@@ -86,7 +86,8 @@ pip install tfjs-graph-converter
 
    * JSON file: `model-stride16.json`
    * Save Folder: `savedmodel`
-   * Output Format: `tf_saved_model`<br/>
+   * Output Format: `tf_saved_model`
+   \
    ```bash
    tfjs_graph_converter ./model-stride16.json ./savedmodel --output_format tf_saved_model
    ```
