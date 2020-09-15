@@ -28,14 +28,16 @@ To follow along with this example, you will need:
 * A python environment with [tensorflow 2.1+](https://www.tensorflow.org/install) and [tensorflowjs 1.5.2+](https://pypi.org/project/tensorflowjs/) installed
 * A pretrained TFJS model ([download](https://drive.google.com/drive/folders/1gxXxLpof1biBIU0_jgUazQ5L32C0GfCT?usp=sharing))
 
-The TFJS model used for this tutorial is a Posenet model with a ResNet architecture. You can download the folder containing the TFJS model [here](https://drive.google.com/drive/folders/1gxXxLpof1biBIU0_jgUazQ5L32C0GfCT?usp=sharing). Once you've downloaded the zip file, extract the `posenet-resnet-stride16` folder.
+The TFJS model used for this tutorial is a [PoseNet](https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5) model with a [ResNet](https://arxiv.org/abs/1512.03385) architecture. You can download the folder containing the TFJS model [here](https://drive.google.com/drive/folders/1gxXxLpof1biBIU0_jgUazQ5L32C0GfCT?usp=sharing). Once you've downloaded the zip file, extract the `posenet-resnet-stride16` folder.
 
 A pretrained TFJS model consists of the following files:
 
 * A JSON file that defines the model topology
 * One or more .bin files that contain the trained weights
 
-**Note:** When downloading a TFJS model from from somewhere like [TensorFlow Hub](https://tfhub.dev/s?deployment-format=tfjs), make sure the JSON file isn't corrupted. If you open up the JSON file, you should see something like this:
+```
+{% include alert.html text="When downloading a TFJS model from from somewhere like [TensorFlow Hub](https://tfhub.dev/s?deployment-format=tfjs), make sure the JSON file isn't corrupted. If you open up the JSON file, you should see something like this:" %}
+```
 
 ```json
 "format": "graph-model",
@@ -106,7 +108,9 @@ pip install tfjs-graph-converter
    Converting.... Done.
    Conversion took 2.778s
    ```
-   **Note:** Some newer TFJS models released by Google use new types of layers in their Neural Network architecture that are not yet supported by the converter library at the time of writing.
+   ```
+   {% include alert.html text="Some newer TFJS models released by Google use new types of layers in their Neural Network architecture that are not yet supported by the converter library at the time of writing." %}
+   ```
 
    The `savedmodel` folder should contain:
 
