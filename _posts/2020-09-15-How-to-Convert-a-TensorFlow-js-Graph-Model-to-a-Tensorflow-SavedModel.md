@@ -5,8 +5,6 @@ description: A simple example of how to convert a TensorFlow.js graph model to a
 categories: [tensorflow]
 title: How to Convert a TensorFlow.js Graph Model to a TensorFlow SavedModel
 ---
-# How to Convert a TensorFlow.js Graph Model to a TensorFlow SavedModel
-
 ## Motivation
 
 The [Tensoflow.js](https://www.tensorflow.org/js) library is great for leveraging machine learning directly in a [web browser](https://pose-animator-demo.firebaseapp.com/static_image.html) or [Node.js application](https://medium.com/@andreas.schallwig/do-not-laugh-a-simple-ai-powered-game-3e22ad0f8166). However, TensorFlow does not currently provide any methods for converting TensorFlow.js models back into a standard TensorFlow format. This can be a problem if you need to change how your model is deployed at some point and don't have access to a standard TensorFlow format. In addition, standard TensorFlow formats have not been made available for most of the pretrained TFJS models. Fortunately, there is a third-party [library](https://github.com/patlevin/tfjs-to-tf) that provides this functionality. This post will cover how to use this library to convert a TFJS model to the standard SavedModel format.
