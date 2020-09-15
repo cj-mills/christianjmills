@@ -33,9 +33,7 @@ A pretrained TFJS model consists of the following files:
 * A JSON file that defines the model topology
 * One or more .bin files that contain the trained weights
 
-```
-{% include alert.html text="When downloading a TFJS model from from somewhere like [TensorFlow Hub](https://tfhub.dev/s?deployment-format=tfjs), make sure the JSON file isn't corrupted. If you open up the JSON file, you should see something like this:" %}
-```
+**Note:** When downloading a TFJS model from from somewhere like [TensorFlow Hub](https://tfhub.dev/s?deployment-format=tfjs), make sure the JSON file isn't corrupted. If you open up the JSON file, you should see something like this:
 
 ```json
 "format": "graph-model",
@@ -106,15 +104,13 @@ pip install tfjs-graph-converter
    Converting.... Done.
    Conversion took 2.778s
    ```
-   ```
-   {% include alert.html text="Some newer TFJS models released by Google use new types of layers in their Neural Network architecture that are not yet supported by the converter library at the time of writing." %}
-   ```
-
+   **Note:** Some newer TFJS models released by Google use new types of layers in their Neural Network architecture that are not yet supported by the converter library at the time of writing.
+   
    The `savedmodel` folder should contain:
 
    * A `variables` folder (which is empty for this example) 
-   * A `saved_model.pb` file.
-
+* A `saved_model.pb` file.
+   
 4. (Optional) If you wish, you can examine the SavedModel using the following command:
 
    ```bash
