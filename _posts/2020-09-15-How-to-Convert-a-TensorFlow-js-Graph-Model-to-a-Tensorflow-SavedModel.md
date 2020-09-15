@@ -109,7 +109,7 @@ pip install tfjs-graph-converter
    The `savedmodel` folder should contain:
 
    * A `variables` folder (which is empty for this example) 
-* A `saved_model.pb` file.
+   * A `saved_model.pb` file.
    
 4. (Optional) If you wish, you can examine the SavedModel using the following command:
 
