@@ -10,7 +10,7 @@ search_exclude: false
 
 ## Background
 
-I've recently started playing around with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/index.html) neural network inference library for the [Unity](https://unity.com/) game engine. What's cool about Barracuda is that it runs models locally within Unity. There's no remote server or special dependencies required to use an ML model in your application. With a few [constraints](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/SupportedPlatforms.html), it should work on any platform supported by Unity. Running the model in Unity also allows to combine it with all the other [features](https://unity.com/products/unity-platform) of a modern real-time development platform.
+I've recently started playing around with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/index.html) neural network inference library for the [Unity](https://unity.com/) game engine. What's cool about Barracuda is that it runs models locally within Unity. There's no remote server or special dependencies required to use an ML model in your application. With a few [constraints](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/SupportedPlatforms.html), it should work on any platform supported by Unity. Running the model in Unity also allows you to combine it with all the other [features](https://unity.com/products/unity-platform) of a modern real-time development platform.
 
 **Note:** If you're interested in learning how to get started with Barracuda, I plan to make a separate post on that in the near future. I will update this post with a link when it is ready.
 
