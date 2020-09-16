@@ -10,7 +10,7 @@ search_exclude: false
 
 ## Background
 
-I've recently started playing around with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/index.html) neural network inference library for the [Unity](https://unity.com/) game engine. What's cool about Barracuda is that it runs models locally within Unity. There's no remote server or special dependencies required to use an ML model in your application. With a few [constraints](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/SupportedPlatforms.html), it should work on any platform supported by Unity. Running the model in Unity also allows you to combine it with all the other [features](https://unity.com/products/unity-platform) of a modern real-time development platform.
+I've recently started playing around with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/index.html) neural network inference library for the [Unity](https://unity.com/) game engine. What's cool about Barracuda is that it runs models locally within Unity. There's no remote server or special dependencies required to use an deep learning (DL) model in your application. With a few [constraints](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/manual/SupportedPlatforms.html), it should work on any platform supported by Unity. Running the model in Unity also allows you to combine it with all the other [features](https://unity.com/products/unity-platform) of a modern real-time development platform.
 
 **Note:** If you're interested in learning how to get started with Barracuda, I plan to make a separate post on that in the near future. I will update this post with a link when it is ready.
 
@@ -20,5 +20,5 @@ Since, I've finally gotten around to making a blog, I going to attempt to docume
 
 ## The project
 
-One of the first things that came to mind was mapping a user's movements to a virtual character in real-time.
+One of the first things that came to mind for a project was mapping a user's movements to a virtual character in real-time. Fortunately, there are existing DL models that are well suited for this task. These models perform what is called pose estimation. Pose estimation is a technique where a model predicts the location of a person or object in an image or video. When tracking humans, a model is typically trained to predict the locations of key points on a person's body (e.g. joints, nose, eyes, etc.). You can learn more about pose estimation [here](https://www.fritz.ai/pose-estimation/).
 
