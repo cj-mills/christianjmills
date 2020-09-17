@@ -33,8 +33,26 @@ The basic goal for this project is to use the key point locations predicted by t
 * Scale the estimated pose that the model outputs to account for differences in size between the target character sprite/model and the size of the image being fed into the model. 
 * Handle differences in body proportions between the user and the character. 
 * Separate the estimated pose from the user's location in the camera frame.
-
-
+* Smooth out any choppiness in character movement due to updates in the pose predictions made by the model.
+* Keep the frame rate high enough that the application isn't jarring for the user.
 
 ## Current Progress
+
+I'll start by outlining where I'm currently at before going through what it took to get to this point. 
+
+The first thing to note is that after many trials and tribulations I have managed to get a pretrained pose estimation model working in Unity using the Barracuda library. I'm currently drawing lines connecting the appropriate key points to indicate the predicted pose. This gives a basic skeleton that is useful for development and debugging purposes. I have only just started trying to map the pose estimations to a virtual character sprite. The particular pose estimation model I'm doesn't estimate depth so I'm starting with 2D character sprites. 
+
+I'm currently using a PoseNet model for handling pose estimation. I have gotten both [MobileNet](https://arxiv.org/abs/1704.04861) and [ResNet50](https://arxiv.org/abs/1512.03385) variants of the model to work with Barracuda. The pretrained models I'm using aren't perfect but they work well for getting the rest of the application working. Having to train my own model before even getting started in Unity would have really slowed me down. Although, this approach did introduce some other challenges.
+
+
+
+**Note:** I plan to make posts going into further detail on each of the solutions to challenges I have encountered so far.
+
+
+
+
+
+
+
+
 
