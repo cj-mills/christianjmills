@@ -20,5 +20,21 @@ Since, I've finally gotten around to making a blog, I going to attempt to docume
 
 ## The project
 
-One of the first things that came to mind for a project was mapping a user's movements to a virtual character in real-time. Fortunately, there are existing DL models that are well suited for this task. These models perform what is called pose estimation. Pose estimation is a technique where a model predicts the location of a person or object in an image or video. When tracking humans, a model is typically trained to predict the locations of key points on a person's body (e.g. joints, nose, eyes, etc.). You can learn more about pose estimation [here](https://www.fritz.ai/pose-estimation/).
+One of the first ideas that came to mind for a project was mapping a user's movements to a virtual character in real-time. Fortunately, there are existing DL models that are well suited for this task. These models perform what is called pose estimation. Pose estimation is a technique where a model predicts the location of a person or object in an image or video. When tracking humans, a model is typically trained to predict the locations of key points on a person's body (e.g. joints, nose, eyes, etc.). You can learn more about pose estimation [here](https://www.fritz.ai/pose-estimation/).
+
+I decided to start with an existing pretrained model so I could get to a proof of concept more quickly. However, I plan to train my own pose estimation models once I get far enough along with the rest of the application.
+
+### Project Goals
+
+The basic goal for this project is to use the key point locations predicted by the pose estimation model to control a virtual character. For example, when the user moves their arm, the virtual character's arm should move accordingly. That may seem straightforward enough, but (as often happens) it quickly got more complicated once I actually tried to spell out what I wanted. The requirements I've determined so far are listed below. 
+
+#### Requirements:
+
+* Scale the estimated pose that the model outputs to account for differences in size between the target character sprite/model and the size of the image being fed into the model. 
+* Handle differences in body proportions between the user and the character. 
+* Separate the estimated pose from the user's location in the camera frame.
+
+
+
+## Current Progress
 
