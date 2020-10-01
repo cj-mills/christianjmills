@@ -4,8 +4,8 @@ title: About Me
 permalink: /about/
 ---
 
-This website is powered by **[fastpages](https://github.com/fastai/fastpages)** [^1].
 
 
+## Why I started this blog
 
-[^1]:a blogging platform that natively supports Jupyter notebooks in addition to other formats.
+I decided to make a blog so that I'd have a place to write about projects I work on as well as any interesting things I learn along the way. Specifically, I plan to keep notes while I'm working through problems and document my mistakes and successes. I've historically been pretty bad at doing this, but maintaining a blog should force me to improve in this area. Hopefully, this will help me work through problems and maybe arrive at new solutions more quickly. I also plan to make stand alone tutorials when I find solutions to challenges I encounter. Ideally, this blog will help provide an easier path for anyone interested in similar projects and don't know where to start. I like the idea of making my work available for others to build off so they don't need to start from square one. 
