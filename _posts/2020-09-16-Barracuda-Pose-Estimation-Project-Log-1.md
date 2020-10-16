@@ -40,11 +40,11 @@ My goals for this project are evolving as I discover more of what's possible. As
 
 ### Proof of Concept
 
-As mentioned previously, I have actually gotten a basic example working in Unity. I've also learned how to leverage compute shaders to perform the preprocessing steps on the GPU. Figuring out how to process inputs and outputs for neural networks efficiently inside Unity has been the most irritating part of the project so far. It's given me a new appreciation for all the great data science resources available in the Python ecosystem.
+As mentioned previously, I have actually gotten a basic example working in Unity. I've also learned how to leverage compute shaders to perform the preprocessing steps on the GPU. 
 
 ### Some Weak Points
 
-Basic things like getting slices of arrays and matrices are such a pain in C# compared to Python. It really highlights the need to identify and learn how to leverage the strengths and weaknesses of the tools your working with. Compute shaders are definitely one of the more important strengths to leverage in Unity.
+Figuring out how to process inputs and outputs for neural networks efficiently inside Unity has been the most irritating part of the project so far. It's given me a new appreciation for all the great data science resources available in the Python ecosystem. Basic things like getting slices of arrays and matrices are such a pain in C# compared to Python. It really highlights the need to identify and learn how to leverage the strengths and weaknesses of the tools your working with. Compute shaders are definitely one of the more important strengths to leverage in Unity.
 
 ### Some Strong Points
 
