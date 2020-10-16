@@ -10,7 +10,7 @@ search_exclude: false
 
 ## Background
 
-I've been learning how to get pose estimation working in Unity using their new inference library called Barracuda. I think the name might be a reference to Nvidia's CUDA library. Apparently, barracuda are really fast swimmers so maybe inference speed is a priority for the library as well. I have difficulty coming up with names for things so I'm always looking for new methods. 
+I've been learning how to get pose estimation working in Unity using their new inference library called [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html). I think the name might be a reference to Nvidia's CUDA library. Apparently, barracuda are really fast swimmers so maybe inference speed is a priority for the library as well. I have difficulty coming up with names for things so I'm always looking for new methods. 
 
 Anyways, I've made some decent progress and have actually managed to get a basic proof of concept working. I figured now would be a good time to start a blog and actually track my progress. I've never been good about keeping notes when working on projects. Hopefully, this project will provide sufficient motivation for changing that and get me to write more often (or at all really).
 
