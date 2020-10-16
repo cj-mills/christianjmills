@@ -3,7 +3,7 @@ title: Barracuda Pose Estimation Project Log Pt.1
 layout: post
 toc: true
 description: The journey so far.
-image: images/pexels-peter-simmons-66218.jpg
+image: /images/pexels-peter-simmons-66218.jpg
 categories: [unity,project,log]
 hide: false
 search_exclude: false
