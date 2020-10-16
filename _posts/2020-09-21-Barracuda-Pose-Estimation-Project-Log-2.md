@@ -2,7 +2,7 @@
 title: Barracuda Pose Estimation Project Log Pt.2
 layout: post
 toc: true
-description: This is the second post documenting my progress implementing pose estimation using the Barracuda inference library in Unity.
+description: Trying to remove bottlenecks.
 categories: [unity,project,log]
 hide: false
 search_exclude: false
