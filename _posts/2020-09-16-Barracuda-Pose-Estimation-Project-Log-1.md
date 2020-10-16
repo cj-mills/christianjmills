@@ -6,6 +6,7 @@ image: images/pexels_peter_simmons_66218_1080p.jpg
 description: The journey so far.
 categories: [unity,project,log]
 hide: false
+show_image: true
 search_exclude: false
 ---
 
