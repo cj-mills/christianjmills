@@ -16,8 +16,8 @@ Well I feel like an idiot. It turns out I've had the x and y offset vectors swap
 
 Before:
 
-![pose_estimation_swapped_offsets](F:\Projects\GitHub\christianjmills\images\pose_estimation_swapped_offsets.gif)
+![pose_estimation_swapped_offsets](images\pose_estimation_swapped_offsets.gif)
 
 After:
 
-![pose_estimation_corrected_offsets](F:\Projects\GitHub\christianjmills\images\pose_estimation_corrected_offsets.gif)
+![pose_estimation_corrected_offsets](\images\pose_estimation_corrected_offsets.gif)
