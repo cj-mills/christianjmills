@@ -38,13 +38,21 @@ My goals for this project are evolving as I discover more of what's possible. As
 
 ## Current Progress
 
-As mentioned previously, I have actually gotten a basic example working in Unity. I've also learned how to leverage compute shaders to perform the preprocessing steps on the GPU. Figuring out how to process inputs and outputs for neural networks efficiently inside Unity has been the most irritating part of the project so far. It's given me a new appreciation for all the great data science resources available in the Python ecosystem. 
+### Proof of Concept
 
-Basic things like getting slices of arrays and matrices are such a pain in C# compared to Python. It really highlights the need to identify and learn how to leverage the strengths and weaknesses of the tools your working with. Compute shaders are definitely one of the more important strengths to leverage in Unity. 
+As mentioned previously, I have actually gotten a basic example working in Unity. I've also learned how to leverage compute shaders to perform the preprocessing steps on the GPU. Figuring out how to process inputs and outputs for neural networks efficiently inside Unity has been the most irritating part of the project so far. It's given me a new appreciation for all the great data science resources available in the Python ecosystem.
+
+ ### Some Weak Points
+
+Basic things like getting slices of arrays and matrices are such a pain in C# compared to Python. It really highlights the need to identify and learn how to leverage the strengths and weaknesses of the tools your working with. Compute shaders are definitely one of the more important strengths to leverage in Unity.
+
+### Some Strong Points
 
 Compute shaders are awesome for doing the same thing to every element in a data structure on the GPU. They're actually what the Barracuda library uses. There is a bit of a learning process for figuring out how to actually get the data you want to the shader, access the data within the shader, and how to get the output back. It took a lot of googling to figure out but it's worth the effort. 
 
 So far, I've managed to get my whole preprocessing pipeline to run on the GPU. I can load an input image onto the GPU, crop it, resize it, normalize the values, and execute the model all without sending data back and forth between the CPU and GPU. Aside from being way faster, this also has the benefit of completely freeing up the CPU to do other things.
+
+### Current Challenges
 
 I still need to figure out if I can get the post processing done on the GPU. That's my last remaining bottleneck for fully utilizing my GPU during runtime. It also highlights just how much overhead there is when transferring data from the GPU back to the CPU. When testing different methods for preprocessing, I discovered that the simple act of downloading a tensor from the GPU to the CPU took longer than it did to actually run the model. 
 
@@ -52,11 +60,15 @@ Unfortunately, the Barracuda library does not make it intuitive for extracting i
 
 Since I haven't figured out how to efficiently access slices of arrays, I need iterate through the whole output tensor to find the most likely locations for key points in the input image. That's not a big deal if the output tensor is small, but quickly becomes a problem when using larger input images. Unfortunately, the model architecture I'm using seems to require large input images to get more accurate pose estimations.
 
+### Potential Roadblocks
+
 Something else this project has highlighted is how much of a pain it still is to get machine learning models from the training environment to arbitrary production applications. Unity requires your model to either be in the native Barracuda or ONNX format. I decided to start with a pretrained TensorFlow model while I get the hang of using Barracuda. That meant I needed to convert the model to ONNX before I could begin working with it in Unity. 
 
 Unfortunately, TensorFlow does not contain any built-in methods for exporting trained models to ONNX. They seem to prefer that you stay within their ecosystem. However, it also doesn't contain a complete set of methods for converting between different TensorFlow libraries. For example, they provide a method to convert standard TensorFlow models to either TensorFlow Lite or Tensorflow.js format but not the other way around. This created a bit of a road block, since TensorFlow only provides tflite and TFJS versions of the pretrained PoseNet model I'm using. That combined with the lack of built in support for exporting to ONNX means that there aren't any officially supported ways to get an arbitrary TensorFlow model into Unity. That's a bit inconvenient since I wanted to start with a pretrained model so that I wouldn't need to spend a bunch of time training my own model before even getting into Unity. 
 
-I eventually found a third-party library to convert a pretrained TFJS model to the standard TensorFlow SavedModel format. I then had to use another third-party library to convert the converted TensorFlow model into ONNX. It might seem like these third-party libraries completely resolve the missing functionality in TensorFlow. Unfortunately, this method requires that all third-party libraries used, implement support for whatever neural network layers are used in the model you want to convert. The PoseNet architecture is fully supported, but a lot of the the newer pretrained models released for TensorFlow contain new types of layers that are not yet supported by these libraries. Even if these libraries did support these new layer types, Unity would likely still need to implement support for them in Barracuda. This all introduced a bunch work that I had to get done before I could even begin making a proof of concept in Unity. 
+I eventually found a third-party library to convert a pretrained TFJS model to the standard TensorFlow SavedModel format. I then had to use another third-party library to convert the converted TensorFlow model into ONNX. It might seem like these third-party libraries completely resolve the missing functionality in TensorFlow. Unfortunately, this method requires that all third-party libraries used, implement support for whatever neural network layers are used in the model you want to convert. The PoseNet architecture is fully supported, but a lot of the the newer pretrained models released for TensorFlow contain new types of layers that are not yet supported by these libraries. Even if these libraries did support these new layer types, Unity would likely still need to implement support for them in Barracuda. This all introduced a bunch work that I had to get done before I could even begin making a proof of concept in Unity.
+
+### Potential Solutions
 
 While I was looking for solutions to the challenges in the previous paragraph, I came across some methods that others developed for manually converting models from one library to another. It involves using a neural network analysis tool to construct a JSON file that contains the network topology and then using that to construct the same topology using the target library. You then need to iterate through the trained model to get the weights for each layer and assign them to the appropriate layer in the new model. 
 
