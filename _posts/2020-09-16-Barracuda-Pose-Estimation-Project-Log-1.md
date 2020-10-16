@@ -20,7 +20,7 @@ I've already noticed a conflict between the desire to actually work on the proje
 
 I'm really interested in the potential applications for mapping a user's movements to a virtual character in real-time. Traditionally, this required specialized hardware like motion capture suits. Fortunately, there are deep learning models that now let you accomplish the same thing with a regular webcam and sufficient computing power. These models perform what is called pose estimation. 
 
-Pose estimation is a technique where a model predicts the location of a person or object in an image or video. When tracking humans, a model is typically trained to predict the locations of key points on a person's body (e.g. joints, nose, eyes, etc.). You can learn more about pose estimation [here](https://www.fritz.ai/pose-estimation/). I want to use these types of models inside a Unity application so I can combine the with all other [features](https://unity.com/products/unity-platform) included in a modern real-time development platform.
+Pose estimation is a technique where a model predicts the location of a person or object in an image or video. When tracking humans, a model is typically trained to predict the locations of key points on a person's body (e.g. joints, nose, eyes, etc.). You can learn more about pose estimation [here](https://www.fritz.ai/pose-estimation/). I want to use these types of models inside a Unity application so I can combine the with all other [features](https://unity.com/products/unity-platform) included in a modern real-time 2D/3D development platform.
 
 ### Project Goals
 
