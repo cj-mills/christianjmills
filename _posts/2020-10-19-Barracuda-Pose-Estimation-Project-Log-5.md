@@ -32,6 +32,7 @@ This actually worked pretty well when combined with Unity's 2D character rigging
 
 ### My Results:
 
-![2D_sprite_animation](\images\2D_sprite_animation.gif)
+<img src="\images\2D_sprite_animation.gif" alt="2D_sprite_animation" style="zoom:50%;" />
+
 
 This 2D sprite turned out not to be ideal for testing out a full range of poses. It's drawn facing towards one side of the screen which makes it a bit awkward when testing out the joint mappings. Ideally, the sprite would be facing directly towards the user.
