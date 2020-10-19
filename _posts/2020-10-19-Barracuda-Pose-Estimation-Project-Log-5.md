@@ -8,8 +8,6 @@ hide: false
 search_exclude: false
 ---
 
-## 
-
 In further proof that you should never skip days when trying to form a new habit, I allowed myself to get completely distracted over past few weeks. There really are too many cool things to try out in the machine learning space these days. Although, if I'm being honest, I probably allowed myself to get distracted in the first place because I wasn't sure what I wanted to work on next in the pose estimation project. I think it's almost time to move on from 2D to 3D pose estimation models. However, there are some things I want to try out before making that jump. First things first though. I did actually make a bit more progress before getting sidetracked.
 
 ### Updates on Post Processing Optimization
