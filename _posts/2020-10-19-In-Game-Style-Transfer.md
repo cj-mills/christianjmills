@@ -10,8 +10,6 @@ search_exclude: false
 
 I've been fascinated with style transfer models ever since I first learned about them a few years ago. Most available style transfer applications are meant for single images. Interestingly, Unity seems to have another use case in mind. The home page for the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html) library has an image of what appears to be in-game style transfer.
 
-<img src="\images\barracuda_landing.png" alt="barracuda_landing" style="zoom: 50%;" />
-
 This was such an intriguing idea that I decided to give it a shot before getting started on my pose estimation project. One concern I had going in was performance. The style transfer models I'd used previously weren't exactly designed for real-time inference. This concern turned out to be well founded. The frame rates for my first attempt were so low it looked like a stop motion film.
 
 At the time, I'd assumed the low frame rates were purely due to the performance demands of the style transfer model. I didn't realize that my methods for pre and post processing were needlessly inefficient. What's more, the output looked really bad. I learned much later that this was because I wasn't implementing the processing steps correctly. I decided to drop the whole endeavor and moved on to pose estimation.
