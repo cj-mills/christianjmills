@@ -34,7 +34,7 @@ My current results might need a seizure warning, but they are still way better t
 
 ### My Results:
 
-<img src="\images\style_transfer_mosaic_360.gif" alt="style_transfer_mosaic_360" style="zoom:80%;" />
+<img src="\images\style_transfer_mosaic_360.gif" alt="style_transfer_mosaic_360_480p" style="zoom:100%;" />
 
 ### Future Work:
 
