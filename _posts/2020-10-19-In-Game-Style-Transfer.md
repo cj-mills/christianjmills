@@ -1,5 +1,5 @@
 ---
-title: In Game Style Transfer
+title: In-Game Style Transfer
 layout: post
 toc: false
 description: Some optimization is still required.
