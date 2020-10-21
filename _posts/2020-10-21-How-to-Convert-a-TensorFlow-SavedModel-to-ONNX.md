@@ -8,9 +8,7 @@ hide: true
 search_exclude: false
 ---
 
-## Motivation
-
-Currently, there is no officially supported method for exporting TensorFlow models to ONNX. The TensorFlow team has no plans to provide such support anytime soon. Fortunately, the python tool [tf2onnx](https://github.com/onnx/tensorflow-onnx) supports conversions for most types of models. This post covers how to use tf2onnx to convert a PoseNet SavedModel to ONNX.
+This post covers how to use tf2onnx to convert a PoseNet SavedModel to ONNX.
 
 ## Requirements
 
