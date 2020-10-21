@@ -81,4 +81,4 @@ Be sure to check out the GitHub [repo](https://github.com/onnx/tensorflow-onnx) 
 * Current TensorFlow support
 * Parameter options
 * Advanced use cases
-* Explanations of how the tool converts TensorFlow Models
+* How the tool converts TensorFlow Models
