@@ -1,5 +1,5 @@
 ---
-title: How to Convert TensorFlow models to ONNX with tf2onnx
+title: How to Convert TensorFlow Models to ONNX with tf2onnx
 layout: post
 toc: true
 description: An example of how to convert a TensorFlow SavedModel to ONNX.
