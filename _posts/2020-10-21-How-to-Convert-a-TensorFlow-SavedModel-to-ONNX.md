@@ -44,7 +44,7 @@ pip install -U tf2onnx
 
 1. Make sure the SavedModel file is named `saved_model.pb`
 
-2. At a minimum, you need to specify the source model format, provide the path to the folder containing the SavedModel, and provide a name for the ONNX file.
+2. At a minimum, you need to specify the source model format, the path to the folder containing the SavedModel, and a name for the ONNX file.
 
    For example:
 
