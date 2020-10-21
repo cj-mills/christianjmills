@@ -66,7 +66,7 @@ pip install -U tf2onnx
 python -m tf2onnx.convert --saved-model ./savedmodel --opset 10 --output model.onnx
 ```
 
-With these arguments you might receive some warnings, but the output should include something like this.
+With these parameters you might receive some warnings, but the output should include something like this.
 
 ```bash
 2020-10-21 12:54:11,024 - INFO - Using tensorflow=2.3.0, onnx=1.7.0, tf2onnx=1.6.3/d4abc8
@@ -78,3 +78,13 @@ With these arguments you might receive some warnings, but the output should incl
 2020-10-21 12:54:14,215 - INFO - ONNX model is saved at model.onnx
 ```
 
+
+
+## Next Steps
+
+Be sure to check out the GitHub [repo](https://github.com/onnx/tensorflow-onnx) if you want to learn what else you can do with the tool. The README page goes in to greater detail about the following:
+
+* Current TensorFlow support
+* Parameter options
+* Advanced use cases
+* Explanations of how the tool converts TensorFlow Models
