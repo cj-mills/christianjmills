@@ -4,7 +4,7 @@ layout: post
 toc: true
 description: This post covers how to use tf2onnx to convert a PoseNet SavedModel to ONNX.
 categories: [tensorflow,onnx,tutorial]
-hide: true
+hide: false
 search_exclude: false
 ---
 
