@@ -66,7 +66,7 @@ pip install -U tf2onnx
 python -m tf2onnx.convert --saved-model ./savedmodel --opset 10 --output model.onnx
 ```
 
-​	With these arguments you might receive some warnings, but the output should include something like this.
+With these arguments you might receive some warnings, but the output should include something like this.
 
 ```bash
 2020-10-21 12:54:11,024 - INFO - Using tensorflow=2.3.0, onnx=1.7.0, tf2onnx=1.6.3/d4abc8
