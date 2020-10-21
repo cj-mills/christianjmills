@@ -50,7 +50,7 @@ pip install -U tf2onnx
 
    * Model Format: `--saved-model`
 
-   * Target Folder: `./savedmodel` 
+   * Model Folder: `./savedmodel` 
 
      **Note:** Do not include a `/` at the end of the path.
 
