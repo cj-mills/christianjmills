@@ -12,20 +12,21 @@ search_exclude: false
 
 This page provides resources for those interested in getting started with the topics covered in this blog. The page will be updated as new topics are covered.
 
-Topics Currently Covered:
+## Topics Currently Covered:
 
 * [Deep Learning](#deep-learning)
 * [Unity](#unity)
 * [Blender](#blender)
 
-## Deep Learning
+### Deep Learning
 
-### [Fast.ai](https://course.fast.ai/)
+- #### [Fast.ai](https://course.fast.ai/)
 
-## Unity
+### Unity
 
-### [Create with Code](https://learn.unity.com/course/create-with-code)
+- ### [Create with Code](https://learn.unity.com/course/create-with-code)
 
-## Blender
+### Blender
 
-### [Blender Beginner Tutorial Series](https://www.youtube.com/playlist?list=PLjEaoINr3zgEq0u2MzVgAaHEBt--xLB6U)
+- #### [Blender Beginner Tutorial Series](https://www.youtube.com/playlist?list=PLjEaoINr3zgEq0u2MzVgAaHEBt--xLB6U)
+
