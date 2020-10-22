@@ -14,7 +14,7 @@ This page provides resources for those interested in getting started with the to
 
 Topics Currently Covered:
 
-* [Deep Learning](#'deep learning')
+* [Deep Learning](#deep_learning)
 * [Unity](#unity)
 * [Blender](#blender)
 
@@ -168,7 +168,7 @@ sdfgsdfgsdf
 
 
 
-## Deep Learning
+## Deep_Learning
 
 sdfgsdfgsdf
 
