@@ -16,11 +16,17 @@ search_exclude: false
 
 ## Deep Learning
 
-1. [Fast.ai](https://course.fast.ai/)
+1. [Fast.ai: Practical Deep Learning for Coders](https://course.fast.ai/)
 
    
 
-2. 
+2. Deeplearning.ai: Deep Learning Specialization
+
+   1. Part 1: Neural Networks
+   2. Part 2: Tuning Networks
+   3. Part 3: Structuring Machine Learning Projects
+   4. Part 4: Convolutional Neural Networks
+   5. Part 5: Sequence Models
 
 ## Unity
 
