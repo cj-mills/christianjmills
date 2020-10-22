@@ -16,7 +16,7 @@ search_exclude: false
 
 ## Deep Learning
 
-1. ### [Fast.ai](https://course.fast.ai/)
+1. [Fast.ai](https://course.fast.ai/)
 
    
 
