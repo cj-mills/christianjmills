@@ -2,15 +2,11 @@
 title: How to Get Started
 layout: post
 toc: false
-description: This post covers how to get started with the topics covered in this blog.
+description: This page provides resources for those interested in getting started with the topics covered in this blog. The page will be updated as new topics are covered.
 categories: []
 hide: true
 search_exclude: false
 ---
-
-
-
-This page provides resources for those interested in getting started with the topics covered in this blog. The page will be updated as new topics are covered.
 
 ## Topics:
 
