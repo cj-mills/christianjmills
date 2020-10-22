@@ -14,15 +14,15 @@ search_exclude: false
 * [Unity](#unity)
 * [Blender](#blender)
 
-### Deep Learning
+## Deep Learning
 
 - #### [Fast.ai](https://course.fast.ai/)
 
-### Unity
+## Unity
 
 - #### [Create with Code](https://learn.unity.com/course/create-with-code)
 
-### Blender
+## Blender
 
 - #### [Blender Beginner Tutorial Series](https://www.youtube.com/playlist?list=PLjEaoINr3zgEq0u2MzVgAaHEBt--xLB6U)
 
