@@ -1,5 +1,5 @@
 ---
-title: How to Get Started
+title: Getting Started
 layout: post
 toc: false
 description: This page provides resources for those interested in getting started with the topics covered in this blog. The page will be updated as new topics are covered.
