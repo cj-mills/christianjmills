@@ -12,7 +12,7 @@ search_exclude: false
 
 This page provides resources for those interested in getting started with the topics covered in this blog. The page will be updated as new topics are covered.
 
-## Topics Currently Covered:
+## Topics:
 
 * [Deep Learning](#deep-learning)
 * [Unity](#unity)
