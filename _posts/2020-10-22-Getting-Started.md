@@ -22,11 +22,11 @@ search_exclude: false
 
 2. Deeplearning.ai: Deep Learning Specialization
 
-   1. Part 1: Neural Networks
-   2. Part 2: Tuning Networks
-   3. Part 3: Structuring Machine Learning Projects
-   4. Part 4: Convolutional Neural Networks
-   5. Part 5: Sequence Models
+   1. [Part 1: Neural Networks](https://www.youtube.com/playlist?list=PLkDaE6sCZn6Ec-XTbcX1uRg2_u4xOEky0)
+   2. [Part 2: Tuning Networks](https://www.youtube.com/playlist?list=PLkDaE6sCZn6Hn0vK8co82zjQtt3T2Nkqc)
+   3. [Part 3: Structuring Machine Learning Projects](https://www.youtube.com/playlist?list=PLkDaE6sCZn6E7jZ9sN_xHwSHOdjUxUW_b)
+   4. [Part 4: Convolutional Neural Networks](https://www.youtube.com/playlist?list=PLkDaE6sCZn6Gl29AoE31iwdVwSG-KnDzF)
+   5. [Part 5: Sequence Models](https://www.youtube.com/playlist?list=PLkDaE6sCZn6F6wUI9tvS_Gw1vaFAx6rd6)
 
 ## Unity
 
