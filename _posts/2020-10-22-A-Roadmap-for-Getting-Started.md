@@ -1,7 +1,7 @@
 ---
 title: How to Get Started
 layout: post
-toc: true
+toc: false
 description: This post covers how to get started with the topics covered in this blog.
 categories: []
 hide: true
