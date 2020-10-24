@@ -162,4 +162,4 @@ Now we can finally click the play button and watch the video.
 
 You should see something like this.
 
-![barracuda-posenet-tutorial_2](\images\barracuda-posenet-tutorial\barracuda-posenet-tutorial_420p.gif)
+<img src="\images\barracuda-posenet-tutorial\barracuda_posenet_tutorial_420p.gif" alt="barracuda_posenet_tutorial_420p"  />
