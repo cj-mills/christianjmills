@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Barracuda PoseNet Tutorial Pt.1 | Christian Mills</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Barracuda PoseNet Tutorial Pt.1" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This is part 1 of a step-by-step-guide for running a PoseNet model with Unity’s Barracuda library." />
+<meta property="og:description" content="This is part 1 of a step-by-step-guide for running a PoseNet model with Unity’s Barracuda library." />
+<link rel="canonical" href="https://christianjmills.com/2020/10/23/Barracuda-PoseNet-Tutorial-1.html" />
+<meta property="og:url" content="https://christianjmills.com/2020/10/23/Barracuda-PoseNet-Tutorial-1.html" />
+<meta property="og:site_name" content="Christian Mills" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-10-23T00:00:00-05:00" />
+<script type="application/ld+json">
+{"headline":"Barracuda PoseNet Tutorial Pt.1","dateModified":"2020-10-23T00:00:00-05:00","description":"This is part 1 of a step-by-step-guide for running a PoseNet model with Unity’s Barracuda library.","datePublished":"2020-10-23T00:00:00-05:00","@type":"BlogPosting","url":"https://christianjmills.com/2020/10/23/Barracuda-PoseNet-Tutorial-1.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/2020/10/23/Barracuda-PoseNet-Tutorial-1.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Christian Mills</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Barracuda PoseNet Tutorial Pt.1</h1><p class="page-description">This is part 1 of a step-by-step-guide for running a PoseNet model with Unity's Barracuda library.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-10-23T00:00:00-05:00" itemprop="datePublished">
+        Oct 23, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      3 min read
+    
+</span></p>
+
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#prerequisites">Prerequisites</a></li>
+<li class="toc-entry toc-h2"><a href="#create-a-new-project">Create a New Project</a></li>
+<li class="toc-entry toc-h2"><a href="#setup-video-player">Setup Video Player</a></li>
+<li class="toc-entry toc-h2"><a href="#get-test-videos">Get Test Videos</a></li>
+</ul><h2 id="prerequisites">
+<a class="anchor" href="#prerequisites" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prerequisites</h2>
+
+<p>This tutorial assumes that you have used Unity before. If you’ve never used Unity, you can get your feet wet with this <a href="https://www.youtube.com/watch?v=OR0e-1UBEOU&amp;list=PLB5_EOMkLx_VHKn4IISeNwhlDrb1948ZX&amp;index=3">tutorial</a>.</p>
+
+<p>We’ll be using Unity 2019.4.13 (<a href="unityhub://2019.4.13f1/518737b1de84">download</a>).</p>
+
+<h2 id="create-a-new-project">
+<a class="anchor" href="#create-a-new-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create a New Project</h2>
+
+<p>First, we need to create a new Unity project. Since the PoseNet model only estimates 2D poses, we’ll select the 2D template.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ccreate_project.PNG" alt="create_project"></p>
+
+<h2 id="setup-video-player">
+<a class="anchor" href="#setup-video-player" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setup Video Player</h2>
+
+<p>Before getting into any code, we’ll setup a video player. We’ll cover how to use a webcam as well, but a prerecorded video is better for testing purposes.</p>
+
+<p>In the <code class="highlighter-rouge">Hierarchy</code> tab, right click an empty area, select the <code class="highlighter-rouge">Video</code> section, and click <code class="highlighter-rouge">Video Player</code>. This will create a new <code class="highlighter-rouge">GameObject</code> called <code class="highlighter-rouge">Video Player</code>. The default name works well enough so we’ll leave it as is.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ccreate_video_player.PNG" alt="create_video_player"></p>
+
+<h2 id="get-test-videos">
+<a class="anchor" href="#get-test-videos" aria-hidden="true"><span class="octicon octicon-link"></span></a>Get Test Videos</h2>
+
+<p>https://www.pexels.com/videos/</p>
+
+<p>For this tutorial we’ll be using these two videos available on <a href="https://www.pexels.com/">Pexels</a>, a free stock photos &amp; videos site.</p>
+
+<p><a href="https://www.pexels.com/video/woman-dancing-2873755/">Woman Dancing</a></p>
+
+<p><a href="https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/">Boardslides</a></p>
+
+<p>In the <code class="highlighter-rouge">Assets</code> window, right-click an empty space, select the <code class="highlighter-rouge">Create</code> option, and click <code class="highlighter-rouge">Folder</code>. Name the folder <code class="highlighter-rouge">Videos</code>.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ccreate_folder.PNG" alt="create_folder"></p>
+
+<p>Double-click the <code class="highlighter-rouge">Videos</code> folder to open it.</p>
+
+<p>Drag and drop the two video files into the <code class="highlighter-rouge">Videos</code> folder.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cvideo_file_assets.PNG" alt="video_file_assets"></p>
+
+<p>Select the <code class="highlighter-rouge">Video Player</code> object in the <code class="highlighter-rouge">Hierarchy</code> tab. Then click and drag the <code class="highlighter-rouge">pexels_boardslides</code> file into the <code class="highlighter-rouge">Video Clip</code> value in the <code class="highlighter-rouge">Inspector</code> tab.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cvideo_clip_empty.png" alt="video_clip_empty"></p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cvideo_clip_filled.png" alt="video_clip_filled"></p>
+
+<p>Tick the <code class="highlighter-rouge">Loop</code> checkbox in the <code class="highlighter-rouge">Inspector</code> tab to make the video repeat when the project is running.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cloop_video_checkbox.png" alt="loop_video_checkbox"></p>
+
+<p>Create a new folder in the <code class="highlighter-rouge">Assets</code> window and name it <code class="highlighter-rouge">Textures</code>.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ctextures_folder.PNG" alt="textures_folder"></p>
+
+<p>Open the folder and right click an empty space. In the <code class="highlighter-rouge">Create</code> section, click <code class="highlighter-rouge">Render Texture</code>. You can name it something like <code class="highlighter-rouge">video_texture</code>.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ccreate_render_texture.PNG" alt="create_render_texture"></p>
+
+<p>With the <code class="highlighter-rouge">video_texture</code> object selected, the adjust values for <code class="highlighter-rouge">Size</code> parameter in the <code class="highlighter-rouge">Inspector</code> tab. We’ll set the size parameter to the resolution of the videos. In our case, the resolution is 1920 x 1080.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Crt_size_parameter.png" alt="rt_size_parameter"></p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Crt_set_resolution.png" alt="rt_set_resolution"></p>
+
+<p>With the resolution set, select the <code class="highlighter-rouge">Video Player</code> object in the <code class="highlighter-rouge">Hierarchy</code> tab again. Click and drag the <code class="highlighter-rouge">video_texture</code> object into the <code class="highlighter-rouge">Target Texture</code> parameter option in the <code class="highlighter-rouge">Inspector</code> tab.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ctarget_texture_empty.png" alt="target_texture_empty"></p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ctarget_texture_filled.png" alt="target_texture_filled"></p>
+
+<p>Now, we need to create a screen to watch the video play. We’ll use a <code class="highlighter-rouge">Quad</code> object for the screen. Right click an empty space in the <code class="highlighter-rouge">Hierarchy</code> tab, select the <code class="highlighter-rouge">3D Object</code> section and click <code class="highlighter-rouge">Quad</code>. We can just name it <code class="highlighter-rouge">VideoScreen</code>.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Ccreate_quad.PNG" alt="create_quad"></p>
+
+<p>With the <code class="highlighter-rouge">VideoScreen</code> object selected, we need to adjust the <code class="highlighter-rouge">Scale</code> parameter in the <code class="highlighter-rouge">Inspector</code> tab. Set the <code class="highlighter-rouge">X</code> value to 1920 and the <code class="highlighter-rouge">Y</code> value to 1080. Leave the <code class="highlighter-rouge">Z</code> value at 1.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cquad_scale_default.png" alt="quad_scale_default"></p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cquad_scale_set.png" alt="quad_scale_set"></p>
+
+<p>Next, we need to adjust the position of the <code class="highlighter-rouge">VideoScreen</code> object so that the bottom left corner is at <code class="highlighter-rouge">X: 0, Y: 0, Z: 0</code>. This will make things easier when handling the output from the PoseNet model. To do this we’ll set update the <code class="highlighter-rouge">Position</code> value in the <code class="highlighter-rouge">Inspector</code> tab. Set the <code class="highlighter-rouge">X</code> value to half the <code class="highlighter-rouge">X</code> value for the <code class="highlighter-rouge">Scale</code> parameter. Do the same for the <code class="highlighter-rouge">Y</code> value. The <code class="highlighter-rouge">X</code> value for <code class="highlighter-rouge">Position</code> should be 960 and the <code class="highlighter-rouge">Y</code> value should be set to 540.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cquad_position_default.png" alt="quad_position_default"></p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cquad_position_set.png" alt="quad_position_set"></p>
+
+<p>With the parameters for the <code class="highlighter-rouge">VideoScreen</code> object set, we need to zoom out and re-center our perspective. We can easily do this by selecting the <code class="highlighter-rouge">VideoScreen</code> object and pressing the <code class="highlighter-rouge">F</code> key on our keyboard.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Crecentered_video_screen.PNG" alt="recentered_video_screen"></p>
+
+<p>If you want to zoom back in a bit, you can scroll up with you mouse wheel.</p>
+
+<p>Click and drag the <code class="highlighter-rouge">video_texture</code> object from the <code class="highlighter-rouge">Textures</code> folder onto the <code class="highlighter-rouge">VideoScreen</code> object in the <code class="highlighter-rouge">Scene</code> tab. The <code class="highlighter-rouge">VideoScreen</code> object should turn completely black.</p>
+
+<p>With the <code class="highlighter-rouge">VideoScreen</code> object selected, click the <code class="highlighter-rouge">Shader</code> dropdown in the <code class="highlighter-rouge">Inspector</code> tab. Select the Unlit option. In the <code class="highlighter-rouge">Unlit</code> section, select <code class="highlighter-rouge">Texture</code>. Choosing this setting means that out <code class="highlighter-rouge">VideoScreen</code> object does not require a separate light source. Without this setting, the video will look extremely dim.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cselect_unlit_shader.PNG" alt="select_unlit_shader"></p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cselect_unlit_texture_shader.PNG" alt="select_unlit_texture_shader"></p>
+
+<p>Before playing the video we need to reorient the <code class="highlighter-rouge">Main Camera</code> object. With the <code class="highlighter-rouge">Main Camera</code> object selected in the <code class="highlighter-rouge">Hierarchy</code> tab, set the values for the <code class="highlighter-rouge">Position</code> parameter to same values as the <code class="highlighter-rouge">VideoScreen</code> object.</p>
+
+<p>Next, we need to adjust the <code class="highlighter-rouge">Z</code> value for the <code class="highlighter-rouge">Position</code> parameter for the <code class="highlighter-rouge">Main Camera</code> object. Set it to the opposite of the <code class="highlighter-rouge">X</code> value.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cset_main_camera_position_new.png" alt="set_main_camera_position_new"></p>
+
+<p>Finally, we need to adjust the Size parameter to 540 in the <code class="highlighter-rouge">Inspector</code> tab.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cset_camera_size_new.png" alt="set_camera_size_new"></p>
+
+<p>Now we can finally click the play button and watch the video.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cplay_button.png" alt="play_button"></p>
+
+<p>You should see something like this.</p>
+
+<p><img src="%5Cimages%5CBarracuda_PoseNet_Tutorial%5Cbarracuda_posenet_tutorial_420p.gif" alt="barracuda_posenet_tutorial_2"></p>
+
+  </div><a class="u-url" href="/2020/10/23/Barracuda-PoseNet-Tutorial-1.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>My personal blog</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/cj-mills" title="cj-mills"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/Innominate817" title="Innominate817"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
