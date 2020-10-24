@@ -8,6 +8,12 @@ hide: true
 search_exclude: false
 ---
 
+
+
+![mosaic](\images\mosaic.jpg)
+
+
+
 ## Prerequisites
 
 This tutorial assumes that you have used Unity before. If you've never used Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=OR0e-1UBEOU&list=PLB5_EOMkLx_VHKn4IISeNwhlDrb1948ZX&index=3).
