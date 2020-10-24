@@ -44,8 +44,6 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 ## Get Test Videos
 
-https://www.pexels.com/videos/
-
 For this tutorial we'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site.
 
 
