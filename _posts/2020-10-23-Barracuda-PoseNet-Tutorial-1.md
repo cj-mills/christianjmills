@@ -14,7 +14,7 @@ search_exclude: false
   * [Download Video Files](#download-video-files)
   * [Create Folder](#create-folder)
   * [Add Video Files](#add-video-files)
-* [Create a Video Player GameObject](#create-a-video-player-gameobject)
+* [Create Video Player GameObject](#create-video-player-gameobject)
 
 
 
@@ -58,7 +58,7 @@ Drag and drop the two video files into the `Videos` folder.
 
 
 
-## Create a Video Player GameObject
+## Create Video Player GameObject
 
 This post covers how to set up a video player in Unity. We'll be using this video player to view 
 
