@@ -29,7 +29,7 @@ We'll be using Unity 2019.4.13 ([download](unityhub://2019.4.13f1/518737b1de84))
 
 First, we need to create a new Unity project. Since the PoseNet model only estimates 2D poses, we'll select the 2D template.
 
-![create_project](F:\Projects\GitHub\christianjmills\images\barracuda-posenet-tutorial\create_project.PNG)
+![create_project](\images\barracuda-posenet-tutorial\create_project.PNG)
 
 
 
