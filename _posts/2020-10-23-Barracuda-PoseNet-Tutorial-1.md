@@ -34,20 +34,6 @@ First, we need to create a new Unity project. Since the PoseNet model only estim
 
 ![create_project](\images\barracuda-posenet-tutorial\create_project.PNG)
 
-
-
-## Create a Video Player GameObject
-
-This post covers how to set up a video player in Unity. We'll be using this video player to view 
-
-check the performance of the PoseNet model. We'll cover how to use a webcam in a future post..
-
-In the `Hierarchy` tab, right click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`. The default name works well enough so we'll leave it as is.
-
-![create_video_player](\images\barracuda-posenet-tutorial\create_video_player.PNG)
-
-
-
 ## Import Video Files
 
 ### Download Video Files
@@ -71,6 +57,18 @@ Double-click the `Videos` folder to open it.
 Drag and drop the two video files into the `Videos` folder.
 
 ![video_file_assets](\images\barracuda-posenet-tutorial\video_file_assets.PNG)
+
+
+
+## Create a Video Player GameObject
+
+This post covers how to set up a video player in Unity. We'll be using this video player to view 
+
+check the performance of the PoseNet model. We'll cover how to use a webcam in a future post..
+
+In the `Hierarchy` tab, right click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`. The default name works well enough so we'll leave it as is.
+
+![create_video_player](\images\barracuda-posenet-tutorial\create_video_player.PNG)
 
 
 
