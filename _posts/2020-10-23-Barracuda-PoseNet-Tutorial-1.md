@@ -10,6 +10,11 @@ search_exclude: false
 
 * [Prerequisites](#prerequisites)
 * [Create a New Project](#create-a-new-project)
+* [Create a Video Player GameObject](#create-a-video-player-gameobject)
+* [Import Video Files](#import-video-files)
+  * [Download Video Files](#download-video-files)
+  * [Create Folder](#create-folder)
+  * [Add Video Files](#add-video-files)
 * [Setup  Video Player](#setup-video-player)
 * [Get Test Videos](#get-test-videos)
 
@@ -43,9 +48,9 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 
 
-## Import Test Videos
+## Import Video Files
 
-### Get Test Videos
+### Download Video Files
 
 We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging.
 
