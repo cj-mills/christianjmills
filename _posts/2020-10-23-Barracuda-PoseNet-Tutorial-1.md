@@ -1,14 +1,14 @@
 ---
 title: Barracuda PoseNet Tutorial Pt.1
 layout: post
-toc: true
+toc: false
 description: This is part 1 of a step-by-step-guide for running a PoseNet model with Unity's Barracuda library.
 categories: [unity,tutorial]
 hide: true
 search_exclude: false
 ---
 
-# Top Header
+[TOC]
 
 ![mosaic](\images\mosaic.jpg)
 
