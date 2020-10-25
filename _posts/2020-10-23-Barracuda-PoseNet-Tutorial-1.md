@@ -8,7 +8,11 @@ hide: true
 search_exclude: false
 ---
 
-[TOC]
+
+[Prerequisites](#prerequisites)
+[Create a New Project](#create-a-new-project)
+[Setup  Video Player](#setup-video-player)
+[Get Test Videos](#get-test-videos)
 
 ![mosaic](\images\mosaic.jpg)
 
