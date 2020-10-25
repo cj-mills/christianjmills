@@ -8,18 +8,16 @@ hide: true
 search_exclude: false
 ---
 
-* [Prerequisites](#prerequisites)
-* [Create a New Project](#create-a-new-project)
-* [Setup  Video Player](#setup-video-player)
-* [Get Test Videos](#get-test-videos)
-
-
-
 # Part 1: Setup a Video Player
 
 This post covers how to set up a video player in Unity. We'll be using the video player to check the performance of the PoseNet model. We'll cover how to use a webcam in a future post.
 
 
+
+* [Prerequisites](#prerequisites)
+* [Create a New Project](#create-a-new-project)
+* [Setup  Video Player](#setup-video-player)
+* [Get Test Videos](#get-test-videos)
 
 
 
@@ -31,7 +29,7 @@ This tutorial assumes that you have Unity installed. If you're completely new to
 
 
 
-## Create a New Project
+## 1. Create a New Project
 
 First, we need to create a new Unity project. Since the PoseNet model only estimates 2D poses, we'll select the 2D template.
 
@@ -39,7 +37,7 @@ First, we need to create a new Unity project. Since the PoseNet model only estim
 
 
 
-## Create a Video Player GameObject
+## 2. Create a Video Player GameObject
 
 This post covers how to set up a video player in Unity. We'll be using this video player to view 
 
