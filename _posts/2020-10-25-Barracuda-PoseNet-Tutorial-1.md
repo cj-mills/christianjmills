@@ -78,7 +78,7 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 ## Create Video Screen
 
-We need to make a "screen" in Unity to watch the video. To make the screen we need a `Render Texture` object that stores the data for the current frame and attach it to the surface of a `GameObject`. 
+We need to make a "screen" in Unity to watch the video. To make the screen, we'll use a [`Render Texture`](https://docs.unity3d.com/ScriptReference/RenderTexture.html) to store the data for the current frame and attach it to the surface of a `GameObject`. 
 
 ### Create a Render Texture
 
