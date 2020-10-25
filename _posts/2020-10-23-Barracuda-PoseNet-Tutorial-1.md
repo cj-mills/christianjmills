@@ -10,13 +10,11 @@ search_exclude: false
 
 * [Prerequisites](#prerequisites)
 * [Create a New Project](#create-a-new-project)
-* [Create a Video Player GameObject](#create-a-video-player-gameobject)
 * [Import Video Files](#import-video-files)
   * [Download Video Files](#download-video-files)
   * [Create Folder](#create-folder)
   * [Add Video Files](#add-video-files)
-* [Setup  Video Player](#setup-video-player)
-* [Get Test Videos](#get-test-videos)
+* [Create a Video Player GameObject](#create-a-video-player-gameobject)
 
 
 
