@@ -12,7 +12,7 @@ search_exclude: false
 * [Create a New Project](#create-a-new-project)
 * [Import Video Files](#import-video-files)
 * [Create Video Player GameObject](#create-video-player-gameobject)
-* [Create Video Screen](#create-video-screen)
+* [Create the Video Screen](#create-the-video-screen)
 
 
 
@@ -76,7 +76,7 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 
 
-## Create Video Screen
+## Create the Video Screen
 
 We need to make a "screen" in Unity to watch the video. To make the screen, we'll use a [`Render Texture`](https://docs.unity3d.com/ScriptReference/RenderTexture.html) to store the data for the current frame and attach it to the surface of a `GameObject`. 
 
@@ -90,7 +90,7 @@ Open the folder and right click an empty space. In the `Create` section, click `
 
 ![create_render_texture](\images\barracuda-posenet-tutorial\create_render_texture.PNG)
 
-
+### Resize the Render Texture
 
 With the `video_texture` object selected, the adjust values for `Size` parameter in the `Inspector` tab. We'll set the size parameter to the resolution of the videos. In our case, the resolution is 1920 x 1080.
 
@@ -98,13 +98,11 @@ With the `video_texture` object selected, the adjust values for `Size` parameter
 
 ![rt_set_resolution](\images\barracuda-posenet-tutorial\rt_set_resolution.png)
 
-
+### Assign the Render Texture
 
 With the resolution set, select the `Video Player` object in the `Hierarchy` tab again. Click and drag the `video_texture` object into the `Target Texture` parameter option in the `Inspector` tab.
 
 ![target_texture_empty](\images\barracuda-posenet-tutorial\target_texture_empty.png)
-
-
 
 ![target_texture_filled](\images\barracuda-posenet-tutorial\target_texture_filled.png)
 
