@@ -11,7 +11,6 @@ search_exclude: false
 * [Prerequisites](#prerequisites)
 * [Create a New Project](#create-a-new-project)
 * [Import Video Files](#import-video-files)
-  * [Download Video Files](#download-video-files)
   * [Create Folder](#create-folder)
   * [Add Video Files](#add-video-files)
 * [Create Video Player GameObject](#create-video-player-gameobject)
@@ -33,8 +32,6 @@ First, we need to create a new Unity project. Since the PoseNet model only estim
 ![create_project](\images\barracuda-posenet-tutorial\create_project.PNG)
 
 ## Import Video Files
-
-### Download Video Files
 
 We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging.
 
