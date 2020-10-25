@@ -3,7 +3,7 @@ title: Barracuda PoseNet Tutorial Pt.1
 layout: post
 toc: false
 description: This is part 1 of a step-by-step-guide for running a PoseNet model with Unity's Barracuda library.
-categories: [unity, tutorial]
+categories: [unity,tutorial]
 hide: true
 search_exclude: false
 ---
@@ -163,4 +163,8 @@ Now we can finally click the play button and watch the video.
 
 
 You should see something like this.
+
+
+
+![barracuda_posenet_tutorial_420p](\images\barracuda-posenet-tutorial\barracuda_posenet_tutorial_420p.gif)
 
