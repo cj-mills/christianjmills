@@ -1,7 +1,7 @@
 ---
 title: Barracuda PoseNet Tutorial Pt.1
 layout: post
-toc: false
+toc: true
 description: This is part 1 of a step-by-step-guide for running a PoseNet model with Unity's Barracuda library.
 categories: [unity,tutorial]
 hide: true
