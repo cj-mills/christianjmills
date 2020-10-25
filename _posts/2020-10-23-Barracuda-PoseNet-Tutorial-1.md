@@ -49,9 +49,9 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging.
 
-* [Boardslides](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
+1. [Boardslides](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
 
-* [Woman Dancing](https://www.pexels.com/video/woman-dancing-2873755/)
+2. [Woman Dancing](https://www.pexels.com/video/woman-dancing-2873755/)
 
 ### Create Folder
 
