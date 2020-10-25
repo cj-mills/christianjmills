@@ -112,17 +112,15 @@ Now, we need to create the screen itself. We'll use a [`Quad`](https://docs.unit
 
 ![create_quad](\images\barracuda-posenet-tutorial\create_quad.PNG)
 
-
+### Resize the Screen
 
 With the `VideoScreen` object selected, we need to adjust the `Scale` parameter in the `Inspector` tab. Set the `X` value to 1920 and the `Y` value to 1080. Leave the `Z` value at 1.
 
 ![quad_scale_default](\images\barracuda-posenet-tutorial\quad_scale_default.png)
 
-
-
 ![quad_scale_set](\images\barracuda-posenet-tutorial\quad_scale_set.png)
 
-
+### Set the Screen Position
 
 Next, we need to adjust the position of the `VideoScreen` object so that the bottom left corner is at `X: 0, Y: 0, Z: 0`. This will make things easier when handling the output from the PoseNet model. To do this we'll set update the `Position` value in the `Inspector` tab. Set the `X` value to half the `X` value for the `Scale` parameter. Do the same for the `Y` value. The `X` value for `Position` should be 960 and the `Y` value should be set to 540.
 
@@ -130,19 +128,19 @@ Next, we need to adjust the position of the `VideoScreen` object so that the bot
 
 ![quad_position_set](\images\barracuda-posenet-tutorial\quad_position_set.png)
 
-
-
-
+### Reset the Scene Perspective
 
 With the parameters for the `VideoScreen` object set, we need to zoom out and re-center our perspective. We can easily do this by selecting the `VideoScreen` object and pressing the `F` key on our keyboard. If you want to zoom back in a bit, you can scroll up with you mouse wheel.
 
 ![recentered_video_screen](\images\barracuda-posenet-tutorial\recentered_video_screen.PNG)
 
-
+### Apply the Render Texture to the Screen
 
 Click and drag the `video_texture` object from the `Textures` folder onto the `VideoScreen` object in the `Scene` tab. The `VideoScreen` object should turn completely black.
 
+![empty_screen](\images\barracuda-posenet-tutorial\empty_screen.PNG)
 
+### Make Video Screen Unlit
 
 With the `VideoScreen` object selected, click the `Shader` dropdown in the `Inspector` tab. Select the Unlit option. In the `Unlit` section, select `Texture`. Choosing this setting means that out `VideoScreen` object does not require a separate light source. Without this setting, the video will look extremely dim.
 
@@ -150,7 +148,9 @@ With the `VideoScreen` object selected, click the `Shader` dropdown in the `Insp
 
 ![select_unlit_texture_shader](\images\barracuda-posenet-tutorial\select_unlit_texture_shader.PNG)
 
+## Camera Setup
 
+### Set Camera Position
 
 Before playing the video we need to reorient the `Main Camera` object. With the `Main Camera` object selected in the `Hierarchy` tab, set the values for the `Position` parameter to same values as the `VideoScreen` object. 
 
@@ -158,21 +158,19 @@ Next, we need to adjust the `Z` value for the `Position` parameter for the `Main
 
 ![set_main_camera_position](\images\barracuda-posenet-tutorial\set_main_camera_position_new.png)
 
-
+### Resize the Camera
 
 Finally, we need to adjust the Size parameter to 540 in the `Inspector` tab.
 
 ![set_camera_size_new](\images\barracuda-posenet-tutorial\set_camera_size_new.png)
 
+## Test the Video Player
+
 Now we can finally click the play button and watch the video.
 
 ![play_button](\images\barracuda-posenet-tutorial\play_button.png)
 
-
-
 You should see something like this.
-
-
 
 ![barracuda_posenet_tutorial_420p](\images\barracuda-posenet-tutorial\barracuda_posenet_tutorial_420p.gif)
 
