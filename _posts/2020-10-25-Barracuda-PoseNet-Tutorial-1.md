@@ -78,6 +78,10 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 ## Create Video Screen
 
+We need to make a "screen" in Unity to watch the video.
+
+### Create a Render Texture
+
 Create a new folder in the `Assets` window and name it `Textures`.
 
 ![textures_folder](\images\barracuda-posenet-tutorial\textures_folder.PNG)
