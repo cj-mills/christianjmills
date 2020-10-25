@@ -43,7 +43,9 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 
 
-## Get Test Videos
+## Import Test Videos
+
+### Get Test Videos
 
 We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging.
 
@@ -51,11 +53,15 @@ We'll be using these two videos available on [Pexels](https://www.pexels.com/), 
 
 * [Woman Dancing](https://www.pexels.com/video/woman-dancing-2873755/)
 
+### Create Folder
+
 In the `Assets` window, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`.
 
 ![create_folder](\images\barracuda-posenet-tutorial\create_folder.PNG)
 
 Double-click the `Videos` folder to open it.
+
+### Add Video Files
 
 Drag and drop the two video files into the `Videos` folder.
 
