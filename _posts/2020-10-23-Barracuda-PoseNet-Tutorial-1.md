@@ -14,6 +14,7 @@ search_exclude: false
   * [Create Folder](#create-folder)
   * [Add Video Files](#add-video-files)
 * [Create Video Player GameObject](#create-video-player-gameobject)
+  * [Set Video Clip](#set-video-clip)
 
 
 
@@ -61,7 +62,7 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 ![create_video_player](\images\barracuda-posenet-tutorial\create_video_player.PNG)
 
-
+### Set Video Clip
 
 Select the `Video Player` object in the `Hierarchy` tab. Then click and drag the `pexels_boardslides` file into the `Video Clip` value in the `Inspector` tab.
 
