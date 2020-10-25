@@ -106,9 +106,9 @@ With the resolution set, select the `Video Player` object in the `Hierarchy` tab
 
 ![target_texture_filled](\images\barracuda-posenet-tutorial\target_texture_filled.png)
 
+### Create the Screen GameObject
 
-
-Now, we need to create a screen to watch the video play. We'll use a `Quad` object for the screen. Right click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
+Now, we need to create the screen itself. We'll use a [`Quad`](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
 
 ![create_quad](\images\barracuda-posenet-tutorial\create_quad.PNG)
 
