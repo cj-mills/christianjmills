@@ -11,10 +11,8 @@ search_exclude: false
 * [Prerequisites](#prerequisites)
 * [Create a New Project](#create-a-new-project)
 * [Import Video Files](#import-video-files)
-  * [Create Folder](#create-folder)
-  * [Add Video Files](#add-video-files)
 * [Create Video Player GameObject](#create-video-player-gameobject)
-  * [Set Video Clip](#set-video-clip)
+* [Create Video Screen](#create-video-screen)
 
 
 
@@ -68,11 +66,9 @@ Select the `Video Player` object in the `Hierarchy` tab. Then click and drag the
 
 ![video_clip_empty](\images\barracuda-posenet-tutorial\video_clip_empty.png)
 
-
-
 ![video_clip_filled](\images\barracuda-posenet-tutorial\video_clip_filled.png)
 
-
+### Make Video Loop
 
 Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when the project is running.
 
@@ -80,7 +76,7 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 
 
-
+## Create Video Screen
 
 Create a new folder in the `Assets` window and name it `Textures`.
 
