@@ -45,11 +45,11 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 ## Get Test Videos
 
-For this tutorial we'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site.
+We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging.
 
-**Easy:** [Boardslides](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
+* [Boardslides](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
 
-**Hard:** [Woman Dancing](https://www.pexels.com/video/woman-dancing-2873755/)
+* [Woman Dancing](https://www.pexels.com/video/woman-dancing-2873755/)
 
 In the `Assets` window, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`.
 
