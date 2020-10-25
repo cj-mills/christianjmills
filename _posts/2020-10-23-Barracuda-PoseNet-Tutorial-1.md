@@ -15,13 +15,19 @@ search_exclude: false
 
 
 
+# Part 1: Setup a Video Player
+
+This post covers how to set up a video player in Unity. We'll be using the video player to check the performance of the PoseNet model. We'll cover how to use a webcam in a future post.
+
+
+
+
+
 ## Prerequisites
 
-This tutorial assumes that you have used Unity before. If you've never used Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=OR0e-1UBEOU&list=PLB5_EOMkLx_VHKn4IISeNwhlDrb1948ZX&index=3).
+This tutorial assumes that you have Unity installed. If you're completely new to Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=OR0e-1UBEOU&list=PLB5_EOMkLx_VHKn4IISeNwhlDrb1948ZX&index=3).
 
-
-
-We'll be using Unity 2019.4.13 ([download](unityhub://2019.4.13f1/518737b1de84)).
+**Note:** This tutorial was made using Unity 2019.4.13 ([download](unityhub://2019.4.13f1/518737b1de84)).
 
 
 
@@ -33,9 +39,11 @@ First, we need to create a new Unity project. Since the PoseNet model only estim
 
 
 
-## Setup Video Player
+## Create a Video Player GameObject
 
-Before getting into any code, we'll setup a video player. We'll cover how to use a webcam as well, but a prerecorded video is easier for testing purposes.
+This post covers how to set up a video player in Unity. We'll be using this video player to view 
+
+check the performance of the PoseNet model. We'll cover how to use a webcam in a future post..
 
 In the `Hierarchy` tab, right click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`. The default name works well enough so we'll leave it as is.
 
@@ -141,13 +149,9 @@ Next, we need to adjust the position of the `VideoScreen` object so that the bot
 
 
 
-With the parameters for the `VideoScreen` object set, we need to zoom out and re-center our perspective. We can easily do this by selecting the `VideoScreen` object and pressing the `F` key on our keyboard.
+With the parameters for the `VideoScreen` object set, we need to zoom out and re-center our perspective. We can easily do this by selecting the `VideoScreen` object and pressing the `F` key on our keyboard. If you want to zoom back in a bit, you can scroll up with you mouse wheel.
 
 ![recentered_video_screen](\images\barracuda-posenet-tutorial\recentered_video_screen.PNG)
-
-
-
-If you want to zoom back in a bit, you can scroll up with you mouse wheel.
 
 
 
