@@ -173,9 +173,11 @@ With the `VideoScreen` object selected, click the `Shader` dropdown in the `Insp
 
 ## Camera Setup
 
+Before playing the video, we need to reposition and resize the `Main Camera` object. 
+
 ### Set Camera Position
 
-Before playing the video we need to reorient the `Main Camera` object. With the `Main Camera` object selected in the `Hierarchy` tab, set the values for the `Position` parameter to same values as the `VideoScreen` object. 
+With the `Main Camera` object selected in the `Hierarchy` tab, set the values for the `Position` parameter to same values as the `VideoScreen` object. 
 
 Next, we need to adjust the `Z` value for the `Position` parameter for the `Main Camera` object. Set it to the opposite of the `X` value.
 
