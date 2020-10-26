@@ -51,7 +51,7 @@ Double-click the `Videos` folder to open it.
 
 ### Add Video Files
 
-Drag and drop the two video files into the `Videos` folder.
+Drag and drop the two video files from the file explorer into the `Videos` folder.
 
 ![video_file_assets](\images\barracuda-posenet-tutorial\video_file_assets.PNG)
 
