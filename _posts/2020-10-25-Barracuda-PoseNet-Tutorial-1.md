@@ -35,7 +35,11 @@ We'll be using these two videos available on [Pexels](https://www.pexels.com/), 
 
 1. [Boardslides](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
 
+   **Note:** Renamed to `pexels_boardslides`
+
 2. [Woman Dancing](https://www.pexels.com/video/woman-dancing-2873755/)
+
+   **Note:** Renamed to `pexels_woman_dancing`
 
 ### Create the Videos Folder
 
