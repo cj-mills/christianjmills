@@ -133,7 +133,7 @@ Next, we need to adjust the position of the `VideoScreen` object so that the bot
 
 ### Reset the Scene Perspective
 
-With the parameters for the `VideoScreen` object set, we need to zoom out and re-center our perspective. We can easily do this by selecting the `VideoScreen` object and pressing the `F` key on our keyboard. If you want to zoom back in a bit, you can scroll up with you mouse wheel.
+With the parameters for the `VideoScreen` object set, we need to zoom out and re-center our perspective. We can easily do this by selecting the `VideoScreen` object and pressing the `F` key on our keyboard. If you want to zoom back in a bit, you can scroll up with your mouse wheel.
 
 ![recentered_video_screen](\images\barracuda-posenet-tutorial\recentered_video_screen.PNG)
 
