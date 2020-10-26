@@ -33,7 +33,7 @@ First, we need to create a new Unity project. Since the PoseNet model only estim
 
 We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging. We'll be using the **Full HD** resolution for the videos.
 
-1. [Boardslides](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
+1. [Two Young Men Doing a Boardslide Over a Railing](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
 
    **Note:** Renamed to `pexels_boardslides`
 
