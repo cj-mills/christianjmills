@@ -65,7 +65,7 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 ### Set Video Clip
 
-Select the `Video Player` object in the `Hierarchy` tab. Then drag and drop the `pexels_boardslides` file into the `Video Clip` value in the `Inspector` tab.
+Select the `Video Player` object in the `Hierarchy` tab. Then drag and drop the `pexels_boardslides` file into the `Video Clip` parameter in the `Inspector` tab.
 
 ![video_clip_empty](\images\barracuda-posenet-tutorial\video_clip_empty.png)
 
