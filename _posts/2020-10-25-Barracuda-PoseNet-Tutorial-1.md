@@ -11,7 +11,7 @@ search_exclude: false
 * [Prerequisites](#prerequisites)
 * [Create a New Project](#create-a-new-project)
 * [Import Video Files](#import-video-files)
-* [Create Video Player GameObject](#create-video-player-gameobject)
+* [Create the Video Player](#create-the-video-player)
 * [Create the Video Screen](#create-the-video-screen)
 * [Test the Video Player](#test-the-video-player)
 
