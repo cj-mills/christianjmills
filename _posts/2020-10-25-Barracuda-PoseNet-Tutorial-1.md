@@ -195,7 +195,7 @@ Now we can finally click the play button and watch the video.
 
 ![play_button](\images\barracuda-posenet-tutorial\play_button.png)
 
-You should see something like this.
+### Result
 
 ![barracuda_posenet_tutorial_420p](\images\barracuda-posenet-tutorial\barracuda_posenet_tutorial_420p.gif)
 
