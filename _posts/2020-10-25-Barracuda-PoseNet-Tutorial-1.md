@@ -2,7 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt.1
 layout: post
 toc: false
-description: This post covers how to set up a video player in Unity. We'll be using the video player to check the performance of the PoseNet model. We'll cover how to use a webcam in a future post.
+description: This post covers how to set up a video player in Unity. We'll be using the video player to check the performance of the PoseNet model.
 categories: [unity,tutorial]
 hide: true
 search_exclude: false
@@ -31,7 +31,7 @@ First, we need to create a new Unity project. Since the PoseNet model only estim
 
 ## Import Video Files
 
-We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging.
+We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second one is a bit more challenging. We'll be using the **Full HD** resolution for the videos.
 
 1. [Boardslides](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
 
