@@ -67,7 +67,11 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 Select the `Video Player` object in the `Hierarchy` tab. Then drag and drop the `pexels_boardslides` file into the `Video Clip` parameter in the `Inspector` tab.
 
+#### Before:
+
 ![video_clip_empty](\images\barracuda-posenet-tutorial\video_clip_empty.png)
+
+#### After:
 
 ![video_clip_filled](\images\barracuda-posenet-tutorial\video_clip_filled.png)
 
@@ -97,15 +101,23 @@ Open the folder and right click an empty space. In the `Create` section, click `
 
 With the `video_texture` object selected, adjust the values for the `Size` parameter in the `Inspector` tab. We'll set the size parameter to the resolution of the videos. In our case, the resolution is 1920 x 1080.
 
+#### Before:
+
 ![rt_size_parameter](\images\barracuda-posenet-tutorial\rt_size_parameter.png)
+
+#### After:
 
 ![rt_set_resolution](\images\barracuda-posenet-tutorial\rt_set_resolution.png)
 
 ### Assign the Render Texture
 
-With the resolution set, select the `Video Player` object in the `Hierarchy` tab again. Drag and drop the `video_texture` object into the `Target Texture` parameter option in the `Inspector` tab.
+With the resolution set, select the `Video Player` object in the `Hierarchy` tab again. Drag and drop the `video_texture` object into the `Target Texture` parameter in the `Inspector` tab.
+
+#### Before:
 
 ![target_texture_empty](\images\barracuda-posenet-tutorial\target_texture_empty.png)
+
+#### After:
 
 ![target_texture_filled](\images\barracuda-posenet-tutorial\target_texture_filled.png)
 
@@ -119,7 +131,11 @@ Now, we need to create the screen itself. We'll use a [`Quad`](https://docs.unit
 
 With the `VideoScreen` object selected, we need to adjust the `Scale` parameter in the `Inspector` tab. Set the `X` value to 1920 and the `Y` value to 1080. Leave the `Z` value at 1.
 
+#### Before:
+
 ![quad_scale_default](\images\barracuda-posenet-tutorial\quad_scale_default.png)
+
+#### After:
 
 ![quad_scale_set](\images\barracuda-posenet-tutorial\quad_scale_set.png)
 
@@ -127,7 +143,11 @@ With the `VideoScreen` object selected, we need to adjust the `Scale` parameter 
 
 Next, we need to adjust the position of the `VideoScreen` object so that the bottom left corner is at `X: 0, Y: 0, Z: 0`. This will make things easier when handling the output from the PoseNet model. To do this we'll set update the `Position` value in the `Inspector` tab. Set the `X` value to half the `X` value for the `Scale` parameter. Do the same for the `Y` value. The `X` value for `Position` should be 960 and the `Y` value should be set to 540.
 
+#### Before:
+
 ![quad_position_default](\images\barracuda-posenet-tutorial\quad_position_default.png)
+
+#### After:
 
 ![quad_position_set](\images\barracuda-posenet-tutorial\quad_position_set.png)
 
