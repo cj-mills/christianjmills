@@ -95,7 +95,7 @@ Open the folder and right click an empty space. In the `Create` section, click `
 
 ### Resize the Render Texture
 
-With the `video_texture` object selected, the adjust values for `Size` parameter in the `Inspector` tab. We'll set the size parameter to the resolution of the videos. In our case, the resolution is 1920 x 1080.
+With the `video_texture` object selected, adjust the values for `Size` parameter in the `Inspector` tab. We'll set the size parameter to the resolution of the videos. In our case, the resolution is 1920 x 1080.
 
 ![rt_size_parameter](\images\barracuda-posenet-tutorial\rt_size_parameter.png)
 
