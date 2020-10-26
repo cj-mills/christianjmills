@@ -13,8 +13,7 @@ search_exclude: false
 * [Import Video Files](#import-video-files)
 * [Create Video Player GameObject](#create-video-player-gameobject)
 * [Create the Video Screen](#create-the-video-screen)
-
-
+* [Test the Video Player](#test-the-video-player)
 
 ## Prerequisites
 
