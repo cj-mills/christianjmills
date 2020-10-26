@@ -53,7 +53,7 @@ Drag and drop the two video files into the `Videos` folder.
 
 
 
-## Create Video Player GameObject
+## Create the Video Player
 
 In the `Hierarchy` tab, right click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`. The default name works well enough so we'll leave it as is.
 
