@@ -65,7 +65,7 @@ In the `Hierarchy` tab, right click an empty area, select the `Video` section, a
 
 ### Set Video Clip
 
-Select the `Video Player` object in the `Hierarchy` tab. Then click and drag the `pexels_boardslides` file into the `Video Clip` value in the `Inspector` tab.
+Select the `Video Player` object in the `Hierarchy` tab. Then drag and drop the `pexels_boardslides` file into the `Video Clip` value in the `Inspector` tab.
 
 ![video_clip_empty](\images\barracuda-posenet-tutorial\video_clip_empty.png)
 
@@ -103,7 +103,7 @@ With the `video_texture` object selected, the adjust values for `Size` parameter
 
 ### Assign the Render Texture
 
-With the resolution set, select the `Video Player` object in the `Hierarchy` tab again. Click and drag the `video_texture` object into the `Target Texture` parameter option in the `Inspector` tab.
+With the resolution set, select the `Video Player` object in the `Hierarchy` tab again. Drag and drop the `video_texture` object into the `Target Texture` parameter option in the `Inspector` tab.
 
 ![target_texture_empty](\images\barracuda-posenet-tutorial\target_texture_empty.png)
 
@@ -139,7 +139,7 @@ With the parameters for the `VideoScreen` object set, we need to zoom out and re
 
 ### Apply the Render Texture to the Screen
 
-Click and drag the `video_texture` object from the `Textures` folder onto the `VideoScreen` object in the `Scene` tab. The `VideoScreen` object should turn completely black.
+Drag and drop the `video_texture` object from the `Textures` folder onto the `VideoScreen` object in the `Scene` tab. The `VideoScreen` object should turn completely black.
 
 ![empty_screen](\images\barracuda-posenet-tutorial\empty_screen.PNG)
 
