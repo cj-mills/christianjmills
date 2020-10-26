@@ -4,7 +4,7 @@ layout: post
 toc: false
 description: This post covers how to set up a video player in Unity. We'll be using the video player to check the performance of the PoseNet model.
 categories: [unity,tutorial]
-hide: true
+hide: false
 search_exclude: false
 ---
 
