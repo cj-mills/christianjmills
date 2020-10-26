@@ -37,7 +37,7 @@ We'll be using these two videos available on [Pexels](https://www.pexels.com/), 
 
 2. [Woman Dancing](https://www.pexels.com/video/woman-dancing-2873755/)
 
-### Create Folder
+### Create the Videos Folder
 
 In the `Assets` window, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`.
 
