@@ -20,25 +20,25 @@ search_exclude: false
 
 Select the `Package Manager` tab in the Unity editor.
 
-![select_package_manager_tab](..\images\barracuda-posenet-tutorial\select_package_manager_tab.png)
+![select_package_manager_tab](\images\barracuda-posenet-tutorial\select_package_manager_tab.png)
 
 
 
 Type `Barracuda` into the search box.
 
-![barracuda_search](..\images\barracuda-posenet-tutorial\barracuda_search.PNG)
+![barracuda_search](\images\barracuda-posenet-tutorial\barracuda_search.PNG)
 
 
 
 Click the `Install` button to install the package.
 
-![barracuda_install](..\images\barracuda-posenet-tutorial\barracuda_install.PNG)
+![barracuda_install](\images\barracuda-posenet-tutorial\barracuda_install.PNG)
 
 
 
 Wait for Unity to install the dependencies.
 
-![barracuda_installation_progress](..\images\barracuda-posenet-tutorial\barracuda_installation_progress.PNG)
+![barracuda_installation_progress](\images\barracuda-posenet-tutorial\barracuda_installation_progress.PNG)
 
 
 
