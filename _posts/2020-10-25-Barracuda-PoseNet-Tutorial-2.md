@@ -3,18 +3,12 @@ title: Barracuda PoseNet Tutorial Pt.2
 layout: post
 toc: true
 description: This is part 2 of a step-by-step-guide for running a PoseNet model with Unity's Barracuda library.
-categories: []
+categories: [unity, tutorial]
 hide: true
 search_exclude: false
 ---
 
-## Prerequisites
-
-This tutorial assumes that you have used Unity before. If you've never used Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=OR0e-1UBEOU&list=PLB5_EOMkLx_VHKn4IISeNwhlDrb1948ZX&index=3).
-
-
-
-We'll be using Unity 2019.4.13 ([download](unityhub://2019.4.13f1/518737b1de84)).
+[Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html)
 
 
 
