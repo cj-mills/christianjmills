@@ -22,12 +22,30 @@ We'll be using Unity 2019.4.13 ([download](unityhub://2019.4.13f1/518737b1de84))
 
  Next, we need to install the Barracuda package in the package manager.
 
+
+
 Select the `Package Manager` tab in the Unity editor.
+
+![select_package_manager_tab](F:\Projects\GitHub\christianjmills\images\barracuda-posenet-tutorial\select_package_manager_tab.png)
+
+
 
 Type `Barracuda` into the search box.
 
+![barracuda_search](F:\Projects\GitHub\christianjmills\images\barracuda-posenet-tutorial\barracuda_search.PNG)
+
+
+
 Click the `Install` button to install the package.
 
+![barracuda_install](F:\Projects\GitHub\christianjmills\images\barracuda-posenet-tutorial\barracuda_install.PNG)
+
+
+
 Wait for Unity to install the dependencies.
+
+![barracuda_installation_progress](F:\Projects\GitHub\christianjmills\images\barracuda-posenet-tutorial\barracuda_installation_progress.PNG)
+
+
 
 
