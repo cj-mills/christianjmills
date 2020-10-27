@@ -1,7 +1,7 @@
 ---
 title: Barracuda PoseNet Tutorial Pt.2
 layout: post
-toc: true
+toc: false
 description: This is part 2 of a step-by-step-guide for running a PoseNet model with Unity's Barracuda library.
 categories: [unity, tutorial]
 hide: true
@@ -20,7 +20,7 @@ search_exclude: false
 
 Select the `Package Manager` tab in the Unity editor.
 
-![select_package_manager_tab](F:\Projects\GitHub\christianjmills\images\barracuda-posenet-tutorial\select_package_manager_tab.png)
+![select_package_manager_tab](\images\barracuda-posenet-tutorial\select_package_manager_tab.png)
 
 
 
