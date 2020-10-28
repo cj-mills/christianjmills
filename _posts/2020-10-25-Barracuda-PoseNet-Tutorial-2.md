@@ -42,4 +42,11 @@ Wait for Unity to install the dependencies.
 
 
 
+## Create Script
+
+Create a new folder in the `Assets` window and name it `Scripts`.
+
+In the `Scripts` folder, right-click an empty space and click the `C# Script` option in the `Create` section.
+
+![create_new_script](\images\barracuda-posenet-tutorial\create_new_script.PNG)
 
