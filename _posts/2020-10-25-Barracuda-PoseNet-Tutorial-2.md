@@ -48,13 +48,7 @@ We'll name this method `PreprocessImage` and place it below the `Update` method.
 
 To prepare the image for the model, we need to first create a new `Texture2D` using the `inputTexture`. We don't want to alter the `inputTexture` directly.
 
-**Old**
-
-We'll create a new method called `ToTexture2D` to handle this. This method will take in a RenderTexture and return a Texture2D. The method will copy the data from the `RenderTexture` without needing to download it from the GPU. This is more efficient than downloading the data to the CPU and then sending back to the GPU.
-
-**New**
-
-We can use the `Graphics.CopyTexture()` method to copy the data from the `RenderTexture` on the GPU. This is more efficient than downloading the data to the CPU and then sending it to the GPU.
+We can use the `Graphics.CopyTexture()` method to copy the data from the `RenderTexture` on the GPU. This is more efficient than downloading the data to the CPU.
 
 
 
