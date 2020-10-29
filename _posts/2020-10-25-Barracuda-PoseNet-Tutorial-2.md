@@ -30,23 +30,37 @@ Name the script `PoseNet`.
 
 Open the script in your code editor.
 
-
+### Create `inputTexture` Variable
 
 Above the start method, create a new public RenderTexture named `inputTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
-![create_inputTexture_variable](\images\barracuda-posenet-tutorial\create_inputTexture_variable_borderless_vscode.png)
+![create_inputTexture_variable](..\images\barracuda-posenet-tutorial\create_inputTexture_variable_borderless_vscode.png)
 
 
+
+### Create the Preprocessing Method
 
 Next, we need to make a new method to handle the preprocessing steps for the `inputTexture`.
 
 We'll call this method `PreprocessImage` and place it below the `Update` method. 
 
-To prepare the image for the model, we need to first create a new `Texture2D` using the `inputTexture`. We don't want to alter the `inputTexture` directly. 
+#### Create a New Texture2D
+
+To prepare the image for the model, we need to first create a new `Texture2D` using the `inputTexture`. We don't want to alter the `inputTexture` directly.
+
+#### Resize the Image
 
 Now that we a `Texture2D` we need to resize it to a more reasonable resolution. Lowering the resolution does decrease the model's accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We'll examine this trade-off in a later post.
 
-The resizing method will squish our input image from a 16:9 aspect ration to a 1:1 aspect ratio. We'll need to account for this when we get to the post processing  method.
+The resizing method will squish our input image from a 16:9 aspect ration to a 1:1 aspect ratio. We'll need to account for this when we get to the post processing method.
+
+#### Apply Model Specific Preprocessing
+
+Finally, we need to modify the RGB channel values of the image so that they are in the same range of values that the model was trained on. The model that we'll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. This means we need to first scale the RGB channel values and then add the ImageNet mean for each channel.
+
+
+
+
 
 
 
