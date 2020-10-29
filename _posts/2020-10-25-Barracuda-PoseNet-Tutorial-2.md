@@ -32,9 +32,9 @@ Open the script in your code editor.
 
 ### Create `inputTexture` Variable
 
-Above the start method, create a new public RenderTexture named `inputTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
+Above the start method, create a new public RenderTexture named `videoTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
-![create_inputTexture_variable](\images\barracuda-posenet-tutorial\create_inputTexture_variable_borderless_vscode.png)
+![create_inputTexture_variable](\images\barracuda-posenet-tutorial\create_videoTexture_variable.png)
 
 
 
@@ -42,11 +42,21 @@ Above the start method, create a new public RenderTexture named `inputTexture`. 
 
 Next, we need to make a new method to handle the preprocessing steps for the `inputTexture`.
 
-We'll call this method `PreprocessImage` and place it below the `Update` method. 
+We'll name this method `PreprocessImage` and place it below the `Update` method. We want this method to be called for every frame so we'll call it in the `Update()` method.
 
 #### Create a New Texture2D
 
 To prepare the image for the model, we need to first create a new `Texture2D` using the `inputTexture`. We don't want to alter the `inputTexture` directly.
+
+**Old**
+
+We'll create a new method called `ToTexture2D` to handle this. This method will take in a RenderTexture and return a Texture2D. The method will copy the data from the `RenderTexture` without needing to download it from the GPU. This is more efficient than downloading the data to the CPU and then sending back to the GPU.
+
+**New**
+
+We can use the `Graphics.CopyTexture()` method to copy the data from the `RenderTexture` on the GPU. This is more efficient than downloading the data to the CPU and then sending it to the GPU.
+
+
 
 #### Resize the Image
 
