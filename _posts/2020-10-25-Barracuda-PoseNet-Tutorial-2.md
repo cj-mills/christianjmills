@@ -18,11 +18,11 @@ Create a new folder in the `Assets` window and name it `Scripts`.
 
 In the `Scripts` folder, right-click an empty space and click the `C# Script` option in the `Create` section.
 
-![create_new_script](..\images\barracuda-posenet-tutorial\create_new_script.PNG)
+![create_new_script](\images\barracuda-posenet-tutorial\create_new_script.PNG)
 
 Name the script `PoseNet`.
 
-![new_posenet_script](..\images\barracuda-posenet-tutorial\new_posenet_script.PNG)
+![new_posenet_script](\images\barracuda-posenet-tutorial\new_posenet_script.PNG)
 
 
 
@@ -34,7 +34,7 @@ Open the script in your code editor.
 
 Above the start method, create a new public RenderTexture named `inputTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
-![create_inputTexture_variable](..\images\barracuda-posenet-tutorial\create_inputTexture_variable_short.png)
+![create_inputTexture_variable](\images\barracuda-posenet-tutorial\create_inputTexture_variable_short.png)
 
 Below the `Update()` method create a new method called `PreprocessImage`
 
