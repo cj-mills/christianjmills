@@ -34,7 +34,7 @@ Open the script in your code editor.
 
 Above the start method, create a new public RenderTexture named `inputTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
-![create_inputTexture_variable](\images\barracuda-posenet-tutorial\create_inputTexture_variable_short_new.png)
+![create_inputTexture_variable](\images\barracuda-posenet-tutorial\create_inputTexture_variable_borderless.png)
 
 
 
