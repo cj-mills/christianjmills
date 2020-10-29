@@ -56,7 +56,9 @@ We can use the `Graphics.CopyTexture()` method to copy the data from the `Render
 
 Now that we a `Texture2D` we need to resize it to a more reasonable resolution. Lowering the resolution does decrease the model's accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We'll examine this trade-off in a later post.
 
-The resizing method will squish our input image from a 16:9 aspect ration to a 1:1 aspect ratio. We'll need to account for this when we get to the post processing method.
+The `Graphics.Copy()` method requires that the source and destination textures be the same size. That means we need to destroy the current `imageTexture` and make a new one with the smaller dimensions.
+
+The resizing method will squish our input image from a 16:9 aspect ration to a square aspect ratio. We'll need to account for this when we get to the post processing section.
 
 #### Apply Model Specific Preprocessing
 
