@@ -26,7 +26,7 @@ Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` wi
 
 
 
- ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader_2.png)
+ ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
 
 
 
@@ -34,7 +34,7 @@ We don't need the `CSMain` function so we can delete it along with the `#pragma 
 
 The updated `ComputeShader` should look like this. 
 
-![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader.png)
+![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader_2.png)
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. This is necessary because color values are in the range of `[0,1]` by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the `Result` variable.
 
@@ -104,7 +104,7 @@ Create a new public `ComputeShader` variable and name it `posenetShader`. We'll 
 
 ![create_posenetShader_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
 
-
+Next, we need to create a new method for executing the `ComputeShader`. We'll name the new method `PreprocessResNet` to match the function in the `PoseNetShader`.
 
 
 
