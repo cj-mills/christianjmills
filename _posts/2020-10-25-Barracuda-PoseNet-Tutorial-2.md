@@ -106,9 +106,9 @@ Create a new public `ComputeShader` variable and name it `posenetShader`. We'll 
 
 Next, we need to create a new method for executing the `ComputeShader`. We'll name the new method `PreprocessResNet` to match the function in the `PoseNetShader`.
 
+The new method looks like this.
 
-
-
+![preprocessResNet_method](..\images\barracuda-posenet-tutorial\preprocessResNet_method.png)
 
 
 
