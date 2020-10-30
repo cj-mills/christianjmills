@@ -114,6 +114,28 @@ window.onload = wrap_img;
   <div class="post-content e-content" itemprop="articleBody">
     <p><a href="https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html">Part 1</a></p>
 
+<h2 id="create-the-computeshader">Create the ComputeShader</h2>
+
+<p>Create a new folder in the assets windows and name it <code class="highlighter-rouge">Shaders</code>.</p>
+
+<p>In the <code class="highlighter-rouge">Shader</code> folder, right-click an empty space, select <code class="highlighter-rouge">Shader</code> under the <code class="highlighter-rouge">Create</code> option and click <code class="highlighter-rouge">Compute Shader</code>. We’ll just name it <code class="highlighter-rouge">PoseNetShader</code>.</p>
+
+<p><img src="\images\barracuda-posenet-tutorial\create_compute_shader.PNG" alt="create_compute_shader" /></p>
+
+<p>Open the <code class="highlighter-rouge">PoseNetShader</code> in your code editor. By default, the <code class="highlighter-rouge">ComputeShader</code> will contain the following</p>
+
+<p><img src="\images\barracuda-posenet-tutorial\default_compute_shader.png" alt="default_compute_shader" /></p>
+
+<p>We don’t need the <code class="highlighter-rouge">CSMain</code> function so we can delete it along with the <code class="highlighter-rouge">#pragma kernel CSMain</code>. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function <code class="highlighter-rouge">PreprocessResNet()</code>. We also need to add a <code class="highlighter-rouge">Texture2D</code> variable below the <code class="highlighter-rouge">Result</code> variable. We can name the new variable <code class="highlighter-rouge">InputImage</code>.</p>
+
+<p>The updated <code class="highlighter-rouge">ComputeShader</code> should look like this.</p>
+
+<p><img src="\images\barracuda-posenet-tutorial\posenet_compute_shader.png" alt="posenet_compute_shader" /></p>
+
+<p>The <code class="highlighter-rouge">PreprocessResNet</code> function scales the RGB channel values of every pixel in the <code class="highlighter-rouge">InputImage</code> by <code class="highlighter-rouge">255</code>. This is necessary because color values are in the range of <code class="highlighter-rouge">[0,1]</code> by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the <code class="highlighter-rouge">Result</code> variable.</p>
+
+<p>Now that we’ve created the <code class="highlighter-rouge">ComputeShader</code>, we need to access it in out <code class="highlighter-rouge">PoseNet</code> script.</p>
+
 <h2 id="create-posenet-script">Create PoseNet Script</h2>
 
 <p>Create a new folder in the <code class="highlighter-rouge">Assets</code> window and name it <code class="highlighter-rouge">Scripts</code>.</p>
@@ -158,6 +180,12 @@ window.onload = wrap_img;
 
 <p>Finally, we need to modify the RGB channel values of the image so that they are in the same range of values that the model was trained on. The model that we’ll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. This means we need to first scale the RGB channel values and then add the ImageNet mean for each channel.</p>
 
+<p>This is where we’ll make use of the <code class="highlighter-rouge">PoseNetShader</code> we made earlier.</p>
+
+<p>Create a new public <code class="highlighter-rouge">ComputeShader</code> variable and name it <code class="highlighter-rouge">posenetShader</code>.</p>
+
+<p><img src="\images\barracuda-posenet-tutorial\create_posenetShader_variable.png" alt="create_posenetShader_variable" /></p>
+
 <h2 id="create-the-pose-estimator--gameobject">Create the Pose Estimator  GameObject</h2>
 
 <p>In the Hierarchy tab, right-click an empty space and select <code class="highlighter-rouge">Create Empty</code> from the menu. Name the empty GameObject <code class="highlighter-rouge">PoseEstimator</code>.</p>
@@ -165,32 +193,6 @@ window.onload = wrap_img;
 <p>With the <code class="highlighter-rouge">PoseEstimator</code> object selected, drag and drop the <code class="highlighter-rouge">PoseNet</code> script into the <code class="highlighter-rouge">Inspector</code> tab.</p>
 
 <p>Next, we need to assign the <code class="highlighter-rouge">video_texture</code> object to the <code class="highlighter-rouge">inputTexture</code> parameter. With the <code class="highlighter-rouge">PoseEstimator</code> object selected, drag and drop the <code class="highlighter-rouge">video_texture</code> object into <code class="highlighter-rouge">inputTexture</code> spot in the <code class="highlighter-rouge">Inspector</code> tab.</p>
-
-<h2 id="create-the-computeshader">Create the ComputeShader</h2>
-
-<p>Create a new folder in the assets windows and name it <code class="highlighter-rouge">Shaders</code>.</p>
-
-<p>In the <code class="highlighter-rouge">Shader</code> folder, right-click an empty space, select <code class="highlighter-rouge">Shader</code> under the <code class="highlighter-rouge">Create</code> option and click <code class="highlighter-rouge">Compute Shader</code>. We’ll just name it <code class="highlighter-rouge">PoseNetShader</code>.</p>
-
-<p><img src="\images\barracuda-posenet-tutorial\create_compute_shader.PNG" alt="create_compute_shader" /></p>
-
-<p>Open the <code class="highlighter-rouge">PoseNetShader</code> in your code editor. By default, the <code class="highlighter-rouge">ComputeShader</code> will contain the following</p>
-
-<p><img src="\images\barracuda-posenet-tutorial\default_compute_shader.png" alt="default_compute_shader" /></p>
-
-<p>We don’t need the <code class="highlighter-rouge">CSMain</code> function so we can delete it along with the <code class="highlighter-rouge">#pragma kernel CSMain</code>. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function <code class="highlighter-rouge">PreprocessResNet()</code>. We also need to add a <code class="highlighter-rouge">Texture2D</code> variable below the <code class="highlighter-rouge">Result</code> variable. We can name the new variable <code class="highlighter-rouge">InputImage</code>.</p>
-
-<p>The updated <code class="highlighter-rouge">ComputeShader</code> should look like this.</p>
-
-<p><img src="\images\barracuda-posenet-tutorial\posenet_compute_shader.png" alt="posenet_compute_shader" /></p>
-
-<p>The <code class="highlighter-rouge">PreprocessResNet</code> function scales the RGB channel values of every pixel in the <code class="highlighter-rouge">InputImage</code> by <code class="highlighter-rouge">255</code>. This is necessary because color values are in the range of <code class="highlighter-rouge">[0,1]</code> by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the <code class="highlighter-rouge">Result</code> variable.</p>
-
-<p>Now that we’ve created the <code class="highlighter-rouge">ComputeShader</code>, we need to access it in out <code class="highlighter-rouge">PoseNet</code> script.</p>
-
-<p>In the <code class="highlighter-rouge">PoseNet</code> script, create a new public <code class="highlighter-rouge">ComputeShader</code> variable and name it <code class="highlighter-rouge">posenetShader</code>.</p>
-
-<p><img src="\images\barracuda-posenet-tutorial\create_posenetShader_variable.png" alt="create_posenetShader_variable" /></p>
 
 
   </div><a class="u-url" href="/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html" hidden></a>
