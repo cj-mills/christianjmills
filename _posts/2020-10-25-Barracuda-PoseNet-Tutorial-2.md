@@ -104,7 +104,7 @@ Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` wi
 
 
 
-We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function `PreprocessResNet()`. We also need to add a `Texture2D` variable below the `Result` variable. We can name the `Texture2D` `ImageInput`.
+We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function `PreprocessResNet()`. We also need to add a `Texture2D` variable below the `Result` variable. We can name the new variable `ImageInput`.
 
 The updated `ComputeShader` should look like this. 
 
