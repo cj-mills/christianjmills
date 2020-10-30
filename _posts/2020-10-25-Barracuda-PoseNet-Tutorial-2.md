@@ -86,5 +86,41 @@ Next, we need to assign the `video_texture` object to the `inputTexture` paramet
 
  
 
+## Create the ComputeShader
+
+Create a new folder in the assets windows and name it `Shaders`.
+
+In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll just name it `PoseNetShader`.
+
+![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
+
+
+
+Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following
+
+
+
+ ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
