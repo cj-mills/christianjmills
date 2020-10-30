@@ -108,7 +108,7 @@ We don't need the `CSMain` function so we can delete it along with the `#pragma 
 
 The updated `ComputeShader` should look like this. 
 
-![posenet_compute_shader](..\images\barracuda-posenet-tutorial\posenet_compute_shader.png)
+![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader.png)
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. This is necessary because color values are in the range of `[0,1]` by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the `Result` variable.
 
