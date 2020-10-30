@@ -100,7 +100,7 @@ Finally, we need to modify the RGB channel values of the image so that they are 
 
 This is where we'll make use of the `PoseNetShader` we made earlier.
 
-Create a new public `ComputeShader` variable and name it `posenetShader`.
+Create a new public `ComputeShader` variable and name it `posenetShader`. We'll assign the `PoseNetShader` to this variable in the Unity Editor. 
 
 ![create_posenetShader_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
 
