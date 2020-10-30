@@ -114,9 +114,11 @@ The `PreprocessResNet` function scales the RGB channel values of every pixel in 
 
 
 
+Now that we've created the `ComputeShader`, we need to access it in out `PoseNet` script. 
 
+In the `PoseNet` script, create a new public `ComputeShader` variable and name it `posenetShader`.
 
-
+![create_posenetShader_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
 
 
 
