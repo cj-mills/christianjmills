@@ -40,7 +40,7 @@ The `PreprocessResNet` function scales the RGB channel values of every pixel in 
 
 
 
-Now that we've created the `ComputeShader`, we need to access it in out `PoseNet` script. 
+Now that we've created our `ComputeShader`, we need to access it in a `C#` script. 
 
 
 
