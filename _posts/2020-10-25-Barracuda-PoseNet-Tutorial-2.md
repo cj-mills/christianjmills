@@ -26,7 +26,7 @@ Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` wi
 
 
 
- ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
+ ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader_2.png)
 
 
 
