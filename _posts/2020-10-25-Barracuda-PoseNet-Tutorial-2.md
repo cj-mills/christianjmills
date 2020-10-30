@@ -108,7 +108,7 @@ Next, we need to create a new method for executing the `ComputeShader`. We'll na
 
 The new method looks like this.
 
-![preprocessResNet_method](..\images\barracuda-posenet-tutorial\preprocessResNet_method.png)
+![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method.png)
 
 
 
