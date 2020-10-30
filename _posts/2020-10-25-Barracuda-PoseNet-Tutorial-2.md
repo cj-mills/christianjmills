@@ -12,6 +12,40 @@ search_exclude: false
 
 
 
+## Create the ComputeShader
+
+Create a new folder in the assets windows and name it `Shaders`.
+
+In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll just name it `PoseNetShader`.
+
+![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
+
+
+
+Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following
+
+
+
+ ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
+
+
+
+We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function `PreprocessResNet()`. We also need to add a `Texture2D` variable below the `Result` variable. We can name the new variable `InputImage`.
+
+The updated `ComputeShader` should look like this. 
+
+![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader.png)
+
+The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. This is necessary because color values are in the range of `[0,1]` by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the `Result` variable.
+
+
+
+Now that we've created the `ComputeShader`, we need to access it in out `PoseNet` script. 
+
+
+
+
+
 ## Create PoseNet Script
 
 Create a new folder in the `Assets` window and name it `Scripts`.
@@ -64,6 +98,18 @@ The resizing method will squish our input image from a 16:9 aspect ration to a s
 
 Finally, we need to modify the RGB channel values of the image so that they are in the same range of values that the model was trained on. The model that we'll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. This means we need to first scale the RGB channel values and then add the ImageNet mean for each channel.
 
+This is where we'll make use of the `PoseNetShader` we made earlier.
+
+Create a new public `ComputeShader` variable and name it `posenetShader`.
+
+![create_posenetShader_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
+
+
+
+
+
+
+
 
 
 
@@ -86,39 +132,7 @@ Next, we need to assign the `video_texture` object to the `inputTexture` paramet
 
  
 
-## Create the ComputeShader
 
-Create a new folder in the assets windows and name it `Shaders`.
-
-In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll just name it `PoseNetShader`.
-
-![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
-
-
-
-Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following
-
-
-
- ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
-
-
-
-We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function `PreprocessResNet()`. We also need to add a `Texture2D` variable below the `Result` variable. We can name the new variable `InputImage`.
-
-The updated `ComputeShader` should look like this. 
-
-![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader.png)
-
-The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. This is necessary because color values are in the range of `[0,1]` by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the `Result` variable.
-
-
-
-Now that we've created the `ComputeShader`, we need to access it in out `PoseNet` script. 
-
-In the `PoseNet` script, create a new public `ComputeShader` variable and name it `posenetShader`.
-
-![create_posenetShader_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
 
 
 
