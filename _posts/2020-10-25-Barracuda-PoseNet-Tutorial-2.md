@@ -34,7 +34,7 @@ Open the script in your code editor.
 
 Above the start method, create a new public RenderTexture named `videoTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
-![create_videoTexture_variable](\images\barracuda-posenet-tutorial\create_videoTexture_variable.png)
+![create_videoTexture_variable](..\images\barracuda-posenet-tutorial\create_videoTexture_variable.png)
 
 
 
