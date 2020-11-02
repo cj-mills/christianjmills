@@ -68,6 +68,8 @@ Open the script in your code editor.
 
 Above the start method, create a new public RenderTexture named `videoTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
+### Create `posenetShader` Variable
+
 We'll also create a new public `ComputeShader` variable and name it `posenetShader`. We'll assign the `PoseNetShader` to this variable in the Unity Editor. 
 
 ![create_videoTexture_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
