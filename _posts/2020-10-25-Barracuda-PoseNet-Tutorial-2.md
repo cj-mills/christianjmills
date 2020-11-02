@@ -34,7 +34,7 @@ We don't need the `CSMain` function so we can delete it along with the `#pragma 
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. By default, color values in Unity are in the range of `[0,1]`. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the `Result` variable.
 
-The updated `ComputeShader` looks like this. 
+The updated code looks like this. 
 
 ![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader_2.png)
 
