@@ -18,13 +18,13 @@ search_exclude: false
 
 We can perform the preprocessing steps more quickly on the GPU. In Unity, we accomplish this with [compute shaders](https://docs.unity3d.com/Manual/class-ComputeShader.html). Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same operations on every pixel in an image. It also frees up the CPU.
 
-### Create a New Compute Shader Asset
+### Create the Asset File
 
 Create a new folder in the assets windows and name it `Shaders`. In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
 
 ![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
 
-### Replace the ComputeShader Code
+### Replace the Compute Shader Code
 
 Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following
 
