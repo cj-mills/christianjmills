@@ -20,7 +20,7 @@ We can perform the preprocessing steps more quickly on the GPU. In Unity, we acc
 
 ### Create the Asset File
 
-Create a new folder in the `Assets` window and name it `Shaders`. In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
+Create a new folder in the `Assets` window and name it `Shaders`. In the `Shaders` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
 
 ![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
 
