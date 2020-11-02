@@ -112,7 +112,7 @@ For this method, we need to use HDR texture formats for the `RenderTexture` and 
 
 The new method looks like this.
 
-![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_4.png)
+![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_5.png)
 
 The `PreprocessResNet` method returns a Texture2D with a HDR texture format. The switch to HDR texture formats means we need to destroy the `tempTex` variable as it's not compatible. Fortunately, we can reuse the `imageTexture` variable that we emptied.
 
