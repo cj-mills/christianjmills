@@ -72,9 +72,7 @@ We'll also create a new public `ComputeShader` variable and name it `posenetShad
 
 ### Create `PreprocessImage()` Method
 
-Next, we need to make a new method to handle the preprocessing steps for the `videoTexture`.
-
-We'll name this method `PreprocessImage` and define it below the `Update` method. The method will return a `Texture2D` that contains the preprocessed image.
+Next, we need to make a new method to handle the preprocessing steps for the `videoTexture`. We'll name this method `PreprocessImage` and define it below the `Update` method. The method will return a `Texture2D` that contains the preprocessed image.
 
 ![preprocessImage_method_new](\images\barracuda-posenet-tutorial\preprocessImage_method_new.png)
 
@@ -90,9 +88,19 @@ We don't want to alter the `videoTexture` directly, so we'll make a copy of the 
 
 #### Resize the Image
 
-Now that we have our `imageTexture`, we need to resize it to a more practical resolution. Lowering the resolution does decrease the model's accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We'll examine this trade-off in a later post.
+Now that we have our `imageTexture`, we need to resize it to a more practical resolution. Lowering the resolution does decrease the model's accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We'll examine this trade-off in a later post. 
 
-The `Graphics.Copy()` method requires that the source and destination textures be the same size. That means we need to destroy the current `imageTexture` and make a new one with the smaller dimensions.
+For now, we'll use a resolution of `360 x 360`. Create two new public `int` variables for the image height and width respectively. This will make it easier to experiment with different resolutions.
+
+![image_height_and_width_variables](\images\barracuda-posenet-tutorial\image_height_and_width_variables.png)
+
+We'll make a new method to handle the resizing process. The method will take in a `Texture2D` as well as the new height and width. It will return a `Texture2D` with the new resolution.
+
+![resize_method](\images\barracuda-posenet-tutorial\resize_method.png)
+
+
+
+The `Graphics.CopyTexture()` method requires that the source and destination textures be the same size. That means we need to destroy the current `imageTexture` and make a new one with the smaller dimensions.
 
 The resizing method will squish our input image from a 16:9 aspect ration to a square aspect ratio. We'll need to account for this when we get to the postprocessing section.
 
