@@ -70,7 +70,7 @@ We'll also create a new public `ComputeShader` variable and name it `posenetShad
 
 
 
-### Create the Preprocessing Method
+### Create `PreprocessImage()` Method
 
 Next, we need to make a new method to handle the preprocessing steps for the `videoTexture`.
 
