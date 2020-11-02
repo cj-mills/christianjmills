@@ -46,9 +46,7 @@ Now that we've created our `ComputeShader`, we need to execute it using a `C#` s
 
 ### Create the Asset File
 
-Create a new folder in the `Assets` window and name it `Scripts`.
-
-In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` section.
+Create a new folder in the `Assets` window and name it `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` section.
 
 ![create_new_script](\images\barracuda-posenet-tutorial\create_new_script.PNG)
 
@@ -62,7 +60,7 @@ Open the script in your code editor.
 
 ### Create `videoTexture` Variable
 
-Above the start method, create a new public RenderTexture named `videoTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
+Above the start method, create a new public `RenderTexture` named `videoTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
 ### Create `posenetShader` Variable
 
