@@ -17,7 +17,7 @@ search_exclude: false
 
 ## Prerequisites
 
-This tutorial assumes that you have Unity installed. If you're completely new to Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=OR0e-1UBEOU&list=PLB5_EOMkLx_VHKn4IISeNwhlDrb1948ZX&index=3).
+This tutorial assumes that you have Unity installed. If you're completely new to Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY).
 
 **Note:** This tutorial was made using Unity 2019.4.13 ([download](unityhub://2019.4.13f1/518737b1de84)).
 
