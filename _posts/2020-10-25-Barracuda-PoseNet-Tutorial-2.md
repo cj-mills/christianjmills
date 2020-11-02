@@ -116,7 +116,7 @@ The new method looks like this.
 
 
 
-The `PreprocessResNet` method returns an Texture2D with a HDR texture format. The switch to HDR texture formats means we need to destroy the `tempTex` variable as it's not compatible. Fortunately, we can reuse the `imageTexture` variable that we emptied.
+The `PreprocessResNet` method returns a Texture2D with a HDR texture format. The switch to HDR texture formats means we need to destroy the `tempTex` variable as it's not compatible. Fortunately, we can reuse the `imageTexture` variable that we emptied.
 
 #### Call the Method
 
