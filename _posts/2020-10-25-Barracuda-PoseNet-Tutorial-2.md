@@ -110,7 +110,7 @@ This is where we'll make use of the `PoseNetShader` we made earlier. We need to 
 
 The new method looks like this.
 
-![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_3.png)
+![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_4.png)
 
 
 
