@@ -100,7 +100,7 @@ We'll make a new method to handle the resizing process. The method will take in 
 
 The `Graphics.CopyTexture()` method requires that the source and destination textures be the same size. That means we need to destroy the current `imageTexture` and make a temporary one with the smaller dimensions.
 
-![preprocessImage_method_resize_image](\images\barracuda-posenet-tutorial\preprocessImage_method_resize_image.png)
+![preprocessImage_method_resize_image](\images\barracuda-posenet-tutorial\preprocessImage_method_resize_image_2.png)
 
 **Note:** The resizing method will squish our input image from a 16:9 aspect ratio to a square aspect ratio. We'll need to account for this when we get to the postprocessing section.
 
@@ -114,15 +114,17 @@ The new method looks like this.
 
 ![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_4.png)
 
-
-
 The `PreprocessResNet` method returns a Texture2D with a HDR texture format. The switch to HDR texture formats means we need to destroy the `tempTex` variable as it's not compatible. Fortunately, we can reuse the `imageTexture` variable that we emptied.
+
+The finished `PreprocessImage` method looks like this.
+
+![preprocessImage_method_complete](\images\barracuda-posenet-tutorial\preprocessImage_method_complete.png)
 
 #### Call the Method
 
 We want this method to be called for every frame so we'll call it in the `Update()` method.
 
-
+![call_preprocessImage_method](\images\barracuda-posenet-tutorial\call_preprocessImage_method.png)
 
 ## Create the Pose Estimator  GameObject
 
