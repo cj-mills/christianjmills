@@ -60,8 +60,6 @@ Name the script `PoseNet`.
 
 
 
-
-
 Open the script in your code editor.
 
 ### Create `videoTexture` Variable
@@ -84,11 +82,7 @@ We'll name this method `PreprocessImage` and place it below the `Update` method.
 
 #### Create a New Texture2D
 
-To prepare the image for the model, we need to first create a new `Texture2D` using the `inputTexture`. We don't want to alter the `inputTexture` directly.
-
-We can use the `Graphics.CopyTexture()` method to copy the data from the `RenderTexture` on the GPU. This is more efficient than downloading the data to the CPU.
-
-
+We don't want to alter the `videoTexture` directly, so we'll make a copy of the current frame. Create a new `Texture2D` called `imageTexture` and give it the same dimensions as the `videoTexture`. We can use the `Graphics.CopyTexture()` method to copy the data from the `RenderTexture` directly on the GPU.
 
 #### Resize the Image
 
