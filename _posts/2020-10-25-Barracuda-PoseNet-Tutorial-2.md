@@ -102,7 +102,7 @@ The `Graphics.CopyTexture()` method requires that the source and destination tex
 
 ![preprocessImage_method_resize_image](\images\barracuda-posenet-tutorial\preprocessImage_method_resize_image.png)
 
-The resizing method will squish our input image from a 16:9 aspect ration to a square aspect ratio. We'll need to account for this when we get to the postprocessing section.
+**Note:** The resizing method will squish our input image from a 16:9 aspect ratio to a square aspect ratio. We'll need to account for this when we get to the postprocessing section.
 
 #### Apply Model Specific Preprocessing
 
