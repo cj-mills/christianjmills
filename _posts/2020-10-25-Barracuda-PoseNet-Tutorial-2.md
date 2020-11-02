@@ -88,6 +88,10 @@ We'll name this method `PreprocessImage` and define it below the `Update` method
 
 We don't want to alter the `videoTexture` directly, so we'll make a copy of the current frame. Create a new `Texture2D` called `imageTexture` and give it the same dimensions as the `videoTexture`. We can use the `Graphics.CopyTexture()` method to copy the data from the `RenderTexture` directly on the GPU.
 
+![preprocessImage_method_create_imageTexture](\images\barracuda-posenet-tutorial\preprocessImage_method_create_imageTexture.png)
+
+
+
 #### Resize the Image
 
 Now that we a `Texture2D` we need to resize it to a more reasonable resolution. Lowering the resolution does decrease the model's accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We'll examine this trade-off in a later post.
