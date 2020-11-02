@@ -12,7 +12,7 @@ search_exclude: false
 
 * [Create a Compute Shader](#create-a-compute-shader)
 
-* [Create PoseNet Script](#create-posenet-script)
+* [Create the PoseNet Script](#create-the-posenet-script)
 
 ## Create a Compute Shader
 
@@ -24,27 +24,25 @@ Create a new folder in the assets windows and name it `Shaders`. In the `Shader`
 
 ![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
 
-### Replace the Compute Shader Code
+### Replace the Default Code
 
-Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following
+Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following.
 
  ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
 
-We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function `PreprocessResNet()`. We also need to add a `Texture2D` variable below the `Result` variable. We can name the new variable `InputImage`.
-
-The updated `ComputeShader` should look like this. 
-
-![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader_2.png)
+We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`.  We need to add a `Texture2D` variable below the `Result` variable. Name the new variable `InputImage`. We also need to make a new function to apply the ResNet preprocessing. We'll name the new function `PreprocessResNet()`.
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. This is necessary because color values are in the range of `[0,1]` by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the `Result` variable.
 
-Now that we've created our `ComputeShader`, we need to access it in a `C#` script. 
+The updated `ComputeShader` looks like this. 
+
+![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader_2.png)
+
+Now that we've created our `ComputeShader`, we need to execute it using a `C#` script. 
 
 
 
-
-
-## Create PoseNet Script
+## Create the PoseNet Script
 
 Create a new folder in the `Assets` window and name it `Scripts`.
 
