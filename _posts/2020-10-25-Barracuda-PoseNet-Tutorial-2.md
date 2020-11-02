@@ -82,7 +82,7 @@ Next, we need to make a new method to handle the preprocessing steps for the `vi
 
 We don't want to alter the `videoTexture` directly, so we'll make a copy of the current frame. Create a new `Texture2D` called `imageTexture` and give it the same dimensions as the `videoTexture`. We can use the `Graphics.CopyTexture()` method to copy the data from the `RenderTexture` directly on the GPU.
 
-![preprocessImage_method_create_imageTexture](\images\barracuda-posenet-tutorial\preprocessImage_method_create_imageTexture.png)
+![preprocessImage_method_create_imageTexture](\images\barracuda-posenet-tutorial\preprocessImage_method_create_imageTexture_2.png)
 
 
 
@@ -100,7 +100,7 @@ We'll make a new method to handle the resizing process. The method will take in 
 
 The `Graphics.CopyTexture()` method requires that the source and destination textures be the same size. That means we need to destroy the current `imageTexture` and make a temporary one with the smaller dimensions.
 
-![preprocessImage_method_resize_image](\images\barracuda-posenet-tutorial\preprocessImage_method_resize_image_2.png)
+![preprocessImage_method_resize_image](\images\barracuda-posenet-tutorial\preprocessImage_method_resize_image_3.png)
 
 **Note:** The resizing method will squish our input image from a 16:9 aspect ratio to a square aspect ratio. We'll need to account for this when we get to the postprocessing section.
 
@@ -118,7 +118,7 @@ The `PreprocessResNet` method returns a Texture2D with an HDR texture format. Th
 
 The finished `PreprocessImage` method looks like this.
 
-![preprocessImage_method_complete](\images\barracuda-posenet-tutorial\preprocessImage_method_complete.png)
+![preprocessImage_method_complete](\images\barracuda-posenet-tutorial\preprocessImage_method_complete_2.png)
 
 #### Call the Method
 
