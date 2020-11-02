@@ -44,6 +44,8 @@ Now that we've created our `ComputeShader`, we need to execute it using a `C#` s
 
 ## Create the PoseNet Script
 
+### Create the Asset File
+
 Create a new folder in the `Assets` window and name it `Scripts`.
 
 In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` section.
