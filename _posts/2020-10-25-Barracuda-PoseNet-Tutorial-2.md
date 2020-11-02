@@ -32,7 +32,7 @@ Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` wi
 
 We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`.  We need to add a `Texture2D` variable below the `Result` variable. Name it `InputImage`. We also need to make a new function to apply the ResNet preprocessing. We'll name the new function `PreprocessResNet()`.
 
-The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. This is necessary because color values are in the range of `[0,1]` by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the `Result` variable.
+The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. By default, color values in Unity are in the range of `[0,1]`. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the `Result` variable.
 
 The updated `ComputeShader` looks like this. 
 
