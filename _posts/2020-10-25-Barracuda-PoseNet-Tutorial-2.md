@@ -94,7 +94,7 @@ We don't want to alter the `videoTexture` directly, so we'll make a copy of the 
 
 #### Resize the Image
 
-Now that we a `Texture2D` we need to resize it to a more reasonable resolution. Lowering the resolution does decrease the model's accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We'll examine this trade-off in a later post.
+Now that we have our `imageTexture`, we need to resize it to a more practical resolution. Lowering the resolution does decrease the model's accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We'll examine this trade-off in a later post.
 
 The `Graphics.Copy()` method requires that the source and destination textures be the same size. That means we need to destroy the current `imageTexture` and make a new one with the smaller dimensions.
 
