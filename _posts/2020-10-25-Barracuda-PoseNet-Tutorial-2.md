@@ -18,6 +18,8 @@ search_exclude: false
 
 We can perform the preprocessing steps more quickly on the GPU. In Unity, we accomplish this with [compute shaders](https://docs.unity3d.com/Manual/class-ComputeShader.html). Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same operations on every pixel in an image. It also frees up the CPU.
 
+We need to modify the RGB channel values of the image so that they are in the same range that the model was trained on. The model we'll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. This means we need to first scale the RGB channel values and then add the ImageNet mean for each channel.
+
 ### Create the Asset File
 
 Create a new folder in the `Assets` window and name it `Shaders`. In the `Shaders` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
@@ -93,8 +95,6 @@ The `Graphics.Copy()` method requires that the source and destination textures b
 The resizing method will squish our input image from a 16:9 aspect ration to a square aspect ratio. We'll need to account for this when we get to the post processing section.
 
 #### Apply Model Specific Preprocessing
-
-Finally, we need to modify the RGB channel values of the image so that they are in the same range of values that the model was trained on. The model that we'll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. This means we need to first scale the RGB channel values and then add the ImageNet mean for each channel.
 
 This is where we'll make use of the `PoseNetShader` we made earlier.
 
