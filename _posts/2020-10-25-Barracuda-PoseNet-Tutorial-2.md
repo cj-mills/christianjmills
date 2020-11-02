@@ -80,7 +80,7 @@ Next, we need to make a new method to handle the preprocessing steps for the `vi
 
 We'll name this method `PreprocessImage` and define it below the `Update` method. The method will return a `Texture2D` that contains the preprocessed image.
 
-![preprocessImage_method_empty](\images\barracuda-posenet-tutorial\preprocessImage_method_empty.png)
+![preprocessImage_method_new](\images\barracuda-posenet-tutorial\preprocessImage_method_new.png)
 
 
 
