@@ -18,7 +18,7 @@ search_exclude: false
 
 We can perform the preprocessing steps more quickly on the GPU. In Unity, we accomplish this with [compute shaders](https://docs.unity3d.com/Manual/class-ComputeShader.html). Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same operations on every pixel in an image. It also frees up the CPU.
 
-We need to modify the RGB channel values of the image so that they are in the same range that the model was trained on. The model we'll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. This means we need to first scale the RGB channel values and then add the ImageNet mean for each channel.
+The model we'll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. We first need to scale the RGB channel values of input images so that they are in the same range that the model was trained on. We'll then add the ImageNet mean value for each channel.
 
 ### Create the Asset File
 
