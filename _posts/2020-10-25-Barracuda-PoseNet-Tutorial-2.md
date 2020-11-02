@@ -108,11 +108,17 @@ The `Graphics.CopyTexture()` method requires that the source and destination tex
 
 This is where we'll make use of the `PoseNetShader` we made earlier. We need to create a new method for executing the `ComputeShader`. Name the new method `PreprocessResNet` to match the function in the `PoseNetShader`.
 
+For this method, we need to use HDR texture formats for the `RenderTexture` and `Texture2D`. This allows us to feed images into the model with color values outside of the standard range of `[0,1]`. The Barracuda library [remaps](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.Tensor.html#Unity_Barracuda_Tensor__ctor_UnityEngine_Texture_System_Int32_System_String_) non-HDR color values to `[0, 1]`. Given that we're scaling the color values by `255`, this is undesirable.
+
 The new method looks like this.
 
 ![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_4.png)
 
 
+
+The `PreprocessResNet` method returns an Texture2D with as HDR texture format. The switch to HDR texture formats means we need to destroy the `tempTex` variable as it's not compatible. Fortunately, we can reuse the `imageTexture` variable that we emptied.
+
+#### Call the Method
 
 We want this method to be called for every frame so we'll call it in the `Update()` method.
 
