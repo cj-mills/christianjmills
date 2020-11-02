@@ -98,7 +98,7 @@ Now that we have our `imageTexture`, we need to resize it to a more practical re
 
 The `Graphics.Copy()` method requires that the source and destination textures be the same size. That means we need to destroy the current `imageTexture` and make a new one with the smaller dimensions.
 
-The resizing method will squish our input image from a 16:9 aspect ration to a square aspect ratio. We'll need to account for this when we get to the post processing section.
+The resizing method will squish our input image from a 16:9 aspect ration to a square aspect ratio. We'll need to account for this when we get to the postprocessing section.
 
 #### Apply Model Specific Preprocessing
 
