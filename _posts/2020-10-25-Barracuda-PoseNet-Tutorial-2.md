@@ -68,7 +68,9 @@ Open the script in your code editor.
 
 Above the start method, create a new public RenderTexture named `videoTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
 
-![create_videoTexture_variable](\images\barracuda-posenet-tutorial\create_videoTexture_variable.png)
+We'll also create a new public `ComputeShader` variable and name it `posenetShader`. We'll assign the `PoseNetShader` to this variable in the Unity Editor. 
+
+![create_videoTexture_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
 
 
 
@@ -96,13 +98,7 @@ The resizing method will squish our input image from a 16:9 aspect ration to a s
 
 #### Apply Model Specific Preprocessing
 
-This is where we'll make use of the `PoseNetShader` we made earlier.
-
-Create a new public `ComputeShader` variable and name it `posenetShader`. We'll assign the `PoseNetShader` to this variable in the Unity Editor. 
-
-![create_posenetShader_variable](\images\barracuda-posenet-tutorial\create_posenetShader_variable.png)
-
-Next, we need to create a new method for executing the `ComputeShader`. We'll name the new method `PreprocessResNet` to match the function in the `PoseNetShader`.
+This is where we'll make use of the `PoseNetShader` we made earlier. We need to create a new method for executing the `ComputeShader`. Name the new method `PreprocessResNet` to match the function in the `PoseNetShader`.
 
 The new method looks like this.
 
