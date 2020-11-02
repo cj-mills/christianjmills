@@ -10,19 +10,17 @@ search_exclude: false
 
 [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html)
 
+* [Create a Compute Shader](#create-a-compute-shader)
 
+* [Create PoseNet Script](#create-posenet-script)
 
 ## Create a Compute Shader
 
 We can perform the preprocessing steps more quickly on the GPU. In Unity, we accomplish this with [compute shaders](https://docs.unity3d.com/Manual/class-ComputeShader.html). Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same operations on every pixel in an image. It also frees up the CPU.
 
-### Create a New Folder
+### Create a New Compute Shader Asset
 
-Create a new folder in the assets windows and name it `Shaders`.
-
-### Create a New ComputeShader
-
-In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
+Create a new folder in the assets windows and name it `Shaders`. In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
 
 ![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
 
