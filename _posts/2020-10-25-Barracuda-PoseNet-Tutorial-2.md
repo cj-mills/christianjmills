@@ -12,7 +12,9 @@ search_exclude: false
 
 
 
-## Create a ComputeShader
+## Create a Compute Shader
+
+We can perform the preprocessing steps more quickly by executing them on the GPU rather than the CPU. In Unity, we accomplish this using a [compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html). Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same preprocessing operation on every pixel in an input image.
 
 ### Create a New Folder
 
@@ -37,8 +39,6 @@ The updated `ComputeShader` should look like this.
 ![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_compute_shader_2.png)
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. This is necessary because color values are in the range of `[0,1]` by default in Unity. The function then adds the ImageNet mean specific to the RGB channels. The updated image is returned in the `Result` variable.
-
-
 
 Now that we've created our `ComputeShader`, we need to access it in a `C#` script. 
 
