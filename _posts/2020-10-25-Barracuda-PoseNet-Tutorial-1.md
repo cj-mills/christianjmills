@@ -19,9 +19,7 @@ search_exclude: false
 
 This tutorial assumes that you have Unity installed. If you're completely new to Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY).
 
-**Note:** This tutorial was made using Unity 2019.4.13 ([download](unityhub://2019.4.13f1/518737b1de84)).
-
-
+**Note:** This tutorial was made using Unity 2019.4.13. If you want to use the exact same version, you can download it with this [link](unityhub://2019.4.13f1/518737b1de84).
 
 ## Create a New Project
 
