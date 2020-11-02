@@ -78,7 +78,7 @@ We'll also create a new public `ComputeShader` variable and name it `posenetShad
 
 ### Create the Preprocessing Method
 
-Next, we need to make a new method to handle the preprocessing steps for the `inputTexture`.
+Next, we need to make a new method to handle the preprocessing steps for the `videoTexture`.
 
 We'll name this method `PreprocessImage` and place it below the `Update` method. We want this method to be called for every frame so we'll call it in the `Update()` method.
 
