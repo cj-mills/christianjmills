@@ -12,23 +12,23 @@ search_exclude: false
 
 
 
-## Create the ComputeShader
+## Create a ComputeShader
+
+### Create a New Folder
 
 Create a new folder in the assets windows and name it `Shaders`.
 
-In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll just name it `PoseNetShader`.
+### Create a New ComputeShader
+
+In the `Shader` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
 
 ![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
 
-
+### Replace the ComputeShader Code
 
 Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following
 
-
-
  ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
-
-
 
 We don't need the `CSMain` function so we can delete it along with the `#pragma kernel CSMain`. We need to make a new function to apply the ResNet specific preprocessing. We can just name the new function `PreprocessResNet()`. We also need to add a `Texture2D` variable below the `Result` variable. We can name the new variable `InputImage`.
 
