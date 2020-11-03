@@ -32,7 +32,7 @@ Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` wi
 
  ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
 
-Delete the `CSMain` function along with the `#pragma kernel CSMain`. We need to add a `Texture2D` variable to store the input image. Name it `InputImage` and give it a data type of `<half4>`. Use the same data type for the `Result` variable as well. We also need to make a new function to apply the ResNet preprocessing. We'll name the new function `PreprocessResNet()`.
+Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we need to add a `Texture2D` variable to store the input image. Name it `InputImage` and give it a data type of `<half4>`. Use the same data type for the `Result` variable as well. We also need to make a new function to apply the ResNet preprocessing. We'll name the new function `PreprocessResNet()`.
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. By default, color values in Unity are in the range of `[0,1]`. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the `Result` variable.
 
@@ -55,8 +55,6 @@ Create a new folder in the `Assets` window and name it `Scripts`. In the `Script
 Name the script `PoseNet`.
 
 ![new_posenet_script](\images\barracuda-posenet-tutorial\new_posenet_script.PNG)
-
-
 
 Open the script in your code editor.
 
@@ -108,25 +106,27 @@ The `Graphics.CopyTexture()` method requires that the source and destination tex
 
 #### Apply Model Specific Preprocessing
 
-This is where we'll make use of the `PoseNetShader` we made earlier. We'll create a new method to the execution process. Name the new method `PreprocessResNet` to match the function in the `PoseNetShader`.
+This is where we'll make use of the `PoseNetShader` we made earlier. We'll create a new method to handle the execution process. Name the new method `PreprocessResNet` to match the function in the `PoseNetShader`. They don't need to have the same name. It's just personal preference.
 
 For this method, we need to use HDR texture formats for the `RenderTexture` and `Texture2D`. This allows us to feed images into the model with color values outside of the standard range of `[0,1]`. The Barracuda library [remaps](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.Tensor.html#Unity_Barracuda_Tensor__ctor_UnityEngine_Texture_System_Int32_System_String_) non-HDR color values to `[0, 1]`. Given that we're scaling the values by `255`, this is undesirable.
 
-The new method looks like this.
+You can view the full `PreprocessResNet` method below.
 
-![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_5.png)
+![preprocessResNet_method](\images\barracuda-posenet-tutorial\preprocessResNet_method_6.png)
 
 The `PreprocessResNet` method returns a Texture2D with an HDR texture format. The switch to HDR texture formats means the `tempTex` variable is no longer compatible. Fortunately, we can reuse the `imageTexture` variable that we emptied.
 
 The finished `PreprocessImage` method looks like this.
 
-![preprocessImage_method_complete](\images\barracuda-posenet-tutorial\preprocessImage_method_complete_2.png)
+![preprocessImage_method_complete](\images\barracuda-posenet-tutorial\preprocessImage_method_complete_3.png)
 
 #### Call the Method
 
-We want this method to be called for every frame so we'll call it in the `Update()` method.
+We call `PreprocessImage()` in the `Update()` method so that it runs every frame.
 
 ![call_preprocessImage_method](\images\barracuda-posenet-tutorial\call_preprocessImage_method.png)
+
+To run the script, we need to attach it to a `GameObject` in the Unity Editor.
 
 ## Create the Pose Estimator  GameObject
 
