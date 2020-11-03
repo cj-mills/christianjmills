@@ -122,7 +122,7 @@ The finished `PreprocessImage` method looks like this.
 
 #### Call the Method
 
-We call `PreprocessImage()` in the `Update()` method so that it runs every frame.
+We'll call `PreprocessImage()` in the `Update()` method so that it runs every frame.
 
 ![call_preprocessImage_method](\images\barracuda-posenet-tutorial\call_preprocessImage_method.png)
 
