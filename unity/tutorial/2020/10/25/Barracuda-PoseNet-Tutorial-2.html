@@ -141,7 +141,7 @@ window.onload = wrap_img;
 
 <p><img src="\images\barracuda-posenet-tutorial\default_compute_shader.png" alt="default_compute_shader" /></p>
 
-<p>Delete the <code class="highlighter-rouge">CSMain</code> function along with the <code class="highlighter-rouge">#pragma kernel CSMain</code>. We need to add a <code class="highlighter-rouge">Texture2D</code> variable to store the input image. Name it <code class="highlighter-rouge">InputImage</code> and give it a data type of <code class="highlighter-rouge">&lt;half4&gt;</code>. Use the same data type for the <code class="highlighter-rouge">Result</code> variable as well. We also need to make a new function to apply the ResNet preprocessing. We’ll name the new function <code class="highlighter-rouge">PreprocessResNet()</code>.</p>
+<p>Delete the <code class="highlighter-rouge">CSMain</code> function along with the <code class="highlighter-rouge">#pragma kernel CSMain</code>. Next, we need to add a <code class="highlighter-rouge">Texture2D</code> variable to store the input image. Name it <code class="highlighter-rouge">InputImage</code> and give it a data type of <code class="highlighter-rouge">&lt;half4&gt;</code>. Use the same data type for the <code class="highlighter-rouge">Result</code> variable as well. We also need to make a new function to apply the ResNet preprocessing. We’ll name the new function <code class="highlighter-rouge">PreprocessResNet()</code>.</p>
 
 <p>The <code class="highlighter-rouge">PreprocessResNet</code> function scales the RGB channel values of every pixel in the <code class="highlighter-rouge">InputImage</code> by <code class="highlighter-rouge">255</code>. By default, color values in Unity are in the range of <code class="highlighter-rouge">[0,1]</code>. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the <code class="highlighter-rouge">Result</code> variable.</p>
 
@@ -207,25 +207,27 @@ window.onload = wrap_img;
 
 <h4 id="apply-model-specific-preprocessing">Apply Model Specific Preprocessing</h4>
 
-<p>This is where we’ll make use of the <code class="highlighter-rouge">PoseNetShader</code> we made earlier. We’ll create a new method to the execution process. Name the new method <code class="highlighter-rouge">PreprocessResNet</code> to match the function in the <code class="highlighter-rouge">PoseNetShader</code>.</p>
+<p>This is where we’ll make use of the <code class="highlighter-rouge">PoseNetShader</code> we made earlier. We’ll create a new method to handle the execution process. Name the new method <code class="highlighter-rouge">PreprocessResNet</code> to match the function in the <code class="highlighter-rouge">PoseNetShader</code>. They don’t need to have the same name. It’s just personal preference.</p>
 
 <p>For this method, we need to use HDR texture formats for the <code class="highlighter-rouge">RenderTexture</code> and <code class="highlighter-rouge">Texture2D</code>. This allows us to feed images into the model with color values outside of the standard range of <code class="highlighter-rouge">[0,1]</code>. The Barracuda library <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.Tensor.html#Unity_Barracuda_Tensor__ctor_UnityEngine_Texture_System_Int32_System_String_">remaps</a> non-HDR color values to <code class="highlighter-rouge">[0, 1]</code>. Given that we’re scaling the values by <code class="highlighter-rouge">255</code>, this is undesirable.</p>
 
-<p>The new method looks like this.</p>
+<p>You can view the full <code class="highlighter-rouge">PreprocessResNet</code> method below.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\preprocessResNet_method_5.png" alt="preprocessResNet_method" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\preprocessResNet_method_6.png" alt="preprocessResNet_method" /></p>
 
 <p>The <code class="highlighter-rouge">PreprocessResNet</code> method returns a Texture2D with an HDR texture format. The switch to HDR texture formats means the <code class="highlighter-rouge">tempTex</code> variable is no longer compatible. Fortunately, we can reuse the <code class="highlighter-rouge">imageTexture</code> variable that we emptied.</p>
 
 <p>The finished <code class="highlighter-rouge">PreprocessImage</code> method looks like this.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\preprocessImage_method_complete_2.png" alt="preprocessImage_method_complete" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\preprocessImage_method_complete_3.png" alt="preprocessImage_method_complete" /></p>
 
 <h4 id="call-the-method">Call the Method</h4>
 
-<p>We want this method to be called for every frame so we’ll call it in the <code class="highlighter-rouge">Update()</code> method.</p>
+<p>We call <code class="highlighter-rouge">PreprocessImage()</code> in the <code class="highlighter-rouge">Update()</code> method so that it runs every frame.</p>
 
 <p><img src="\images\barracuda-posenet-tutorial\call_preprocessImage_method.png" alt="call_preprocessImage_method" /></p>
+
+<p>To run the script, we need to attach it to a <code class="highlighter-rouge">GameObject</code> in the Unity Editor.</p>
 
 <h2 id="create-the-pose-estimator--gameobject">Create the Pose Estimator  GameObject</h2>
 
