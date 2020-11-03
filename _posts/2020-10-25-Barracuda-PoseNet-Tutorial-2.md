@@ -44,6 +44,8 @@ Now that we've created our `ComputeShader`, we need to execute it using a `C#` s
 
 ## Create the PoseNet Script
 
+We need to make a new `C#` script to perform inference with the PoseNet model. When finished, this script will load the model, prepare the input, run the model, and process the output. For this post, we'll implement the preprocessing functionality.
+
 ### Create the Asset File
 
 Create a new folder in the `Assets` window and name it `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` section.
