@@ -126,9 +126,11 @@ We'll call `PreprocessImage()` in the `Update()` method so that it runs every fr
 
 ![call_preprocessImage_method](\images\barracuda-posenet-tutorial\call_preprocessImage_method.png)
 
-To run the script, we need to attach it to a `GameObject` in the Unity Editor.
+## Create the Pose Estimator
 
-## Create the Pose Estimator  GameObject
+To run the `PoseNet` script, we need to attach it to a `GameObject` in the Unity Editor.
+
+### Create an Empty `GameObject`
 
 In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `PoseEstimator`.
 
