@@ -163,9 +163,7 @@ If you want to see what the preprocessed images look like before they get fed in
 
 ### Make a Quad
 
-In the `Hierarchy` tab, make an new Quad and name it `InputScreen`. 
-
-![create_inputScreen_gameObject](\images\barracuda-posenet-tutorial\create_inputScreen_gameObject.PNG)
+In the `Hierarchy` tab, make an new Quad and name it `InputScreen`.
 
 #### Set the Scale
 
