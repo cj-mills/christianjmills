@@ -134,7 +134,7 @@ To run the `PoseNet` script, we need to attach it to a `GameObject` in the Unity
 
 In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `PoseEstimator`.
 
-![create_poseEstimator_gameobject](..\images\barracuda-posenet-tutorial\create_poseEstimator_gameobject.PNG)
+![create_poseEstimator_gameobject](\images\barracuda-posenet-tutorial\create_poseEstimator_gameobject.PNG)
 
 
 
@@ -164,7 +164,7 @@ If you want to see what the preprocessed images look like before the get fed int
 
 In the `Hierarchy` tab, make an new Quad and name it `InputScreen`. 
 
-![create_inputScreen_gameObject](..\images\barracuda-posenet-tutorial\create_inputScreen_gameObject.PNG)
+![create_inputScreen_gameObject](\images\barracuda-posenet-tutorial\create_inputScreen_gameObject.PNG)
 
 #### Set the Scale
 
@@ -174,7 +174,7 @@ We'll set both the `X` and `Y` scale values to `360` to match our current input 
 
 We also need to set the `X` and `Y` position values to `180`. Set the `Z` position value to `-1` so that it's in front of the `VideoScreen`.
 
-![set_inputScreen_transform](..\images\barracuda-posenet-tutorial\set_inputScreen_transform.PNG)
+![set_inputScreen_transform](\images\barracuda-posenet-tutorial\set_inputScreen_transform.PNG)
 
 ### Make a RenderTexture
 
@@ -184,7 +184,7 @@ Make another `RenderTexture` and name it `input_texture`.
 
 Set the `Size` to `360 x 360`.
 
-![set_input_texture_size](..\images\barracuda-posenet-tutorial\set_input_texture_size.PNG)
+![set_input_texture_size](\images\barracuda-posenet-tutorial\set_input_texture_size.PNG)
 
 ### Make the Shader Unlit
 
@@ -208,7 +208,7 @@ Create a new public `GameObject` variable called `inputScreen`. We need to acces
 
 Create a new public `RenderTexture` variable called `inputTexture`. We'll assign the `input_texture` asset to this variable in the Unity Editor.
 
-![preview_preprocessed_input_variables](..\images\barracuda-posenet-tutorial\preview_preprocessed_input_variables.png)
+![preview_preprocessed_input_variables](\images\barracuda-posenet-tutorial\preview_preprocessed_input_variables.png)
 
 
 
@@ -216,7 +216,7 @@ Create a new public `RenderTexture` variable called `inputTexture`. We'll assign
 
 We can use the `Graphics.Blit()` method to copy the `processedImage` data to the `inputTexture` variable. We'll use the `inputScreen.SetActive()` method to activate and deactivate the `InputScreen`.
 
-![update_method_with_displayInput](..\images\barracuda-posenet-tutorial\update_method_with_displayInput.png)
+![update_method_with_displayInput](\images\barracuda-posenet-tutorial\update_method_with_displayInput.png)
 
 
 
@@ -224,4 +224,4 @@ We can use the `Graphics.Blit()` method to copy the `processedImage` data to the
 
 With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `InputScreen` and `input_texture` to their respective variables in the `Inspector` tab.
 
-![pose_estimator_displayInput](..\images\barracuda-posenet-tutorial\pose_estimator_displayInput.PNG)
+![pose_estimator_displayInput](\images\barracuda-posenet-tutorial\pose_estimator_displayInput.PNG)
