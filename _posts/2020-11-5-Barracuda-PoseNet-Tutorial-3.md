@@ -10,29 +10,19 @@ search_exclude: false
 
 ### [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html)
 
-## Install Barracuda
-
- Next, we need to install the Barracuda package in the package manager.
-
-
+## Install Barracuda Package
 
 Select the `Package Manager` tab in the Unity editor.
 
 ![select_package_manager_tab](\images\barracuda-posenet-tutorial\select_package_manager_tab.png)
 
-
-
 Type `Barracuda` into the search box.
 
 ![barracuda_search](\images\barracuda-posenet-tutorial\barracuda_search.PNG)
 
-
-
 Click the `Install` button to install the package.
 
 ![barracuda_install](\images\barracuda-posenet-tutorial\barracuda_install.PNG)
-
-
 
 Wait for Unity to install the dependencies.
 
