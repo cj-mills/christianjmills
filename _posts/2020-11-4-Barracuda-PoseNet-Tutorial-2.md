@@ -159,7 +159,7 @@ We also need to drag and drop the `PoseNetShader` asset into the `Posenet Shader
 
 ## Optional: View Preprocessed Input
 
-If you want to see what the preprocessed images look like before the get fed into the model, we can make a second screen to view them during runtime.
+If you want to see what the preprocessed images look like before they get fed into the model, we can make a second screen to view them during runtime.
 
 ### Make a Quad
 
