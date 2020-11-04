@@ -105,7 +105,7 @@ The `Graphics.CopyTexture()` method requires that the source and destination tex
 
 **Note:** Resizing the image to `360 x 360` will squish our input image from a 16:9 aspect ratio to a square aspect ratio. We'll need to account for this when we get to the postprocessing section.
 
-#### Apply Model Specific Preprocessing
+#### Apply Model-Specific Preprocessing
 
 This is where we'll make use of the `PoseNetShader` we made earlier. We'll create a new method to handle the execution process. Name the new method `PreprocessResNet` to match the function in the `PoseNetShader`. They don't need to have the same name. It's just personal preference.
 
