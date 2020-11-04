@@ -11,8 +11,9 @@ search_exclude: false
 [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html)
 
 * [Create a Compute Shader](#create-a-compute-shader)
-
 * [Create the PoseNet Script](#create-the-posenet-script)
+* [Create the Pose Estimator](#create-the-pose-estimator)
+* [Optional: View Preprocessed Input](#optional-view-preprocessed-input)
 
 ## Create a Compute Shader
 
