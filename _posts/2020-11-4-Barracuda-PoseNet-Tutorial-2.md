@@ -185,6 +185,10 @@ Set the `Size` to `360 x 360`.
 
 ![set_input_texture_size](\images\barracuda-posenet-tutorial\set_input_texture_size.PNG)
 
+#### Apply the `input_texture`
+
+Drag and drop the `input_texture` onto the `InputScreen` in the `Scene` tab.
+
 ### Make the Shader Unlit
 
 Set the `Shader` for the `InputScreen` to `Unlit/Texture` just like the `VideoScreen`.
