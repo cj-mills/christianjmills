@@ -134,21 +134,25 @@ To run the `PoseNet` script, we need to attach it to a `GameObject` in the Unity
 
 In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `PoseEstimator`.
 
+![create_poseEstimator_gameobject](..\images\barracuda-posenet-tutorial\create_poseEstimator_gameobject.PNG)
 
 
 
+### Attach the `PoseNet` Script
 
 With the `PoseEstimator` object selected, drag and drop the `PoseNet` script into the `Inspector` tab.
 
-Next, we need to assign the `video_texture` object to the `inputTexture` parameter. With the `PoseEstimator` object selected, drag and drop the `video_texture` object into `inputTexture` spot in the `Inspector` tab.
+![posenet_script_inspector_empty](\images\barracuda-posenet-tutorial\posenet_script_inspector_empty.PNG)
 
+### Assign the `video_texture`
 
+Next, we need to assign the `video_texture` asset to the `Video Texture` parameter. With the `PoseEstimator` object selected, drag and drop the `video_texture` asset into the `Video Texture` spot in the `Inspector` tab.
 
- 
+### Assign the `PoseNetShader`
 
+We also need to drag and drop the `PoseNetShader` asset into the `Posenet Shader` spot in the the Inspector tab.
 
-
-
+![posenet_script_inspector_full_1](\images\barracuda-posenet-tutorial\posenet_script_inspector_full_1.PNG)
 
 
 
