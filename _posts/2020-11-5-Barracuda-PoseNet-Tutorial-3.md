@@ -47,7 +47,7 @@ Create a new folder in the `Assets` window and name it `Models`. Drag and drop t
 
 If you select the `resnet50` asset, you should see the following in the `Inspector` tab.
 
-![resnet50_inspector_tab](..\images\barracuda-posenet-tutorial\resnet50_inspector_tab.PNG)
+![resnet50_inspector_tab](\images\barracuda-posenet-tutorial\resnet50_inspector_tab.PNG)
 
 
 
