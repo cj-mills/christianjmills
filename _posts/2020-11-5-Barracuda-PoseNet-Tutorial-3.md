@@ -113,13 +113,13 @@ We'll add the new layer using a `ModelBuilder`.
 
 Now we can create a worker to execute the modified model using the selected backend. We'll do this using the `WorkerFactory.CreateWorker()` method.
 
-![create_worker](..\images\barracuda-posenet-tutorial\create_worker.png)
+![create_worker](\images\barracuda-posenet-tutorial\create_worker.png)
 
 ### Release Inference Engine Resources
 
 We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we'll do it in the `OnDisable()` method. This method gets called when the Unity project exits. We need to implement this method in the `PoseNet` script.
 
-![onDisable_method](..\images\barracuda-posenet-tutorial\onDisable_method.png)
+![onDisable_method](\images\barracuda-posenet-tutorial\onDisable_method.png)
 
 
 
