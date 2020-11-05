@@ -10,6 +10,9 @@ search_exclude: false
 
 ### [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html)
 
+* [Install Barracuda Package](#install-barracuda-package)
+* [Import PoseNet Model](#import-posenet-model)
+
 ## Install Barracuda Package
 
 Select the `Package Manager` tab in the Unity editor.
