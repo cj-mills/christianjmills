@@ -57,11 +57,11 @@ Next, we need to implement the code for loading the model in the `PoseNet` [scri
 
 ### Create `modelAsset` Variable
 
-Open the `PoseNet` script and make a new public `NNModel` called `modelAsset`. We'll assign the `resnet50` asset to this variable in the Unity Editor.
+Open the `PoseNet` script and make a new public `NNModel` variable called `modelAsset`. We'll assign the `resnet50` asset to this variable in the Unity Editor.
 
 ### Create `workerType` Variable
 
-We'll also add a variable that let's us choose which [backend](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html) to use when performing inference. The options are divided into `CPU` and `GPU`. I believe there are plans to add support for specialized hardware such as Neural Processing Units in the future. Our preprocessing pipeline runs entirely on the `GPU` so we'll be sticking with the `GPU` options for this tutorial series. However, feel free to experiment.
+We'll also add a variable that let's us choose which [backend](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html) to use when performing inference. The options are divided into `CPU` and `GPU`. I believe there are plans to add support for specialized hardware such as Neural Processing Units in the future. Our preprocessing pipeline runs entirely on the `GPU` so we'll be sticking with the `GPU` options for this tutorial series.
 
 Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
@@ -73,7 +73,7 @@ We need to compile the `modelAsset` into a run-time model to perform inference. 
 
 ### Create `engine` Variable
 
-Next, we'll create a new private `IWorker` variable to store our inference engine. Name the the variable `engine`.
+Next, we'll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
 ![load_model_variables_2](\images\barracuda-posenet-tutorial\load_model_variables_2.png)
 
@@ -83,9 +83,11 @@ Add a new private `string` variable to store the  name of the heatmap layer in t
 
 ![resnet50_output_layers](\images\barracuda-posenet-tutorial\resnet50_output_layers.PNG)
 
+**Note:** The last two output layers used when estimating the pose of multiple people. We'll be sticking to single pose estimation for this series. 
+
 ### Create `offsetsLayer` Variable
 
-We'll go ahead and create a variable for the the `float_short_offsets` layer as well since we'll need it later. The output from this layer is used to refine the location determined with the heatmap layer. 
+We'll go ahead and create a variable for the `float_short_offsets` layer as well since we'll need it later. The output from this layer is used to refine the location determined with the heatmap layer. 
 
 ![layer_name_variables](\images\barracuda-posenet-tutorial\layer_name_variables.png)
 
@@ -97,10 +99,13 @@ We need to get an object oriented representation of the model before we can work
 
 ### Modify the Model
 
-We need to add a `Sigmoid` layer to the end of the model before creating our inference engine. This will map the output values to the range `[0,1]`. We'll use these values to measure the model's confidence that a given key point is in a given spot in the input image. A value of `1` would indicate that the model is `100%` confident the key point is in that location.
+We need to add a [`Sigmoid`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.ModelBuilder.html#Unity_Barracuda_ModelBuilder_Sigmoid_System_String_System_Object_) layer to the end of the model before creating our inference engine. This will map the output values to the range `[0,1]`. We'll use these values to measure the model's confidence that a given key point is in a given spot in the input image. A value of `1` would indicate that the model is `100%` confident the key point is in that location. We won't be getting any `1`'s.
 
 First, we need to make a new private `string` variable to store the name of this new layer. We'll name the variable `predictionLayer` and name the layer `heatmap_predictions`.
 
 ![predictionLayer_name](\images\barracuda-posenet-tutorial\predictionLayer_name.png)
 
-We'll add the new layer using a `ModelBuilder`. 
+We'll add the new layer using a `ModelBuilder`.
+
+![add_sigmoid_layer](\images\barracuda-posenet-tutorial\add_sigmoid_layer.png)
+
