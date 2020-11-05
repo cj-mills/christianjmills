@@ -81,19 +81,19 @@ Next, we'll create a new private `IWorker` variable to store our inference engin
 
 Add a new private `string` variable to store the  name of the heatmap layer in the `resnet50` model. We'll need the output of this layer to determine the location of key points in the input image. We can find the name for the model's output layers in the `Inspector` tab. For our model, the heatmap layer is named `float_heamap`.
 
-![resnet50_output_layers](..\images\barracuda-posenet-tutorial\resnet50_output_layers.PNG)
+![resnet50_output_layers](\images\barracuda-posenet-tutorial\resnet50_output_layers.PNG)
 
 ### Create `offsetsLayer` Variable
 
 We'll go ahead and create a variable for the the `float_short_offsets` layer as well since we'll need it later. The output from this layer is used to refine the location determined with the heatmap layer. 
 
-![layer_name_variables](..\images\barracuda-posenet-tutorial\layer_name_variables.png)
+![layer_name_variables](\images\barracuda-posenet-tutorial\layer_name_variables.png)
 
 ### Compile the Model
 
 We need to get an object oriented representation of the model before we can work with it. We'll do this in the `Start()` method and store it in the `m_RuntimeModel`.
 
-![compile_model](..\images\barracuda-posenet-tutorial\compile_model.png)
+![compile_model](\images\barracuda-posenet-tutorial\compile_model.png)
 
 ### Modify the Model
 
@@ -101,6 +101,6 @@ We need to add a `Sigmoid` layer to the end of the model before creating our inf
 
 First, we need to make a new private `string` variable to store the name of this new layer. We'll name the variable `predictionLayer` and name the layer `heatmap_predictions`.
 
-![predictionLayer_name](..\images\barracuda-posenet-tutorial\predictionLayer_name.png)
+![predictionLayer_name](\images\barracuda-posenet-tutorial\predictionLayer_name.png)
 
 We'll add the new layer using a `ModelBuilder`. 
