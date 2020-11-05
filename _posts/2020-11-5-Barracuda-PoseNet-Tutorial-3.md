@@ -51,15 +51,29 @@ If you select the `resnet50` asset, you should see the following in the `Inspect
 
 
 
+## Load the Model
 
+Next, we need to implement the code for loading the model in the `PoseNet` [script](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html#create-the-posenet-script).
 
+### Create `modelAsset` Variable
 
+Open the `PoseNet` script and make a new public `NNModel` called `modelAsset`. We'll assign the `resnet50` asset to this variable in the Unity Editor.
 
+### Create `workerType` Variable
 
+We'll also add a variable that let's us choose which [backend](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html) to use when performing inference. The option are divided into `CPU` and `GPU`. Our preprocessing pipeline runs entirely on the `GPU` so we'll be sticking with the `GPU` options for this tutorial series. However, feel free to experiment.
 
+Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
+![load_model_variables_1](\images\barracuda-posenet-tutorial\load_model_variables_1.png)
 
+### Create `m_RuntimeModel` Variable
 
+We need to compile the `modelAsset` into a run-time model to perform inference. We'll store the compiled model in a new private `Model` variable called `m_RuntimeModel`. This is the naming convention used in the Barracuda [documentation](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Loading.html). 
 
+### Create `engine` Variable
 
+Next, we'll create a new private `IWorker` variable to store our inference engine. Name the the variable `engine`.
+
+![load_model_variables_2](\images\barracuda-posenet-tutorial\load_model_variables_2.png)
 
