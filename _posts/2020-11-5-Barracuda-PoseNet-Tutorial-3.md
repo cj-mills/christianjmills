@@ -28,3 +28,7 @@ Wait for Unity to install the dependencies.
 
 ![barracuda_installation_progress](\images\barracuda-posenet-tutorial\barracuda_installation_progress.PNG)
 
+
+
+## Import PoseNet Model
+
