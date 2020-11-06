@@ -1,5 +1,5 @@
 ---
-title: Barracuda Pose Estimation Project Log Pt.2
+title: Barracuda Pose Estimation Project Log Pt. 2
 layout: post
 toc: true
 description: Trying to remove bottlenecks.
