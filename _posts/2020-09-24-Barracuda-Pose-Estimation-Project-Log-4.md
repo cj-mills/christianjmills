@@ -1,5 +1,5 @@
 ---
-title: Barracuda Pose Estimation Project Log Pt.4
+title: Barracuda Pose Estimation Project Log Pt. 4
 layout: post
 toc: false
 description: I'm an idiot.
