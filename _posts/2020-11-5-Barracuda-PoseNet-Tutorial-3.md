@@ -32,8 +32,6 @@ Wait for Unity to install the dependencies.
 
 ![barracuda_installation_progress](\images\barracuda-posenet-tutorial\barracuda_installation_progress.PNG)
 
-
-
 ## Import PoseNet Model
 
 Now we can import the model into Unity. The Barracuda dev team has focused on supporting the [ONNX](https://onnx.ai/) format for models. We aren't able to directly import models from TensorFlow or PyTorch. I've already converted the PoseNet model to ONNX. You can check out my tutorial for converting TensorFlow SavedModels to ONNX ([here](https://christianjmills.com/tensorflow/onnx/tutorial/2020/10/21/How-to-Convert-a-TensorFlow-SavedModel-to-ONNX.html)). PyTorch provides built-in support for ONNX ([link](https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html)).
@@ -49,8 +47,6 @@ Create a new folder in the `Assets` window and name it `Models`. Drag and drop t
 If you select the `resnet50` asset, you should see the following in the `Inspector` tab.
 
 ![resnet50_inspector_tab](\images\barracuda-posenet-tutorial\resnet50_inspector_tab.PNG)
-
-
 
 ## Load the Model
 
@@ -121,8 +117,6 @@ Now we can create a worker to execute the modified model using the selected back
 We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we'll do it in the `OnDisable()` method. This method gets called when the Unity project exits. We need to implement this method in the `PoseNet` script.
 
 ![onDisable_method](\images\barracuda-posenet-tutorial\onDisable_method.png)
-
-
 
 ## Set Inspector Variables
 
