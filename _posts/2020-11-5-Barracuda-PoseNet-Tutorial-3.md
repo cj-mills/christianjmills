@@ -13,6 +13,7 @@ search_exclude: false
 * [Install Barracuda Package](#install-barracuda-package)
 * [Import PoseNet Model](#import-posenet-model)
 * [Load the Model](#load-the-model)
+* [Set Inspector Variables](#set-inspector-variables)
 
 ## Install Barracuda Package
 
