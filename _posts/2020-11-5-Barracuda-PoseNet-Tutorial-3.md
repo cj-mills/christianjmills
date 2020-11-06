@@ -1,8 +1,8 @@
 ---
-title: Barracuda PoseNet Tutorial Pt.3
+title: Barracuda PoseNet Tutorial Pt. 3
 layout: post
 toc: false
-description: This post covers how to perform inference with the PoseNet model.
+description: This post covers how to load the the PoseNet model in a script.
 categories: [unity, tutorial]
 hide: true
 search_exclude: false
@@ -12,6 +12,7 @@ search_exclude: false
 
 * [Install Barracuda Package](#install-barracuda-package)
 * [Import PoseNet Model](#import-posenet-model)
+* [Load the Model](#load-the-model)
 
 ## Install Barracuda Package
 
