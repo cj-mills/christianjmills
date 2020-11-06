@@ -153,3 +153,7 @@ Next, we need to assign the `video_texture` asset to the `Video Texture` paramet
 We also need to drag and drop the `PoseNetShader` asset into the `Posenet Shader` spot in the the Inspector tab.
 
 ![posenet_script_inspector_full_1](\images\barracuda-posenet-tutorial\posenet_script_inspector_full_1.PNG)
+
+
+
+### [Part 2.5 (Optional)](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html)
