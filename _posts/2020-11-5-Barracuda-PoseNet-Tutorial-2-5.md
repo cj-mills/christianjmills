@@ -1,5 +1,5 @@
 ---
-title: Barracuda PoseNet Tutorial Pt.2.5 (Optional)
+title: Barracuda PoseNet Tutorial Pt. 2.5 (Optional)
 layout: post
 toc: false
 description: This post covers how to view preprocessed images during runtime.
