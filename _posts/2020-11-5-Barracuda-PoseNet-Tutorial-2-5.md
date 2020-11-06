@@ -12,7 +12,7 @@ search_exclude: false
 
 * [Make a New Screen](#make-a-new-screen)
 * [Update the PoseNet Script](#update-the-posenet-script)
-* [Assign Variables In Inspector](#assign-variables-in-inspector)
+* [Assign Inspector Variables](#assign-inspector-variables)
 * [Test the New Screen](#test-the-new-screen)
 
 ## Make a New Screen
@@ -75,7 +75,7 @@ We can use the `Graphics.Blit()` method to copy the `processedImage` data to the
 
 ![update_method_with_displayInput](\images\barracuda-posenet-tutorial\update_method_with_displayInput.png)
 
-## Assign Variables In Inspector
+## Assign Inspector Variables
 
 With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `InputScreen` and `input_texture` to their respective variables in the `Inspector` tab.
 
