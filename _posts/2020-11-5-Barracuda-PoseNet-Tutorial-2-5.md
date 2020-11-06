@@ -25,7 +25,7 @@ In the `Hierarchy` tab, make an new Quad and name it `InputScreen`.
 
 #### Set the Scale
 
-We'll set both the `X` and `Y` scale values to `360` to match our current input resolution.
+We'll set both the `X` and `Y` scale values to `360` to match our current input resolution for the model.
 
 #### Set the Position
 
