@@ -77,7 +77,7 @@ We can use the `Graphics.Blit()` method to copy the `processedImage` data to the
 
 ## Assign Inspector Variables
 
-With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `InputScreen` and `input_texture` to their respective variables in the `Inspector` tab.
+With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `InputScreen` and `input_texture` into their respective variables in the `Inspector` tab.
 
 ![pose_estimator_displayInput](\images\barracuda-posenet-tutorial\pose_estimator_displayInput.PNG)
 
