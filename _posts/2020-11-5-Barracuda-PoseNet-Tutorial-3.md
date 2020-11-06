@@ -4,7 +4,7 @@ layout: post
 toc: false
 description: This post covers how to load the the PoseNet model in a script.
 categories: [unity, tutorial]
-hide: true
+hide: false
 search_exclude: false
 ---
 
