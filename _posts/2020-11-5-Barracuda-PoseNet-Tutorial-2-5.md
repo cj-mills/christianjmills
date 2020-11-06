@@ -10,9 +10,12 @@ search_exclude: false
 
 ### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html)
 
-* [Optional: View Preprocessed Input](#optional-view-preprocessed-input)
+* [Make a New Screen](#make-a-new-screen)
+* [Update the PoseNet Script](#update-the-posenet-script)
+* [Assign the Variables](#assign-the-variables)
+* [Test the New Screen](#test-the-new-screen)
 
-## Optional: View Preprocessed Input
+## Make a New Screen
 
 If you want to see what the preprocessed images look like before they get fed into the model, we can make a second screen to view them during runtime.
 
@@ -48,43 +51,37 @@ Drag and drop the `input_texture` onto the `InputScreen` in the `Scene` tab.
 
 Set the `Shader` for the `InputScreen` to `Unlit/Texture` just like the `VideoScreen`.
 
-
-
-### Update the PoseNet Script
+## Update the PoseNet Script
 
 Next, we need to create a few new public variables in the PoseNet script.
 
-#### Add `displayInput` variable
+### Add `displayInput` variable
 
 Create a new public `bool` variable called `displayInput`. This will add a checkbox in the `Inpsector` tab that we can use to turn the `InputScreen` on and off.
 
-#### Add `inputScreen` variable
+### Add `inputScreen` variable
 
 Create a new public `GameObject` variable called `inputScreen`. We need to access the `InputScreen` object to activate and deactivate it.
 
-#### Add `inputTexture` variable 
+### Add `inputTexture` variable 
 
 Create a new public `RenderTexture` variable called `inputTexture`. We'll assign the `input_texture` asset to this variable in the Unity Editor.
 
 ![preview_preprocessed_input_variables](\images\barracuda-posenet-tutorial\preview_preprocessed_input_variables.png)
 
-
-
-#### Modify the `Update()` Method
+### Modify the `Update()` Method
 
 We can use the `Graphics.Blit()` method to copy the `processedImage` data to the `inputTexture` variable. We'll use the `inputScreen.SetActive()` method to activate and deactivate the `InputScreen`.
 
 ![update_method_with_displayInput](\images\barracuda-posenet-tutorial\update_method_with_displayInput.png)
 
-
-
-### Assign the Variables
+## Assign the Variables
 
 With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `InputScreen` and `input_texture` to their respective variables in the `Inspector` tab.
 
 ![pose_estimator_displayInput](\images\barracuda-posenet-tutorial\pose_estimator_displayInput.PNG)
 
-### Test the InputScreen
+## Test the New Screen
 
 Make sure the `Display Input` checkbox is ticked in the `Inspector` tab. It will be easier to see the changes to the preprocessed images if we use a full color video. We can set the `Video Clip` for the `Video Player` to the `pexels_woman_dancing` file that we downloaded in [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html#import-video-files).
 
