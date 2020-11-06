@@ -1,5 +1,5 @@
 ---
-title: Barracuda Pose Estimation Project Log Pt.5
+title: Barracuda Pose Estimation Project Log Pt. 5
 layout: post
 toc: false
 description: Back to it.
