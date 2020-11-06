@@ -124,3 +124,15 @@ We need to manually release the resources that get allocated for the inference `
 
 
 
+## Set Inspector Variables
+
+Now we just need to set the values for the `Model Asset` and select the inference backend.
+
+### Assign the Model Asset
+
+With the `PoseEstimator` object selected, drag and drop the `resnet50` asset into the `Model Asset` variable.
+
+### Select Inference Backend
+
+Set the backend to the `Compte Precompiled` option in the `Worker Type` drop-down. This is the most efficient GPU backend.
+
