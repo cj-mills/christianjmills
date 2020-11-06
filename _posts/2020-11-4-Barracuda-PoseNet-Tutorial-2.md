@@ -156,4 +156,4 @@ We also need to drag and drop the `PoseNetShader` asset into the `Posenet Shader
 
 
 
-### [Part 2.5(Optional)](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html)
+### Next: [Part 2.5(Optional)](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html)
