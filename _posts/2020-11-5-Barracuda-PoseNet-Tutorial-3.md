@@ -85,7 +85,7 @@ Add a new private `string` variable to store the  name of the heatmap layer in t
 
 ### Create `offsetsLayer` Variable
 
-We'll go ahead and create a variable for the `float_short_offsets` layer as well since we'll need it later. The output from this layer is used to refine the location determined with the heatmap layer. 
+We'll go ahead and create a variable for the `float_short_offsets` layer as well since we'll need it later. The output from this layer is used to refine the estimated key point locations determined with the heatmap layer. 
 
 ![layer_name_variables](\images\barracuda-posenet-tutorial\layer_name_variables.png)
 
