@@ -77,7 +77,7 @@ Next, we'll create a new private `IWorker` variable to store our inference engin
 
 ### Create `heatmapLayer` Variable
 
-Add a new private `string` variable to store the  name of the heatmap layer in the `resnet50` model. We'll need the output of this layer to determine the location of key points in the input image. We can find the name for the model's output layers in the `Inspector` tab. For our model, the heatmap layer is named `float_heamap`.
+Add a new private `string` variable to store the  name of the heatmap layer in the `resnet50` model. We'll need the output of this layer to determine the location of key points (e.g. nose, elbows, knees, etc.) in the input image. We can find the name for the model's output layers in the `Inspector` tab. For our model, the heatmap layer is named `float_heamap`.
 
 ![resnet50_output_layers](\images\barracuda-posenet-tutorial\resnet50_output_layers.PNG)
 
