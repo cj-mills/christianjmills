@@ -129,6 +129,6 @@ With the `PoseEstimator` object selected, drag and drop the `resnet50` asset int
 
 ### Select Inference Backend
 
-Set the backend to the `Compte Precompiled` option in the `Worker Type` drop-down. This is the most efficient GPU backend.
+Set the backend to the `Compute Precompiled` option in the `Worker Type` drop-down. This is the most efficient GPU backend.
 
 ![assign_model_asset_and_backend](\images\barracuda-posenet-tutorial\assign_model_asset_and_backend.PNG)
