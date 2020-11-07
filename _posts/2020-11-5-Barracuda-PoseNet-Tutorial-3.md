@@ -103,7 +103,7 @@ First, we need to make a new private `string` variable to store the name of this
 
 ![predictionLayer_name](\images\barracuda-posenet-tutorial\predictionLayer_name.png)
 
-We'll add the new layer using a `ModelBuilder`.
+We'll add the new layer using a [`ModelBuilder`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.ModelBuilder.html).
 
 ![add_sigmoid_layer](\images\barracuda-posenet-tutorial\add_sigmoid_layer.png)
 
