@@ -81,7 +81,7 @@ Add a new private `string` variable to store the  name of the heatmap layer in t
 
 ![resnet50_output_layers](\images\barracuda-posenet-tutorial\resnet50_output_layers.PNG)
 
-**Note:** The last two output layers used when estimating the pose of multiple people. We'll be sticking to single pose estimation for this series. 
+**Note:** The last two output layers, `resnet_v1_50/displacement_bwd_2/BiasAd` and `resnet_v1_50/displacement_fwd_2/BiasAd`, are used when estimating the pose of multiple people. We'll be sticking to single pose estimation for this series. 
 
 ### Create `offsetsLayer` Variable
 
