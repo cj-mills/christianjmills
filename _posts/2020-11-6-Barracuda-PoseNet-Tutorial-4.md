@@ -2,7 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 4
 layout: post
 toc: false
-description: This post covers how to perform inference with the PoseNet model.
+description: This post covers how to perform inference with the PoseNet model and process the output.
 categories: [unity, tutorial]
 hide: true
 search_exclude: false
