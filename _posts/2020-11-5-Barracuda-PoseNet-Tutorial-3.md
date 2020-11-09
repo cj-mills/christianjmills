@@ -2,7 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 3
 layout: post
 toc: false
-description: This post covers how to load the the PoseNet model in a script.
+description: This post covers how to perform inference with the PoseNet model.
 categories: [unity, tutorial]
 hide: false
 search_exclude: false
@@ -14,6 +14,7 @@ search_exclude: false
 * [Import PoseNet Model](#import-posenet-model)
 * [Load the Model](#load-the-model)
 * [Set Inspector Variables](#set-inspector-variables)
+* [Perform Inference](#perform-inference)
 
 ## Install Barracuda Package
 
@@ -132,3 +133,19 @@ With the `PoseEstimator` object selected, drag and drop the `resnet50` asset int
 Set the backend to the `Compute Precompiled` option in the `Worker Type` drop-down. This is the most efficient GPU backend.
 
 ![assign_model_asset_and_backend](\images\barracuda-posenet-tutorial\assign_model_asset_and_backend.PNG)
+
+## Perform Inference
+
+Finally, we'll add the code to perform inference in the `Update()` method.
+
+### Create the `input` Tensor
+
+We need to convert the `processedImage` to a `Tensor` before we can feed it to the model. We need to specify the number of channels in the image. We don't need the alpha (transparency) channel so we'll specify `3` for the RGB color channels. We'll need to manually release the allocated resources for the Tensor with the `input.Dispose()` method.
+
+### Execute the Model
+
+We'll use the [`engine.Execute()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_) method to perform inference. This method takes in the input Tensor and schedules the network execution.
+
+Here is the revised `Update()` method.
+
+![perform_inference_update_method](..\images\barracuda-posenet-tutorial\perform_inference_update_method.png)
