@@ -152,4 +152,4 @@ We'll need to manually release the allocated resources for the Tensor with the `
 
 Here is the revised `Update()` method.
 
-![perform_inference_update_method](\images\barracuda-posenet-tutorial\perform_inference_update_method.png)
+![perform_inference_update_method](\images\barracuda-posenet-tutorial\perform_inference_update_method_2.png)
