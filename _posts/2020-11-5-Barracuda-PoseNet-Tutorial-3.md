@@ -148,4 +148,4 @@ We'll use the [`engine.Execute()`](https://docs.unity3d.com/Packages/com.unity.b
 
 Here is the revised `Update()` method.
 
-![perform_inference_update_method](..\images\barracuda-posenet-tutorial\perform_inference_update_method.png)
+![perform_inference_update_method](\images\barracuda-posenet-tutorial\perform_inference_update_method.png)
