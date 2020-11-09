@@ -142,13 +142,19 @@ Finally, we'll add the code to perform inference in the `Update()` method.
 
 We need to convert the `processedImage` to a `Tensor` before we can feed it to the model. The `Tensor` constructor requires us to specify the number of channels in the image. We don't need the alpha (transparency) channel so we'll specify `3` for the RGB color channels.
 
+![create_input_tensor](\images\barracuda-posenet-tutorial\create_input_tensor.png)
+
 ### Execute the Model
 
 We'll use the [`engine.Execute()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_) method to perform inference. This method takes in the input Tensor and schedules the network execution.
 
+![execute_model](\images\barracuda-posenet-tutorial\execute_model.png)
+
 ### Release Input Tensor Resources
 
 We'll need to manually release the allocated resources for the Tensor with the `input.Dispose()` method.
+
+![dispose_input_tensor](\images\barracuda-posenet-tutorial\dispose_input_tensor.png)
 
 Here is the revised `Update()` method.
 
