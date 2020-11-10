@@ -17,21 +17,37 @@ search_exclude: false
 
 ## Create `ProcessOutput()` Method
 
+![processoutput_method_empty](\images\barracuda-posenet-tutorial\processoutput_method_empty.png)
+
 ### Retrieve Output Tenors
 
-
+![update_method_processoutput](\images\barracuda-posenet-tutorial\update_method_processoutput.png)
 
 ## Calculate Scaling Values
 
 ### Calculate Model Stride
 
+![calculate_stride](\images\barracuda-posenet-tutorial\calculate_stride.png)
+
 ### Calculate Image Scale Value
 
+![calculate_image_scale](\images\barracuda-posenet-tutorial\calculate_image_scale.png)
+
 ### Calculate Aspect Ratio Scale Value
+
+![calculate_aspect_ratio_scale](\images\barracuda-posenet-tutorial\calculate_aspect_ratio_scale.png)
+
+![calculate_scaling_values](\images\barracuda-posenet-tutorial\calculate_scaling_values.png)
 
 
 
 ## Locate Key Point Indices
+
+![locateKeyPointIndex_method](\images\barracuda-posenet-tutorial\locateKeyPointIndex_method.png)
+
+
+
+![processOutput_locateIndices](\images\barracuda-posenet-tutorial\processOutput_locateIndices.png)
 
 
 
@@ -41,9 +57,13 @@ search_exclude: false
 
 ## Calculate Key Point Positions
 
+![calculate_position](\images\barracuda-posenet-tutorial\calculate_position.png)
+
+
+
 ### Store Key Point Positions
 
-
+![store_position](\images\barracuda-posenet-tutorial\store_position.png)
 
 
 
