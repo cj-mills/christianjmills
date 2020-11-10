@@ -17,6 +17,12 @@ search_exclude: false
 
 ## Create `ProcessOutput()` Method
 
+### Create `numKeypoints` Variable
+
+### Create `keypointLocations` Variable
+
+
+
 ![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\numKeyPoints_and_keypointLocations.png)
 
 
