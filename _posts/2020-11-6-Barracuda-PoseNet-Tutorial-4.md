@@ -10,11 +10,10 @@ search_exclude: false
 
 ### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html) [Part 2.5](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html)
 
-* [Create `ProcessOutput()` Method](#create-processoutput-method)
+* [Create ProcessOutput() Method](#create-processoutput-method)
 * [Calculate Scaling Values](#calculate-scaling-values)
 * [Locate Key Point Indices](#locate-key-point-indices)
-* [Calculate the Key Point Positions](#calculate-the-key-point-positions)
-* [Store the Key Point Positions](#store-the-key-point-positions)
+* [Calculate Key Point Positions](#calculate-key-point-positions)
 
 ## Create `ProcessOutput()` Method
 
@@ -40,11 +39,9 @@ search_exclude: false
 
 
 
-## Calculate the Key Point Positions
+## Calculate Key Point Positions
 
-
-
-## Store the Key Point Positions
+### Store Key Point Positions
 
 
 
