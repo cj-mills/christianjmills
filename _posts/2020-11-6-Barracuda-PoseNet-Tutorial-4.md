@@ -17,6 +17,10 @@ search_exclude: false
 
 ## Create `ProcessOutput()` Method
 
+![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\numKeyPoints_and_keypointLocations.png)
+
+
+
 ![processoutput_method_empty](\images\barracuda-posenet-tutorial\processoutput_method_empty.png)
 
 ### Retrieve Output Tenors
