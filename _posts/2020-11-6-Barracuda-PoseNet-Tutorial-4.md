@@ -63,7 +63,7 @@ search_exclude: false
 
 ### Store Key Point Positions
 
-![store_position](\images\barracuda-posenet-tutorial\store_position.png)
+![store_position](\images\barracuda-posenet-tutorial\store_position_2.png)
 
 
 
