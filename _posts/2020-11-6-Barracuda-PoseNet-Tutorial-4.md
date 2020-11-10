@@ -10,39 +10,41 @@ search_exclude: false
 
 ### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html) [Part 2.5](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html)
 
-* [Process the Output](#process-the-output)
+* [Create `ProcessOutput()` Method](#create-processoutput-method)
+* [Calculate Scaling Values](#calculate-scaling-values)
+* [Locate Key Point Indices](#locate-key-point-indices)
+* [Calculate the Key Point Positions](#calculate-the-key-point-positions)
+* [Store the Key Point Positions](#store-the-key-point-positions)
 
-## Get the Output Tenors
+## Create `ProcessOutput()` Method
 
-
-
-## Process the Output
-
-### Calculate the Stride
-
-
-
-### Get `videoTexture` Dimensions
+### Retrieve Output Tenors
 
 
 
-### Calculate Scaling Values
+## Calculate Scaling Values
+
+### Calculate Model Stride
+
+### Calculate Image Scale Value
+
+### Calculate Aspect Ratio Scale Value
 
 
 
-### Locate Key Point Indices
+## Locate Key Point Indices
 
 
 
-#### Another Way
+### Another Way
 
 
 
-### Calculate the Key Point Positions
+## Calculate the Key Point Positions
 
 
 
-### Store the Key Point Positions
+## Store the Key Point Positions
 
 
 
