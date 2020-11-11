@@ -17,9 +17,11 @@ search_exclude: false
 
 ## Create `ProcessOutput()` Method
 
-The post processing steps will be handled in a new method called `ProcessOutput()`. The method will take in the output `Tensors` from the `predictionLayer` and the `offsetsLayer`. Before filling out the function, we need to create a new constant and a new variable.
+The post processing steps will be handled in a new method called `ProcessOutput()`. The method will take in the output `Tensors` from the `predictionLayer` and the `offsetsLayer`. 
 
-![update_method_processoutput](\images\barracuda-posenet-tutorial\update_method_processoutput.png)
+![processoutput_method_empty](\images\barracuda-posenet-tutorial\processoutput_method_empty.png)
+
+Before filling out the function, we need to create a new constant and a new variable.
 
 ### Create `numKeypoints` Constant
 
