@@ -19,7 +19,7 @@ search_exclude: false
 
 The post processing steps will be handled in a new method. We'll name the method `ProcessOutput` and have it take in the output `Tensors` from the `predictionLayer` and the `offsetsLayer`. Before defining the function, we need to create two new variables.
 
-### Create `numKeypoints` Variable
+### Create `numKeypoints` Constant
 
 The PoseNet model estimates the 2D locations of `17` key points on a human body.
 
@@ -43,7 +43,7 @@ The PoseNet model estimates the 2D locations of `17` key points on a human body.
 | 15    | Left Ankle     |
 | 16    | Right Ankle    |
 
-Since the number of key points never changes, we'll store it in a constant `int` variable. Name the variable `numKeypoints` and set the value to `17`.
+Since the number of key points never changes, we'll store it in an `int` constant. Name the constant `numKeypoints` and set the value to `17`.
 
 ### Create `keypointLocations` Variable
 
