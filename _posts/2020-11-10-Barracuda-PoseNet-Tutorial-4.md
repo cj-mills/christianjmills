@@ -17,9 +17,11 @@ search_exclude: false
 
 ## Create `ProcessOutput()` Method
 
+The post processing steps will be handled in a new method. We'll name the method `ProcessOutput` and have it take in the output `Tensors` from the `predictionLayer` and the ` offsetsLayer`. Before defining the function, we need to create two new variables.
+
 ### Create `numKeypoints` Variable
 
-The PoseNet model estimates the locations of `17` key points on a human body.
+The PoseNet model estimates the 2D locations of `17` key points on a human body.
 
 | Index | Name           |
 | ----- | -------------- |
@@ -41,19 +43,13 @@ The PoseNet model estimates the locations of `17` key points on a human body.
 | 15    | Left Ankle     |
 | 16    | Right Ankle    |
 
-
-
-Create a new constant `int` variable to store the number of key points estimated by the PoseNet model. We'll name the variable `numKeypoints` and set the value to `17`.
-
-
-
-
-
-
+Since the number of key points never changes, we'll store it in a constant `int` variable. Name the variable `numKeypoints` and set the value to `17`.
 
 ### Create `keypointLocations` Variable
 
+We'll also create a variable to store the processed output from the model. This variable will store the `(X,Y)` coordinates for each key point. For this tutorial, the coordinates will be scaled to the original resolution. In our case, the original resolution is `1920x1080`.
 
+We'll also store confidence values associated with the coordinates. We want to store the confidence values because the model will estimate locations for each key point even if there isn't a human in the input image. In such situations, the confidence values will likely be quite low. We can use this information to decide whether to ignore the latest estimated locations.
 
 ![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\numKeyPoints_and_keypointLocations.png)
 
