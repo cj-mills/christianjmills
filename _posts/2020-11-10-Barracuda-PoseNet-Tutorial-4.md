@@ -17,7 +17,7 @@ search_exclude: false
 
 ## Create `ProcessOutput()` Method
 
-The post processing steps will be handled in a new method. We'll name the method `ProcessOutput` and have it take in the output `Tensors` from the `predictionLayer` and the ` offsetsLayer`. Before defining the function, we need to create two new variables.
+The post processing steps will be handled in a new method. We'll name the method `ProcessOutput` and have it take in the output `Tensors` from the `predictionLayer` and the `offsetsLayer`. Before defining the function, we need to create two new variables.
 
 ### Create `numKeypoints` Variable
 
