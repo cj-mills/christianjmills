@@ -47,9 +47,9 @@ Since the number of key points never changes, we'll store it in an `int` constan
 
 ### Create `keypointLocations` Variable
 
-We'll also create a variable to store the processed output from the model. This variable will store the `(X,Y)` coordinates for each key point. For this tutorial, the coordinates will be scaled to the original resolution. In our case, the original resolution is `1920x1080`.
+The processed output from the model will be stored in a new variable called `keypointLocations`. This variable will contain the `(X,Y)` coordinates for each key point. For this tutorial, the coordinates will be scaled to the original resolution. In our case, the original resolution is `1920x1080`.
 
-We'll also store the confidence values associated with the coordinates. We want to store the confidence values because the model will estimate locations for each key point even if there isn't a human in the input image. In such situations, the confidence values will likely be quite low. We can decide how to handle the latest estimated locations based on a confidence threshold that we pick.
+This variable will also store the confidence values associated with the coordinates. We want to store the confidence values because the model will estimate locations for each key point even if there isn't a human in the input image. In such situations, the confidence values will likely be quite low. We can decide how to handle the latest estimated locations based on a confidence threshold that we pick.
 
 ![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\numKeyPoints_and_keypointLocations.png)
 
