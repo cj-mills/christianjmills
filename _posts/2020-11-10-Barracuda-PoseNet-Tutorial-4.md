@@ -17,7 +17,9 @@ search_exclude: false
 
 ## Create `ProcessOutput()` Method
 
-The post processing steps will be handled in a new method called `ProcessOutput`. The method will take in the output `Tensors` from the `predictionLayer` and the `offsetsLayer`. Before defining the function, we need to create a new constant and a new variable.
+The post processing steps will be handled in a new method called `ProcessOutput()`. The method will take in the output `Tensors` from the `predictionLayer` and the `offsetsLayer`. Before filling out the function, we need to create a new constant and a new variable.
+
+![update_method_processoutput](\images\barracuda-posenet-tutorial\update_method_processoutput.png)
 
 ### Create `numKeypoints` Constant
 
@@ -62,6 +64,8 @@ There are many ways we can store this information. For simplicity, we'll stick w
 ![processoutput_method_empty](\images\barracuda-posenet-tutorial\processoutput_method_empty.png)
 
 ### Retrieve Output Tenors
+
+Call `ProcessOutput()` after `engine.Execute(input)` in the `Update()`  method. We'll use the [`engine.PeekOutput()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_PeekOutput_System_String_) method to get a reference to the output `Tensors` from the model. Since they are just references, we don't need to manually dispose of them.
 
 ![update_method_processoutput](\images\barracuda-posenet-tutorial\update_method_processoutput.png)
 
