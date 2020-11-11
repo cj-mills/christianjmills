@@ -19,6 +19,40 @@ search_exclude: false
 
 ### Create `numKeypoints` Variable
 
+The PoseNet model estimates the location of `17` key points on a body. Here is a list of them.
+
+
+
+| Index | Name           |
+| ----- | -------------- |
+| 0     | Nose           |
+| 1     | Left Eye       |
+| 2     | Right Eye      |
+| 3     | Left Ear       |
+| 4     | Right Ear      |
+| 5     | Left Shoulder  |
+| 6     | Right Shoulder |
+| 7     | Left Elbow     |
+| 8     | Right Elbow    |
+| 9     | Left Wrist     |
+| 10    | Right Wrist    |
+| 11    | Left Hip       |
+| 12    | Right Hip      |
+| 13    | Left Knee      |
+| 14    | Right Knee     |
+| 15    | Left Ankle     |
+| 16    | Right Ankle    |
+
+
+
+Create a new constant `int` variable to store the number of key points estimated by the PoseNet model. We'll name the variable `numKeypoints` and set the value to `17`.
+
+
+
+
+
+
+
 ### Create `keypointLocations` Variable
 
 
