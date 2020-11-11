@@ -51,7 +51,7 @@ The processed output from the model will be stored in a new variable called `key
 
 This variable will also store the confidence values associated with the coordinates. The model predicts key point locations even when there isn't a human in the input image. In such situations, the confidence values will likely be quite low. We can decide how to handle the latest coordinates based on a confidence threshold that we pick.
 
-There is a variety of ways we can store this information. For this tutorial, we'll stick with an array of arrays. The array will have `17` elements. Each element contains the location information for the key point that matches their index.   
+There are many ways we can store this information. For simplicity, we'll stick with an array of arrays. The array will have `17` elements. Each element will contain the location information for the key point that matches their index.
 
 ![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\numKeyPoints_and_keypointLocations.png)
 
