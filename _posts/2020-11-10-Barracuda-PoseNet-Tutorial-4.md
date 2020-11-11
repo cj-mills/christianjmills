@@ -19,9 +19,7 @@ search_exclude: false
 
 ### Create `numKeypoints` Variable
 
-The PoseNet model estimates the location of `17` key points on a body. Here is a list of them.
-
-
+The PoseNet model estimates the locations of `17` key points on a human body.
 
 | Index | Name           |
 | ----- | -------------- |
