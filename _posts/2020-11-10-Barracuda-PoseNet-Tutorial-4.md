@@ -45,6 +45,8 @@ The PoseNet model estimates the 2D locations of `17` key points on a human body.
 
 Since the number of key points never changes, we'll store it in an `int` constant. Name the constant `numKeypoints` and set the value to `17`.
 
+![numKeypoints_constant](\images\barracuda-posenet-tutorial\numKeypoints_constant.png)
+
 ### Create `keypointLocations` Variable
 
 The processed output from the model will be stored in a new variable called `keypointLocations`. This variable will contain the `(X,Y)` coordinates for each key point. For this tutorial, the coordinates will be scaled to the original resolution of `1920x1080`.
@@ -53,7 +55,7 @@ This variable will also store the confidence values associated with the coordina
 
 There are many ways we can store this information. For simplicity, we'll stick with an array of arrays. The array will have `17` elements. Each element will contain the location information for the key point that matches their index.
 
-![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\numKeyPoints_and_keypointLocations.png)
+![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\keypointLocations_variable.png)
 
 ### Create Method Signature
 
