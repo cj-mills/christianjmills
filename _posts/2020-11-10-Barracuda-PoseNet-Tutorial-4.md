@@ -109,17 +109,15 @@ Now we can iterate through each of the heatmaps and determine the location of th
 
 For each heatmap, we'll first need to locate the index with the  highest confidence value. This indicates what region of the image the model thinks is most likely to contain that key point. We'll create a separate method to handle this. 
 
-The new method will be called `LocateKeyPointIndex()` and take in the `heatmaps` and `offsets` tensors along with the current `keypointIndex`. It will return a `Tuple` containing the heatmap index, the associated offset vector, and the confidence value at that heatmap index. 
+The new method will be called `LocateKeyPointIndex()` and take in the `heatmaps` and `offsets` tensors along with the current `keypointIndex`. It will return a [`Tuple`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples) containing the `(X,Y)` coordinates from the heatmap index, the associated offset vector, and the confidence value at the heatmap index.
 
 ![locateKeyPointIndex_method](\images\barracuda-posenet-tutorial\locateKeyPointIndex_method.png)
 
+#### Call the Method
 
+We'll call the `LocateKeyPointIndex()` at the start of each iteration through the for loop in `ProcessOutput()`.
 
 ![processOutput_locateIndices](\images\barracuda-posenet-tutorial\processOutput_locateIndices.png)
-
-
-
-#### Another Way
 
 
 
