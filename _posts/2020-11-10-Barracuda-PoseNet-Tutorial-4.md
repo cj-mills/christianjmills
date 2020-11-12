@@ -115,11 +115,9 @@ The new method will be called `LocateKeyPointIndex()` and take in the `heatmaps`
 
 #### Call the Method
 
-We'll call the `LocateKeyPointIndex()` at the start of each iteration through the for loop in `ProcessOutput()`.
+We'll call `LocateKeyPointIndex()` at the start of each iteration through the for loop in `ProcessOutput()`.
 
-![processOutput_locateIndices](\images\barracuda-posenet-tutorial\processOutput_locateIndices.png)
-
-
+![processOutput_locateIndices](\images\barracuda-posenet-tutorial\processOutput_locateIndices_2.png)
 
 ### Calculate Key Point Positions
 
