@@ -83,23 +83,19 @@ Since we know the stride for this model, we could make it a constant value. Howe
 
 ResNet50 Stride 16: ([download](https://drive.google.com/file/d/1dlsWlBpjgD2AuZgi-qhZs-1IV-T98iLM/view?usp=sharing))
 
-![calculate_stride](\images\barracuda-posenet-tutorial\calculate_stride.png)
+![stride](\images\barracuda-posenet-tutorial\stride.png)
 
 ### Calculate Image Scale Value
 
 After scaling the output from the heatmaps back to the `inputImage` resolution, we'll need to scale the output up to the source resolution. We'll use the dimensions of `videoTexture` to calculate this scale.
 
-![calculate_image_scale](\images\barracuda-posenet-tutorial\calculate_image_scale.png)
+![scale](\images\barracuda-posenet-tutorial\scale.png)
 
 ### Calculate Aspect Ratio Scale Value
 
 As I noted in [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html#resize-the-image), we need to compensate for the change in aspect ratio that results from resizing the image. We can use the dimensions of the `videoTexture` to stretch the output to the original aspect ratio. 
 
-![calculate_aspect_ratio_scale](\images\barracuda-posenet-tutorial\calculate_aspect_ratio_scale.png)
-
-### The method so far:
-
-![calculate_scaling_values](\images\barracuda-posenet-tutorial\calculate_scaling_values.png)
+![unsqueezeScale](\images\barracuda-posenet-tutorial\unsqueezeScale.png)
 
 
 
