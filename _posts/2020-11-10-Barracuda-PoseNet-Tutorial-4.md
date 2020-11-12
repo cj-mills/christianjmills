@@ -99,7 +99,13 @@ As I noted in [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Bar
 
 
 
-## Locate Key Point Indices
+## Iterate Through Heatmaps
+
+Now we can iterate through each of the heatmaps and determine the location of the associated key points.
+
+![iterate_through_heatmaps](\images\barracuda-posenet-tutorial\iterate_through_heatmaps.png)
+
+### Locate Key Point Indices
 
 ![locateKeyPointIndex_method](\images\barracuda-posenet-tutorial\locateKeyPointIndex_method.png)
 
@@ -109,17 +115,17 @@ As I noted in [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Bar
 
 
 
-### Another Way
+#### Another Way
 
 
 
-## Calculate Key Point Positions
+### Calculate Key Point Positions
 
 ![calculate_position](\images\barracuda-posenet-tutorial\calculate_position.png)
 
 
 
-### Store Key Point Positions
+#### Store Key Point Positions
 
 ![store_position](\images\barracuda-posenet-tutorial\store_position_2.png)
 
