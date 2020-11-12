@@ -107,6 +107,10 @@ Now we can iterate through each of the heatmaps and determine the location of th
 
 ### Locate Key Point Indices
 
+For each heatmap we'll first need to locate the index with the  highest confidence value. This indicates what region of the image the model thinks is most likely to contain that key point. We'll create a separate method to handle this. The new method will be called `LocateKeyPointIndex()` and take in the heatmap and offset tensors.
+
+
+
 ![locateKeyPointIndex_method](\images\barracuda-posenet-tutorial\locateKeyPointIndex_method.png)
 
 
