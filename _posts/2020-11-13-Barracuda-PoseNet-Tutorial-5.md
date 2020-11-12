@@ -1,5 +1,5 @@
 ---
-title: Barracuda PoseNet Tutorial Pt. 4
+title: Barracuda PoseNet Tutorial Pt. 5
 layout: post
 toc: false
 description: This post covers how to map the key point locations to a pose skeleton.
