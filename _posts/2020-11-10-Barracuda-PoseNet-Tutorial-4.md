@@ -79,9 +79,7 @@ The size of the heatmaps are dependent on both the size of the input image and a
 
 Since we know the stride for this model, we could make it a constant value. However, calculating it is an easy way to make sure. This also makes it less of a hassle when switching between models with different stride values. 
 
-**Note:** Here are download links to variants of the model with a stride of 8 and a stride of 16 if you want to experiment.
-
-Stride 16: [link](https://drive.google.com/file/d/1dlsWlBpjgD2AuZgi-qhZs-1IV-T98iLM/view?usp=sharing)
+ResNet50 Stride 16: ([download](https://drive.google.com/file/d/1dlsWlBpjgD2AuZgi-qhZs-1IV-T98iLM/view?usp=sharing))
 
 ![calculate_stride](\images\barracuda-posenet-tutorial\calculate_stride.png)
 
