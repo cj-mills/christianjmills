@@ -127,6 +127,8 @@ Now we can calculate the estimated key point locations relative to the source `v
 
 #### Store Key Point Positions
 
+Finally, we'll store the location data for the current key point at the corresponding index in the `keypointLocations` array.
+
 ![store_position](\images\barracuda-posenet-tutorial\store_position_2.png)
 
 
