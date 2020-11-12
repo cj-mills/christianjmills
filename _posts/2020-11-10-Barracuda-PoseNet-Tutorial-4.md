@@ -109,7 +109,7 @@ Now we can iterate through each of the heatmaps and determine the location of th
 
 For each heatmap, we'll first need to locate the index with the  highest confidence value. This indicates what region of the image the model thinks is most likely to contain that key point. We'll create a separate method to handle this. 
 
-The new method will be called `LocateKeyPointIndex()` and take in the `heatmaps` and `offsets` tensors along with the current `keypointIndex`. It will return a [`Tuple`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples) containing the `(X,Y)` coordinates from the heatmap index, the associated offset vector, and the confidence value at the heatmap index.
+The new method will be called `LocateKeyPointIndex()` and take in the `heatmaps` and `offsets` tensors along with the current `keypointIndex`. It will return a [`Tuple`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples) containing the `(x,y)` coordinates from the heatmap index, the associated offset vector, and the confidence value at the heatmap index.
 
 ![locateKeyPointIndex_method](\images\barracuda-posenet-tutorial\locateKeyPointIndex_method.png)
 
@@ -121,9 +121,9 @@ We'll call `LocateKeyPointIndex()` at the start of each iteration through the fo
 
 ### Calculate Key Point Positions
 
+Now we can calculate the estimated key point locations relative to the source `videoTexture`. We'll first extract the output  from the `Tuple` returned by `LocateKeyPointIndex()`. The offset vectors are based on the `inputImage` resolution so we'll scale the `(x,y)` coordinates by the `stride` before adding them. We'll then scale the coordinates up to the source `videoTexture`. Only the X-axis position is scaled by the `unsqueezeValue`.
+
 ![calculate_position](\images\barracuda-posenet-tutorial\calculate_position.png)
-
-
 
 #### Store Key Point Positions
 
