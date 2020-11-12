@@ -91,7 +91,7 @@ For most input resolutions this will yield a value that is slightly above the ac
 
 ### Calculate Image Scale
 
-After scaling the output from the heatmaps back to the `inputImage` resolution, we'll need to scale the output up to the source resolution. We'll use the dimensions of `videoTexture` to calculate this scale.
+After scaling the output back to the `inputImage` resolution, we'll need to scale the output up to the source resolution. We can use the dimensions of `videoTexture` to calculate this scale.
 
 ![scale](\images\barracuda-posenet-tutorial\scale.png)
 
