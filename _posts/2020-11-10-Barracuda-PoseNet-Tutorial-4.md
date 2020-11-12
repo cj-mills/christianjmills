@@ -85,13 +85,13 @@ ResNet50 Stride 16: ([download](https://drive.google.com/file/d/1dlsWlBpjgD2AuZg
 
 ![stride](\images\barracuda-posenet-tutorial\stride.png)
 
-### Calculate Image Scale Value
+### Calculate Image Scale
 
 After scaling the output from the heatmaps back to the `inputImage` resolution, we'll need to scale the output up to the source resolution. We'll use the dimensions of `videoTexture` to calculate this scale.
 
 ![scale](\images\barracuda-posenet-tutorial\scale.png)
 
-### Calculate Aspect Ratio Scale Value
+### Calculate Aspect Ratio Scale
 
 As I noted in [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html#resize-the-image), we need to compensate for the change in aspect ratio that results from resizing the image. We can use the dimensions of the `videoTexture` to stretch the output to the original aspect ratio. 
 
