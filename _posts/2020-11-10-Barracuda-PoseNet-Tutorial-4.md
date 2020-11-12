@@ -123,7 +123,7 @@ We'll call `LocateKeyPointIndex()` at the start of each iteration through the fo
 
 Now we can calculate the estimated key point locations relative to the source `videoTexture`. We'll first extract the output  from the `Tuple` returned by `LocateKeyPointIndex()`. The offset vectors are based on the `inputImage` resolution so we'll scale the `(x,y)` coordinates by the `stride` before adding them. We'll then scale the coordinates up to the source `videoTexture`. Only the X-axis position is scaled by the `unsqueezeValue`.
 
-![calculate_position](\images\barracuda-posenet-tutorial\calculate_position.png)
+![calculate_position](\images\barracuda-posenet-tutorial\calculate_position_2.png)
 
 #### Store Key Point Positions
 
