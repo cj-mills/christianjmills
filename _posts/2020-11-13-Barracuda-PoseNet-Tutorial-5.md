@@ -10,9 +10,9 @@ search_exclude: false
 
 ### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html) [Part 2.5](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html) [Part 4](https://christianjmills.com/unity/tutorial/2020/11/12/Barracuda-PoseNet-Tutorial-4.html)
 
-* [Create Pose Skeleton](#create-pose-skeleton)
+* [Create Key Points](#create-key-points)
 
-## Create Pose Skeleton
+## Create Key Points
 
 We'll create the pose skeleton using `GameObjects` rather than altering the `videoTexture`. We need to create a separate `GameObjects` for each of the `17` key points. 
 
@@ -72,6 +72,8 @@ We need to increase the `X` and `Y` values for the `Scale` parameter in the `Ins
 
 ### Change GameObject Material
 
+The default color for the `GameObjects` doesn't stand out much against the background. Apparently, yellow is really easy for humans to spot so we'll go with that.
+
 #### Create Yellow Material
 
 Open the `Materials` folder in the `Assets` window. Right-click an empty space and select `Material` in the the `Create` sub-menu.
@@ -101,3 +103,34 @@ We'll change the `Shader` for the material to `Unlit/Color`.
 Select all the key point objects in `Hierarchy` tab. Then, drag and drop the `Yellow` material into the `Inspector` tab.
 
 ![assign_yellow_material](\images\barracuda-posenet-tutorial\assign_yellow_material.PNG)
+
+
+
+## Map Key Point Locations
+
+Now we can update the positions of the key point objects using the location data obtained from the `PosNet` model.
+
+### Create `keypoints` Variable
+
+Open the `PoseNet` script and add a public `GameObject` array. Name the variable `keypoints`.
+
+![keypoints_variable](\images\barracuda-posenet-tutorial\keypoints_variable.png)
+
+### Assign the Key Point Objects
+
+Select the `PoseEstimator` object in the `Hierarchy` tab. Then, click the small lock icon above the `Inspector` tab. This will lock the current selected object in the `Inspector` tab.
+
+![lock_inspector_2](\images\barracuda-posenet-tutorial\lock_inspector_2.png)
+
+
+
+Make sure the `Size` value for the `Keypoints` variable is set to `0`.
+
+![initialize_keypoints_parameter](\images\barracuda-posenet-tutorial\initialize_keypoints_parameter.png)
+
+Select all the key point objects in the `Hierarchy`. Then, drag and drop them onto the `Keypoints` variable in the `Inspector` tab.
+
+![assign_keypoint_objects](\images\barracuda-posenet-tutorial\assign_keypoint_objects.PNG)
+
+
+
