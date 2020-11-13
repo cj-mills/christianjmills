@@ -108,7 +108,7 @@ Select all the key point objects in `Hierarchy` tab. Then, drag and drop the `Ye
 
 ## Map Key Point Locations
 
-Now we can update the positions of the key point objects using the location data obtained from the `PosNet` model.
+Now we can update the positions of the key point objects using the location data obtained from the `PoseNet` model. Ordinarily, we would implement this in a separate `C#` script. This script would access the `keypointLocations[][]` array in the `PoseNet` script. However, we'll do it in the `PoseNet` script to keep things simple. 
 
 ### Create `keypoints` Variable
 
@@ -132,5 +132,12 @@ Select all the key point objects in the `Hierarchy`. Then, drag and drop them on
 
 ![assign_keypoint_objects](\images\barracuda-posenet-tutorial\assign_keypoint_objects.PNG)
 
+Go ahead and unlock the `Inspector` tab by clicking the lock icon again.
+
+### Create `minConfidence` Variable
+
+Next, we'll add a public `int` variable. This variable will be the confidence threshold for deciding whether or not to display a given key point object. Name the variable `minConfidence` and set the default value to 80. You can add a `Range` attribute to create a slider in the `Inspector` tab. Set the range to `[0, 100]`.
 
 
+
+ ![minConfidence_variable](..\images\barracuda-posenet-tutorial\minConfidence_variable.png)
