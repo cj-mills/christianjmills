@@ -72,17 +72,26 @@ We need to increase the `X` and `Y` values for the `Scale` parameter in the `Ins
 
 ### Change GameObject Material
 
+#### Create Yellow Material
+
 Open the `Materials` folder in the `Assets` window. Right-click an empty space and select `Material` in the the `Create` sub-menu.
-
-
 
 ![create_material](\images\barracuda-posenet-tutorial\create_material.PNG)
 
-
-
 Name the material `Yellow` since that's the color we'll be giving it.
+
+#### Change Material Color
 
 With the material selected click the small white box in the `Inspector` tab.
 
 ![select_material_color](\images\barracuda-posenet-tutorial\select_material_color_3.png)
 
+Set the value for `B` to `0` in the popup `Color` window. This will change the color to pure yellow.
+
+![change_material_color_to_yellow](\images\barracuda-posenet-tutorial\change_material_color_to_yellow.PNG)
+
+#### Make Material Unlit
+
+We'll change the `Shader` for the material to `Unlit/Color`.
+
+![change_material_shader_to_unlit_color](\images\barracuda-posenet-tutorial\change_material_shader_to_unlit_color.PNG)
