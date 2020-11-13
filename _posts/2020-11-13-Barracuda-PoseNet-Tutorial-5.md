@@ -61,3 +61,28 @@ Rename the `Sphere` objects according to the table below.
 #### Result
 
 ![keypoint_gameobjects](\images\barracuda-posenet-tutorial\keypoint_gameobjects.PNG)
+
+### Resize GameObjects
+
+Next, we'll make the key point objects larger so that they're easier to see. Select the `Nose` object in the `Hierachy`. Then,   hold Shift and click `RightAnkle` to select all 17 objects at once.
+
+![select_all_keypoint_objects](\images\barracuda-posenet-tutorial\select_all_keypoint_objects.PNG)
+
+We need to increase the `X` and `Y` values for the `Scale` parameter in the `Inspector` table. I'm setting them to 10, but use whatever size works best for you.
+
+### Change GameObject Material
+
+Open the `Materials` folder in the `Assets` window. Right-click an empty space and select `Material` in the the `Create` sub-menu.
+
+
+
+![create_material](\images\barracuda-posenet-tutorial\create_material.PNG)
+
+
+
+Name the material `Yellow` since that's the color we'll be giving it.
+
+With the material selected click the small white box in the `Inspector` tab.
+
+![select_material_color](\images\barracuda-posenet-tutorial\select_material_color_3.png)
+
