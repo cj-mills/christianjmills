@@ -95,3 +95,9 @@ Set the value for `B` to `0` in the popup `Color` window. This will change the c
 We'll change the `Shader` for the material to `Unlit/Color`.
 
 ![change_material_shader_to_unlit_color](\images\barracuda-posenet-tutorial\change_material_shader_to_unlit_color.PNG)
+
+#### Assign Yellow Material
+
+Select all the key point objects in `Hierarchy` tab. Then, drag and drop the `Yellow` material into the `Inspector` tab.
+
+![assign_yellow_material](\images\barracuda-posenet-tutorial\assign_yellow_material.PNG)
