@@ -36,7 +36,28 @@ Right-click the `Key Points` object and select `Sphere` under `3D Object`. This 
 
 Select the new `Sphere` object and press Ctrl-d to duplicate it. We'll need `16` duplicates for the remaining key points.
 
-Rename the `Sphere` objects according to the image below.
+Rename the `Sphere` objects according to the table below.
+
+| Index | Name           |
+| ----- | -------------- |
+| 0     | Nose           |
+| 1     | Left Eye       |
+| 2     | Right Eye      |
+| 3     | Left Ear       |
+| 4     | Right Ear      |
+| 5     | Left Shoulder  |
+| 6     | Right Shoulder |
+| 7     | Left Elbow     |
+| 8     | Right Elbow    |
+| 9     | Left Wrist     |
+| 10    | Right Wrist    |
+| 11    | Left Hip       |
+| 12    | Right Hip      |
+| 13    | Left Knee      |
+| 14    | Right Knee     |
+| 15    | Left Ankle     |
+| 16    | Right Ankle    |
+
+#### Result
 
 ![keypoint_gameobjects](\images\barracuda-posenet-tutorial\keypoint_gameobjects.PNG)
-
