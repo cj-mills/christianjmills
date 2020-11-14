@@ -229,11 +229,13 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 
 
+### Create `RenderSkeleton()` Method
 
 
 
 
 
+![renderSkeleton_method](\images\barracuda-posenet-tutorial\renderSkeleton_method.png)
 
 
 
