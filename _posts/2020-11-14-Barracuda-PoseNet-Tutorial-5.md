@@ -4,7 +4,7 @@ layout: post
 toc: false
 description: This post covers how to map the key point locations to GameObjects.
 categories: [unity, tutorial]
-hide: true
+hide: false
 search_exclude: false
 ---
 
