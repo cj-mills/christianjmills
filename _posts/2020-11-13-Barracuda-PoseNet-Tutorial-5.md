@@ -217,7 +217,7 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 
 
-![initializeLine_method](..\images\barracuda-posenet-tutorial\initializeLine_method.png)
+![initializeLine_method](\images\barracuda-posenet-tutorial\initializeLine_method.png)
 
 
 
@@ -225,7 +225,7 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 
 
-![initializeSkeleton_method](..\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
+![initializeSkeleton_method](\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
 
 
 
