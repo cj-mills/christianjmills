@@ -166,7 +166,7 @@ The last step for creating our pose skeleton is to draw lines connecting the app
 
 #### Create `keypoints` Variable
 
-We need to access the key point objects so make another `GameObject` array just like in the `PoseNet` script.
+We need to access the key point objects so make another public `GameObject` array just like in the `PoseNet` script.
 
 ![keypoints_variable_drawSkeleton](\images\barracuda-posenet-tutorial\keypoints_variable_drawSkeleton.png)
 
@@ -214,7 +214,7 @@ We need initialize the `lines`, `lineRenderers`, and `jointPairs` variables in t
 
 #### Create `InitializeLine()` Method
 
-We'll create a new method to set up each of the lines in the pose skeleton. The method will create an empty `GameObject` for a line and add a `LineRenderer` component to it. We won't set the start and end positions for the line as all none key points would have updated yet.
+We'll create a new method to set up each of the lines in the pose skeleton. The method will create an empty `GameObject` for a line and add a `LineRenderer` component to it. We won't set the start and end positions as none of the key points would have updated yet.
 
 ![initializeLine_method](\images\barracuda-posenet-tutorial\initializeLine_method.png)
 
@@ -222,7 +222,7 @@ We'll create a new method to set up each of the lines in the pose skeleton. The 
 
 #### Create `InitializeSkeleton()` Method
 
-Next we need to call `InitializeLine()` in a new method for each part of the pose skeleton. We'll give each region of the skeleton a different color. 
+Next we need to call `InitializeLine()` in a new method for each part of the pose skeleton. We'll give each region of the skeleton a different color.
 
 ![initializeSkeleton_method](\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
 
@@ -252,7 +252,28 @@ We'll render the skeleton lines in the `LateUpdate()` method instead of `Update(
 
 
 
+### Create `SkeletonRenderer`
+
+We'll attach the `DrawSkeleton` script to a new `GameObject`. Create an empty `GameObject` in the `Hierarchy` tab and name it `SkeletonRenderer`.
+
+![create_skeletonRenderer_object](\images\barracuda-posenet-tutorial\create_skeletonRenderer_object.PNG)
 
 
 
+#### Attach the `DrawSkeleton` Script
 
+With `SkeletonRenderer` selected in the `Hierarchy`, drag and drop the `DrawSkeleton` script into the `Inspector` tab.
+
+![skeletonRenderer_inspector_empty](\images\barracuda-posenet-tutorial\skeletonRenderer_inspector_empty.PNG)
+
+#### Assign Key Points
+
+Drag and drop the key point objects onto the `Keypoints` parameter just like with the `PoseNet` script.
+
+![skeletonRenderer_inspector_full](\images\barracuda-posenet-tutorial\skeletonRenderer_inspector_full.PNG)
+
+## Try it Out
+
+If you press the play button, you should see something like this.
+
+![pose_skeleton_480p_90c](\images\barracuda-posenet-tutorial\pose_skeleton_480p_90c.gif)
