@@ -193,6 +193,59 @@ We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.ht
 
 #### Create `jointPairs` Variable
 
-The last variable will contain pairs of key point indices. These pairs indicate the start and end points for the skeleton lines.
+The next variable will contain pairs of key point indices. These pairs indicate the start and end points for the skeleton lines.
 
 ![jointPairs_variable](\images\barracuda-posenet-tutorial\jointPairs_variable.png)
+
+
+
+#### Create `lineWidth` Variable
+
+Finally, we'll make a variable for the line width in the skeleton.
+
+![lineWidth_variable](\images\barracuda-posenet-tutorial\lineWidth_variable.png)
+
+
+
+
+
+### Create `InitializeLine()` Method
+
+
+
+
+
+
+
+![initializeLine_method](..\images\barracuda-posenet-tutorial\initializeLine_method.png)
+
+
+
+### Create `InitializeSkeleton()` Method
+
+
+
+![initializeSkeleton_method](..\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
