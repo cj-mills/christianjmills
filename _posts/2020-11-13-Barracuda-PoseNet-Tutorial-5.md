@@ -152,3 +152,47 @@ We need to define a new method to update the key point positions. Name the metho
 We'll call the method in `Update()` just after `ProcessOutput()`.
 
 ![call_updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\call_updateKeyPointPositions_method.png)
+
+
+
+## Create `DrawSkeleton` Script
+
+The last step for creating our pose skeleton is to draw lines connecting the appropriate key points. We'll implement this step in a new `C#` script called `DrawSkeleton`.
+
+![create_drawSkeleton_script](\images\barracuda-posenet-tutorial\create_drawSkeleton_script.PNG)
+
+
+
+### Define Variables
+
+We'll need to create a few variables in the `DrawSkeleton` script so open it up in your editor.
+
+#### Create `keypoints` Variable
+
+We need to access the key point objects so make another `GameObject` array just like in the `PoseNet` script.
+
+![keypoints_variable_drawSkeleton](\images\barracuda-posenet-tutorial\keypoints_variable_drawSkeleton.png)
+
+
+
+#### Create `lines` Variable
+
+Next create a private `GameObject` array to hold the lines themselves. Name the variable `lines`.
+
+![lines_variable](\images\barracuda-posenet-tutorial\lines_variable.png)
+
+
+
+#### Create `lineRenderers` Variable
+
+We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.html) components to draw the skeleton.
+
+![lineRenderers_variable](\images\barracuda-posenet-tutorial\lineRenderers_variable.png)
+
+
+
+#### Create `jointPairs` Variable
+
+The last variable will contain pairs of key point indices. These pairs indicate the start and end points for the skeleton lines.
+
+![jointPairs_variable](\images\barracuda-posenet-tutorial\jointPairs_variable.png)
