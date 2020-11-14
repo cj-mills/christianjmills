@@ -144,10 +144,10 @@ Next, we'll add a public `int` variable. This variable will be the confidence th
 
 We need to define a new method to update the key point positions. Name the method `UpdateKeyPointPositions()`.
 
-![updateKeyPointPositions_method](..\images\barracuda-posenet-tutorial\updateKeyPointPositions_method.png)
+![updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\updateKeyPointPositions_method.png)
 
 ### Call the Method
 
 We'll call the method in `Update()` just after `ProcessOutput()`.
 
-![call_updateKeyPointPositions_method](..\images\barracuda-posenet-tutorial\call_updateKeyPointPositions_method.png)
+![call_updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\call_updateKeyPointPositions_method.png)
