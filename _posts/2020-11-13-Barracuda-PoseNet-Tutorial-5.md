@@ -198,17 +198,23 @@ The next variable will contain pairs of key point indices. These pairs indicate 
 
 #### Create `lineWidth` Variable
 
-Finally, we'll make a variable for the line width in the skeleton.
+The last variable we'll make defines the line width for the skeleton lines.
 
 ![lineWidth_variable](\images\barracuda-posenet-tutorial\lineWidth_variable.png)
 
 
 
+#### Initialize Variables
+
+We need initialize the `lines`, `lineRenderers`, and `jointPairs` variables in the `Start()` method.
+
+![initialize_drawSkeleton_variables](\images\barracuda-posenet-tutorial\initialize_drawSkeleton_variables.png)
+
 
 
 #### Create `InitializeLine()` Method
 
-
+We'll create a new method to set up each of the lines in the pose skeleton. The method will create an empty `GameObject` for a line and add a `LineRenderer` component to it. We won't set the start and end positions for the line as all none key points would have updated yet.
 
 ![initializeLine_method](\images\barracuda-posenet-tutorial\initializeLine_method.png)
 
@@ -216,7 +222,7 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 #### Create `InitializeSkeleton()` Method
 
-
+Next we need to call `InitializeLine()` in a new method for each part of the pose skeleton. We'll give each region of the skeleton a different color. 
 
 ![initializeSkeleton_method](\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
 
@@ -224,17 +230,25 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 #### Create `RenderSkeleton()` Method
 
-
+The last method we need to define will handle updating the position of the each of the lines in the pose skeleton. The method will iterate through each of the joint pairs and update the start and end positions for the associated `LineRenderer`. We'll only display a given line if both of the key point objects are currently active. 
 
 ![renderSkeleton_method](\images\barracuda-posenet-tutorial\renderSkeleton_method.png)
 
 
 
+#### Call `InitializeSkeleton()` Method
+
+We'll initialize the pose skeleton lines in the `Start()` method.
+
+![call_initializeSkeleton_method](\images\barracuda-posenet-tutorial\call_initializeSkeleton_method.png)
 
 
 
+#### Call `RenderSkeleton()` Method
 
+We'll render the skeleton lines in the `LateUpdate()` method instead of `Update()`. This will ensure the PoseNet model has run for the latest frame before updating the pose skeleton.
 
+![call_renderSkeleton_method](\images\barracuda-posenet-tutorial\call_renderSkeleton_method.png)
 
 
 
