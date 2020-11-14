@@ -10,17 +10,17 @@ search_exclude: false
 
 ### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html) [Part 2.5](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html) [Part 4](https://christianjmills.com/unity/tutorial/2020/11/12/Barracuda-PoseNet-Tutorial-4.html)
 
-* [Draw Pose Skeleton](#draw-pose-skeleton)
+* [Create DrawSkeleton Script](#create-drawskeleton-script)
+* [Create SkeletonRenderer](#create-skeletonrenderer)
+* [Try It Out](#try-it-out)
 
-## Draw Pose Skeleton
-
-### Create `DrawSkeleton` Script
+## Create `DrawSkeleton` Script
 
 The last step for creating our pose skeleton is to draw lines connecting the appropriate key points. We'll implement this step in a new `C#` script called `DrawSkeleton`.
 
 ![create_drawSkeleton_script](\images\barracuda-posenet-tutorial\create_drawSkeleton_script.PNG)
 
-#### Create `keypoints` Variable
+### Create `keypoints` Variable
 
 We need to access the key point objects so make another public `GameObject` array just like in the `PoseNet` script.
 
@@ -28,7 +28,7 @@ We need to access the key point objects so make another public `GameObject` arra
 
 
 
-#### Create `lines` Variable
+### Create `lines` Variable
 
 Next create a private `GameObject` array to hold the lines themselves. Name the variable `lines`.
 
@@ -36,7 +36,7 @@ Next create a private `GameObject` array to hold the lines themselves. Name the 
 
 
 
-#### Create `lineRenderers` Variable
+### Create `lineRenderers` Variable
 
 We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.html) components to draw the skeleton.
 
@@ -44,7 +44,7 @@ We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.ht
 
 
 
-#### Create `jointPairs` Variable
+### Create `jointPairs` Variable
 
 The next variable will contain pairs of key point indices. These pairs indicate the start and end points for the skeleton lines.
 
@@ -52,7 +52,7 @@ The next variable will contain pairs of key point indices. These pairs indicate 
 
 
 
-#### Create `lineWidth` Variable
+### Create `lineWidth` Variable
 
 The last variable we'll make defines the line width for the skeleton lines.
 
@@ -60,7 +60,7 @@ The last variable we'll make defines the line width for the skeleton lines.
 
 
 
-#### Initialize Variables
+### Initialize Variables
 
 We need initialize the `lines`, `lineRenderers`, and `jointPairs` variables in the `Start()` method.
 
@@ -68,7 +68,7 @@ We need initialize the `lines`, `lineRenderers`, and `jointPairs` variables in t
 
 
 
-#### Create `InitializeLine()` Method
+### Create `InitializeLine()` Method
 
 We'll create a new method to set up each of the lines in the pose skeleton. The method will create an empty `GameObject` for a line and add a `LineRenderer` component to it. We won't set the start and end positions as none of the key points would have updated yet.
 
@@ -76,7 +76,7 @@ We'll create a new method to set up each of the lines in the pose skeleton. The 
 
 
 
-#### Create `InitializeSkeleton()` Method
+### Create `InitializeSkeleton()` Method
 
 Next we need to call `InitializeLine()` in a new method for each part of the pose skeleton. We'll give each region of the skeleton a different color.
 
@@ -84,7 +84,7 @@ Next we need to call `InitializeLine()` in a new method for each part of the pos
 
 
 
-#### Create `RenderSkeleton()` Method
+### Create `RenderSkeleton()` Method
 
 The last method we need to define will handle updating the position of the each of the lines in the pose skeleton. The method will iterate through each of the joint pairs and update the start and end positions for the associated `LineRenderer`. We'll only display a given line if both of the key point objects are currently active. 
 
@@ -92,7 +92,7 @@ The last method we need to define will handle updating the position of the each 
 
 
 
-#### Call `InitializeSkeleton()` Method
+### Call `InitializeSkeleton()` Method
 
 We'll initialize the pose skeleton lines in the `Start()` method.
 
@@ -100,7 +100,7 @@ We'll initialize the pose skeleton lines in the `Start()` method.
 
 
 
-#### Call `RenderSkeleton()` Method
+### Call `RenderSkeleton()` Method
 
 We'll render the skeleton lines in the `LateUpdate()` method instead of `Update()`. This will ensure the PoseNet model has run for the latest frame before updating the pose skeleton.
 
@@ -108,7 +108,7 @@ We'll render the skeleton lines in the `LateUpdate()` method instead of `Update(
 
 
 
-### Create `SkeletonRenderer`
+## Create `SkeletonRenderer`
 
 We'll attach the `DrawSkeleton` script to a new `GameObject`. Create an empty `GameObject` in the `Hierarchy` tab and name it `SkeletonRenderer`.
 
@@ -116,19 +116,19 @@ We'll attach the `DrawSkeleton` script to a new `GameObject`. Create an empty `G
 
 
 
-#### Attach the `DrawSkeleton` Script
+### Attach the `DrawSkeleton` Script
 
 With `SkeletonRenderer` selected in the `Hierarchy`, drag and drop the `DrawSkeleton` script into the `Inspector` tab.
 
 ![skeletonRenderer_inspector_empty](\images\barracuda-posenet-tutorial\skeletonRenderer_inspector_empty.PNG)
 
-#### Assign Key Points
+### Assign Key Points
 
 Drag and drop the key point objects onto the `Keypoints` parameter just like with the `PoseNet` script.
 
 ![skeletonRenderer_inspector_full](\images\barracuda-posenet-tutorial\skeletonRenderer_inspector_full.PNG)
 
-## Try it Out
+## Try It Out
 
 If you press the play button, you should see something like this.
 
