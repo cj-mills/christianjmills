@@ -8,7 +8,7 @@ hide: true
 search_exclude: false
 ---
 
-### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html) [Part 2.5](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html) [Part 4](https://christianjmills.com/unity/tutorial/2020/11/12/Barracuda-PoseNet-Tutorial-4.html)
+### Previous: [Part 5](https://christianjmills.com/unity/tutorial/2020/11/14/Barracuda-PoseNet-Tutorial-5.html)
 
 * [Create DrawSkeleton Script](#create-drawskeleton-script)
 * [Create SkeletonRenderer](#create-skeletonrenderer)
