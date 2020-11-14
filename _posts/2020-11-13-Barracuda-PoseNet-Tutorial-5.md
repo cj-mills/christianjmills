@@ -138,6 +138,4 @@ Go ahead and unlock the `Inspector` tab by clicking the lock icon again.
 
 Next, we'll add a public `int` variable. This variable will be the confidence threshold for deciding whether or not to display a given key point object. Name the variable `minConfidence` and set the default value to 80. You can add a `Range` attribute to create a slider in the `Inspector` tab. Set the range to `[0, 100]`.
 
-
-
- ![minConfidence_variable](..\images\barracuda-posenet-tutorial\minConfidence_variable.png)
+ ![minConfidence_variable](..\images\barracuda-posenet-tutorial\minConfidence_variable_2.png)
