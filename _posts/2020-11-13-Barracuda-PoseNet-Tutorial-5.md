@@ -164,7 +164,7 @@ The last step for creating our pose skeleton is to draw lines connecting the app
 
 ![create_drawSkeleton_script](\images\barracuda-posenet-tutorial\create_drawSkeleton_script.PNG)
 
-### Create `keypoints` Variable
+#### Create `keypoints` Variable
 
 We need to access the key point objects so make another `GameObject` array just like in the `PoseNet` script.
 
@@ -172,7 +172,7 @@ We need to access the key point objects so make another `GameObject` array just 
 
 
 
-### Create `lines` Variable
+#### Create `lines` Variable
 
 Next create a private `GameObject` array to hold the lines themselves. Name the variable `lines`.
 
@@ -180,7 +180,7 @@ Next create a private `GameObject` array to hold the lines themselves. Name the 
 
 
 
-### Create `lineRenderers` Variable
+#### Create `lineRenderers` Variable
 
 We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.html) components to draw the skeleton.
 
@@ -188,7 +188,7 @@ We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.ht
 
 
 
-### Create `jointPairs` Variable
+#### Create `jointPairs` Variable
 
 The next variable will contain pairs of key point indices. These pairs indicate the start and end points for the skeleton lines.
 
@@ -196,7 +196,7 @@ The next variable will contain pairs of key point indices. These pairs indicate 
 
 
 
-### Create `lineWidth` Variable
+#### Create `lineWidth` Variable
 
 Finally, we'll make a variable for the line width in the skeleton.
 
@@ -206,7 +206,7 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 
 
-### Create `InitializeLine()` Method
+#### Create `InitializeLine()` Method
 
 
 
@@ -214,7 +214,7 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 
 
-### Create `InitializeSkeleton()` Method
+#### Create `InitializeSkeleton()` Method
 
 
 
@@ -222,7 +222,7 @@ Finally, we'll make a variable for the line width in the skeleton.
 
 
 
-### Create `RenderSkeleton()` Method
+#### Create `RenderSkeleton()` Method
 
 
 
