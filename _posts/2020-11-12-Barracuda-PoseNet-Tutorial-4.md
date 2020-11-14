@@ -137,8 +137,6 @@ Finally, we'll store the location data for the current key point at the correspo
 
 ![store_position](\images\barracuda-posenet-tutorial\store_position_2.png)
 
-
-
 ### Next: [Part 5](https://christianjmills.com/unity/tutorial/2020/11/14/Barracuda-PoseNet-Tutorial-5.html)
 
 
