@@ -79,11 +79,9 @@ The default color for a `GameObject` doesn't stand out much against the backgrou
 
 #### Create Yellow Material
 
-Open the `Materials` folder in the `Assets` window. Right-click an empty space and select `Material` in the the `Create` sub-menu.
+Open the `Materials` folder in the `Assets` window. Right-click an empty space and select `Material` in the the `Create` sub-menu. Name the new material `Yellow`.
 
 ![create_material](\images\barracuda-posenet-tutorial\create_material.PNG)
-
-Name the material `Yellow` since that's the color we'll be giving it.
 
 #### Change Material Color
 
