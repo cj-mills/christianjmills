@@ -82,6 +82,12 @@ Next, we need to call `InitializeLine()` in a new method for each line in the po
 
 ![initializeSkeleton_method](\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
 
+### Call `InitializeSkeleton()` Method
+
+We'll initialize the pose skeleton lines in the `Start()` method.
+
+![call_initializeSkeleton_method](\images\barracuda-posenet-tutorial\call_initializeSkeleton_method.png)
+
 
 
 ### Create `RenderSkeleton()` Method
@@ -89,14 +95,6 @@ Next, we need to call `InitializeLine()` in a new method for each line in the po
 The last method we need to define will handle updating the position of the each of the lines in the pose skeleton. The method will iterate through each of the joint pairs and update the start and end positions for the associated `LineRenderer`. We'll only display a given line if both of the key point objects are currently active. 
 
 ![renderSkeleton_method](\images\barracuda-posenet-tutorial\renderSkeleton_method.png)
-
-
-
-### Call `InitializeSkeleton()` Method
-
-We'll initialize the pose skeleton lines in the `Start()` method.
-
-![call_initializeSkeleton_method](\images\barracuda-posenet-tutorial\call_initializeSkeleton_method.png)
 
 
 
