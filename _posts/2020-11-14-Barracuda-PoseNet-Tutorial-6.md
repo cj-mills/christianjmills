@@ -100,7 +100,7 @@ The last method we need to define will handle updating the position of the each 
 
 We'll render the skeleton lines in the `LateUpdate()` method instead of `Update()`. This will ensure the PoseNet model has run for the latest frame before updating the pose skeleton.
 
-![call_renderSkeleton_method](\images\barracuda-posenet-tutorial\call_renderSkeleton_method.png)
+![call_renderSkeleton_method](\images\barracuda-posenet-tutorial\call_renderSkeleton_method_2.png)
 
 
 
