@@ -54,7 +54,7 @@ The next variable will contain pairs of key point indices. The corresponding key
 
 ### Create `lineWidth` Variable
 
-The last variable we'll make defines the line width for the skeleton lines.
+The last variable we'll make defines the line width.
 
 ![lineWidth_variable](\images\barracuda-posenet-tutorial\lineWidth_variable.png)
 
