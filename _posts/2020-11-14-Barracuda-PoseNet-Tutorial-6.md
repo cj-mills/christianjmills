@@ -82,6 +82,8 @@ Next, we need to call `InitializeLine()` in a new method for each line in the po
 
 ![initializeSkeleton_method](\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
 
+#### Call the method
+
 We'll initialize the pose skeleton lines in the `Start()` method.
 
 ![call_initializeSkeleton_method](\images\barracuda-posenet-tutorial\call_initializeSkeleton_method.png)
@@ -94,7 +96,7 @@ The last method we need to define will handle updating the position of the each 
 
 ![renderSkeleton_method](\images\barracuda-posenet-tutorial\renderSkeleton_method.png)
 
-
+#### Call the method
 
 We'll render the skeleton lines in the `LateUpdate()` method instead of `Update()`. This will ensure the PoseNet model has run for the latest frame before updating the pose skeleton.
 
