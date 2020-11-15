@@ -85,11 +85,11 @@ Open the `Materials` folder in the `Assets` window. Right-click an empty space a
 
 #### Change Material Color
 
-With the `Yellow` material selected, click the small white box in the `Inspector` tab.
+With the `Yellow` material selected, click the small white box in the `Inspector` tab. A `Color` window should pop up.
 
 ![select_material_color](\images\barracuda-posenet-tutorial\select_material_color_3.png)
 
-Set the value for `B` to `0` in the popup `Color` window. This will change the color to pure yellow.
+Set the value for `B` to `0` in the `Color` window. This will change the color to pure yellow.
 
 ![change_material_color_to_yellow](\images\barracuda-posenet-tutorial\change_material_color_to_yellow.PNG)
 
@@ -101,7 +101,7 @@ We'll change the `Shader` for the material to `Unlit/Color`.
 
 #### Assign Yellow Material
 
-Select all the key point objects in `Hierarchy` tab. Then, drag and drop the `Yellow` material into the `Inspector` tab.
+Select all the key point objects in the `Hierarchy` tab. Then, drag and drop the `Yellow` material into the `Inspector` tab.
 
 ![assign_yellow_material](\images\barracuda-posenet-tutorial\assign_yellow_material.PNG)
 
@@ -129,7 +129,7 @@ Make sure the `Size` value for the `Keypoints` variable is set to `0`.
 
 ![initialize_keypoints_parameter](\images\barracuda-posenet-tutorial\initialize_keypoints_parameter.png)
 
-Select all the key point objects in the `Hierarchy`. Then, drag and drop them onto the `Keypoints` variable in the `Inspector` tab.
+Select all the key point objects in the `Hierarchy`. Then, drag and drop them onto the `Keypoints` parameter in the `Inspector` tab.
 
 ![assign_keypoint_objects](\images\barracuda-posenet-tutorial\assign_keypoint_objects.PNG)
 
@@ -137,7 +137,7 @@ Go ahead and unlock the `Inspector` tab by clicking the lock icon again.
 
 ### Create `minConfidence` Variable
 
-Next, we'll add a public `int` variable. This variable will be the confidence threshold for deciding whether or not to display a given key point object. Name the variable `minConfidence` and set the default value to 70. You can add a `Range` attribute to create a slider in the `Inspector` tab. Set the range to `[0, 100]`.
+Next, we'll add a public `int` variable. This variable will define the confidence threshold for deciding whether or not to display a given key point object. Name the variable `minConfidence` and set the default value to 70. You can add a `Range` attribute to create a slider in the `Inspector` tab. Set the range to `[0, 100]`.
 
  ![minConfidence_variable](\images\barracuda-posenet-tutorial\minConfidence_variable_2.png)
 
@@ -145,7 +145,7 @@ Next, we'll add a public `int` variable. This variable will be the confidence th
 
 We need to define a new method to update the key point positions. Name the method `UpdateKeyPointPositions()`.
 
-![updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\updateKeyPointPositions_method.png)
+![updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\updateKeyPointPositions_method_2.png)
 
 ### Call the Method
 
