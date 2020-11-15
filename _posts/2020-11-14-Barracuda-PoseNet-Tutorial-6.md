@@ -62,7 +62,7 @@ The last variable we'll make defines the line width.
 
 ### Initialize Variables
 
-We need initialize the `lines`, `lineRenderers`, and `jointPairs` variables in the `Start()` method.
+We need to initialize the `lines`, `lineRenderers`, and `jointPairs` variables in the `Start()` method.
 
 ![initialize_drawSkeleton_variables](\images\barracuda-posenet-tutorial\initialize_drawSkeleton_variables.png)
 
