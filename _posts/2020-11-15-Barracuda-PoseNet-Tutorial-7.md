@@ -38,7 +38,7 @@ search_exclude: false
 
 
 
-## Set up Webcam Feed
+## Set Up Webcam Feed
 
 
 
