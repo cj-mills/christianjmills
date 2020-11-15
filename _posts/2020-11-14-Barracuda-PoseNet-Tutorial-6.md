@@ -70,7 +70,7 @@ We need to initialize the `lines`, `lineRenderers`, and `jointPairs` variables i
 
 ### Create `InitializeLine()` Method
 
-We'll create a new method to set up each of the lines in the pose skeleton. The method will create an empty `GameObject` for a line and add a `LineRenderer` component to it. We won't set the start and end positions as none of the key points would have updated yet.
+We'll create a new method to set up each of the lines in the pose skeleton. The method will create an empty `GameObject` for a line and add a `LineRenderer` component to it. We won't set the start and end positions as none of the key points will have updated yet.
 
 ![initializeLine_method](\images\barracuda-posenet-tutorial\initializeLine_method.png)
 
