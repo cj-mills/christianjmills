@@ -15,7 +15,7 @@ search_exclude: false
 
 ## Create Key Points
 
-We'll create the pose skeleton using `GameObjects` rather than altering the `videoTexture`. We need to create a separate `GameObject` for each of the `17` key points. 
+We need to create a separate `GameObject` for each of the `17` key points. 
 
 ### Create Container
 
