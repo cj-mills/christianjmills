@@ -16,7 +16,7 @@ search_exclude: false
 
 ## Create `DrawSkeleton` Script
 
-The last step for creating our pose skeleton is to draw lines connecting the appropriate key points. We'll implement this step in a new `C#` script called `DrawSkeleton`.
+We'll complete our pose skeleton by drawing lines connecting the appropriate key points. Create a new `C#` script and name it `DrawSkeleton`.
 
 ![create_drawSkeleton_script](\images\barracuda-posenet-tutorial\create_drawSkeleton_script.PNG)
 
