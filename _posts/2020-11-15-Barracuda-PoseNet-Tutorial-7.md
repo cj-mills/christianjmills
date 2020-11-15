@@ -34,11 +34,11 @@ We'll use a [`WebCamTexture`](https://docs.unity3d.com/ScriptReference/WebCamTex
 
 ## Set Up Webcam Feed
 
-We need to modify the `Start()` method to set up the webcam feed. 
+We need to modify the `Start()` method to set up the webcam feed.
 
 ### Initialize the `webcamTexture`
 
-First create a new `webcamTexture` using the first device found. If you have more than one webcam attached, you'll need to [specify](https://docs.unity3d.com/ScriptReference/WebCamTexture-ctor.html) the device name.
+First, create a new `webcamTexture` using the first device found. If you have more than one webcam attached, you'll need to [specify](https://docs.unity3d.com/ScriptReference/WebCamTexture-ctor.html) the device name.
 
 ### Flip the `VideoScreen`
 
