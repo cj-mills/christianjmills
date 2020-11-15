@@ -30,7 +30,7 @@ We need to access the key point objects so make another public `GameObject` arra
 
 ### Create `lines` Variable
 
-Next create a private `GameObject` array to hold the lines themselves. Name the variable `lines`.
+Next, create a private `GameObject` array to hold the lines themselves. Name the variable `lines`.
 
 ![lines_variable](\images\barracuda-posenet-tutorial\lines_variable.png)
 
