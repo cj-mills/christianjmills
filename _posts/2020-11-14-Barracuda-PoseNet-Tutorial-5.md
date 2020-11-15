@@ -85,7 +85,7 @@ Open the `Materials` folder in the `Assets` window. Right-click an empty space a
 
 #### Change Material Color
 
-With the material selected click the small white box in the `Inspector` tab.
+With the `Yellow` material selected, click the small white box in the `Inspector` tab.
 
 ![select_material_color](\images\barracuda-posenet-tutorial\select_material_color_3.png)
 
