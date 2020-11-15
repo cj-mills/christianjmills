@@ -75,7 +75,7 @@ We need to increase the `X` and `Y` values for the `Scale` parameter in the `Ins
 
 ### Change GameObject Material
 
-The default color for the `GameObjects` doesn't stand out much against the background. Apparently, yellow is really easy for humans to spot so we'll go with that.
+The default color for a `GameObject` doesn't stand out much against the background. We'll make the key point objects yellow since it's apparently really easy for humans to spot.
 
 #### Create Yellow Material
 
