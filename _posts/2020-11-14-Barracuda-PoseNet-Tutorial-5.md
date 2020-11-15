@@ -71,6 +71,8 @@ Next, we'll make the key point objects larger so that they're easier to see. Sel
 
 We need to increase the `X` and `Y` values for the `Scale` parameter in the `Inspector` tab. Increasing them to 10 should be enough.
 
+![increase_key_point_object_size](\images\barracuda-posenet-tutorial\increase_key_point_object_size.PNG)
+
 ### Change GameObject Material
 
 The default color for the `GameObjects` doesn't stand out much against the background. Apparently, yellow is really easy for humans to spot so we'll go with that.
