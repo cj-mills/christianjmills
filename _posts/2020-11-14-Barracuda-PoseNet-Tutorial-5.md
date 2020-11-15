@@ -69,7 +69,7 @@ Next, we'll make the key point objects larger so that they're easier to see. Sel
 
 ![select_all_keypoint_objects](\images\barracuda-posenet-tutorial\select_all_keypoint_objects.PNG)
 
-We need to increase the `X` and `Y` values for the `Scale` parameter in the `Inspector` table. I'm setting them to 10, but use whatever size works best for you.
+We need to increase the `X` and `Y` values for the `Scale` parameter in the `Inspector` tab. Increasing them to 10 should be enough.
 
 ### Change GameObject Material
 
