@@ -46,7 +46,7 @@ We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.ht
 
 ### Create `jointPairs` Variable
 
-The next variable will contain pairs of key point indices. These pairs indicate the start and end points for the skeleton lines.
+The next variable will contain pairs of key point indices. The corresponding key points indicate the start and end points for the skeleton lines.
 
 ![jointPairs_variable](\images\barracuda-posenet-tutorial\jointPairs_variable.png)
 
