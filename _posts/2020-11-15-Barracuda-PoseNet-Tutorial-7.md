@@ -20,7 +20,7 @@ search_exclude: false
 
 
 
-![useWebcam_variable](..\images\barracuda-posenet-tutorial\useWebcam_variable.png)
+![useWebcam_variable](\images\barracuda-posenet-tutorial\useWebcam_variable.png)
 
 
 
@@ -32,7 +32,7 @@ search_exclude: false
 
 
 
-![webcamTexture_variable](..\images\barracuda-posenet-tutorial\webcamTexture_variable.png)
+![webcamTexture_variable](\images\barracuda-posenet-tutorial\webcamTexture_variable.png)
 
 
 
@@ -42,7 +42,7 @@ search_exclude: false
 
 
 
-![initialize_webcam_start_method](..\images\barracuda-posenet-tutorial\initialize_webcam_start_method.png)
+![initialize_webcam_start_method](\images\barracuda-posenet-tutorial\initialize_webcam_start_method.png)
 
 
 
@@ -52,7 +52,7 @@ search_exclude: false
 
 
 
-![useWebcam_update_method](..\images\barracuda-posenet-tutorial\useWebcam_update_method.png)
+![useWebcam_update_method](\images\barracuda-posenet-tutorial\useWebcam_update_method.png)
 
 
 
@@ -60,7 +60,7 @@ search_exclude: false
 
 
 
-![useWebcam_processOutput_method](..\images\barracuda-posenet-tutorial\useWebcam_processOutput_method.png)
+![useWebcam_processOutput_method](\images\barracuda-posenet-tutorial\useWebcam_processOutput_method.png)
 
 
 
@@ -68,11 +68,11 @@ search_exclude: false
 
 
 
-![flipImage_computeShader](..\images\barracuda-posenet-tutorial\flipImage_computeShader.png)
+![flipImage_computeShader](\images\barracuda-posenet-tutorial\flipImage_computeShader.png)
 
 
 
-![flipImage_method](..\images\barracuda-posenet-tutorial\flipImage_method.png)
+![flipImage_method](\images\barracuda-posenet-tutorial\flipImage_method.png)
 
 
 
@@ -86,7 +86,7 @@ search_exclude: false
 
 
 
-![enable_useWebcam_inspector](..\images\barracuda-posenet-tutorial\enable_useWebcam_inspector.PNG)
+![enable_useWebcam_inspector](\images\barracuda-posenet-tutorial\enable_useWebcam_inspector.PNG)
 
 
 
