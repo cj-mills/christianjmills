@@ -78,7 +78,7 @@ We'll create a new method to set up each of the lines in the pose skeleton. The 
 
 ### Create `InitializeSkeleton()` Method
 
-Next, we need to call `InitializeLine()` in a new method for each line the pose skeleton. We'll give each region of the skeleton a different color.
+Next, we need to call `InitializeLine()` in a new method for each line in the pose skeleton. We'll give each region of the skeleton a different color.
 
 ![initializeSkeleton_method](\images\barracuda-posenet-tutorial\initializeSkeleton_method.png)
 
