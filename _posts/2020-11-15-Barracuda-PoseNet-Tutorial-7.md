@@ -73,7 +73,7 @@ We'll use the `Graphics.Blit()` method to update the `videoTexture` with the dat
 
 ### Flip Key Point Locations
 
-Even though we flipped the `VideoScreen`, the `videoTexture` itself is not flipped. Therefore, the output of the model will not be flipped either. We can fix this by mirroring the `xPos` values for the calculated key point locations.
+Flipping the `VideoScreen` does not flip the `videoTexture` itself. Therefore, the output of the model will not be flipped either. We can fix this by mirroring the `xPos` values for the calculated key point locations.
 
 ![useWebcam_processOutput_method](\images\barracuda-posenet-tutorial\useWebcam_processOutput_method.png)
 
