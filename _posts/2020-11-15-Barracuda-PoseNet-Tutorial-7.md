@@ -42,7 +42,7 @@ First, create a new `webcamTexture` using the first device found. If you have mo
 
 ### Flip the `VideoScreen`
 
-Next, we need to adjust the rotation and scale of the `VideoScreen` object. The webcam feed doesn't mirror the user. For example, the user's right arm appears on the left side of the screen. This can be disorienting when looking at the generated pose skeleton. Therefore we'll flip the `VideoScreen` so that the webcam feed mirrors the user.
+Next, we need to adjust the rotation and scale of the `VideoScreen` object. The webcam feed doesn't mirror the user. For example, the user's right arm appears on the left side of the screen. This can be disorienting when looking at the generated pose skeleton. We'll flip the `VideoScreen` to compensate.
 
 ### Start the Camera
 
@@ -50,7 +50,7 @@ Use the `webcamTexture.Play()` method to start the camera.
 
 ### Deactivate the Video Player
 
-We'll deactivate the `Video Player` as it's not being used. 
+Finally, we'll deactivate the `Video Player` as it's not being used. 
 
 ### Completed Code
 
