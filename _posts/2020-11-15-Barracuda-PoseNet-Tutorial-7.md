@@ -41,11 +41,11 @@ We'll prepare the webcam feed at the top of the `Start()` method.
 
 #### Initialize the `webcamTexture`
 
-First, create a new `webcamTexture` using the first device found. If you have more than one webcam attached, you'll need to [specify](https://docs.unity3d.com/ScriptReference/WebCamTexture-ctor.html) the device name.
+First, initialize the `webcamTexture`. We'll use the first video input device Unity finds. If you have more than one webcam attached, you'll need to [specify](https://docs.unity3d.com/ScriptReference/WebCamTexture-ctor.html) the device name.
 
 #### Flip the `VideoScreen`
 
-Next, we need to adjust the rotation and scale of the `VideoScreen` object. The webcam feed doesn't mirror the user. For example, the user's right arm appears on the left side of the screen. This can be disorienting when looking at the generated pose skeleton. We'll flip the `VideoScreen` to compensate.
+Next, we need to adjust the rotation and scale of the `VideoScreen` object. The webcam feed doesn't mirror the user by default. For example, the user's right arm appears on the left side of the screen. This can be disorienting when looking at the generated pose skeleton. We'll flip the `VideoScreen` to compensate.
 
 #### Start the Camera
 
