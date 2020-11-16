@@ -19,11 +19,7 @@ search_exclude: false
 
 We can add the option to use a webcam feed by making some modifications to the `PoseNet` script.
 
-### Add Webcam Variables
-
-First, we need to add a couple new variables.
-
-#### Create `useWebcam` Variable
+### Create `useWebcam` Variable
 
 Open the `PoseNet` script and create a new public `bool` variable. Name the variable `useWebcam` and set the default value to `false`. This will create a checkbox in the `Inspector` tab that we can use to enable and disable the webcam.
 
@@ -31,7 +27,7 @@ Open the `PoseNet` script and create a new public `bool` variable. Name the vari
 
 
 
-#### Create `webcamTexture` Variable
+### Create `webcamTexture` Variable
 
 We'll use a [`WebCamTexture`](https://docs.unity3d.com/ScriptReference/WebCamTexture.html) variable to store the live video input from our webcam. Name the variable `webcamTexture`.
 
