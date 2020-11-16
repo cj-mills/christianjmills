@@ -49,7 +49,7 @@ Next, we need to adjust the rotation and scale of the `VideoScreen` object. The 
 
 #### Start the Camera
 
-Use the `webcamTexture.Play()` method to start the camera.
+We'll use the `webcamTexture.Play()` method to start the camera.
 
 ### Deactivate the Video Player
 
