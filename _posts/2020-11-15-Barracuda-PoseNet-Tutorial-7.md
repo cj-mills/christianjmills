@@ -85,7 +85,7 @@ Now we can enable and disable the webcam from the `Inspector` tab.
 
 ![enable_useWebcam_inspector](\images\barracuda-posenet-tutorial\enable_useWebcam_inspector.PNG)
 
-`Note:` Don't toggle the `useWebcam` value at runtime with the code as it is.
+`Note:` Don't toggle the `useWebcam` parameter during runtime with the code as it is.
 
 
 
