@@ -16,6 +16,8 @@ search_exclude: false
 
 ## Modify `PoseNet` Script
 
+We can add the option to use a webcam feed by making some modifications to the `PoseNet` script.
+
 ### Add Webcam Variables
 
 First, we need to add a couple new variables.
