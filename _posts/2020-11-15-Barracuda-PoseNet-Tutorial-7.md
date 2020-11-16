@@ -4,7 +4,7 @@ layout: post
 toc: false
 description: This post covers how to use a webcam feed as input for the PoseNet model.
 categories: [unity, tutorial]
-hide: true
+hide: false
 search_exclude: false
 ---
 
@@ -73,7 +73,7 @@ We'll use the `Graphics.Blit()` method to update the `videoTexture` with the dat
 
 ### Flip Key Point Locations
 
-Even the we flipped the `VideoScreen` the `videoTexture` itself is not flipped. Therefore, the output of the model will not be flipped either. We can fix this by mirroring the x position values for the calculated key point locations.
+Even the we flipped the `VideoScreen` the `videoTexture` itself is not flipped. Therefore, the output of the model will not be flipped either. We can fix this by mirroring the `xPos` values for the calculated key point locations.
 
 ![useWebcam_processOutput_method](\images\barracuda-posenet-tutorial\useWebcam_processOutput_method.png)
 
