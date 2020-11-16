@@ -129,3 +129,5 @@ Drag and drop the key point objects onto the `Keypoints` parameter just like wit
 If you press the play button, you should see something like this.
 
 ![pose_skeleton_480p_90c](\images\barracuda-posenet-tutorial\pose_skeleton_480p_90c.gif)
+
+### Next: [Part  7](https://christianjmills.com/unity/tutorial/2020/11/15/Barracuda-PoseNet-Tutorial-7.html)
