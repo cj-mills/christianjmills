@@ -11,6 +11,7 @@ search_exclude: false
 ### Previous: [Part 6](https://christianjmills.com/unity/tutorial/2020/11/14/Barracuda-PoseNet-Tutorial-6.html)
 
 * [Modify PoseNet Script](#modify-posenet-script)
+* [Set Inspector Variable](#set-inspector-variable)
 
 
 
