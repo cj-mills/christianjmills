@@ -23,8 +23,6 @@ In the `Hierarchy` tab, create an empty `GameObject` and name it `Key Points`. W
 
 **Optional:** With `Key Points` selected, right-click the `Transform` component in the `Inspector` tab. Click `Reset` in the pop-up menu. This will reset the object's position to the origin.
 
-
-
 ![reset_transform](\images\barracuda-posenet-tutorial\reset_transform.PNG)
 
 ### Create GameObjects
@@ -32,8 +30,6 @@ In the `Hierarchy` tab, create an empty `GameObject` and name it `Key Points`. W
 Right-click the `Key Points` object and select `Sphere` under `3D Object`. This will create a nested `GameObject` inside `Key Points`.
 
 ![create_keypoint_gameobject](\images\barracuda-posenet-tutorial\create_keypoint_gameobject.PNG)
-
-
 
 Select the new `Sphere` object and press Ctrl-d to duplicate it. We'll need `16` duplicates for the remaining key points.
 
