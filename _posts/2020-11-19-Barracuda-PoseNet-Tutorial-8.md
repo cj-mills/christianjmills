@@ -12,7 +12,7 @@ search_exclude: false
 
 * [Add UnityEngine.Video Namespace](#Add `unityenginevideo-namespace)
 * [Update Start() Method](#update-start-method)
-* [Update ProcessOutput() Method](#update-processOutput-method)
+* [Update ProcessOutput() Method](#update-processoutput-method)
 * [Set Inspector Variables](#set-inspector-variables)
 
 ## Add `UnityEngine.Video` Namespace
