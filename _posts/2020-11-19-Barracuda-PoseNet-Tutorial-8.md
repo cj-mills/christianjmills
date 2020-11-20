@@ -17,11 +17,15 @@ search_exclude: false
 
 We can add the ability to handle input with different aspect ratios by once again making some modifications to the `PoseNet` script.
 
+### Add `UnityEngine.Video` Dependency
 
+We'll first add a new `using` statement at the top of the `PoseNet` script. We need the `UnityEngine.Video` package to work with the `Video Player` object.
+
+![import_unityengine_video](\images\barracuda-posenet-tutorial\import_unityengine_video.png)
 
 ### Add Webcam Variables
 
-Unity defaults to a resolution of `640 x 480` for webcams. There is no built-in method that returns the frame rate. However, it does not appear to be over 30fps.  We can request a resolution and frame rate when initializing the `webcamTexture`. Unity should accept the requested settings as long as the camera supports them.
+Unity defaults to a resolution of `640 x 480` for webcams. There is no built-in method that returns the frame rate. However, the default does not appear to be over 30fps.  We can request a resolution and frame rate when initializing the `webcamTexture`. Unity should accept the requested settings as long as the camera supports them.
 
 #### Create `webcamHeight` Variable
 
@@ -31,7 +35,7 @@ Add a new public `int` variable so we can adjust the camera height from the `Ins
 
 #### Create `webcamWidth` Variable
 
-Next, create a variable for the camera's height and name it `webcamWidth`. I've set the default value to `1280`.
+Next, create a variable for the camera's width and name it `webcamWidth`. I've set the default value to `1280`.
 
 ![webcamWidth_variable](\images\barracuda-posenet-tutorial\webcamWidth_variable.png)
 
@@ -45,17 +49,9 @@ We'll also add a variable to set the frame rate for the camera and name it `webc
 
 ### Add Video Resolution Variables
 
-#### Create `videoHeight` Variable
-
-#### Create `videoWidth` Variable
+Next, we need to create a couple of private `int` variables to store the dimensions of the video source. Name the variables `videoHeight` and `videoWidth`.
 
 ![video_resolution_variables](\images\barracuda-posenet-tutorial\video_resolution_variables.png)
-
-
-
-### Add `UnityEngine.Video` Dependency
-
-![import_unityengine_video](\images\barracuda-posenet-tutorial\import_unityengine_video.png)
 
 
 
