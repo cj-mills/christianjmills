@@ -10,7 +10,8 @@ search_exclude: false
 
 ### Previous: [Part 7](https://christianjmills.com/unity/tutorial/2020/11/15/Barracuda-PoseNet-Tutorial-7.html)
 
-* 
+* [Modify PoseNet Script](#modify-posenet-script)
+* [Set Inspector Variables](#set-inspector-variables)
 
 ## Modify `PoseNet` Script
 
@@ -84,11 +85,11 @@ We can add the ability to handle input with different aspect ratio by once again
 
 
 
-## Update `ProcessOutput()` Method
+### Update `ProcessOutput()` Method
 
 
 
-### Update Scaling Calculations
+#### Update Scaling Calculations
 
 
 
@@ -98,7 +99,7 @@ We can add the ability to handle input with different aspect ratio by once again
 
 
 
-### Update Key Point Calculations
+#### Update Key Point Calculations
 
 
 
@@ -107,4 +108,8 @@ We can add the ability to handle input with different aspect ratio by once again
 
 
 ![update_key_point_calculations_part2](\images\barracuda-posenet-tutorial\update_key_point_calculations_part2.png)
+
+
+
+## Set Inspector Variables
 
