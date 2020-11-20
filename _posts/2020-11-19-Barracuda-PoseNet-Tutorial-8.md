@@ -11,6 +11,7 @@ search_exclude: false
 ### Previous: [Part 7](https://christianjmills.com/unity/tutorial/2020/11/15/Barracuda-PoseNet-Tutorial-7.html)
 
 * [Add UnityEngine.Video Namespace](#add-unityenginevideo-namespace)
+* [Add Video Resolution Variables](#add-video-resolution-variables)
 * [Update Start() Method](#update-start-method)
 * [Update ProcessOutput() Method](#update-processoutput-method)
 * [Set Inspector Variables](#set-inspector-variables)
