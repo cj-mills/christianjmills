@@ -10,36 +10,34 @@ search_exclude: false
 
 ### Previous: [Part 7](https://christianjmills.com/unity/tutorial/2020/11/15/Barracuda-PoseNet-Tutorial-7.html)
 
-* [Modify PoseNet Script](#modify-posenet-script)
+* [Add UnityEngine.Video Namespace](#Add `unityengine.video-namespace)
+* [Update Start() Method](#update-start()-method)
+* [Update ProcessOutput() Method](#update-processOutput()-method)
 * [Set Inspector Variables](#set-inspector-variables)
 
-## Modify `PoseNet` Script
+## Add `UnityEngine.Video` Namespace
 
-We can add the ability to handle input with different aspect ratios by once again making some modifications to the `PoseNet` script.
-
-### Add `UnityEngine.Video` Namespace
-
-We'll first add a new [`using directive`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive) at the top of the `PoseNet` script. We need the `UnityEngine.Video` namespace to work with the `Video Player` object.
+Open the `PoseNet` script and add a new [`using directive`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive) at the top. We need the `UnityEngine.Video` namespace to work with the `Video Player` object.
 
 ![import_unityengine_video](\images\barracuda-posenet-tutorial\import_unityengine_video.png)
 
-### Add Webcam Variables
+## Add Webcam Variables
 
 Unity defaults to a resolution of `640 x 480` for webcams. There is no built-in method that returns the frame rate. However, the default does not appear to be over 30fps.  We can request a resolution and frame rate when initializing the `webcamTexture`. Unity should accept the requested settings as long as the camera supports them. Unity defaults to its closest preset if the requested settings are not supported.
 
-#### Create `webcamHeight` Variable
+### Create `webcamHeight` Variable
 
 Add a new public `int` variable so we can adjust the camera height from the `Inspector` tab. Name the variable `webcamHeight`. My webcam supports 720p at 60fps, so I've set the default value to `720`.
 
 ![webcamHeight_variable](\images\barracuda-posenet-tutorial\webcamHeight_variable.png)
 
-#### Create `webcamWidth` Variable
+### Create `webcamWidth` Variable
 
 Next, create a variable for the camera's width and name it `webcamWidth`. I've set the default value to `1280`.
 
 ![webcamWidth_variable](\images\barracuda-posenet-tutorial\webcamWidth_variable.png)
 
-#### Create `webcamFPS` Variable
+### Create `webcamFPS` Variable
 
 We'll also add a variable to set the frame rate for the camera and name it `webcamFPS`. Set the default value to `60`.
 
@@ -47,11 +45,15 @@ We'll also add a variable to set the frame rate for the camera and name it `webc
 
 
 
-### Add Video Resolution Variables
+## Add Video Resolution Variables
 
 Next, we need to create a couple of private `int` variables to store the dimensions of the video source. Name the variables `videoHeight` and `videoWidth`.
 
 ![video_resolution_variables](\images\barracuda-posenet-tutorial\video_resolution_variables.png)
+
+
+
+## Update `Start()` Method
 
 
 
@@ -99,7 +101,7 @@ We'll also resize and reposition the `Main Camera` object to account for changes
 
 
 
-### Update `ProcessOutput()` Method
+## Update `ProcessOutput()` Method
 
 
 
