@@ -102,9 +102,9 @@ We can add the ability to handle input with different aspect ratio by once again
 
 
 
-![update_key_point_calculations_part1](..\images\barracuda-posenet-tutorial\update_key_point_calculations_part1.png)
+![update_key_point_calculations_part1](\images\barracuda-posenet-tutorial\update_key_point_calculations_part1.png)
 
 
 
-![update_key_point_calculations_part2](..\images\barracuda-posenet-tutorial\update_key_point_calculations_part2.png)
+![update_key_point_calculations_part2](\images\barracuda-posenet-tutorial\update_key_point_calculations_part2.png)
 
