@@ -22,9 +22,15 @@ We can add the ability to handle input with different aspect ratio by once again
 
 #### Create `webcamHeight` Variable
 
+![webcamHeight_variable](\images\barracuda-posenet-tutorial\webcamHeight_variable.png)
+
 #### Create `webcamWidth` Variable
 
+![webcamWidth_variable](\images\barracuda-posenet-tutorial\webcamWidth_variable.png)
+
 #### Create `webcamFPS` Variable
+
+![webcam_fps_variable](\images\barracuda-posenet-tutorial\webcam_fps_variable.png)
 
 
 
@@ -33,6 +39,8 @@ We can add the ability to handle input with different aspect ratio by once again
 #### Create `videoHeight` Variable
 
 #### Create `videoWidth` Variable
+
+![video_resolution_variables](\images\barracuda-posenet-tutorial\video_resolution_variables.png)
 
 
 
