@@ -105,7 +105,7 @@ We'll also resize and reposition the `Main Camera` object to account for changes
 
 
 
-#### Update Scaling Calculations
+### Update Scaling Calculations
 
 
 
@@ -115,7 +115,7 @@ We'll also resize and reposition the `Main Camera` object to account for changes
 
 
 
-#### Update Key Point Calculations
+### Update Key Point Calculations
 
 
 
