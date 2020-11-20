@@ -85,7 +85,7 @@ The dimensions for `videoTexture` can't be updated once it's been created. We'll
 
 ### Update `VideoScreen`
 
-![update_videoScreen](\images\barracuda-posenet-tutorial\update_videoScreen.png)
+![update_videoScreen](\images\barracuda-posenet-tutorial\update_videoScreen_2.png)
 
 ### Adjust `Main Camera`
 
