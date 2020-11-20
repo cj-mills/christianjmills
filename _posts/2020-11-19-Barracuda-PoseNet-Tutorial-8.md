@@ -86,3 +86,17 @@ We can add the ability to handle input with different aspect ratio by once again
 
 ## Update `ProcessOutput()` Method
 
+
+
+### Update Scaling Calculations
+
+![update_scaling_calculations](\images\barracuda-posenet-tutorial\update_scaling_calculations.png)
+
+
+
+
+
+
+
+
+
