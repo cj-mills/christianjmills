@@ -46,37 +46,37 @@ We can add the ability to handle input with different aspect ratio by once again
 
 ### Add `UnityEngine.Video` Dependency
 
-![import_unityengine_video](..\images\barracuda-posenet-tutorial\import_unityengine_video.png)
+![import_unityengine_video](\images\barracuda-posenet-tutorial\import_unityengine_video.png)
 
 
 
 ### Get Reference to `Video Player`
 
-![find_video_player](..\images\barracuda-posenet-tutorial\find_video_player.png)
+![find_video_player](\images\barracuda-posenet-tutorial\find_video_player.png)
 
 
 
 ### Get Webcam Resolution
 
-![get_webcam_resolution](..\images\barracuda-posenet-tutorial\get_webcam_resolution.png)
+![get_webcam_resolution](\images\barracuda-posenet-tutorial\get_webcam_resolution.png)
 
 
 
 ### Get Video Clip Dimensions
 
-![get_video_clip_dimensions](..\images\barracuda-posenet-tutorial\get_video_clip_dimensions.png)
+![get_video_clip_dimensions](\images\barracuda-posenet-tutorial\get_video_clip_dimensions.png)
 
 ### Replace `videoTexture`
 
-![replace_videoTexture](..\images\barracuda-posenet-tutorial\replace_videoTexture.png)
+![replace_videoTexture](\images\barracuda-posenet-tutorial\replace_videoTexture.png)
 
 ### Update `VideoScreen`
 
-![update_videoScreen](..\images\barracuda-posenet-tutorial\update_videoScreen.png)
+![update_videoScreen](\images\barracuda-posenet-tutorial\update_videoScreen.png)
 
 ### Adjust `Main Camera`
 
-![adjust_main_camera](..\images\barracuda-posenet-tutorial\adjust_main_camera.png)
+![adjust_main_camera](\images\barracuda-posenet-tutorial\adjust_main_camera.png)
 
 ### Complete `Start()` Method
 
