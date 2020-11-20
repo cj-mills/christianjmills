@@ -16,7 +16,31 @@ search_exclude: false
 
 We can add the ability to handle input with different aspect ratio by once again making some modifications to the `PoseNet` script.
 
+
+
+### Add Webcam Variables
+
+#### Create `webcamHeight` Variable
+
+#### Create `webcamWidth` Variable
+
+#### Create `webcamFPS` Variable
+
+
+
+### Add Video Resolution Variables
+
+#### Create `videoHeight` Variable
+
+#### Create `videoWidth` Variable
+
+
+
 ### Add `UnityEngine.Video` Dependency
+
+
+
+### Get Webcam Resolution
 
 
 
@@ -27,6 +51,12 @@ We can add the ability to handle input with different aspect ratio by once again
 ### Replace `videoTexture`
 
 
+
+### Adjust `VideoScreen`
+
+
+
+### Adjust `Main Camera`
 
 ![start_method_dynamic_video](\images\barracuda-posenet-tutorial\start_method_dynamic_video_4.png)
 
