@@ -29,7 +29,7 @@ Unity defaults to a resolution of `640 x 480` for webcams. There is no built-in 
 
 #### Create `webcamHeight` Variable
 
-Add a new public `int` variable so we can adjust the camera height from the `Inspector` tab. Name the variable `webcamHeight`. My webcam supports 720p at 60fps so I've set the default value to `720`.
+Add a new public `int` variable so we can adjust the camera height from the `Inspector` tab. Name the variable `webcamHeight`. My webcam supports 720p at 60fps, so I've set the default value to `720`.
 
 ![webcamHeight_variable](\images\barracuda-posenet-tutorial\webcamHeight_variable.png)
 
@@ -56,6 +56,8 @@ Next, we need to create a couple of private `int` variables to store the dimensi
 
 
 ### Get Reference to `Video Player`
+
+Create a new `GameObject` variable to access the `Video Player` object. Name the variable `videoPlayer` and place it at the top of the `Start()` method. We'll also move the `Transform videoScreen` variable outside of the `if (useWebcam)` statement.
 
 ![find_video_player](\images\barracuda-posenet-tutorial\find_video_player.png)
 
