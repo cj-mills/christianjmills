@@ -114,7 +114,7 @@ We should only scale the `xPos` value by the `unsqueezeScale` if the width large
 
 ![update_key_point_calculations_part1](\images\barracuda-posenet-tutorial\update_key_point_calculations_part1.png)
 
-We'll scale either `xPos` or `yPos` by `unsqueezeScale` depending on whether the width or height value is larger. Place the `if (useWebcam)` statement after this calculation.
+We'll scale either `xPos` or `yPos` by `unsqueezeScale` depending on whether the width or height value for `videoTexture` is larger. Place the `if (useWebcam)` statement after this calculation.
 
 ![update_key_point_calculations_part2](\images\barracuda-posenet-tutorial\update_key_point_calculations_part2.png)
 
