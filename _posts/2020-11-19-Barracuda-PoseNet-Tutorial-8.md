@@ -89,6 +89,8 @@ Next, we need to apply the new `videoTexture` to the `VideoScreen` object. We'll
 
 ![update_videoScreen](\images\barracuda-posenet-tutorial\update_videoScreen_2.png)
 
+
+
 ### Adjust `Main Camera`
 
 We'll also resize and reposition the `Main Camera` object to account for changes to the `VideoScreen`.
