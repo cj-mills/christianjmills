@@ -73,7 +73,7 @@ We can't access the webcam resolution until after the webcam has started. Theref
 
 ### Get Video Clip Dimensions
 
-We need to get the video resolution from the `Video Player` object when we're not using a webcam. We can get the resolution by accessing the `VideoPlayer` component.
+We need to get the video resolution from the `Video Player` object when we're not using a webcam. We can get the height and width by accessing the `VideoPlayer` component.
 
 ![get_video_clip_dimensions](\images\barracuda-posenet-tutorial\get_video_clip_dimensions.png)
 
