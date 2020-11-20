@@ -17,9 +17,9 @@ search_exclude: false
 
 We can add the ability to handle input with different aspect ratios by once again making some modifications to the `PoseNet` script.
 
-### Add `UnityEngine.Video` Dependency
+### Add `UnityEngine.Video` Namespace
 
-We'll first add a new `using` statement at the top of the `PoseNet` script. We need the `UnityEngine.Video` package to work with the `Video Player` object.
+We'll first add a new [`using directive`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive) at the top of the `PoseNet` script. We need the `UnityEngine.Video` namespace to work with the `Video Player` object.
 
 ![import_unityengine_video](\images\barracuda-posenet-tutorial\import_unityengine_video.png)
 
