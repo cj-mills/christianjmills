@@ -10,7 +10,7 @@ search_exclude: false
 
 ### Previous: [Part 7](https://christianjmills.com/unity/tutorial/2020/11/15/Barracuda-PoseNet-Tutorial-7.html)
 
-* [Add UnityEngine.Video Namespace](#Add `unityenginevideo-namespace)
+* [Add UnityEngine.Video Namespace](#add-unityenginevideo-namespace)
 * [Update Start() Method](#update-start-method)
 * [Update ProcessOutput() Method](#update-processoutput-method)
 * [Set Inspector Variables](#set-inspector-variables)
