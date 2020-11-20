@@ -22,6 +22,8 @@ Open the `PoseNet` script and add a new [`using directive`](https://docs.microso
 
 ![import_unityengine_video](\images\barracuda-posenet-tutorial\import_unityengine_video.png)
 
+
+
 ## Add Webcam Variables
 
 Unity defaults to a resolution of `640 x 480` for webcams. There is no built-in method that returns the frame rate. However, the default does not appear to be over 30fps.  We can request a resolution and frame rate when initializing the `webcamTexture`. Unity should accept the requested settings as long as the camera supports them. Unity defaults to its closest preset if the requested settings are not supported.
@@ -56,7 +58,7 @@ Next, we need to create a couple of private `int` variables to store the dimensi
 
 ## Update `Start()` Method
 
-
+We need to make some modifications to the `Start()` method to prepare for input with different aspect ratios.
 
 ### Get Reference to `Video Player`
 
@@ -64,15 +66,11 @@ Create a new `GameObject` variable to access the `Video Player` object. Name the
 
 ![find_video_player](\images\barracuda-posenet-tutorial\find_video_player.png)
 
-
-
 ### Get Webcam Resolution
 
 We can't access the webcam resolution until after the webcam has started. Therefore, we'll update the values for `videoHeight` and `videoWidth` after `webcamTexture.Play()` has been called.
 
 ![get_webcam_resolution](\images\barracuda-posenet-tutorial\get_webcam_resolution.png)
-
-
 
 ### Get Video Clip Dimensions
 
@@ -92,8 +90,6 @@ Next, we need to apply the new `videoTexture` to the `VideoScreen` object. We'll
 
 ![update_videoScreen](\images\barracuda-posenet-tutorial\update_videoScreen_2.png)
 
-
-
 ### Adjust `Main Camera`
 
 We'll also resize and reposition the `Main Camera` object to account for changes to the `VideoScreen`.
@@ -104,17 +100,13 @@ We'll also resize and reposition the `Main Camera` object to account for changes
 
 ## Update `ProcessOutput()` Method
 
-
+Next, we need to modify how we calculate the key point locations.
 
 ### Update Scaling Calculations
 
 
 
 ![update_scaling_calculations](\images\barracuda-posenet-tutorial\update_scaling_calculations.png)
-
-
-
-
 
 ### Update Key Point Calculations
 
