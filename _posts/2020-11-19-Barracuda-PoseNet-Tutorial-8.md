@@ -65,11 +65,15 @@ Create a new `GameObject` variable to access the `Video Player` object. Name the
 
 ### Get Webcam Resolution
 
+We can't access the webcam resolution until after the webcam has started. Therefore, we'll update the values for `videoHeight` and `videoWidth` after `webcamTexture.Play()` has been called.
+
 ![get_webcam_resolution](\images\barracuda-posenet-tutorial\get_webcam_resolution.png)
 
 
 
 ### Get Video Clip Dimensions
+
+We need to get the video resolution from the `Video Player` object when we're not using a webcam. We can get the resolution by accessing the `VideoPlayer` component.
 
 ![get_video_clip_dimensions](\images\barracuda-posenet-tutorial\get_video_clip_dimensions.png)
 
