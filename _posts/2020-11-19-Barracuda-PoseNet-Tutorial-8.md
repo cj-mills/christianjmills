@@ -91,11 +91,9 @@ Next, we need to apply the new `videoTexture` to the `VideoScreen` object. We'll
 
 ### Adjust `Main Camera`
 
+We'll also resize and reposition the `Main Camera` object to account for changes to the `VideoScreen`.
+
 ![adjust_main_camera](\images\barracuda-posenet-tutorial\adjust_main_camera.png)
-
-### Complete `Start()` Method
-
-![start_method_dynamic_video](\images\barracuda-posenet-tutorial\start_method_dynamic_video_4.png)
 
 
 
