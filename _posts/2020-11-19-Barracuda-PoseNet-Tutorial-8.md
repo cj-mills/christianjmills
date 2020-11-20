@@ -82,3 +82,7 @@ We can add the ability to handle input with different aspect ratio by once again
 
 ![start_method_dynamic_video](\images\barracuda-posenet-tutorial\start_method_dynamic_video_4.png)
 
+
+
+## Update `ProcessOutput()` Method
+
