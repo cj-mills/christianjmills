@@ -198,4 +198,4 @@ Now we can finally click the play button and watch the video.
 
 ![barracuda_posenet_tutorial_420p](\images\barracuda-posenet-tutorial\barracuda_posenet_tutorial_420p.gif)
 
-## Next: [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html)
+## Next: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/)
