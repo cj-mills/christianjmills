@@ -5,7 +5,7 @@ toc: false
 description: This post covers how to handle video input with different aspect ratios.
 categories: [unity, tutorial]
 hide: false
-permalink: /barracuda-posenet-tutorial-part-8/
+permalink: /:title/
 search_exclude: false
 ---
 
