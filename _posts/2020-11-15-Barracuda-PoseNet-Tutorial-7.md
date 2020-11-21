@@ -9,7 +9,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 6](https://christianjmills.com/unity/tutorial/2020/11/14/Barracuda-PoseNet-Tutorial-6.html)
+### Previous: [Part 6](https://christianjmills.com/Barracuda-PoseNet-Tutorial-6/)
 
 * [Modify PoseNet Script](#modify-posenet-script)
 * [Set Inspector Variable](#set-inspector-variable)
@@ -90,4 +90,4 @@ Now we can enable and disable the webcam from the `Inspector` tab.
 
 
 
-### Next: [Part 8](https://christianjmills.com/unity/tutorial/2020/11/20/Barracuda-PoseNet-Tutorial-8.html)
+### Next: [Part 8](https://christianjmills.com/Barracuda-PoseNet-Tutorial-8/)
