@@ -9,7 +9,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-2.html) [Part 2.5](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html) [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html)
+### Previous: [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-3/)
 
 * [Create ProcessOutput() Method](#create-processoutput-method)
 * [Calculate Scaling Values](#calculate-scaling-values)
@@ -138,7 +138,7 @@ Finally, we'll store the location data for the current key point at the correspo
 
 ![store_position](\images\barracuda-posenet-tutorial\store_position_2.png)
 
-### Next: [Part 5](https://christianjmills.com/unity/tutorial/2020/11/14/Barracuda-PoseNet-Tutorial-5.html)
+### Next: [Part 5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-5/)
 
 
 
