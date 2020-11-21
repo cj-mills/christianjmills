@@ -5,6 +5,7 @@ toc: false
 description: This post covers how to view preprocessed images during runtime.
 categories: [unity, tutorial]
 hide: false
+permalink: /:title/
 search_exclude: false
 ---
 
