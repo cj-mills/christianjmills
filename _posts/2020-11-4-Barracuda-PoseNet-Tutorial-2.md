@@ -5,6 +5,7 @@ toc: false
 description: This post covers how to implement the preprocessing steps for the PoseNet model.
 categories: [unity, tutorial]
 hide: false
+permalink: /:title/
 search_exclude: false
 ---
 
