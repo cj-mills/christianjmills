@@ -122,7 +122,7 @@ We'll scale either `xPos` or `yPos` by `unsqueezeScale` depending on whether the
 
 ## Try It Out
 
-Now we can test the modifications by using some vertical videos from [Pexels](https://www.pexels.com/).
+Now we can test the modifications on some vertical videos from [Pexels](https://www.pexels.com/).
 
 1. [Woman Doing a Jump Rope Exercise](https://www.pexels.com/video/woman-doing-a-jump-rope-exercise-2785536/)
 2. [Man Dancing Hip-Hop](https://www.pexels.com/video/man-dancing-hip-hop-2795742/)
