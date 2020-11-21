@@ -9,7 +9,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html) [Part 2.5](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-2-5.html)
+### Previous: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/) [Part 2.5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2-5/)
 
 * [Install Barracuda Package](#install-barracuda-package)
 * [Import PoseNet Model](#import-posenet-model)
@@ -161,4 +161,4 @@ Here is the revised `Update()` method.
 
 ![perform_inference_update_method](\images\barracuda-posenet-tutorial\perform_inference_update_method_2.png)
 
-### Next: [Part 4](https://christianjmills.com/unity/tutorial/2020/11/12/Barracuda-PoseNet-Tutorial-4.html)
+### Next: [Part 4](https://christianjmills.com/Barracuda-PoseNet-Tutorial-4/)
