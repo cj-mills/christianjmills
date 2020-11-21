@@ -9,7 +9,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 7](https://christianjmills.com/unity/tutorial/2020/11/15/Barracuda-PoseNet-Tutorial-7.html)
+### Previous: [Part 7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-7/)
 
 * [Add UnityEngine.Video Namespace](#add-unityenginevideo-namespace)
 * [Add Video Resolution Variables](#add-video-resolution-variables)
