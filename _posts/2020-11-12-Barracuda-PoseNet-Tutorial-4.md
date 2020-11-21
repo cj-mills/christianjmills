@@ -5,6 +5,7 @@ toc: false
 description: This post covers how to process the output of the PoseNet model.
 categories: [unity, tutorial]
 hide: false
+permalink: /:title/
 search_exclude: false
 ---
 
