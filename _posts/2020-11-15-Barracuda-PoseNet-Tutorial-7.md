@@ -5,6 +5,7 @@ toc: false
 description: This post covers how to use a webcam feed as input for the PoseNet model.
 categories: [unity, tutorial]
 hide: false
+permalink: /:title/
 search_exclude: false
 ---
 
