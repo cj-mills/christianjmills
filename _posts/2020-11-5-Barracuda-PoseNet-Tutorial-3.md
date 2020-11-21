@@ -5,6 +5,7 @@ toc: false
 description: This post covers how to perform inference with the PoseNet model.
 categories: [unity, tutorial]
 hide: false
+permalink: /:title/
 search_exclude: false
 ---
 
