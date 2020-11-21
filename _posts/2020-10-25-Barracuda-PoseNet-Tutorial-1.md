@@ -19,9 +19,16 @@ search_exclude: false
 
 ## Prerequisites
 
-This tutorial assumes that you have Unity installed. If you're completely new to Unity, you can get your feet wet with this [tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY).
+This tutorial assumes that you have Unity installed. You can get acquainted with Unity by clicking on one of the tutorials listed below.
 
-**Note:** This tutorial was made using Unity 2019.4.13. If you want to use the exact same version, you can download it with this ([link](unityhub://2019.4.13f1/518737b1de84)).
+### How to Make a Game - Unity Beginner Tutorial
+
+* [Unity 2019.3](https://www.youtube.com/watch?v=OR0e-1UBEOU)
+* [Unity 2020.1](https://www.youtube.com/watch?v=Lu76c85LhGY)
+
+You can download the exact version of Unity used for this tutorial by clicking the link below. 
+
+* [Unity 2019.4.13](unityhub://2019.4.13f1/518737b1de84)
 
 ## Create a New Project
 
