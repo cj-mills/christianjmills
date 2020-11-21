@@ -25,7 +25,7 @@ This tutorial assumes that you have Unity installed. If you're completely new to
 
 ## Create a New Project
 
-First, we need to create a new Unity project. Since the PoseNet model only estimates 2D poses, we'll select the 2D template.
+First, we need to create a new Unity project. We'll select the 2D template since the PoseNet model only estimates 2D poses.
 
 ![create_project](\images\barracuda-posenet-tutorial\create_project.PNG)
 
