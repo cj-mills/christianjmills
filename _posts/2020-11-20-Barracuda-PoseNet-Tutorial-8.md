@@ -58,7 +58,7 @@ Next, we need to create a couple of private `int` variables to store the dimensi
 
 ## Update `Start()` Method
 
-We need to make some modifications to the `Start()` method to prepare for input with different aspect ratios.
+We'll make some modifications to the `Start()` method to prepare for input with different aspect ratios.
 
 ### Get Reference to `Video Player`
 
