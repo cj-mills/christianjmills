@@ -4,7 +4,7 @@ layout: post
 toc: false
 description: This post covers how to dynamically handle video input with different aspect ratios.
 categories: [unity, tutorial]
-hide: true
+hide: false
 search_exclude: false
 ---
 
