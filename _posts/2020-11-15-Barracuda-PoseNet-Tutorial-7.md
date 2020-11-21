@@ -89,3 +89,4 @@ Now we can enable and disable the webcam from the `Inspector` tab.
 
 
 
+### Next: [Part 8](https://christianjmills.com/unity/tutorial/2020/11/20/Barracuda-PoseNet-Tutorial-8.html)
