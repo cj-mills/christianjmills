@@ -9,7 +9,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 5](https://christianjmills.com/unity/tutorial/2020/11/14/Barracuda-PoseNet-Tutorial-5.html)
+### Previous: [Part 5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-5/)
 
 * [Create DrawSkeleton Script](#create-drawskeleton-script)
 * [Create SkeletonRenderer](#create-skeletonrenderer)
@@ -131,4 +131,5 @@ If you press the play button, you should see something like this.
 
 ![pose_skeleton_480p_90c](\images\barracuda-posenet-tutorial\pose_skeleton_480p_90c.gif)
 
-### Next: [Part  7](https://christianjmills.com/unity/tutorial/2020/11/15/Barracuda-PoseNet-Tutorial-7.html)
+### Next: [Part  7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-7/)
+
