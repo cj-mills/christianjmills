@@ -9,7 +9,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 4](https://christianjmills.com/unity/tutorial/2020/11/12/Barracuda-PoseNet-Tutorial-4.html)
+### Previous: [Part 4](https://christianjmills.com/Barracuda-PoseNet-Tutorial-4/)
 
 * [Create Key Points](#create-key-points)
 * [Map Key Point Locations](#map-key-point-locations)
@@ -150,5 +150,5 @@ We'll call the method in `Update()` just after `ProcessOutput()`.
 
 ![call_updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\call_updateKeyPointPositions_method.png)
 
-### Next: [Part 6](https://christianjmills.com/unity/tutorial/2020/11/14/Barracuda-PoseNet-Tutorial-6.html)
+### Next: [Part 6](https://christianjmills.com/Barracuda-PoseNet-Tutorial-6/)
 
