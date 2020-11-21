@@ -2,7 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 1
 layout: post
 toc: false
-comments: false
+comments: true
 description: This first post covers how to set up a video player in Unity. We'll be using the video player to check the accuracy of the PoseNet model.
 categories: [unity,tutorial]
 hide: false
