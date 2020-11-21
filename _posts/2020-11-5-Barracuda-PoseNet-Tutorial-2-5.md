@@ -9,7 +9,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html) [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html)
+### Previous: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/)
 
 * [Make a New Screen](#make-a-new-screen)
 * [Update the PoseNet Script](#update-the-posenet-script)
@@ -88,4 +88,4 @@ Make sure the `Display Input` checkbox is ticked in the `Inspector` tab. It will
 
 ![preprocessed_image_preview6](\images\barracuda-posenet-tutorial\preprocessed_image_preview6.gif)
 
-### Next: [Part 3](https://christianjmills.com/unity/tutorial/2020/11/05/Barracuda-PoseNet-Tutorial-3.html)
+### Next: [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-3/)
