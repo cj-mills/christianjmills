@@ -80,7 +80,7 @@ We need to get the video resolution from the `Video Player` object when we're no
 
 ### Replace `videoTexture`
 
-The dimensions for `videoTexture` can't be updated once it's been created. We'll need to replace it with a new `RenderTexture` that uses the new `videoHeight` and `videoWidth` values.
+The dimensions for `videoTexture` can't be updated once it's been created. We'll need to replace it with a new `RenderTexture` that uses the new `videoHeight` and `videoWidth` values. We also need to set the new `videoTexture` as the `targetTexture` for the `Video Player` object.
 
 ![replace_videoTexture](\images\barracuda-posenet-tutorial\replace_videoTexture.png)
 
