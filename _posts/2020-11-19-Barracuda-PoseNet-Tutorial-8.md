@@ -14,7 +14,7 @@ search_exclude: false
 * [Add Video Resolution Variables](#add-video-resolution-variables)
 * [Update Start() Method](#update-start-method)
 * [Update ProcessOutput() Method](#update-processoutput-method)
-* [Set Inspector Variables](#set-inspector-variables)
+* [Try It Out](#try-it-out)
 
 ## Add `UnityEngine.Video` Namespace
 
@@ -100,7 +100,7 @@ We'll also resize and reposition the `Main Camera` object to account for changes
 
 ## Update `ProcessOutput()` Method
 
-Next, we need to modify how we calculate the key point locations.
+Finally, we need to modify how we calculate the key point locations.
 
 ### Update Scaling Calculations
 
@@ -120,5 +120,18 @@ We'll scale either `xPos` or `yPos` by `unsqueezeScale` depending on whether the
 
 
 
-## Set Inspector Variables
+## Try It Out
+
+Now we can test the modifications by using some vertical videos from [Pexels](https://www.pexels.com/).
+
+1. [Woman Doing a Jump Rope Exercise](https://www.pexels.com/video/woman-doing-a-jump-rope-exercise-2785536/)
+2. [Man Dancing Hip-Hop](https://www.pexels.com/video/man-dancing-hip-hop-2795742/)
+
+![jump_rope_pose_estimation_4](\images\barracuda-posenet-tutorial\jump_rope_pose_estimation_4.gif)
+
+
+
+
+
+
 
