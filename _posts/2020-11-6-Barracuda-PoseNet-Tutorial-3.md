@@ -55,9 +55,17 @@ If you select the `resnet50` asset, you should see the following in the `Inspect
 
 Next, we need to implement the code for loading the model in the `PoseNet` [script](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html#create-the-posenet-script).
 
+### Add `Unity.Barracuda` Namespace
+
+Open the `PoseNet` script and add the `Unity.Barracuda` namespace at the top script.
+
+![add_barracuda_namespace](\images\barracuda-posenet-tutorial\add_barracuda_namespace.png)
+
 ### Create `modelAsset` Variable
 
-Open the `PoseNet` script and make a new public `NNModel` variable called `modelAsset`. We'll assign the `resnet50` asset to this variable in the Unity Editor.
+Make a new public `NNModel` variable called `modelAsset`. We'll assign the `resnet50` asset to this variable in the Unity Editor.
+
+![create_modelAsset_variable](\images\barracuda-posenet-tutorial\create_modelAsset_variable.png)
 
 ### Create `workerType` Variable
 
@@ -65,7 +73,7 @@ We'll also add a variable that let's us choose which [backend](https://docs.unit
 
 Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
-![load_model_variables_1](\images\barracuda-posenet-tutorial\load_model_variables_1.png)
+![load_model_variables_1](\images\barracuda-posenet-tutorial\create_workerType_variable.png)
 
 ### Create `m_RuntimeModel` Variable
 
