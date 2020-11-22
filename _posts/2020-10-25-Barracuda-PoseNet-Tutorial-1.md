@@ -162,9 +162,7 @@ Before playing the video, we need to reposition and resize the `Main Camera` obj
 
 ### Set Camera Position
 
-With the `Main Camera` object selected in the `Hierarchy` tab, set the values for the `Position` parameter to same values as the `VideoScreen` object. 
-
-Next, we need to adjust the `Z` value for the `Position` parameter for the `Main Camera` object. Set it to the opposite of the `X` value.
+Select the `Main Camera` object in the `Hierarchy` tab and set the `Position` to same `X: 960 Y: 540` as the `VideoScreen` object. Next, we need to set the `Z` value for the `Position` to the opposite of the `X` value.
 
 ![set_main_camera_position](\images\barracuda-posenet-tutorial\set_main_camera_position_new.png)
 
