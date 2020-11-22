@@ -134,12 +134,6 @@ With the `VideoScreen` object selected, we need to adjust the `Scale` parameter 
 
 Next, we'll move `VideoScreen` to make things easier when processing output from the model. We want the bottom left corner to be at the origin. Set the `X` value for `Position` to half the `X` value for the `Scale` parameter. Do the same for the `Y` value. The new `Position` values should be `X: 960 Y: 540 Z: 0`.
 
-#### Before:
-
-![quad_position_default](\images\barracuda-posenet-tutorial\quad_position_default.png)
-
-#### After:
-
 ![quad_position_set](\images\barracuda-posenet-tutorial\quad_position_set.png)
 
 ### Reset the Scene Perspective
