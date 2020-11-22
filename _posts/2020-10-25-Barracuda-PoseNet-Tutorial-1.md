@@ -108,7 +108,7 @@ Open the folder and right-click an empty space. Select `Render Texture` in the `
 
 ### Resize the Render Texture
 
-With the `video_texture` asset selected, adjust the values for the `Size` parameter in the `Inspector` tab. We'll set the size parameter to the resolution of the videos. In our case, the resolution is 1920 x 1080.
+With the `video_texture` asset selected, adjust the values for the `Size` parameter in the `Inspector` tab. We'll set the size to `1920 x 1080` to match the videos.
 
 #### Before:
 
