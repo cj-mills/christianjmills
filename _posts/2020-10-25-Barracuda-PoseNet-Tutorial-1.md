@@ -19,7 +19,7 @@ search_exclude: false
 
 ## Prerequisites
 
-I recommend checking the following prerequisites if you want to follow along with this series on your own computer.
+I recommend checking the following prerequisites if you want to follow along with on your own computer.
 
 ### Unity
 
