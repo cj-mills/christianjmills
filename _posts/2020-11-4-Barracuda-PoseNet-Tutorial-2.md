@@ -33,7 +33,13 @@ Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` wi
 
  ![default_compute_shader](\images\barracuda-posenet-tutorial\default_compute_shader.png)
 
-Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we need to add a `Texture2D` variable to store the input image. Name it `InputImage` and give it a data type of `<half4>`. Use the same data type for the `Result` variable as well. We also need to make a new function to apply the ResNet preprocessing. We'll name the new function `PreprocessResNet()`.
+Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we need to add a `Texture2D` variable to store the input image. Name it `InputImage` and give it a data type of `<half4>`. Use the same data type for the `Result` variable as well.
+
+![posenet_shader_part1](\images\barracuda-posenet-tutorial\posenet_shader_part1.png)
+
+We also need to make a new function to apply the ResNet preprocessing. We'll name the new function `PreprocessResNet()`. We'll use the default `[numthreads(8,8,1)]`.
+
+![posenet_shader_part2](\images\barracuda-posenet-tutorial\posenet_shader_part2.png)
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. By default, color values in Unity are in the range of `[0,1]`. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the `Result` variable.
 
