@@ -19,6 +19,10 @@ search_exclude: false
 
 ## Prerequisites
 
+I recommend checking the following prerequisites if you want to follow along with this series on your own computer.
+
+### Unity
+
 This tutorial assumes that you have Unity installed. You can get acquainted with Unity by clicking on one of the tutorials listed below.
 
 ### How to Make a Game - Unity Beginner Tutorial
@@ -26,9 +30,13 @@ This tutorial assumes that you have Unity installed. You can get acquainted with
 * [Unity 2019.3](https://www.youtube.com/watch?v=OR0e-1UBEOU)
 * [Unity 2020.1](https://www.youtube.com/watch?v=Lu76c85LhGY)
 
-You can download the exact version of Unity used for this tutorial by clicking the link below. 
+**Note:** You can download the exact version of Unity used for this tutorial by clicking the link below. 
 
 * [Unity 2019.4.13](unityhub://2019.4.13f1/518737b1de84)
+
+### Hardware
+
+We'll be performing [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) with the PoseNet model on the GPU. The PoseNet model we'll be using can be quite demanding when using larger input resolutions.
 
 ## Create a New Project
 
