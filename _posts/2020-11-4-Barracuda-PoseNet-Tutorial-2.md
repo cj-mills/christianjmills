@@ -57,7 +57,7 @@ We need to make a new `C#` script to perform inference with the PoseNet model. W
 
 ### Create the Asset File
 
-Create a new folder in the `Assets` window and name it `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` section.
+Create a new folder in the `Assets` window and name it `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` submenu.
 
 ![create_new_script](\images\barracuda-posenet-tutorial\create_new_script.PNG)
 
