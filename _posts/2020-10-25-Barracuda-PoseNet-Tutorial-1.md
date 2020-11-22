@@ -74,7 +74,7 @@ Drag and drop the two video files from the file explorer into the `Videos` folde
 
 ## Create the Video Player
 
-In the `Hierarchy` tab, right click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`. The default name works well enough so we'll leave it as is.
+In the `Hierarchy` tab, right-click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`. The default name works well enough so we'll leave it as is.
 
 ![create_video_player](\images\barracuda-posenet-tutorial\create_video_player.PNG)
 
@@ -102,7 +102,7 @@ Create a new folder in the `Assets` window and name it `Textures`.
 
 ![textures_folder](\images\barracuda-posenet-tutorial\textures_folder.PNG)
 
-Open the folder and right click an empty space. In the `Create` section, click `Render Texture`. You can name it something like `video_texture`.
+Open the folder and right-click an empty space. In the `Create` section, click `Render Texture`. You can name it something like `video_texture`.
 
 ![create_render_texture](\images\barracuda-posenet-tutorial\create_render_texture.PNG)
 
