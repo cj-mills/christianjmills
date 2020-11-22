@@ -116,12 +116,6 @@ With the `video_texture` asset selected, adjust the values for the `Size` parame
 
 With the resolution set, select the `Video Player` object in the `Hierarchy` tab again. Drag and drop the `video_texture` object into the `Target Texture` parameter in the `Inspector` tab.
 
-#### Before:
-
-![target_texture_empty](\images\barracuda-posenet-tutorial\target_texture_empty.png)
-
-#### After:
-
 ![target_texture_filled](\images\barracuda-posenet-tutorial\target_texture_filled.png)
 
 ### Create the Screen GameObject
