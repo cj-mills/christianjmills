@@ -23,7 +23,7 @@ The model we'll be using has a ResNet50 architecture and was pretrained on the I
 
 ### Create the Asset File
 
-Create a new folder in the `Assets` window and name it `Shaders`. In the `Shaders` folder, right-click an empty space, select `Shader` under the `Create` option and click `Compute Shader`. We'll name it `PoseNetShader`.
+Create a new folder in the `Assets` window and name it `Shaders`. Open the `Shaders` folder and right-click an empty space. Select `Shader` in the `Create` submenu and click `Compute Shader`. We'll name it `PoseNetShader`.
 
 ![create_compute_shader](\images\barracuda-posenet-tutorial\create_compute_shader.PNG)
 
