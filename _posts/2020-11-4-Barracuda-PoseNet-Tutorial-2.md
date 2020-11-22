@@ -69,7 +69,7 @@ Open the script in your code editor.
 
 ### Create `videoTexture` Variable
 
-Above the start method, create a new public `RenderTexture` named `videoTexture`. This is the variable to which we'll assign the `video_texture` RenderTexture that we made in part 1.
+Above the start method, create a new public `RenderTexture` named `videoTexture`. This is the variable to which we'll assign the `video_texture` that we made in part 1.
 
 ### Create `posenetShader` Variable
 
