@@ -41,11 +41,11 @@ Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we ne
 
 We also need to make a new function to apply the ResNet preprocessing. Name the new function `PreprocessResNet()`. We'll use the default `[numthreads(8,8,1)]`.
 
-![posenet_shader_part2](\images\barracuda-posenet-tutorial\posenet_shader_part2.png)
+![posenet_shader_part2](\images\barracuda-posenet-tutorial\posenet_shader_part2v2.png)
 
 The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. By default, color values in Unity are in the range of `[0,1]`. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the `Result` variable.
 
-![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_shader_part3.png)
+![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_shader_part3v2.png)
 
 Now that we've created our `ComputeShader`, we need to execute it using a `C#` script. 
 
