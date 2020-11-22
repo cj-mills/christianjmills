@@ -144,7 +144,7 @@ We should center our perspective on the `VideoScreen`. We can do so by selecting
 
 ### Apply the Render Texture to the Screen
 
-Drag and drop the `video_texture` object from the `Textures` folder onto the `VideoScreen` object in the `Scene` tab. The `VideoScreen` object should turn completely black.
+Drag and drop the `video_texture` asset onto the `VideoScreen` in the `Scene` tab. The `VideoScreen` object should turn completely black.
 
 ![empty_screen](\images\barracuda-posenet-tutorial\empty_screen.PNG)
 
