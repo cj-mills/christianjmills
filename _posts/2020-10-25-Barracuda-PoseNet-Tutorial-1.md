@@ -138,7 +138,7 @@ Next, we'll move `VideoScreen` to make things easier when processing output from
 
 ### Reset the Scene Perspective
 
-With the parameters for the `VideoScreen` object set, we need to zoom out and re-center our perspective. We can easily do this by selecting the `VideoScreen` object and pressing the `F` key on our keyboard. If you want to zoom back in a bit, you can scroll up with your mouse wheel.
+We should center our perspective on the `VideoScreen`. We can do so by selecting the `VideoScreen` object and pressing the `F` key on our keyboard. You can zoom back in a bit by scrolling up with your mouse wheel.
 
 ![recentered_video_screen](\images\barracuda-posenet-tutorial\recentered_video_screen.PNG)
 
