@@ -132,7 +132,7 @@ With the `VideoScreen` object selected, we need to adjust the `Scale` parameter 
 
 ### Set the Screen Position
 
-Next, we'll move `VideoScreen` to make things easier when handling output from the PoseNet model. We want the bottom left corner to be at the origin. Set the `X` value for `Position` to half the `X` value for the `Scale` parameter. Do the same for the `Y` value. The new `Position` values should be `X: 960 Y: 540 Z: 0`.
+Next, we'll move `VideoScreen` to make things easier when processing output from the model. We want the bottom left corner to be at the origin. Set the `X` value for `Position` to half the `X` value for the `Scale` parameter. Do the same for the `Y` value. The new `Position` values should be `X: 960 Y: 540 Z: 0`.
 
 #### Before:
 
