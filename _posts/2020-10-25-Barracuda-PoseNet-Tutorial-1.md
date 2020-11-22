@@ -36,7 +36,7 @@ This tutorial assumes that you have Unity installed. You can get acquainted with
 
 ### Hardware
 
-We'll be performing [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) with the PoseNet model on the GPU. The PoseNet model we'll be using can be quite demanding when using larger input resolutions.
+We'll be performing [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) on the GPU for this series. If possible, use a graphics card from a recent generation.
 
 ## Create a New Project
 
