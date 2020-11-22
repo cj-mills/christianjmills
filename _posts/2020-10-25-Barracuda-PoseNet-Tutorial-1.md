@@ -150,7 +150,7 @@ Drag and drop the `video_texture` asset onto the `VideoScreen` in the `Scene` ta
 
 ### Make Video Screen Unlit
 
-With the `VideoScreen` object selected, click the `Shader` dropdown in the `Inspector` tab. Select the Unlit option. In the `Unlit` section, select `Texture`. This removes the need for a separate light source. Without this setting, the video will look extremely dim.
+With the `VideoScreen` object selected, click the `Shader` dropdown in the `Inspector` tab. Select the Unlit option and click `Texture`. This removes the need for a separate light source. Otherwise, the videos would look extremely dim.
 
 ![select_unlit_shader](\images\barracuda-posenet-tutorial\select_unlit_shader.PNG)
 
