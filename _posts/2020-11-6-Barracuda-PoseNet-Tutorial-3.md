@@ -57,7 +57,7 @@ Next, we need to implement the code for loading the model in the `PoseNet` [scri
 
 ### Add `Unity.Barracuda` Namespace
 
-Open the `PoseNet` script and add the `Unity.Barracuda` namespace at the top script.
+Open the `PoseNet` script and add the `Unity.Barracuda` namespace at the top of the script.
 
 ![add_barracuda_namespace](\images\barracuda-posenet-tutorial\add_barracuda_namespace.png)
 
