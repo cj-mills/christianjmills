@@ -37,7 +37,7 @@ Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we ne
 
 ![posenet_shader_part1](\images\barracuda-posenet-tutorial\posenet_shader_part1.png)
 
-### Create `PreprocessResnet` Function
+### Create `PreprocessResNet` Function
 
 We also need to make a new function to apply the ResNet preprocessing. Name the new function `PreprocessResNet()`. We'll use the default `[numthreads(8,8,1)]`.
 
