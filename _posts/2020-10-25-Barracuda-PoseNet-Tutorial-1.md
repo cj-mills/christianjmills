@@ -102,7 +102,7 @@ Create a new folder in the `Assets` window and name it `Textures`.
 
 ![textures_folder](\images\barracuda-posenet-tutorial\textures_folder.PNG)
 
-Open the folder and right-click an empty space. Select `Render Texture` in the `Create` submenu. You can name it something like `video_texture`.
+Open the folder and right-click an empty space. Select `Render Texture` in the `Create` submenu and name it `video_texture`.
 
 ![create_render_texture](\images\barracuda-posenet-tutorial\create_render_texture.PNG)
 
