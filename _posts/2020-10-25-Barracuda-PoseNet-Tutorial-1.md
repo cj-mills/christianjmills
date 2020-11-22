@@ -128,12 +128,6 @@ Now, we need to create the screen itself. We'll use a [`Quad`](https://docs.unit
 
 With the `VideoScreen` object selected, we need to adjust the `Scale` parameter in the `Inspector` tab. Set the `X` value to 1920 and the `Y` value to 1080. Leave the `Z` value at 1.
 
-#### Before:
-
-![quad_scale_default](\images\barracuda-posenet-tutorial\quad_scale_default.png)
-
-#### After:
-
 ![quad_scale_set](\images\barracuda-posenet-tutorial\quad_scale_set.png)
 
 ### Set the Screen Position
