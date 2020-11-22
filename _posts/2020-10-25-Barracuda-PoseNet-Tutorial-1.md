@@ -84,7 +84,7 @@ Select the `Video Player` object in the `Hierarchy` tab. Then, drag and drop the
 
 ![video_clip_filled](\images\barracuda-posenet-tutorial\video_clip_filled.png)
 
-### Make Video Loop
+### Make the Video Loop
 
 Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when the project is running.
 
