@@ -46,7 +46,7 @@ First, we need to create a new Unity project. We'll select the 2D template since
 
 ## Import Video Files
 
-We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second has some more challenging sections. We'll be using the **Full HD** resolution for the videos.
+We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is easier for the PoseNet model. The second has some more challenging sections. We'll be using the `**Full HD**` resolution for the videos.
 
 1. [Two Young Men Doing a Boardslide Over a Railing](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
 
