@@ -53,26 +53,26 @@ The next variable will contain pairs of key point indices. The corresponding key
 
 #### Joint Pairs
 
-| Starting Key Point | Ending Key Point |
-| ------------------ | ---------------- |
-| Nose               | Left Eye         |
-| Nose               | Right Eye        |
-| Left Eye           | Left Ear         |
-| Right Eye          | Right Ear        |
-| Left Shoulder      | Right Shoulder   |
-| Left Shoulder      | Left Hip         |
-| Right Shoulder     | Right Hip        |
-| Left Shoulder      | Right Hip        |
-| Right Shoulder     | Left Hip         |
-| Left Hip           | Right Hip        |
-| Left Shoulder      | Left Elbow       |
-| Left Elbow         | Left Wrist       |
-| Right Shoulder     | Right Elbow      |
-| Right Elbow        | Right Wrist      |
-| Left Hip           | Left Knee        |
-| Left Knee          | Left Ankle       |
-| Right Hip          | Right Knee       |
-| Right Knee         | Right Ankle      |
+|  #   | Starting Key Point | Ending Key Point |
+| :--: | ------------------ | ---------------- |
+|  1   | Nose               | Left Eye         |
+|  2   | Nose               | Right Eye        |
+|  3   | Left Eye           | Left Ear         |
+|  4   | Right Eye          | Right Ear        |
+|  5   | Left Shoulder      | Right Shoulder   |
+|  6   | Left Shoulder      | Left Hip         |
+|  7   | Right Shoulder     | Right Hip        |
+|  8   | Left Shoulder      | Right Hip        |
+|  9   | Right Shoulder     | Left Hip         |
+|  10  | Left Hip           | Right Hip        |
+|  11  | Left Shoulder      | Left Elbow       |
+|  12  | Left Elbow         | Left Wrist       |
+|  13  | Right Shoulder     | Right Elbow      |
+|  14  | Right Elbow        | Right Wrist      |
+|  15  | Left Hip           | Left Knee        |
+|  16  | Left Knee          | Left Ankle       |
+|  17  | Right Hip          | Right Knee       |
+|  18  | Right Knee         | Right Ankle      |
 
 
 
