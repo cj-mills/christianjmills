@@ -51,6 +51,29 @@ The next variable will contain pairs of key point indices. The corresponding key
 
 ![jointPairs_variable](\images\barracuda-posenet-tutorial\jointPairs_variable.png)
 
+#### Joint Pairs
+
+| Starting Key Point | Ending Key Point |
+| ------------------ | ---------------- |
+| Nose               | Left Eye         |
+| Nose               | Right Eye        |
+| Left Eye           | Left Ear         |
+| Right Eye          | Right Ear        |
+| Left Shoulder      | Right Shoulder   |
+| Left Shoulder      | Left Hip         |
+| Right Shoulder     | Right Hip        |
+| Left Shoulder      | Right Hip        |
+| Right Shoulder     | Left Hip         |
+| Left Hip           | Right Hip        |
+| Left Shoulder      | Left Elbow       |
+| Left Elbow         | Left Wrist       |
+| Right Shoulder     | Right Elbow      |
+| Right Elbow        | Right Wrist      |
+| Left Hip           | Left Knee        |
+| Left Knee          | Left Ankle       |
+| Right Hip          | Right Knee       |
+| Right Knee         | Right Ankle      |
+
 
 
 ### Create `lineWidth` Variable
