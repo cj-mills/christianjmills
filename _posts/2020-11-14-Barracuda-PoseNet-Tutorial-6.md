@@ -152,6 +152,10 @@ Drag and drop the key point objects onto the `Keypoints` parameter just like wit
 
 If you press the play button, you should see something like this.
 
+**Image Height:** `720`
+
+**Image Width:** `720`
+
 ![pose_skeleton_480p_90c](\images\barracuda-posenet-tutorial\pose_skeleton_480p_90c.gif)
 
 ### Next: [Part  7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-7/)
