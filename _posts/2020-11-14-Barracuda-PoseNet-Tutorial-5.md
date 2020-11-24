@@ -32,7 +32,7 @@ Right-click the `Key Points` object and select `Sphere` under `3D Object`. This 
 
 ![create_keypoint_gameobject](\images\barracuda-posenet-tutorial\create_keypoint_gameobject.PNG)
 
-Select the new `Sphere` object and press Ctrl-d to duplicate it. We'll need `16` duplicates for the remaining key points.
+Select the new `Sphere` object and press Ctrl-d to duplicate it. We'll need `17` spheres total.
 
 Rename the `Sphere` objects according to the table below.
 
