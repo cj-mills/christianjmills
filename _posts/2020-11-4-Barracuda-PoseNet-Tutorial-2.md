@@ -55,7 +55,7 @@ The `PreprocessResNet` function scales the RGB channel values of every pixel in 
 | Green   |    115.90     |
 | Blue    |    103.06     |
 
-![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_shader_part3v4.png)
+![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_shader_part3v5.png)
 
 Now that we've created our `ComputeShader`, we need to execute it using a `C#` script. 
 
