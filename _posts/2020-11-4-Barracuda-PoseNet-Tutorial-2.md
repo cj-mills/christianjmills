@@ -15,6 +15,7 @@ search_exclude: false
 * [Create a Compute Shader](#create-a-compute-shader)
 * [Create the PoseNet Script](#create-the-posenet-script)
 * [Create the Pose Estimator](#create-the-pose-estimator)
+* [Summary](#summary)
 
 ## Introduction
 
@@ -172,6 +173,8 @@ We also need to drag and drop the `PoseNetShader` asset into the `Posenet Shader
 
 ![posenet_script_inspector_full_1](\images\barracuda-posenet-tutorial\posenet_script_inspector_full_1.PNG)
 
+## Summary
 
+We're now ready to feed video frames to our PoseNet model. The next post covers how to install the Barracuda library and perform inference with our model.
 
 ### Next: [Part 2.5(Optional)](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2-5/) [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-3/)
