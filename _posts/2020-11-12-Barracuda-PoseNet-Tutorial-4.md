@@ -82,7 +82,7 @@ Since we know the stride for this model, we could make it a constant value. Howe
 
 #### Model with a Different Stride Value
 
-ResNet50 Stride 16: ([download](https://drive.google.com/file/d/1dlsWlBpjgD2AuZgi-qhZs-1IV-T98iLM/view?usp=sharing))
+* ResNet50 Stride 16: ([download](https://drive.google.com/file/d/1dlsWlBpjgD2AuZgi-qhZs-1IV-T98iLM/view?usp=sharing))
 
 To get the stride value, we'll select a dimension of `inputImage` and subtract `1`. We then divide that value by the same dimension of the heatmap with `1` subtracted as well. If we don't subtract `1`, we'll undershoot the stride value. 
 
