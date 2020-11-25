@@ -23,7 +23,7 @@ Select the `Package Manager` tab in the Unity editor.
 
 ![select_package_manager_tab](\images\barracuda-posenet-tutorial\select_package_manager_tab.png)
 
-Type `Barracuda` into the search box.
+Type `Barracuda` into the search box. The version of the package used in the tutorial is `1.0.4`.
 
 ![barracuda_search](\images\barracuda-posenet-tutorial\barracuda_search.PNG)
 
