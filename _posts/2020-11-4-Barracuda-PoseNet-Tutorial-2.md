@@ -11,15 +11,18 @@ search_exclude: false
 
 ### Previous: [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
 
+* [Introduction](#introduction)
 * [Create a Compute Shader](#create-a-compute-shader)
 * [Create the PoseNet Script](#create-the-posenet-script)
 * [Create the Pose Estimator](#create-the-pose-estimator)
 
+## Introduction
+
+The PoseNet model takes a single RGB image as input. We need to perform some preprocessing operations on the RGB channel values before feeding an image to the model. We'll first scale the values so that they are in the same range that the model was trained on. We then subtract the mean RGB values for the ImageNet dataset.
+
 ## Create a Compute Shader
 
 We can perform the preprocessing steps more quickly on the GPU. In Unity, we accomplish this with [compute shaders](https://docs.unity3d.com/Manual/class-ComputeShader.html). Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same operations on every pixel in an image. It also frees up the CPU.
-
-The model we'll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. We first need to scale the RGB channel values of input images so that they are in the same range that the model was trained on. We'll then add the ImageNet mean value for each channel.
 
 ### Create the Asset File
 
@@ -43,9 +46,15 @@ We also need to make a new function to apply the ResNet preprocessing. Name the 
 
 ![posenet_shader_part2](\images\barracuda-posenet-tutorial\posenet_shader_part2v3.png)
 
-The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. By default, color values in Unity are in the range of `[0,1]`. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the `Result` variable.
+The `PreprocessResNet` function scales the RGB channel values of every pixel in the `InputImage` by `255`. By default, color values in Unity are in the range of `[0,1]`. The function then substracts the ImageNet mean specific to the RGB channels. The processed image is returned in the `Result` variable.
 
-![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_shader_part3v3.png)
+| Channel | ImageNet Mean |
+| ------- | :-----------: |
+| Red     |    123.15     |
+| Green   |    115.90     |
+| Blue    |    103.06     |
+
+![posenet_compute_shader](\images\barracuda-posenet-tutorial\posenet_shader_part3v4.png)
 
 Now that we've created our `ComputeShader`, we need to execute it using a `C#` script. 
 
