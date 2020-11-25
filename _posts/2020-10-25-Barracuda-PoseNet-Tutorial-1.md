@@ -17,6 +17,7 @@ search_exclude: false
 * [Create the Video Player](#create-the-video-player)
 * [Create the Video Screen](#create-the-video-screen)
 * [Test the Video Player](#test-the-video-player)
+* [Summary](#summary)
 
 ## Introduction
 
