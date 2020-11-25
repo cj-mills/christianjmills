@@ -10,12 +10,19 @@ permalink: /:title/
 search_exclude: false
 ---
 
+* [Introduction](#introduction)
 * [Prerequisites](#prerequisites)
 * [Create a New Project](#create-a-new-project)
 * [Import Video Files](#import-video-files)
 * [Create the Video Player](#create-the-video-player)
 * [Create the Video Screen](#create-the-video-screen)
 * [Test the Video Player](#test-the-video-player)
+
+## Introduction
+
+This tutorial series provides step-by-step instructions for how to perform human [pose estimation](https://www.fritz.ai/pose-estimation/) in [Unity](https://unity.com/) with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html) inference library. We'll be using a pretrained [PoseNet](https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5) model to estimate the 2D locations of key points on an individual's body.
+
+This post demonstrates how to play and view videos inside Unity. We'll later perform pose estimation on individual frames while the video is playing. We can gauge the model's accuracy by comparing the estimated key point locations to the source video.
 
 ## Prerequisites
 
@@ -181,6 +188,10 @@ Now we can finally click the play button and watch the video.
 ### Result
 
 ![barracuda_posenet_tutorial_420p](\images\barracuda-posenet-tutorial\barracuda_posenet_tutorial_420p.gif)
+
+## Summary
+
+We now have a video player that we can use to feed input to the PoseNet model. The next post covers how to prepare input for the model on the GPU.
 
 ## Next: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/)
 
