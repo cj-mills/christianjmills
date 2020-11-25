@@ -175,6 +175,6 @@ We also need to drag and drop the `PoseNetShader` asset into the `Posenet Shader
 
 ## Summary
 
-We're now ready to feed video frames to our PoseNet model. The next post covers how to install the Barracuda library and perform inference with our model.
+We're now ready to feed video frames to our PoseNet model. In part 3, we'll cover how to install the Barracuda library and perform inference with our model.
 
 ### Next: [Part 2.5(Optional)](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2-5/) [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-3/)
