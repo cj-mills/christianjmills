@@ -115,16 +115,19 @@ window.onload = wrap_img;
     <h3 id="previous-part-1">Previous: <a href="https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/">Part 1</a></h3>
 
 <ul>
+  <li><a href="#introduction">Introduction</a></li>
   <li><a href="#create-a-compute-shader">Create a Compute Shader</a></li>
   <li><a href="#create-the-posenet-script">Create the PoseNet Script</a></li>
   <li><a href="#create-the-pose-estimator">Create the Pose Estimator</a></li>
 </ul>
 
+<h2 id="introduction">Introduction</h2>
+
+<p>The PoseNet model takes a single RGB image as input. We need to perform some preprocessing operations on the RGB channel values before feeding an image to the model. We’ll first scale the values so that they are in the same range that the model was trained on. We then subtract the mean RGB values for the ImageNet dataset.</p>
+
 <h2 id="create-a-compute-shader">Create a Compute Shader</h2>
 
 <p>We can perform the preprocessing steps more quickly on the GPU. In Unity, we accomplish this with <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">compute shaders</a>. Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same operations on every pixel in an image. It also frees up the CPU.</p>
-
-<p>The model we’ll be using has a ResNet50 architecture and was pretrained on the ImageNet dataset. We first need to scale the RGB channel values of input images so that they are in the same range that the model was trained on. We’ll then add the ImageNet mean value for each channel.</p>
 
 <h3 id="create-the-asset-file">Create the Asset File</h3>
 
@@ -148,9 +151,32 @@ window.onload = wrap_img;
 
 <p><img src="\images\barracuda-posenet-tutorial\posenet_shader_part2v3.png" alt="posenet_shader_part2" /></p>
 
-<p>The <code class="highlighter-rouge">PreprocessResNet</code> function scales the RGB channel values of every pixel in the <code class="highlighter-rouge">InputImage</code> by <code class="highlighter-rouge">255</code>. By default, color values in Unity are in the range of <code class="highlighter-rouge">[0,1]</code>. The function then adds the ImageNet mean specific to the RGB channels. The processed image is returned in the <code class="highlighter-rouge">Result</code> variable.</p>
+<p>The <code class="highlighter-rouge">PreprocessResNet</code> function scales the RGB channel values of every pixel in the <code class="highlighter-rouge">InputImage</code> by <code class="highlighter-rouge">255</code>. By default, color values in Unity are in the range of <code class="highlighter-rouge">[0,1]</code>. The function then substracts the ImageNet mean specific to the RGB channels. The processed image is returned in the <code class="highlighter-rouge">Result</code> variable.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\posenet_shader_part3v3.png" alt="posenet_compute_shader" /></p>
+<table>
+  <thead>
+    <tr>
+      <th>Channel</th>
+      <th style="text-align: center">ImageNet Mean</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Red</td>
+      <td style="text-align: center">123.15</td>
+    </tr>
+    <tr>
+      <td>Green</td>
+      <td style="text-align: center">115.90</td>
+    </tr>
+    <tr>
+      <td>Blue</td>
+      <td style="text-align: center">103.06</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><img src="\images\barracuda-posenet-tutorial\posenet_shader_part3v4.png" alt="posenet_compute_shader" /></p>
 
 <p>Now that we’ve created our <code class="highlighter-rouge">ComputeShader</code>, we need to execute it using a <code class="highlighter-rouge">C#</code> script.</p>
 
