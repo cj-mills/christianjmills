@@ -11,11 +11,17 @@ search_exclude: false
 
 ### Previous: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/) [Part 2.5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2-5/)
 
+* [Introduction](#introduction)
 * [Install Barracuda Package](#install-barracuda-package)
 * [Import PoseNet Model](#import-posenet-model)
 * [Load the Model](#load-the-model)
 * [Set Inspector Variables](#set-inspector-variables)
 * [Perform Inference](#perform-inference)
+* [Summary](#summary)
+
+## Introduction
+
+We can now start using the Barracuda library. We'll first install the Barracuda package for our project and import the PoseNet model. We're going to modify the model a bit to make postprocessing easier. Finally, we'll perform inference using a preprocessed image as input.
 
 ## Install Barracuda Package
 
@@ -41,7 +47,9 @@ Now we can import the model into Unity. The Barracuda dev team has focused on su
 
 ### Download the ONNX File
 
-You can download the converted PoseNet model from this ([link](https://drive.google.com/file/d/1oKrlraI3m3ecme-pAvAh25-Jzzu86sv_/view?usp=sharing)).
+You can download the converted PoseNet model from the link below.
+
+* ResNet50: ([download](https://drive.google.com/file/d/1oKrlraI3m3ecme-pAvAh25-Jzzu86sv_/view?usp=sharing))
 
 ### Import Model to Assets
 
@@ -168,5 +176,9 @@ We'll need to manually release the allocated resources for the Tensor with the `
 Here is the revised `Update()` method.
 
 ![perform_inference_update_method](\images\barracuda-posenet-tutorial\perform_inference_update_method_2.png)
+
+## Summary
+
+We've finally performed inference using a PoseNet model in Unity. However, we need to process the output from the model to determine the estimated key point locations. We'll cover how to perform the postprocessing operations in part 4.
 
 ### Next: [Part 4](https://christianjmills.com/Barracuda-PoseNet-Tutorial-4/)
