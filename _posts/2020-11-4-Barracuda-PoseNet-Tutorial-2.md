@@ -18,7 +18,7 @@ search_exclude: false
 
 ## Introduction
 
-The PoseNet model takes a single RGB image as input. We need to perform some preprocessing operations on the RGB channel values before feeding an image to the model. We'll first scale the values so that they are in the same range that the model was trained on. We then subtract the mean RGB values for the ImageNet dataset.
+The PoseNet model we'll be using has a ResNet-50 architecture and was created using TensorFlow. It takes a single RGB image as input. We need to perform some preprocessing operations on the RGB channel values before feeding an image to the model. We'll first scale the values so that they are in the same range that the model was trained on. We then subtract the mean RGB values for the ImageNet dataset.
 
 ## Create a Compute Shader
 
