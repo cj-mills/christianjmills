@@ -9,6 +9,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+**Last Updated:** Nov 25, 2020
+
 ### Previous: [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-3/)
 
 * [Create ProcessOutput() Method](#create-processoutput-method)
