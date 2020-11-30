@@ -9,9 +9,9 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
-
 **Last Updated:** Nov 25, 2020
+
+### Previous: [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
 
 * [Introduction](#introduction)
 * [Create a Compute Shader](#create-a-compute-shader)
