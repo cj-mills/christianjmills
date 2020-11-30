@@ -1,5 +1,6 @@
 ---
 toc: true
+comments: true
 layout: post
 description: A simple example of how to convert a TensorFlow.js graph model to a TensorFlow SavedModel.
 categories: [tensorflow,tutorial]
