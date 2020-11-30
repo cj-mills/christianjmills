@@ -2,6 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 5
 layout: post
 toc: false
+comments: true
 description: This post covers how to map the key point locations to GameObjects.
 categories: [unity, tutorial]
 hide: false
