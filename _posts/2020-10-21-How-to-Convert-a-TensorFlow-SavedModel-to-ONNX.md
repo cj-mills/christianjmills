@@ -2,6 +2,7 @@
 title: How to Convert TensorFlow Models to ONNX with tf2onnx
 layout: post
 toc: true
+comments: true
 description: This post covers how to use tf2onnx to convert a TensorFlow SavedModel to ONNX.
 categories: [tensorflow,onnx,tutorial]
 hide: false
