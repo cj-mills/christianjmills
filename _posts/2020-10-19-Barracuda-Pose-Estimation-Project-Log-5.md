@@ -2,6 +2,7 @@
 title: Barracuda Pose Estimation Project Log Pt. 5
 layout: post
 toc: false
+comments: true
 description: Back to it.
 categories: [unity,project,log]
 hide: false
