@@ -10,18 +10,24 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** Nov 21, 2020
+**Last Updated:** Nov 30, 2020
 
 ### Previous: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/)
 
+* [Introduction](#introduction)
 * [Make a New Screen](#make-a-new-screen)
 * [Update the PoseNet Script](#update-the-posenet-script)
 * [Assign Inspector Variables](#assign-inspector-variables)
 * [Test the New Screen](#test-the-new-screen)
+* [Summary](#summary)
+
+## Introduction
+
+Examining the preprocessed input images can be a useful step when debugging. We can see how much the source image gets squished when resized to a square aspect ratio. The model can have a hard time accurately determining key point locations if the individual gets squished too much. We can also get a visual sense of how the preprocessing operations change the pixel values.
 
 ## Make a New Screen
 
-If you want to see what the preprocessed images look like before they get fed into the model, we can make a second screen to view them during runtime.
+We can make a second screen to see what the preprocessed images look like before they get fed into the model.
 
 ### Make a Quad
 
@@ -87,8 +93,40 @@ With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `Inp
 
 ## Test the New Screen
 
-Make sure the `Display Input` checkbox is ticked in the `Inspector` tab. It will be easier to see the changes to the preprocessed images if we use a full color video. We can set the `Video Clip` for the `Video Player` to the `pexels_woman_dancing` file that we downloaded in [Part 1](https://christianjmills.com/unity/tutorial/2020/10/25/Barracuda-PoseNet-Tutorial-1.html#import-video-files).
+Make sure the `Display Input` checkbox is ticked in the `Inspector` tab. It will be easier to see the changes to the preprocessed images if we use a full color video. We can set the `Video Clip` for the `Video Player` to the `pexels_woman_dancing` file that we downloaded in [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/#import-video-files).
 
 ![preprocessed_image_preview6](\images\barracuda-posenet-tutorial\preprocessed_image_preview6.gif)
+
+## Rescale Pixel Values
+
+The current result may not be the most accurate representation as pixel values are still in the the range of `[0, 255]` instead of Unity's `[0.0, 1.0]`. We can rescale the pixel values by adding another function to our `PoseNetShader`.
+
+### Update `PoseNetShader`
+
+We'll create another function called `ScaleInputImage()` that divides the RGB channel valued by `255.0`.
+
+![scaleInputImage_poseNetShader](\images\barracuda-posenet-tutorial\scaleInputImage_poseNetShader.png)
+
+**Note:** Rescaling the pixel values will have a small impact on performance. Make sure to untick the `Display Input` checkbox when you're not examining the input image.
+
+### Create `ScaleInputImage` Method
+
+We need to create a new method in the `PoseNet` script to execute the function just like for the `PreprocessResNet` function.
+
+![scaleInputImage_poseNet_method](\images\barracuda-posenet-tutorial\scaleInputImage_poseNet_method.png)
+
+### Call `ScaleInputImage` Method
+
+Finally, we'll call the new method in the `if (displayInput)` statement.
+
+![call_scaleInputImage_method](\images\barracuda-posenet-tutorial\call_scaleInputImage_method.png)
+
+### Result
+
+![rescaledInputImage_6](\images\barracuda-posenet-tutorial\rescaledInputImage_6.gif)
+
+## Summary
+
+We now have a little screen that we can use to view the input image before it gets fed to the model.
 
 ### Next: [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-3/)
