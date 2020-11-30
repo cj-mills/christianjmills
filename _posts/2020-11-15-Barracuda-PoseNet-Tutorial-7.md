@@ -2,6 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 7
 layout: post
 toc: false
+comments: true
 description: This post covers how to use a webcam feed as input for the PoseNet model.
 categories: [unity, tutorial]
 hide: false
