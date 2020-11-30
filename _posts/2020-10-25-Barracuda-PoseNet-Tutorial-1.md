@@ -10,7 +10,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** November 24, 2020
+**Last Updated:** Nov 24, 2020
 
 * [Introduction](#introduction)
 * [Prerequisites](#prerequisites)
