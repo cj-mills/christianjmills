@@ -2,6 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 8
 layout: post
 toc: false
+comments: true
 description: This post covers how to handle video input with different aspect ratios.
 categories: [unity, tutorial]
 hide: false
