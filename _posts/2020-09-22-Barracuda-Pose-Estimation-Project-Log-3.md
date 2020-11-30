@@ -2,6 +2,7 @@
 title: Barracuda Pose Estimation Project Log Pt. 3
 layout: post
 toc: true
+comments: true
 description: I might be doing something wrong.
 categories: [unity,project,log]
 hide: false
