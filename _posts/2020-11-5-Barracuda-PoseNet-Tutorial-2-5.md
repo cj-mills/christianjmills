@@ -9,6 +9,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+**Last Updated:** Nov 21, 2020
+
 ### Previous: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/)
 
 * [Make a New Screen](#make-a-new-screen)
