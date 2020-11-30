@@ -10,7 +10,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** Nov 24, 2020
+**Last Updated:** Nov 30, 2020
 
 ### Previous: [Part 4](https://christianjmills.com/Barracuda-PoseNet-Tutorial-4/)
 
@@ -151,7 +151,7 @@ We need to define a new method to update the key point positions. Name the metho
 
 We'll call the method in `Update()` just after `ProcessOutput()`.
 
-![call_updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\call_updateKeyPointPositions_method.png)
+![call_updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\call_updateKeyPointPositions_method_2.png)
 
 ### Next: [Part 6](https://christianjmills.com/Barracuda-PoseNet-Tutorial-6/)
 
