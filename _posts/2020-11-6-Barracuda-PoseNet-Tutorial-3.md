@@ -10,7 +10,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** Nov 25, 2020
+**Last Updated:** Nov 30, 2020
 
 ### Previous: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/) [Part 2.5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2-5/)
 
@@ -178,7 +178,7 @@ We'll need to manually release the allocated resources for the Tensor with the `
 
 Here is the revised `Update()` method.
 
-![perform_inference_update_method](\images\barracuda-posenet-tutorial\perform_inference_update_method_2.png)
+![perform_inference_update_method](\images\barracuda-posenet-tutorial\perform_inference_update_method_3.png)
 
 ## Summary
 
