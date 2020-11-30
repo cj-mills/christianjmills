@@ -9,6 +9,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+**Last Updated:** Nov 24, 2020
+
 ### Previous: [Part 5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-5/)
 
 * [Create DrawSkeleton Script](#create-drawskeleton-script)
