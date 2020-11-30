@@ -2,6 +2,7 @@
 title: In-Game Style Transfer
 layout: post
 toc: false
+comments: true
 description: Some optimization is still required.
 categories: [unity,style_transfer]
 hide: false
