@@ -2,6 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 6
 layout: post
 toc: false
+comments: true
 description: This post covers how to create a pose skeleton by drawing lines between key points.
 categories: [unity, tutorial]
 hide: false
