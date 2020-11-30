@@ -2,6 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 2
 layout: post
 toc: false
+comments: true
 description: This post covers how to implement the preprocessing steps for the PoseNet model.
 categories: [unity, tutorial]
 hide: false
