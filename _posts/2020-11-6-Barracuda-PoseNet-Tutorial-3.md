@@ -2,6 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 3
 layout: post
 toc: false
+comments: true
 description: This post covers how to perform inference with the PoseNet model.
 categories: [unity, tutorial]
 hide: false
