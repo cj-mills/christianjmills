@@ -19,6 +19,7 @@ search_exclude: false
 * [Update the PoseNet Script](#update-the-posenet-script)
 * [Assign Inspector Variables](#assign-inspector-variables)
 * [Test the New Screen](#test-the-new-screen)
+* [Rescale Pixel Values](#rescale-pixel-values)
 * [Summary](#summary)
 
 ## Introduction
