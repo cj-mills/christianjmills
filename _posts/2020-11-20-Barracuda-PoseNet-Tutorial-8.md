@@ -9,6 +9,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+**Last Updated:** Nov 21, 2020
+
 ### Previous: [Part 7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-7/)
 
 * [Add UnityEngine.Video Namespace](#add-unityenginevideo-namespace)
