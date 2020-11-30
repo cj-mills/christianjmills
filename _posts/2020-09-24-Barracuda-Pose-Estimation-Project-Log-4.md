@@ -2,6 +2,7 @@
 title: Barracuda Pose Estimation Project Log Pt. 4
 layout: post
 toc: false
+comments: true
 description: I'm an idiot.
 categories: [unity,project,log]
 hide: false
