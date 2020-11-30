@@ -2,6 +2,7 @@
 title: Barracuda PoseNet Tutorial Pt. 4
 layout: post
 toc: false
+comments: true
 description: This post covers how to process the output of the PoseNet model.
 categories: [unity, tutorial]
 hide: false
