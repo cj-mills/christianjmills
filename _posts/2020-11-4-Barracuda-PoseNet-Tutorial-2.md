@@ -11,6 +11,8 @@ search_exclude: false
 
 ### Previous: [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
 
+**Last Updated:** Nov 25, 2020
+
 * [Introduction](#introduction)
 * [Create a Compute Shader](#create-a-compute-shader)
 * [Create the PoseNet Script](#create-the-posenet-script)
