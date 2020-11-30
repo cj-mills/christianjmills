@@ -104,7 +104,7 @@ The current result may not be the most accurate representation as pixel values a
 
 ### Update `PoseNetShader`
 
-We'll create another function called `ScaleInputImage()` that divides the RGB channel valued by `255.0`.
+We'll create another function called `ScaleInputImage()` that divides the RGB channel values by `255.0`.
 
 ![scaleInputImage_poseNetShader](\images\barracuda-posenet-tutorial\scaleInputImage_poseNetShader.png)
 
