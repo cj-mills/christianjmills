@@ -127,6 +127,6 @@ Finally, we'll call the new method in the `if (displayInput)` statement.
 
 ## Summary
 
-We now have a little screen that we can use to view the input image before it gets fed to the model.
+We now have a little screen that we can use to view the processed input image before it gets fed to the model.
 
 ### Next: [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-3/)
