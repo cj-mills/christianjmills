@@ -14,8 +14,14 @@ search_exclude: false
 
 ### Previous: [Part 4](https://christianjmills.com/Barracuda-PoseNet-Tutorial-4/)
 
+* [Introduction](#introduction)
 * [Create Key Points](#create-key-points)
 * [Map Key Point Locations](#map-key-point-locations)
+* [Summary](#summary)
+
+## Introduction
+
+In this post, we'll make use of the `VideoScreen` we made in [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/) by checking if the estimated key point locations align with the actual locations in the video. We'll know everything is working as intended if the objects get placed in front of the target key points. If not, we'll at least have a visual debugging tool to work out where we things went wrong.
 
 ## Create Key Points
 
@@ -152,6 +158,10 @@ We need to define a new method to update the key point positions. Name the metho
 We'll call the method in `Update()` just after `ProcessOutput()`.
 
 ![call_updateKeyPointPositions_method](\images\barracuda-posenet-tutorial\call_updateKeyPointPositions_method_2.png)
+
+## Summary
+
+We now have a useful debugging tool to gauge our model's performance. In the next post, we'll create a complete pose skeleton by drawing lines connecting the key point objects we made in this post.
 
 ### Next: [Part 6](https://christianjmills.com/Barracuda-PoseNet-Tutorial-6/)
 
