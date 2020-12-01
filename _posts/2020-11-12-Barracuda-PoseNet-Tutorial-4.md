@@ -25,7 +25,7 @@ search_exclude: false
 
 The post processing phase consists of a few main steps. We need to first determine the region of the image that the model estimates is most likely to contain a given key point. We'll then refine this estimate using the output from the `offsetsLayer`. Lastly, we'll account for any changes in aspect ratio and scale the key point locations up to the source resolution.
 
-So far, major operations have been performed on the GPU. Unfortunately, we'll be performing the post processing steps on the CPU. `Tensor` elements need to be accessed on the main thread. Just reading the values from the model's output layers forces the rest of the program to wait until the operation completes. Even if we perform the post processing on the GPU, we would still need to access the result on the CPU. I'm working on a way to avoid reading the values on the CPU. However, it's still too messy to include in this tutorial.
+So far, major operations have been performed on the GPU. We'll be performing the post processing steps on the CPU. `Tensor` elements need to be accessed on the main thread. Just reading the values from the model's output layers forces the rest of the program to wait until the operation completes. Even if we perform the post processing on the GPU, we would still need to access the result on the CPU. I'm working on a way to avoid reading the values on the CPU. Unfortunately, it's still too messy to include in this tutorial.
 
 ## Create `ProcessOutput()` Method
 
