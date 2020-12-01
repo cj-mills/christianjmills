@@ -10,12 +10,18 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** Nov 21, 2020
+**Last Updated:** Dec 1, 2020
 
 ### Previous: [Part 6](https://christianjmills.com/Barracuda-PoseNet-Tutorial-6/)
 
+* [Introduction](#introduction)
 * [Modify PoseNet Script](#modify-posenet-script)
 * [Set Inspector Variable](#set-inspector-variable)
+* [Summary](#summary)
+
+## Introduction
+
+It's time to see how our model performs with a webcam. Prerecorded videos are great for testing, but most real-world applications will likely use a live video feed. We'll set up our video feed for a front-facing camera that mirrors the user.
 
 
 
@@ -90,6 +96,12 @@ Now we can enable and disable the webcam from the `Inspector` tab.
 ![enable_useWebcam_inspector](\images\barracuda-posenet-tutorial\enable_useWebcam_inspector.PNG)
 
 `Note:` Don't toggle the `useWebcam` parameter during runtime with the code as it is.
+
+
+
+## Summary
+
+We can now perform pose estimation using either prerecorded or live video feeds. We'll further increase our project's flexibility in the next post by adding the ability to handle input with different aspect ratios.
 
 
 
