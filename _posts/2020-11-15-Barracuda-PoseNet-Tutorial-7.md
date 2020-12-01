@@ -101,7 +101,7 @@ Now we can enable and disable the webcam from the `Inspector` tab.
 
 ## Summary
 
-We can now perform pose estimation using either prerecorded or live video feeds. We'll further increase our project's flexibility in the next post by adding the ability to handle input with different aspect ratios.
+We can now perform pose estimation using either prerecorded or live video feeds. We'll further increase our flexibility for input sources in the next post by adding the ability to handle input with different aspect ratios.
 
 
 
