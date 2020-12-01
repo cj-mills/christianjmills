@@ -47,7 +47,7 @@ We'll use a [`WebCamTexture`](https://docs.unity3d.com/ScriptReference/WebCamTex
 
 ### Set Up Webcam Feed
 
-We'll prepare the webcam feed at the top of the `Start()` method.
+We'll prepare the webcam feed at the top of the `Start()` method. You can find the completed code below.
 
 #### Initialize the `webcamTexture`
 
