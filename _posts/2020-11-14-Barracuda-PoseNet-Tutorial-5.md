@@ -25,7 +25,7 @@ In this post, we'll make use of the `VideoScreen` we made in [Part 1](https://ch
 
 ## Create Key Points
 
-We need to create a separate `GameObject` for each of the `17` key points. 
+We need to create a separate `GameObject` for each of the `17` key points.
 
 ### Create Container
 
