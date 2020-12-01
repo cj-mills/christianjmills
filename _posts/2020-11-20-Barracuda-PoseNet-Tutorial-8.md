@@ -10,15 +10,21 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** Nov 21, 2020
+**Last Updated:** Dec 1, 2020
 
 ### Previous: [Part 7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-7/)
 
+* [Introduction](#introduction)
 * [Add UnityEngine.Video Namespace](#add-unityenginevideo-namespace)
 * [Add Video Resolution Variables](#add-video-resolution-variables)
 * [Update Start() Method](#update-start-method)
 * [Update ProcessOutput() Method](#update-processoutput-method)
 * [Try It Out](#try-it-out)
+* [Summary](#summary)
+
+## Introduction
+
+So far, we've only worked with video sources that have `16:9` aspect ratios. You might need to work with input that has a taller or wider aspect ratio depending on your application and equipment. In this post, we'll cover how to adjust to the current source resolution at runtime.
 
 ## Add `UnityEngine.Video` Namespace
 
@@ -135,7 +141,9 @@ Now we can test the modifications on some vertical videos from [Pexels](https://
 
 
 
+## Summary
 
+Now we can use video sources with different aspect ratios without needing to manually change any parameters.
 
 
 
