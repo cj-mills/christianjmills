@@ -10,13 +10,19 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** Nov 24, 2020
+**Last Updated:** Nov 30, 2020
 
 ### Previous: [Part 5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-5/)
 
+* [Introduction](#introduction)
 * [Create DrawSkeleton Script](#create-drawskeleton-script)
 * [Create SkeletonRenderer](#create-skeletonrenderer)
 * [Try It Out](#try-it-out)
+* [Summary](#summary)
+
+## Introduction
+
+In this post, we'll add some connecting lines between the key points to create a simple skeleton. This will improve visibility over the key point objects alone.
 
 ## Create `DrawSkeleton` Script
 
@@ -162,6 +168,10 @@ If you press the play button, you should see something like this.
 | `minConfidence` |  85   |
 
 ![pose_skeleton_480p_90c](\images\barracuda-posenet-tutorial\pose_skeleton_480p_90c.gif)
+
+## Summary
+
+We now have a complete pose skeleton that we can use for debugging or demos. In the next post, we'll add the option to use a live webcam feed as input instead of a prerecorded video.
 
 ### Next: [Part  7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-7/)
 
