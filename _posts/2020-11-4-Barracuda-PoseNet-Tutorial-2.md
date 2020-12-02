@@ -12,7 +12,7 @@ search_exclude: false
 
 **Last Updated:** Nov 25, 2020
 
-### Previous: [Part 1](https://christianjmills.com/barracuda-posenet-tutorial\part-2-1/)
+### Previous: [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
 
 * [Introduction](#introduction)
 * [Create a Compute Shader](#create-a-compute-shader)
