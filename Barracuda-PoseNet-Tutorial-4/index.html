@@ -135,7 +135,7 @@ window.onload = wrap_img;
 
 <p>The post processing steps will be handled in a new method called <code class="highlighter-rouge">ProcessOutput()</code>. The method will take in the output <code class="highlighter-rouge">Tensors</code> from the <code class="highlighter-rouge">predictionLayer</code> and the <code class="highlighter-rouge">offsetsLayer</code>.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\processoutput_method_empty.png" alt="processoutput_method_empty" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\processoutput_method_empty.png" alt="processoutput_method_empty" /></p>
 
 <p>Before filling out the function, we need to create a new constant and a new variable.</p>
 
@@ -224,7 +224,7 @@ window.onload = wrap_img;
 
 <p>Since the number of key points never changes, we’ll store it in an <code class="highlighter-rouge">int</code> constant. Name the constant <code class="highlighter-rouge">numKeypoints</code> and set the value to <code class="highlighter-rouge">17</code>.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\numKeypoints_constant.png" alt="numKeypoints_constant" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\numKeypoints_constant.png" alt="numKeypoints_constant" /></p>
 
 <h3 id="create-keypointlocations-variable">Create <code class="highlighter-rouge">keypointLocations</code> Variable</h3>
 
@@ -234,13 +234,13 @@ window.onload = wrap_img;
 
 <p>There are many ways we can store this information. For simplicity, we’ll stick with an array of arrays. The array will have <code class="highlighter-rouge">17</code> elements. Each element will contain the location information for the key point that matches their index.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\keypointLocations_variable.png" alt="numKeyPoints_and_keypointLocations" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\keypointLocations_variable.png" alt="numKeyPoints_and_keypointLocations" /></p>
 
 <h3 id="retrieve-output-tenors">Retrieve Output Tenors</h3>
 
 <p>Call <code class="highlighter-rouge">ProcessOutput()</code> after <code class="highlighter-rouge">engine.Execute(input)</code> in the <code class="highlighter-rouge">Update()</code>  method. We’ll use the <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_PeekOutput_System_String_"><code class="highlighter-rouge">engine.PeekOutput()</code></a> method to get a reference to the output <code class="highlighter-rouge">Tensors</code> from the model. Since they are just references, we don’t need to manually dispose of them.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\update_method_processoutput.png" alt="update_method_processoutput" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\update_method_processoutput.png" alt="update_method_processoutput" /></p>
 
 <p>Now we can start filling out the <code class="highlighter-rouge">ProcessOutput()</code> method.</p>
 
@@ -264,25 +264,25 @@ window.onload = wrap_img;
 
 <p>For most input resolutions this will yield a value that is slightly above the actual stride. If we left it there, the key point locations would be offset from the <code class="highlighter-rouge">videoTexture</code>. To compensate, we’ll subtract the remainder of the calculated stride divided by <code class="highlighter-rouge">8</code>. The stride for the PoseNet models provided in this tutorial series are all multiples of <code class="highlighter-rouge">8</code>.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\stride.png" alt="stride" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\stride.png" alt="stride" /></p>
 
 <h3 id="calculate-image-scale">Calculate Image Scale</h3>
 
 <p>After scaling the output back to the <code class="highlighter-rouge">inputImage</code> resolution, we’ll need to scale the output up to the source resolution. We can use the dimensions of <code class="highlighter-rouge">videoTexture</code> to calculate this scale.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\scale.png" alt="scale" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\scale.png" alt="scale" /></p>
 
 <h3 id="calculate-aspect-ratio-scale">Calculate Aspect Ratio Scale</h3>
 
 <p>As I noted in <a href="https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html#resize-the-image">Part 2</a>, we need to compensate for the change in aspect ratio that results from resizing the image. We can use the dimensions of the <code class="highlighter-rouge">videoTexture</code> to stretch the output to the original aspect ratio.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\unsqueezeScale.png" alt="unsqueezeScale" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\unsqueezeScale.png" alt="unsqueezeScale" /></p>
 
 <h2 id="iterate-through-heatmaps">Iterate Through Heatmaps</h2>
 
 <p>Now we can iterate through each of the heatmaps and determine the location of the associated key points.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\iterate_through_heatmaps_2.png" alt="iterate_through_heatmaps" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\iterate_through_heatmaps_2.png" alt="iterate_through_heatmaps" /></p>
 
 <h3 id="locate-key-point-indices">Locate Key Point Indices</h3>
 
@@ -290,13 +290,13 @@ window.onload = wrap_img;
 
 <p>The new method will be called <code class="highlighter-rouge">LocateKeyPointIndex()</code> and take in the <code class="highlighter-rouge">heatmaps</code> and <code class="highlighter-rouge">offsets</code> tensors along with the current <code class="highlighter-rouge">keypointIndex</code>. It will return a <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples"><code class="highlighter-rouge">Tuple</code></a> containing the <code class="highlighter-rouge">(x,y)</code> coordinates from the heatmap index, the associated offset vector, and the confidence value at the heatmap index.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\locateKeyPointIndex_method.png" alt="locateKeyPointIndex_method" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\locateKeyPointIndex_method.png" alt="locateKeyPointIndex_method" /></p>
 
 <h4 id="call-the-method">Call the Method</h4>
 
 <p>We’ll call <code class="highlighter-rouge">LocateKeyPointIndex()</code> at the start of each iteration through the for loop in <code class="highlighter-rouge">ProcessOutput()</code>.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\processOutput_locateIndices_2.png" alt="processOutput_locateIndices" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\processOutput_locateIndices_2.png" alt="processOutput_locateIndices" /></p>
 
 <h3 id="calculate-key-point-positions">Calculate Key Point Positions</h3>
 
@@ -304,13 +304,13 @@ window.onload = wrap_img;
 
 <p>Only the x-axis position is scaled by the <code class="highlighter-rouge">unsqueezeValue</code>. This is specific to our current <code class="highlighter-rouge">videoTexture</code> aspect ratio. I will cover a more dynamic approach in a later post.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\calculate_position_2.png" alt="calculate_position" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\calculate_position_2.png" alt="calculate_position" /></p>
 
 <h4 id="store-key-point-positions">Store Key Point Positions</h4>
 
 <p>Finally, we’ll store the location data for the current key point at the corresponding index in the <code class="highlighter-rouge">keypointLocations</code> array.</p>
 
-<p><img src="\images\barracuda-posenet-tutorial\store_position_2.png" alt="store_position" /></p>
+<p><img src="\images\barracuda-posenet-tutorial\part-4\store_position_2.png" alt="store_position" /></p>
 
 <h2 id="summary">Summary</h2>
 
