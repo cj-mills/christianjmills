@@ -196,5 +196,5 @@ Now we can finally click the play button and watch the video.
 
 We now have a video player that we can use to feed input to the PoseNet model. The next post covers how to prepare input for the model on the GPU.
 
-## Next: [Part 2](https://christianjmills.com/barracuda-posenet-tutorial\part-2/)
+## Next: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/)
 
