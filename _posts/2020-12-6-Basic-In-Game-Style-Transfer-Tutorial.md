@@ -149,9 +149,13 @@ Open the `Style_Transer` folder and create a new folder called `Shaders`. Enter 
 
 ### Remove the Default Code
 
-Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following.
+Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following. 
 
 ![default_compute_shader](\images\basic-in-game-style-transfer-tutorial\default_compute_shader.png)
+
+Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we need to add a `Texture2D` variable to store the input image. Name it `InputImage` and give it a data type of `<half4>`. Use the same data type for the `Result` variable as well.
+
+![styleTransfer_shader_part1](\images\basic-in-game-style-transfer-tutorial\styleTransfer_shader_part1.png)
 
 
 
