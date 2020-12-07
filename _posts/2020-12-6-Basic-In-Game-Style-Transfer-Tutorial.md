@@ -77,17 +77,17 @@ We'll place all our additions to the project in a new folder called `Style_Trans
 
 ## Import Models
 
-Next, we need to add some style transfer models. PyTorch models need to be exported to the [ONNX](https://onnx.ai/) format before being imported to Unity. Fortunately, PyTorch provides built-in support for exporting to ONNX ([link](https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html)).
+Next, we need to add some style transfer models. PyTorch models need to be exported to the [ONNX](https://onnx.ai/) format before being imported to Unity. Fortunately, PyTorch provides built-in support for exporting to ONNX ([tutorial](https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html)).
 
 ### Download ONNX Files
 
 You can download some exported style transfer models from the links below.
 
-* [Mosaic](https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing)
+* Mosaic: ([download](https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing))
 
   ![mosaic](\images\basic-in-game-style-transfer-tutorial\mosaic.jpg)
 
-* [Van Gogh Starry Night](https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing)
+* Van Gogh Starry Night: ([download](https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing))
 
 ![van-gogh-starry-night-google-art-project](\images\basic-in-game-style-transfer-tutorial\van-gogh-starry-night-google-art-project.jpg)
 
