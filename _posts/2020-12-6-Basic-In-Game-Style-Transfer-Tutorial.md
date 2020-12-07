@@ -155,11 +155,11 @@ Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` wi
 
 
 
-### Create `PreprocessStyleTransfer` Function
+### Create `ProcessInput` Function
 
 
 
-### Create `PostprocessStyleTransfer` Function
+### Create `ProcessOutput` Function
 
 
 
