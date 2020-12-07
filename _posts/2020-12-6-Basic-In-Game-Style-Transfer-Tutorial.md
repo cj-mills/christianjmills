@@ -210,25 +210,27 @@ Now we need to add a few variables to perform inference with the style transfer 
 
 #### Create `modelAsset` Variable
 
-
+Make a new public `NNModel` variable called `modelAsset`. We’ll assign the `resnet50` asset to this variable in the Unity Editor.
 
 ![modelAsset_variable](\images\basic-in-game-style-transfer-tutorial\modelAsset_variable.png)
 
 #### Create `workerType` Variable
 
+We’ll also add a variable that let’s us choose which [backend](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html) to use when performing inference. The options are divided into `CPU` and `GPU`. Our preprocessing pipeline runs entirely on the `GPU` so we’ll be sticking with the `GPU` options for this tutorial series.
 
+Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
 ![workerType_variable](\images\basic-in-game-style-transfer-tutorial\workerType_variable.png)
 
 #### Create `m_RuntimeModel` Variable
 
-
+We need to compile the `modelAsset` into a run-time model to perform inference. We’ll store the compiled model in a new private `Model` variable called `m_RuntimeModel`.
 
 ![m_RuntimeModel_variable](\images\basic-in-game-style-transfer-tutorial\m_RuntimeModel_variable.png)
 
 #### Create `engine` Variable
 
-
+Next, we’ll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
 ![engine_variable](\images\basic-in-game-style-transfer-tutorial\engine_variable.png)
 
