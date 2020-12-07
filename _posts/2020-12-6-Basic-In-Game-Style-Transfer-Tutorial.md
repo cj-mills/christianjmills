@@ -116,7 +116,7 @@ Add a new folder called `Textures` in the `Style_Transfer` folder.
 
 ![textures_folder](\images\basic-in-game-style-transfer-tutorial\textures_folder.png)
 
-### Create `Render Texture`  Assets
+### Create  Asset Files
 
 Open the `Textures` folder and create three new `Render Texture` assets. 
 
@@ -134,7 +134,33 @@ We need to use a fairly low resolution to get playable frame rates. Click an emp
 
 
 
-## Create Compute Shader
+## Create a Compute Shader
+
+We can perform both the preprocessing and postprocessing steps on the GPU since both the input and output are images. We'll implement these steps in a [compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html).
+
+### Create the Asset File
+
+Open the `Style_Transer` folder and create a new folder called `Shaders`. Enter the `Shaders` folder and right-click an empty space. Select `Shader` in the `Create` submenu and click `Compute Shader`. We’ll name it `StyleTransferShader`.
+
+![create-compute-shader](\images\basic-in-game-style-transfer-tutorial\create-compute-shader.png)
+
+
+
+### Remove the Default Code
+
+Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following.
+
+![default_compute_shader](\images\basic-in-game-style-transfer-tutorial\default_compute_shader.png)
+
+
+
+### Create `PreprocessStyleTransfer` Function
+
+
+
+### Create `PostprocessStyleTransfer` Function
+
+
 
 
 
