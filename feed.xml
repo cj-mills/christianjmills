@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="https://christianjmills.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://christianjmills.com/" rel="alternate" type="text/html" /><updated>2020-12-07T16:27:13-06:00</updated><id>https://christianjmills.com/feed.xml</id><title type="html">Christian Mills</title><subtitle>My personal blog</subtitle><entry><title type="html">Basic In-Game Style Transfer Tutorial</title><link href="https://christianjmills.com/Basic-In-Game-Style-Transfer-Tutorial/" rel="alternate" type="text/html" title="Basic In-Game Style Transfer Tutorial" /><published>2020-12-06T00:00:00-06:00</published><updated>2020-12-06T00:00:00-06:00</updated><id>https://christianjmills.com/Basic-In-Game-Style-Transfer-Tutorial</id><content type="html" xml:base="https://christianjmills.com/Basic-In-Game-Style-Transfer-Tutorial/">&lt;ul&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="https://christianjmills.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://christianjmills.com/" rel="alternate" type="text/html" /><updated>2020-12-07T16:56:45-06:00</updated><id>https://christianjmills.com/feed.xml</id><title type="html">Christian Mills</title><subtitle>My personal blog</subtitle><entry><title type="html">Basic In-Game Style Transfer Tutorial</title><link href="https://christianjmills.com/Basic-In-Game-Style-Transfer-Tutorial/" rel="alternate" type="text/html" title="Basic In-Game Style Transfer Tutorial" /><published>2020-12-06T00:00:00-06:00</published><updated>2020-12-06T00:00:00-06:00</updated><id>https://christianjmills.com/Basic-In-Game-Style-Transfer-Tutorial</id><content type="html" xml:base="https://christianjmills.com/Basic-In-Game-Style-Transfer-Tutorial/">&lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;#select-a-unity-project&quot;&gt;Select a Unity Project&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;#install-barracuda-package&quot;&gt;Install Barracuda Package&lt;/a&gt;&lt;/li&gt;
@@ -152,17 +152,35 @@
 
 &lt;p&gt;The style transfer models expect RGB channel values to be in range &lt;code class=&quot;highlighter-rouge&quot;&gt;[0, 255]&lt;/code&gt;. Color values in Unity are in the range &lt;code class=&quot;highlighter-rouge&quot;&gt;[0,1]&lt;/code&gt;. Therefore, we need to scale the three channel values for the &lt;code class=&quot;highlighter-rouge&quot;&gt;InputImage&lt;/code&gt; by &lt;code class=&quot;highlighter-rouge&quot;&gt;255&lt;/code&gt;. We’ll perform this step in a new function called &lt;code class=&quot;highlighter-rouge&quot;&gt;ProcessInput&lt;/code&gt; as shown below.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;..\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png&quot; alt=&quot;processInput_compute_shader&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png&quot; alt=&quot;processInput_compute_shader&quot; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;create-processoutput-function&quot;&gt;Create &lt;code class=&quot;highlighter-rouge&quot;&gt;ProcessOutput&lt;/code&gt; Function&lt;/h3&gt;
 
 &lt;p&gt;The models are supposed to output an image with RGB channel values in the range &lt;code class=&quot;highlighter-rouge&quot;&gt;[0, 255]&lt;/code&gt;. However, it can sometimes return values a little outside that range. We can use the built-in &lt;a href=&quot;https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-clamp&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;clamp()&lt;/code&gt;&lt;/a&gt; method to make sure all values are in the correct range. We’ll then scale the values back down to &lt;code class=&quot;highlighter-rouge&quot;&gt;[0, 1]&lt;/code&gt; for Unity. We’ll perform these steps in a new function called &lt;code class=&quot;highlighter-rouge&quot;&gt;ProcessOutput&lt;/code&gt; as shown below.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;..\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png&quot; alt=&quot;processOutput_compute_shader&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png&quot; alt=&quot;processOutput_compute_shader&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Now that we’ve created our &lt;code class=&quot;highlighter-rouge&quot;&gt;ComputeShader&lt;/code&gt;, we need to execute it using a &lt;code class=&quot;highlighter-rouge&quot;&gt;C#&lt;/code&gt; script.&lt;/p&gt;
 
 &lt;h2 id=&quot;create-styletransfer-script&quot;&gt;Create StyleTransfer Script&lt;/h2&gt;
+
+&lt;p&gt;We need to make a new &lt;code class=&quot;highlighter-rouge&quot;&gt;C#&lt;/code&gt; script to perform inference with the style transfer models. This script will load the model, process the input, runt the model, and process the output.&lt;/p&gt;
+
+&lt;h3 id=&quot;create-the-asset-file-1&quot;&gt;Create the Asset File&lt;/h3&gt;
+
+&lt;p&gt;Open the &lt;code class=&quot;highlighter-rouge&quot;&gt;Style_Transfer&lt;/code&gt; folder and create a new folder called &lt;code class=&quot;highlighter-rouge&quot;&gt;Scripts&lt;/code&gt;. In the &lt;code class=&quot;highlighter-rouge&quot;&gt;Scripts&lt;/code&gt; folder, right-click an empty space and select &lt;code class=&quot;highlighter-rouge&quot;&gt;C# Script&lt;/code&gt; in the &lt;code class=&quot;highlighter-rouge&quot;&gt;Create&lt;/code&gt; submenu.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;\images\basic-in-game-style-transfer-tutorial\create_c_sharp_script.png&quot; alt=&quot;create_c_sharp_script&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Name the script &lt;code class=&quot;highlighter-rouge&quot;&gt;StyleTransfer&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;\images\basic-in-game-style-transfer-tutorial\styleTransfer_script_new.png&quot; alt=&quot;styleTransfer_script_new&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;add-unitybarracuda-namespace&quot;&gt;Add &lt;code class=&quot;highlighter-rouge&quot;&gt;Unity.Barracuda&lt;/code&gt; Namespace&lt;/h3&gt;
+
+&lt;p&gt;Open the &lt;code class=&quot;highlighter-rouge&quot;&gt;StyleTransfer&lt;/code&gt; script and add the &lt;code class=&quot;highlighter-rouge&quot;&gt;Unity.Barracuda&lt;/code&gt; namespace at the top of the script.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png&quot; alt=&quot;add_barracuda_namespace&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;</content><author><name></name></author><summary type="html">Introduction Select a Unity Project Install Barracuda Package Create Style Transfer Folder Import Models Prepare Render Textures Create a Compute Shader Summary</summary></entry><entry><title type="html">How to Flip an Image With a Compute Shader</title><link href="https://christianjmills.com/How-to-Flip-an-Image-With-a-Compute-Shader/" rel="alternate" type="text/html" title="How to Flip an Image With a Compute Shader" /><published>2020-12-03T00:00:00-06:00</published><updated>2020-12-03T00:00:00-06:00</updated><id>https://christianjmills.com/How-to-Flip-an-Image-With-a-Compute-Shader</id><content type="html" xml:base="https://christianjmills.com/How-to-Flip-an-Image-With-a-Compute-Shader/">&lt;p&gt;&lt;strong&gt;Last Updated:&lt;/strong&gt; Dec 3, 2020&lt;/p&gt;
 
