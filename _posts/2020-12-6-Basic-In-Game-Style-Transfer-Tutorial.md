@@ -18,7 +18,7 @@ search_exclude: false
 
 ## Introduction
 
-Unity has finally released the in-game style transfer project they've been teasing in the Barracuda documentation. Their implementation is slightly more polished than my early attempts described in my initial post. And by slightly, I mean they seem to have addressed every major complaint I had with my initial implementation. Be sure to check out there accompanying blog post ([link](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/)).
+Unity has finally released the in-game style transfer project they've been teasing in the Barracuda documentation. Their implementation is slightly more polished than my early attempts described in my initial post. And by slightly, I mean they seem to have addressed every major complaint I had with my initial implementation. Be sure to check out the project ([link](https://github.com/UnityLabs/barracuda-style-transfer)) as well as the accompanying blog post ([link](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/)).
 
 It's exciting that Unity has started releasing projects that explore alternative uses for the Barracuda library. Hopefully, they'll explore other deep learning applications in future projects. I would love to see projects that use GANs for dynamically generating in-game content.
 
