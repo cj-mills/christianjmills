@@ -49,7 +49,9 @@ Once downloaded, unzip the folder and add the project to Unity Hub using the `Ad
 
 ### Set the Unity Version
 
-Select a Unity version from the drop-down menu. The demo project was made using Unity `2019.4.5f1`. You can use a later `2019.4` release if you don't have that version installed ([download](unityhub://2019.4.16f1/e05b6e02d63e)).
+Select a Unity version from the drop-down menu. The demo project was made using Unity `2019.4.5f1`. You can use a later `2019.4` release if you don't have that version installed.
+
+* Unity 2019.4.16: ([download](unityhub://2019.4.16f1/e05b6e02d63e))
 
 ![set-unity-version-0-0](\images\basic-in-game-style-transfer-tutorial\set-unity-version.png)
 
@@ -71,7 +73,7 @@ Click the `Install` button to install the package.
 
 ## Create Style Transfer Folder
 
-We'll place all our additions to the project in a new folder called `Style_Transfer`. This will help keep things organized.
+We'll place all our additions to the project in a new asset folder called `Style_Transfer`. This will help keep things organized.
 
 ![style_transfer_folder](\images\basic-in-game-style-transfer-tutorial\style_transfer_folder.png)
 
@@ -103,9 +105,31 @@ Drag and drop the ONNX files into the `Models` folder.
 
 
 
-## Create Render Texture Assets
+## Setup Render Texture Assets
 
+Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We'll store the current camera frame, model output, and processed output in separate [render textures](https://docs.unity3d.com/ScriptReference/RenderTexture.html). We need to use a fairly low resolution to get playable frame rates. Therefore, we'll set the dimensions for each `RenderTexture` to `720 x 540`. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
 
+### Create `Textures` Folder
+
+Add a new folder called `Textures` in the `Style_Transfer` folder.
+
+![textures_folder](\images\basic-in-game-style-transfer-tutorial\textures_folder.png)
+
+### Create `Render Texture`  Assets
+
+Open the `Textures` folder and create three new `Render Texture` assets. 
+
+![create_renderTexture](\images\basic-in-game-style-transfer-tutorial\create_renderTexture.png)
+
+Name the new assets `CameraInput`, `ModelOutput`, `ProcessedOutput`.
+
+![new_renderTexture_assets](\images\basic-in-game-style-transfer-tutorial\new_renderTexture_assets.png)
+
+### Update Size Parameters
+
+Click an empty space in the `Textures` folder and press `Ctrl-a` to select all three render textures. Set the size the parameter to `720 x 540` in the `Inspector` tab.
+
+![set_renderTexture_sizes](\images\basic-in-game-style-transfer-tutorial\set_renderTexture_sizes.png)
 
 
 
