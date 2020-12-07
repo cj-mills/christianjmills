@@ -13,6 +13,7 @@ search_exclude: false
 * [Introduction](#introduction)
 * [Select a Unity Project](#select-a-unity-project)
 * [Install Barracuda Package](#install-barracuda-package)
+* [Create Style Transfer Folder](#create-style-transfer-folder)
 * [Import Models](#import-models)
 * [Summary](#summary)
 
@@ -68,15 +69,19 @@ Click the `Install` button to install the package.
 
 ![barracuda_install](\images\basic-in-game-style-transfer-tutorial\barracuda_install.PNG)
 
+## Create Style Transfer Folder
 
+We'll place all our additions to the project in a new folder called `Style_Transfer`. This will help keep things organized.
+
+![style_transfer_folder](..\images\basic-in-game-style-transfer-tutorial\style_transfer_folder.PNG)
 
 ## Import Models
 
-We'll place all our additions to the project in a new folder called `Style_Transfer`. This will help keep things organized. 
+Next, we need to add some style transfer models. PyTorch models need to be exported to the [ONNX](https://onnx.ai/) format before being imported to Unity. Fortunately, PyTorch provides built-in support for exporting to ONNX ([link](https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html)).
 
 ### Download ONNX Files
 
-You can download some converted style transfer models from the links below.
+You can download some exported style transfer models from the links below.
 
 * [Mosaic](https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing)
 
@@ -85,8 +90,6 @@ You can download some converted style transfer models from the links below.
 * [Van Gogh Starry Night](https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing)
 
 ![van-gogh-starry-night-google-art-project](\images\basic-in-game-style-transfer-tutorial\van-gogh-starry-night-google-art-project.jpg)
-
-
 
 ### Import ONNX Files to Assets
 
