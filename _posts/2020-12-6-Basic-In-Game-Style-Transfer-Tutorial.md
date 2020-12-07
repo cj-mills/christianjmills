@@ -14,7 +14,7 @@ search_exclude: false
 * [Select a Unity Project](#select-a-unity-project)
 * [Install Barracuda Package](#install-barracuda-package)
 * [Create Style Transfer Folder](#create-style-transfer-folder)
-* [Set Up Render Textures](#set-up-render-textures)
+* [Prepare Render Textures](#prepare-render-textures)
 * [Import Models](#import-models)
 * [Summary](#summary)
 
@@ -106,7 +106,7 @@ Drag and drop the ONNX files into the `Models` folder.
 
 
 
-## Set Up Render Textures
+## Prepare Render Textures
 
 Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We'll store the current camera frame, model output, and processed output in separate [render textures](https://docs.unity3d.com/ScriptReference/RenderTexture.html). We need to use a fairly low resolution to get playable frame rates. Therefore, we'll set the dimensions for each `RenderTexture` to `720 x 540`. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
 
