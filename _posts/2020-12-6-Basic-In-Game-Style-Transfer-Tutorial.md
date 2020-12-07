@@ -137,15 +137,13 @@ We need to use a fairly low resolution to get playable frame rates. Click an emp
 
 ## Create a Compute Shader
 
-We can perform both the preprocessing and postprocessing steps on the GPU since both the input and output are images. We'll implement these steps in a [compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html).
+We can perform both the preprocessing and postprocessing operations on the GPU since both the input and output are images. We'll implement these steps in a [compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html).
 
 ### Create the Asset File
 
 Open the `Style_Transer` folder and create a new folder called `Shaders`. Enter the `Shaders` folder and right-click an empty space. Select `Shader` in the `Create` submenu and click `Compute Shader`. We’ll name it `StyleTransferShader`.
 
 ![create-compute-shader](\images\basic-in-game-style-transfer-tutorial\create-compute-shader.png)
-
-
 
 ### Remove the Default Code
 
@@ -157,15 +155,19 @@ Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we ne
 
 ![styleTransfer_shader_part1](\images\basic-in-game-style-transfer-tutorial\styleTransfer_shader_part1.png)
 
-
-
 ### Create `ProcessInput` Function
 
+The style transfer models expect RGB channel values to be in range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
 
+![processInput_compute_shader](..\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png)
 
 ### Create `ProcessOutput` Function
 
+The models are supposed to output an image with RGB channel values in the range `[0, 255]`. However, it can sometimes return values a little outside that range. We can use the built-in [`clamp()`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-clamp) method to make sure all values are in the correct range. We'll then scale the values back down to `[0, 1]` for Unity. We'll perform these steps in a new function called `ProcessOutput` as shown below.
 
+![processOutput_compute_shader](..\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png)
+
+Now that we’ve created our `ComputeShader`, we need to execute it using a `C#` script.
 
 
 
