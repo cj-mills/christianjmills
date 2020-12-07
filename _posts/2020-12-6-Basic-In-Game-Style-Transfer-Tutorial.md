@@ -10,8 +10,6 @@ permalink: /:title/
 search_exclude: false
 ---
 
-**Last Updated:** Dec 5, 2020
-
 * [Introduction](#introduction)
 * [Select a Unity Project](#select-a-unity-project)
 * [Install Barracuda Package](#install-barracuda-package)
