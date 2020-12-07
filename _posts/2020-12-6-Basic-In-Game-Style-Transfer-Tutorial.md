@@ -48,7 +48,7 @@ Once downloaded, unzip the folder and add the project to Unity Hub using the `Ad
 
 ### Set the Unity Version
 
-The demo project was made using Unity `2019.4.5f1`. You can just use the latest `2019.4` release if you don't have one already installed ([download](unityhub://2019.4.16f1/e05b6e02d63e)). Select the target Unity version from the drop-down menu.
+Select a Unity version from the drop-down menu. The demo project was made using Unity `2019.4.5f1`. You can use a later `2019.4` release if you don't have that version installed ([download](unityhub://2019.4.16f1/e05b6e02d63e)).
 
 ![set-unity-version-0-0](\images\basic-in-game-style-transfer-tutorial\set-unity-version.png)
 
@@ -60,7 +60,7 @@ Now we can open the project. We'll be prompted to upgrade the project to the sel
 
 ## Install Barracuda Package
 
-We'll install the Barracuda package once the project has finished loading. Select the Package Manager tab in the Unity editor. Type Barracuda into the search box.
+We'll install the Barracuda package once the project has finished loading. Select the Package Manager tab in the Unity editor and type Barracuda into the search box.
 
 ![barracuda_search](\images\basic-in-game-style-transfer-tutorial\barracuda_search.PNG)
 
