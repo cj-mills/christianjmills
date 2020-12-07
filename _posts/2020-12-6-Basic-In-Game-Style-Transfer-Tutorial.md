@@ -36,7 +36,9 @@ I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinema
 
 ### Download Kinematica Demo
 
-You can download the Unity project by clicking on this ([link](https://github.com/Unity-Technologies/Kinematica_Demo/releases/download/0.8.0-preview/Kinematica_Demo_0.8.0-preview.zip)). The zipped folder is approximately 1.2 GB.
+You can download the Unity project by clicking on the link below. The zipped folder is approximately 1.2 GB.
+
+* `Kinematica_Demo_0.8.0-preview`: ([download](https://github.com/Unity-Technologies/Kinematica_Demo/releases/download/0.8.0-preview/Kinematica_Demo_0.8.0-preview.zip))
 
 ![download_kinematica_demo](\images\basic-in-game-style-transfer-tutorial\download_kinematica_demo.png)
 
