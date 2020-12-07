@@ -14,6 +14,8 @@ search_exclude: false
 
 * [Introduction](#introduction)
 * [Select a Unity Project](#select-a-unity-project)
+* [Install Barracuda Package](#install-barracuda-package)
+* [Import Models](#import-models)
 * [Summary](#summary)
 
 ## Introduction
@@ -38,35 +40,35 @@ I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinema
 
 You can download the Unity project by clicking on this ([link](https://github.com/Unity-Technologies/Kinematica_Demo/releases/download/0.8.0-preview/Kinematica_Demo_0.8.0-preview.zip)). The zipped folder is approximately 1.2 GB.
 
-![download_kinematica_demo](..\images\basic-in-game-style-transfer-tutorial\download_kinematica_demo.png)
+![download_kinematica_demo](\images\basic-in-game-style-transfer-tutorial\download_kinematica_demo.png)
 
 ### Add Project to Unity Hub
 
 Once downloaded, unzip the folder and add the project to Unity Hub using the `Add` button.
 
-![unity_hub_add_project](..\images\basic-in-game-style-transfer-tutorial\unity_hub_add_project.png)
+![unity_hub_add_project](\images\basic-in-game-style-transfer-tutorial\unity_hub_add_project.png)
 
 ### Set the Unity Version
 
 The demo project was made using Unity `2019.4.5f1`. You can just use the latest `2019.4` release if you don't have one already installed ([download](unityhub://2019.4.16f1/e05b6e02d63e)). Select the target Unity version from the drop-down menu.
 
-![set-unity-version-0-0](..\images\basic-in-game-style-transfer-tutorial\set-unity-version.png)
+![set-unity-version-0-0](\images\basic-in-game-style-transfer-tutorial\set-unity-version.png)
 
 ### Open the Project
 
 Now we can open the project. We'll be prompted to upgrade the project to the selected Unity version. Click `Confirm` in the popup to upgrade the project. As mentioned earlier, this project takes a while to load the first time.
 
-![set-unity-version](..\images\basic-in-game-style-transfer-tutorial\upgrade-unity-version.png)
+![set-unity-version](\images\basic-in-game-style-transfer-tutorial\upgrade-unity-version.png)
 
 ## Install Barracuda Package
 
 We'll install the Barracuda package once the project has finished loading. Select the Package Manager tab in the Unity editor. Type Barracuda into the search box.
 
-![barracuda_search](..\images\basic-in-game-style-transfer-tutorial\barracuda_search.PNG)
+![barracuda_search](\images\basic-in-game-style-transfer-tutorial\barracuda_search.PNG)
 
 Click the `Install` button to install the package.
 
-![barracuda_install](..\images\basic-in-game-style-transfer-tutorial\barracuda_install.PNG)
+![barracuda_install](\images\basic-in-game-style-transfer-tutorial\barracuda_install.PNG)
 
 
 
@@ -74,23 +76,29 @@ Click the `Install` button to install the package.
 
 We'll place all our additions to the project in a new folder called `Style_Transfer`. This will help keep things organized. 
 
-### Create Models Folder
-
-Open the `Style_Transfer` folder and make a new folder called `Models`.
-
-
-
 ### Download ONNX Files
 
 You can download some converted style transfer models from the links below.
 
 * [Mosaic](https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing)
 
-  ![mosaic](..\images\basic-in-game-style-transfer-tutorial\mosaic.jpg)
+  ![mosaic](\images\basic-in-game-style-transfer-tutorial\mosaic.jpg)
 
 * [Van Gogh Starry Night](https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing)
 
-![Van_Gogh_-_Starry_Night_-_Google_Art_Project_2K](..\images\basic-in-game-style-transfer-tutorial\Van_Gogh_-_Starry_Night_-_Google_Art_Project_2K.jpg)
+![Van_Gogh_-_Starry_Night_-_Google_Art_Project_2K](\images\basic-in-game-style-transfer-tutorial\Van_Gogh_-_Starry_Night_-_Google_Art_Project_2K.jpg)
+
+
+
+### Import ONNX Files to Assets
+
+Open the `Style_Transfer` folder and make a new folder called `Models`.
+
+![create-models-folder](\images\basic-in-game-style-transfer-tutorial\create-models-folder.png)
+
+Drag and drop the ONNX files into the `Models` folder.
+
+![imported_onnx_files](\images\basic-in-game-style-transfer-tutorial\imported_onnx_files.png)
 
 
 
