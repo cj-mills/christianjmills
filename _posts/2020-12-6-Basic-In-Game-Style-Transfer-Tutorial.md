@@ -108,7 +108,7 @@ Drag and drop the ONNX files into the `Models` folder.
 
 ## Prepare Render Textures
 
-Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We'll store the current camera frame, model output, and processed output in separate [render textures](https://docs.unity3d.com/ScriptReference/RenderTexture.html). We need to use a fairly low resolution to get playable frame rates. Therefore, we'll set the dimensions for each `RenderTexture` to `720 x 540`. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
+Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We'll store the current camera frame, model output, and processed output in separate [render textures](https://docs.unity3d.com/ScriptReference/RenderTexture.html).
 
 ### Create `Textures` Folder
 
@@ -128,7 +128,7 @@ Name the new assets `CameraInput`, `ModelOutput`, `ProcessedOutput`.
 
 ### Update Size Parameters
 
-Click an empty space in the `Textures` folder and press `Ctrl-a` to select all three render textures. Set the size the parameter to `720 x 540` in the `Inspector` tab.
+We need to use a fairly low resolution to get playable frame rates. Click an empty space in the `Textures` folder and press `Ctrl-a` to select all three render textures. Set the size the parameter to `720 x 540` in the `Inspector` tab. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
 
 ![set_renderTexture_sizes](\images\basic-in-game-style-transfer-tutorial\set_renderTexture_sizes.png)
 
