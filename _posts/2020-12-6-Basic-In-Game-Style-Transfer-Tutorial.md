@@ -17,6 +17,7 @@ search_exclude: false
 * [Import Models](#import-models)
 * [Prepare Render Textures](#prepare-render-textures)
 * [Create a Compute Shader](#create-a-compute-shader)
+* [Create StyleTransfer Script](#create-styletransfer-script)
 * [Summary](#summary)
 
 ## Introduction
@@ -171,7 +172,7 @@ Now that we’ve created our `ComputeShader`, we need to execute it using a `C#`
 
 
 
-## Create StyleTransfer Script
+## Create `StyleTransfer` Script
 
 We need to make a new `C#` script to perform inference with the style transfer models. This script will load the model, process the input, runt the model, and process the output.
 
