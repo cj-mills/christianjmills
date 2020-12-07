@@ -73,7 +73,7 @@ Click the `Install` button to install the package.
 
 We'll place all our additions to the project in a new folder called `Style_Transfer`. This will help keep things organized.
 
-![style_transfer_folder](\images\basic-in-game-style-transfer-tutorial\style_transfer_folder.PNG)
+![style_transfer_folder](\images\basic-in-game-style-transfer-tutorial\style_transfer_folder.png)
 
 ## Import Models
 
