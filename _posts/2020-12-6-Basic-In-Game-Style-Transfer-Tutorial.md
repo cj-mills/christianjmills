@@ -84,7 +84,7 @@ You can download some converted style transfer models from the links below.
 
 * [Van Gogh Starry Night](https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing)
 
-![Van_Gogh_-_Starry_Night_-_Google_Art_Project_2K](\images\basic-in-game-style-transfer-tutorial\Van_Gogh_-_Starry_Night_-_Google_Art_Project_2K.jpg)
+![van-gogh-starry-night-google-art-project](\images\basic-in-game-style-transfer-tutorial\van-gogh-starry-night-google-art-project.jpg)
 
 
 
