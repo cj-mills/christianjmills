@@ -159,13 +159,13 @@ Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we ne
 
 The style transfer models expect RGB channel values to be in range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
 
-![processInput_compute_shader](..\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png)
+![processInput_compute_shader](\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png)
 
 ### Create `ProcessOutput` Function
 
 The models are supposed to output an image with RGB channel values in the range `[0, 255]`. However, it can sometimes return values a little outside that range. We can use the built-in [`clamp()`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-clamp) method to make sure all values are in the correct range. We'll then scale the values back down to `[0, 1]` for Unity. We'll perform these steps in a new function called `ProcessOutput` as shown below.
 
-![processOutput_compute_shader](..\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png)
+![processOutput_compute_shader](\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png)
 
 Now that we’ve created our `ComputeShader`, we need to execute it using a `C#` script.
 
@@ -173,7 +173,23 @@ Now that we’ve created our `ComputeShader`, we need to execute it using a `C#`
 
 ## Create StyleTransfer Script
 
+We need to make a new `C#` script to perform inference with the style transfer models. This script will load the model, process the input, runt the model, and process the output.
 
+### Create the Asset File
+
+Open the `Style_Transfer` folder and create a new folder called `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` submenu.
+
+![create_c_sharp_script](\images\basic-in-game-style-transfer-tutorial\create_c_sharp_script.png)
+
+Name the script `StyleTransfer`.
+
+![styleTransfer_script_new](\images\basic-in-game-style-transfer-tutorial\styleTransfer_script_new.png)
+
+### Add `Unity.Barracuda` Namespace
+
+Open the `StyleTransfer` script and add the `Unity.Barracuda` namespace at the top of the script.
+
+![add_barracuda_namespace](\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png)
 
 
 
