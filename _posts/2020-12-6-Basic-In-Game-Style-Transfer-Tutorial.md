@@ -24,7 +24,7 @@ It's exciting that Unity has started releasing projects that explore alternative
 
 I plan to work on a more sophisticated implementation for in-game style transfer in the future, perhaps using some tricks from Unity's implementation. However, I wanted to start with a basic implementation to serve as a baseline. 
 
-This tutorial will cover how to use models generated with this example [project](https://github.com/pytorch/examples/tree/master/fast_neural_style) provided by PyTorch. The models take in regular images and return stylized versions. We'll get our input images from the in-game camera and display the stylized output to the user.
+This tutorial will cover how to use trained models from the `fast_neural_style` project ([link](https://github.com/pytorch/examples/tree/master/fast_neural_style)) provided by PyTorch. The models take in regular images and return stylized versions. We'll get our input images from the in-game camera and display the stylized output to the user.
 
 **Important:** This is meant as a simple proof of concept and requires a powerful GPU to get playable frame rates. An RTX 20-series card or newer is recommended.
 
