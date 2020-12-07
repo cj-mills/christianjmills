@@ -14,8 +14,9 @@ search_exclude: false
 * [Select a Unity Project](#select-a-unity-project)
 * [Install Barracuda Package](#install-barracuda-package)
 * [Create Style Transfer Folder](#create-style-transfer-folder)
-* [Prepare Render Textures](#prepare-render-textures)
 * [Import Models](#import-models)
+* [Prepare Render Textures](#prepare-render-textures)
+* [Create a Compute Shader](#create-a-compute-shader)
 * [Summary](#summary)
 
 ## Introduction
