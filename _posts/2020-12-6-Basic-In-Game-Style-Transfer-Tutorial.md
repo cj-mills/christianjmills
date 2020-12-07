@@ -192,7 +192,45 @@ Open the `StyleTransfer` script and add the `Unity.Barracuda` namespace at the t
 
 ![add_barracuda_namespace](\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png)
 
+### Create `RenderTexture` Variables
 
+We need to create some public variables that we can use to access our three render texture assets in the script.
+
+ ![renderTexture_variables](\images\basic-in-game-style-transfer-tutorial\renderTexture_variables.png)
+
+### Create `StyleTransferShader` Variable
+
+Next, we'll add a public variable to access our compute shader.
+
+![styleTransferShader_variable](\images\basic-in-game-style-transfer-tutorial\styleTransferShader_variable.png)
+
+### Create Barracuda Variables
+
+Now we need to add a few variables to perform inference with the style transfer models.
+
+#### Create `modelAsset` Variable
+
+
+
+![modelAsset_variable](\images\basic-in-game-style-transfer-tutorial\modelAsset_variable.png)
+
+#### Create `workerType` Variable
+
+
+
+![workerType_variable](\images\basic-in-game-style-transfer-tutorial\workerType_variable.png)
+
+#### Create `m_RuntimeModel` Variable
+
+
+
+![m_RuntimeModel_variable](\images\basic-in-game-style-transfer-tutorial\m_RuntimeModel_variable.png)
+
+#### Create `engine` Variable
+
+
+
+![engine_variable](\images\basic-in-game-style-transfer-tutorial\engine_variable.png)
 
 
 
