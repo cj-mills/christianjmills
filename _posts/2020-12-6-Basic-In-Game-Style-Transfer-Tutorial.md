@@ -18,13 +18,13 @@ search_exclude: false
 
 ## Introduction
 
-Unity has finally released the in-game style transfer project they've been teasing in the Barracuda documentation. Their implementation is slightly more polished than my early attempts described in my initial post. And by slightly, I mean they seem to have addressed every major complaint I had with my initial implementation. Be sure to check out their sample project ([link](https://github.com/UnityLabs/barracuda-style-transfer)) as well as the accompanying blog post ([link](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/)).
+Unity has finally released the in-game style transfer project they've been [teasing](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/images/BarracudaLanding.png) in the Barracuda [documentation](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html). Their implementation is slightly more polished than my early attempts described in my initial [post](https://christianjmills.com/unity/style_transfer/2020/10/19/In-Game-Style-Transfer.html). And by slightly, I mean they seem to have addressed every major complaint I had with my implementation. Be sure to check out their sample [project](https://github.com/UnityLabs/barracuda-style-transfer) as well as the accompanying blog [post](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/).
 
 It's exciting that Unity has started releasing projects that explore alternative uses for the Barracuda library. Hopefully, they'll explore other deep learning applications in future projects. I would love to see projects that use GANs for dynamically generating in-game content.
 
 I plan to work on a more sophisticated implementation for in-game style transfer in the future, perhaps using some tricks from Unity's implementation. However, I wanted to start with a basic implementation to serve as a baseline. 
 
-This tutorial will cover how to use trained models from the `fast_neural_style` project ([link](https://github.com/pytorch/examples/tree/master/fast_neural_style)) provided by PyTorch. The models take in regular images and return stylized versions. We'll get our input images from the in-game camera and display the stylized output to the user.
+This tutorial will cover how to use trained models from the [`fast_neural_style`](https://github.com/pytorch/examples/tree/master/fast_neural_style) project provided by PyTorch. The models take in regular images and return stylized versions. We'll get our input images from the in-game camera and display the stylized output to the user.
 
 **Important:** This is meant as a simple proof of concept and requires a powerful GPU to get playable frame rates. An RTX 20-series card or newer is recommended.
 
@@ -32,7 +32,7 @@ This tutorial will cover how to use trained models from the `fast_neural_style` 
 
 ## Select a Unity Project
 
-I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. It provides a great character model for testing different styles. However, feel free to follow along with a different project. This one is a bit large and takes a while to open the first time. 
+I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. It provides a great character model for testing different styles. However, feel free to follow along with a different project. This one is a bit large and takes a while to open the first time.
 
 ### Download Kinematica Demo
 
