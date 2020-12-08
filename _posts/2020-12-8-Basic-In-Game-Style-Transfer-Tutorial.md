@@ -308,7 +308,7 @@ We need to process the raw output from the model before we can display it to the
 
 
 
-![display_output](F:\Projects\GitHub\christianjmills\images\basic-in-game-style-transfer-tutorial\display_output.png)
+![display_output](..\images\basic-in-game-style-transfer-tutorial\display_output.png)
 
 
 
