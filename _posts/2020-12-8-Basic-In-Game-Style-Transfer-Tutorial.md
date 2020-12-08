@@ -256,7 +256,7 @@ We need to manually release the resources that get allocated for the inference `
 
 ### Create `ToTexture2D()` Method
 
-We'll make a new method to copy the data from a `RenderTexture` to a new `Texture2D`. We'll need to call this method before performing both the preprocessing and postprocessing steps. This method will take in the source `RenderTexture` and the format for the new Texture2D.
+We'll make a new method to copy the data from a `RenderTexture` to a new `Texture2D`. We'll need to call this method before performing both the preprocessing and postprocessing steps. The method will take in the source `RenderTexture` and the format for the new `Texture2D`.
 
 ![toTexture2D_method](..\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png)
 
@@ -264,7 +264,7 @@ We'll make a new method to copy the data from a `RenderTexture` to a new `Textur
 
 ### Create `ProcessImage()` Method
 
-Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to create textures with HDR formats so that we can use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
+Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
 
 ![processImage_method](..\images\basic-in-game-style-transfer-tutorial\processImage_method.png)
 
