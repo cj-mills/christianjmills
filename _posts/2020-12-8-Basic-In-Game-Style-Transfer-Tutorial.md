@@ -258,55 +258,47 @@ We need to manually release the resources that get allocated for the inference `
 
 We'll make a new method to copy the data from a `RenderTexture` to a new `Texture2D`. We'll need to call this method before performing both the preprocessing and postprocessing steps. The method will take in the source `RenderTexture` and the format for the new `Texture2D`.
 
-![toTexture2D_method](..\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png)
-
-
+![toTexture2D_method](\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png)
 
 ### Create `ProcessImage()` Method
 
 Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
 
-![processImage_method](..\images\basic-in-game-style-transfer-tutorial\processImage_method.png)
-
-
+![processImage_method](\images\basic-in-game-style-transfer-tutorial\processImage_method.png)
 
 ### Process Input Image
 
 Now we can process the current camera frame. We'll call the `ToTexture2D()` method at the top of the `Update` method. The `cameraInput` is not an HDR texture so we'll use an SDR format for the new `Texture2D`. We'll then call the `ProcessImage()` method with new `Texture2D` as input.
 
-![process_input_image](..\images\basic-in-game-style-transfer-tutorial\process_input_image.png)
-
-
+![process_input_image](\images\basic-in-game-style-transfer-tutorial\process_input_image.png)
 
 ### Perform Inference
 
 Next, we'll feed the `processedImage` to the model and get the output. We first need to convert the `processedImage` to a `Tensor`.
 
-![perform_inference_pt1](..\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png)
+![perform_inference_pt1](\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png)
 
 We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
 
-![perform_inference_pt2](..\images\basic-in-game-style-transfer-tutorial\perform_inference_pt2.png)
-
-
+![perform_inference_pt2](\images\basic-in-game-style-transfer-tutorial\perform_inference_pt2.png)
 
 ### Process the  Output
 
 We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to a new HDR `RenderTexture`.
 
-![process_output_pt1](..\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png)
+![process_output_pt1](\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png)
 
 We'll then copy the data to a `Texture2D` and pass it to the `ProcessImage()` method. This time we'll be executing the `ProcessOutput()` function on the `ComputeShader`.
 
-![process_output_pt2](..\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png)
-
-
+![process_output_pt2](\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png)
 
 ### Display the Processed Output
 
 We can finally display the stylized image by using the `Graphics.Blit()` method to copy the final image to `processedOutput`.
 
-![display_output](..\images\basic-in-game-style-transfer-tutorial\display_output.png)
+![display_output](\images\basic-in-game-style-transfer-tutorial\display_output.png)
+
+Next, we'll need to modify the project scene to use the `StyleTransfer` script. 
 
 
 
