@@ -270,7 +270,7 @@ We need to manually release the resources that get allocated for the inference `
 
 In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.unity` asset. You don't need to save the current scene if you get prompted to do so.
 
-![select_biped_scene](..\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png)
+![select_biped_scene](\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png)
 
 
 
@@ -282,25 +282,25 @@ To run the `StyleTransfer` script, we need to attach it to a `GameObject` in the
 
 In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `StyleConverter`.
 
-![create_empyt_gameObject](..\images\basic-in-game-style-transfer-tutorial\create_empyt_gameObject.png)
+![create_empyt_gameObject](\images\basic-in-game-style-transfer-tutorial\create_empyt_gameObject.png)
 
 ### Attach the `StyleTransfer` Script
 
 With the `StyleConverter` object selected, drag and drop the `StyleTransfer` script into the `Inspector` tab.
 
-![attach_styleTransfer_script](..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png)
+![attach_styleTransfer_script](\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png)
 
 ### Assign the Assets
 
 We need to assign the render textures, compute shader and one of the ONNX files to their respective parameters in the `Inspector` tab. I'll start with the mosaic model. We'll also set the `Worker Type` to `Compute Precompiled`. 
 
-![attach_styleTransfer_script_full](..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script_full.png)
+![attach_styleTransfer_script_full](\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script_full.png)
 
 ## Set Camera Target Texture
 
 Select the `_Scene` object in the `Hierarchy` tab. In the dropdown, select the `Main Camera` object.
 
-![assign_camera_target_texture](..\images\basic-in-game-style-transfer-tutorial\assign_camera_target_texture.png)
+![assign_camera_target_texture](\images\basic-in-game-style-transfer-tutorial\assign_camera_target_texture.png)
 
 
 
@@ -308,7 +308,7 @@ Select the `_Scene` object in the `Hierarchy` tab. In the dropdown, select the `
 
 Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the `UI` submenu. Name it Screen.
 
-![create_raw_image](..\images\basic-in-game-style-transfer-tutorial\create_raw_image.png)
+![create_raw_image](\images\basic-in-game-style-transfer-tutorial\create_raw_image.png)
 
 
 
@@ -316,17 +316,17 @@ Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the 
 
 
 
-![stretch_screen_pt1](..\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt1.png)
+![stretch_screen_pt1](\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt1.png)
 
 
 
 
 
-![stretch_screen_pt2](..\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt2.png)
+![stretch_screen_pt2](\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt2.png)
 
 
 
-![set_anchors_to_zero](..\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png)
+![set_anchors_to_zero](\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png)
 
 
 
@@ -334,7 +334,7 @@ Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the 
 
 Width the Screen object selected, drag and drop the `ProcessedOutput` asset into the `Texture` parameter in the `Inspector` tab.
 
-![assign_screen_texture](..\images\basic-in-game-style-transfer-tutorial\assign_screen_texture.png)
+![assign_screen_texture](\images\basic-in-game-style-transfer-tutorial\assign_screen_texture.png)
 
 ### Adjust the Game Tab
 
@@ -342,11 +342,11 @@ Width the Screen object selected, drag and drop the `ProcessedOutput` asset into
 
 #### Set the Aspect Ratio
 
-![set_aspect_ratio](F:\Projects\GitHub\christianjmills\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png)
+![set_aspect_ratio](\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png)
 
 ### Disable Warning
 
-![disable_no_camera_warning](..\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png)
+![disable_no_camera_warning](\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png)
 
 
 
