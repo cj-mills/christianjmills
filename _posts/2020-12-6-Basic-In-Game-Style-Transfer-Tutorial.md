@@ -234,6 +234,28 @@ Next, we’ll create a new private `IWorker` variable to store our inference eng
 
 ![engine_variable](\images\basic-in-game-style-transfer-tutorial\engine_variable.png)
 
+### Compile the Model
+
+We need to get an object oriented representation of the model before we can work with it. We’ll do this in the `Start()` method and store it in the `m_RuntimeModel`.
+
+![compile_model](..\images\basic-in-game-style-transfer-tutorial\compile_model.png)
+
+### Initialize Inference Engine
+
+Now we can create a worker to execute the modified model using the selected backend. We’ll do this using the [`WorkerFactory.CreateWorker()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_) method.
+
+![initialize_inference_engine](..\images\basic-in-game-style-transfer-tutorial\initialize_inference_engine.png)
+
+### Release Inference Engine Resources
+
+We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we’ll do it in the `OnDisable()` method. This method gets called when the Unity project exits.
+
+![onDisable_method](..\images\basic-in-game-style-transfer-tutorial\onDisable_method.png)
+
+
+
+
+
 
 
 ## Summary
