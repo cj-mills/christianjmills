@@ -270,6 +270,14 @@ Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput
 
 
 
+### Process Input Image
+
+Now we can process the current camera frame. We'll call the `ToTexture2D()` method at the top of the `Update` method. The `cameraInput` is not an HDR texture so we'll use an SDR format for the new `Texture2D`. We'll then call the `ProcessImage()` method with new `Texture2D` as input.
+
+![process_input_image](..\images\basic-in-game-style-transfer-tutorial\process_input_image.png)
+
+
+
 ## Open the `Biped` Scene
 
 In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.unity` asset. You don't need to save the current scene if you get prompted to do so.
