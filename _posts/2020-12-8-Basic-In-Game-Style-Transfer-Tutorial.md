@@ -280,15 +280,9 @@ Now we can process the current camera frame. We'll call the `ToTexture2D()` meth
 
 ### Perform Inference
 
-Next, we'll feed the `processedImage` to the model and get the output. 
-
-#### Create an Input `Tensor`
-
-We first need to convert the `processedImage` to a `Tensor`.
+Next, we'll feed the `processedImage` to the model and get the output. We first need to convert the `processedImage` to a `Tensor`.
 
 ![perform_inference_pt1](..\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png)
-
-#### Execute the Model
 
 We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
 
