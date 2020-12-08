@@ -110,7 +110,7 @@ Drag and drop the ONNX files into the `Models` folder.
 
 ## Prepare Render Textures
 
-Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We'll store the current camera frame, model output, and processed output in separate [render textures](https://docs.unity3d.com/ScriptReference/RenderTexture.html).
+Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We'll store the current camera frame and processed output in separate [render textures](https://docs.unity3d.com/ScriptReference/RenderTexture.html).
 
 ### Create `Textures` Folder
 
@@ -120,19 +120,19 @@ Add a new folder called `Textures` in the `Style_Transfer` folder.
 
 ### Create  Asset Files
 
-Open the `Textures` folder and create three new `Render Texture` assets. 
+Open the `Textures` folder and create two new `Render Texture` assets. 
 
 ![create_renderTexture](\images\basic-in-game-style-transfer-tutorial\create_renderTexture.png)
 
-Name the new assets `CameraInput`, `ModelOutput`, `ProcessedOutput`.
+Name the new assets `CameraInput`, `ProcessedOutput`.
 
-![new_renderTexture_assets](\images\basic-in-game-style-transfer-tutorial\new_renderTexture_assets.png)
+![new_renderTexture_assets](\images\basic-in-game-style-transfer-tutorial\new_renderTexture_assets_2.png)
 
 ### Update Size Parameters
 
-We need to use a fairly low resolution to get playable frame rates. Click an empty space in the `Textures` folder and press `Ctrl-a` to select all three render textures. Set the size the parameter to `720 x 540` in the `Inspector` tab. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
+We need to use a fairly low resolution to get playable frame rates. Click an empty space in the `Textures` folder and press `Ctrl-a` to select both render textures. Set the size the parameter to `720 x 540` in the `Inspector` tab. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
 
-![set_renderTexture_sizes](\images\basic-in-game-style-transfer-tutorial\set_renderTexture_sizes.png)
+![set_renderTexture_sizes](\images\basic-in-game-style-transfer-tutorial\set_renderTexture_sizes_2.png)
 
 
 
@@ -194,15 +194,15 @@ Open the `StyleTransfer` script and add the `Unity.Barracuda` namespace at the t
 
 ### Create `RenderTexture` Variables
 
-We need to create some public variables that we can use to access our three render texture assets in the script.
+We need to create some public variables that we can use to access our two render texture assets in the script.
 
- ![renderTexture_variables](\images\basic-in-game-style-transfer-tutorial\renderTexture_variables.png)
+![renderTexture_variables](\images\basic-in-game-style-transfer-tutorial\renderTexture_variables_2.png)
 
 ### Create `StyleTransferShader` Variable
 
 Next, we'll add a public variable to access our compute shader.
 
-![styleTransferShader_variable](\images\basic-in-game-style-transfer-tutorial\styleTransferShader_variable.png)
+![styleTransferShader_variable](\images\basic-in-game-style-transfer-tutorial\styleTransferShader_variable_2.png)
 
 ### Create Barracuda Variables
 
@@ -212,7 +212,7 @@ Now we need to add a few variables to perform inference with the style transfer 
 
 Make a new public `NNModel` variable called `modelAsset`. We’ll assign one of the ONNX files to this variable in the Unity Editor.
 
-![modelAsset_variable](\images\basic-in-game-style-transfer-tutorial\modelAsset_variable.png)
+![modelAsset_variable](\images\basic-in-game-style-transfer-tutorial\modelAsset_variable_2.png)
 
 #### Create `workerType` Variable
 
