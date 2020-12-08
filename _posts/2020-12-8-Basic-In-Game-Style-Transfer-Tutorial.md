@@ -386,6 +386,14 @@ You might see a warning saying that there isn't a camera rendering. This would b
 
 
 
+## Test it Out
+
+![basic_in_game_style_transfer_4](..\images\basic-in-game-style-transfer-tutorial\basic_in_game_style_transfer_4.gif)
+
+
+
+
+
 ## Summary
 
 
