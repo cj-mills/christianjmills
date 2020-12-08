@@ -312,7 +312,7 @@ In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.
 
 ## Create Style Converter
 
-To run the `StyleTransfer` script, we need to attach it to a `GameObject` in the Unity Editor.
+To run the `StyleTransfer` script, we need to attach it to a `GameObject` in the scene.
 
 ### Create an Empty `GameObject`
 
@@ -348,19 +348,17 @@ Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the 
 
 
 
-### Adjust the Screen Position
+### Adjust the Anchor Presets
 
-
+With the `Screen` object selected, click on the anchor presets box in the `Inspector` tab outlined below.  
 
 ![stretch_screen_pt1](\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt1.png)
 
-
-
-
+Select the option in the bottom right corner that's outlined below.
 
 ![stretch_screen_pt2](\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt2.png)
 
-
+Next we need to set all the `Rect Transform` values to zero. This will cause the `Screen` to take up the entire display.
 
 ![set_anchors_to_zero](\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png)
 
@@ -368,7 +366,7 @@ Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the 
 
 ### Set the Screen Texture
 
-Width the Screen object selected, drag and drop the `ProcessedOutput` asset into the `Texture` parameter in the `Inspector` tab.
+With the Screen object still selected, drag and drop the `ProcessedOutput` asset into the `Texture` parameter in the `Inspector` tab.
 
 ![assign_screen_texture](\images\basic-in-game-style-transfer-tutorial\assign_screen_texture.png)
 
