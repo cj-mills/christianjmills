@@ -362,8 +362,6 @@ Next we need to set all the `Rect Transform` values to zero. This will cause the
 
 ![set_anchors_to_zero](\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png)
 
-
-
 ### Set the Screen Texture
 
 With the Screen object still selected, drag and drop the `ProcessedOutput` asset into the `Texture` parameter in the `Inspector` tab.
@@ -372,13 +370,17 @@ With the Screen object still selected, drag and drop the `ProcessedOutput` asset
 
 ### Adjust the Game Tab
 
-
+Our last step is to set up the game tab for our chosen resolution.
 
 #### Set the Aspect Ratio
+
+My chosen resolution of `720 x 540` has a `4:3` aspect ratio. You can change the aspect ratio in the drop-down menu.
 
 ![set_aspect_ratio](\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png)
 
 ### Disable Warning
+
+You might see a warning saying that there isn't a camera rendering. This would be because we set the camera to render to `CameraInput`. If you do, right-click the `Game` tab and uncheck the `Warn if No Cameras Rendering` option.
 
 ![disable_no_camera_warning](\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png)
 
