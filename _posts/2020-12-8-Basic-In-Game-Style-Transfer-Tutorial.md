@@ -258,11 +258,15 @@ We need to manually release the resources that get allocated for the inference `
 
 
 
+![toTexture2D_method](..\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png)
+
 ### Create `ProcessImage` Method
 
 
 
 
+
+![processImage_method](..\images\basic-in-game-style-transfer-tutorial\processImage_method.png)
 
 
 
