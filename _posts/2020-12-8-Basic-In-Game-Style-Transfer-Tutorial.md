@@ -280,9 +280,41 @@ Now we can process the current camera frame. We'll call the `ToTexture2D()` meth
 
 ### Perform Inference
 
-Next we'll feed the `processedImage` to the model and get the output. We first need to convert the `processedImage` to a `Tensor`. We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
+Next, we'll feed the `processedImage` to the model and get the output. 
 
-![perform_inference](..\images\basic-in-game-style-transfer-tutorial\perform_inference.png)
+#### Create an Input `Tensor`
+
+We first need to convert the `processedImage` to a `Tensor`.
+
+![perform_inference_pt1](..\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png)
+
+#### Execute the Model
+
+We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
+
+![perform_inference_pt2](..\images\basic-in-game-style-transfer-tutorial\perform_inference_pt2.png)
+
+
+
+### Process the  Output
+
+We need to process the raw output from the model before we can display it to the user.
+
+
+
+![process_output_pt1](..\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png)
+
+
+
+![process_output_pt2](..\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png)
+
+
+
+### Display the Processed Output
+
+
+
+![display_output](F:\Projects\GitHub\christianjmills\images\basic-in-game-style-transfer-tutorial\display_output.png)
 
 
 
