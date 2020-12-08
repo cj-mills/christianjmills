@@ -54,7 +54,7 @@ Once downloaded, unzip the folder and add the project to Unity Hub using the `Ad
 
 Select a Unity version from the drop-down menu. The demo project was made using Unity `2019.4.5f1`. You can use a later `2019.4` release if you don't have that version installed.
 
-* Unity 2019.4.16: ([download](unityhub://2019.4.16f1/e05b6e02d63e))
+* Unity 2019.4.13: ([download](unityhub://2019.4.13f1/518737b1de84))
 
 ![set-unity-version-0-0](\images\basic-in-game-style-transfer-tutorial\set-unity-version.png)
 
@@ -251,6 +251,102 @@ Now we can create a worker to execute the modified model using the selected back
 We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we’ll do it in the `OnDisable()` method. This method gets called when the Unity project exits.
 
 ![onDisable_method](\images\basic-in-game-style-transfer-tutorial\onDisable_method.png)
+
+
+
+### Create `ToTexture2D` Method
+
+
+
+### Create `ProcessImage` Method
+
+
+
+
+
+
+
+## Open the `Biped` Scene
+
+In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.unity` asset. You don't need to save the current scene if you get prompted to do so.
+
+![select_biped_scene](..\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png)
+
+
+
+## Create Style Converter
+
+To run the `StyleTransfer` script, we need to attach it to a `GameObject` in the Unity Editor.
+
+### Create an Empty `GameObject`
+
+In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `StyleConverter`.
+
+![create_empyt_gameObject](..\images\basic-in-game-style-transfer-tutorial\create_empyt_gameObject.png)
+
+### Attach the `StyleTransfer` Script
+
+With the `StyleConverter` object selected, drag and drop the `StyleTransfer` script into the `Inspector` tab.
+
+![attach_styleTransfer_script](..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png)
+
+### Assign the Assets
+
+We need to assign the render textures, compute shader and one of the ONNX files to their respective parameters in the `Inspector` tab. I'll start with the mosaic model. We'll also set the `Worker Type` to `Compute Precompiled`. 
+
+![attach_styleTransfer_script_full](..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script_full.png)
+
+## Set Camera Target Texture
+
+Select the `_Scene` object in the `Hierarchy` tab. In the dropdown, select the `Main Camera` object.
+
+![assign_camera_target_texture](..\images\basic-in-game-style-transfer-tutorial\assign_camera_target_texture.png)
+
+
+
+## Create a Screen
+
+Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the `UI` submenu. Name it Screen.
+
+![create_raw_image](..\images\basic-in-game-style-transfer-tutorial\create_raw_image.png)
+
+
+
+### Adjust the Screen Position
+
+
+
+![stretch_screen_pt1](..\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt1.png)
+
+
+
+
+
+![stretch_screen_pt2](..\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt2.png)
+
+
+
+![set_anchors_to_zero](..\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png)
+
+
+
+### Set the Screen Texture
+
+Width the Screen object selected, drag and drop the `ProcessedOutput` asset into the `Texture` parameter in the `Inspector` tab.
+
+![assign_screen_texture](..\images\basic-in-game-style-transfer-tutorial\assign_screen_texture.png)
+
+### Adjust the Game Tab
+
+
+
+#### Set the Aspect Ratio
+
+![set_aspect_ratio](F:\Projects\GitHub\christianjmills\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png)
+
+### Disable Warning
+
+![disable_no_camera_warning](..\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png)
 
 
 
