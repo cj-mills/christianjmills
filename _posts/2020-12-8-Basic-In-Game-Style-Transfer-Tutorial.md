@@ -378,15 +378,11 @@ My chosen resolution of `720 x 540` has a `4:3` aspect ratio. You can change the
 
 ![set_aspect_ratio](\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png)
 
-### Disable Warning
+#### Disable Warning
 
 You might see a warning saying that there isn't a camera rendering. This would be because we set the camera to render to `CameraInput`. If you do, right-click the `Game` tab and uncheck the `Warn if No Cameras Rendering` option.
 
 ![disable_no_camera_warning](\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png)
-
-
-
-
 
 
 
