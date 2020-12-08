@@ -292,13 +292,11 @@ We'll then use the `engine.Execute()` method to run the model with the current `
 
 ### Process the  Output
 
-We need to process the raw output from the model before we can display it to the user.
-
-
+We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to a new HDR `RenderTexture`.
 
 ![process_output_pt1](..\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png)
 
-
+We'll then copy the data to a `Texture2D` and pass it to the `ProcessImage()` method. This time we'll be executing the `ProcessOutput()` function on the `ComputeShader`.
 
 ![process_output_pt2](..\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png)
 
@@ -306,7 +304,7 @@ We need to process the raw output from the model before we can display it to the
 
 ### Display the Processed Output
 
-
+We can finally display the stylized image by using the `Graphics.Blit()` method to copy the final image to `processedOutput`.
 
 ![display_output](..\images\basic-in-game-style-transfer-tutorial\display_output.png)
 
