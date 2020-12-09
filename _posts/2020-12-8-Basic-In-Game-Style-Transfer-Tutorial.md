@@ -30,7 +30,7 @@ I plan to work on a more sophisticated implementation for in-game style transfer
 
 This tutorial will cover how to use trained models from the [`fast_neural_style`](https://github.com/pytorch/examples/tree/master/fast_neural_style) project provided by PyTorch. The models take in regular images and return stylized versions. We'll get our input images from the in-game camera and display the stylized output to the user.
 
-**Important:** This is meant as a simple proof of concept and requires a powerful GPU to get playable frame rates. An RTX 20-series card or newer is recommended.
+**Important:** This is meant as a simple proof of concept and requires a powerful GPU to get playable frame rates. An RTX 20-series equivalent or newer is recommended.
 
 
 
