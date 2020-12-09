@@ -396,13 +396,6 @@ You might see a warning saying that there isn't a camera rendering. This would b
 
 We now have a basic implementation of in-game style transfer. It's pretty inefficient and probably needs a seizure warning. I started with this model architecture for it's relative simplicity but it was not designed for real-time video. I was surprised to get playable frame rates even at this low of a resolution. 
 
-Despite it's shortcomings, this little demo provides a glimpse at what's possible. It can also serve as a decent testing environment for trying out different styles. I already have another style transfer [project](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that I want to try to get working in Unity. That project does a great job of generating consistent video output.
+Despite it's shortcomings, this little demo provides a glimpse at what's possible. It can also serve as a decent testing environment for trying out different styles. It's worth noting that the models used in this tutorial were trained on datasets of real-world photos and not video games. I might try making an training dataset using screenshots from video games and see what impact that has on the stylized images. 
 
-In the mean time, I recommend checking out Unity's sample project. They put a lot of work into making it optimized for playable frame rates at more reasonable resolutions. The output also has better consistency between frames (i.e. no seizure warning).
-
-
-
-
-
-
-
+I already have another style transfer [project](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that I want to try to get working in Unity. This project does a great job of generating consistent video output. In the mean time, I recommend checking out Unity's sample [project](https://github.com/UnityLabs/barracuda-style-transfer). They put a lot of work into optimizing it for playable frame rates at more reasonable resolutions. The output also has better consistency between frames (i.e. no seizure warning).
