@@ -388,6 +388,8 @@ You might see a warning saying that there isn't a camera rendering. This would b
 
 ## Test it Out
 
+We can finally press the play button and see how it looks.
+
 ![basic_in_game_style_transfer_4](..\images\basic-in-game-style-transfer-tutorial\basic_in_game_style_transfer_4.gif)
 
 
