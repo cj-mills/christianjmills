@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post provides a basic method for performing in-game style transfer.
 categories: [unity, tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
