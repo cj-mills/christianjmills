@@ -14,7 +14,7 @@ search_exclude: false
 
 * [Introduction](#introduction)
 * [Input Resolutions](#input-resolutions)
-* [Stride Values](#stride-values)
+* [Difficult Scenarios](#difficult-scenarios)
 * [Summary](#summary)
 
 ## Introduction
