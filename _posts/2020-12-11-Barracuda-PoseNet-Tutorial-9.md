@@ -25,7 +25,9 @@ The easiest way to change the heatmap size is to adjust the resolution for the i
 
 ## Input Resolutions
 
-We'll start off with an extremely low resolution and go up from there. The minimum confidence for each test is set to `80%`.
+We'll start off with an extremely low resolution and go up from there. The minimum confidence for each test is set to 80%.
+
+**Note:** The GIFs were all recorded at 24fps so differences in frame rate will not be visible.
 
 ### 160 x 160 at 111fps
 
@@ -47,17 +49,15 @@ This is probably the sweet spot for balancing performance and accuracy. The mode
 
 ### 640 x 640 at 59fps
 
-
+Here we start to dip below 60fps. The model's predictions are more stable, but the difference is less noticable than previous jumps in resolutions.
 
 ![skateboards_640p](..\images\barracuda-posenet-tutorial\part-9\skateboards_640p.gif)
 
 ### 840 x 840 at  35fps
 
+At this resolution, we see a significant impact on inference speed for little to no gain in accuracy. Different video content might benefit more from this high of a resolution. However, The performance trade off is likely not worth it.
+
 ![skateboards_800p](..\images\barracuda-posenet-tutorial\part-9\skateboards_800p.gif)
-
-
-
-
 
 
 
