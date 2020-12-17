@@ -52,7 +52,7 @@ I wanted to see how the model ran in Unity before investing the time to make the
 
 ### Unity Performance
 
-The model did a surprisingly okay job stylizing the Kinematica demo despite having only trained on one hundred images of a lynx. Flickering is also significantly reduced. It didn't even give me any headaches importing the ONNX file into Unity. The only catch was performance. The model that I've been using ran `720 x 540` at approximately 25fps. This new model runs the same resolution at about 9fps. You'd probably need to wait a couple generations of GPUs before you could get playable frame rates with the model as is.
+The model did a surprisingly okay job stylizing the Kinematica demo despite having only trained on one hundred images of a lynx. Flickering is also significantly reduced. It didn't even give me any headaches importing the ONNX file into Unity. The only catch was performance. The model that I've been using runs `720 x 540` at approximately 25fps. This new model runs the same resolution at about 9fps. You'd probably need to wait a couple generations of GPUs before you could get playable frame rates with the model as is.
 
 ![few_shot_mosaic](..\images\in-game-style-transfer-experiments\part-1\few_shot_mosaic.gif)
 
