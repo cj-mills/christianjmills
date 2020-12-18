@@ -87,7 +87,7 @@ In short, I have some homework to do.
 
 
 
-![unity_style_transfer_scene](..\images\in-game-style-transfer-experiments\part-1\unity_style_transfer_scene.png)
+![unity_style_transfer_scene](..\images\in-game-style-transfer-experiments\part-1\unity_style_transfer_scene_2.jpg)
 
 
 
