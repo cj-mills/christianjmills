@@ -20,7 +20,7 @@ search_exclude: false
 
 ## Introduction
 
-I spent a bit of time this week messing around with different style transfer experiments. I wanted to see if training the [`fast_neural_style`](https://github.com/pytorch/examples/tree/master/fast_neural_style) model on images from the Kinematica demo would improve the output quality. I also got the model from the [`Interactive Video Stylization Using Few-Shot Patch-Based Training`](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) project working in Unity. It was actually super easy, barely an inconvenience. Although, I can't say the same for training the model. Finally, I started exploring Unity's style transfer [project](https://github.com/UnityLabs/barracuda-style-transfer). Calling my implementation basic might have been an understatement.
+I spent a bit of time this week messing around with different style transfer experiments. I wanted to see if training the [`fast_neural_style`](https://github.com/pytorch/examples/tree/master/fast_neural_style) model on images from the Kinematica demo would improve the output quality. I also got the model from the [`Interactive Video Stylization Using Few-Shot Patch-Based Training`](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) project working in Unity. Lastly, I started exploring Unity's style transfer [project](https://github.com/UnityLabs/barracuda-style-transfer). Let's just say calling my implementation basic might have been an understatement.
 
 ## Kinematica Image Dataset
 
@@ -37,8 +37,6 @@ I used [OBS](https://obsproject.com/) to record an approximately 13 minute video
 
 
 ## Video Stylization Model
-
-
 
 Training this style transfer model is a bit more involved than the one I've been using so far. First, this model doesn't learn from a source style image like the one below.
 
@@ -58,7 +56,7 @@ You can technically just make masks and noise for the whole image rather than fo
 
 ### Training Results
 
-As you can see below, this model produces much less flickering than the `fast_neural_style` model. The next step was to see how this transferred to Unity.
+As you can see below, this model produces much less flickering than the `fast_neural_style` model. The next step was to see how well this transferred to Unity.
 
 ![lynx_380p_cropped](..\images\in-game-style-transfer-experiments\part-1\lynx_380p_cropped.gif)
 
