@@ -14,7 +14,7 @@ search_exclude: false
 * [Kinematica Image Dataset](#kinematica-image-dataset)
 * [Video Stylization Model](#video-stylization-model)
 * [Unity's Implementation: First Impressions](#unitys-implementation-first-impressions)
-* [Summary](#summary)
+* [Conclusion](#conclusion)
 
 ## Introduction
 
