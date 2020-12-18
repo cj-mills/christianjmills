@@ -55,11 +55,11 @@ You also need to generate noise for these masks like the example below.
 
 You can technically just make masks and noise for the whole image rather than for specific parts. However, I didn't feel like doing that just yet. I wanted to see how the model ran in Unity before investing the time to make the masks and noise, so I used one of the sample training [datasets](https://drive.google.com/file/d/1EscSNFg4ILpB7dxr-zYw_UdOILLmDlRj/view) provided for the project. Specifically, I used the Lynx dataset.
 
-![lynx_099](..\images\in-game-style-transfer-experiments\part-1\lynx_099.jpg)
+![lynx_000](..\images\in-game-style-transfer-experiments\part-1\lynx_000.jpg)
 
 ### Training Results
 
-As you can see below, the model produces much less flickering than the previous model.
+As you can see below, this model produces much less flickering than the `fast_neural_style` model.
 
 ![lynx_380p_cropped](..\images\in-game-style-transfer-experiments\part-1\lynx_380p_cropped.gif)
 
