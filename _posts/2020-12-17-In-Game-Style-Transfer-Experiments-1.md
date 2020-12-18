@@ -58,10 +58,6 @@ The model did a surprisingly okay job stylizing the Kinematica demo despite havi
 
 
 
-
-
-
-
 ## Potential Solutions
 
 
