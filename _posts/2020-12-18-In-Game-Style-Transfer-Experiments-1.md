@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: Trying out custom datasets, a new model, and Unity's style transfer project.
 categories: [unity, log]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -84,5 +84,5 @@ My experiments provided some useful insights in how I should move forward with f
 
 The performance from the video stylization model was lower than I expected. I thought there might be some decrease in frame rate, but I did not expect it to drop by roughly two thirds. In hindsight, I guess it's not unreasonable. The video stylization model is double the size at 13MB versus 6.5MB for the `fast_neural_style` model.
 
-I'm now even more grateful that Unity has released their example project. It applies a level of expertise that would have taken me a long time to figure out on my own. However, it also demonstrates just how much work still remains in optimizing more sophisticated models for end-user devices. I'm curious if it's feasible to automate this optimization process.
+I'm now even more grateful that Unity has released their example project. It applies a level of expertise that would have taken me a long time to figure out on my own. However, it also shows just how much work still remains in optimizing more sophisticated models for end-user devices. I'm curious if it's feasible to automate this optimization process.
 
