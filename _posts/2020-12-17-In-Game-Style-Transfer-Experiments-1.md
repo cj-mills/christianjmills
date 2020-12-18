@@ -3,7 +3,7 @@ title: In-Game Style Transfer Experiments Pt.1
 layout: post
 toc: false
 comments: true
-description: 
+description: Experimenting with custom datasets, a new model, and unity's style transfer project.
 categories: [unity, log]
 hide: true
 permalink: /:title/
@@ -12,9 +12,16 @@ search_exclude: false
 
 
 
-I spent a bit of time earlier this week messing around with different style transfer experiments. 
+* [Introduction](#introduction)
+* [Kinematica Image Dataset](#kinematica-image-dataset)
+* [Video Stylization Model](#video-stylization-model)
+* [Options for Optimization](#options-for-optimization)
+* [Unity's Implementation: First Impressions](#unitys-implementation-first-impressions)
+* [Summary](#summary)
 
+## Introduction
 
+I spent a bit of time this week messing around with different style transfer experiments. I wanted to see if training the `fast_neural_style` model on images from the Kinematica demo would improve the output quality. I also got the model from the `Interactive Video Stylization Using Few-Shot Patch-Based Training` project working in Unity. It was actually super easy, barely an inconvenience. Although, I can't say the same for training the model. Finally, I started exploring Unity's style transfer project. Calling my implementation basic might have been an understatement.
 
 ## Kinematica Image Dataset
 
@@ -30,7 +37,7 @@ I used OBS to record an approximately 13 minute video of the character running a
 
 
 
-## Video Stylization
+## Video Stylization Model
 
 Training this style transfer model is a bit more involved than the one I've been using so far. First, this model doesn't learn from a source style image like the one below.
 
@@ -58,11 +65,11 @@ The model did a surprisingly okay job stylizing the Kinematica demo despite havi
 
 
 
-## Potential Solutions
+## Options for Optimization
 
 
 
-## Unity's Implementation First Impressions
+## Unity's Implementation: First Impressions
 
 In short, I have some homework to do. 
 
@@ -84,5 +91,5 @@ In short, I have some homework to do.
 
 
 
-
+## Summary
 
