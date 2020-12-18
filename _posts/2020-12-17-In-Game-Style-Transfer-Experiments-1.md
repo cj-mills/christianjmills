@@ -26,7 +26,7 @@ I spent a bit of time this week messing around with different style transfer exp
 
 I used [OBS](https://obsproject.com/) to record an approximately 13 minute video of the character running around the Kinematica demo. I then split the video into separate frames using [ffmpeg](https://ffmpeg.org/). I also created mirrored copies of the frames to double the size of my dataset. I ended up resizing the images to `640 x 480` to speed up training. My experiment resulted in noticeably less flickering when running the demo. Although, I still find the flickering in my results a bit distracting. There are also some slight changes in color between the two models. However, the differences were mostly lost when creating the Gifs below.
 
-### COCO 2014 Training images dataset
+### COCO 2014 Training Images Dataset
 
 ![base_mosaic_3](..\images\in-game-style-transfer-experiments\part-1\base_mosaic_3.gif)
 
