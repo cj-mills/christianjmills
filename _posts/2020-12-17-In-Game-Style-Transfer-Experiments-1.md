@@ -1,5 +1,5 @@
 ---
-title: In Game Style Transfer Experiments Pt.1
+title: In-Game Style Transfer Experiments Pt.1
 layout: post
 toc: false
 comments: true
@@ -68,3 +68,12 @@ The model did a surprisingly okay job stylizing the Kinematica demo despite havi
 
 ## Unity's Implementation First Impressions
 
+In short, I have some homework to do. 
+
+
+
+
+
+
+
+![unity_style_transfer](..\images\in-game-style-transfer-experiments\part-1\unity_style_transfer.gif)
