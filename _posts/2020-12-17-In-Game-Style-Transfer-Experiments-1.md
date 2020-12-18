@@ -66,15 +66,11 @@ The model did a surprisingly okay job stylizing the Kinematica demo despite havi
 
 ![few_shot_mosaic](..\images\in-game-style-transfer-experiments\part-1\few_shot_mosaic.gif)
 
-The `fast_neural_style` model I've been using runs `720 x 540` at approximately 25fps. This new model runs the same resolution at about 9fps. You'd probably need to wait a few generations of GPUs before you could get playable frame rates with the model as is. It would take some insane optimization to make this viable for in-game style transfer. 
+The `fast_neural_style` model I've been using runs `720 x 540` at approximately 25fps. This new model runs the same resolution at about 9fps. You'd probably need to wait a few generations of GPUs before you could get playable frame rates with the model as is. It would take some insane optimization to make this viable for in-game style transfer. Fortunately, Unity has already figured out how to do some insane optimization for their style transfer project.
 
 ## Unity's Implementation: First Impressions
 
-In short, I have some homework to do. 
-
-
-
-
+In short, I have some homework to do. I've only glanced through the code for Unity's project, but I'm already impressed with what I've found.
 
 
 
