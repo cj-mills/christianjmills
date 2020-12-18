@@ -10,8 +10,6 @@ permalink: /:title/
 search_exclude: false
 ---
 
-
-
 * [Introduction](#introduction)
 * [Kinematica Image Dataset](#kinematica-image-dataset)
 * [Video Stylization Model](#video-stylization-model)
@@ -33,8 +31,6 @@ I used [OBS](https://obsproject.com/) to record an approximately 13 minute video
 ### Kinematica Demo Image Dataset
 
 ![my_mosaic](..\images\in-game-style-transfer-experiments\part-1\my_mosaic.gif)
-
-
 
 ## Video Stylization Model
 
@@ -71,8 +67,6 @@ The `fast_neural_style` model I've been using runs `720 x 540` at approximately 
 ## Unity's Implementation: First Impressions
 
 In short, I have some homework to do. I've only glanced through the code for Unity's project, but I'm already impressed with what I've found.
-
-
 
 ![unity_style_transfer](..\images\in-game-style-transfer-experiments\part-1\unity_style_transfer.gif)
 
