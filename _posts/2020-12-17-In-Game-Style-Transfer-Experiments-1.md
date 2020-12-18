@@ -39,6 +39,8 @@ I used [OBS](https://obsproject.com/) to record an approximately 13 minute video
 
 ## Video Stylization Model
 
+
+
 Training this style transfer model is a bit more involved than the one I've been using so far. First, this model doesn't learn from a source style image like the one below.
 
 ![mosaic](..\images\in-game-style-transfer-experiments\part-1\mosaic.jpg)
@@ -51,9 +53,13 @@ You also need to generate noise for these masks like the example below.
 
 ![111_noise](..\images\in-game-style-transfer-experiments\part-1\111_noise.png)
 
+You can technically just make masks and noise for the whole image rather than for specific parts. However, I didn't feel like doing that just yet. I wanted to see how the model ran in Unity before investing the time to make the masks and noise, so I used one of the sample training [datasets](https://drive.google.com/file/d/1EscSNFg4ILpB7dxr-zYw_UdOILLmDlRj/view) provided for the project. Specifically, I used the Lynx dataset.
+
+![lynx_099](..\images\in-game-style-transfer-experiments\part-1\lynx_099.jpg)
+
 ### Training Results
 
-I wanted to see how the model ran in Unity before investing the time to make the masks and noise, so I used one of the sample training datasets provided with the project. As you can see below, the model produces much less flickering than the previous model.
+As you can see below, the model produces much less flickering than the previous model.
 
 ![lynx_380p_cropped](..\images\in-game-style-transfer-experiments\part-1\lynx_380p_cropped.gif)
 
@@ -66,6 +72,8 @@ The model did a surprisingly okay job stylizing the Kinematica demo despite havi
 
 
 ## Options for Optimization
+
+
 
 
 
