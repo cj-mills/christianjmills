@@ -21,11 +21,11 @@ search_exclude: false
 
 ## Introduction
 
-I spent a bit of time this week messing around with different style transfer experiments. I wanted to see if training the `fast_neural_style` model on images from the Kinematica demo would improve the output quality. I also got the model from the `Interactive Video Stylization Using Few-Shot Patch-Based Training` project working in Unity. It was actually super easy, barely an inconvenience. Although, I can't say the same for training the model. Finally, I started exploring Unity's style transfer project. Calling my implementation basic might have been an understatement.
+I spent a bit of time this week messing around with different style transfer experiments. I wanted to see if training the [`fast_neural_style`](https://github.com/pytorch/examples/tree/master/fast_neural_style) model on images from the Kinematica demo would improve the output quality. I also got the model from the [`Interactive Video Stylization Using Few-Shot Patch-Based Training`](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) project working in Unity. It was actually super easy, barely an inconvenience. Although, I can't say the same for training the model. Finally, I started exploring Unity's style transfer [project](https://github.com/UnityLabs/barracuda-style-transfer). Calling my implementation basic might have been an understatement.
 
 ## Kinematica Image Dataset
 
-I used OBS to record an approximately 13 minute video of the character running around the Kinematica demo. I then split the video into separate frames using ffmpeg. I also created mirrored copies of the frames to double my dataset. I ended up resizing the images to `640 x 480` to speed up training. My experiment resulted in noticeably less flickering when running the demo. Although, I still find the flickering in my results a bit distracting. There are also some slight changes in color between the two models. However, the differences were mostly lost when creating the Gifs below.
+I used [OBS](https://obsproject.com/) to record an approximately 13 minute video of the character running around the Kinematica demo. I then split the video into separate frames using [ffmpeg](https://ffmpeg.org/). I also created mirrored copies of the frames to double my dataset. I ended up resizing the images to `640 x 480` to speed up training. My experiment resulted in noticeably less flickering when running the demo. Although, I still find the flickering in my results a bit distracting. There are also some slight changes in color between the two models. However, the differences were mostly lost when creating the Gifs below.
 
 ### Baseline
 
