@@ -15,7 +15,6 @@ search_exclude: false
 * [Introduction](#introduction)
 * [Kinematica Image Dataset](#kinematica-image-dataset)
 * [Video Stylization Model](#video-stylization-model)
-* [Options for Optimization](#options-for-optimization)
 * [Unity's Implementation: First Impressions](#unitys-implementation-first-impressions)
 * [Summary](#summary)
 
@@ -45,7 +44,7 @@ Training this style transfer model is a bit more involved than the one I've been
 
 ![mosaic](..\images\in-game-style-transfer-experiments\part-1\mosaic.jpg)
 
-Instead, you need to provide a few stylized examples of images from your training dataset. I just used the style transfer model I've been working with to generate these examples. However, you need to put in a bit more work to get the best results. You need to create image masks for each image in the dataset like the one below.
+Instead, you need to provide a few stylized examples of images from your training dataset. I just used the `fast_neural_style` model to generate these examples. However, you need to put in a bit more work to get the best results. This involves creating masks for each image in the dataset like the one below.
 
 ![111_mask](..\images\in-game-style-transfer-experiments\part-1\111_mask.png)
 
@@ -53,29 +52,23 @@ You also need to generate noise for these masks like the example below.
 
 ![111_noise](..\images\in-game-style-transfer-experiments\part-1\111_noise.png)
 
-You can technically just make masks and noise for the whole image rather than for specific parts. However, I didn't feel like doing that just yet. I wanted to see how the model ran in Unity before investing the time to make the masks and noise, so I used one of the sample training [datasets](https://drive.google.com/file/d/1EscSNFg4ILpB7dxr-zYw_UdOILLmDlRj/view) provided for the project. Specifically, I used the Lynx dataset.
+You can technically just make masks and noise for the whole image rather than for specific parts. However, I didn't feel like doing that just yet. I wanted to see how the model ran in Unity first, so I used one of the sample training [datasets](https://drive.google.com/file/d/1EscSNFg4ILpB7dxr-zYw_UdOILLmDlRj/view) provided for the project. Specifically, I used the lynx dataset.
 
 ![lynx_000](..\images\in-game-style-transfer-experiments\part-1\lynx_000.jpg)
 
 ### Training Results
 
-As you can see below, this model produces much less flickering than the `fast_neural_style` model.
+As you can see below, this model produces much less flickering than the `fast_neural_style` model. The next step was to see how this transferred to Unity.
 
 ![lynx_380p_cropped](..\images\in-game-style-transfer-experiments\part-1\lynx_380p_cropped.gif)
 
 ### Unity Performance
 
-The model did a surprisingly okay job stylizing the Kinematica demo despite having only trained on one hundred images of a lynx. Flickering is also significantly reduced. It didn't even give me any headaches importing the ONNX file into Unity. The only catch was performance. The model that I've been using runs `720 x 540` at approximately 25fps. This new model runs the same resolution at about 9fps. You'd probably need to wait a couple generations of GPUs before you could get playable frame rates with the model as is.
+The model did a surprisingly okay job stylizing the Kinematica demo despite having only trained on one hundred images of a lynx. Flickering is also significantly reduced. It didn't even give me any headaches importing the ONNX file into Unity. The only catch was performance.
 
 ![few_shot_mosaic](..\images\in-game-style-transfer-experiments\part-1\few_shot_mosaic.gif)
 
-
-
-## Options for Optimization
-
-
-
-
+The `fast_neural_style` model I've been using runs `720 x 540` at approximately 25fps. This new model runs the same resolution at about 9fps. You'd probably need to wait a few generations of GPUs before you could get playable frame rates with the model as is. It would take some insane optimization to make this viable for in-game style transfer. 
 
 ## Unity's Implementation: First Impressions
 
