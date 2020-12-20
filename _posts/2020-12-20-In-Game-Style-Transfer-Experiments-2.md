@@ -39,7 +39,7 @@ The longer training session actually resulted in more noticeable flickering than
 
 ## Unity's Implementation in Kinematica Demo
 
-Good news first, there is basically no flickering and the frame rate is about 3x higher than the `fast_neural_style` model at around 80fps. For reference, the Kinematica demo runs at around 120fps with no style transfer. The bad news is the quality of style transfer isn't that great.
+I'll start with the good news. There is basically no flickering and the frame rate is over 3x higher than the `fast_neural_style` model at around 80fps. For reference, the Kinematica demo runs at around 120fps with no style transfer. The bad news is the quality of style transfer isn't that great.
 
 ![unity_style_kinematica_4](..\images\in-game-style-transfer-experiments\part-2\unity_style_kinematica_4.gif)
 
