@@ -1,5 +1,5 @@
 ---
-title: In-Game Style Transfer Experiments Pt.1
+title: In-Game Style Transfer Experiments Pt.2
 layout: post
 toc: false
 comments: true
