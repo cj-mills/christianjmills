@@ -17,11 +17,11 @@ search_exclude: false
 
 ## Introduction
 
-To follow up on the last post, I let the `fast_neural_style` model train overnight. I also got Unity's style transfer implementation working in the Kinematica demo so I could directly compare it. 
+To follow up on the last post, I let the `fast_neural_style` model train overnight. I also got Unity's style transfer implementation working in the Kinematica demo so I could directly compare it to other models.
 
 ## Longer Training Session Results
 
-The longer training session actually resulted in more noticeable flickering than the shorter training session. The flickering is still lower than the baseline at least.
+The longer training session actually resulted in more noticeable flickering than the shorter training session. The flickering is still lower than the baseline at least. The model never seemed to settle on how to apply the style during training. The model might be able to get more consistent if I fiddled with the hyperparameters. It would take a long time to find the ideal values, so I'll hold off on that.
 
 ### COCO 2014 Training Images Dataset
 
