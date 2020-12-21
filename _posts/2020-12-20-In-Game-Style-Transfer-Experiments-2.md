@@ -17,7 +17,7 @@ search_exclude: false
 
 ## Introduction
 
-To follow up on the last post, I let the `fast_neural_style` model train overnight. I also got Unity's style transfer implementation working in the Kinematica demo so I could directly compare it to other models.
+To follow up on the last post, I let the `fast_neural_style` model train overnight. I also got Unity's style transfer implementation working in the Kinematica demo so I could directly compare it to other models. The results for both were a bit disappointing.
 
 ## Longer Training Session Results
 
@@ -39,7 +39,7 @@ The longer training session actually resulted in more noticeable flickering than
 
 ## Unity's Implementation in Kinematica Demo
 
-I'll start with the good news. There is basically no flickering and the frame rate is over 3x higher than the `fast_neural_style` model at around 80fps. For reference, the Kinematica demo runs at around 120fps with no style transfer. The bad news is the quality of style transfer isn't that great.
+The good news is there is basically no flickering and the frame rate is over 3x higher than the `fast_neural_style` model at around 80fps. For reference, the Kinematica demo runs at around 120fps with no style transfer. The bad news is the quality of style transfer isn't that great.
 
 ![unity_style_kinematica_4](..\images\in-game-style-transfer-experiments\part-2\unity_style_kinematica_4.gif)
 
@@ -49,5 +49,5 @@ As Unity stated in their blog post, improving the quality of style transfer whil
 
 ## Conclusion
 
-
+The video stylization model I tested in the last post seems the most promising for both quality and consistency between frames. The only roadblock is that it requires much more compute power. It might be worthwhile exploring methods to optimize this model. I'd like to try optimization techniques such as [quantization](https://pytorch.org/blog/introduction-to-quantization-on-pytorch/) and [pruning](https://pytorch.org/tutorials/intermediate/pruning_tutorial.html). Both approaches aim to reduce the size of the model and thus reduce hardware requirements. However, I don't know if the Barracuda library supports quantized models yet. I'm also curious how well the [temporal upsampling](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/) from Unity's implementation would work with the video stylization model. I've never implemented any of these optimization techniques before, so I don't know how long it would take to get them working.
 
