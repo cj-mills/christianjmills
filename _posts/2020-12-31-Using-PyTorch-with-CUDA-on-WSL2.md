@@ -1,9 +1,9 @@
 ---
-title: Enable CUDA on WSL2
+title: Using PyTorch with CUDA on WSL2
 layout: post
 toc: false
 comments: true
-description: This post covers the steps I took to get CUDA working on WSL2.
+description: This post covers getting PyTorch to run with CUDA on WSL2.
 categories: [tutorial]
 hide: true
 permalink: /:title/
