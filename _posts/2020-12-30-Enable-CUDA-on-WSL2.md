@@ -51,6 +51,75 @@ chmod +x Anaconda3-2020.11-Linux-x86_64.sh
 ./Anaconda3-2020.11-Linux-x86_64.sh
 ```
 
+```bash
+Last updated September 28, 2020
+
+
+Do you accept the license terms? [yes|no]
+[no] >>> yes
+```
+
+
+
+```bash
+Anaconda3 will now be installed into this location:
+/home/innom-dt/anaconda3
+
+  - Press ENTER to confirm the location
+  - Press CTRL-C to abort the installation
+  - Or specify a different location below
+
+[/home/innom-dt/anaconda3] >>>
+```
+
+
+
+```bash
+Preparing transaction: done
+Executing transaction: done
+installation finished.
+Do you wish the installer to initialize Anaconda3
+by running conda init? [yes|no]
+[no] >>> yes
+```
+
+
+
+```bash
+wsl.exe --shutdown Ubuntu
+```
+
+
+
+```bash
+(base) innom-dt@INNOM-DT:~$ python
+Python 3.8.5 (default, Sep  4 2020, 07:30:14)
+[GCC 7.3.0] :: Anaconda, Inc. on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+
+
+
+
+
+```bash
+conda install -c fastai -c pytorch -c anaconda fastai gh anaconda
+```
+
+
+
+```bash
+(base) innom-dt@INNOM-DT:~$ python
+Python 3.8.5 (default, Sep  4 2020, 07:30:14)
+[GCC 7.3.0] :: Anaconda, Inc. on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import torch
+>>> torch.cuda.is_available()
+True
+>>>
+```
+
 
 
 ## Conclusion
