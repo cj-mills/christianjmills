@@ -18,7 +18,17 @@ search_exclude: false
 
 
 
+Nvidia Driver for CUDA on WSL
 
+* [download](https://developer.nvidia.com/cuda/wsl/download)
+
+
+
+### Select Target Platform
+
+![select_target_platform](..\images\enable-cuda-on-wsl2\select_target_platform.png)
+
+### Download Installer
 
 ```bash
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
@@ -28,6 +38,17 @@ sudo dpkg -i cuda-repo-ubuntu2004-11-2-local_11.2.0-460.27.04-1_amd64.deb
 sudo apt-key add /var/cuda-repo-ubuntu2004-11-2-local/7fa2af80.pub
 sudo apt-get update
 sudo apt-get -y install cuda
+```
+
+
+
+### Install Anaconda
+
+```bash
+cd ~
+wget https://repo.anaconda.com/archive/Anaconda3-2020.11-Linux-x86_64.sh
+chmod +x Anaconda3-2020.11-Linux-x86_64.sh
+./Anaconda3-2020.11-Linux-x86_64.sh
 ```
 
 
