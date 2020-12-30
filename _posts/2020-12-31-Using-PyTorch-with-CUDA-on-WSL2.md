@@ -20,7 +20,7 @@ I've spent the past couple days figuring out how to get my Linux environment for
 
 ### What is WSL
 
-Windows Subsystem for Linux is a compatibility layer that let's you run Linux environments directly on Windows. You can run Linux command-line tools and applications, invoke Windows applications from the Linux command-line, and access Windows drives through the Linux file system. The most recent version, WSL2, uses a real Linux kernel. This provides support for more applications such as Docker. More importantly for my purposes, it also enables GPU accelerated applications.
+WSL is a compatibility layer that let's you run Linux environments directly on Windows. You can run Linux command-line tools and applications, invoke Windows applications from the Linux command-line, and access Windows drives through the Linux file system. The most recent version, WSL2, uses a real Linux kernel. This provides support for more applications such as Docker. More importantly for my purposes, it also enables GPU accelerated applications.
 
 ### Motivation
 
