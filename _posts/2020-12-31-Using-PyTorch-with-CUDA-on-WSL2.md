@@ -11,7 +11,7 @@ search_exclude: false
 ---
 
 * [Introduction](#introduction)
-* [](#)
+* [Installation Preparations](#installation-preparations)
 * [Conclusion](#conclusion)
 
 ## Introduction
@@ -25,6 +25,16 @@ WSL is a compatibility layer that let's you run Linux environments directly on W
 ### Motivation
 
 I've been dual-booting Windows and Linux for a while now. I prefer Linux for coding and training models while Windows can be more convenient for things like gaming and school work. This setup didn't have any drawbacks for me until I started working with the Barracuda library for Unity. Unity is installed on Windows but my environment for training deep learning models is on Linux. This is inconvenient when I want to test out a newly trained model in Unity. I decided to try WSL2 in the hopes that it would remove the need to switch between operating systems.
+
+
+
+## Installation Preparations
+
+The [install process](https://docs.microsoft.com/en-us/windows/wsl/install-win10) for most WSL2 use cases is straightforward. You just need to enable a few features and install your preferred Linux distribution from the Microsoft Store. The process for enabling CUDA support is a bit more involved.
+
+### Install Windows Insider Build
+
+CUDA applications are only supported in WSL2 on Windows build versions 20145 or higher. These are currently only accessible through the [Dev Channel](https://blogs.windows.com/windows-insider/2020/06/15/introducing-windows-insider-channels/) for the [Windows Insider Program](https://insider.windows.com/en-us/getting-started#register). Microsoft requires you to enable Full telemetry collection to install Insider builds for Windows. This was annoying since the first thing I do when installing Windows is disable every accessible telemetry setting. Fortunately, you can disable everything again once you've installed an Insider build.
 
 
 
