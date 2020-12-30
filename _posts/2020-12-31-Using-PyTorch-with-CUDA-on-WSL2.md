@@ -46,6 +46,12 @@ Nvidia provides a preview driver for their graphics cards that enables CUDA on W
 
 I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71).
 
+
+
+## Install CUDA Toolkit
+
+* [Instructions](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal)
+
 ### Select Target Platform
 
 ![select_target_platform](..\images\enable-cuda-on-wsl2\select_target_platform.png)
