@@ -16,17 +16,11 @@ search_exclude: false
 
 ## Introduction
 
-I've spent the past couple days figuring out how to get my Linux environment for training deep learning models working on Microsoft's Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official guides are adequate for getting set up, I needed a few extra steps to actually train a model. 
-
-
-
-The process was involved enough that it feels worth the effort to consolidate the steps I took in a blog post.
-
-
+I've spent the past couple days figuring out how to get my Linux environment for training deep learning models working on Microsoft's Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official guides are adequate for getting set up, I needed a few extra steps to actually train a model. This post summarizes my experience making it work.
 
 ### What is WSL
 
-
+Windows Subsystem for Linux is a compatibility layer that let's you run Linux environments directly on Windows. You can run Linux command-line tools and applications, invoke Windows applications from the Linux command-line, and access Windows drives through the Linux file system. The most recent version, WSL2, uses a real Linux kernel. This provides support for more applications such as Docker. More importantly for my purposes, it also enables GPU accelerated applications.
 
 ### Motivation
 
