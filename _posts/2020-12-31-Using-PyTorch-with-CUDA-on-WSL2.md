@@ -30,19 +30,21 @@ I've been dual-booting Windows and Linux for a while now. I prefer Linux for cod
 
 ## Installation Preparations
 
-The [install process](https://docs.microsoft.com/en-us/windows/wsl/install-win10) for most WSL2 use cases is straightforward. You just need to enable a few features and install your preferred Linux distribution from the Microsoft Store. The process for enabling CUDA support is a bit more involved.
+The [install process](https://docs.microsoft.com/en-us/windows/wsl/install-win10) for most WSL2 use cases is straightforward. You just need to enable a few features and install your preferred Linux distribution from the Microsoft Store. However, the process for enabling CUDA support is a bit more involved.
 
 ### Install Windows Insider Build
 
 CUDA applications are only supported in WSL2 on Windows build versions 20145 or higher. These are currently only accessible through the [Dev Channel](https://blogs.windows.com/windows-insider/2020/06/15/introducing-windows-insider-channels/) for the [Windows Insider Program](https://insider.windows.com/en-us/getting-started#register). Microsoft requires you to enable Full telemetry collection to install Insider builds for Windows. This was annoying since the first thing I do when installing Windows is disable every accessible telemetry setting. Fortunately, you can disable everything again once you've installed an Insider build.
 
+### Install Nvidia's Preview Driver
 
+Nvidia provides a preview driver for their graphics cards that enables CUDA on WSL2.
 
-Nvidia Driver for CUDA on WSL
+* [Nvidia Drivers for CUDA on WSL](https://developer.nvidia.com/cuda/wsl/download)
 
-* [download](https://developer.nvidia.com/cuda/wsl/download)
+## Install WSL
 
-
+I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71).
 
 ### Select Target Platform
 
