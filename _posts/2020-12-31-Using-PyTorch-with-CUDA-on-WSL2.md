@@ -11,12 +11,32 @@ search_exclude: false
 ---
 
 * [Introduction](#introduction)
-* 
+* [](#)
 * [Conclusion](#conclusion)
 
 ## Introduction
 
+I've spent the past couple days figuring out how to get my Linux environment for training deep learning models working on Microsoft's Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official guides are adequate for getting set up, I needed a few extra steps to actually train a model. 
 
+
+
+The process was involved enough that it feels worth the effort to consolidate the steps I took in a blog post.
+
+
+
+### What is WSL
+
+
+
+### Motivation
+
+I've been dual-booting Windows and Linux for a while now. I prefer Linux for coding and training models while Windows can be more convenient for things like gaming and school work. This setup didn't have any drawbacks for me until I started working with the Barracuda library for Unity. Unity is installed on Windows but my environment for training deep learning models is on Linux. This is inconvenient when I want to test out a newly trained model in Unity. I decided to try Microsoft's Windows Subsystem for Linux (WSL) in the hopes that it would remove the need to switch between operating systems.
+
+
+
+However, Microsoft has been taking steps to make Windows more appealing for software development. One of the those steps is the Windows Subsystem for Linux (WSL). WSL lets you run a Linux environment on Windows without the overhead of traditional virtual machines.
+
+I didn't have a use case for WSL until I started working with the Barracuda library for Unity. I have Unity installed on Windows but my environment for training models is in Linux. So far, I've been 
 
 Nvidia Driver for CUDA on WSL
 
