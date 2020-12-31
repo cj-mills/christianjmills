@@ -101,11 +101,17 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 ### Install Fastai Library
 
+I installed the fastai library which is built on top of PyTorch to test whether I could access the GPU. 
+
 ```bash
 conda install -c fastai -c pytorch -c anaconda fastai gh anaconda
 ```
 
+The installation went smoothly.
+
 #### Confirm CUDA Works
+
+I was able to confirm that PyTorch could access the GPU using the `torch.cuda.is_available()` method.
 
 ```bash
 (base) innom-dt@INNOM-DT:~$ python
@@ -117,6 +123,8 @@ Type "help", "copyright", "credits" or "license" for more information.
 True
 >>>
 ```
+
+We aren't able to see any GPU usage stats in Windows yet. I believe Nvidia is planning on adding that functionality in a future release. The only way I was able to tell that the GPU was doing anything when training a model was checking the available GPU memory and temperature in the Windows Task Manager.
 
 
 
