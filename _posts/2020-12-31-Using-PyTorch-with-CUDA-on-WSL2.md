@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: This post covers my experience getting PyTorch to run with CUDA on WSL2.
-categories: [tutorial]
+categories: [log]
 hide: true
 permalink: /:title/
 search_exclude: true
@@ -13,11 +13,12 @@ search_exclude: true
 * [Introduction](#introduction)
 * [Installation Preparations](#installation-preparations)
 * [Set Up Ubuntu](#set-up-ubuntu)
+* [The Headaches](#the-headaches)
 * [Conclusion](#conclusion)
 
 ## Introduction
 
-I spent a couple days figuring out how to get my Linux environment for deep learning working on Microsoft’s Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official guides are adequate for getting set up, I needed a few extra steps to actually train a model. This post summarizes my experience making it work.
+I spent a couple days figuring out how to train deep learning models on Microsoft’s Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official installation guides are adequate, there were some headaches that came up when attempting to train models. This post summarizes my experience making it work.
 
 ### What is WSL
 
@@ -130,7 +131,7 @@ We aren't able to see any GPU usage stats in Windows yet. I believe Nvidia is pl
 
 
 
-## Additional Steps
+## The Headaches
 
 
 
