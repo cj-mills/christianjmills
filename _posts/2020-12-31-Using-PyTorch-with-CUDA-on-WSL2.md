@@ -64,9 +64,10 @@ sudo apt upgrade
 
 ### Install CUDA Toolkit
 
-The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a separate distribution. However, I ended up using the standard `Ubuntu` option. You can view the selected instructions I followed by clicking the link below.
+The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a separate distribution. I don't know what makes it functionally different than the regular `Ubuntu` distribution. Both performed the same for me when training models. You can view the selected instructions I followed for both by clicking the links below.
 
-* [Instructions](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal)
+* [Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal)
+* [WSL-Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=WSLUbuntu&target_version=20&target_type=deblocal)
 
 
 
@@ -81,10 +82,10 @@ chmod +x Anaconda3-2020.11-Linux-x86_64.sh
 ./Anaconda3-2020.11-Linux-x86_64.sh
 ```
 
-#### Restart Ubuntu
+#### Restart Bash
 
 ```bash
-wsl.exe --shutdown Ubuntu
+exec bash
 ```
 
 #### Confirm Python Works
