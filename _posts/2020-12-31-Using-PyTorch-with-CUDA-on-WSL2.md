@@ -7,7 +7,7 @@ description: This post covers my experience getting PyTorch to run with CUDA on 
 categories: [tutorial]
 hide: true
 permalink: /:title/
-search_exclude: false
+search_exclude: true
 ---
 
 * [Introduction](#introduction)
@@ -17,7 +17,7 @@ search_exclude: false
 
 ## Introduction
 
-I’ve spent the past couple days figuring out how to get my Linux environment for deep learning working on Microsoft’s Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official guides are adequate for getting set up, I needed a few extra steps to actually train a model. This post summarizes my experience making it work.
+I spent a couple days figuring out how to get my Linux environment for deep learning working on Microsoft’s Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official guides are adequate for getting set up, I needed a few extra steps to actually train a model. This post summarizes my experience making it work.
 
 ### What is WSL
 
