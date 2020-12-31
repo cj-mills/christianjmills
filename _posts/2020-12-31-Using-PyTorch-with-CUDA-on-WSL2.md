@@ -38,17 +38,24 @@ CUDA applications are only supported in WSL2 on Windows build versions 20145 or 
 
 ### Install Nvidia's Preview Driver
 
-Nvidia provides a preview driver for their graphics cards that enables CUDA on WSL2.
+Nvidia provides a preview driver for their graphics cards that enables CUDA on WSL2. This Windows driver includes both the regular driver components for Windows and WSL. We don't install display drivers on the Linux distribution.
 
 * [Nvidia Drivers for CUDA on WSL](https://developer.nvidia.com/cuda/wsl/download)
 
 ## Install WSL
 
-I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71).
+You can [install](https://docs.microsoft.com/en-us/windows/wsl/install-win10#simplified-installation-for-windows-insiders) WSL with one line in the command window if you have a preview build installed. I did it backwards so I had to use the slightly longer [manual installation](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps). I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71) for my distribution since that's what I currently have installed on my desktop. The Ubuntu distribution needs to be updated after it gets installed.
 
+```bash
+sudo apt update
+sudo apt upgrade
+```
 
+The next step was to install the CUDA toolkit.
 
 ## Install CUDA Toolkit
+
+
 
 * [Instructions](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal)
 
