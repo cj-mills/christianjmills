@@ -73,6 +73,8 @@ The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a se
 
 ### Install Anaconda
 
+I use Anaconda, so I downloaded the latest available release to the home directory and installed it like normal.
+
 #### Download and Run the Install Script
 
 ```bash
@@ -82,16 +84,17 @@ chmod +x Anaconda3-2020.11-Linux-x86_64.sh
 ./Anaconda3-2020.11-Linux-x86_64.sh
 ```
 
-#### Restart Bash
+#### Confirm Python Works
+
+I had to restart bash to use the new python interpreter like normal as well.
 
 ```bash
 exec bash
 ```
 
-#### Confirm Python Works
+After that, the interactive python interpreter started without issue.
 
 ```bash
-(base) innom-dt@INNOM-DT:~$ python
 Python 3.8.5 (default, Sep  4 2020, 07:30:14)
 [GCC 7.3.0] :: Anaconda, Inc. on linux
 Type "help", "copyright", "credits" or "license" for more information.
@@ -102,13 +105,11 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 ### Install Fastai Library
 
-I installed the fastai library which is built on top of PyTorch to test whether I could access the GPU. 
+I installed the fastai library which is built on top of PyTorch to test whether I could access the GPU. The installation went smoothly.
 
 ```bash
 conda install -c fastai -c pytorch -c anaconda fastai gh anaconda
 ```
-
-The installation went smoothly.
 
 #### Confirm CUDA Works
 
