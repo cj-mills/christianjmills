@@ -12,6 +12,7 @@ search_exclude: false
 
 * [Introduction](#introduction)
 * [Installation Preparations](#installation-preparations)
+* [Set Up Ubuntu](#set-up-ubuntu)
 * [Conclusion](#conclusion)
 
 ## Introduction
@@ -38,46 +39,40 @@ CUDA applications are only supported in WSL2 on Windows build versions 20145 or 
 
 ### Install Nvidia's Preview Driver
 
-Nvidia provides a preview Windows display driver for their graphics cards that enables CUDA on WSL2. This Windows driver includes both the regular driver components for Windows and WSL. We don't install display drivers on the Linux distribution.
+Nvidia provides a preview Windows display driver for their graphics cards that enables CUDA on WSL2. This Windows driver includes both the regular driver components for Windows and WSL. We don't install display drivers on the Linux distribution itself.
 
 * [Nvidia Drivers for CUDA on WSL](https://developer.nvidia.com/cuda/wsl/download)
 
 ## Install WSL
 
-You can [install](https://docs.microsoft.com/en-us/windows/wsl/install-win10#simplified-installation-for-windows-insiders) WSL with one line in the command window if you install a preview build first. I did it backwards so I had to use the slightly longer [manual installation](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps). I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71) for my distribution since that's what I currently have installed on my desktop. The Ubuntu distribution needs to be updated after it gets installed.
+You can [install](https://docs.microsoft.com/en-us/windows/wsl/install-win10#simplified-installation-for-windows-insiders) WSL with one line in the command window if you install a preview build first. I did it backwards so I had to use the slightly longer [manual installation](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps). I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71) for my distribution since that's what I currently have installed on my desktop. 
+
+
+
+## Set Up Ubuntu
+
+#### Update Ubuntu
+
+The Ubuntu distribution needs to be updated after it gets installed.
 
 ```bash
 sudo apt update
 sudo apt upgrade
 ```
 
-The next step was to install the CUDA toolkit.
-
-## Install CUDA Toolkit
 
 
+### Install CUDA Toolkit
+
+The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a separate distribution. However, I ended up using the standard `Ubuntu` option. You can view the selected instructions I followed by clicking the link below.
 
 * [Instructions](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal)
-
-### Select Target Platform
-
-![select_target_platform](..\images\enable-cuda-on-wsl2\select_target_platform.png)
-
-### Download Installer
-
-```bash
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
-sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-wget https://developer.download.nvidia.com/compute/cuda/11.2.0/local_installers/cuda-repo-ubuntu2004-11-2-local_11.2.0-460.27.04-1_amd64.deb
-sudo dpkg -i cuda-repo-ubuntu2004-11-2-local_11.2.0-460.27.04-1_amd64.deb
-sudo apt-key add /var/cuda-repo-ubuntu2004-11-2-local/7fa2af80.pub
-sudo apt-get update
-sudo apt-get -y install cuda
-```
 
 
 
 ### Install Anaconda
+
+#### Download and Run the Install Script
 
 ```bash
 cd ~
@@ -86,45 +81,13 @@ chmod +x Anaconda3-2020.11-Linux-x86_64.sh
 ./Anaconda3-2020.11-Linux-x86_64.sh
 ```
 
-```bash
-Last updated September 28, 2020
-
-
-Do you accept the license terms? [yes|no]
-[no] >>> yes
-```
-
-
-
-```bash
-Anaconda3 will now be installed into this location:
-/home/innom-dt/anaconda3
-
-  - Press ENTER to confirm the location
-  - Press CTRL-C to abort the installation
-  - Or specify a different location below
-
-[/home/innom-dt/anaconda3] >>>
-```
-
-
-
-```bash
-Preparing transaction: done
-Executing transaction: done
-installation finished.
-Do you wish the installer to initialize Anaconda3
-by running conda init? [yes|no]
-[no] >>> yes
-```
-
-
+#### Restart Ubuntu
 
 ```bash
 wsl.exe --shutdown Ubuntu
 ```
 
-
+#### Confirm Python Works
 
 ```bash
 (base) innom-dt@INNOM-DT:~$ python
@@ -136,13 +99,13 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 
 
-
+### Install Fastai Library
 
 ```bash
 conda install -c fastai -c pytorch -c anaconda fastai gh anaconda
 ```
 
-
+#### Confirm CUDA Works
 
 ```bash
 (base) innom-dt@INNOM-DT:~$ python
@@ -154,6 +117,12 @@ Type "help", "copyright", "credits" or "license" for more information.
 True
 >>>
 ```
+
+
+
+## Additional Steps
+
+
 
 
 
