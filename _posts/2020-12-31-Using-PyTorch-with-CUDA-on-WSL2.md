@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: This post covers my experience getting PyTorch to run with CUDA on WSL2.
-categories: [log]
+categories: [log, tutorial]
 hide: true
 permalink: /:title/
 search_exclude: true
@@ -120,7 +120,7 @@ Everything seemed to be working as I'd hoped. However, I started encountering so
 
 ### Memory Usage
 
-By default, WSL distributions will take up as much system memory as available and not release it. This problem is compounded since Windows already takes up a decent chuck of memory. I don't think there is currently a way to make WSL automatically free memory when it's done with it. This seems to be something Microsoft is still working on. However, you can limit the amount of memory WSL can use. The [workaround](https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261) involves creating a `.wslconfig` file and adding it to you Windows user folder (e.g. `C:\Users\Username`). You can see the contents for an example config file below.
+By default, WSL distributions will take up as much system memory as is available and not release it. This problem is compounded since Windows already takes up a decent chuck of memory. This seems to be something Microsoft is still working on. However, you can limit the amount of memory WSL can access. The [workaround](https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261) involves creating a `.wslconfig` file and adding it to you Windows user folder (e.g. `C:\Users\Username`). You can see the contents for an example config file below.
 
 ```
 [wsl2]
@@ -131,7 +131,7 @@ GPU memory usage doesn't suffer from this problem, so it wasn't too big of an is
 
 ### File Permissions
 
-This is where things started to get a bit inconvenient for my use case. The way in which WSL handles permissions for files in attached drives isn't readily apparent for new users. I didn't have any problem accessing previously mentioned jupyter notebook or the image dataset I used to train the model. However, I couldn't access a the images in a different dataset when training a different model. I tried adding the necessary permissions in Ubuntu but that didn't work. I ended up finding a solution on [Stack Exchange](https://superuser.com/a/1392722). It involves adding another config file, this time to Ubuntu. I needed to create a `wsl.conf` file in the `/etc/` directory. This one enables metadata for the files so that changes in permission actually work. I had to restart my computer after creating the file for it to take effect.
+This is where things started to get more inconvenient for my use case. The way in which WSL handles permissions for files in attached drives isn't readily apparent for new users. I didn't have any problem accessing the previously mentioned jupyter notebook or the image dataset I used to train the model. However, I couldn't access the images in a different dataset when training a different model. I tried adding the necessary permissions in Ubuntu but that didn't work even after copying the files to the Ubuntu home directory. I ended up finding a solution on [Stack Exchange](https://superuser.com/a/1392722). It involves adding another config file, this time to Ubuntu. I needed to create a `wsl.conf` file in the `/etc/` directory. This one enables metadata for the files so that changes in permission actually work.
 
 ```bash
 [automount]
@@ -140,14 +140,14 @@ root = /mnt/
 options = "metadata,umask=22,fmask=11"
 ```
 
-You can learn more about `wsl.conf` files and the settings in the above example at the links below.
+I had to restart my computer after creating the file for it to take effect. You can learn more about `wsl.conf` files and the settings in the above example at the links below.
 
 * [Automatically Configuring WSL](https://devblogs.microsoft.com/commandline/automatically-configuring-wsl/)
 * [Chmod/Chown WSL Improvements](Chmod/Chown WSL Improvements)
 
 ### Disk Space
 
-
+I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images.
 
 
 
