@@ -28,55 +28,47 @@ WSL is a compatibility layer that let's you run Linux environments directly on W
 
 I've been dual-booting Windows and Linux for a while now. I prefer Linux for coding and training models while Windows can be more convenient for things like gaming and school work. This setup didn't have any drawbacks for me until I started working with the Barracuda library for Unity. Unity is installed on Windows but my environment for training deep learning models is on Linux. This is inconvenient when I want to test out a newly trained model in Unity. I decided to try WSL2 in the hopes that it would remove the need to switch between operating systems.
 
-
-
 ## Installation Preparations
 
 The [install process](https://docs.microsoft.com/en-us/windows/wsl/install-win10) for most WSL2 use cases is straightforward. You just need to enable a few features and install your preferred Linux distribution from the Microsoft Store. However, the process for enabling CUDA support is a bit more involved.
 
 ### Install Windows Insider Build
 
-CUDA applications are only supported in WSL2 on Windows build versions 20145 or higher. These are currently only accessible through the [Dev Channel](https://blogs.windows.com/windows-insider/2020/06/15/introducing-windows-insider-channels/) for the [Windows Insider Program](https://insider.windows.com/en-us/getting-started#register). Microsoft requires you to enable Full telemetry collection to install Insider builds for Windows. This was annoying since the first thing I do when installing Windows is disable every accessible telemetry setting. Fortunately, you can disable everything again once you've installed an Insider build.
+CUDA applications are only supported in WSL2 on Windows build versions 20145 or higher. These are currently only accessible through the [Dev Channel](https://blogs.windows.com/windows-insider/2020/06/15/introducing-windows-insider-channels/) for the [Windows Insider Program](https://insider.windows.com/en-us/getting-started#register). I confirmed it does not work with the latest public release. Microsoft requires you to enable Full telemetry collection to install Insider builds for Windows. This was annoying since the first thing I do when installing Windows is disable every accessible telemetry setting. Fortunately, I only needed to temporarily enable a couple of the settings to install an Insider build.
 
 ### Install Nvidia's Preview Driver
 
-Nvidia provides a preview Windows display driver for their graphics cards that enables CUDA on WSL2. This Windows driver includes both the regular driver components for Windows and WSL. We don't install display drivers on the Linux distribution itself.
+Nvidia provides a preview Windows display driver for their graphics cards that enables CUDA on WSL2. This Windows driver includes both the regular driver components for Windows and WSL. We're not supposed to install display drivers on the Linux distribution itself.
 
 * [Nvidia Drivers for CUDA on WSL](https://developer.nvidia.com/cuda/wsl/download)
 
-## Install WSL
+### Install WSL
 
 You can [install](https://docs.microsoft.com/en-us/windows/wsl/install-win10#simplified-installation-for-windows-insiders) WSL with one line in the command window if you install a preview build first. I did it backwards so I had to use the slightly longer [manual installation](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps). I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71) for my distribution since that's what I currently have installed on my desktop. 
 
-
-
 ## Set Up Ubuntu
+
+The set up process was basically the same as regular Ubuntu with the exception of no display drivers.
 
 #### Update Ubuntu
 
-The Ubuntu distribution needs to be updated after it gets installed.
+As usual, I first checked for any updates. There were quite a few.
 
 ```bash
 sudo apt update
 sudo apt upgrade
 ```
 
-
-
 ### Install CUDA Toolkit
 
-The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a separate distribution. I don't know what makes it functionally different than the regular `Ubuntu` distribution. Both performed the same for me when training models. You can view the selected instructions I followed for both by clicking the links below.
+The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a separate distribution. I don't know what makes it functionally different than the regular `Ubuntu` distribution. Both worked and performed the same for me when training models. You can view the selected instructions I followed for both by clicking the links below.
 
 * [Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal)
 * [WSL-Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=WSLUbuntu&target_version=20&target_type=deblocal)
 
-
-
 ### Install Anaconda
 
-I use Anaconda, so I downloaded the latest available release to the home directory and installed it like normal.
-
-#### Download and Run the Install Script
+I like to use Anaconda, so I downloaded the latest available release to the home directory and installed it like normal.
 
 ```bash
 cd ~
@@ -84,8 +76,6 @@ wget https://repo.anaconda.com/archive/Anaconda3-2020.11-Linux-x86_64.sh
 chmod +x Anaconda3-2020.11-Linux-x86_64.sh
 ./Anaconda3-2020.11-Linux-x86_64.sh
 ```
-
-#### Confirm Python Works
 
 I had to restart bash to use the new python interpreter like normal as well.
 
@@ -102,8 +92,6 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ```
 
-
-
 ### Install Fastai Library
 
 I installed the fastai library which is built on top of PyTorch to test whether I could access the GPU. The installation went smoothly.
@@ -112,12 +100,9 @@ I installed the fastai library which is built on top of PyTorch to test whether 
 conda install -c fastai -c pytorch -c anaconda fastai gh anaconda
 ```
 
-#### Confirm CUDA Works
-
 I was able to confirm that PyTorch could access the GPU using the `torch.cuda.is_available()` method.
 
 ```bash
-(base) innom-dt@INNOM-DT:~$ python
 Python 3.8.5 (default, Sep  4 2020, 07:30:14)
 [GCC 7.3.0] :: Anaconda, Inc. on linux
 Type "help", "copyright", "credits" or "license" for more information.
@@ -127,11 +112,40 @@ True
 >>>
 ```
 
-We aren't able to see any GPU usage stats in Windows yet. I believe Nvidia is planning on adding that functionality in a future release. The only way I was able to tell that the GPU was doing anything when training a model was checking the available GPU memory and temperature in the Windows Task Manager.
-
-
+I opened up a jupyter notebook and trained a ResNet50 model to confirm that the GPU was actually being used. The Task Manager in Windows accurately displays the available GPU memory and temperature but not GPU usage for WSL applications. The `nvidia-smi` command doesn't work yet in WSL either. I believe Nvidia is planning on adding that functionality in a future release. However, the `nvidia-smi.exe` command does accurately show GPU usage.
 
 ## The Headaches
+
+Everything seemed to be working as I'd hoped. However, I started encountering some issues the more I used WSL.
+
+### Memory Usage
+
+By default, WSL distributions will take up as much system memory as available and not release it. This problem is compounded since Windows already takes up a decent chuck of memory. I don't think there is currently a way to make WSL automatically free memory when it's done with it. This seems to be something Microsoft is still working on. However, you can limit the amount of memory WSL can use. The [workaround](https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261) involves creating a `.wslconfig` file and adding it to you Windows user folder (e.g. `C:\Users\Username`). You can see the contents for an example config file below.
+
+```
+[wsl2]
+memory=6GB
+```
+
+GPU memory usage doesn't suffer from this problem, so it wasn't too big of an issue for me.
+
+### File Permissions
+
+This is where things started to get a bit inconvenient for my use case. The way in which WSL handles permissions for files in attached drives isn't readily apparent for new users. I didn't have any problem accessing previously mentioned jupyter notebook or the image dataset I used to train the model. However, I couldn't access a the images in a different dataset when training a different model. I tried adding the necessary permissions in Ubuntu but that didn't work. I ended up finding a solution on [Stack Exchange](https://superuser.com/a/1392722). It involves adding another config file, this time to Ubuntu. I needed to create a `wsl.conf` file in the `/etc/` directory. This one enables metadata for the files so that changes in permission actually work. I had to restart my computer after creating the file for it to take effect.
+
+```bash
+[automount]
+enabled = true
+root = /mnt/
+options = "metadata,umask=22,fmask=11"
+```
+
+You can learn more about `wsl.conf` files and the settings in the above example at the links below.
+
+* [Automatically Configuring WSL](https://devblogs.microsoft.com/commandline/automatically-configuring-wsl/)
+* [Chmod/Chown WSL Improvements](Chmod/Chown WSL Improvements)
+
+### Disk Space
 
 
 
