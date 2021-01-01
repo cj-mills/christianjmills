@@ -146,6 +146,7 @@ I had to restart my computer after creating the file for it to take effect. You 
 
 * [Automatically Configuring WSL](https://devblogs.microsoft.com/commandline/automatically-configuring-wsl/)
 * [Chmod/Chown WSL Improvements](Chmod/Chown WSL Improvements)
+* [File Permissions for WSL](https://docs.microsoft.com/en-us/windows/wsl/file-permissions)
 
 ### Disk Space
 
