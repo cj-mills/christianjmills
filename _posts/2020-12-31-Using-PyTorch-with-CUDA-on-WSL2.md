@@ -61,7 +61,7 @@ sudo apt upgrade
 
 ### Install CUDA Toolkit
 
-The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a separate distribution. I don't know what makes it functionally different than the regular `Ubuntu` distribution. Both worked and performed the same for me when training models. You can view the selected instructions I followed for both by clicking the links below.
+The next step was to install the CUDA toolkit. Nvidia lists `WSL-Ubuntu` as a separate distribution. I don't know what makes it functionally different than the regular `Ubuntu` distribution. Both worked and performed the same for me when training models. You can view the instructions I followed for both by clicking the links below.
 
 * [Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal)
 * [WSL-Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=WSLUbuntu&target_version=20&target_type=deblocal)
