@@ -147,9 +147,11 @@ I had to restart my computer after creating the file for it to take effect. You 
 
 ### Disk Space
 
-I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images.
+I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images. This is also a [known](https://github.com/microsoft/WSL/issues/4699) problem with WSL. There is another [workaround](https://github.com/microsoft/WSL/issues/4699#issuecomment-635673427) where you can manually release unused disk space that involves the following steps.
 
-There is another [workaround](https://github.com/microsoft/WSL/issues/4699#issuecomment-635673427) where you can manually release unused disk space.
+1. Open PowerShell as an Administrator and navigate to the folder containing the virtual hard drive file for your distribution. 
+2. Shutdown WSL.
+3.  Run [`optimize-vhd`](https://docs.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd?view=win10-ps) for the virtual hard drive.
 
 ```powershell
 cd C:\Users\UserName_Here\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState
@@ -157,7 +159,7 @@ wsl --shutdown
 optimize-vhd -Path .\ext4.vhdx -Mode full
 ```
 
-
+You need to do this every time you want to reclaim disk space from WSL.
 
 ## Conclusion
 
