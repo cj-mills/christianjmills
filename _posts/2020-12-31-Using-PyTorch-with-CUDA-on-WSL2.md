@@ -149,7 +149,7 @@ I had to restart my computer after creating the file for it to take effect. You 
 
 ### Disk Space
 
-This is the one that killed the endeavor for me. I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images. This is also a [known](https://github.com/microsoft/WSL/issues/4699) problem with WSL. There is another [workaround](https://github.com/microsoft/WSL/issues/4699#issuecomment-635673427) where you can manually release unused disk space that involves the following steps.
+This is the one that killed the whole endeavor for me. I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images. This is also a [known](https://github.com/microsoft/WSL/issues/4699) problem with WSL. There is another [workaround](https://github.com/microsoft/WSL/issues/4699#issuecomment-635673427) where you can manually release unused disk space that involves the following steps.
 
 1. Open PowerShell as an Administrator.
 2. Navigate to the folder containing the virtual hard drive file for your distribution. 
