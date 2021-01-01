@@ -120,7 +120,7 @@ Everything seemed to be working as I'd hoped. However, I started encountering so
 
 ### Memory Usage
 
-By default, WSL distributions will take up as much system memory as is available and not release it. This problem is compounded since Windows already takes up a decent chuck of memory. This seems to be something Microsoft is still working on. However, you can limit the amount of memory WSL can access. The [workaround](https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261) involves creating a `.wslconfig` file and adding it to you Windows user folder (e.g. `C:\Users\Username`). You can see the contents for an example config file below.
+By default, WSL distributions will take up as much system memory as is available and not release it. This problem is compounded since Windows already takes up a decent chuck of memory. This seems to be something Microsoft is still [working on](https://github.com/microsoft/WSL/issues/4166). However, you can limit the amount of memory WSL can access. The [workaround](https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261) involves creating a `.wslconfig` file and adding it to you Windows user folder (e.g. `C:\Users\Username`). You can see the contents for an example config file below.
 
 ```
 [wsl2]
@@ -131,7 +131,9 @@ GPU memory usage doesn't suffer from this problem, so it wasn't too big of an is
 
 ### File Permissions
 
-This is where things started to get more inconvenient for my use case. The way in which WSL handles permissions for files in attached drives isn't readily apparent for new users. I didn't have any problem accessing the previously mentioned jupyter notebook or the image dataset I used to train the model. However, I couldn't access the images in a different dataset when training a different model. I tried adding the necessary permissions in Ubuntu but that didn't work even after copying the files to the Ubuntu home directory. I ended up finding a solution on [Stack Exchange](https://superuser.com/a/1392722). It involves adding another config file, this time to Ubuntu. I needed to create a `wsl.conf` file in the `/etc/` directory. This one enables metadata for the files so that changes in permission actually work.
+This is where things started to get more inconvenient for my use case. The way in which WSL handles permissions for files in attached drives isn't readily apparent for new users. I didn't have any problem accessing the previously mentioned jupyter notebook or the image dataset I used to train the model. However, I couldn't access the images in a different dataset when training a different model. 
+
+I tried adding the necessary permissions in Ubuntu but that didn't work. I even tried copying the dataset to the Ubuntu home directory. I ended up finding a solution on [Stack Exchange](https://superuser.com/a/1392722). It involves adding another config file, this time to Ubuntu. I needed to create a `wsl.conf` file in the `/etc/` directory. This one enables metadata for the files so that changes in permission actually work.
 
 ```bash
 [automount]
@@ -147,11 +149,12 @@ I had to restart my computer after creating the file for it to take effect. You 
 
 ### Disk Space
 
-I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images. This is also a [known](https://github.com/microsoft/WSL/issues/4699) problem with WSL. There is another [workaround](https://github.com/microsoft/WSL/issues/4699#issuecomment-635673427) where you can manually release unused disk space that involves the following steps.
+This is the one that killed the endeavor for me. I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images. This is also a [known](https://github.com/microsoft/WSL/issues/4699) problem with WSL. There is another [workaround](https://github.com/microsoft/WSL/issues/4699#issuecomment-635673427) where you can manually release unused disk space that involves the following steps.
 
-1. Open PowerShell as an Administrator and navigate to the folder containing the virtual hard drive file for your distribution. 
-2. Shutdown WSL.
-3.  Run [`optimize-vhd`](https://docs.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd?view=win10-ps) for the virtual hard drive.
+1. Open PowerShell as an Administrator.
+2. Navigate to the folder containing the virtual hard drive file for your distribution. 
+3. Shutdown WSL.
+4.  Run [`optimize-vhd`](https://docs.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd?view=win10-ps) for the virtual hard drive.
 
 ```powershell
 cd C:\Users\UserName_Here\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState
@@ -159,7 +162,7 @@ wsl --shutdown
 optimize-vhd -Path .\ext4.vhdx -Mode full
 ```
 
-You need to do this every time you want to reclaim disk space from WSL. By this point, any convenience over a dual-boot setup had been wiped out for me.
+You currently need to do this every time you want to reclaim disk space from WSL. By this point, any convenience I'd gain over a dual-boot setup had been wiped out.
 
 ## Conclusion
 
