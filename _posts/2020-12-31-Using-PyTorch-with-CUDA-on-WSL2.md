@@ -159,7 +159,8 @@ wsl --shutdown
 optimize-vhd -Path .\ext4.vhdx -Mode full
 ```
 
-You need to do this every time you want to reclaim disk space from WSL.
+You need to do this every time you want to reclaim disk space from WSL. By this point, any convenience over a dual-boot setup had been wiped out for me.
 
 ## Conclusion
 
+I'm excited about the future of WSL. Having such tight integration between Windows and Linux has a lot of potential. Unfortunately, it's not at a point where I'd feel comfortable switching over from a dual-boot setup. I'm hoping that the issues I encountered will get resolved in 2021. I'll give it another shot when CUDA support comes out of preview.
