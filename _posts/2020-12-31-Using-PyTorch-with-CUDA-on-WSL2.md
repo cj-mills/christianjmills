@@ -11,8 +11,8 @@ search_exclude: false
 ---
 
 * [Introduction](#introduction)
-* [Installation](#installation)
-* [Set Up Ubuntu](#set-up-ubuntu)
+* [Installing WSL](#installing-wsl)
+* [Setting Up Ubuntu](#setting-up-ubuntu)
 * [The Headaches](#the-headaches)
 * [Conclusion](#conclusion)
 
@@ -28,7 +28,7 @@ WSL is a compatibility layer that let's you run Linux environments directly on W
 
 I've been dual-booting Windows and Linux for a while now. I prefer Linux for coding and training models while Windows is supported by more applications. This setup didn't have any drawbacks for me until I started working with the Barracuda library for Unity. Unity is installed on Windows but my environment for training deep learning models is on Linux. This is inconvenient when I want to test out a newly trained model in Unity. I decided to try WSL2 in the hopes that it would remove the need to switch between operating systems.
 
-## Installation
+## Installing WSL
 
 The [install process](https://docs.microsoft.com/en-us/windows/wsl/install-win10) for most WSL2 use cases is straightforward. You just need to enable a few features and install your preferred Linux distribution from the Microsoft Store. However, the process for enabling CUDA support is a bit more involved.
 
@@ -46,7 +46,7 @@ Nvidia provides a preview Windows display driver for their graphics cards that e
 
 You can [install](https://docs.microsoft.com/en-us/windows/wsl/install-win10#simplified-installation-for-windows-insiders) WSL with one line in the command window if you install a preview build first. I did it backwards so I had to use the slightly longer [manual installation](https://docs.microsoft.com/en-us/windows/wsl/install-win10#manual-installation-steps). I went with [Ubuntu 20.04](https://www.microsoft.com/store/productId/9N6SVWS3RX71) for my distribution since that's what I currently have installed on my desktop. 
 
-## Set Up Ubuntu
+## Setting Up Ubuntu
 
 The set up process was basically the same as regular Ubuntu with the exception of no display drivers.
 
