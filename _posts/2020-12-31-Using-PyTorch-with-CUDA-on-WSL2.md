@@ -11,7 +11,7 @@ search_exclude: true
 ---
 
 * [Introduction](#introduction)
-* [Installation Preparations](#installation-preparations)
+* [Installation](#installation)
 * [Set Up Ubuntu](#set-up-ubuntu)
 * [The Headaches](#the-headaches)
 * [Conclusion](#conclusion)
@@ -28,7 +28,7 @@ WSL is a compatibility layer that let's you run Linux environments directly on W
 
 I've been dual-booting Windows and Linux for a while now. I prefer Linux for coding and training models while Windows can be more convenient for things like gaming and school work. This setup didn't have any drawbacks for me until I started working with the Barracuda library for Unity. Unity is installed on Windows but my environment for training deep learning models is on Linux. This is inconvenient when I want to test out a newly trained model in Unity. I decided to try WSL2 in the hopes that it would remove the need to switch between operating systems.
 
-## Installation Preparations
+## Installation
 
 The [install process](https://docs.microsoft.com/en-us/windows/wsl/install-win10) for most WSL2 use cases is straightforward. You just need to enable a few features and install your preferred Linux distribution from the Microsoft Store. However, the process for enabling CUDA support is a bit more involved.
 
