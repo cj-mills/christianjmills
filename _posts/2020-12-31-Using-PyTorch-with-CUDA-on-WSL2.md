@@ -149,6 +149,14 @@ I had to restart my computer after creating the file for it to take effect. You 
 
 I deleted the copy of the dataset I made in the Ubuntu home directory after I was able to access the original. I noticed that my disk usage didn't decrease after I deleted the 48GB of images.
 
+There is another [workaround](https://github.com/microsoft/WSL/issues/4699#issuecomment-635673427) where you can manually release unused disk space.
+
+```powershell
+cd C:\Users\UserName_Here\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState
+wsl --shutdown
+optimize-vhd -Path .\ext4.vhdx -Mode full
+```
+
 
 
 ## Conclusion
