@@ -5,9 +5,9 @@ toc: false
 comments: true
 description: This post covers my experience getting PyTorch to run with CUDA on WSL2.
 categories: [log, tutorial]
-hide: true
+hide: false
 permalink: /:title/
-search_exclude: true
+search_exclude: false
 ---
 
 * [Introduction](#introduction)
