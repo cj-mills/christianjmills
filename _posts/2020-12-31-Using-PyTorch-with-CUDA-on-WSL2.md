@@ -18,7 +18,7 @@ search_exclude: true
 
 ## Introduction
 
-I spent a couple days figuring out how to train deep learning models on Microsoft’s Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official installation guides are adequate, there were some headaches that came up when attempting to train models. This post summarizes my experience making it work.
+I spent a couple days figuring out how to train deep learning models on Microsoft’s Windows Subsystem for Linux (WSL). The process was a bit of a hassle. While the official installation guides are adequate, there were some headaches that came up during regular use. This post summarizes my experience making it work.
 
 ### What is WSL
 
