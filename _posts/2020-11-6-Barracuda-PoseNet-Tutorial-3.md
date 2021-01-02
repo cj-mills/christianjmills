@@ -184,4 +184,6 @@ Here is the revised `Update()` method.
 
 We've finally performed inference using a PoseNet model in Unity. However, we need to process the output from the model to determine the estimated key point locations. We'll cover how to perform the postprocessing operations in part 4.
 
+### [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+
 ### Next: [Part 4](https://christianjmills.com/Barracuda-PoseNet-Tutorial-4/)
