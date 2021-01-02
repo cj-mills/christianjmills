@@ -402,4 +402,5 @@ Despite it's shortcomings, this little demo provides a glimpse at what's possibl
 
 I already have another style transfer [project](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that I want to try to get working in Unity. This project does a great job of generating consistent video output (i.e. no seizure warning). In the mean time, I recommend checking out Unity's sample [project](https://github.com/UnityLabs/barracuda-style-transfer). They put a lot of work into optimizing it for playable frame rates at more reasonable resolutions.
 
-#### GitHub Repo: ([link](https://github.com/cj-mills/Basic-In-Game-Style-Transfer))
+#### [GitHub Repository](https://github.com/cj-mills/Basic-In-Game-Style-Transfer)
+
