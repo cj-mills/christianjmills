@@ -153,6 +153,8 @@ Finally, we'll store the location data for the current key point at the correspo
 
 We finally have the estimated key point locations relative to the source video. However, we still don't have an easy means to gauge the model's accuracy. In the next post, we'll map each key point location to a `GameObject`. This will provide a quick way to determine if the model is outputting nonsense as well as what scenarios the model struggles with.    
 
+### [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+
 ### Next: [Part 5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-5/)
 
 
