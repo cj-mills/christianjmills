@@ -3,7 +3,7 @@ title: In-Game Style Transfer Experiments Pt.3
 layout: post
 toc: false
 comments: true
-description: Examining results from my initial attempts to optimize the `fast_neural_style` model.
+description: Examining results from my initial attempts to optimize the fast_neural_style model.
 categories: [unity, log]
 hide: true
 permalink: /:title/
