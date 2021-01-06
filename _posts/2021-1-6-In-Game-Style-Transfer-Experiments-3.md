@@ -30,11 +30,19 @@ I then tried to quantize a regular ONNX model directly. This can be easily done 
 
 ## Network Pruning
 
-I went through the [pruning tutorial](https://pytorch.org/tutorials/intermediate/pruning_tutorial.html#remove-pruning-re-parametrization) provided by PyTorch and didn't encounter any issues applying the code to the fast_neural_style model. However, I didn't encounter any performance improvements. After some more [forum diving](https://discuss.pytorch.org/t/weight-pruning-on-bert/83429/2), I discovered that the pruning module is still an experimental feature. It's not currently meant as a means to improve inference speed. Also it turns out that GPUs currently aren't optimized for the sparse networks that result from pruning. Apparently, this is [starting to change](https://timdettmers.com/2020/09/07/which-gpu-for-deep-learning/#Additional_Considerations_for_Ampere_RTX_30_Series) with the latest RTX 30 series cards from Nvidia.
+I went through the [pruning tutorial](https://pytorch.org/tutorials/intermediate/pruning_tutorial.html#remove-pruning-re-parametrization) provided by PyTorch and didn't encounter any issues applying the code to the fast_neural_style model. However, I didn't encounter any performance improvements. After some more [forum diving](https://discuss.pytorch.org/t/weight-pruning-on-bert/83429/2), I discovered that the pruning module is still an experimental feature. It's not currently meant as a means to improve inference speed. Also, it turns out that GPUs currently aren't optimized for the sparse networks that result from pruning. Apparently, this is [starting to change](https://timdettmers.com/2020/09/07/which-gpu-for-deep-learning/#Additional_Considerations_for_Ampere_RTX_30_Series) with the latest RTX 30 series cards from Nvidia.
 
 ## Using a Smaller Model
 
-So both of the fancy optimization techniques I wanted to try are currently dead ends for my use case. Fortunately, I then thought to try the much simpler approach of just starting with a smaller model. This really should have been the first approach I tried. I kept the number and types of layers in the model the same but reduced the size of the many of the layers. This turned out to be quite effective. I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output. 
+So both of the fancy optimization techniques I wanted to try are currently dead ends for my use case. Fortunately, I then thought to try the much simpler approach of just starting with a smaller model. This really should have been the first approach I tried. 
+
+I kept the number and types of layers in the model the same but reduced the size of the many of the layers. This turned out to be quite effective. I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output.
+
+![mosaic_small_v3](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_v3.png)
+
+
+
+![mosaic_small_v3_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_v3_stats.gif)
 
 ## Conclusion
 
