@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="https://christianjmills.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://christianjmills.com/" rel="alternate" type="text/html" /><updated>2021-01-06T12:37:54-06:00</updated><id>https://christianjmills.com/feed.xml</id><title type="html">Christian Mills</title><subtitle>My personal blog</subtitle><entry><title type="html">In-Game Style Transfer Experiments Pt.3</title><link href="https://christianjmills.com/In-Game-Style-Transfer-Experiments-3/" rel="alternate" type="text/html" title="In-Game Style Transfer Experiments Pt.3" /><published>2021-01-06T00:00:00-06:00</published><updated>2021-01-06T00:00:00-06:00</updated><id>https://christianjmills.com/In-Game-Style-Transfer-Experiments-3</id><content type="html" xml:base="https://christianjmills.com/In-Game-Style-Transfer-Experiments-3/">&lt;ul&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="https://christianjmills.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://christianjmills.com/" rel="alternate" type="text/html" /><updated>2021-01-06T15:38:01-06:00</updated><id>https://christianjmills.com/feed.xml</id><title type="html">Christian Mills</title><subtitle>My personal blog</subtitle><entry><title type="html">In-Game Style Transfer Experiments Pt.3</title><link href="https://christianjmills.com/In-Game-Style-Transfer-Experiments-3/" rel="alternate" type="text/html" title="In-Game Style Transfer Experiments Pt.3" /><published>2021-01-06T00:00:00-06:00</published><updated>2021-01-06T00:00:00-06:00</updated><id>https://christianjmills.com/In-Game-Style-Transfer-Experiments-3</id><content type="html" xml:base="https://christianjmills.com/In-Game-Style-Transfer-Experiments-3/">&lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;#model-quantization&quot;&gt;Model Quantization&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;#network-pruning&quot;&gt;Network Pruning&lt;/a&gt;&lt;/li&gt;
@@ -8,7 +8,15 @@
 
 &lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
 
+&lt;p&gt;I finally got around to exploring different optimization methods to speed up the style transfer models in Unity. I started off with post-training optimization techniques including quantization and pruning. I then tried training with smaller models. I should have started off with the smaller models.&lt;/p&gt;
+
 &lt;h2 id=&quot;model-quantization&quot;&gt;Model Quantization&lt;/h2&gt;
+
+&lt;p&gt;I followed the example code in PyTorch’s documentation to quantize the &lt;code class=&quot;highlighter-rouge&quot;&gt;fast_neural_style&lt;/code&gt; model. The quantized model did seem to perform inference faster in Python. Unfortunately, there was no performance change after importing the quantized model to Unity.&lt;/p&gt;
+
+&lt;p&gt;Turns out it’s not yet possible to export quantized models to ONNX for general use. According to this &lt;a href=&quot;https://discuss.pytorch.org/t/onnx-export-of-quantized-model/76884/8&quot;&gt;forum post&lt;/a&gt;, quantized models can only be exported for Caffe2. While disappointing, this wasn’t too surprising. Quantization is still in beta for PyTorch.&lt;/p&gt;
+
+&lt;p&gt;I then tried to quantize a regular ONNX model directly. This can be easily done using the Python &lt;a href=&quot;https://github.com/microsoft/onnxruntime/blob/master/onnxruntime/python/tools/quantization/README.md&quot;&gt;tool&lt;/a&gt; provided with ONNX Runtime. I was able to reduce the size of the model from 6.5MB to 1.65MB by following the example code in the tool’s documentation. As I &lt;a href=&quot;https://christianjmills.com/In-Game-Style-Transfer-Experiments-2/#conclusion&quot;&gt;suspected&lt;/a&gt; though, the quantized ONNX model uses operators that are not currently supported by Barracuda. I’d be surprised if supported wasn’t added in the future, so I’ll retry with new releases.&lt;/p&gt;
 
 &lt;h2 id=&quot;network-pruning&quot;&gt;Network Pruning&lt;/h2&gt;
 
