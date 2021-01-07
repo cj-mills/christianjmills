@@ -94,6 +94,40 @@ I kept the number and types of layers in the model the same but reduced the size
 
 ![mosaic_small_1280x720_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1280x720_stats.gif)
 
+Now I'm really curious to see how an RTX 3080 or RX6800 XT would perform with this smaller model.
+
+
+
+### Resolution: 1920 x 1080
+
+
+
+#### Original Model
+
+
+
+![mosaic_original_1920x1080](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1920x1080.png)
+
+
+
+![mosaic_original_1920x1080_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1920x1080_stats.gif)
+
+
+
+
+
+#### Smaller Model
+
+
+
+![mosaic_small_1920x1080](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1920x1080.png)
+
+
+
+
+
+![mosaic_small_1920x1080_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1920x1080_stats.gif)
+
 
 
 ## Conclusion
