@@ -46,7 +46,7 @@ I kept the number and types of layers in the model the same but reduced the size
 
 ![TransformerNet_v3](..\images\in-game-style-transfer-experiments\part-3\TransformerNet_v3.png)
 
-I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output. Frame rates improved significantly compared to the original model at a given resolution. The performance gap narrows as the resolution increases, but frame rates for the smaller model are approximately 2x higher than the original. You can see a comparison of output quality and frame rates at different resolutions below.
+I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output. Frame rates improved significantly compared to the original model at a given resolution. The performance gap narrows as the resolution increases, but frame rates for the smaller model are approximately 2x higher than the original. You can see comparisons of output quality and frame rates at different resolutions below.
 
 ### Resolution: 720 x 540
 
@@ -98,5 +98,4 @@ I was able to reduce the size of the model from 6.5MB to less than 600KB without
 
 ## Conclusion
 
-Now I'm really curious to see how an RTX 3080 or RX6800 XT would perform with this smaller model. 1080p is still out of reach, but 720p should be easily playable on the latest generation of GPUs.
-
+Now I'm really curious to see how an RTX 3080 or RX6800 XT would perform with this smaller model. 1080p is still out of reach, but 720p should be easily playable on the latest generation of GPUs. The next step is to see how much I can reduce the size of the [video style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) I tried previously. That model is roughly twice the size of the original `fast_neural_style` model. I might need to do more than reduce the size of some of the layers to get playable framerates.
