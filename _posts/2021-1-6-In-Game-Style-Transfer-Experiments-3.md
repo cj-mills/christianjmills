@@ -34,33 +34,31 @@ I went through the [pruning tutorial](https://pytorch.org/tutorials/intermediate
 
 ## Using a Smaller Model
 
-So both of the fancy optimization techniques I wanted to try are currently dead ends for my use case. Fortunately, I then thought to try the much simpler approach of just starting with a smaller model. This really should have been the first approach I tried. 
+So both of the fancy optimization techniques I wanted to try are currently dead ends for my use case. Fortunately, I finally thought to try the much simpler approach of just starting with a smaller model. This really should have been the first approach I tried. 
 
-I kept the number and types of layers in the model the same but reduced the size of the many of the layers. This turned out to be quite effective. I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output.
+I kept the number and types of layers in the model the same but reduced the size for many of the layers. I made no changes to other parts of the code. This turned out to be quite effective. 
+
+### Original Model
+
+![TransformerNet_original](..\images\in-game-style-transfer-experiments\part-3\TransformerNet_original.png)
+
+### Smaller Model
+
+![TransformerNet_v3](..\images\in-game-style-transfer-experiments\part-3\TransformerNet_v3.png)
+
+I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output. Frame rates improved significantly compared to the original model at a given resolution. The performance gap narrows as the resolution increases, but frame rates for the smaller model are approximately 2x higher than the original. You can see a comparison of output quality and frame rates at different resolutions below.
 
 ### Resolution: 720 x 540
 
-
-
 #### Original Model
-
-
 
 ![mosaic_original](..\images\in-game-style-transfer-experiments\part-3\mosaic_original.png)
 
-
-
 ![mosaic_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_stats.gif)
-
-
 
 #### Smaller Model
 
-
-
 ![mosaic_small_v3](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_v3.png)
-
-
 
 ![mosaic_small_v3_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_v3_stats.gif)
 
@@ -68,11 +66,7 @@ I kept the number and types of layers in the model the same but reduced the size
 
 ### Resolution: 1280 x 720
 
-
-
 #### Original Model
-
-
 
 ![mosaic_original_1280x720](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1280x720.png)
 
@@ -80,51 +74,23 @@ I kept the number and types of layers in the model the same but reduced the size
 
 ![mosaic_original_1280x720_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1280x720_stats.gif)
 
-
-
-
-
 #### Smaller Model
-
-
 
 ![mosaic_small_1280x720](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1280x720.png)
 
-
-
 ![mosaic_small_1280x720_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1280x720_stats.gif)
-
-Now I'm really curious to see how an RTX 3080 or RX6800 XT would perform with this smaller model.
-
-
 
 ### Resolution: 1920 x 1080
 
-
-
 #### Original Model
-
-
 
 ![mosaic_original_1920x1080](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1920x1080.png)
 
-
-
 ![mosaic_original_1920x1080_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1920x1080_stats.gif)
-
-
-
-
 
 #### Smaller Model
 
-
-
 ![mosaic_small_1920x1080](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1920x1080.png)
-
-
-
-
 
 ![mosaic_small_1920x1080_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1920x1080_stats.gif)
 
@@ -132,5 +98,5 @@ Now I'm really curious to see how an RTX 3080 or RX6800 XT would perform with th
 
 ## Conclusion
 
-
+Now I'm really curious to see how an RTX 3080 or RX6800 XT would perform with this smaller model. 1080p is still out of reach, but 720p should be easily playable on the latest generation of GPUs.
 
