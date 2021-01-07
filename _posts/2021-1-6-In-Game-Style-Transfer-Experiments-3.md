@@ -38,11 +38,63 @@ So both of the fancy optimization techniques I wanted to try are currently dead 
 
 I kept the number and types of layers in the model the same but reduced the size of the many of the layers. This turned out to be quite effective. I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output.
 
+### Resolution: 720 x 540
+
+
+
+#### Original Model
+
+
+
+![mosaic_original](..\images\in-game-style-transfer-experiments\part-3\mosaic_original.png)
+
+
+
+![mosaic_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_stats.gif)
+
+
+
+#### Smaller Model
+
+
+
 ![mosaic_small_v3](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_v3.png)
 
 
 
 ![mosaic_small_v3_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_v3_stats.gif)
+
+
+
+### Resolution: 1280 x 720
+
+
+
+### Original Model
+
+
+
+![mosaic_original_1280x720](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1280x720.png)
+
+
+
+![mosaic_original_1280x720_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_original_1280x720_stats.gif)
+
+
+
+
+
+#### Smaller Model
+
+
+
+![mosaic_small_1280x720](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1280x720.png)
+
+
+
+![mosaic_small_1280x720_stats](..\images\in-game-style-transfer-experiments\part-3\mosaic_small_1280x720_stats.gif)
+
+
 
 ## Conclusion
 
