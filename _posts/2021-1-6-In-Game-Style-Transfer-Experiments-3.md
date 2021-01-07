@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: Examining results from my initial attempts to optimize the fast neural style transfer model.
 categories: [unity, log]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
