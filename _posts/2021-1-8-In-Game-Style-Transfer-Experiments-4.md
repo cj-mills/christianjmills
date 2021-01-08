@@ -30,8 +30,6 @@ I followed up on the [results](https://christianjmills.com/In-Game-Style-Transfe
 
 
 
-
-
 ## Conclusion
 
 
