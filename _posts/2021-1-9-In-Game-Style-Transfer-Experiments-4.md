@@ -34,13 +34,13 @@ It was a bit of a pain figuring out what preprocessing operations I needed to ap
 
 ## Performance Results
 
-The modified video stylization model has similar performance to 
+The modified video stylization model has better performance than the original `fast_neural_style` model, but is still far behind the smaller variant. On the plus side, flickering is significantly reduced over the `fast_neural_style` model.
+
+### Resolution: 720 x 540
 
 ![few_shot_mosaic](..\images\in-game-style-transfer-experiments\part-4\few_shot_mosaic_720x540.png)
 
 ![few_shot_mosaic_peformance](..\images\in-game-style-transfer-experiments\part-4\stats_720x540.gif)
-
-
 
 
 
