@@ -22,13 +22,11 @@ I followed up on the [results](https://christianjmills.com/In-Game-Style-Transfe
 
 ## Shrinking the Model
 
-I was able to shrink the model from 13MB to less than 1MB by modifying two lines. This involved significantly reducing the number and size of layers in the model.
+I was able to shrink the model from 13MB to less than 1MB by modifying two lines in the config file. This involved significantly reducing the number and size of layers in the model.
 
 <img src="..\images\in-game-style-transfer-experiments\part-4\generator_combo.png" alt="generator_combo" style="zoom:40%;" />
 
 Fortunately, this didn't seem to have any significant impact on the quality of the output. The model did however need to be trained longer to achieve similar results.
-
-
 
 ## Getting it Working in Unity
 
@@ -36,13 +34,11 @@ It was a bit of a pain figuring out what preprocessing operations I needed to ap
 
 ## Performance Results
 
+The modified video stylization model has similar performance to 
 
+![few_shot_mosaic](..\images\in-game-style-transfer-experiments\part-4\few_shot_mosaic_720x540.png)
 
-![few_shot_mosaic](..\images\in-game-style-transfer-experiments\part-4\few_shot_mosaic.png)
-
-
-
-![few_shot_mosaic_peformance](..\images\in-game-style-transfer-experiments\part-4\few_shot_mosaic_peformance.gif)
+![few_shot_mosaic_peformance](..\images\in-game-style-transfer-experiments\part-4\stats_720x540.gif)
 
 
 
