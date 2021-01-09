@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: Examining results from my initial attempts to optimize the few-shot video stylization model.
 categories: [unity, log]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
