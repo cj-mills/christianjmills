@@ -24,13 +24,9 @@ I followed up on the [results](https://christianjmills.com/In-Game-Style-Transfe
 
 I was able to shrink the model from 13MB to less than 1MB by modifying two lines. This required significantly reducing the number and size of layers in the model.
 
-### Original
+<img src="..\images\in-game-style-transfer-experiments\part-4\generator_combo.png" alt="generator_combo" style="zoom:50%;" />
 
-<img src="..\images\in-game-style-transfer-experiments\part-4\generator_original_2.png" alt="generator_original" style="zoom:46.78%;" />
 
-### Modified
-
-<img src="..\images\in-game-style-transfer-experiments\part-4\generator_small.png" alt="generator_small" style="zoom:50%;" />
 
 
 
