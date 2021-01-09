@@ -42,6 +42,12 @@ It was a bit of a pain figuring out what preprocessing operations I needed to ap
 
 
 
+![few_shot_mosaic_peformance](..\images\in-game-style-transfer-experiments\part-4\few_shot_mosaic_peformance.gif)
+
+
+
+
+
 ## Training Challenges
 
 
