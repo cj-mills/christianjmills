@@ -37,17 +37,17 @@ Having resolved the discrepancy between the training results and Unity results, 
 
 ![lynx_digital_painting](..\images\in-game-style-transfer-experiments\part-5\lynx_digital_painting.jpg)
 
-The `fast_neural_style` model wasn't able to do much more than learn the color palette from this image. It failed to transfer texture or brush strokes. This was unexpected since the model does a decent job learning the style of physical paintings. 
+The `fast_neural_style` model wasn't able to do much more than transfer the color palette from this image. It failed to transfer texture or brush strokes. I tried a range of values for the training parameters but that didn't really help. I then tried modifying the model architecture to see if I could get it to capture more subtle details. None of these changes produced decent results with the above image. This was unexpected since the model does a decent job learning the style of physical paintings.
+
+### Starry Night by Vincent van Gogh ([link](https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg))
 
 ![starry-night](..\images\in-game-style-transfer-experiments\part-5\starry-night.jpg)
 
-It can also learn style from other pieces of digital art.
+It can also learn styles from some pieces of digital art.
+
+### Totem by Justin Maller ([link](http://www.facets.la/2014/360/))
 
 ![facets-dragon](..\images\in-game-style-transfer-experiments\part-5\facets-dragon.jpg)
-
-
-
-I tried a range of values for the training parameters but that didn't really help. I then tried modifying the model architecture to see if that would help it capture more subtle details.
 
 
 
