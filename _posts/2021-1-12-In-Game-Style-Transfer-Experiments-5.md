@@ -31,11 +31,23 @@ This model did produce a bit more flickering than the models trained on fewer ex
 
 ![few_shot_mosaic_frame](..\images\in-game-style-transfer-experiments\part-5\few_shot_mosaic_frame.png)
 
-
-
 ## Difficult to Learn Styles
 
+Having resolved the discrepancy between the training results and Unity results, I started training models on different styles. I wanted to try styles that were very different from the mosaic image. I started with this sample output from the video stylization model.
 
+![lynx_digital_painting](..\images\in-game-style-transfer-experiments\part-5\lynx_digital_painting.png)
+
+The `fast_neural_style` model wasn't able to do much more than learn the color palette from this image. It failed to transfer texture or brush strokes. This was unexpected since the model does a decent job learning the style of physical paintings. 
+
+![starry-night](..\images\in-game-style-transfer-experiments\part-5\starry-night.png)
+
+It can also learn style from other pieces of digital art.
+
+![facets-dragon](..\images\in-game-style-transfer-experiments\part-5\facets-dragon.png)
+
+
+
+I tried a range of values for the training parameters but that didn't really help. I then tried modifying the model architecture to see if that would help it capture more subtle details.
 
 
 
