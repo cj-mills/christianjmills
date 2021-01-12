@@ -19,8 +19,6 @@ search_exclude: false
 
 I'm starting to see a trend where a seemingly difficult problem is easily resolved and something I didn't think was going to be a problem turns out to be difficult. 
 
-
-
 ## Many-Shot Learning
 
 I was able to get the video stylization model to correctly stylize in Unity by adding a lot more training examples. The creators of the model only needed a few training examples to get great results for a specific scene. I decided to try using around 80 examples to see if that would help it generalize. It did.
