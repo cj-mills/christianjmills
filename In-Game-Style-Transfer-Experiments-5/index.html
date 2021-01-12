@@ -4,19 +4,19 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
-<title>Barracuda PoseNet Tutorial Pt. 9 | Christian Mills</title>
+<title>In-Game Style Transfer Experiments Pt.5 | Christian Mills</title>
 <meta name="generator" content="Jekyll v4.0.0" />
-<meta property="og:title" content="Barracuda PoseNet Tutorial Pt. 9" />
+<meta property="og:title" content="In-Game Style Transfer Experiments Pt.5" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="This post demonstrates the tradeoffs between speed and accuracy for the PoseNet model." />
-<meta property="og:description" content="This post demonstrates the tradeoffs between speed and accuracy for the PoseNet model." />
-<link rel="canonical" href="https://christianjmills.com/Barracuda-PoseNet-Tutorial-9/" />
-<meta property="og:url" content="https://christianjmills.com/Barracuda-PoseNet-Tutorial-9/" />
+<meta name="description" content="I got the video stylization model to work properly in Unity and found some weaknesses in the fast neural style model." />
+<meta property="og:description" content="I got the video stylization model to work properly in Unity and found some weaknesses in the fast neural style model." />
+<link rel="canonical" href="https://christianjmills.com/In-Game-Style-Transfer-Experiments-5/" />
+<meta property="og:url" content="https://christianjmills.com/In-Game-Style-Transfer-Experiments-5/" />
 <meta property="og:site_name" content="Christian Mills" />
 <meta property="og:type" content="article" />
-<meta property="article:published_time" content="2020-12-11T00:00:00-06:00" />
+<meta property="article:published_time" content="2021-01-12T00:00:00-06:00" />
 <script type="application/ld+json">
-{"datePublished":"2020-12-11T00:00:00-06:00","dateModified":"2020-12-11T00:00:00-06:00","description":"This post demonstrates the tradeoffs between speed and accuracy for the PoseNet model.","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/Barracuda-PoseNet-Tutorial-9/"},"@type":"BlogPosting","url":"https://christianjmills.com/Barracuda-PoseNet-Tutorial-9/","headline":"Barracuda PoseNet Tutorial Pt. 9","@context":"https://schema.org"}</script>
+{"datePublished":"2021-01-12T00:00:00-06:00","dateModified":"2021-01-12T00:00:00-06:00","description":"I got the video stylization model to work properly in Unity and found some weaknesses in the fast neural style model.","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/In-Game-Style-Transfer-Experiments-5/"},"@type":"BlogPosting","url":"https://christianjmills.com/In-Game-Style-Transfer-Experiments-5/","headline":"In-Game Style Transfer Experiments Pt.5","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
 <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
@@ -87,13 +87,13 @@ window.onload = wrap_img;
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">Barracuda PoseNet Tutorial Pt. 9</h1><p class="page-description">This post demonstrates the tradeoffs between speed and accuracy for the PoseNet model.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-12-11T00:00:00-06:00" itemprop="datePublished">
-        Dec 11, 2020
+    <h1 class="post-title p-name" itemprop="name headline">In-Game Style Transfer Experiments Pt.5</h1><p class="page-description">I got the video stylization model to work properly in Unity and found some weaknesses in the fast neural style model.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-01-12T00:00:00-06:00" itemprop="datePublished">
+        Jan 12, 2021
       </time>
        • <span class="read-time" title="Estimated read time">
     
     
-      2 min read
+      1 min read
     
 </span></p>
 
@@ -103,7 +103,7 @@ window.onload = wrap_img;
         <a class="category-tags-link" href="/categories/#unity">unity</a>
         &nbsp;
       
-        <a class="category-tags-link" href="/categories/#tutorial">tutorial</a>
+        <a class="category-tags-link" href="/categories/#log">log</a>
         
       
       </p>
@@ -112,58 +112,32 @@ window.onload = wrap_img;
     </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    <h3 id="previous-part-8">Previous: <a href="https://christianjmills.com/Barracuda-PoseNet-Tutorial-8/">Part 8</a></h3>
-
-<ul>
+    <ul>
   <li><a href="#introduction">Introduction</a></li>
-  <li><a href="#input-resolutions">Input Resolutions</a></li>
-  <li><a href="#summary">Summary</a></li>
+  <li><a href="#many-shot-learning">Many-Shot Learning</a></li>
+  <li><a href="#difficult-to-learn-styles">Difficult to Learn Styles</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
 </ul>
 
 <h2 id="introduction">Introduction</h2>
 
-<p>Different applications can require different tradeoffs between speed and accuracy. The size of the heatmaps generated by the PoseNet model is the greatest factor for balancing this tradeoff. The heatmap resolution indicates how many distinct locations the model needs to make a prediction for in the input image. The fewer distinct locations, the larger and more precise the offset values need to be. It’s easier to estimate whether a key point is in a specific spot rather than how far a way it is from that spot. In this post, we’ll explore how adjusting the input resolution impacts both inference speed and prediction accuracy.</p>
+<p>I’m starting to see a trend where a seemingly difficult problem is easily resolved and something I didn’t think was going to be a problem turns out to be difficult.</p>
 
-<h2 id="input-resolutions">Input Resolutions</h2>
+<h2 id="many-shot-learning">Many-Shot Learning</h2>
 
-<p>The easiest way to change the heatmap size is to adjust the resolution for the input image. We’ll start off with an extremely low resolution and go up from there. The minimum confidence for each test is set to 80%.</p>
+<p>I was able to get the video stylization model to correctly stylize in Unity by adding a lot more training examples. The creators of the model only needed a few training examples to get great results for a specific scene. I decided to try using around 80 examples to see if that would help it generalize. It did.</p>
 
-<p><strong>Note:</strong> The GIFs were all recorded at 24fps so differences in frame rate will not be visible.</p>
+<p><img src="..\images\in-game-style-transfer-experiments\part-5\generator_mosaic_small_v6.png" alt="generator_mosaic_small_v6" /></p>
 
-<h3 id="160-x-160-at-111fps">160 x 160 at 111fps</h3>
+<p>This model did produce a bit more flickering than the models trained on fewer examples. It should be easy to reduce the flickering by tuning the quality and quantity of the training examples. Output from this model even be used as training examples for another model. Although, I actually prefer the color palette from the less accurate model.</p>
 
-<p>This is about as low a resolution we can go before the model completely falls apart. The output is barely useable even with ideal video. The model is rarely confident about it’s predictions as shown below.</p>
+<p><img src="..\images\in-game-style-transfer-experiments\part-5\few_shot_mosaic_frame.png" alt="few_shot_mosaic_frame" /></p>
 
-<p><img src="..\images\barracuda-posenet-tutorial\part-9\skateboards_160p.gif" alt="skateboards_160p" /></p>
+<h2 id="difficult-to-learn-styles">Difficult to Learn Styles</h2>
 
-<h3 id="320-x-320-at-100fps">320 x 320 at 100fps</h3>
+<h2 id="conclusion">Conclusion</h2>
 
-<p>Moving up to <code class="highlighter-rouge">320p</code> improves model accuracy dramatically while having a small impact on performance. The model is much more confident in it’s predictions. It does a solid job with the body key points. However, predictions for the nose, eyes, and ears are still not reliable.</p>
-
-<p><img src="..\images\barracuda-posenet-tutorial\part-9\skateboards_320p.gif" alt="skateboards_320p" /></p>
-
-<h3 id="480-x-480-at-85fps">480 x 480 at 85fps</h3>
-
-<p>This is probably the sweet spot for balancing performance and accuracy. The model’s predictions are stable overall and inference speed is still fairly high.</p>
-
-<p><img src="..\images\barracuda-posenet-tutorial\part-9\skateboards_480p.gif" alt="skateboards_480p" /></p>
-
-<h3 id="640-x-640-at-59fps">640 x 640 at 59fps</h3>
-
-<p>Here we start to dip below 60fps. The model’s predictions are more stable, but the difference is less noticable than previous jumps in resolutions.</p>
-
-<p><img src="..\images\barracuda-posenet-tutorial\part-9\skateboards_640p.gif" alt="skateboards_640p" /></p>
-
-<h3 id="840-x-840-at--35fps">840 x 840 at  35fps</h3>
-
-<p>At this resolution, we see a significant impact on inference speed for little to no gain in accuracy. Different video content might benefit more from this high of a resolution. However, The performance trade off is likely not worth it.</p>
-
-<p><img src="..\images\barracuda-posenet-tutorial\part-9\skateboards_800p.gif" alt="skateboards_800p" /></p>
-
-<h2 id="summary">Summary</h2>
-
-<p>That was a brief overview of how the PoseNet model performs at different resolutions. Model accuracy will vary depending on the video content and the location of the individual in the camera frame. However, the above demos should provide a decent predictor of model performance.</p>
-
+<p>It’s annoying that the <code class="highlighter-rouge">fast_neural_style</code> model can’t seem to capture certain types of styles. Fortunately, I can use any style transfer model I want to generate the training examples for the video stylization model. I’d prefer to have a style transfer model that can produce good results with a wide variety of styles. However, it might be necessary to use multiple models that handle to different styles. I want to develop a reliable workflow so I can write an end-to-end tutorial.</p>
 
   </div><!-- from https://github.com/utterance/utterances -->
 <script src="https://utteranc.es/client.js"
@@ -173,7 +147,7 @@ window.onload = wrap_img;
         theme="github-light"
         crossorigin="anonymous"
         async>
-</script><a class="u-url" href="/Barracuda-PoseNet-Tutorial-9/" hidden></a>
+</script><a class="u-url" href="/In-Game-Style-Transfer-Experiments-5/" hidden></a>
 </article>
 
 
