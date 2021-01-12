@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: I got the video stylization model to work properly in Unity and found some weaknesses in the fast neural style model.
 categories: [unity, log]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
