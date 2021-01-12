@@ -27,7 +27,7 @@ I was able to get the video stylization model to correctly stylize in Unity by a
 
 ![generator_mosaic_small_v6](..\images\in-game-style-transfer-experiments\part-5\generator_mosaic_small_v6.jpg)
 
-This model did produce a bit more flickering than the models trained on fewer examples. It should be easy to reduce the flickering by tuning the quality and quantity of the training examples. Output from this model even be used as training examples for another model. Although, I actually prefer the color palette from the less accurate model.
+This model did produce a bit more flickering than the models trained on fewer examples. It should be easy to reduce the flickering by tuning the quality and quantity of the training examples. Output from this model can even be used as training examples for another model. Although, I actually prefer the color palette from the less accurate model.
 
 ![few_shot_mosaic_frame](..\images\in-game-style-transfer-experiments\part-5\few_shot_mosaic_frame.jpg)
 
@@ -49,8 +49,9 @@ It can also learn styles from some pieces of digital art.
 
 ![facets-dragon](..\images\in-game-style-transfer-experiments\part-5\facets-dragon.jpg)
 
-
+The model might have difficulty capturing the style from the lynx image because of how the style is extracted during the training process. The style of an image is extracted using a model the was pretrained on a bunch of regular images. That model is used to determine whether the style transfer model is doing a good job. It's possible that the pretrained model being used isn't recognizing the style features I want. If that's the case, using a different pretrained model might provide better results.
 
 ## Conclusion
 
-It's annoying that the `fast_neural_style` model can't seem to capture certain types of styles. Fortunately, I can use any style transfer model I want to generate the training examples for the video stylization model. I'd prefer to have a style transfer model that can produce good results with a wide variety of styles. However, it might be necessary to use multiple models that handle to different styles. I want to develop a reliable workflow so I can write an end-to-end tutorial.
+It's annoying that the `fast_neural_style` model can't seem to capture certain types of styles. Fortunately, I can use any style transfer model I want to generate the training examples for the video stylization model. I'd prefer to have a model that can produce good results with a wide variety of styles. However, it might be necessary to use multiple models that handle different styles. I want to develop a reliable workflow before I start writing an end-to-end tutorial.
+
