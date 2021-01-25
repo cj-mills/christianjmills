@@ -1,5 +1,5 @@
 ---
-title: Weekly Recap 1-9-21 to 1-23-21
+title: Weekly Recap Part 1
 layout: post
 toc: false
 comments: true
