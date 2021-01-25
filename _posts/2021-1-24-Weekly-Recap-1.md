@@ -1,9 +1,9 @@
 ---
-title: Weekly Recap /1
+title: Weekly Recap 1-10-21 to 1-23-21
 layout: post
 toc: false
 comments: true
-description: A summary of what I've been working on this past week.
+description: A summary of what I've been working on for the past couple weeks.
 categories: [log]
 hide: true
 permalink: /:title/
