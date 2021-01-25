@@ -20,7 +20,7 @@ search_exclude: false
 
 ## Introduction
 
-It's been a couple weeks since I've posted anything. I've been going back and forth working on a few different projects. I want to start doing a weekly recap so that I have a record of what I spend time on. That was, after all, one of the reasons I started this blog in the first place. Ideally, I would do daily recaps. However, that doesn't seem realistic for me just yet.
+It's been a couple weeks since I've posted anything. I've been going back and forth working on a few different projects and felt like I should keep better track of my activities. I want to start doing a weekly recap so that I have a record of what I spend time on. That was, after all, one of the reasons I started this blog in the first place. Ideally, I would do daily recaps. However, that doesn't seem realistic for me just yet.
 
 
 
