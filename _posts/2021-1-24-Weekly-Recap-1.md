@@ -1,5 +1,5 @@
 ---
-title: Weekly Recap Part 1
+title: Weekly Recap
 layout: post
 toc: false
 comments: true
