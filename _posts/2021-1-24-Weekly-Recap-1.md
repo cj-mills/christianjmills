@@ -22,6 +22,8 @@ search_exclude: false
 
 It's been a couple weeks since I've posted anything. I've been going back and forth working on a few different projects. I want to start doing a weekly recap so that I have a record of what I spend time on. That was, after all, one of the reasons I started this blog in the first place. Ideally, I would do daily recaps. However, that doesn't seem realistic for me just yet.
 
+
+
 ## Style Transfer Updates
 
 I spent some more time trying to improve the fast style model. I tried different style transfer methods in addition to customizing the [`fast_neural_style`](https://github.com/onnx/models/tree/master/vision/style_transfer/fast_neural_style) model. I still didn't get satisfactory results for the [digital lynx painting](https://christianjmills.com/In-Game-Style-Transfer-Experiments-5/#difficult-to-learn-styles). 
@@ -29,6 +31,8 @@ I spent some more time trying to improve the fast style model. I tried different
 <img src="..\images\weekly-recaps\recap-1\slow_style_transfer.png" alt="slow_style_transfer" style="zoom:80%;" />
 
 I was starting to burn a lot of time on this so I decided to take a break. I'll probably just write the end-to-end tutorial with the current level of quality.
+
+
 
 ## fastai to Unity
 
