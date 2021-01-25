@@ -1,5 +1,5 @@
 ---
-title: Weekly Recap #1
+title: Weekly Recap /1
 layout: post
 toc: false
 comments: true
@@ -77,9 +77,13 @@ I'd also like to see how it compares with Unity and Blender for generating synth
 
 I don't think Unreal Engine has an equivalent of Unity's Barracuda Inference library. However, it uses C++ for its programming language so I should be able to use the C++ interface for PyTorch. I believe I can still train models in Python like usual and then export it to C++. C++ is generally more of a hassle than the C# language used for Unity. The upside is that performance should be better and I wouldn't be limited by the current supported operators for the Barracuda library. I'm a bit rusty with C++ so I'll probably need to brush up on it as I go.
 
+
+
 ## Pose Estimation
 
 There are some pretrained models for facial and hand key points that I've been meaning to get working in Unity. There were some compatibility issues/bugs with the Barracuda library that made me hold off on them. I'd like to try and knock those out soon. There have also been some cool 3D pose estimation models that have come out this year.
+
+
 
 ## Conclusion
 
