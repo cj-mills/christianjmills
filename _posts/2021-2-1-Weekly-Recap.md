@@ -22,6 +22,7 @@ search_exclude: false
 
 ## End-to-End Style Transfer Tutorial
 
+I started planning out how I want to structure the tutorial. I want to provide a guide for how to tune the style transfer model to get more desirable results. To that end, I've been generating several examples of stylized images with different settings. I also got a bit side tracked experimenting with customized model architectures. I still haven't found a model that generate consistently superior results across different styles.
 
 
 ## Preparing for Job Hunting
@@ -62,7 +63,7 @@ The open-source NLP library, spaCy, has release version 3.0. You can check out w
 
 A project that aims to produce high quality visualizations of deep learning optimization processes.
 
-### Education
+### Self-directed Learning
 
 #### [The Ultimate Hack for Learning In Public](https://www.swyx.io/learn-in-public-hack/)
 
@@ -73,6 +74,22 @@ One of the reasons, I started this blog was to practice [learning in public](htt
 [<img src="https://res.cloudinary.com/dg3gyk0gu/image/upload/c_scale,f_auto,q_100,w_1200/v1594114495/maggieappleton.com/databases-101/DB_2.jpg" style="zoom: 50%;" />](https://maggieappleton.com/databases)
 
 I learned about this site from the previous link. I like this idea of using illustrated essays to help build intuition for abstract concepts. It's like the learning apps above but requires less compute power. I haven't done any in-depth explanations yet, but I might try this format when I do. I'm curious how difficult it would be to make an application that helps students build their own visual metaphors for abstract concepts.
+
+#### [Readwise](https://readwise.io/)
+
+I've never been good about using spaced repetition tools, despite how effective they are for memorizing new topics. However, this seems like a good tool for remembering what you read.
+
+### Software Development
+
+#### [pypi template](https://github.com/fastai/pypi_template)
+
+A minimal template for creating a pypi package
+
+[make_pr](https://gist.github.com/muellerzr/1da8985f488ddd11719b7e7cac89117e)
+
+Make a new pr from an existing cloned repository by simply doing `make_pr`.
+
+#### [Visualizing sorting algorithms using Python, NumPy, and Matplotlib](https://mobile.twitter.com/pottolama/status/1354066910997073920)
 
 
 
