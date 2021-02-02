@@ -32,7 +32,7 @@ I started planning out how I want to structure the tutorial. I want to provide a
 
 ![mosaic_1440p](..\images\weekly-recaps\recap-2\mosaic_1440p.png)
 
-I also got a bit side tracked experimenting with customized model architectures. I still haven't found a model that generate consistently superior results across different styles.
+I also got a bit sidetracked experimenting with customized model architectures. I still haven't found a model that generate consistently superior results across different styles.
 
 
 ## Preparing for Job Hunting
