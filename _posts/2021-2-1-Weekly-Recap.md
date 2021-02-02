@@ -62,5 +62,21 @@ The open-source NLP library, spaCy, has release version 3.0. You can check out w
 
 A project that aims to produce high quality visualizations of deep learning optimization processes.
 
+### Education
+
+#### [The Ultimate Hack for Learning In Public](https://www.swyx.io/learn-in-public-hack/)
+
+
+
+
+
+#### [Illustrated Essays](https://maggieappleton.com/essays)
+
+[<img src="https://res.cloudinary.com/dg3gyk0gu/image/upload/c_scale,f_auto,q_100,w_1200/v1594114495/maggieappleton.com/databases-101/DB_2.jpg" style="zoom: 50%;" />](https://maggieappleton.com/databases)
+
+I like this idea of using illustrated essays to help build intuition for abstract concepts. It's like the learning apps above but requires less compute power. I haven't done any in-depth explanations yet, but I might try this format when I do. I'm curious how difficult it would be to make an application that helps students build their own visual metaphors for abstract concepts.
+
+
+
 ## Conclusion
 
