@@ -38,7 +38,7 @@ This is something that I've become increasingly interested since I started learn
 
 A list of high quality educational apps that help make learning fun and engaging.
 
-#### [iCircuit 3Dz](http://icircuit3d.appmanuals.com/)
+#### [iCircuit 3D](http://icircuit3d.appmanuals.com/)
 
 A virtual workbench for designing and testing electronics projects. It's currently iOS only but the developer is looking to bring it to other platforms in the future.
 
@@ -47,6 +47,12 @@ A virtual workbench for designing and testing electronics projects. It's current
 #### [The unreasonable effectiveness of synthetic data with Daeil Kim](https://wandb.ai/site/podcast/daeil-kim)
 
 I'm finally catching up on episodes of the Gradient Descent podcast. This episode is an interview with the CEO of one of the few companies the specializes in creating synthetic training data. Apparently, they use Unreal Engine in their workflow. I might need to make learning Unreal Engine a higher priority.
+
+#### [PolyGen: An Autoregressive Generative Model of 3D Meshes](https://github.com/deepmind/deepmind-research/tree/master/polygen)
+
+<img src="https://raw.githubusercontent.com/deepmind/deepmind-research/master/polygen/media/example_samples.png" style="zoom:67%;" />
+
+I learned about this project from the above podcast episode. I haven't tried it yet, but I'm interested in where these types of models are heading.
 
 #### [spaCy v3.0](https://spacy.io/usage/v3)
 
