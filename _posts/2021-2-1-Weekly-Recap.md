@@ -6,7 +6,7 @@ comments: true
 description: A summary of what I've been working on for the past couple weeks.
 categories: [log]
 hide: true
-permalink: /:title/:date/
+permalink: /:title/:year/:w_year/
 search_exclude: false
 ---
 
@@ -20,7 +20,7 @@ search_exclude: false
 
 
 
-
+## Links
 
 
 
