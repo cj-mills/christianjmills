@@ -22,7 +22,17 @@ search_exclude: false
 
 ## End-to-End Style Transfer Tutorial
 
-I started planning out how I want to structure the tutorial. I want to provide a guide for how to tune the style transfer model to get more desirable results. To that end, I've been generating several examples of stylized images with different settings. I also got a bit side tracked experimenting with customized model architectures. I still haven't found a model that generate consistently superior results across different styles.
+I started planning out how I want to structure the tutorial. I want to provide a guide for how to tune the style transfer model to get more desirable results. To that end, I've been generating several examples of stylized images with different settings. For example here's the difference that adjusting the resolution of the style image can make.
+
+#### 720p
+
+![mosaic_720p](..\images\weekly-recaps\recap-2\mosaic_720p.png)
+
+#### 1440p
+
+![mosaic_1440p](..\images\weekly-recaps\recap-2\mosaic_1440p.png)
+
+I also got a bit side tracked experimenting with customized model architectures. I still haven't found a model that generate consistently superior results across different styles.
 
 
 ## Preparing for Job Hunting
