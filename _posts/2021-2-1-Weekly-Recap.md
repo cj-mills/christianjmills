@@ -30,11 +30,17 @@ search_exclude: false
 
 ## Links
 
+### Learning Apps, Games, and Simulations
+
+This is something that I've become increasingly interested since I started learning how to use Unity last year. Most current forms of online education are merely poor imitations of the traditional in-person format. They don't take advantage of the possibilities unlocked with virtual environments.
+
 #### [The 50 best mastery-based apps for PreK-12th grades](https://www.modulo.app/all-resources/bestappsforlearning)
 
-#### [iCircuit 3D](https://apps.apple.com/us/app/icircuit-3d/id1539977373)
+A list of high quality educational apps that help make learning fun and engaging.
 
+#### [iCircuit 3Dz](http://icircuit3d.appmanuals.com/)
 
+A virtual workbench for designing and testing electronics projects. It's currently iOS only but the developer is looking to bring it to other platforms in the future.
 
 ## Conclusion
 
