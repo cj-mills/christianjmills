@@ -22,7 +22,7 @@ search_exclude: false
 
 ## End-to-End Style Transfer Tutorial
 
-I started planning out how I want to structure the tutorial. I want to provide a guide for how to tune the style transfer model to get more desirable results. To that end, I've been generating several examples of stylized images with different settings. For example here's the difference that adjusting the resolution of the style image can make.
+I started planning out how I want to structure the tutorial. I want to provide a guide for how to tune the style transfer model to get more desirable results. To that end, I've been generating several examples of stylized images with different settings. For example, here's the difference that adjusting the resolution of the style image can make.
 
 #### 360p
 
@@ -34,10 +34,9 @@ I started planning out how I want to structure the tutorial. I want to provide a
 
 I also got a bit sidetracked experimenting with customized model architectures. I still haven't found a model that generate consistently superior results across different styles.
 
-
 ## Preparing for Job Hunting
 
-
+Assuming that the pandemic doesn't mess things up too much, I should be finishing my degree this year. With that in mind, I've started learning about all the things that go into job hunting these days. I should probably start using social media platforms like LinkedIn and Twitter to "build my brand". It might also be a good idea to invest more time in making this blog look better.
 
 ## Links of the Week
 
