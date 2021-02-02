@@ -24,9 +24,9 @@ search_exclude: false
 
 I started planning out how I want to structure the tutorial. I want to provide a guide for how to tune the style transfer model to get more desirable results. To that end, I've been generating several examples of stylized images with different settings. For example here's the difference that adjusting the resolution of the style image can make.
 
-#### 720p
+#### 360p
 
-![mosaic_720p](..\images\weekly-recaps\recap-2\mosaic_720p.png)
+![mosaic_360p](..\images\weekly-recaps\recap-2\mosaic_360p.png)
 
 #### 1440p
 
