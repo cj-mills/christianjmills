@@ -13,7 +13,7 @@ search_exclude: false
 * [Introduction](#introduction)
 * [End-to-End Style Transfer Tutorial](#end-to-end-style-transfer-tutorial)
 * [Preparing for Job Hunting](#preparing-for-job-hunting)
-* [Links](#links)
+* [Links of the Week](#links-of-the-week)
 * [Conclusion](#conclusion)
 
 ## Introduction
@@ -28,7 +28,7 @@ search_exclude: false
 
 
 
-## Links
+## Links of the Week
 
 ### Learning Apps, Games, and Simulations
 
@@ -66,15 +66,13 @@ A project that aims to produce high quality visualizations of deep learning opti
 
 #### [The Ultimate Hack for Learning In Public](https://www.swyx.io/learn-in-public-hack/)
 
+One of the reasons, I started this blog was to practice [learning in public](https://www.swyx.io/learn-in-public/). I've never enjoyed writing, but the process of making tutorials here has been undeniably beneficial. If you want to give learning in public a shot, this post provides some great advice for how to proceed.
 
-
-
-
-#### [Illustrated Essays](https://maggieappleton.com/essays)
+#### [Illustrated Essays by Maggie Appleton](https://maggieappleton.com/essays)
 
 [<img src="https://res.cloudinary.com/dg3gyk0gu/image/upload/c_scale,f_auto,q_100,w_1200/v1594114495/maggieappleton.com/databases-101/DB_2.jpg" style="zoom: 50%;" />](https://maggieappleton.com/databases)
 
-I like this idea of using illustrated essays to help build intuition for abstract concepts. It's like the learning apps above but requires less compute power. I haven't done any in-depth explanations yet, but I might try this format when I do. I'm curious how difficult it would be to make an application that helps students build their own visual metaphors for abstract concepts.
+I learned about this site from the previous link. I like this idea of using illustrated essays to help build intuition for abstract concepts. It's like the learning apps above but requires less compute power. I haven't done any in-depth explanations yet, but I might try this format when I do. I'm curious how difficult it would be to make an application that helps students build their own visual metaphors for abstract concepts.
 
 
 
