@@ -10,15 +10,9 @@ permalink: /:title/
 search_exclude: false
 ---
 
-* [Introduction](#introduction)
 * [End-to-End Style Transfer Tutorial](#end-to-end-style-transfer-tutorial)
 * [Preparing for Job Hunting](#preparing-for-job-hunting)
 * [Links of the Week](#links-of-the-week)
-* [Conclusion](#conclusion)
-
-## Introduction
-
-
 
 ## End-to-End Style Transfer Tutorial
 
@@ -99,8 +93,4 @@ A minimal template for creating a pypi package
 Make a new pr from an existing cloned repository by simply doing `make_pr`.
 
 #### [Visualizing sorting algorithms using Python, NumPy, and Matplotlib](https://mobile.twitter.com/pottolama/status/1354066910997073920)
-
-
-
-## Conclusion
 
