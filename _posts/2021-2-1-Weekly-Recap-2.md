@@ -3,7 +3,7 @@ title: Weekly Recap
 layout: post
 toc: false
 comments: true
-description: A summary of what I've been working on for the past couple weeks.
+description: A summary of what I've been working on for the past week.
 categories: [log]
 hide: false
 permalink: /:title/
