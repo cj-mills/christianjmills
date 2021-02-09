@@ -40,13 +40,13 @@ I'd also like to see what performance gains there might be from using Nvidia's [
 
 ## Links of the Week
 
-
-
 #### [GPT-Neo](https://www.eleuther.ai/projects/gpt-neo/)
 
 A group of independent researchers is developing an open source, free-to-use version of OpenAI's GPT-3 language model.
 
+[AI-based Drawing Aids](https://www.clipstudio.net/en/characterart/#func1_7)
 
+I learned about this drawing and painting software over the weekend called [Clip Studio Paint](https://www.clipstudio.net/en/). It has a lot of features to enhance and speed up creating art. One of the features that caught my eye was the ability to [pose](https://www.clipstudio.net/en/characterart/#func1_7) a virtual 3D human figure based on a reference image.
 
 #### How to Make Dope Shit
 
