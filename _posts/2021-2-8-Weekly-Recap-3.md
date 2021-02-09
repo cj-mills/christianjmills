@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: A summary of what I've been working on for the past week.
 categories: [log]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
