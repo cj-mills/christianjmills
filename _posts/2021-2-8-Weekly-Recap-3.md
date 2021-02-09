@@ -22,9 +22,13 @@ I also have the accompanying jupyter notebook pretty much completed. All the cod
 
 I plan to use [Google Colab](https://colab.research.google.com/notebooks/intro.ipynb) for the tutorial so anyone following it won't be required to get PyTorch running on their computer. I need to run the notebook on Colab to make sure the default compute resources are adequate.
 
-I'm probably going to use Unity's FPS Microgame for this tutorial. It should take less time to download and open than the Kinematica demo. I decided to go with Unity's video recorder for capturing the training images from the target video game. That should mean that Unity is the only applications that needs be installed to complete the tutorial. Well, that and a web browser. 
+I'm probably going to use Unity's FPS Microgame for this tutorial. It should take less time to download and open than the Kinematica demo. I decided to go with Unity's video recorder for capturing the training images from the target video game. That should mean that Unity is the only applications that needs be installed to complete the tutorial. Well, that and a web browser. The rest of the tutorial should be pretty similar to the basic tutorial I did previously.
 
-The rest of the tutorial should be pretty similar to the basic tutorial I did previously.
+I also came across an [implementation](https://github.com/magenta/magenta/tree/master/magenta/models/arbitrary_image_stylization) of the model that Unity started with for their in-game style transfer project. It actually does such a good job applying styles that I was tempted to redo the jupyter notebook I'd just completed to use it instead.
+
+![arbitrary-style-model](..\images\weekly-recaps\recap-3\arbitrary-style-model.jpg)
+
+However, it looks like it takes considerably more time to fully train than the single style models that I'm currently using. Therefore, I'll leave the tutorial as is and probably make a separate post for using this model in the future. I still need to convert the model and training code to PyTorch anyways.
 
 ## C++
 
