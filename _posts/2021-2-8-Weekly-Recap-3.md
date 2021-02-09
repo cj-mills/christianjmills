@@ -48,7 +48,7 @@ A group of independent researchers is developing an open source, free-to-use ver
 
 I learned about this drawing and painting software over the weekend called [Clip Studio Paint](https://www.clipstudio.net/en/). It has a lot of features to enhance and speed up creating art. One of the features that caught my eye was the ability to [pose](https://www.clipstudio.net/en/characterart/#func1_7) a virtual 3D human figure based on a reference image.
 
-#### How to Make Dope Shit
+#### [Making Data-Driven Essays](https://pudding.cool/process/how-to-make-dope-shit-part-1/)
 
 A three-part series designed to help familiarize people with the tools to make visual, data-driven essays created by [The Pudding](https://pudding.cool/).
 
