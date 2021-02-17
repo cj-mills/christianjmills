@@ -17,11 +17,11 @@ search_exclude: false
 
 ## Introduction
 
-Every time I think I'm ready to wrap up my style transfer project, I come across something that causes me to spend another week experimenting and troubleshooting. That's poor project management on my part and I've already spent more time on this topic than I intended. Therefore, I'm cutting myself off here and moving on to other topics. Unfortunately, that does mean making some changes to the end-to-end style transfer tutorial.
+Every time I think I'm ready to wrap up my style transfer project, I come across something that causes me to spend another week experimenting and troubleshooting. I've spent way more time on this topic than I intended and the the list future projects keeps growing. Therefore, I've made the decision to stop here and move on. Unfortunately, that does mean making some changes to the end-to-end style transfer tutorial.
 
 ## Arbitrary Style Transfer
 
-As mentioned in the [weekly recap](https://christianjmills.com/Weekly-Recap-3/), I came across an [implementation](https://colab.research.google.com/github/tensorflow/hub/blob/master/examples/colab/tf2_arbitrary_image_stylization.ipynb) of the same style transfer model that Unity used for its style transfer project. However, this one hadn't been watered down to run on a PS4 Pro. The results were impressive enough that I was tempted to use it for the end-to-end tutorial. Unfortunately, the training process is too long to use in the tutorial. Here are a couple examples using style images from Unity's sample project.
+As I mentioned in the [weekly recap](https://christianjmills.com/Weekly-Recap-3/), I came across an [implementation](https://colab.research.google.com/github/tensorflow/hub/blob/master/examples/colab/tf2_arbitrary_image_stylization.ipynb) of the same style transfer model that Unity used for its style transfer project. However, this one hadn't been watered down to run on a PS4 Pro. I was impressed by the results, but it takes days instead of hours to train. Here are a couple examples using style images from Unity's sample project.
 
 ![arbitrary-style-transfer-3](G:\Projects\GitHub\christianjmills\images\in-game-style-transfer-experiments\part-6\arbitrary-style-transfer-3.jpg)
 
