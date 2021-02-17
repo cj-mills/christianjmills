@@ -35,12 +35,12 @@ This method also has an added benefit of allowing the user to adjust the influen
 
 After completing the Google Colab notebook for the end-to-end style transfer tutorial, I began testing the code on a variety of styles as well as sample data from Unity. The goal was to identify areas where the models struggled. The good news is I successfully found areas where the models struggled. The bad news is that I probably won't be able to find a solution for those weaknesses in a reasonable amount of time.
 
-The [video stylization model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that I've been working with does a great job maintaining consistency between frames as long as the scene doesn't change too drastically. However, 3D video game environments tend to be dynamic. I've found that the video stylization model doesn't maintain frame consistency in when moving around in a 3D environment. 
+The [video stylization model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that I've been working with does a great job maintaining consistency between frames as long as the scene doesn't change too drastically. However, camera input from 3D video games tend to change a lot between frames. I've found that the video stylization model doesn't maintain frame consistency when moving around in a 3D environment. 
 
 The GitHub project does provide [methods](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training#temporal-consistency-optional) for improving temporal consistency. However, I don't know if these methods would be practical for stylizing a video game. It's also unclear if the model would still be able to generalize to different scenes with these methods. 
 
-Since I'm not allowing myself to spend any more time experimenting I've decided to not use the video stylization model for the tutorial. Instead I'll be using a modified version of the `fast_neural_style` model. There will be more flickering than I'd like, but the training process will be much simpler.
+Since I'm not allowing myself to spend any more time experimenting I've decided not to use the video stylization model for the tutorial. Instead I'll be using a modified version of the `fast_neural_style` model. There will be more flickering than I'd like, but the training process will be much simpler.
 
 ## Conclusion
 
-I'm disappointed that I wasn't able to resolve the flickering that comes with using a high style influence. Using a lower style influence feels like it defeats the whole point of style transfer. I'll probably come back to style transfer at some point.  For now it's time to move on to other projects.
+I'm disappointed that I wasn't able to resolve the flickering while maintaining playable frame rates. Flickering can be reduced by using a lower style influence. However, that feels like it defeats the whole point of style transfer. I'll probably come back to style transfer at some point.  For now it's time to move on to other projects.
