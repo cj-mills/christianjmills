@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: Testing out an arbitrary style transfer model and a change in plans for the end-to-end style transfer tutorial.
 categories: [style_transfer, log]
-hide: True
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
