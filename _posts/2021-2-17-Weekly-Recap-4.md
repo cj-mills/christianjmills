@@ -41,7 +41,7 @@ I spent some time learning about what goes into running a freelance business. I 
 
 ### [ML Learner's Digest](http://learnersdigest.radekosmulski.com/)
 
-Radek Osmulski knows a thing or two about learning machine learning. He learned out how to program and do deep learning using online resources and is now the AI Research Engineering Lead at the [Earth Species Project](https://www.earthspecies.org/). He now has a newsletter that focuses on how to get better at machine learning. I also recommend checking out his Hacker Noon post, [Going From Not Being Able to Code to Deep Learning Hero](https://hackernoon.com/going-from-not-being-able-to-code-to-deep-learning-hero-2ou34fh).
+Radek Osmulski knows a thing or two about learning machine learning. He learned out how to program and do deep learning using online resources and is now the AI Research Engineering Lead at the [Earth Species Project](https://www.earthspecies.org/). He recently started a newsletter that focuses on how to get better at machine learning. I also recommend checking out his Hacker Noon post, [Going From Not Being Able to Code to Deep Learning Hero](https://hackernoon.com/going-from-not-being-able-to-code-to-deep-learning-hero-2ou34fh).
 
 ### [MetaHumans](https://www.unrealengine.com/en-US/digital-humans)
 
@@ -51,3 +51,14 @@ It seems like the tool will be cloud-streamed only which is a bit unfortunate. I
 
 You can check out a walkthrough of the controls for the facial rig included with MetaHumans on the Unreal Engine YouTube channel ([link](https://www.youtube.com/watch?v=GEpH3o44_58)).
 
+### [Pytorch to fastai, Bridging the Gap](https://muellerzr.github.io/fastblog/2021/02/14/Pytorchtofastai.html)
+
+A blog post by Zachary Mueller on understanding how to incorporate regular PyTorch code into a workflow with the fastai library.
+
+### [Python Concurrency: The Tricky Bits](https://python.hamel.dev/concurrency/)
+
+A blog post by Hamel Husain that explores threads, processes, and coroutines in Python. That reminds me, I need to see how Blender behaves with concurrency when using the Python API.
+
+### [JarvisCloud](https://cloud.jarvislabs.ai/)
+
+This is a 1-click GPU cloud platform, I saw recommended on Twitter. I supports PyTorch, Fastai, and TensorFlow and the user just needs to select the desired specs. The interface is about as simple as it can get the prices seem reasonable. It's worth checking out if you need GPU cloud resources. 
