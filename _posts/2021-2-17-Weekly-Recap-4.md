@@ -21,7 +21,7 @@ As I noted in my latest [experiment log](https://christianjmills.com/In-Game-Sty
 
 ## Working With the Blender Python API
 
-I tried following a couple basic motion graphic tutorials for Blender using only the Python API. I thought they would be fun little exercises to get more familiar with the API. It took quite a bit longer to this way as I had to look up basically every single step. Fortunately, it was easy enough to track down answers online. 
+I tried following a couple basic motion graphic tutorials for Blender using only the Python API. I thought they would be fun little exercises to get more familiar with the API. It took quite a bit longer this way as I had to look up basically every single step. Fortunately, it was easy enough to track down answers online. 
 
 ### [Shape-Key Motion Graphic Loading Icon in Blender 2.9 Eevee - Tutorial](https://www.youtube.com/watch?v=N3FZcFk-dZA&list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&index=10)
 
