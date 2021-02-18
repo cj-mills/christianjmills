@@ -61,4 +61,4 @@ A blog post by Hamel Husain that explores threads, processes, and coroutines in 
 
 ### [JarvisCloud](https://cloud.jarvislabs.ai/)
 
-This is a 1-click GPU cloud platform, I saw recommended on Twitter. I supports PyTorch, Fastai, and TensorFlow and the user just needs to select the desired specs. The interface is about as simple as it can get the prices seem reasonable. It's worth checking out if you need GPU cloud resources. 
+This is a 1-click GPU cloud platform, I saw recommended on Twitter. I supports PyTorch, Fastai, and TensorFlow and the user just needs to select the desired specs. The interface is about as simple as it can get the prices seem reasonable.
