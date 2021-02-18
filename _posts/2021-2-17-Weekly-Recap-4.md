@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: Revising the style transfer tutorial, working with the Blender Python API, and learning about freelancing.
 categories: [log]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
