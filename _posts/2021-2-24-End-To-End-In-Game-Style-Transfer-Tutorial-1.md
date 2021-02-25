@@ -46,7 +46,7 @@ Once downloaded, unzip the folder and add the project to Unity Hub using the `Ad
 
 Select a Unity version from the drop-down menu. The demo project was made using Unity `2019.4.5f1`. You can use a later `2019.4` release if you don't have that version installed.
 
-* Unity 2019.4.13: ([download](unityhub://2019.4.13f1/518737b1de84))
+* Unity 2019.4.20: ([download](unityhub://2019.4.20f1/6dd1c08eedfa))
 
 ![set-unity-version](..\images\end-to-end-in-game-style-transfer-tutorial\set-unity-version.png)
 
