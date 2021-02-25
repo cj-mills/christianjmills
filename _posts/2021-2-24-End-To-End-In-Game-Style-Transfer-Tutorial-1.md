@@ -26,7 +26,7 @@ In this first post, we'll download our Unity project and install the Barracuda l
 
 ## Select a Unity Project
 
-I'll once again be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. I was planning on using the lightweight FPS Microgame available through the Learn section in Unity Hub. However, the environment ended up being so simple that the stylized results didn't look good. However, feel free to follow along with that project instead. The steps are identical and you should get higher frame rates.
+I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. I was planning on using the lightweight FPS Microgame available through the Learn section in Unity Hub. However, the environment ended up being so simple that the stylized results didn't look good. However, feel free to follow along with that project instead. The steps are identical and you should get higher frame rates.
 
 ![unity-hub-fps-microgame](..\images\end-to-end-in-game-style-transfer-tutorial\unity-hub-fps-microgame.png)
 
