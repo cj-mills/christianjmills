@@ -87,4 +87,4 @@ Finally, drag and drop the video file into the project folder in Google Drive.
 
 ## Conclusion
 
-That's all that's needed to get custom training data for your Unity project. You can also use any other recording that you prefer working with. This can be beneficial if you want more control over the quality of the video recordings. In the next post we'll finally train a style transfer model in Google Colab.
+That's all that's needed to get custom training data for your Unity project. You can also use any other recording software that you prefer working with. This can be beneficial if you want more control over the quality of the video recordings. In the next post we'll finally train a style transfer model in Google Colab.
