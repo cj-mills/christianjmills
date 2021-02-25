@@ -21,7 +21,7 @@ search_exclude: false
 
 ## Introduction
 
-In this post, we'll cover how to use the Unity Recorder tool to record in-game footage and images. We'll be training our model using a pre-existing dataset of real-life images. This enables the model to learn do a decent job stylizing arbitrary images. However, some game can look drastically different from real-life. In these situations, it can help to to add additional training images from the target game. This will help the model learn to stylize frames from that specific environment.
+In this post, we'll cover how to use the Unity Recorder tool to record in-game footage. We'll be training our model using a pre-existing dataset of real-life images. This enables the model to learn do a decent job stylizing arbitrary images. However, some game can look drastically different from real-life. In these situations, it can help to to add additional training images from the target game. This will help the model learn to stylize frames from that specific environment.
 
 ## Install Unity Recorder
 
