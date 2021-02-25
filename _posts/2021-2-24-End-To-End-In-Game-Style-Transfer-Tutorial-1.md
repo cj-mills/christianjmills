@@ -52,7 +52,7 @@ Select a Unity version from the drop-down menu. The demo project was made using 
 
 ### Open the Project
 
-Now we can open the project. We'll be prompted to upgrade the project to the selected Unity version. Click `Confirm` in the popup to upgrade the project. As mentioned earlier, this project takes a while to load the first time.
+Now we can open the project. We'll be prompted to upgrade the project to the selected Unity version. Click `Confirm` in the popup to upgrade the project. This project takes a while to load the first time.
 
 ![upgrade-unity-version](..\images\end-to-end-in-game-style-transfer-tutorial\upgrade-unity-version.png)
 
