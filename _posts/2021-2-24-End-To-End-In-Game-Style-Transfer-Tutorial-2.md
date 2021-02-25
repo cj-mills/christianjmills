@@ -1,0 +1,94 @@
+---
+
+
+title: End-to-End In-Game Style Transfer Tutorial Pt.2
+layout: post
+toc: false
+comments: true
+description: This post covers how to use the Unity Recorder tool to generate additional training data for our style transfer model.
+categories: [style_transfer, pytorch, unity, tutorial]
+hide: true
+permalink: /:title/
+search_exclude: false
+---
+
+* [Introduction](#introduction)
+* [Install Unity Recorder](#install-unity-recorder)
+* [Open Game Scene](#open-game-scene)
+* [Open Unity Recorder](#open-unity-recorder)
+* [Add Movie Recorder](#add-movie-recorder)
+* [Record In-Game Footage](#record-in-game-footage)
+* [Upload Video to Google Drive](#upload-video-to-google-drive)
+* [Conclusion](#conclusion)
+
+# Part 2 - Custom Dataset (Optional)
+
+## Introduction
+
+In this post we'll cover how to use the Unity Recorder tool to record in-game footage and images. We'll be training our model using a pre-existing dataset of real-life images. This enables the model to learn do a decent job stylizing arbitrary images. However, some game can look drastically different from real-life. In these situations, it can help to to add additional training images from the target game. This will help the model learn to stylize frames from that specific environment.
+
+## Install Unity Recorder
+
+The Unity Recorder tool is available through the Package Manger. In the Unity Registry section, type `unity recorder` in the search box and click `Install`.
+
+![unity-package-manager-unity-recorder](..\images\end-to-end-in-game-style-transfer-tutorial\unity-package-manager-unity-recorder.png)
+
+
+
+## Open Game Scene
+
+In the `Assets` section of the `Project` tab, navigate to the Scene you want to record. For the Kinematica demo, open the `Biped` scene in the `Scenes` folder.
+
+![kinematica-biped-scene](..\images\end-to-end-in-game-style-transfer-tutorial\kinematica-biped-scene.png)
+
+
+
+## Open Unity Recorder
+
+The Unity Recorder tool is accessible in the `General` sub-menu in the `Windows` section. The tool will open up in its own window.
+
+![unity-open-unity-recorder-window](..\images\end-to-end-in-game-style-transfer-tutorial\unity-open-unity-recorder-window.png)
+
+
+
+## Add Movie Recorder
+
+In the Recorder window, click the `+ Add Recorder` button. 
+
+![unity-recorder-add-recorder](..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-add-recorder.png)
+
+Select the `Movie` option from the drop down.
+
+![unity-recorder-add-movie-recorder](..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-add-movie-recorder.png)
+
+
+
+I recommend setting the `Output Resolution` to 1080p or higher to reduce the amount of compression artifacts.
+
+![unity-recorder-set-resolution](..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-set-resolution.png)
+
+
+
+## Record In-Game Footage
+
+Click `Start Recording` to begin recording and the game will start automatically. Once the game is running, move around and try to capture different parts of the environment. The amount of footage required depends on the size the scene. For the Kinematica demo you should only need a few minutes to capture the whole scene. The only thing to keep in mind is that you'll need to upload the video file to Google Drive. The more footage you record, the longer it will take to upload. 
+
+![unity-recorder-start-recording](..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-start-recording.png)
+
+Once you're finished recording, you can open the Recordings folder by clicking the button outlined in the image below.
+
+![unity-recorder-open-recordings-folder](..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-open-recordings-folder.png)
+
+
+
+## Upload Video to Google Drive
+
+Finally, drag and drop the video file into the project folder in Google Drive.
+
+![gdrive-upload-in-game-recording](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-upload-in-game-recording.png)
+
+
+
+## Conclusion
+
+That's all that's needed to get custom training data for your Unity project. You can also use any other recording that you prefer working with. This can be beneficial if you want more control over the quality of the video recordings. In the next post we'll finally train a style transfer model in Google Colab.
