@@ -1,7 +1,5 @@
 ---
-
-
-title: End-to-End In-Game Style Transfer Tutorial Pt.2
+title: End-to-End In-Game Style Transfer Tutorial Pt.2 (Optional)
 layout: post
 toc: false
 comments: true
@@ -20,8 +18,6 @@ search_exclude: false
 * [Record In-Game Footage](#record-in-game-footage)
 * [Upload Video to Google Drive](#upload-video-to-google-drive)
 * [Conclusion](#conclusion)
-
-# Part 2 - Custom Dataset (Optional)
 
 ## Introduction
 
