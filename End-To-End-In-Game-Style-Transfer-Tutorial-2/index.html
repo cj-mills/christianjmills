@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>End-to-End In-Game Style Transfer Tutorial Pt.2 | Christian Mills</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="End-to-End In-Game Style Transfer Tutorial Pt.2" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This post covers how to use the Unity Recorder tool to generate additional training data for our style transfer model." />
+<meta property="og:description" content="This post covers how to use the Unity Recorder tool to generate additional training data for our style transfer model." />
+<link rel="canonical" href="https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-2/" />
+<meta property="og:url" content="https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-2/" />
+<meta property="og:site_name" content="Christian Mills" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-02-24T00:00:00-06:00" />
+<script type="application/ld+json">
+{"description":"This post covers how to use the Unity Recorder tool to generate additional training data for our style transfer model.","headline":"End-to-End In-Game Style Transfer Tutorial Pt.2","@type":"BlogPosting","dateModified":"2021-02-24T00:00:00-06:00","datePublished":"2021-02-24T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-2/"},"url":"https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-2/","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Christian Mills</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">End-to-End In-Game Style Transfer Tutorial Pt.2</h1><p class="page-description">This post covers how to use the Unity Recorder tool to generate additional training data for our style transfer model.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-02-24T00:00:00-06:00" itemprop="datePublished">
+        Feb 24, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      2 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#style_transfer">style_transfer</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#pytorch">pytorch</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#unity">unity</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#tutorial">tutorial</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#install-unity-recorder">Install Unity Recorder</a></li>
+  <li><a href="#open-game-scene">Open Game Scene</a></li>
+  <li><a href="#open-unity-recorder">Open Unity Recorder</a></li>
+  <li><a href="#add-movie-recorder">Add Movie Recorder</a></li>
+  <li><a href="#record-in-game-footage">Record In-Game Footage</a></li>
+  <li><a href="#upload-video-to-google-drive">Upload Video to Google Drive</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+
+<h1 id="part-2---custom-dataset-optional">Part 2 - Custom Dataset (Optional)</h1>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In this post we’ll cover how to use the Unity Recorder tool to record in-game footage and images. We’ll be training our model using a pre-existing dataset of real-life images. This enables the model to learn do a decent job stylizing arbitrary images. However, some game can look drastically different from real-life. In these situations, it can help to to add additional training images from the target game. This will help the model learn to stylize frames from that specific environment.</p>
+
+<h2 id="install-unity-recorder">Install Unity Recorder</h2>
+
+<p>The Unity Recorder tool is available through the Package Manger. In the Unity Registry section, type <code class="highlighter-rouge">unity recorder</code> in the search box and click <code class="highlighter-rouge">Install</code>.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-package-manager-unity-recorder.png" alt="unity-package-manager-unity-recorder" /></p>
+
+<h2 id="open-game-scene">Open Game Scene</h2>
+
+<p>In the <code class="highlighter-rouge">Assets</code> section of the <code class="highlighter-rouge">Project</code> tab, navigate to the Scene you want to record. For the Kinematica demo, open the <code class="highlighter-rouge">Biped</code> scene in the <code class="highlighter-rouge">Scenes</code> folder.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\kinematica-biped-scene.png" alt="kinematica-biped-scene" /></p>
+
+<h2 id="open-unity-recorder">Open Unity Recorder</h2>
+
+<p>The Unity Recorder tool is accessible in the <code class="highlighter-rouge">General</code> sub-menu in the <code class="highlighter-rouge">Windows</code> section. The tool will open up in its own window.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-open-unity-recorder-window.png" alt="unity-open-unity-recorder-window" /></p>
+
+<h2 id="add-movie-recorder">Add Movie Recorder</h2>
+
+<p>In the Recorder window, click the <code class="highlighter-rouge">+ Add Recorder</code> button.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-add-recorder.png" alt="unity-recorder-add-recorder" /></p>
+
+<p>Select the <code class="highlighter-rouge">Movie</code> option from the drop down.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-add-movie-recorder.png" alt="unity-recorder-add-movie-recorder" /></p>
+
+<p>I recommend setting the <code class="highlighter-rouge">Output Resolution</code> to 1080p or higher to reduce the amount of compression artifacts.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-set-resolution.png" alt="unity-recorder-set-resolution" /></p>
+
+<h2 id="record-in-game-footage">Record In-Game Footage</h2>
+
+<p>Click <code class="highlighter-rouge">Start Recording</code> to begin recording and the game will start automatically. Once the game is running, move around and try to capture different parts of the environment. The amount of footage required depends on the size the scene. For the Kinematica demo you should only need a few minutes to capture the whole scene. The only thing to keep in mind is that you’ll need to upload the video file to Google Drive. The more footage you record, the longer it will take to upload.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-start-recording.png" alt="unity-recorder-start-recording" /></p>
+
+<p>Once you’re finished recording, you can open the Recordings folder by clicking the button outlined in the image below.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-open-recordings-folder.png" alt="unity-recorder-open-recordings-folder" /></p>
+
+<h2 id="upload-video-to-google-drive">Upload Video to Google Drive</h2>
+
+<p>Finally, drag and drop the video file into the project folder in Google Drive.</p>
+
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-upload-in-game-recording.png" alt="gdrive-upload-in-game-recording" /></p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>That’s all that’s needed to get custom training data for your Unity project. You can also use any other recording that you prefer working with. This can be beneficial if you want more control over the quality of the video recordings. In the next post we’ll finally train a style transfer model in Google Colab.</p>
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="cj-mills/christianjmills"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/End-To-End-In-Game-Style-Transfer-Tutorial-2/" hidden></a>
+</article>
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>My personal blog</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/cj-mills" title="cj-mills"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/Innominate817" title="Innominate817"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
