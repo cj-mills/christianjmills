@@ -62,7 +62,7 @@ We'll install the Barracuda package once the project has finished loading. Open 
 
 ![unity-open-package-manager](..\images\end-to-end-in-game-style-transfer-tutorial\unity-open-package-manager.png)
 
- In the Unity Registry, type Barracuda into the search box. We'll be using version `1.0.4`.
+ In the Unity Registry section, type `Barracuda` into the search box. We'll be using version `1.0.4`.
 
 ![barracuda_search](..\images\end-to-end-in-game-style-transfer-tutorial\barracuda_search.png)
 
