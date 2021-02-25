@@ -74,7 +74,7 @@ Click the `Install` button to install the package.
 
 ## Google Drive Prep
 
-We can save our trained model in Google Drive since we'll be training our style transfer model in a Google Colab environment. 
+Google Colab environments provide the option to mount our Google Drive as a directory. We'll be using this feature to automatically save our training progress. 
 
 ### Create a Project Folder
 
