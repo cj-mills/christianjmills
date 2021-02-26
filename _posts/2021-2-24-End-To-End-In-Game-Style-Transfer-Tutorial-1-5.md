@@ -69,7 +69,7 @@ I recommend setting the `Output Resolution` to 1080p or higher to reduce the amo
 
 ## Record In-Game Footage
 
-Click `Start Recording` and the game will begin automatically. Once the game is running, move around and try to capture different parts of the environment. The amount of footage required depends on the size the scene. For the Kinematica demo you should only need a few minutes to capture the whole scene. The only thing to keep in mind is that you'll need to upload the video file to Google Drive. The more footage you record, the longer it will take to upload. 
+Click `Start Recording` and the game will begin automatically. Once the game is running, move around and try to capture different parts of the environment. The amount of footage required depends on the size the scene. For the Kinematica demo you should only need a few minutes to capture the whole scene. The only thing to keep in mind is that you'll need to upload the video file to Google Drive. The more footage you record, the longer it will take to upload.
 
 ![unity-recorder-start-recording](..\images\end-to-end-in-game-style-transfer-tutorial\unity-recorder-start-recording.png)
 
