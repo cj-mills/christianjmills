@@ -797,11 +797,11 @@ The stylized image will be influenced by the following:
 
 * Size of the style image
 
-I recommend keeping the content_weight at `1e5` and adjusting the style_weight between `1e9` and `1e11`.
+I recommend keeping the content_weight at `1e5` and adjusting the style_weight between `5e8` and `1e11`. The ideal style_weight will vary depending on the style image. I recommend starting out low, training for 5-10 checkpoint intervals, and increasing the style weight as needed.
 
 ```python
 # The file path for the target style image
-style_image = f"{style_images_dir}/starry_night_1080_square.png"
+style_image = f"{style_images_dir}/1.png"
 # The file path for a sample input image for demonstrating the model's progress during training
 test_image = f"{test_images_dir}/011.png" 
 
@@ -813,7 +813,7 @@ epochs = 1
 content_weight = 1e5
 # The influence from the style image on the stylized image
 # Default: 1e10
-style_weight = 5e10
+style_weight = 1e10
 
 # (test_image resolution) / content_scale
 content_scale = 1.0
@@ -869,3 +869,8 @@ torch.onnx.export(trainer.generator.cpu(),     #  Model being run
                  )
 ```
 
+
+
+## Conclusion
+
+You now have everything needed to train your own style transfer models. In the next post we'll add the code to use the trained ONNX file in Unity.
