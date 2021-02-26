@@ -121,3 +121,7 @@ Place your test images in a new folder called `test_images`.
 ## Conclusion
 
 That takes care of the required setup. In the next post I'll cover the optional step of recording in-game footage to add to your training dataset. This can help the model better adapt to the game's specific environment. You can also skip ahead to part 3 where we'll be training our style transfer model in Google Colab.
+
+
+
+### Next: Part 1.5 (Optional) Part 2 
