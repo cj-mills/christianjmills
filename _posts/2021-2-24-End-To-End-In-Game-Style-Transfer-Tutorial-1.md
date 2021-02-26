@@ -90,7 +90,7 @@ Name the folder `Style_Transfer_Project`.
 
 ### Create Folder for Style Images
 
-Open the project folder and create a new folder for storing the style images you want to use. 
+Open the project folder and create a new folder for storing the style images you want to use.
 
 ![gdrive-create-style-image-folder](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-create-style-image-folder.png)
 
@@ -98,15 +98,15 @@ Open the project folder and create a new folder for storing the style images you
 
 You can pick whatever images you want, but some will work better than others. Upload the images in their source resolution. You'll have the option to resize them through code when training the model. If you don't currently have any style images in mind you can download the one's that I'll use from the link below.
 
-**Note:** I recommend cropping the style images into squares. Not doing so can occasionally result in a discolored border around the edges of the stylized output image.
+**Note:** I recommend cropping the style images into squares. Not doing so can occasionally result in a border around the edges of the stylized output image.
 
-#### Sample Style Images: ([link](https://drive.google.com/drive/folders/1YvI0odtCeWlBKXkXcpw7p0TYMBy_zrle?usp=sharing))
+#### Sample Style Images: ([link](https://drive.google.com/drive/folders/1IJZk5vY0coY1qOlotkvtZpBHufAP9GFX?usp=sharing))
 
 ![gdrive-upload-style-images](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-upload-style-images.png)
 
 ### Create Folder for Test Images
 
-We'll also need a test image to see how the well the model is stylizing images during training. This is especially important it can take some experimentation to get the model to generate desirable results. It can often be clear early in a training session whether the model is learning as intended.
+We'll also need a test image to see how the well the model is stylizing images during training. This is especially important as it can take some experimentation to get the model to generate desirable results. It can often be clear early in a training session whether the model is learning as intended.
 
 You can use this screenshot from the Kinematica demo for your test image.
 
