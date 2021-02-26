@@ -1,5 +1,5 @@
 ---
-title: End-to-End In-Game Style Transfer Tutorial Pt.2 (Optional)
+title: End-to-End In-Game Style Transfer Tutorial Pt.1.5 (Optional)
 layout: post
 toc: false
 comments: true
@@ -9,6 +9,8 @@ hide: true
 permalink: /:title/
 search_exclude: false
 ---
+
+### Previous: Part 1
 
 * [Introduction](#introduction)
 * [Install Unity Recorder](#install-unity-recorder)
@@ -88,3 +90,6 @@ Finally, drag and drop the video file into the project folder in Google Drive.
 ## Conclusion
 
 That's all that's needed to get custom training data for your Unity project. You can also use any other recording software that you prefer working with. This can be beneficial if you want more control over the quality of the video recordings. In the next post we'll finally train a style transfer model in Google Colab.
+
+### Next: Part 2
+
