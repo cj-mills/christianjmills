@@ -11,6 +11,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+### Previous: Part 1 Part 1.5
+
 * [Introduction](#introduction)
 * [Open Google Colab Notebook](#open-google-colab-notebook)
 * [Continue in the Notebook](#continue-in-the-notebook)
@@ -872,4 +874,8 @@ torch.onnx.export(trainer.generator.cpu(),     #  Model being run
 
 ## Conclusion
 
-You now have everything needed to train your own style transfer models. In the next post we'll add the code to use the trained ONNX file in Unity.
+That's everything needed to train your own style transfer models. In the next post we'll add the code to use the trained ONNX file in Unity.
+
+
+
+### Next: Part 3
