@@ -84,7 +84,7 @@ Select the `Folder` option.
 
 ![gdrive-click-new-folder](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-click-new-folder.png)
 
-Name the folder something like `Style_Transfer_Project`.
+Name the folder `Style_Transfer_Project`.
 
 ![gdrive-create-project-folder](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-create-project-folder.png)
 
