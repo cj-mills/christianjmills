@@ -10,7 +10,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: Part 1 Part 1.5
+### Previous: [Part 1](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-1/) [Part 1.5](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-1-5/)
 
 * [Introduction](#introduction)
 * [Open Google Colab Notebook](#open-google-colab-notebook)
@@ -877,4 +877,4 @@ That's everything needed to train your own style transfer models. In the next po
 
 
 
-### Next: Part 3
+### Next: [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/)
