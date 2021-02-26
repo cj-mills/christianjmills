@@ -3,7 +3,7 @@ title: End-to-End In-Game Style Transfer Tutorial Pt.1
 layout: post
 toc: false
 comments: true
-description: This is part 1 of a tutorial series that covers how to train your own style transfer model and implement it in Unity using the Barracuda library.
+description: This is part 1 of a tutorial series that covers how to train your own style transfer model with PyTorch and implement it in Unity using the Barracuda library.
 categories: [style_transfer, pytorch, unity, tutorial]
 hide: true
 permalink: /:title/
@@ -18,7 +18,7 @@ search_exclude: false
 
 ## Introduction
 
-This tutorial series covers how to train your own style transfer model and implement it in Unity using the Barracuda library. We'll be using the PyTorch library to build and train the model. You will not need to set up PyTorch on your local machine to follow along. Instead, we'll be using the free Google Colab service to train the model in a web browser. This does require you to have a Google account. You will also need some free space on Google Drive as we'll be saving our model's progress there.
+This tutorial series covers how to train your own style transfer model and implement it in Unity using the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html) library. We'll be using the [PyTorch](https://pytorch.org/) library to build and train the model. You will not need to set up PyTorch on your local machine to follow along. Instead, we'll be using the free [Google Colab](https://research.google.com/colaboratory/faq.html) service to train the model in a web browser. This does require you to have a Google account. You will also need some free space on Google Drive as we'll be saving our model's progress there.
 
 In this first post, we'll download our Unity project and install the Barracuda library. We'll also create a folder for our project in Google Drive. This is where we'll store our style images, test images and model checkpoints.
 
