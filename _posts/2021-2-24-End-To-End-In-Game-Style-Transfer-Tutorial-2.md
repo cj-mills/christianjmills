@@ -211,7 +211,7 @@ def stylize(model_path: str, input_image: str, output_image: str, content_scale:
 
 ## Define the Style Transfer Model
 
-Here we'll define the style transfer model itself. The model takes in an RGB image and generates a new image with the same dimensions. The features in the output image (e.g. color texure) are then compared with the features of the style image. The result of this comparison is then used to update the parameters of the model so that it hopefully generates better images.
+Here we'll define the style transfer model itself. The model takes in an RGB image and generates a new image with the same dimensions. The features in the output image (e.g. color and texture) are then compared with the features of the style image and content image. The result of these comparison are then used to update the parameters of the model so that it hopefully generates better images.
 
 I won't go into detail about the model architecture as the goal of this tutorial is primarily showing how to use it.
 
@@ -640,8 +640,6 @@ style_transform = transforms.Compose([transforms.ToTensor(),
 
 
 ### Create the Style Transfer Model
-
-
 
 Next, we'll create a new instance of the style transfer model. It's here that you'll be able to experiment with tradeoffs between performance and quality.
 
