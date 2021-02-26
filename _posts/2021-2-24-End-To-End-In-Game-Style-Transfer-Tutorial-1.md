@@ -100,6 +100,8 @@ Open the project folder and create a new folder for storing the style images you
 
 You can pick whatever images you want, but some will work better than others. Upload the images in their source resolution. You'll have the option to resize them through code when training the model. If you don't currently have any style images in mind you can download the one's that I'll use from the link below.
 
+**Note:** I recommend cropping the style images into squares. Not doing so can occasionally result in a discolored border around the edges of the stylized output image.
+
 #### Sample Style Images: ([link](https://drive.google.com/drive/folders/1YvI0odtCeWlBKXkXcpw7p0TYMBy_zrle?usp=sharing))
 
 ![gdrive-upload-style-images](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-upload-style-images.png)
