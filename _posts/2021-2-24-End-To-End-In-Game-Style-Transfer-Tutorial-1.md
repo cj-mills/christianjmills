@@ -3,7 +3,7 @@ title: End-to-End In-Game Style Transfer Tutorial Pt.1
 layout: post
 toc: false
 comments: true
-description: This is part 1 of a tutorial series that covers how to train your own style transfer model with PyTorch and implement it in Unity using the Barracuda library.
+description: This tutorial series covers how to train your own style transfer model with PyTorch and implement it in Unity using the Barracuda library.
 categories: [style_transfer, pytorch, unity, tutorial]
 hide: true
 permalink: /:title/
