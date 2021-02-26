@@ -1,6 +1,4 @@
 ---
-
-
 title: End-to-End In-Game Style Transfer Tutorial Pt.1
 layout: post
 toc: false
