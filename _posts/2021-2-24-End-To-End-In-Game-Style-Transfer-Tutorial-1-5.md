@@ -89,6 +89,6 @@ The last step is to drag and drop the video file into the project folder in Goog
 
 ## Conclusion
 
-That's all that's needed to generate custom training data for your Unity project. You can also use any other recording software that you prefer working with. This can be beneficial if you want more control over the quality of the video recordings. In the next post, we'll cover how to split the recording into a folder of images and finally train a style transfer model in Google Colab.
+That's all that's needed to generate custom training data from your Unity project. You can also use any other recording software that you prefer working with. This can be beneficial if you want more control over the quality of the video recordings. In the next post, we'll cover how to split the recording into a folder of images and finally train a style transfer model in Google Colab.
 
 ### Next: [Part 2](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-2/)
