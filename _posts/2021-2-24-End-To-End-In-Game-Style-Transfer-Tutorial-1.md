@@ -13,7 +13,7 @@ search_exclude: false
 * [Introduction](#introduction)
 * [Select a Unity Project](#select-a-unity-project)
 * [Install Barracuda Package](#install-barracuda-package)
-* [Google Drive Prep](#google-drive-prep)
+* [Create Google Drive Project Folder](#create-google-drive-project-folder)
 * [Conclusion](#conclusion)
 
 ## Introduction
@@ -24,13 +24,13 @@ In this first post, we'll download our Unity project and install the Barracuda l
 
 ## Select a Unity Project
 
-I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. I was planning on using the lightweight FPS Microgame available through the Learn section in Unity Hub. However, the environment ended up being so simple that the stylized results didn't look good. Feel free to follow along with that project though. The steps are identical and it takes much less time to open.
+I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. I was planning on using the lightweight FPS Microgame that's available in Unity Hub. However, the environment ended up being so simple that there wasn't much to stylize. Feel free to follow along with that project though. The steps are identical and it takes much less time to open.
 
 ![unity-hub-fps-microgame](..\images\end-to-end-in-game-style-transfer-tutorial\unity-hub-fps-microgame.png)
 
 ### Download Kinematica Demo
 
-You can download the Unity project by clicking on the link below. The zipped folder is approximately 1.2 GB.
+You can download the Kinematica project by clicking on the link below. The zipped folder is approximately 1.2 GB.
 
 * Kinematica_Demo_0.8.0-preview: ([download](https://github.com/Unity-Technologies/Kinematica_Demo/releases/download/0.8.0-preview/Kinematica_Demo_0.8.0-preview.zip))
 
@@ -70,7 +70,7 @@ Click the `Install` button to install the package.
 
 
 
-## Google Drive Prep
+## Create Google Drive Project Folder
 
 Google Colab environments provide the option to mount our Google Drive as a directory. We'll be using this feature to automatically save our training progress. 
 
