@@ -4,9 +4,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
-<title>End-to-End In-Game Style Transfer Tutorial Pt.3 | Christian Mills</title>
+<title>End-to-End In-Game Style Transfer Tutorial | Christian Mills</title>
 <meta name="generator" content="Jekyll v4.0.0" />
-<meta property="og:title" content="End-to-End In-Game Style Transfer Tutorial Pt.3" />
+<meta property="og:title" content="End-to-End In-Game Style Transfer Tutorial" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="This post covers how to train an artistic style transfer model using PyTorch and implement it Unity." />
 <meta property="og:description" content="This post covers how to train an artistic style transfer model using PyTorch and implement it Unity." />
@@ -16,7 +16,7 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2021-02-24T00:00:00-06:00" />
 <script type="application/ld+json">
-{"description":"This post covers how to train an artistic style transfer model using PyTorch and implement it Unity.","headline":"End-to-End In-Game Style Transfer Tutorial Pt.3","@type":"BlogPosting","dateModified":"2021-02-24T00:00:00-06:00","datePublished":"2021-02-24T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/"},"url":"https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/","@context":"https://schema.org"}</script>
+{"description":"This post covers how to train an artistic style transfer model using PyTorch and implement it Unity.","headline":"End-to-End In-Game Style Transfer Tutorial","@type":"BlogPosting","dateModified":"2021-02-24T00:00:00-06:00","datePublished":"2021-02-24T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/"},"url":"https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
 <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
@@ -87,13 +87,13 @@ window.onload = wrap_img;
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">End-to-End In-Game Style Transfer Tutorial Pt.3</h1><p class="page-description">This post covers how to train an artistic style transfer model using PyTorch and implement it Unity.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-02-24T00:00:00-06:00" itemprop="datePublished">
+    <h1 class="post-title p-name" itemprop="name headline">End-to-End In-Game Style Transfer Tutorial</h1><p class="page-description">This post covers how to train an artistic style transfer model using PyTorch and implement it Unity.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-02-24T00:00:00-06:00" itemprop="datePublished">
         Feb 24, 2021
       </time>
        • <span class="read-time" title="Estimated read time">
     
     
-      20 min read
+      9 min read
     
 </span></p>
 
@@ -120,838 +120,327 @@ window.onload = wrap_img;
   <div class="post-content e-content" itemprop="articleBody">
     <ul>
   <li><a href="#introduction">Introduction</a></li>
-  <li><a href="#open-google-colab-notebook">Open Google Colab Notebook</a></li>
-  <li><a href="#continue-in-the-notebook">Continue in the Notebook</a></li>
+  <li></li>
   <li><a href="#conclusion">Conclusion</a></li>
 </ul>
 
-<h2 id="introduction">Introduction</h2>
+<h1 id="part-4---unity-project">Part 4 - Unity Project</h1>
 
-<p>In this post we’ll be using the free tier of Google Colab to train a style transfer model in a web browser. Using Google Colab removes the need to setup a Python environment on your local machine. It provides a virtual environment that allows anyone to write and execute arbitrary python code in their browser. It also provides free access to GPUs.</p>
+<h2 id="create-style-transfer-folder">Create Style Transfer Folder</h2>
 
-<p><strong>Important:</strong> Google Colab restricts GPU allocation for free users to 12 hours at a time. You will get disconnected from the server if you leave this notebook running past that. You need to wait a while (probably 12 hours) for the time limit to reset.</p>
+<p>We’ll place all our additions to the project in a new asset folder called <code class="highlighter-rouge">Style_Transfer</code>. This will help keep things organized.</p>
 
-<h2 id="open-google-colab-notebook">Open Google Colab Notebook</h2>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\style_transfer_folder.png" alt="style_transfer_folder" /></p>
 
-<p>First, you need to get your own copy of the Colab Notebook. You can open my copy of the notebook by clicking the link below.</p>
+<h2 id="import-models">Import Models</h2>
 
-<ul>
-  <li><a href="https://colab.research.google.com/drive/1ixyTcASEFb2k_Dn60ZzfxJHboxE9ND85?usp=sharing">Notebook Link</a></li>
-</ul>
+<p>Next, we need to add some style transfer models. PyTorch models need to be exported to the <a href="https://onnx.ai/">ONNX</a> format before being imported to Unity. Fortunately, PyTorch provides built-in support for exporting to ONNX (<a href="https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html">tutorial</a>).</p>
 
-<h3 id="copy-to-google-drive">Copy to Google Drive</h3>
+<h3 id="download-onnx-files">Download ONNX Files</h3>
 
-<p>You need to save the notebook to your Google Drive since you can’t make changes to my copy. To do so, click the <code class="highlighter-rouge">Copy to Drive</code> button.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\colab-save-to-gdrive.png" alt="colab-save-to-gdrive" /></p>
-
-<p>That will reopen the notebook in a new tab where any changes you make can be saved to you Google Drive. Go ahead and close the original tab.</p>
-
-<h4 id="colab-notebooks-folder">Colab Notebooks Folder</h4>
-
-<p>If you open your Google Drive, you should see a new folder named <code class="highlighter-rouge">Colab Notebooks</code>. This is where any notebooks your work on in Google Colab will be saved.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-colab-notebooks-folder-3.png" alt="gdrive-colab-notebooks-folder" /></p>
-
-<h4 id="inside-colab-notebooks-folder">Inside Colab Notebooks Folder</h4>
-
-<p>You can open the new folder to see your copy of the notebook. If you double-click on the notebook file, you’ll be presented with the option to open it in a Google Colab environment. You can use this method to reopen the notebook in the future.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-open-colab-notebook.png" alt="gdrive-open-colab-notebook" /></p>
-
-<h2 id="using-a-colab-notebook">Using a Colab Notebook</h2>
-
-<p>Colab Notebooks are primarily made up of code cell and text cells. Code cells can be executed in multiple ways. If you hover over or click on a code cell, a play button will appear on the left side of the cell. Clicking the play button will execute the code cell.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\colab-execute-code-cell.png" alt="colab-execute-code-cell" /></p>
-
-<p>The other main ways are to either press <code class="highlighter-rouge">CTRL-Enter</code> or <code class="highlighter-rouge">Shift-Enter</code>. <code class="highlighter-rouge">CTRL-Enter</code> executes the code cell in place while <code class="highlighter-rouge">Shift-Enter</code> executes the code cell and moves to the next cell.</p>
-
-<p>You can add more cells by hovering over either the top or bottom of an existing cell. You will be presented with the option to create either a code or text cell.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\colab-add-new-cell.png" alt="colab-add-new-cell" /></p>
-
-<h2 id="connect-to-a-runtime-environment">Connect to a Runtime Environment</h2>
-
-<p>We need to connect to a runtime environment before we start using the notebook. Press the <code class="highlighter-rouge">Connect</code> button outlined below.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\colab-connect-to-runtime.png" alt="colab-connect-to-runtime" /></p>
-
-<p>Once the notebook had connected to a runtime environment hover the RAM/Disk readout and make sure the notebook is using a <code class="highlighter-rouge">GPU</code> backend.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\colab-confirm-gpu-backend.png" alt="colab-confirm-gpu-backend" /></p>
-
-<p>If it’s not, you need to manually set it to use a GPU. You can do by opening the <code class="highlighter-rouge">Notebook Settings</code> under the <code class="highlighter-rouge">Edit</code> section.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\colab-open-notebook-settings.png" alt="colab-open-notebook-settings" /></p>
-
-<p>Select <code class="highlighter-rouge">GPU</code> from the <code class="highlighter-rouge">Hardware Accelerator</code> dropdown and click <code class="highlighter-rouge">Save</code>.</p>
-
-<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\colab-select-hardware-accelerator.png" alt="colab-select-hardware-accelerator" /></p>
-
-<h2 id="continue-in-the-notebook">Continue in the Notebook</h2>
-
-<p>I recommend continuing this post in the Colab notebook itself. In the notebook instructions are inline with the code. However, I have also included the notebook contents below if you’re not following along.</p>
-
-<h2 id="install-the-fastai-library">Install the <a href="https://docs.fast.ai/">fastai</a> Library</h2>
-
-<p>First, we’ll install the fastai library which is built on top of PyTorch. We’ll be using pure PyTorch for training the model but the fastai library includes some convenience functions that we’ll use to download the training dataset.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>%%capture
-<span class="o">!</span>pip <span class="nb">install </span><span class="nv">fastai</span><span class="o">==</span>2.2.5
-</code></pre></div></div>
-
-<h2 id="import-dependencies">Import Dependencies</h2>
-
-<p>Next, we need to import the required python modules and packages.</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Miscellaneous operating system interfaces
-# https://docs.python.org/3/library/os.html
-</span><span class="kn">import</span> <span class="nn">os</span>
-<span class="c1"># Time access and conversions
-# https://docs.python.org/3/library/time.html
-</span><span class="kn">import</span> <span class="nn">time</span>
-<span class="c1"># Object-oriented filesystem paths
-# https://docs.python.org/3/library/pathlib.html#pathlib.Path
-</span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="c1"># Tuple-like objects that have named fields
-# https://docs.python.org/3/library/collections.html#collections.namedtuple
-</span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
-
-<span class="c1"># A convenience function for downloading files from a url to a destination folder
-# https://docs.fast.ai/data.external.html#untar_data
-</span><span class="kn">from</span> <span class="nn">fastai.data.external</span> <span class="kn">import</span> <span class="n">untar_data</span>
-
-<span class="c1"># Provides image processing capabilities
-# https://pillow.readthedocs.io/en/stable/reference/Image.html
-</span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
-
-<span class="c1"># The main PyTorch package
-# https://pytorch.org/docs/stable/torch.html
-</span><span class="kn">import</span> <span class="nn">torch</span>
-
-<span class="c1"># Used to iterate over the dataset during training 
-# https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
-</span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-
-<span class="c1"># Contains definitions of models. We'll be downloading a pretrained VGG-19 model
-# to judge the performance of our style transfer model.
-# https://pytorch.org/vision/stable/models.html#torchvision.models.vgg19
-</span><span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">vgg19</span>
-<span class="c1"># Common image transforms that we'll use to process images before feeding them to the models
-# https://pytorch.org/vision/stable/transforms.html
-</span><span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
-<span class="c1"># Loads images from a directory and applies the specified transforms
-# https://pytorch.org/vision/stable/datasets.html#imagefolder
-</span><span class="kn">from</span> <span class="nn">torchvision.datasets</span> <span class="kn">import</span> <span class="n">ImageFolder</span>
-</code></pre></div></div>
-
-<h2 id="utility-functions">Utility Functions</h2>
-
-<p>We’ll define some utility functions for making new directories, loading and saving images, and stylizing images using model checkpoints.</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_dir</span><span class="p">(</span><span class="n">dir_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="s">"""Create the specified directory if it doesn't already exist"""</span>
-    <span class="n">dir_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dir_name</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">dir_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">"Directory already exists."</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">load_image</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="s">"""Load the specified image and return it as a PIL Image"""</span>
-    <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">scale</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">scale</span><span class="p">)),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">img</span>
-
-<span class="k">def</span> <span class="nf">save_image</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-    <span class="s">"""Save the Tensor data to an image file"""</span>
-    <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-    <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">"uint8"</span><span class="p">)</span>
-    <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-    <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">stylize</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">input_image</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_image</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content_scale</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
-            <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s">"cpu"</span><span class="p">,</span> <span class="n">export_onnx</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="s">"""Load a TransformerNet checkpoint, stylize an image and save the output"""</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">content_image</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">content_scale</span><span class="p">)</span>
-    <span class="n">content_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-        <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-        <span class="n">transforms</span><span class="o">.</span><span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
-    <span class="p">])</span>
-    <span class="n">content_image</span> <span class="o">=</span> <span class="n">content_transform</span><span class="p">(</span><span class="n">content_image</span><span class="p">)</span>
-    <span class="n">content_image</span> <span class="o">=</span> <span class="n">content_image</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="n">filters_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">filters</span> <span class="ow">or</span> <span class="n">filters</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))]</span>
-        <span class="n">res_blocks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'.'</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s">'resnets'</span> <span class="ow">in</span> <span class="n">k</span><span class="p">))</span>
-        <span class="n">style_model</span> <span class="o">=</span> <span class="n">TransformerNet</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="n">filters_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">res_blocks</span><span class="o">=</span><span class="n">res_blocks</span><span class="p">)</span> 
-        <span class="n">style_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-        <span class="n">style_model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-         
-        <span class="k">if</span> <span class="n">export_onnx</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">export_onnx</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">".onnx"</span><span class="p">),</span> <span class="s">"Export model file should end with .onnx"</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">_export</span><span class="p">(</span><span class="n">style_model</span><span class="p">,</span> <span class="n">content_image</span><span class="p">,</span> <span class="n">export_onnx</span><span class="p">,</span> <span class="n">opset_version</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">style_model</span><span class="p">(</span><span class="n">content_image</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-    <span class="n">save_image</span><span class="p">(</span><span class="n">output_image</span><span class="p">,</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</code></pre></div></div>
-
-<h2 id="define-the-style-transfer-model">Define the Style Transfer Model</h2>
-
-<p>Here we’ll define the style transfer model itself. The model takes in an RGB image and generates a new image with the same dimensions. The features in the output image (e.g. color texure) are then compared with the features of the style image. The result of this comparison is then used to update the parameters of the model so that it hopefully generates better images.</p>
-
-<p>I won’t go into detail about the model architecture as the goal of this tutorial is primarily showing how to use it.</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">TransformerNet</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="s">"""TransformerNet
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L4
-    """</span>
-    
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">res_blocks</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TransformerNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filters</span> <span class="o">=</span> <span class="n">filters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">res_blocks</span> <span class="o">=</span> <span class="n">res_blocks</span> <span class="k">if</span> <span class="n">res_blocks</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
-        <span class="c1"># Initial convolution layers
-</span>        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">ConvLayer</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">filters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">ConvLayer</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">filters</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">ConvLayer</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">filters</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="c1"># Residual layers
-</span>        <span class="bp">self</span><span class="o">.</span><span class="n">resnets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">res_blocks</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">resnets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ResidualBlock</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
-        
-        <span class="c1"># Upsampling Layers
-</span>        <span class="bp">self</span><span class="o">.</span><span class="n">deconv1</span> <span class="o">=</span> <span class="n">UpsampleConvLayer</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">filters</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in4</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">deconv2</span> <span class="o">=</span> <span class="n">UpsampleConvLayer</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">filters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in5</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">deconv3</span> <span class="o">=</span> <span class="n">ConvLayer</span><span class="p">(</span><span class="n">filters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="c1"># Non-linearities
-</span>        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
-        
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="n">conv1_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">X</span><span class="p">)))</span>
-        <span class="n">conv2_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">conv1_y</span><span class="p">)))</span>
-        <span class="n">conv3_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in3</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">conv2_y</span><span class="p">)))</span>
-
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resnets</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">conv3_y</span><span class="p">)</span> <span class="o">+</span> <span class="n">conv3_y</span>
-        
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_blocks</span><span class="p">):</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resnets</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">y</span>
-
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in4</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deconv1</span><span class="p">(</span><span class="n">conv3_y</span> <span class="o">+</span> <span class="n">y</span><span class="p">)))</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deconv2</span><span class="p">(</span><span class="n">conv2_y</span> <span class="o">+</span> <span class="n">y</span><span class="p">)))</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deconv3</span><span class="p">(</span><span class="n">conv1_y</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">y</span>
-
-
-<span class="k">class</span> <span class="nc">ConvLayer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="s">"""ConvLayer
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L44
-    """</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ConvLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="n">reflection_padding</span> <span class="o">=</span> <span class="n">kernel_size</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reflection_pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReflectionPad2d</span><span class="p">(</span><span class="n">reflection_padding</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reflection_pad</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span>
-
-
-<span class="k">class</span> <span class="nc">ResidualBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="s">"""ResidualBlock
-    introduced in: https://arxiv.org/abs/1512.03385
-    recommended architecture: http://torch.ch/blog/2016/02/04/resnets.html
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L57
-    """</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ResidualBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">ConvLayer</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">ConvLayer</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
-      
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">residual</span> <span class="o">=</span> <span class="n">x</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">+</span> <span class="n">residual</span>
-        <span class="k">return</span> <span class="n">out</span>
-
-
-<span class="k">class</span> <span class="nc">UpsampleConvLayer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="s">"""UpsampleConvLayer
-    Upsamples the input and then does a convolution. This method gives better results
-    compared to ConvTranspose2d.
-    ref: http://distill.pub/2016/deconv-checkerboard/
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L79
-    """</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">UpsampleConvLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="o">=</span> <span class="n">upsample</span>
-        <span class="n">reflection_padding</span> <span class="o">=</span> <span class="n">kernel_size</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reflection_pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReflectionPad2d</span><span class="p">(</span><span class="n">reflection_padding</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">)</span>
-        
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x_in</span> <span class="o">=</span> <span class="n">x</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">:</span>
-            <span class="n">x_in</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">x_in</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'nearest'</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reflection_pad</span><span class="p">(</span><span class="n">x_in</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span>
-</code></pre></div></div>
-
-<h2 id="define-the-vgg-19-model">Define the VGG-19 Model</h2>
-
-<p>Here we’ll define the model that will be used to judge the quality of the output images from the style transfer model. This model has been pretrained a large image dataset. This means it already know how to recognize a wide variety of features in an image. We’ll use this model to extract the features of the content image, style image, and stylized image.</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Vgg19</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="s">"""
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/vgg.py#L7
-    """</span>
-    
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Vgg19</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">feature_layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vgg_pretrained_features</span> <span class="o">=</span> <span class="n">vgg19</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">slice1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">slice2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">slice3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">slice4</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">slice5</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">slice1</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">vgg_pretrained_features</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">slice2</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">vgg_pretrained_features</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">18</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">slice3</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">vgg_pretrained_features</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">27</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">slice4</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">vgg_pretrained_features</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">27</span><span class="p">,</span> <span class="mi">36</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">slice5</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">vgg_pretrained_features</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">requires_grad</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-                <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="bp">False</span>
-            
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice1</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="n">h_relu1_2</span> <span class="o">=</span> <span class="n">h</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice2</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-        <span class="n">h_relu2_2</span> <span class="o">=</span> <span class="n">h</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice3</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-        <span class="n">h_relu3_3</span> <span class="o">=</span> <span class="n">h</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice4</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-        <span class="n">h_relu4_3</span> <span class="o">=</span> <span class="n">h</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice5</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-        <span class="n">h_relu5_3</span> <span class="o">=</span> <span class="n">h</span>
-        <span class="n">vgg_outputs</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">"VggOutputs"</span><span class="p">,</span> <span class="p">[</span><span class="s">'relu1_2'</span><span class="p">,</span> <span class="s">'relu2_2'</span><span class="p">,</span> <span class="s">'relu3_3'</span><span class="p">,</span> <span class="s">'relu4_3'</span><span class="p">,</span> <span class="s">'relu5_3'</span><span class="p">])</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">vgg_outputs</span><span class="p">(</span><span class="n">h_relu1_2</span><span class="p">,</span> <span class="n">h_relu2_2</span><span class="p">,</span> <span class="n">h_relu3_3</span><span class="p">,</span> <span class="n">h_relu4_3</span><span class="p">,</span> <span class="n">h_relu5_3</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span>
-</code></pre></div></div>
-
-<h2 id="define-the-model-trainer">Define the Model Trainer</h2>
-
-<p>We’ll define a new class to make training the style transfer model a bit easier. Along with training the model, this class will save the model’s current progress at set intervals. It will also generate sample images so we can see how the model is doing. This will allow us to determine if the model is actually improving or whether it’s already good enough that we can stop the training process early.</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Trainer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">style_transform</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">opt_generator</span><span class="p">,</span> <span class="n">style_criterion</span><span class="p">,</span> <span class="n">perception_model</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">train_loader</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">style_transform</span> <span class="o">=</span> <span class="n">style_transform</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">opt_generator</span> <span class="o">=</span> <span class="n">opt_generator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">style_criterion</span> <span class="o">=</span> <span class="n">style_criterion</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">perception_model</span> <span class="o">=</span> <span class="n">perception_model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        
-    <span class="k">def</span> <span class="nf">gram_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="s">"""Compute the gram matrix a PyTorch Tensor"""</span>
-        <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
-        <span class="n">features</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">w</span> <span class="o">*</span> <span class="n">h</span><span class="p">)</span>
-        <span class="n">features_t</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">gram</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">features_t</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">ch</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">w</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">gram</span>
-
-    <span class="k">def</span> <span class="nf">normalize_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="s">"""Normalize a batch of Tensors using the imagenet mean and std """</span>
-        <span class="n">mean</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">([</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">std</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">([</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">div_</span><span class="p">(</span><span class="mf">255.0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">batch</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
-
-    <span class="k">def</span> <span class="nf">get_gram_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style_image</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">style_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="s">"""Get the Gram Matrices for the style image"""</span>
-        <span class="n">style</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">style_image</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">style_size</span><span class="p">)</span>
-        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_transform</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
-        <span class="n">style</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">features_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perception_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">normalize_batch</span><span class="p">(</span><span class="n">style</span><span class="p">))</span>
-        <span class="n">gram_style</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gram_matrix</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">features_style</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">gram_style</span>
-            
-    <span class="k">def</span> <span class="nf">save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="s">"""Save the current model weights at the specified path"""</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="nb">eval</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">path</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">"Checkpoint saved at {path}"</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style_image</span><span class="p">,</span> <span class="n">test_image</span><span class="p">,</span> <span class="n">checkpoint_model_dir</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">content_weight</span><span class="o">=</span><span class="mf">1e5</span><span class="p">,</span> <span class="n">style_weight</span><span class="o">=</span><span class="mf">1e10</span><span class="p">,</span> 
-                <span class="n">content_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">style_size</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">log_interval</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">checkpoint_interval</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
-        <span class="s">"""Train the style transfer model on the provided style image."""</span>
-        
-        <span class="n">gram_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_gram_style</span><span class="p">(</span><span class="n">style_image</span><span class="p">,</span> <span class="n">style_size</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-            <span class="n">agg_content_loss</span> <span class="o">=</span> <span class="mf">0.</span>
-            <span class="n">agg_style_loss</span> <span class="o">=</span> <span class="mf">0.</span>
-            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">batch_id</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span><span class="p">):</span>
-                <span class="n">n_batch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="n">count</span> <span class="o">+=</span> <span class="n">n_batch</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">opt_generator</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-                
-                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-                <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-                <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_batch</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_batch</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span>
-                <span class="n">features_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perception_model</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-                <span class="n">features_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perception_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-                <span class="n">content_loss</span> <span class="o">=</span> <span class="n">content_weight</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_criterion</span><span class="p">(</span><span class="n">features_y</span><span class="o">.</span><span class="n">relu2_2</span><span class="p">,</span> <span class="n">features_x</span><span class="o">.</span><span class="n">relu2_2</span><span class="p">)</span>
-
-                <span class="n">style_loss</span> <span class="o">=</span> <span class="mf">0.</span>
-                <span class="k">for</span> <span class="n">ft_y</span><span class="p">,</span> <span class="n">gm_s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">features_y</span><span class="p">,</span> <span class="n">gram_style</span><span class="p">):</span>
-                    <span class="n">gm_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gram_matrix</span><span class="p">(</span><span class="n">ft_y</span><span class="p">)</span>
-                    <span class="n">style_loss</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_criterion</span><span class="p">(</span><span class="n">gm_y</span><span class="p">,</span> <span class="n">gm_s</span><span class="p">[:</span><span class="n">n_batch</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
-                <span class="n">style_loss</span> <span class="o">=</span> <span class="n">style_loss</span> <span class="o">*</span> <span class="n">style_weight</span>
-
-                <span class="n">total_loss</span> <span class="o">=</span> <span class="n">content_loss</span> <span class="o">+</span> <span class="n">style_loss</span>
-                <span class="n">total_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">opt_generator</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-
-                <span class="n">agg_content_loss</span> <span class="o">+=</span> <span class="n">content_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                <span class="n">agg_style_loss</span> <span class="o">+=</span> <span class="n">style_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-                <span class="k">if</span> <span class="p">(</span><span class="n">batch_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">mesg</span> <span class="o">=</span> <span class="n">f</span><span class="s">"{' '.join(time.ctime().replace('  ', ' ').split(' ')[1:-1])}  "</span>
-                    <span class="n">mesg</span> <span class="o">+=</span> <span class="n">f</span><span class="s">"Epoch {e + 1}: [{count}/{len(self.train_loader.dataset)}]  "</span>
-                    <span class="n">mesg</span> <span class="o">+=</span> <span class="n">f</span><span class="s">"content: {(agg_content_loss / (batch_id + 1)):.4f}  "</span>
-                    <span class="n">mesg</span> <span class="o">+=</span> <span class="n">f</span><span class="s">"style: {(agg_style_loss / (batch_id + 1)):.4f}  "</span>
-                    <span class="n">mesg</span> <span class="o">+=</span> <span class="n">f</span><span class="s">"total: {((agg_content_loss + agg_style_loss) / (batch_id + 1)):.4f}"</span>
-                    <span class="k">print</span><span class="p">(</span><span class="n">mesg</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">checkpoint_model_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">batch_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">checkpoint_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">ckpt_base</span> <span class="o">=</span> <span class="n">f</span><span class="s">"ckpt_epoch_{e}_batch_id_{batch_id + 1}"</span>
-                    <span class="n">ckpt_model_filename</span> <span class="o">=</span> <span class="n">ckpt_base</span> <span class="o">+</span> <span class="s">".pth"</span>
-                    <span class="n">ckpt_model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_model_dir</span><span class="p">,</span> <span class="n">ckpt_model_filename</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="n">ckpt_model_path</span><span class="p">)</span>
-                    <span class="n">output_image</span> <span class="o">=</span> <span class="n">ckpt_base</span> <span class="o">+</span> <span class="s">".png"</span>
-                    <span class="n">output_image_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_model_dir</span><span class="p">,</span> <span class="n">output_image</span><span class="p">)</span>
-                    <span class="n">stylize</span><span class="p">(</span><span class="n">ckpt_model_path</span><span class="p">,</span> <span class="n">test_image</span><span class="p">,</span> <span class="n">output_image_path</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-                
-        <span class="k">print</span><span class="p">(</span><span class="s">"Finished Training"</span><span class="p">)</span>
-        <span class="n">ckpt_model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_model_dir</span><span class="p">,</span> <span class="s">'final.pth'</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="n">ckpt_model_path</span><span class="p">)</span>
-        <span class="n">output_image_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_model_dir</span><span class="p">,</span> <span class="s">'final.png'</span><span class="p">)</span>
-        <span class="n">stylize</span><span class="p">(</span><span class="n">ckpt_model_path</span><span class="p">,</span> <span class="n">test_image</span><span class="p">,</span> <span class="n">output_image_path</span><span class="p">)</span>
-</code></pre></div></div>
-
-<h2 id="mount-google-drive">Mount Google Drive</h2>
-
-<p>Before going any further, we need to mount out Google Drive so we can access our project folder. There is a python library that’s specifically made for working in Colab notebook that provides this functionality.</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
-</code></pre></div></div>
-
-<p>We’ll use the <code class="highlighter-rouge">drive.mount()</code> method to mount our whole Google Drive inside a new directory called <code class="highlighter-rouge">drive</code>.</p>
-
-<p>When you run the code cell below, you will be prompted to open a link to allow Google Colab to access your Drive.</p>
-
-<p>Once you allow access you will be provided with an authorization code. Copy and past the code into text box that appears in the output of the code cell.</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s">'/content/drive'</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>If we look in the new <code class="highlighter-rouge">drive</code> folder, we can see that our main Drive folder is named <code class="highlighter-rouge">MyDrive</code>. All the folders and files in your Drive are accessible in <code class="highlighter-rouge">MyDrive</code>.</p>
-
-<p>If you placed and named your project folder as shown in part 1 of this tutorial, it should be located at <code class="highlighter-rouge">/content/drive/MyDrive/Style_Transfer_Project</code>.</p>
-
-<p>We’ll need that path to our project folder to store in Python variables in the next section.</p>
-
-<h2 id="set-the-directories">Set the Directories</h2>
-
-<p>Now we need to create several variables to store the paths to various directories.</p>
+<p>You can download some exported style transfer models from the links below.</p>
 
 <ul>
   <li>
-    <p>The dataset directory</p>
+    <p>Mosaic: (<a href="https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing">download</a>)</p>
+
+    <p><img src="\images\basic-in-game-style-transfer-tutorial\mosaic.jpg" alt="mosaic" /></p>
   </li>
   <li>
-    <p>The Google Drive style transfer project directory</p>
-  </li>
-  <li>
-    <p>The style images directory</p>
-  </li>
-  <li>
-    <p>The test image directory</p>
-  </li>
-  <li>
-    <p>The model checkpoint directory</p>
+    <p>Van Gogh Starry Night: (<a href="https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing">download</a>)</p>
   </li>
 </ul>
 
-<p>The datset directory will be on the Google Colab environment while the rest will be on your Google Drive. This will allow you to keep all your progress while preventing the dataset from filling up your Drive storage.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\van-gogh-starry-night-google-art-project.jpg" alt="van-gogh-starry-night-google-art-project" /></p>
 
-<p>I recommend creating separate checkpoint directories for each training session. That makes it easier to compare results from experiments.</p>
+<h3 id="import-onnx-files-to-assets">Import ONNX Files to Assets</h3>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dataset_dir</span> <span class="o">=</span> <span class="s">"/content/dataset"</span>
+<p>Open the <code class="highlighter-rouge">Style_Transfer</code> folder and make a new folder called <code class="highlighter-rouge">Models</code>.</p>
 
-<span class="n">project_dir</span> <span class="o">=</span> <span class="s">'/content/drive/MyDrive/Style_Transfer_Project'</span>
-<span class="n">style_images_dir</span> <span class="o">=</span> <span class="n">f</span><span class="s">"{project_dir}/style_images"</span>
-<span class="n">test_images_dir</span> <span class="o">=</span> <span class="n">f</span><span class="s">"{project_dir}/test_images"</span>
-<span class="n">checkpoints_dir</span> <span class="o">=</span> <span class="n">f</span><span class="s">"{project_dir}/checkpoints"</span>
-<span class="n">make_dir</span><span class="p">(</span><span class="n">checkpoints_dir</span><span class="p">)</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\create-models-folder.png" alt="create-models-folder" /></p>
 
-<h2 id="download-training-dataset">Download Training Dataset</h2>
+<p>Drag and drop the ONNX files into the <code class="highlighter-rouge">Models</code> folder.</p>
 
-<p>We’ll be using the <a href="https://cocodataset.org/#home">COCO</a> train 2014 image dataset to train our model. It’s about 13.5 GB unzipped. That’s just high enough to trigger the disk space warning without actually using up the available disk space. You will likely get a disk space warning while the dataset is being unzipped. You can click ignore in the popup window. We’ll delete the zip file once the the folder is unzipped.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\imported_onnx_files.png" alt="imported_onnx_files" /></p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">coco_url</span> <span class="o">=</span> <span class="s">'http://images.cocodataset.org/zips/train2014.zip'</span>
-<span class="n">untar_data</span><span class="p">(</span><span class="n">coco_url</span><span class="p">,</span> <span class="s">'coco.zip'</span><span class="p">,</span> <span class="n">dataset_dir</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s">'coco.zip'</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s">'coco.zip'</span><span class="p">)</span>
-</code></pre></div></div>
+<h2 id="prepare-render-textures">Prepare Render Textures</h2>
 
-<h2 id="split-gameplay-video">Split Gameplay Video</h2>
+<p>Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We’ll store the current camera frame and processed output in separate <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.html">render textures</a>.</p>
 
-<p>In this section we’ll split the gameplay video if you made one. We’ll store the frames in a new sub-directory called <code class="highlighter-rouge">video_frames</code> in the <code class="highlighter-rouge">dataset_dir</code>.</p>
+<h3 id="create-textures-folder">Create <code class="highlighter-rouge">Textures</code> Folder</h3>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">!</span><span class="nb">mkdir</span> ./dataset/video_frames/
-</code></pre></div></div>
+<p>Add a new folder called <code class="highlighter-rouge">Textures</code> in the <code class="highlighter-rouge">Style_Transfer</code> folder.</p>
 
-<p>We’ll use the <code class="highlighter-rouge">ffmpeg</code> command-line tool to split the video file. Google Colab should already have the tool installed.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\textures_folder.png" alt="textures_folder" /></p>
 
-<p>In the code cell below replace <code class="highlighter-rouge">/content/drive/MyDrive/Style_Transfer_Project/movie_001.mp4</code> with the path to your video file.</p>
+<h3 id="create--asset-files">Create  Asset Files</h3>
 
-<p>If your recorded a lot of footage, you might want to keep an eye on the available disk space and manually stop the code cell from running. This shouldn’t be a problem if you only recorded several minutes of gameplay.</p>
+<p>Open the <code class="highlighter-rouge">Textures</code> folder and create two new <code class="highlighter-rouge">Render Texture</code> assets.</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">!</span>ffmpeg <span class="nt">-i</span> /content/drive/MyDrive/Style_Transfer_Project/movie_001.mp4 ./dataset/video_frames/%05d.png <span class="nt">-hide_banner</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\create_renderTexture.png" alt="create_renderTexture" /></p>
 
-<h2 id="create-the-trainer-variables">Create the Trainer Variables</h2>
+<p>Name the new assets <code class="highlighter-rouge">CameraInput</code>, <code class="highlighter-rouge">ProcessedOutput</code>.</p>
 
-<p>In this section we’ll define the variables required to define a new Trainer.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\new_renderTexture_assets_2.png" alt="new_renderTexture_assets" /></p>
 
-<h3 id="define-the-dataloader">Define the <code class="highlighter-rouge">DataLoader</code></h3>
+<h3 id="update-size-parameters">Update Size Parameters</h3>
 
-<p>We need to define a <code class="highlighter-rouge">DataLoader</code> that will be responsible for iterating through the dataset during training.</p>
+<p>We need to use a fairly low resolution to get playable frame rates. Click an empty space in the <code class="highlighter-rouge">Textures</code> folder and press <code class="highlighter-rouge">Ctrl-a</code> to select both render textures. Set the size the parameter to <code class="highlighter-rouge">720 x 540</code> in the <code class="highlighter-rouge">Inspector</code> tab. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.</p>
 
-<p>We also need to specify the <code class="highlighter-rouge">batch_size</code> which indicates how many images will be fed to the model at a time.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\set_renderTexture_sizes_2.png" alt="set_renderTexture_sizes" /></p>
 
-<p>Every image in a batch needs to be the same size. We’ll set the size using the <code class="highlighter-rouge">image_size</code> variable.</p>
+<h2 id="create-a-compute-shader">Create a Compute Shader</h2>
 
-<p>Images need to be processed before being fed to the model. We’ll define the preprocessing steps using the <code class="highlighter-rouge">transforms.Compose()</code> method. Our preprocessing steps include the following:</p>
+<p>We can perform both the preprocessing and postprocessing operations on the GPU since both the input and output are images. We’ll implement these steps in a <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">compute shader</a>.</p>
 
-<ol>
-  <li>
-    <p>Resize the images in the current batch to the target <code class="highlighter-rouge">image_size</code></p>
-  </li>
-  <li>
-    <p>Crop the images so that they are all square</p>
-  </li>
-  <li>
-    <p>Convert the images to PyTorch Tensors</p>
-  </li>
-  <li>
-    <p>Multiply the pixel values by 255</p>
-  </li>
-</ol>
+<h3 id="create-the-asset-file">Create the Asset File</h3>
 
-<p>We then store the list of images in the <code class="highlighter-rouge">dataset_dir</code> along with the preprocessing steps in a new variable called <code class="highlighter-rouge">train_dataset</code>.</p>
+<p>Open the <code class="highlighter-rouge">Style_Transer</code> folder and create a new folder called <code class="highlighter-rouge">Shaders</code>. Enter the <code class="highlighter-rouge">Shaders</code> folder and right-click an empty space. Select <code class="highlighter-rouge">Shader</code> in the <code class="highlighter-rouge">Create</code> submenu and click <code class="highlighter-rouge">Compute Shader</code>. We’ll name it <code class="highlighter-rouge">StyleTransferShader</code>.</p>
 
-<p>Finally, we create our <code class="highlighter-rouge">DataLoader</code> using the <code class="highlighter-rouge">train_dataset</code> and specified <code class="highlighter-rouge">batch_size</code></p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\create-compute-shader.png" alt="create-compute-shader" /></p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">image_size</span> <span class="o">=</span> <span class="mi">256</span>
-<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="n">image_size</span><span class="p">),</span>
-                                <span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="n">image_size</span><span class="p">),</span>
-                                <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-                                <span class="n">transforms</span><span class="o">.</span><span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
-                                <span class="p">])</span>
+<h3 id="remove-the-default-code">Remove the Default Code</h3>
 
-<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">ImageFolder</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span>
-<span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
-</code></pre></div></div>
+<p>Open the <code class="highlighter-rouge">PoseNetShader</code> in your code editor. By default, the <code class="highlighter-rouge">ComputeShader</code> will contain the following.</p>
 
-<h3 id="select-compute-device">Select Compute Device</h3>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\default_compute_shader.png" alt="default_compute_shader" /></p>
 
-<p>We’ll double that check a cuda GPU is available using the <code class="highlighter-rouge">torch.cuda.is_available()</code> method.</p>
+<p>Delete the <code class="highlighter-rouge">CSMain</code> function along with the <code class="highlighter-rouge">#pragma kernel CSMain</code>. Next, we need to add a <code class="highlighter-rouge">Texture2D</code> variable to store the input image. Name it <code class="highlighter-rouge">InputImage</code> and give it a data type of <code class="highlighter-rouge">&lt;half4&gt;</code>. Use the same data type for the <code class="highlighter-rouge">Result</code> variable as well.</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use_cuda</span> <span class="o">=</span> <span class="bp">True</span>
-<span class="n">device</span> <span class="o">=</span> <span class="s">"cuda"</span> <span class="k">if</span> <span class="p">(</span><span class="n">use_cuda</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">())</span> <span class="k">else</span> <span class="s">"cpu"</span>
-<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">"Using: {device}"</span><span class="p">)</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\styleTransfer_shader_part1.png" alt="styleTransfer_shader_part1" /></p>
 
-<h3 id="define-transforms-for-style-image">Define Transforms for Style Image</h3>
+<h3 id="create-processinput-function">Create <code class="highlighter-rouge">ProcessInput</code> Function</h3>
 
-<p>Next we’ll define the transforms used to process the style image before feeding it to the VGG-19 model. The processing steps are basically the same as for the training images accept the style will have already been resized.</p>
+<p>The style transfer models expect RGB channel values to be in range <code class="highlighter-rouge">[0, 255]</code>. Color values in Unity are in the range <code class="highlighter-rouge">[0,1]</code>. Therefore, we need to scale the three channel values for the <code class="highlighter-rouge">InputImage</code> by <code class="highlighter-rouge">255</code>. We’ll perform this step in a new function called <code class="highlighter-rouge">ProcessInput</code> as shown below.</p>
 
-<ol>
-  <li>Convert the image to a PyTorch Tensor</li>
-  <li>Multiply the pixel values by 255</li>
-</ol>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png" alt="processInput_compute_shader" /></p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">style_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-                                      <span class="n">transforms</span><span class="o">.</span><span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
-                                      <span class="p">])</span>
-</code></pre></div></div>
+<h3 id="create-processoutput-function">Create <code class="highlighter-rouge">ProcessOutput</code> Function</h3>
 
-<h3 id="create-the-style-transfer-model">Create the Style Transfer Model</h3>
+<p>The models are supposed to output an image with RGB channel values in the range <code class="highlighter-rouge">[0, 255]</code>. However, it can sometimes return values a little outside that range. We can use the built-in <a href="https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-clamp"><code class="highlighter-rouge">clamp()</code></a> method to make sure all values are in the correct range. We’ll then scale the values back down to <code class="highlighter-rouge">[0, 1]</code> for Unity. We’ll perform these steps in a new function called <code class="highlighter-rouge">ProcessOutput</code> as shown below.</p>
 
-<p>Next, we’ll create a new instance of the style transfer model. It’s here that you’ll be able to experiment with tradeoffs between performance and quality.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png" alt="processOutput_compute_shader" /></p>
 
-<h4 id="tuning-model-inference-speed">Tuning Model Inference Speed:</h4>
+<p>Now that we’ve created our <code class="highlighter-rouge">ComputeShader</code>, we need to execute it using a <code class="highlighter-rouge">C#</code> script.</p>
 
-<p>The easiest way to make the style transfer model faster is to make it smaller. We can easily tune the size of model by adjusting the size of the layers or by using fewer layers.</p>
+<h2 id="create-styletransfer-script">Create <code class="highlighter-rouge">StyleTransfer</code> Script</h2>
 
-<h5 id="resolution-960x540">Resolution: <code class="highlighter-rouge">960x540</code></h5>
+<p>We need to make a new <code class="highlighter-rouge">C#</code> script to perform inference with the style transfer models. This script will load the model, process the input, runt the model, and process the output.</p>
 
-<h5 id="filters-16-32-64">Filters: <code class="highlighter-rouge">(16, 32, 64)</code></h5>
+<h3 id="create-the-asset-file-1">Create the Asset File</h3>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>================================================================
-Total params: 424,899
-Trainable params: 424,899
-Non-trainable params: 0
-----------------------------------------------------------------
-Input size (MB): 5.93
-Forward/backward pass size (MB): 2210.61
-Params size (MB): 1.62
-Estimated Total Size (MB): 2218.17
-----------------------------------------------------------------
-</code></pre></div></div>
+<p>Open the <code class="highlighter-rouge">Style_Transfer</code> folder and create a new folder called <code class="highlighter-rouge">Scripts</code>. In the <code class="highlighter-rouge">Scripts</code> folder, right-click an empty space and select <code class="highlighter-rouge">C# Script</code> in the <code class="highlighter-rouge">Create</code> submenu.</p>
 
-<h5 id="resolution-960x540-1">Resolution: <code class="highlighter-rouge">960x540</code></h5>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\create_c_sharp_script.png" alt="create_c_sharp_script" /></p>
 
-<h5 id="filters-32-64-128">Filters: <code class="highlighter-rouge">(32, 64, 128)</code></h5>
+<p>Name the script <code class="highlighter-rouge">StyleTransfer</code>.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>================================================================
-Total params: 1,679,235
-Trainable params: 1,679,235
-Non-trainable params: 0
-----------------------------------------------------------------
-Input size (MB): 5.93
-Forward/backward pass size (MB): 4385.35
-Params size (MB): 6.41
-Estimated Total Size (MB): 4397.69
-----------------------------------------------------------------
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\styleTransfer_script_new.png" alt="styleTransfer_script_new" /></p>
 
-<p>By default, the style transfer model uses the following values:</p>
+<h3 id="add-unitybarracuda-namespace">Add <code class="highlighter-rouge">Unity.Barracuda</code> Namespace</h3>
 
-<ul>
-  <li>
-    <p>filters: (32, 64, 128)</p>
-  </li>
-  <li>
-    <p>res_blocks: 5</p>
-  </li>
-</ul>
+<p>Open the <code class="highlighter-rouge">StyleTransfer</code> script and add the <code class="highlighter-rouge">Unity.Barracuda</code> namespace at the top of the script.</p>
 
-<p>The <code class="highlighter-rouge">filters</code> variable determines the size of the layers in the model. The <code class="highlighter-rouge">resnet_blocks</code> variable determines the number of <code class="highlighter-rouge">ResidualBlocks</code> that form the core of the model.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png" alt="add_barracuda_namespace" /></p>
 
-<p>I’ve found that setting filters to <code class="highlighter-rouge">(8, 16, 32)</code> and keeping keeping res_blocks at <code class="highlighter-rouge">5</code> significantly improves performance in Unity with minimal impact on quality.</p>
+<h3 id="create-rendertexture-variables">Create <code class="highlighter-rouge">RenderTexture</code> Variables</h3>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">filters</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
-<span class="n">res_blocks</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">generator</span> <span class="o">=</span> <span class="n">TransformerNet</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span> <span class="n">res_blocks</span><span class="o">=</span><span class="n">res_blocks</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</code></pre></div></div>
+<p>We need to create some public variables that we can use to access our two render texture assets in the script.</p>
 
-<h3 id="create-the-optimizer-for-the-style-transfer-model">Create the Optimizer for the Style Transfer Model</h3>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\renderTexture_variables_2.png" alt="renderTexture_variables" /></p>
 
-<p>Next, we’ll define the optimizer for our model. The optimizer determines how the model gets updated during training. The optimizer takes in the model’s parameters and a learning rate. The learning rate determines how much the model gets updated after each batch of images.</p>
+<h3 id="create-styletransfershader-variable">Create <code class="highlighter-rouge">StyleTransferShader</code> Variable</h3>
 
-<p>We’ll use a learning rate of <code class="highlighter-rouge">1e-3</code> which is equivalent to <code class="highlighter-rouge">0.001</code>.</p>
+<p>Next, we’ll add a public variable to access our compute shader.</p>
 
-<p><strong>Notation Examples:</strong></p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\styleTransferShader_variable_2.png" alt="styleTransferShader_variable" /></p>
 
-<ul>
-  <li>
-    <p>1e-4 = 0.0001</p>
-  </li>
-  <li>
-    <p>1e0 = 1.0</p>
-  </li>
-  <li>
-    <p>1e5 = 100000.0</p>
-  </li>
-  <li>
-    <p>5e10 = 50000000000.0</p>
-  </li>
-</ul>
+<h3 id="create-barracuda-variables">Create Barracuda Variables</h3>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">lr</span> <span class="o">=</span> <span class="mf">1e-3</span>
-<span class="n">opt_generator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="p">)</span>
-</code></pre></div></div>
+<p>Now we need to add a few variables to perform inference with the style transfer models.</p>
 
-<h3 id="define-how-model-performance-will-be-measured">Define How Model Performance Will Be Measured</h3>
+<h4 id="create-modelasset-variable">Create <code class="highlighter-rouge">modelAsset</code> Variable</h4>
 
-<p>We’ll be using Mean Squared Error (MSE) for comparing the difference between the features of the content image and stylized image and between the features of the stylized image and the target style image.</p>
+<p>Make a new public <code class="highlighter-rouge">NNModel</code> variable called <code class="highlighter-rouge">modelAsset</code>. We’ll assign one of the ONNX files to this variable in the Unity Editor.</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">style_criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\modelAsset_variable_2.png" alt="modelAsset_variable" /></p>
 
-<p><strong>Note:</strong> If you’re not familiar with MSE, take a look at the toy example below.</p>
+<h4 id="create-workertype-variable">Create <code class="highlighter-rouge">workerType</code> Variable</h4>
 
-<h4 id="mean-squared-error-in-python">Mean Squared Error in Python</h4>
+<p>We’ll also add a variable that let’s us choose which <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html">backend</a> to use when performing inference. The options are divided into <code class="highlighter-rouge">CPU</code> and <code class="highlighter-rouge">GPU</code>. Our preprocessing pipeline runs entirely on the <code class="highlighter-rouge">GPU</code> so we’ll be sticking with the <code class="highlighter-rouge">GPU</code> options for this tutorial series.</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
-<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>
-
-<span class="n">sum_of_squares</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
-    <span class="n">error</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    <span class="n">squared_error</span> <span class="o">=</span> <span class="n">error</span><span class="o">**</span><span class="mi">2</span>
-    <span class="n">sum_of_squares</span> <span class="o">+=</span> <span class="n">squared_error</span>
-    
-<span class="n">mse</span> <span class="o">=</span> <span class="n">sum_of_squares</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">mse</span>
-</code></pre></div></div>
+<p>Make a new public <code class="highlighter-rouge">WorkerFactory.Type</code> called <code class="highlighter-rouge">workerType</code>. Give it a default value of <code class="highlighter-rouge">WorkerFactory.Type.Auto</code>.</p>
 
-<h4 id="mean-squared-error-in-pytorch">Mean Squared Error in PyTorch</h4>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\workerType_variable.png" alt="workerType_variable" /></p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">y_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<h4 id="create-m_runtimemodel-variable">Create <code class="highlighter-rouge">m_RuntimeModel</code> Variable</h4>
 
-<span class="n">mse_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+<p>We need to compile the <code class="highlighter-rouge">modelAsset</code> into a run-time model to perform inference. We’ll store the compiled model in a new private <code class="highlighter-rouge">Model</code> variable called <code class="highlighter-rouge">m_RuntimeModel</code>.</p>
 
-<span class="n">mse_loss</span><span class="p">(</span><span class="n">x_t</span><span class="p">,</span> <span class="n">y_t</span><span class="p">)</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\m_RuntimeModel_variable.png" alt="m_RuntimeModel_variable" /></p>
 
-<h3 id="create-a-new-vgg-19-perception-model">Create a New VGG-19 Perception Model</h3>
+<h4 id="create-engine-variable">Create <code class="highlighter-rouge">engine</code> Variable</h4>
 
-<p>Next, we’ll create a new vgg-19 model. The pretrained model will be downloaded the first time this cell is run.</p>
+<p>Next, we’ll create a new private <code class="highlighter-rouge">IWorker</code> variable to store our inference engine. Name the variable <code class="highlighter-rouge">engine</code>.</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">perception_model</span> <span class="o">=</span> <span class="n">Vgg19</span><span class="p">(</span><span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\engine_variable.png" alt="engine_variable" /></p>
 
-<h2 id="create-a-new-trainer">Create a New Trainer</h2>
+<h3 id="compile-the-model">Compile the Model</h3>
 
-<p>We can now create a new trainer instance using the variables we defined above.</p>
+<p>We need to get an object oriented representation of the model before we can work with it. We’ll do this in the <code class="highlighter-rouge">Start()</code> method and store it in the <code class="highlighter-rouge">m_RuntimeModel</code>.</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">train_loader</span><span class="o">=</span><span class="n">train_loader</span><span class="p">,</span> 
-                  <span class="n">style_transform</span><span class="o">=</span><span class="n">style_transform</span><span class="p">,</span> 
-                  <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span> 
-                  <span class="n">opt_generator</span><span class="o">=</span><span class="n">opt_generator</span><span class="p">,</span> 
-                  <span class="n">style_criterion</span><span class="o">=</span><span class="n">style_criterion</span><span class="p">,</span> 
-                  <span class="n">perception_model</span><span class="o">=</span><span class="n">perception_model</span><span class="p">,</span> 
-                  <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\compile_model.png" alt="compile_model" /></p>
 
-<h4 id="tuning-the-stylized-image">Tuning the Stylized Image</h4>
+<h3 id="initialize-inference-engine">Initialize Inference Engine</h3>
 
-<p>The stylized image will be influenced by the following:</p>
+<p>Now we can create a worker to execute the modified model using the selected backend. We’ll do this using the <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_"><code class="highlighter-rouge">WorkerFactory.CreateWorker()</code></a> method.</p>
 
-<ul>
-  <li>
-    <p>Influence of the content image</p>
-  </li>
-  <li>
-    <p>Influence of the style image</p>
-  </li>
-  <li>
-    <p>Size of the style image</p>
-  </li>
-</ul>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\initialize_inference_engine.png" alt="initialize_inference_engine" /></p>
 
-<p>I recommend keeping the content_weight at <code class="highlighter-rouge">1e5</code> and adjusting the style_weight between <code class="highlighter-rouge">5e8</code> and <code class="highlighter-rouge">1e11</code>. The ideal style_weight will vary depending on the style image. I recommend starting out low, training for 5-10 checkpoint intervals, and increasing the style weight as needed.</p>
+<h3 id="release-inference-engine-resources">Release Inference Engine Resources</h3>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># The file path for the target style image
-</span><span class="n">style_image</span> <span class="o">=</span> <span class="n">f</span><span class="s">"{style_images_dir}/1.png"</span>
-<span class="c1"># The file path for a sample input image for demonstrating the model's progress during training
-</span><span class="n">test_image</span> <span class="o">=</span> <span class="n">f</span><span class="s">"{test_images_dir}/011.png"</span> 
+<p>We need to manually release the resources that get allocated for the inference <code class="highlighter-rouge">engine</code>. This should be one of the last actions performed. Therefore, we’ll do it in the <code class="highlighter-rouge">OnDisable()</code> method. This method gets called when the Unity project exits.</p>
 
-<span class="c1"># The number of times to iterate through the entire training dataset
-</span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">1</span>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\onDisable_method.png" alt="onDisable_method" /></p>
 
-<span class="c1"># The influence from the input image on the stylized image
-# Default: 1e5
-</span><span class="n">content_weight</span> <span class="o">=</span> <span class="mf">1e5</span>
-<span class="c1"># The influence from the style image on the stylized image
-# Default: 1e10
-</span><span class="n">style_weight</span> <span class="o">=</span> <span class="mf">1e10</span>
+<h3 id="create-totexture2d-method">Create <code class="highlighter-rouge">ToTexture2D()</code> Method</h3>
 
-<span class="c1"># (test_image resolution) / content_scale
-</span><span class="n">content_scale</span> <span class="o">=</span> <span class="mf">1.0</span>
-<span class="c1"># Target size for style_image = (style_size, styl_size)
-</span><span class="n">style_size</span> <span class="o">=</span> <span class="mi">720</span>
+<p>We’ll make a new method to copy the data from a <code class="highlighter-rouge">RenderTexture</code> to a new <code class="highlighter-rouge">Texture2D</code>. We’ll need to call this method before performing both the preprocessing and postprocessing steps. The method will take in the source <code class="highlighter-rouge">RenderTexture</code> and the format for the new <code class="highlighter-rouge">Texture2D</code>.</p>
 
-<span class="c1"># The number of training batches to wait before printing the progress of the model 
-</span><span class="n">log_interval</span> <span class="o">=</span> <span class="mi">500</span>
-<span class="c1"># The number of training to wait before saving the current model weights
-</span><span class="n">checkpoint_interval</span> <span class="o">=</span> <span class="mi">500</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png" alt="toTexture2D_method" /></p>
 
-<h2 id="train-the-model">Train the Model</h2>
+<h3 id="create-processimage-method">Create <code class="highlighter-rouge">ProcessImage()</code> Method</h3>
 
-<p>Once you execute the code cell below, open the checkpoints folder in Google Drive in another tab. You can view the model’s progress by looking at the sample style images that get generated with each checkpoint. You can stop the training process early by clicking the stop button where the play button normally is on the left side of the code cell.</p>
+<p>Next, we’ll make a new method to execute the <code class="highlighter-rouge">ProcessInput()</code> and <code class="highlighter-rouge">ProcessOutput()</code> functions in our <code class="highlighter-rouge">ComputeShader</code>. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We’ll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of <code class="highlighter-rouge">[0, 1]</code>. As mentioned previously, the model expects values in the range of <code class="highlighter-rouge">[0, 255]</code>.</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">style_image</span><span class="o">=</span><span class="n">style_image</span><span class="p">,</span> 
-              <span class="n">test_image</span><span class="o">=</span><span class="n">test_image</span><span class="p">,</span> 
-              <span class="n">checkpoint_model_dir</span><span class="o">=</span><span class="n">checkpoints_dir</span><span class="p">,</span> 
-              <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span> 
-              <span class="n">content_weight</span><span class="o">=</span><span class="n">content_weight</span><span class="p">,</span> 
-              <span class="n">style_weight</span><span class="o">=</span><span class="n">style_weight</span><span class="p">,</span>
-              <span class="n">content_scale</span><span class="o">=</span><span class="n">content_scale</span><span class="p">,</span>
-              <span class="n">style_size</span><span class="o">=</span><span class="n">style_size</span><span class="p">,</span>
-              <span class="n">log_interval</span><span class="o">=</span><span class="n">log_interval</span><span class="p">,</span> 
-              <span class="n">checkpoint_interval</span><span class="o">=</span><span class="n">checkpoint_interval</span><span class="p">)</span>
-</code></pre></div></div>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\processImage_method.png" alt="processImage_method" /></p>
 
-<h2 id="export-the-model-to-onnx">Export the model to ONNX</h2>
+<h3 id="process-input-image">Process Input Image</h3>
 
-<p>We can finally export the model to ONNX format. PyTorch exports models by feeding a sample input into the model and tracing what operators are used to compute the outputs.</p>
+<p>Now we can process the current camera frame. We’ll call the <code class="highlighter-rouge">ToTexture2D()</code> method at the top of the <code class="highlighter-rouge">Update</code> method. The <code class="highlighter-rouge">cameraInput</code> is not an HDR texture so we’ll use an SDR format for the new <code class="highlighter-rouge">Texture2D</code>. We’ll then call the <code class="highlighter-rouge">ProcessImage()</code> method with new <code class="highlighter-rouge">Texture2D</code> as input.</p>
 
-<p>We’ll use a <code class="highlighter-rouge">(1, 3, 960, 540)</code> Tensor with random values as our sample input. This is equivalent to feeding a <code class="highlighter-rouge">960x540</code> RGB image to the model. The resolution doesn’t matter as we can feed images with arbitrary resolutions once the model is exported.</p>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\process_input_image.png" alt="process_input_image" /></p>
 
-<p>The ONNX file will be saved to the project folder in Google Drive.</p>
+<h3 id="perform-inference">Perform Inference</h3>
 
-<p><strong>Note:</strong> You will get a warning after running the code cell below recommending that you use ONNX opset 11 or above. Unity has prioritized support for opset 9 for Barracuda and higher opsets are not fully supported.</p>
+<p>Next, we’ll feed the <code class="highlighter-rouge">processedImage</code> to the model and get the output. We first need to convert the <code class="highlighter-rouge">processedImage</code> to a <code class="highlighter-rouge">Tensor</code>.</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">960</span><span class="p">,</span> <span class="mi">540</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png" alt="perform_inference_pt1" /></p>
 
-<span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>     <span class="c1">#  Model being run
-</span>                  <span class="n">x</span><span class="p">,</span>                           <span class="c1"># Sample input
-</span>                  <span class="n">f</span><span class="s">"{project_dir}/final.onnx"</span><span class="p">,</span> <span class="c1"># Path to save ONNX file
-</span>                  <span class="n">export_params</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>          <span class="c1"># Store trained weights
-</span>                  <span class="n">opset_version</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>             <span class="c1"># Which ONNX version to use
-</span>                  <span class="n">do_constant_folding</span><span class="o">=</span><span class="bp">True</span>     <span class="c1"># Replace operations that have all constant inputs with pre-computed nodes
-</span>                 <span class="p">)</span>
-</code></pre></div></div>
+<p>We’ll then use the <code class="highlighter-rouge">engine.Execute()</code> method to run the model with the current <code class="highlighter-rouge">input</code>. We can store the raw output from the model in a new <code class="highlighter-rouge">Tensor</code>.</p>
 
-<h2 id="conclusion">Conclusion</h2>
+<p><img src="\images\basic-in-game-style-transfer-tutorial\perform_inference_pt2.png" alt="perform_inference_pt2" /></p>
 
-<p>You now have everything needed to train your own style transfer models. In the next post we’ll add the code to use the trained ONNX file in Unity.</p>
+<h3 id="process-the--output">Process the  Output</h3>
+
+<p>We need to process the raw output from the model before we can display it to the user. We’ll first copy the model output to a new HDR <code class="highlighter-rouge">RenderTexture</code>.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png" alt="process_output_pt1" /></p>
+
+<p>We’ll then copy the data to a <code class="highlighter-rouge">Texture2D</code> and pass it to the <code class="highlighter-rouge">ProcessImage()</code> method. This time we’ll be executing the <code class="highlighter-rouge">ProcessOutput()</code> function on the <code class="highlighter-rouge">ComputeShader</code>.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png" alt="process_output_pt2" /></p>
+
+<h3 id="display-the-processed-output">Display the Processed Output</h3>
+
+<p>We can finally display the stylized image by using the <code class="highlighter-rouge">Graphics.Blit()</code> method to copy the final image to <code class="highlighter-rouge">processedOutput</code>.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\display_output.png" alt="display_output" /></p>
+
+<p>Next, we’ll need to modify the project scene to use the <code class="highlighter-rouge">StyleTransfer</code> script.</p>
+
+<h2 id="open-the-biped-scene">Open the <code class="highlighter-rouge">Biped</code> Scene</h2>
+
+<p>In the <code class="highlighter-rouge">Assets</code> window, open the <code class="highlighter-rouge">Scenes</code> folder and double-click on the <code class="highlighter-rouge">Biped.unity</code> asset. You don’t need to save the current scene if you get prompted to do so.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png" alt="select_biped_scene" /></p>
+
+<h2 id="create-style-converter">Create Style Converter</h2>
+
+<p>To run the <code class="highlighter-rouge">StyleTransfer</code> script, we need to attach it to a <code class="highlighter-rouge">GameObject</code> in the scene.</p>
+
+<h3 id="create-an-empty-gameobject">Create an Empty <code class="highlighter-rouge">GameObject</code></h3>
+
+<p>In the Hierarchy tab, right-click an empty space and select <code class="highlighter-rouge">Create Empty</code> from the menu. Name the empty GameObject <code class="highlighter-rouge">StyleConverter</code>.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\create_empyt_gameObject.png" alt="create_empyt_gameObject" /></p>
+
+<h3 id="attach-the-styletransfer-script">Attach the <code class="highlighter-rouge">StyleTransfer</code> Script</h3>
+
+<p>With the <code class="highlighter-rouge">StyleConverter</code> object selected, drag and drop the <code class="highlighter-rouge">StyleTransfer</code> script into the <code class="highlighter-rouge">Inspector</code> tab.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png" alt="attach_styleTransfer_script" /></p>
+
+<h3 id="assign-the-assets">Assign the Assets</h3>
+
+<p>We need to assign the render textures, compute shader and one of the ONNX files to their respective parameters in the <code class="highlighter-rouge">Inspector</code> tab. I’ll start with the mosaic model. We’ll also set the <code class="highlighter-rouge">Worker Type</code> to <code class="highlighter-rouge">Compute Precompiled</code>.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script_full.png" alt="attach_styleTransfer_script_full" /></p>
+
+<h2 id="set-camera-target-texture">Set Camera Target Texture</h2>
+
+<p>Select the <code class="highlighter-rouge">_Scene</code> object in the <code class="highlighter-rouge">Hierarchy</code> tab. In the dropdown, select the <code class="highlighter-rouge">Main Camera</code> object.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\assign_camera_target_texture.png" alt="assign_camera_target_texture" /></p>
+
+<h2 id="create-a-screen">Create a Screen</h2>
+
+<p>Right-click an empty space in the <code class="highlighter-rouge">Hierarchy</code> tab and select <code class="highlighter-rouge">Raw Image</code> in the <code class="highlighter-rouge">UI</code> submenu. Name it Screen.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\create_raw_image.png" alt="create_raw_image" /></p>
+
+<h3 id="adjust-the-anchor-presets">Adjust the Anchor Presets</h3>
+
+<p>With the <code class="highlighter-rouge">Screen</code> object selected, click on the anchor presets box in the <code class="highlighter-rouge">Inspector</code> tab outlined below.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt1.png" alt="stretch_screen_pt1" /></p>
+
+<p>Select the option in the bottom right corner that’s outlined below.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt2.png" alt="stretch_screen_pt2" /></p>
+
+<p>Next we need to set all the <code class="highlighter-rouge">Rect Transform</code> values to zero. This will cause the <code class="highlighter-rouge">Screen</code> to take up the entire display.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png" alt="set_anchors_to_zero" /></p>
+
+<h3 id="set-the-screen-texture">Set the Screen Texture</h3>
+
+<p>With the Screen object still selected, drag and drop the <code class="highlighter-rouge">ProcessedOutput</code> asset into the <code class="highlighter-rouge">Texture</code> parameter in the <code class="highlighter-rouge">Inspector</code> tab.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\assign_screen_texture.png" alt="assign_screen_texture" /></p>
+
+<h3 id="adjust-the-game-tab">Adjust the Game Tab</h3>
+
+<p>Our last step is to set up the game tab for our chosen resolution.</p>
+
+<h4 id="set-the-aspect-ratio">Set the Aspect Ratio</h4>
+
+<p>My chosen resolution of <code class="highlighter-rouge">720 x 540</code> has a <code class="highlighter-rouge">4:3</code> aspect ratio. You can change the aspect ratio in the drop-down menu.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png" alt="set_aspect_ratio" /></p>
+
+<h4 id="disable-warning">Disable Warning</h4>
+
+<p>You might see a warning saying that there isn’t a camera rendering. This would be because we set the camera to render to <code class="highlighter-rouge">CameraInput</code>. If you do, right-click the <code class="highlighter-rouge">Game</code> tab and uncheck the <code class="highlighter-rouge">Warn if No Cameras Rendering</code> option.</p>
+
+<p><img src="\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png" alt="disable_no_camera_warning" /></p>
+
+<h2 id="test-it-out">Test it Out</h2>
+
+<p>We can finally press the play button and see how it looks.</p>
+
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\basic_in_game_style_transfer_4.gif" alt="basic_in_game_style_transfer_4" /></p>
+
+<h2 id="summary">Summary</h2>
+
+<p>We now have a basic implementation of in-game style transfer. It’s pretty inefficient and probably needs a seizure warning. I started with this model architecture for it’s relative simplicity but it was not designed for real-time video. I was surprised to get playable frame rates even at this low of a resolution.</p>
+
+<p>Despite it’s shortcomings, this little demo provides a glimpse at what’s possible. It can also serve as a decent testing environment for trying out different styles. It’s worth noting that the models used in this tutorial were trained on datasets of real-world photos and not video games. I might try making an training dataset using screenshots from video games and see what impact that has on the stylized images.</p>
+
+<p>I already have another style transfer <a href="https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training">project</a> that I want to try to get working in Unity. This project does a great job of generating consistent video output (i.e. no seizure warning). In the mean time, I recommend checking out Unity’s sample <a href="https://github.com/UnityLabs/barracuda-style-transfer">project</a>. They put a lot of work into optimizing it for playable frame rates at more reasonable resolutions.</p>
+
+<h4 id="github-repository"><a href="https://github.com/cj-mills/Basic-In-Game-Style-Transfer">GitHub Repository</a></h4>
+
 
   </div><!-- from https://github.com/utterance/utterances -->
 <script src="https://utteranc.es/client.js"
