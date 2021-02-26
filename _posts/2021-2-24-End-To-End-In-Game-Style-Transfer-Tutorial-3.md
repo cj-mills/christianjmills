@@ -1,7 +1,7 @@
 ---
 
 
-title: End-to-End In-Game Style Transfer Tutorial Pt.3
+title: End-to-End In-Game Style Transfer Tutorial
 layout: post
 toc: false
 comments: true
@@ -13,864 +13,340 @@ search_exclude: false
 ---
 
 * [Introduction](#introduction)
-* [Open Google Colab Notebook](#open-google-colab-notebook)
-* [Continue in the Notebook](#continue-in-the-notebook)
+* 
 * [Conclusion](#conclusion)
 
-## Introduction
+# Part 4 - Unity Project
 
-In this post we'll be using the free tier of Google Colab to train a style transfer model in a web browser. Using Google Colab removes the need to setup a Python environment on your local machine. It provides a virtual environment that allows anyone to write and execute arbitrary python code in their browser. It also provides free access to GPUs. 
 
-**Important:** Google Colab restricts GPU allocation for free users to 12 hours at a time. You will get disconnected from the server if you leave this notebook running past that. You need to wait a while (probably 12 hours) for the time limit to reset.
 
-## Open Google Colab Notebook
+## Create Style Transfer Folder
 
-First, you need to get your own copy of the Colab Notebook. You can open my copy of the notebook by clicking the link below.
+We'll place all our additions to the project in a new asset folder called `Style_Transfer`. This will help keep things organized.
 
-* [Notebook Link](https://colab.research.google.com/drive/1ixyTcASEFb2k_Dn60ZzfxJHboxE9ND85?usp=sharing)
+![style_transfer_folder](\images\basic-in-game-style-transfer-tutorial\style_transfer_folder.png)
 
-### Copy to Google Drive
+## Import Models
 
-You need to save the notebook to your Google Drive since you can't make changes to my copy. To do so, click the `Copy to Drive` button.
+Next, we need to add some style transfer models. PyTorch models need to be exported to the [ONNX](https://onnx.ai/) format before being imported to Unity. Fortunately, PyTorch provides built-in support for exporting to ONNX ([tutorial](https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html)).
 
-![colab-save-to-gdrive](..\images\end-to-end-in-game-style-transfer-tutorial\colab-save-to-gdrive.png)
+### Download ONNX Files
 
-That will reopen the notebook in a new tab where any changes you make can be saved to you Google Drive. Go ahead and close the original tab.
+You can download some exported style transfer models from the links below.
 
-#### Colab Notebooks Folder
+* Mosaic: ([download](https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing))
 
-If you open your Google Drive, you should see a new folder named `Colab Notebooks`. This is where any notebooks your work on in Google Colab will be saved.
+  ![mosaic](\images\basic-in-game-style-transfer-tutorial\mosaic.jpg)
 
-![gdrive-colab-notebooks-folder](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-colab-notebooks-folder-3.png)
+* Van Gogh Starry Night: ([download](https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing))
 
-#### Inside Colab Notebooks Folder
+![van-gogh-starry-night-google-art-project](\images\basic-in-game-style-transfer-tutorial\van-gogh-starry-night-google-art-project.jpg)
 
-You can open the new folder to see your copy of the notebook. If you double-click on the notebook file, you'll be presented with the option to open it in a Google Colab environment. You can use this method to reopen the notebook in the future.
+### Import ONNX Files to Assets
 
-![gdrive-open-colab-notebook](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-open-colab-notebook.png)
+Open the `Style_Transfer` folder and make a new folder called `Models`.
 
+![create-models-folder](\images\basic-in-game-style-transfer-tutorial\create-models-folder.png)
 
+Drag and drop the ONNX files into the `Models` folder.
 
-## Using a Colab Notebook
+![imported_onnx_files](\images\basic-in-game-style-transfer-tutorial\imported_onnx_files.png)
 
-Colab Notebooks are primarily made up of code cell and text cells. Code cells can be executed in multiple ways. If you hover over or click on a code cell, a play button will appear on the left side of the cell. Clicking the play button will execute the code cell.
 
-![colab-execute-code-cell](..\images\end-to-end-in-game-style-transfer-tutorial\colab-execute-code-cell.png)
 
-The other main ways are to either press `CTRL-Enter` or `Shift-Enter`. `CTRL-Enter` executes the code cell in place while `Shift-Enter` executes the code cell and moves to the next cell.
+## Prepare Render Textures
 
-You can add more cells by hovering over either the top or bottom of an existing cell. You will be presented with the option to create either a code or text cell.
+Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We'll store the current camera frame and processed output in separate [render textures](https://docs.unity3d.com/ScriptReference/RenderTexture.html).
 
-![colab-add-new-cell](..\images\end-to-end-in-game-style-transfer-tutorial\colab-add-new-cell.png)
+### Create `Textures` Folder
 
+Add a new folder called `Textures` in the `Style_Transfer` folder.
 
+![textures_folder](\images\basic-in-game-style-transfer-tutorial\textures_folder.png)
 
-## Connect to a Runtime Environment
+### Create  Asset Files
 
-We need to connect to a runtime environment before we start using the notebook. Press the `Connect` button outlined below.
+Open the `Textures` folder and create two new `Render Texture` assets. 
 
-![colab-connect-to-runtime](..\images\end-to-end-in-game-style-transfer-tutorial\colab-connect-to-runtime.png)
+![create_renderTexture](\images\basic-in-game-style-transfer-tutorial\create_renderTexture.png)
 
-Once the notebook had connected to a runtime environment hover the RAM/Disk readout and make sure the notebook is using a `GPU` backend.
+Name the new assets `CameraInput`, `ProcessedOutput`.
 
-![colab-confirm-gpu-backend](..\images\end-to-end-in-game-style-transfer-tutorial\colab-confirm-gpu-backend.png)
+![new_renderTexture_assets](\images\basic-in-game-style-transfer-tutorial\new_renderTexture_assets_2.png)
 
-If it's not, you need to manually set it to use a GPU. You can do by opening the `Notebook Settings` under the `Edit` section.
+### Update Size Parameters
 
-![colab-open-notebook-settings](..\images\end-to-end-in-game-style-transfer-tutorial\colab-open-notebook-settings.png)
+We need to use a fairly low resolution to get playable frame rates. Click an empty space in the `Textures` folder and press `Ctrl-a` to select both render textures. Set the size the parameter to `720 x 540` in the `Inspector` tab. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
 
-Select `GPU` from the `Hardware Accelerator` dropdown and click `Save`.
+![set_renderTexture_sizes](\images\basic-in-game-style-transfer-tutorial\set_renderTexture_sizes_2.png)
 
-![colab-select-hardware-accelerator](..\images\end-to-end-in-game-style-transfer-tutorial\colab-select-hardware-accelerator.png)
 
 
+## Create a Compute Shader
 
+We can perform both the preprocessing and postprocessing operations on the GPU since both the input and output are images. We'll implement these steps in a [compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html).
 
+### Create the Asset File
 
-## Continue in the Notebook
+Open the `Style_Transer` folder and create a new folder called `Shaders`. Enter the `Shaders` folder and right-click an empty space. Select `Shader` in the `Create` submenu and click `Compute Shader`. We’ll name it `StyleTransferShader`.
 
-I recommend continuing this post in the Colab notebook itself. In the notebook instructions are inline with the code. However, I have also included the notebook contents below if you're not following along. 
+![create-compute-shader](\images\basic-in-game-style-transfer-tutorial\create-compute-shader.png)
 
-## Install the [fastai](https://docs.fast.ai/) Library
+### Remove the Default Code
 
-First, we'll install the fastai library which is built on top of PyTorch. We'll be using pure PyTorch for training the model but the fastai library includes some convenience functions that we'll use to download the training dataset.
+Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following. 
 
-```bash
-%%capture
-!pip install fastai==2.2.5
-```
+![default_compute_shader](\images\basic-in-game-style-transfer-tutorial\default_compute_shader.png)
 
-## Import Dependencies
+Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we need to add a `Texture2D` variable to store the input image. Name it `InputImage` and give it a data type of `<half4>`. Use the same data type for the `Result` variable as well.
 
-Next, we need to import the required python modules and packages.
+![styleTransfer_shader_part1](\images\basic-in-game-style-transfer-tutorial\styleTransfer_shader_part1.png)
 
-```python
-# Miscellaneous operating system interfaces
-# https://docs.python.org/3/library/os.html
-import os
-# Time access and conversions
-# https://docs.python.org/3/library/time.html
-import time
-# Object-oriented filesystem paths
-# https://docs.python.org/3/library/pathlib.html#pathlib.Path
-from pathlib import Path
-# Tuple-like objects that have named fields
-# https://docs.python.org/3/library/collections.html#collections.namedtuple
-from collections import namedtuple
+### Create `ProcessInput` Function
 
-# A convenience function for downloading files from a url to a destination folder
-# https://docs.fast.ai/data.external.html#untar_data
-from fastai.data.external import untar_data
-
-# Provides image processing capabilities
-# https://pillow.readthedocs.io/en/stable/reference/Image.html
-from PIL import Image
-
-# The main PyTorch package
-# https://pytorch.org/docs/stable/torch.html
-import torch
-
-# Used to iterate over the dataset during training 
-# https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
-from torch.utils.data import DataLoader
-
-# Contains definitions of models. We'll be downloading a pretrained VGG-19 model
-# to judge the performance of our style transfer model.
-# https://pytorch.org/vision/stable/models.html#torchvision.models.vgg19
-from torchvision.models import vgg19
-# Common image transforms that we'll use to process images before feeding them to the models
-# https://pytorch.org/vision/stable/transforms.html
-from torchvision import transforms
-# Loads images from a directory and applies the specified transforms
-# https://pytorch.org/vision/stable/datasets.html#imagefolder
-from torchvision.datasets import ImageFolder
-```
-
-
-
-## Utility Functions
-
-We'll define some utility functions for making new directories, loading and saving images, and stylizing images using model checkpoints.
-
-```python
-def make_dir(dir_name: str):
-    """Create the specified directory if it doesn't already exist"""
-    dir_path = Path(dir_name)
-    try:
-        dir_path.mkdir()
-    except:
-        print("Directory already exists.")
-
-def load_image(filename: str, size: int=None, scale: float=None):
-    """Load the specified image and return it as a PIL Image"""
-    img = Image.open(filename)
-    if size is not None:
-        img = img.resize((size, size), Image.ANTIALIAS)
-    elif scale is not None:
-        img = img.resize((int(img.size[0] / scale), int(img.size[1] / scale)), Image.ANTIALIAS)
-    return img
-
-def save_image(filename: str, data: torch.Tensor):
-    """Save the Tensor data to an image file"""
-    img = data.clone().clamp(0, 255).numpy()
-    img = img.transpose(1, 2, 0).astype("uint8")
-    img = Image.fromarray(img)
-    img.save(filename)
-
-def stylize(model_path: str, input_image: str, output_image: str, content_scale: float=None, 
-            device: str="cpu", export_onnx: bool=None):
-    """Load a TransformerNet checkpoint, stylize an image and save the output"""
-    device = torch.device(device)
-    content_image = load_image(input_image, scale=content_scale)
-    content_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Lambda(lambda x: x.mul(255))
-    ])
-    content_image = content_transform(content_image)
-    content_image = content_image.unsqueeze(0).to(device)
-
-    with torch.no_grad():
-        state_dict = torch.load(model_path)
-        keys = [k for k in state_dict.keys()]
-        filters = set()
-        filters_list = [state_dict[k].shape[0] for k in keys if not (state_dict[k].shape[0] in filters or filters.add(state_dict[k].shape[0]))]
-        res_blocks = len(set(k.split('.')[1] for k in state_dict.keys() if 'resnets' in k))
-        style_model = TransformerNet(filters=filters_list[:-1], res_blocks=res_blocks) 
-        style_model.load_state_dict(state_dict, strict=False)
-        style_model.to(device)
-         
-        if export_onnx:
-            assert export_onnx.endswith(".onnx"), "Export model file should end with .onnx"
-            output = torch.onnx._export(style_model, content_image, export_onnx, opset_version=9).cpu()
-        else:
-            output = style_model(content_image).cpu()
-    save_image(output_image, output[0])
-```
-
-
-
-## Define the Style Transfer Model
-
-Here we'll define the style transfer model itself. The model takes in an RGB image and generates a new image with the same dimensions. The features in the output image (e.g. color texure) are then compared with the features of the style image. The result of this comparison is then used to update the parameters of the model so that it hopefully generates better images.
-
-I won't go into detail about the model architecture as the goal of this tutorial is primarily showing how to use it.
-
-```python
-class TransformerNet(torch.nn.Module):
-    """TransformerNet
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L4
-    """
-    
-    def __init__(self, filters=(32, 64, 128), res_blocks=5):
-        super(TransformerNet, self).__init__()
-        self.filters = filters
-        self.res_blocks = res_blocks if res_blocks > 0 else 1
-        # Initial convolution layers
-        self.conv1 = ConvLayer(3, filters[0], kernel_size=9, stride=1)
-        self.in1 = torch.nn.InstanceNorm2d(filters[0], affine=True)
-        self.conv2 = ConvLayer(filters[0], filters[1], kernel_size=3, stride=2)
-        self.in2 = torch.nn.InstanceNorm2d(filters[1], affine=True)
-        self.conv3 = ConvLayer(filters[1], filters[2], kernel_size=3, stride=2)
-        self.in3 = torch.nn.InstanceNorm2d(filters[2], affine=True)
-        # Residual layers
-        self.resnets = torch.nn.ModuleList()
-        for i in range(self.res_blocks):
-            self.resnets.append(ResidualBlock(filters[2]))
-        
-        # Upsampling Layers
-        self.deconv1 = UpsampleConvLayer(filters[2], filters[1], kernel_size=3, stride=1, upsample=2)
-        self.in4 = torch.nn.InstanceNorm2d(filters[1], affine=True)
-        self.deconv2 = UpsampleConvLayer(filters[1], filters[0], kernel_size=3, stride=1, upsample=2)
-        self.in5 = torch.nn.InstanceNorm2d(filters[0], affine=True)
-        self.deconv3 = ConvLayer(filters[0], 3, kernel_size=9, stride=1)
-        # Non-linearities
-        self.relu = torch.nn.ReLU()
-        
-    def forward(self, X):
-        conv1_y = self.relu(self.in1(self.conv1(X)))
-        conv2_y = self.relu(self.in2(self.conv2(conv1_y)))
-        conv3_y = self.relu(self.in3(self.conv3(conv2_y)))
-
-        y = self.resnets[0](conv3_y) + conv3_y
-        
-        for i in range(1, self.res_blocks):
-            y = self.resnets[i](y) + y
-
-        y = self.relu(self.in4(self.deconv1(conv3_y + y)))
-        y = self.relu(self.in5(self.deconv2(conv2_y + y)))
-        y = self.deconv3(conv1_y + y)
-        return y
-
-
-class ConvLayer(torch.nn.Module):
-    """ConvLayer
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L44
-    """
-
-    def __init__(self, in_channels, out_channels, kernel_size, stride):
-        super(ConvLayer, self).__init__()
-        reflection_padding = kernel_size // 2
-        self.reflection_pad = torch.nn.ReflectionPad2d(reflection_padding)
-        self.conv2d = torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride)
-
-    def forward(self, x):
-        out = self.reflection_pad(x)
-        out = self.conv2d(out)
-        return out
-
-
-class ResidualBlock(torch.nn.Module):
-    """ResidualBlock
-    introduced in: https://arxiv.org/abs/1512.03385
-    recommended architecture: http://torch.ch/blog/2016/02/04/resnets.html
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L57
-    """
-
-    def __init__(self, channels):
-        super(ResidualBlock, self).__init__()
-        self.conv1 = ConvLayer(channels, channels, kernel_size=3, stride=1)
-        self.in1 = torch.nn.InstanceNorm2d(channels, affine=True)
-        self.conv2 = ConvLayer(channels, channels, kernel_size=3, stride=1)
-        self.in2 = torch.nn.InstanceNorm2d(channels, affine=True)
-        self.relu = torch.nn.ReLU()
-      
-    def forward(self, x):
-        residual = x
-        out = self.relu(self.in1(self.conv1(x)))
-        out = self.in2(self.conv2(out))
-        out = out + residual
-        return out
-
-
-class UpsampleConvLayer(torch.nn.Module):
-    """UpsampleConvLayer
-    Upsamples the input and then does a convolution. This method gives better results
-    compared to ConvTranspose2d.
-    ref: http://distill.pub/2016/deconv-checkerboard/
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/transformer_net.py#L79
-    """
-
-    def __init__(self, in_channels, out_channels, kernel_size, stride, upsample=None):
-        super(UpsampleConvLayer, self).__init__()
-        self.upsample = upsample
-        reflection_padding = kernel_size // 2
-        self.reflection_pad = torch.nn.ReflectionPad2d(reflection_padding)
-        self.conv2d = torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride)
-        
-    def forward(self, x):
-        x_in = x
-        if self.upsample:
-            x_in = torch.nn.functional.interpolate(x_in, mode='nearest', scale_factor=self.upsample)
-        out = self.reflection_pad(x_in)
-        out = self.conv2d(out)
-        return out
-```
-
-
-
-## Define the VGG-19 Model
-
-Here we'll define the model that will be used to judge the quality of the output images from the style transfer model. This model has been pretrained a large image dataset. This means it already know how to recognize a wide variety of features in an image. We'll use this model to extract the features of the content image, style image, and stylized image.
-
-```python
-class Vgg19(torch.nn.Module):
-    """
-    https://github.com/pytorch/examples/blob/36441a83b6595524a538e342594ee6482754f374/fast_neural_style/neural_style/vgg.py#L7
-    """
-    
-    def __init__(self, requires_grad=False):
-        super(Vgg19, self).__init__()
-        self.feature_layers = [0, 3, 5]
-        self.vgg_pretrained_features = vgg19(pretrained=True).features
-        self.slice1 = torch.nn.Sequential()
-        self.slice2 = torch.nn.Sequential()
-        self.slice3 = torch.nn.Sequential()
-        self.slice4 = torch.nn.Sequential()
-        self.slice5 = torch.nn.Sequential()
-        for x in range(4):
-            self.slice1.add_module(str(x), self.vgg_pretrained_features[x])
-        for x in range(4, 9):
-            self.slice2.add_module(str(x), self.vgg_pretrained_features[x])
-        for x in range(9, 18):
-            self.slice3.add_module(str(x), self.vgg_pretrained_features[x])
-        for x in range(18, 27):
-            self.slice4.add_module(str(x), self.vgg_pretrained_features[x])
-        for x in range(27, 36):
-            self.slice5.add_module(str(x), self.vgg_pretrained_features[x])
-        if not requires_grad:
-            for param in self.parameters():
-                param.requires_grad = False
-            
-    def forward(self, X):
-        h = self.slice1(X)
-        h_relu1_2 = h
-        h = self.slice2(h)
-        h_relu2_2 = h
-        h = self.slice3(h)
-        h_relu3_3 = h
-        h = self.slice4(h)
-        h_relu4_3 = h
-        h = self.slice5(h)
-        h_relu5_3 = h
-        vgg_outputs = namedtuple("VggOutputs", ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3', 'relu5_3'])
-        out = vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
-        return out
-```
-
-
-
-## Define the Model Trainer
-
-We'll define a new class to make training the style transfer model a bit easier. Along with training the model, this class will save the model's current progress at set intervals. It will also generate sample images so we can see how the model is doing. This will allow us to determine if the model is actually improving or whether it's already good enough that we can stop the training process early.
-
-```python
-class Trainer(object):
-    def __init__(self, train_loader, style_transform, generator, opt_generator, style_criterion, perception_model, device):
-        self.train_loader = train_loader
-        self.style_transform = style_transform
-        self.generator = generator
-        self.opt_generator = opt_generator
-        self.style_criterion = style_criterion
-        self.perception_model = perception_model
-        self.device = device
-        self.generator.to(self.device)
-        
-    def gram_matrix(self, y: torch.Tensor):
-        """Compute the gram matrix a PyTorch Tensor"""
-        (b, ch, h, w) = y.size()
-        features = y.view(b, ch, w * h)
-        features_t = features.transpose(1, 2)
-        gram = features.bmm(features_t) / (ch * h * w)
-        return gram
-
-    def normalize_batch(self, batch: torch.Tensor):
-        """Normalize a batch of Tensors using the imagenet mean and std """
-        mean = batch.new_tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
-        std = batch.new_tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
-        batch = batch.div_(255.0)
-        return (batch - mean) / std
-
-    def get_gram_style(self, style_image: str, style_size: int):
-        """Get the Gram Matrices for the style image"""
-        style = load_image(style_image, size=style_size)
-        style = self.style_transform(style)
-        style = style.repeat(self.train_loader.batch_size, 1, 1, 1).to(self.device)
-        features_style = self.perception_model(self.normalize_batch(style))
-        gram_style = [self.gram_matrix(y) for y in features_style]
-        return gram_style
-            
-    def save_checkpoint(self, path: str):
-        """Save the current model weights at the specified path"""
-        self.generator.eval().cpu()
-        torch.save(self.generator.state_dict(), path)
-        print(f"Checkpoint saved at {path}")
-
-    def train(self, style_image, test_image, checkpoint_model_dir, epochs=5, content_weight=1e5, style_weight=1e10, 
-                content_scale=None, style_size=None, log_interval=500, checkpoint_interval=500):
-        """Train the style transfer model on the provided style image."""
-        
-        gram_style = self.get_gram_style(style_image, style_size)
-
-        for e in range(epochs):
-            self.generator.train()
-            agg_content_loss = 0.
-            agg_style_loss = 0.
-            count = 0
-            for batch_id, (x, _) in enumerate(self.train_loader):
-                n_batch = len(x)
-                count += n_batch
-                self.opt_generator.zero_grad()
-                
-                x = x.to(self.device)
-                y = self.generator(x)
-
-                y = self.normalize_batch(y.clone())
-                x = self.normalize_batch(x.clone())
-                features_y = self.perception_model(y)
-                features_x = self.perception_model(x)
-
-                content_loss = content_weight * self.style_criterion(features_y.relu2_2, features_x.relu2_2)
-
-                style_loss = 0.
-                for ft_y, gm_s in zip(features_y, gram_style):
-                    gm_y = self.gram_matrix(ft_y)
-                    style_loss += self.style_criterion(gm_y, gm_s[:n_batch, :, :])
-                style_loss = style_loss * style_weight
-
-                total_loss = content_loss + style_loss
-                total_loss.backward()
-                self.opt_generator.step()
-
-                agg_content_loss += content_loss.item()
-                agg_style_loss += style_loss.item()
-
-                if (batch_id + 1) % log_interval == 0:
-                    mesg = f"{' '.join(time.ctime().replace('  ', ' ').split(' ')[1:-1])}  "
-                    mesg += f"Epoch {e + 1}: [{count}/{len(self.train_loader.dataset)}]  "
-                    mesg += f"content: {(agg_content_loss / (batch_id + 1)):.4f}  "
-                    mesg += f"style: {(agg_style_loss / (batch_id + 1)):.4f}  "
-                    mesg += f"total: {((agg_content_loss + agg_style_loss) / (batch_id + 1)):.4f}"
-                    print(mesg)
-
-                if checkpoint_model_dir is not None and (batch_id + 1) % checkpoint_interval == 0:
-                    ckpt_base = f"ckpt_epoch_{e}_batch_id_{batch_id + 1}"
-                    ckpt_model_filename = ckpt_base + ".pth"
-                    ckpt_model_path = os.path.join(checkpoint_model_dir, ckpt_model_filename)
-                    self.save_checkpoint(ckpt_model_path)
-                    output_image = ckpt_base + ".png"
-                    output_image_path = os.path.join(checkpoint_model_dir, output_image)
-                    stylize(ckpt_model_path, test_image, output_image_path)
-                    self.generator.to(self.device).train()
-                
-        print("Finished Training")
-        ckpt_model_path = os.path.join(checkpoint_model_dir, 'final.pth')
-        self.save_checkpoint(ckpt_model_path)
-        output_image_path = os.path.join(checkpoint_model_dir, 'final.png')
-        stylize(ckpt_model_path, test_image, output_image_path)
-```
-
-
-
-## Mount Google Drive
-
-Before going any further, we need to mount out Google Drive so we can access our project folder. There is a python library that's specifically made for working in Colab notebook that provides this functionality.
-
-```python
-from google.colab import drive
-```
-
-We'll use the `drive.mount()` method to mount our whole Google Drive inside a new directory called `drive`.
-
-When you run the code cell below, you will be prompted to open a link to allow Google Colab to access your Drive.
-
-Once you allow access you will be provided with an authorization code. Copy and past the code into text box that appears in the output of the code cell.
-
-```python
-drive.mount('/content/drive')
-```
-
-If we look in the new `drive` folder, we can see that our main Drive folder is named `MyDrive`. All the folders and files in your Drive are accessible in `MyDrive`.
-
-If you placed and named your project folder as shown in part 1 of this tutorial, it should be located at `/content/drive/MyDrive/Style_Transfer_Project`.
-
-We'll need that path to our project folder to store in Python variables in the next section.
-
-## Set the Directories
-
-Now we need to create several variables to store the paths to various directories.
-
-* The dataset directory
-
-* The Google Drive style transfer project directory
-
-* The style images directory
-
-* The test image directory
-
-* The model checkpoint directory
-
-The datset directory will be on the Google Colab environment while the rest will be on your Google Drive. This will allow you to keep all your progress while preventing the dataset from filling up your Drive storage.
-
-I recommend creating separate checkpoint directories for each training session. That makes it easier to compare results from experiments.
-
-```python
-dataset_dir = "/content/dataset"
-
-project_dir = '/content/drive/MyDrive/Style_Transfer_Project'
-style_images_dir = f"{project_dir}/style_images"
-test_images_dir = f"{project_dir}/test_images"
-checkpoints_dir = f"{project_dir}/checkpoints"
-make_dir(checkpoints_dir)
-```
-
-
-
-## Download Training Dataset
-
-We'll be using the [COCO](https://cocodataset.org/#home) train 2014 image dataset to train our model. It's about 13.5 GB unzipped. That's just high enough to trigger the disk space warning without actually using up the available disk space. You will likely get a disk space warning while the dataset is being unzipped. You can click ignore in the popup window. We'll delete the zip file once the the folder is unzipped.
-
-```python
-coco_url = 'http://images.cocodataset.org/zips/train2014.zip'
-untar_data(coco_url, 'coco.zip', dataset_dir)
-if os.path.exists('coco.zip'): os.remove('coco.zip')
-```
-
-
-
-## Split Gameplay Video
-
-In this section we'll split the gameplay video if you made one. We'll store the frames in a new sub-directory called `video_frames` in the `dataset_dir`.
-
-```bash
-!mkdir ./dataset/video_frames/
-```
-
-We'll use the `ffmpeg` command-line tool to split the video file. Google Colab should already have the tool installed. 
-
-In the code cell below replace `/content/drive/MyDrive/Style_Transfer_Project/movie_001.mp4` with the path to your video file.
-
-If your recorded a lot of footage, you might want to keep an eye on the available disk space and manually stop the code cell from running. This shouldn't be a problem if you only recorded several minutes of gameplay.
-
-```bash
-!ffmpeg -i /content/drive/MyDrive/Style_Transfer_Project/movie_001.mp4 ./dataset/video_frames/%05d.png -hide_banner
-```
-
-## Create the Trainer Variables
-
-In this section we'll define the variables required to define a new Trainer.
-
-### Define the `DataLoader`
-
-We need to define a `DataLoader` that will be responsible for iterating through the dataset during training.
-
-We also need to specify the `batch_size` which indicates how many images will be fed to the model at a time.
-
-Every image in a batch needs to be the same size. We'll set the size using the `image_size` variable.
-
-Images need to be processed before being fed to the model. We'll define the preprocessing steps using the `transforms.Compose()` method. Our preprocessing steps include the following:
-
-1. Resize the images in the current batch to the target `image_size`
-
-2. Crop the images so that they are all square
-
-3. Convert the images to PyTorch Tensors
-
-4. Multiply the pixel values by 255
-
-We then store the list of images in the `dataset_dir` along with the preprocessing steps in a new variable called `train_dataset`.
-
-Finally, we create our `DataLoader` using the `train_dataset` and specified `batch_size`
-
-```python
-batch_size = 4
-image_size = 256
-transform = transforms.Compose([transforms.Resize(image_size),
-                                transforms.CenterCrop(image_size),
-                                transforms.ToTensor(),
-                                transforms.Lambda(lambda x: x.mul(255))
-                                ])
-
-train_dataset = ImageFolder(dataset_dir, transform)
-train_loader = DataLoader(train_dataset, batch_size=batch_size)
-```
-
-### Select Compute Device
-
-We'll double that check a cuda GPU is available using the `torch.cuda.is_available()` method.
-
-```python
-use_cuda = True
-device = "cuda" if (use_cuda and torch.cuda.is_available()) else "cpu"
-print(f"Using: {device}")
-```
-
-### Define Transforms for Style Image
-
-Next we'll define the transforms used to process the style image before feeding it to the VGG-19 model. The processing steps are basically the same as for the training images accept the style will have already been resized.
-
-1. Convert the image to a PyTorch Tensor
-2. Multiply the pixel values by 255
-
-```python
-style_transform = transforms.Compose([transforms.ToTensor(),
-                                      transforms.Lambda(lambda x: x.mul(255))
-                                      ])
-```
-
-
-
-### Create the Style Transfer Model
-
-
-
-Next, we'll create a new instance of the style transfer model. It's here that you'll be able to experiment with tradeoffs between performance and quality.
-
-
-
-#### Tuning Model Inference Speed:
-
-The easiest way to make the style transfer model faster is to make it smaller. We can easily tune the size of model by adjusting the size of the layers or by using fewer layers.
-
-##### Resolution: `960x540`
-
-##### Filters: `(16, 32, 64)`
-
-```
-================================================================
-Total params: 424,899
-Trainable params: 424,899
-Non-trainable params: 0
-----------------------------------------------------------------
-Input size (MB): 5.93
-Forward/backward pass size (MB): 2210.61
-Params size (MB): 1.62
-Estimated Total Size (MB): 2218.17
-----------------------------------------------------------------
-```
-
-##### Resolution: `960x540`
-
-##### Filters: `(32, 64, 128)`
-
-```
-================================================================
-Total params: 1,679,235
-Trainable params: 1,679,235
-Non-trainable params: 0
-----------------------------------------------------------------
-Input size (MB): 5.93
-Forward/backward pass size (MB): 4385.35
-Params size (MB): 6.41
-Estimated Total Size (MB): 4397.69
-----------------------------------------------------------------
-```
-
-By default, the style transfer model uses the following values:
-
-* filters: (32, 64, 128)
-
-* res_blocks: 5
-
-The `filters` variable determines the size of the layers in the model. The `resnet_blocks` variable determines the number of `ResidualBlocks` that form the core of the model.
+The style transfer models expect RGB channel values to be in range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
 
-I've found that setting filters to `(8, 16, 32)` and keeping keeping res_blocks at `5` significantly improves performance in Unity with minimal impact on quality.
+![processInput_compute_shader](\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png)
 
-```python
-filters = (8, 16, 32)
-res_blocks = 5
-generator = TransformerNet(filters=filters, res_blocks=res_blocks).to(device)
-```
+### Create `ProcessOutput` Function
 
+The models are supposed to output an image with RGB channel values in the range `[0, 255]`. However, it can sometimes return values a little outside that range. We can use the built-in [`clamp()`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-clamp) method to make sure all values are in the correct range. We'll then scale the values back down to `[0, 1]` for Unity. We'll perform these steps in a new function called `ProcessOutput` as shown below.
 
+![processOutput_compute_shader](\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png)
 
-### Create the Optimizer for the Style Transfer Model 
+Now that we’ve created our `ComputeShader`, we need to execute it using a `C#` script.
 
-Next, we'll define the optimizer for our model. The optimizer determines how the model gets updated during training. The optimizer takes in the model's parameters and a learning rate. The learning rate determines how much the model gets updated after each batch of images.
 
-We'll use a learning rate of `1e-3` which is equivalent to `0.001`.
 
-**Notation Examples:**
+## Create `StyleTransfer` Script
 
-* 1e-4 = 0.0001
+We need to make a new `C#` script to perform inference with the style transfer models. This script will load the model, process the input, runt the model, and process the output.
 
-* 1e0 = 1.0
+### Create the Asset File
 
-* 1e5 = 100000.0
+Open the `Style_Transfer` folder and create a new folder called `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` submenu.
 
-* 5e10 = 50000000000.0
+![create_c_sharp_script](\images\basic-in-game-style-transfer-tutorial\create_c_sharp_script.png)
 
-```python
-lr = 1e-3
-opt_generator = torch.optim.Adam(generator.parameters(), lr)
-```
+Name the script `StyleTransfer`.
 
-### Define How Model Performance Will Be Measured
+![styleTransfer_script_new](\images\basic-in-game-style-transfer-tutorial\styleTransfer_script_new.png)
 
-We'll be using Mean Squared Error (MSE) for comparing the difference between the features of the content image and stylized image and between the features of the stylized image and the target style image.
+### Add `Unity.Barracuda` Namespace
 
-```python
-style_criterion = torch.nn.MSELoss()
-```
+Open the `StyleTransfer` script and add the `Unity.Barracuda` namespace at the top of the script.
 
-**Note:** If you're not familiar with MSE, take a look at the toy example below.
+![add_barracuda_namespace](\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png)
 
-#### Mean Squared Error in Python
+### Create `RenderTexture` Variables
 
-```python
-x = [1, 2, 3, 4]
-y = [5, 6, 7, 8]
+We need to create some public variables that we can use to access our two render texture assets in the script.
 
-sum_of_squares = 0
-for i in range(len(x)):
-    error = x[i] - y[i]
-    squared_error = error**2
-    sum_of_squares += squared_error
-    
-mse = sum_of_squares / len(x)
-mse
-```
+![renderTexture_variables](\images\basic-in-game-style-transfer-tutorial\renderTexture_variables_2.png)
 
-#### Mean Squared Error in PyTorch
+### Create `StyleTransferShader` Variable
 
-```python
-x_t = torch.Tensor(x)
-y_t = torch.Tensor(y)
+Next, we'll add a public variable to access our compute shader.
 
-mse_loss = torch.nn.MSELoss()
+![styleTransferShader_variable](\images\basic-in-game-style-transfer-tutorial\styleTransferShader_variable_2.png)
 
-mse_loss(x_t, y_t)
-```
+### Create Barracuda Variables
 
+Now we need to add a few variables to perform inference with the style transfer models.
 
+#### Create `modelAsset` Variable
 
-### Create a New VGG-19 Perception Model
+Make a new public `NNModel` variable called `modelAsset`. We’ll assign one of the ONNX files to this variable in the Unity Editor.
 
-Next, we'll create a new vgg-19 model. The pretrained model will be downloaded the first time this cell is run.
+![modelAsset_variable](\images\basic-in-game-style-transfer-tutorial\modelAsset_variable_2.png)
 
-```python
-perception_model = Vgg19(requires_grad=False).to(device)
-```
+#### Create `workerType` Variable
 
+We’ll also add a variable that let’s us choose which [backend](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html) to use when performing inference. The options are divided into `CPU` and `GPU`. Our preprocessing pipeline runs entirely on the `GPU` so we’ll be sticking with the `GPU` options for this tutorial series.
 
+Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
-## Create a New Trainer
+![workerType_variable](\images\basic-in-game-style-transfer-tutorial\workerType_variable.png)
 
-We can now create a new trainer instance using the variables we defined above.
+#### Create `m_RuntimeModel` Variable
 
-```python
-trainer = Trainer(train_loader=train_loader, 
-                  style_transform=style_transform, 
-                  generator=generator, 
-                  opt_generator=opt_generator, 
-                  style_criterion=style_criterion, 
-                  perception_model=perception_model, 
-                  device=device)
-```
+We need to compile the `modelAsset` into a run-time model to perform inference. We’ll store the compiled model in a new private `Model` variable called `m_RuntimeModel`.
 
-#### Tuning the Stylized Image
+![m_RuntimeModel_variable](\images\basic-in-game-style-transfer-tutorial\m_RuntimeModel_variable.png)
 
-The stylized image will be influenced by the following:
+#### Create `engine` Variable
 
-* Influence of the content image
+Next, we’ll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
-* Influence of the style image
+![engine_variable](\images\basic-in-game-style-transfer-tutorial\engine_variable.png)
 
-* Size of the style image
+### Compile the Model
 
-I recommend keeping the content_weight at `1e5` and adjusting the style_weight between `5e8` and `1e11`. The ideal style_weight will vary depending on the style image. I recommend starting out low, training for 5-10 checkpoint intervals, and increasing the style weight as needed.
+We need to get an object oriented representation of the model before we can work with it. We’ll do this in the `Start()` method and store it in the `m_RuntimeModel`.
 
-```python
-# The file path for the target style image
-style_image = f"{style_images_dir}/1.png"
-# The file path for a sample input image for demonstrating the model's progress during training
-test_image = f"{test_images_dir}/011.png" 
+![compile_model](\images\basic-in-game-style-transfer-tutorial\compile_model.png)
 
-# The number of times to iterate through the entire training dataset
-epochs = 1
+### Initialize Inference Engine
 
-# The influence from the input image on the stylized image
-# Default: 1e5
-content_weight = 1e5
-# The influence from the style image on the stylized image
-# Default: 1e10
-style_weight = 1e10
+Now we can create a worker to execute the modified model using the selected backend. We’ll do this using the [`WorkerFactory.CreateWorker()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_) method.
 
-# (test_image resolution) / content_scale
-content_scale = 1.0
-# Target size for style_image = (style_size, styl_size)
-style_size = 720
+![initialize_inference_engine](\images\basic-in-game-style-transfer-tutorial\initialize_inference_engine.png)
 
-# The number of training batches to wait before printing the progress of the model 
-log_interval = 500
-# The number of training to wait before saving the current model weights
-checkpoint_interval = 500
-```
+### Release Inference Engine Resources
 
+We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we’ll do it in the `OnDisable()` method. This method gets called when the Unity project exits.
 
+![onDisable_method](\images\basic-in-game-style-transfer-tutorial\onDisable_method.png)
 
-## Train the Model
 
-Once you execute the code cell below, open the checkpoints folder in Google Drive in another tab. You can view the model's progress by looking at the sample style images that get generated with each checkpoint. You can stop the training process early by clicking the stop button where the play button normally is on the left side of the code cell.
 
-```python
-trainer.train(style_image=style_image, 
-              test_image=test_image, 
-              checkpoint_model_dir=checkpoints_dir, 
-              epochs=epochs, 
-              content_weight=content_weight, 
-              style_weight=style_weight,
-              content_scale=content_scale,
-              style_size=style_size,
-              log_interval=log_interval, 
-              checkpoint_interval=checkpoint_interval)
-```
+### Create `ToTexture2D()` Method
 
+We'll make a new method to copy the data from a `RenderTexture` to a new `Texture2D`. We'll need to call this method before performing both the preprocessing and postprocessing steps. The method will take in the source `RenderTexture` and the format for the new `Texture2D`.
 
+![toTexture2D_method](\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png)
 
-## Export the model to ONNX
+### Create `ProcessImage()` Method
 
-We can finally export the model to ONNX format. PyTorch exports models by feeding a sample input into the model and tracing what operators are used to compute the outputs.
+Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
 
-We'll use a `(1, 3, 960, 540)` Tensor with random values as our sample input. This is equivalent to feeding a `960x540` RGB image to the model. The resolution doesn't matter as we can feed images with arbitrary resolutions once the model is exported.
+![processImage_method](\images\basic-in-game-style-transfer-tutorial\processImage_method.png)
 
-The ONNX file will be saved to the project folder in Google Drive.
+### Process Input Image
 
-**Note:** You will get a warning after running the code cell below recommending that you use ONNX opset 11 or above. Unity has prioritized support for opset 9 for Barracuda and higher opsets are not fully supported.
+Now we can process the current camera frame. We'll call the `ToTexture2D()` method at the top of the `Update` method. The `cameraInput` is not an HDR texture so we'll use an SDR format for the new `Texture2D`. We'll then call the `ProcessImage()` method with new `Texture2D` as input.
 
-```python
-x = torch.randn(1, 3, 960, 540).cpu()
+![process_input_image](\images\basic-in-game-style-transfer-tutorial\process_input_image.png)
 
-torch.onnx.export(trainer.generator.cpu(),     #  Model being run
-                  x,                           # Sample input
-                  f"{project_dir}/final.onnx", # Path to save ONNX file
-                  export_params=True,          # Store trained weights
-                  opset_version=9,             # Which ONNX version to use
-                  do_constant_folding=True     # Replace operations that have all constant inputs with pre-computed nodes
-                 )
-```
+### Perform Inference
 
+Next, we'll feed the `processedImage` to the model and get the output. We first need to convert the `processedImage` to a `Tensor`.
 
+![perform_inference_pt1](\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png)
 
-## Conclusion
+We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
 
-You now have everything needed to train your own style transfer models. In the next post we'll add the code to use the trained ONNX file in Unity.
+![perform_inference_pt2](\images\basic-in-game-style-transfer-tutorial\perform_inference_pt2.png)
+
+### Process the  Output
+
+We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to a new HDR `RenderTexture`.
+
+![process_output_pt1](\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png)
+
+We'll then copy the data to a `Texture2D` and pass it to the `ProcessImage()` method. This time we'll be executing the `ProcessOutput()` function on the `ComputeShader`.
+
+![process_output_pt2](\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png)
+
+### Display the Processed Output
+
+We can finally display the stylized image by using the `Graphics.Blit()` method to copy the final image to `processedOutput`.
+
+![display_output](\images\basic-in-game-style-transfer-tutorial\display_output.png)
+
+Next, we'll need to modify the project scene to use the `StyleTransfer` script. 
+
+
+
+## Open the `Biped` Scene
+
+In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.unity` asset. You don't need to save the current scene if you get prompted to do so.
+
+![select_biped_scene](\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png)
+
+
+
+## Create Style Converter
+
+To run the `StyleTransfer` script, we need to attach it to a `GameObject` in the scene.
+
+### Create an Empty `GameObject`
+
+In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `StyleConverter`.
+
+![create_empyt_gameObject](\images\basic-in-game-style-transfer-tutorial\create_empyt_gameObject.png)
+
+### Attach the `StyleTransfer` Script
+
+With the `StyleConverter` object selected, drag and drop the `StyleTransfer` script into the `Inspector` tab.
+
+![attach_styleTransfer_script](\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png)
+
+### Assign the Assets
+
+We need to assign the render textures, compute shader and one of the ONNX files to their respective parameters in the `Inspector` tab. I'll start with the mosaic model. We'll also set the `Worker Type` to `Compute Precompiled`. 
+
+![attach_styleTransfer_script_full](\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script_full.png)
+
+## Set Camera Target Texture
+
+Select the `_Scene` object in the `Hierarchy` tab. In the dropdown, select the `Main Camera` object.
+
+![assign_camera_target_texture](\images\basic-in-game-style-transfer-tutorial\assign_camera_target_texture.png)
+
+
+
+## Create a Screen
+
+Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the `UI` submenu. Name it Screen.
+
+![create_raw_image](\images\basic-in-game-style-transfer-tutorial\create_raw_image.png)
+
+
+
+### Adjust the Anchor Presets
+
+With the `Screen` object selected, click on the anchor presets box in the `Inspector` tab outlined below.  
+
+![stretch_screen_pt1](\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt1.png)
+
+Select the option in the bottom right corner that's outlined below.
+
+![stretch_screen_pt2](\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt2.png)
+
+Next we need to set all the `Rect Transform` values to zero. This will cause the `Screen` to take up the entire display.
+
+![set_anchors_to_zero](\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png)
+
+### Set the Screen Texture
+
+With the Screen object still selected, drag and drop the `ProcessedOutput` asset into the `Texture` parameter in the `Inspector` tab.
+
+![assign_screen_texture](\images\basic-in-game-style-transfer-tutorial\assign_screen_texture.png)
+
+### Adjust the Game Tab
+
+Our last step is to set up the game tab for our chosen resolution.
+
+#### Set the Aspect Ratio
+
+My chosen resolution of `720 x 540` has a `4:3` aspect ratio. You can change the aspect ratio in the drop-down menu.
+
+![set_aspect_ratio](\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png)
+
+#### Disable Warning
+
+You might see a warning saying that there isn't a camera rendering. This would be because we set the camera to render to `CameraInput`. If you do, right-click the `Game` tab and uncheck the `Warn if No Cameras Rendering` option.
+
+![disable_no_camera_warning](\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png)
+
+
+
+## Test it Out
+
+We can finally press the play button and see how it looks.
+
+![basic_in_game_style_transfer_4](..\images\basic-in-game-style-transfer-tutorial\basic_in_game_style_transfer_4.gif)
+
+
+
+## Summary
+
+We now have a basic implementation of in-game style transfer. It's pretty inefficient and probably needs a seizure warning. I started with this model architecture for it's relative simplicity but it was not designed for real-time video. I was surprised to get playable frame rates even at this low of a resolution. 
+
+Despite it's shortcomings, this little demo provides a glimpse at what's possible. It can also serve as a decent testing environment for trying out different styles. It's worth noting that the models used in this tutorial were trained on datasets of real-world photos and not video games. I might try making an training dataset using screenshots from video games and see what impact that has on the stylized images. 
+
+I already have another style transfer [project](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that I want to try to get working in Unity. This project does a great job of generating consistent video output (i.e. no seizure warning). In the mean time, I recommend checking out Unity's sample [project](https://github.com/UnityLabs/barracuda-style-transfer). They put a lot of work into optimizing it for playable frame rates at more reasonable resolutions.
+
+#### [GitHub Repository](https://github.com/cj-mills/Basic-In-Game-Style-Transfer)
+
