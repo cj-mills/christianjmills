@@ -1,7 +1,7 @@
 ---
 
 
-title: End-to-End In-Game Style Transfer Tutorial
+title: End-to-End In-Game Style Transfer Tutorial Pt.3
 layout: post
 toc: false
 comments: true
