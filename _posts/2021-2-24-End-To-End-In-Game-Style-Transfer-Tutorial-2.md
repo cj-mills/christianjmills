@@ -19,7 +19,7 @@ search_exclude: false
 
 ## Introduction
 
-In this post we'll be using the free tier of Google Colab to train a style transfer model in a web browser. Using Google Colab removes the need to setup a Python environment on your local machine. It provides a virtual environment that allows anyone to write and execute arbitrary python code in their browser. It also provides free access to GPUs. 
+In this post we'll be using the free tier of Google Colab to train a style transfer model in a web browser. Google Colab provides a virtual environment that allows anyone to write and execute arbitrary python code in their browser. This removes the need to setup a Python environment on your local machine. It also provides free access to GPUs. 
 
 **Important:** Google Colab restricts GPU allocation for free users to 12 hours at a time. You will get disconnected from the server if you leave this notebook running past that. You need to wait a while (probably 12 hours) for the time limit to reset.
 
