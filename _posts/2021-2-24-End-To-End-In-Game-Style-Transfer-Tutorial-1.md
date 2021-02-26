@@ -20,7 +20,7 @@ search_exclude: false
 
 This tutorial series covers how to train your own style transfer model and implement it in Unity using the Barracuda library. We'll be using the PyTorch library to build and train the model. You will not need to set up PyTorch on your local machine to follow along. Instead, we'll be using the free Google Colab service to train the model in a web browser. This does require you to have a Google account. You will also need some free space on Google Drive as we'll be saving our model's progress there.
 
-In this first post, we'll download our Unity project and install the Barracuda library. We'll also create a folder for our project in Google Drive. We'll store our style images, test images and model checkpoints here.
+In this first post, we'll download our Unity project and install the Barracuda library. We'll also create a folder for our project in Google Drive. This is where we'll store our style images, test images and model checkpoints.
 
 ## Select a Unity Project
 
