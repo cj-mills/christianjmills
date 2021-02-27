@@ -31,11 +31,11 @@ First, you need to get your own copy of the Colab Notebook. You can open my copy
 
 ### Copy to Google Drive
 
-You need to save the notebook to your Google Drive since you can't make changes to my copy. To do so, click the `Copy to Drive` button. The notebook should autosave progress, but you can manually save by pressing `CTRL-s`.
+You need to save the notebook to your Google Drive since you can't make changes to my copy. To do so, click the `Copy to Drive` button.
 
 ![colab-save-to-gdrive](..\images\end-to-end-in-game-style-transfer-tutorial\colab-save-to-gdrive.png)
 
-That will reopen the notebook in a new tab where any changes you make can be saved to you Google Drive. Go ahead and close the original tab.
+That will reopen the notebook in a new tab where any changes you make can be saved to you Google Drive. Go ahead and close the original tab. The notebook should autosave progress, but you can manually save by pressing `CTRL-s`.
 
 #### Colab Notebooks Folder
 
