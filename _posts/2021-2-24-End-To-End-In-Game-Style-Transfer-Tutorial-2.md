@@ -874,5 +874,3 @@ torch.onnx.export(trainer.generator.cpu(),     #  Model being run
 That's everything needed to train your own style transfer models. In the next post we'll add the code to use the trained ONNX file in Unity.
 
 
-
-### Next: [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/)
