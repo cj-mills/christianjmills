@@ -330,7 +330,7 @@ class UpsampleConvLayer(torch.nn.Module):
 
 ## Define the VGG-19 Model
 
-Here we'll define the model that will be used to judge the quality of the output images from the style transfer model. This model has been pretrained a large image dataset. This means it's already learned to recognize a wide variety of features in images. We'll use this model to extract the features of the content image, style image, and stylized image.
+Here we'll define the model that will be used to judge the quality of the output images from the style transfer model. This model has been pretrained a large image dataset. This means it's already learned to recognize a wide variety of features in images. We'll use this model to extract the features of the content image, style image, and stylized images.
 
 ```python
 class Vgg19(torch.nn.Module):
