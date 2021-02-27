@@ -3,7 +3,7 @@ title: End-to-End In-Game Style Transfer Tutorial Pt.2
 layout: post
 toc: false
 comments: true
-description: This post covers how to train an artistic style transfer model using PyTorch in Google Colab.
+description: This post covers how to train an artistic style transfer model with PyTorch in Google Colab.
 categories: [style_transfer, pytorch, unity, tutorial]
 hide: true
 permalink: /:title/
