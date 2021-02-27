@@ -816,7 +816,7 @@ style_weight = 1e10
 # (test_image resolution) / content_scale
 content_scale = 1.0
 # Target size for style_image = (style_size, styl_size)
-style_size = 720
+style_size = 256
 
 # The number of training batches to wait before printing the progress of the model 
 log_interval = 500
