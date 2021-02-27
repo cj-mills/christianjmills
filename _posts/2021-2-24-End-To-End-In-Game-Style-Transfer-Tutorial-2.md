@@ -626,7 +626,7 @@ print(f"Using: {device}")
 
 ### Define Transforms for Style Image
 
-Next we'll define the transforms used to process the style image before feeding it to the VGG-19 model. The processing steps are basically the same as for the training images accept the style will have already been resized.
+Next we'll define the transforms used to process the style image before feeding it to the VGG-19 model. The processing steps are basically the same as for the training images accept the style image will have already been resized.
 
 1. Convert the image to a PyTorch Tensor
 2. Multiply the pixel values by 255
