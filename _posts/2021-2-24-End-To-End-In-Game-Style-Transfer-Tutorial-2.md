@@ -53,7 +53,7 @@ You can open the new folder to see your copy of the notebook. If you double-clic
 
 ## Using a Colab Notebook
 
-Colab Notebooks are primarily made up of code cell and text cells. Code cells can be executed in multiple ways. If you hover over or click on a code cell, a play button will appear on the left side of the cell. Clicking the play button will execute the code cell.
+Colab Notebooks are primarily made up of code cells and text cells. Code cells can be executed in multiple ways. If you hover over or click on a code cell, a play button will appear on the left side of the cell. Clicking the play button will execute the code cell.
 
 ![colab-execute-code-cell](..\images\end-to-end-in-game-style-transfer-tutorial\colab-execute-code-cell.png)
 
@@ -71,11 +71,11 @@ We need to connect to a runtime environment before we start using the notebook. 
 
 ![colab-connect-to-runtime](..\images\end-to-end-in-game-style-transfer-tutorial\colab-connect-to-runtime.png)
 
-Once the notebook had connected to a runtime environment hover the RAM/Disk readout and make sure the notebook is using a `GPU` backend.
+Once the notebook has connected to a runtime environment hover the RAM/Disk readout and make sure the notebook is using a `GPU` backend.
 
 ![colab-confirm-gpu-backend](..\images\end-to-end-in-game-style-transfer-tutorial\colab-confirm-gpu-backend.png)
 
-If it's not, you need to manually set it to use a GPU. You can do by opening the `Notebook Settings` under the `Edit` section.
+If it's not, you need to manually set it to use a GPU. You can do so by opening the `Notebook Settings` under the `Edit` section.
 
 ![colab-open-notebook-settings](..\images\end-to-end-in-game-style-transfer-tutorial\colab-open-notebook-settings.png)
 
@@ -89,7 +89,7 @@ Select `GPU` from the `Hardware Accelerator` dropdown and click `Save`.
 
 ## Continue in the Notebook
 
-I recommend continuing this post in the Colab notebook itself. However, I have also included the notebook contents below if you're not following along. 
+I recommend continuing this post in the Colab notebook itself. However, I have also included the notebook contents below if you're only reading through the tutorial. 
 
 ## Install the [fastai](https://docs.fast.ai/) Library
 
