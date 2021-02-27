@@ -595,7 +595,7 @@ Images need to be processed before being fed to the model. We'll define the prep
 
 3. Convert the images to PyTorch Tensors
 
-4. Multiply the pixel values by 255
+4. Multiply the color channel values by 255
 
 We then store the list of images in the `dataset_dir` along with the preprocessing steps in a new variable called `train_dataset`.
 
