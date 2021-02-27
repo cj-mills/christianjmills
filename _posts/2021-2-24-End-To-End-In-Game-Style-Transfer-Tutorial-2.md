@@ -330,7 +330,7 @@ class UpsampleConvLayer(torch.nn.Module):
 
 ## Define the VGG-19 Model
 
-Here we'll define the model that will be used to judge the quality of the output images from the style transfer model. This model has been pretrained a large image dataset. This means it's already learned to recognize a wide variety of features in images. We'll use this model to extract the features of the content image, style image, and stylized images.
+Next, we'll define the model that will be used to judge the quality of the output images from the style transfer model. This model has been pretrained a large image dataset. This means it's already learned to recognize a wide variety of features in images. We'll use this model to extract the features of the content image, style image, and stylized images.
 
 ```python
 class Vgg19(torch.nn.Module):
@@ -569,7 +569,7 @@ We'll use the `ffmpeg` command-line tool to split the video file. Google Colab s
 
 In the code cell below replace `/content/drive/MyDrive/Style_Transfer_Project/movie_001.mp4` with the path to your video file.
 
-If your recorded a lot of footage, you might want to keep an eye on the available disk space and manually stop the code cell from running. This shouldn't be a problem if you only recorded several minutes of gameplay.
+If you recorded a lot of footage, you might want to keep an eye on the available disk space and manually stop the code cell from running. This shouldn't be a problem if you only recorded several minutes of gameplay.
 
 ```bash
 !ffmpeg -i /content/drive/MyDrive/Style_Transfer_Project/movie_001.mp4 ./dataset/video_frames/%05d.png -hide_banner
