@@ -148,7 +148,7 @@ Open the `Style_Transfer` folder and create a new folder called `Shaders`. Enter
 
 ### Remove the Default Code
 
-Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following. 
+Open the `StyleTransferShader` in your code editor. By default, the `ComputeShader` will contain the following. 
 
 ![default_compute_shader](\images\basic-in-game-style-transfer-tutorial\default_compute_shader.png)
 
