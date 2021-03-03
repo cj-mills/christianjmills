@@ -142,7 +142,7 @@ We can perform both the preprocessing and postprocessing operations on the GPU s
 
 ### Create the Asset File
 
-Open the `Style_Transer` folder and create a new folder called `Shaders`. Enter the `Shaders` folder and right-click an empty space. Select `Shader` in the `Create` submenu and click `Compute Shader`. We’ll name it `StyleTransferShader`.
+Open the `Style_Transfer` folder and create a new folder called `Shaders`. Enter the `Shaders` folder and right-click an empty space. Select `Shader` in the `Create` submenu and click `Compute Shader`. We’ll name it `StyleTransferShader`.
 
 ![create-compute-shader](\images\basic-in-game-style-transfer-tutorial\create-compute-shader.png)
 
