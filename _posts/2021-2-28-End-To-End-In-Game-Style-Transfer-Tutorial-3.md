@@ -144,7 +144,7 @@ We'll also add a public `bool` variable to indicate whether we want to stylize t
 
 ### Create TargetHeight Variable
 
-Getting playable frame rates at higher resolutions can be difficult even when using a smaller model. We can avoid melting our GPU by scaling down the camera input to a lower resolution before feeding it to the model. We would then scale the output image back up to the source resolution. This can also yield results closer to what during training if you trained the model with lower resolution images.
+Getting playable frame rates at higher resolutions can be difficult even when using a smaller model. We can help out our GPU by scaling down the camera input to a lower resolution before feeding it to the model. We would then scale the output image back up to the source resolution. This can also yield results closer to what during training if you trained the model with lower resolution images.
 
 Create a new public `int` variable named `targetHeight`. We'll set the default value to `540` which is the same as the test image used in the Colab Notebook.
 
@@ -154,15 +154,13 @@ Create a new public `int` variable named `targetHeight`. We'll set the default v
 
 ### Create Barracuda Variables
 
-Now we need to add a few variables to perform inference with the style transfer models.
-
-
+Now we need to add a few variables to perform inference with the style transfer model.
 
 #### Create `modelAsset` Variable
 
 Make a new public `NNModel` variable called `modelAsset`. We’ll assign one of the ONNX files to this variable in the Unity Editor.
 
-
+![unity-modelAsset-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-modelAsset-variable.png)
 
 #### Create `workerType` Variable
 
@@ -170,19 +168,19 @@ We’ll also add a variable that let’s us choose which [backend](https://docs.
 
 Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
-
+![unity-workerType-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-workerType-variable.png)
 
 #### Create `m_RuntimeModel` Variable
 
 We need to compile the `modelAsset` into a run-time model to perform inference. We’ll store the compiled model in a new private `Model` variable called `m_RuntimeModel`.
 
-
+![unity-m_RuntimModel-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-m_RuntimModel-variable.png)
 
 #### Create `engine` Variable
 
 Next, we’ll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
-
+![unity-engine-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-engine-variable.png)
 
 ### Compile the Model
 
@@ -208,37 +206,47 @@ We need to manually release the resources that get allocated for the inference `
 
 Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
 
-
-
-### Process Input Image
-
+![unity-ProcessImage-method](..\images\end-to-end-in-game-style-transfer-tutorial\unity-ProcessImage-method.png)
 
 
 
+### Create `StylizeImage()` Method
 
-### Perform Inference
 
 
+#### Process Input Image
+
+
+
+
+
+#### Perform Inference
 
 We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
 
 
 
-### Process the  Output
+#### Process the  Output
 
 We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to sdfklja.
 
 
 
+#### Complete Method
+
+![unity-StylizeImage-method](..\images\end-to-end-in-game-style-transfer-tutorial\unity-StylizeImage-method.png)
 
 
 
 
-### Display the Processed Output
 
 
 
 
+
+### Define `OnRenderImage()` Method
+
+We'll be calling the `StylizeImage()` method from the `OnRenderImage()` method instead of the `Update()` method. Give us access to the `RenderTexture` for the game camera as well as the `RenderTexture` for the target display.
 
 
 
