@@ -82,7 +82,7 @@ Open the `Style_Transfer` folder and create a new folder called `Shaders`. Enter
 
 ### Remove the Default Code
 
-Open the `PoseNetShader` in your code editor. By default, the `ComputeShader` will contain the following. 
+Open the `StyleTransferShader` in your code editor. By default, the `ComputeShader` will contain the following. 
 
 ![default_compute_shader](..\images\end-to-end-in-game-style-transfer-tutorial\default_compute_shader.png)
 
@@ -92,7 +92,7 @@ Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we ne
 
 ### Create `ProcessInput` Function
 
-The style transfer models expect RGB channel values to be in range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
+The style transfer models expect RGB channel values to be in the range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
 
 ![processInput_compute_shader](..\images\end-to-end-in-game-style-transfer-tutorial\processInput_compute_shader.png)
 
@@ -114,7 +114,7 @@ We need to make a new `C#` script to perform inference with the style transfer m
 
 Open the `Style_Transfer` folder and create a new folder called `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` submenu.
 
-![create_c_sharp_script](..\images\basic-in-game-style-transfer-tutorial\create_c_sharp_script.png)
+<img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-create-csharp-script.png" alt="unity-create-csharp-script"  />
 
 Name the script `StyleTransfer`.
 
@@ -124,11 +124,31 @@ Name the script `StyleTransfer`.
 
 Open the `StyleTransfer` script and add the `Unity.Barracuda` namespace at the top of the script.
 
-![add_barracuda_namespace](..\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png)
+<img src="..\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png" alt="add_barracuda_namespace" style="zoom: 50%;" />
 
 ### Create `StyleTransferShader` Variable
 
-Next, we'll add a public variable to access our compute shader.
+Next, we need to add a public variable to access our compute shader.
+
+![unity-declare-computeshader-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-declare-computeshader-variable.png)
+
+
+
+### Create Style Transfer Toggle
+
+We'll also add a public `bool` variable to indicate whether we want to stylize the scene. This  will create a checkbox in the `Inspector` tab that we can use to toggle the style transfer on and off while the game is running.
+
+![unity-stylizeImage-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-stylizeImage-variable.png)
+
+
+
+### Create TargetHeight Variable
+
+Getting playable frame rates at higher resolutions can be difficult even when using a smaller model. We can avoid melting our GPU by scaling down the camera input to a lower resolution before feeding it to the model. We would then scale the output image back up to the source resolution. This can also yield results closer to what during training if you trained the model with lower resolution images.
+
+Create a new public `int` variable named `targetHeight`. We'll set the default value to `540` which is the same as the test image used in the Colab Notebook.
+
+![unity-targetHeight-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-targetHeight-variable.png)
 
 
 
