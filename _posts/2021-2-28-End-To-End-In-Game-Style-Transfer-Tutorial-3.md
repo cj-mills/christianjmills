@@ -132,27 +132,23 @@ Open the `StyleTransfer` script and add the `Unity.Barracuda` namespace at the t
 
 ![add_barracuda_namespace](..\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png)
 
-### Create `RenderTexture` Variables
-
-We need to create some public variables that we can use to access our two render texture assets in the script.
-
-![renderTexture_variables](..\images\basic-in-game-style-transfer-tutorial\renderTexture_variables_2.png)
-
 ### Create `StyleTransferShader` Variable
 
 Next, we'll add a public variable to access our compute shader.
 
-![styleTransferShader_variable](..\images\basic-in-game-style-transfer-tutorial\styleTransferShader_variable_2.png)
+
 
 ### Create Barracuda Variables
 
 Now we need to add a few variables to perform inference with the style transfer models.
 
+
+
 #### Create `modelAsset` Variable
 
 Make a new public `NNModel` variable called `modelAsset`. We’ll assign one of the ONNX files to this variable in the Unity Editor.
 
-![modelAsset_variable](..\images\basic-in-game-style-transfer-tutorial\modelAsset_variable_2.png)
+
 
 #### Create `workerType` Variable
 
@@ -160,19 +156,19 @@ We’ll also add a variable that let’s us choose which [backend](https://docs.
 
 Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
-![workerType_variable](..\images\basic-in-game-style-transfer-tutorial\workerType_variable.png)
+
 
 #### Create `m_RuntimeModel` Variable
 
 We need to compile the `modelAsset` into a run-time model to perform inference. We’ll store the compiled model in a new private `Model` variable called `m_RuntimeModel`.
 
-![m_RuntimeModel_variable](..\images\basic-in-game-style-transfer-tutorial\m_RuntimeModel_variable.png)
+
 
 #### Create `engine` Variable
 
 Next, we’ll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
-![engine_variable](..\images\basic-in-game-style-transfer-tutorial\engine_variable.png)
+
 
 ### Compile the Model
 
@@ -194,51 +190,39 @@ We need to manually release the resources that get allocated for the inference `
 
 
 
-### Create `ToTexture2D()` Method
-
-We'll make a new method to copy the data from a `RenderTexture` to a new `Texture2D`. We'll need to call this method before performing both the preprocessing and postprocessing steps. The method will take in the source `RenderTexture` and the format for the new `Texture2D`.
-
-![toTexture2D_method](..\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png)
-
 ### Create `ProcessImage()` Method
 
 Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
 
-![processImage_method](..\images\basic-in-game-style-transfer-tutorial\processImage_method.png)
+
 
 ### Process Input Image
 
-Now we can process the current camera frame. We'll call the `ToTexture2D()` method at the top of the `Update` method. The `cameraInput` is not an HDR texture so we'll use an SDR format for the new `Texture2D`. We'll then call the `ProcessImage()` method with new `Texture2D` as input.
 
-![process_input_image](..\images\basic-in-game-style-transfer-tutorial\process_input_image.png)
+
+
 
 ### Perform Inference
 
-Next, we'll feed the `processedImage` to the model and get the output. We first need to convert the `processedImage` to a `Tensor`.
 
-![perform_inference_pt1](..\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png)
 
 We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
 
-![perform_inference_pt2](..\images\basic-in-game-style-transfer-tutorial\perform_inference_pt2.png)
+
 
 ### Process the  Output
 
-We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to a new HDR `RenderTexture`.
+We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to sdfklja.
 
-![process_output_pt1](..\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png)
 
-We'll then copy the data to a `Texture2D` and pass it to the `ProcessImage()` method. This time we'll be executing the `ProcessOutput()` function on the `ComputeShader`.
 
-![process_output_pt2](..\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png)
+
+
+
 
 ### Display the Processed Output
 
-We can finally display the stylized image by using the `Graphics.Blit()` method to copy the final image to `processedOutput`.
 
-![display_output](..\images\basic-in-game-style-transfer-tutorial\display_output.png)
-
-Next, we'll need to modify the project scene to use the `StyleTransfer` script. 
 
 
 
@@ -248,7 +232,7 @@ Next, we'll need to modify the project scene to use the `StyleTransfer` script.
 
 ## Attach Script to Camera
 
-To run the `StyleTransfer` script, we need to attach it to a `GameObject` in the scene.
+To run the `StyleTransfer` script, we need to attach it to the active `Camera` in the scene.
 
 
 
@@ -260,11 +244,9 @@ In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.
 
 
 
-### Create an Empty `GameObject`
+### Select the Camera
 
-In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `StyleConverter`.
 
-![create_empyt_gameObject](..\images\basic-in-game-style-transfer-tutorial\create_empyt_gameObject.png)
 
 ### Attach the `StyleTransfer` Script
 
@@ -273,12 +255,6 @@ With the `StyleConverter` object selected, drag and drop the `StyleTransfer` scr
 ![attach_styleTransfer_script](..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png)
 
 ### Assign the Assets
-
-We need to assign the render textures, compute shader and one of the ONNX files to their respective parameters in the `Inspector` tab. I'll start with the mosaic model. We'll also set the `Worker Type` to `Compute Precompiled`. 
-
-![attach_styleTransfer_script_full](..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script_full.png)
-
-## Set Camera Target Texture
 
 
 
