@@ -177,6 +177,16 @@ def save_image(filename: str, data: torch.Tensor):
     img = Image.fromarray(img)
     img.save(filename)
 
+def load_checkpoint(model_path):
+    state_dict = torch.load(model_path)
+    keys = [k for k in state_dict.keys()]
+    filters = set()
+    filters_list = [state_dict[k].shape[0] for k in keys if not (state_dict[k].shape[0] in filters or filters.add(state_dict[k].shape[0]))]
+    res_blocks = len(set(k.split('.')[1] for k in state_dict.keys() if 'resnets' in k))
+    model = TransformerNet(filters=filters_list[:-1], res_blocks=res_blocks) 
+    model.load_state_dict(state_dict, strict=False)
+    return model
+
 def stylize(model_path: str, input_image: str, output_image: str, content_scale: float=None, 
             device: str="cpu", export_onnx: bool=None):
     """Load a TransformerNet checkpoint, stylize an image and save the output"""
@@ -190,13 +200,7 @@ def stylize(model_path: str, input_image: str, output_image: str, content_scale:
     content_image = content_image.unsqueeze(0).to(device)
 
     with torch.no_grad():
-        state_dict = torch.load(model_path)
-        keys = [k for k in state_dict.keys()]
-        filters = set()
-        filters_list = [state_dict[k].shape[0] for k in keys if not (state_dict[k].shape[0] in filters or filters.add(state_dict[k].shape[0]))]
-        res_blocks = len(set(k.split('.')[1] for k in state_dict.keys() if 'resnets' in k))
-        style_model = TransformerNet(filters=filters_list[:-1], res_blocks=res_blocks) 
-        style_model.load_state_dict(state_dict, strict=False)
+        style_model = load_checkpoint(model_path)
         style_model.to(device)
          
         if export_onnx:
@@ -503,7 +507,7 @@ We'll use the `drive.mount()` method to mount our whole Google Drive inside a ne
 
 When you run the code cell below, you will be prompted to open a link to allow Google Colab to access your Drive.
 
-Once you allow access you will be provided with an authorization code. Copy and past the code into text box that appears in the output of the code cell.
+Once you allow access you will be provided with an authorization code. Copy and paste the code into text box that appears in the output of the code cell and press Enter.
 
 ```python
 drive.mount('/content/drive')
@@ -811,7 +815,7 @@ epochs = 1
 content_weight = 1e5
 # The influence from the style image on the stylized image
 # Default: 1e10
-style_weight = 1e10
+style_weight = 2e9
 
 # (test_image resolution) / content_scale
 content_scale = 1.0
@@ -856,9 +860,14 @@ The ONNX file will be saved to the project folder in Google Drive.
 **Note:** You will get a warning after running the code cell below recommending that you use ONNX opset 11 or above. Unity has prioritized support for opset 9 for Barracuda and higher opsets are not fully supported.
 
 ```python
+checkpoint_path = f"{checkpoints_dir}/final.pth"
+style_model = load_checkpoint(checkpoint_path)
+```
+
+```python
 x = torch.randn(1, 3, 960, 540).cpu()
 
-torch.onnx.export(trainer.generator.cpu(),     #  Model being run
+torch.onnx.export(style_model.cpu(),     #  Model being run
                   x,                           # Sample input
                   f"{project_dir}/final.onnx", # Path to save ONNX file
                   export_params=True,          # Store trained weights
