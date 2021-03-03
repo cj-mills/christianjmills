@@ -93,7 +93,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      9 min read
+      5 min read
     
 </span></p>
 
@@ -124,104 +124,102 @@ window.onload = wrap_img;
   <li>
     <p><a href="#introduction">Introduction</a></p>
   </li>
-  <li></li>
-  <li><a href="#conclusion">Conclusion</a></li>
+  <li>
+    <p><a href="#">Create Style Transfer Folder</a></p>
+  </li>
+  <li>
+    <p><a href="#import-model">Import Model</a></p>
+  </li>
+  <li>
+    <p><a href="#"></a></p>
+  </li>
+  <li>
+    <p><a href="#create-compute-shader">Create Compute Shader</a></p>
+  </li>
+  <li>
+    <p><a href="#create-styletransfer-script">Create <code class="highlighter-rouge">StyleTransfer</code> Script</a></p>
+  </li>
+  <li>
+    <p><a href="#attach-script-to-camera">Attach Script to Camera</a></p>
+  </li>
+  <li>
+    <p><a href="#"></a></p>
+  </li>
+  <li>
+    <p><a href="#"></a></p>
+  </li>
+  <li>
+    <p><a href="#"></a></p>
+  </li>
+  <li>
+    <p><a href="#test-it-out">Test it Out</a></p>
+  </li>
+  <li>
+    <p><a href="#conclusion">Conclusion</a></p>
+  </li>
 </ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In this post we’ll implement our trained style transfer model in Unity.</p>
 
 <h2 id="create-style-transfer-folder">Create Style Transfer Folder</h2>
 
 <p>We’ll place all our additions to the project in a new asset folder called <code class="highlighter-rouge">Style_Transfer</code>. This will help keep things organized.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\style_transfer_folder.png" alt="style_transfer_folder" /></p>
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity_style_transfer_folder.png" alt="style_transfer_folder" /></p>
 
-<h2 id="import-models">Import Models</h2>
+<h2 id="import-model">Import Model</h2>
 
-<p>Next, we need to add some style transfer models. PyTorch models need to be exported to the <a href="https://onnx.ai/">ONNX</a> format before being imported to Unity. Fortunately, PyTorch provides built-in support for exporting to ONNX (<a href="https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html">tutorial</a>).</p>
+<p>Next, we need to import the trained ONNX file that we trained in Part 2.</p>
 
 <h3 id="download-onnx-files">Download ONNX Files</h3>
 
-<p>You can download some exported style transfer models from the links below.</p>
+<p>Right-click the <code class="highlighter-rouge">final.onnx</code> in your Google Drive project folder and click <code class="highlighter-rouge">Download</code>.</p>
 
-<ul>
-  <li>
-    <p>Mosaic: (<a href="https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing">download</a>)</p>
-
-    <p><img src="\images\basic-in-game-style-transfer-tutorial\mosaic.jpg" alt="mosaic" /></p>
-  </li>
-  <li>
-    <p>Van Gogh Starry Night: (<a href="https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing">download</a>)</p>
-  </li>
-</ul>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\van-gogh-starry-night-google-art-project.jpg" alt="van-gogh-starry-night-google-art-project" /></p>
+<p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-download-onnx-file.png" alt="gdrive-download-onnx-file" /></p>
 
 <h3 id="import-onnx-files-to-assets">Import ONNX Files to Assets</h3>
 
 <p>Open the <code class="highlighter-rouge">Style_Transfer</code> folder and make a new folder called <code class="highlighter-rouge">Models</code>.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\create-models-folder.png" alt="create-models-folder" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\create-models-folder.png" alt="create-models-folder" /></p>
 
 <p>Drag and drop the ONNX files into the <code class="highlighter-rouge">Models</code> folder.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\imported_onnx_files.png" alt="imported_onnx_files" /></p>
-
 <h2 id="prepare-render-textures">Prepare Render Textures</h2>
 
-<p>Our basic process will involve taking the current frame from the in-game camera, feeding it to the model, getting the output, and displaying the processed output to the user. We’ll store the current camera frame and processed output in separate <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.html">render textures</a>.</p>
-
-<h3 id="create-textures-folder">Create <code class="highlighter-rouge">Textures</code> Folder</h3>
-
-<p>Add a new folder called <code class="highlighter-rouge">Textures</code> in the <code class="highlighter-rouge">Style_Transfer</code> folder.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\textures_folder.png" alt="textures_folder" /></p>
-
-<h3 id="create--asset-files">Create  Asset Files</h3>
-
-<p>Open the <code class="highlighter-rouge">Textures</code> folder and create two new <code class="highlighter-rouge">Render Texture</code> assets.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\create_renderTexture.png" alt="create_renderTexture" /></p>
-
-<p>Name the new assets <code class="highlighter-rouge">CameraInput</code>, <code class="highlighter-rouge">ProcessedOutput</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\new_renderTexture_assets_2.png" alt="new_renderTexture_assets" /></p>
-
-<h3 id="update-size-parameters">Update Size Parameters</h3>
-
-<p>We need to use a fairly low resolution to get playable frame rates. Click an empty space in the <code class="highlighter-rouge">Textures</code> folder and press <code class="highlighter-rouge">Ctrl-a</code> to select both render textures. Set the size the parameter to <code class="highlighter-rouge">720 x 540</code> in the <code class="highlighter-rouge">Inspector</code> tab. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\set_renderTexture_sizes_2.png" alt="set_renderTexture_sizes" /></p>
-
-<h2 id="create-a-compute-shader">Create a Compute Shader</h2>
+<h2 id="create-compute-shader">Create Compute Shader</h2>
 
 <p>We can perform both the preprocessing and postprocessing operations on the GPU since both the input and output are images. We’ll implement these steps in a <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">compute shader</a>.</p>
 
 <h3 id="create-the-asset-file">Create the Asset File</h3>
 
-<p>Open the <code class="highlighter-rouge">Style_Transer</code> folder and create a new folder called <code class="highlighter-rouge">Shaders</code>. Enter the <code class="highlighter-rouge">Shaders</code> folder and right-click an empty space. Select <code class="highlighter-rouge">Shader</code> in the <code class="highlighter-rouge">Create</code> submenu and click <code class="highlighter-rouge">Compute Shader</code>. We’ll name it <code class="highlighter-rouge">StyleTransferShader</code>.</p>
+<p>Open the <code class="highlighter-rouge">Style_Transfer</code> folder and create a new folder called <code class="highlighter-rouge">Shaders</code>. Enter the <code class="highlighter-rouge">Shaders</code> folder and right-click an empty space. Select <code class="highlighter-rouge">Shader</code> in the <code class="highlighter-rouge">Create</code> submenu and click <code class="highlighter-rouge">Compute Shader</code>. We’ll name it <code class="highlighter-rouge">StyleTransferShader</code>.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\create-compute-shader.png" alt="create-compute-shader" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\create-compute-shader.png" alt="create-compute-shader" /></p>
 
 <h3 id="remove-the-default-code">Remove the Default Code</h3>
 
 <p>Open the <code class="highlighter-rouge">PoseNetShader</code> in your code editor. By default, the <code class="highlighter-rouge">ComputeShader</code> will contain the following.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\default_compute_shader.png" alt="default_compute_shader" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\default_compute_shader.png" alt="default_compute_shader" /></p>
 
 <p>Delete the <code class="highlighter-rouge">CSMain</code> function along with the <code class="highlighter-rouge">#pragma kernel CSMain</code>. Next, we need to add a <code class="highlighter-rouge">Texture2D</code> variable to store the input image. Name it <code class="highlighter-rouge">InputImage</code> and give it a data type of <code class="highlighter-rouge">&lt;half4&gt;</code>. Use the same data type for the <code class="highlighter-rouge">Result</code> variable as well.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\styleTransfer_shader_part1.png" alt="styleTransfer_shader_part1" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\styleTransfer_shader_part1.png" alt="styleTransfer_shader_part1" /></p>
 
 <h3 id="create-processinput-function">Create <code class="highlighter-rouge">ProcessInput</code> Function</h3>
 
 <p>The style transfer models expect RGB channel values to be in range <code class="highlighter-rouge">[0, 255]</code>. Color values in Unity are in the range <code class="highlighter-rouge">[0,1]</code>. Therefore, we need to scale the three channel values for the <code class="highlighter-rouge">InputImage</code> by <code class="highlighter-rouge">255</code>. We’ll perform this step in a new function called <code class="highlighter-rouge">ProcessInput</code> as shown below.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png" alt="processInput_compute_shader" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png" alt="processInput_compute_shader" /></p>
 
 <h3 id="create-processoutput-function">Create <code class="highlighter-rouge">ProcessOutput</code> Function</h3>
 
 <p>The models are supposed to output an image with RGB channel values in the range <code class="highlighter-rouge">[0, 255]</code>. However, it can sometimes return values a little outside that range. We can use the built-in <a href="https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-clamp"><code class="highlighter-rouge">clamp()</code></a> method to make sure all values are in the correct range. We’ll then scale the values back down to <code class="highlighter-rouge">[0, 1]</code> for Unity. We’ll perform these steps in a new function called <code class="highlighter-rouge">ProcessOutput</code> as shown below.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png" alt="processOutput_compute_shader" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\processOutput_compute_shader.png" alt="processOutput_compute_shader" /></p>
 
 <p>Now that we’ve created our <code class="highlighter-rouge">ComputeShader</code>, we need to execute it using a <code class="highlighter-rouge">C#</code> script.</p>
 
@@ -233,29 +231,21 @@ window.onload = wrap_img;
 
 <p>Open the <code class="highlighter-rouge">Style_Transfer</code> folder and create a new folder called <code class="highlighter-rouge">Scripts</code>. In the <code class="highlighter-rouge">Scripts</code> folder, right-click an empty space and select <code class="highlighter-rouge">C# Script</code> in the <code class="highlighter-rouge">Create</code> submenu.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\create_c_sharp_script.png" alt="create_c_sharp_script" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\create_c_sharp_script.png" alt="create_c_sharp_script" /></p>
 
 <p>Name the script <code class="highlighter-rouge">StyleTransfer</code>.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\styleTransfer_script_new.png" alt="styleTransfer_script_new" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\styleTransfer_script_new.png" alt="styleTransfer_script_new" /></p>
 
 <h3 id="add-unitybarracuda-namespace">Add <code class="highlighter-rouge">Unity.Barracuda</code> Namespace</h3>
 
 <p>Open the <code class="highlighter-rouge">StyleTransfer</code> script and add the <code class="highlighter-rouge">Unity.Barracuda</code> namespace at the top of the script.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png" alt="add_barracuda_namespace" /></p>
-
-<h3 id="create-rendertexture-variables">Create <code class="highlighter-rouge">RenderTexture</code> Variables</h3>
-
-<p>We need to create some public variables that we can use to access our two render texture assets in the script.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\renderTexture_variables_2.png" alt="renderTexture_variables" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\add_barracuda_namespace.png" alt="add_barracuda_namespace" /></p>
 
 <h3 id="create-styletransfershader-variable">Create <code class="highlighter-rouge">StyleTransferShader</code> Variable</h3>
 
 <p>Next, we’ll add a public variable to access our compute shader.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\styleTransferShader_variable_2.png" alt="styleTransferShader_variable" /></p>
 
 <h3 id="create-barracuda-variables">Create Barracuda Variables</h3>
 
@@ -265,183 +255,81 @@ window.onload = wrap_img;
 
 <p>Make a new public <code class="highlighter-rouge">NNModel</code> variable called <code class="highlighter-rouge">modelAsset</code>. We’ll assign one of the ONNX files to this variable in the Unity Editor.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\modelAsset_variable_2.png" alt="modelAsset_variable" /></p>
-
 <h4 id="create-workertype-variable">Create <code class="highlighter-rouge">workerType</code> Variable</h4>
 
 <p>We’ll also add a variable that let’s us choose which <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html">backend</a> to use when performing inference. The options are divided into <code class="highlighter-rouge">CPU</code> and <code class="highlighter-rouge">GPU</code>. Our preprocessing pipeline runs entirely on the <code class="highlighter-rouge">GPU</code> so we’ll be sticking with the <code class="highlighter-rouge">GPU</code> options for this tutorial series.</p>
 
 <p>Make a new public <code class="highlighter-rouge">WorkerFactory.Type</code> called <code class="highlighter-rouge">workerType</code>. Give it a default value of <code class="highlighter-rouge">WorkerFactory.Type.Auto</code>.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\workerType_variable.png" alt="workerType_variable" /></p>
-
 <h4 id="create-m_runtimemodel-variable">Create <code class="highlighter-rouge">m_RuntimeModel</code> Variable</h4>
 
 <p>We need to compile the <code class="highlighter-rouge">modelAsset</code> into a run-time model to perform inference. We’ll store the compiled model in a new private <code class="highlighter-rouge">Model</code> variable called <code class="highlighter-rouge">m_RuntimeModel</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\m_RuntimeModel_variable.png" alt="m_RuntimeModel_variable" /></p>
 
 <h4 id="create-engine-variable">Create <code class="highlighter-rouge">engine</code> Variable</h4>
 
 <p>Next, we’ll create a new private <code class="highlighter-rouge">IWorker</code> variable to store our inference engine. Name the variable <code class="highlighter-rouge">engine</code>.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\engine_variable.png" alt="engine_variable" /></p>
-
 <h3 id="compile-the-model">Compile the Model</h3>
 
 <p>We need to get an object oriented representation of the model before we can work with it. We’ll do this in the <code class="highlighter-rouge">Start()</code> method and store it in the <code class="highlighter-rouge">m_RuntimeModel</code>.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\compile_model.png" alt="compile_model" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\compile_model.png" alt="compile_model" /></p>
 
 <h3 id="initialize-inference-engine">Initialize Inference Engine</h3>
 
 <p>Now we can create a worker to execute the modified model using the selected backend. We’ll do this using the <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_"><code class="highlighter-rouge">WorkerFactory.CreateWorker()</code></a> method.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\initialize_inference_engine.png" alt="initialize_inference_engine" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\initialize_inference_engine.png" alt="initialize_inference_engine" /></p>
 
 <h3 id="release-inference-engine-resources">Release Inference Engine Resources</h3>
 
 <p>We need to manually release the resources that get allocated for the inference <code class="highlighter-rouge">engine</code>. This should be one of the last actions performed. Therefore, we’ll do it in the <code class="highlighter-rouge">OnDisable()</code> method. This method gets called when the Unity project exits.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\onDisable_method.png" alt="onDisable_method" /></p>
-
-<h3 id="create-totexture2d-method">Create <code class="highlighter-rouge">ToTexture2D()</code> Method</h3>
-
-<p>We’ll make a new method to copy the data from a <code class="highlighter-rouge">RenderTexture</code> to a new <code class="highlighter-rouge">Texture2D</code>. We’ll need to call this method before performing both the preprocessing and postprocessing steps. The method will take in the source <code class="highlighter-rouge">RenderTexture</code> and the format for the new <code class="highlighter-rouge">Texture2D</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\toTexture2D_method.png" alt="toTexture2D_method" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\onDisable_method.png" alt="onDisable_method" /></p>
 
 <h3 id="create-processimage-method">Create <code class="highlighter-rouge">ProcessImage()</code> Method</h3>
 
 <p>Next, we’ll make a new method to execute the <code class="highlighter-rouge">ProcessInput()</code> and <code class="highlighter-rouge">ProcessOutput()</code> functions in our <code class="highlighter-rouge">ComputeShader</code>. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We’ll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of <code class="highlighter-rouge">[0, 1]</code>. As mentioned previously, the model expects values in the range of <code class="highlighter-rouge">[0, 255]</code>.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\processImage_method.png" alt="processImage_method" /></p>
-
 <h3 id="process-input-image">Process Input Image</h3>
-
-<p>Now we can process the current camera frame. We’ll call the <code class="highlighter-rouge">ToTexture2D()</code> method at the top of the <code class="highlighter-rouge">Update</code> method. The <code class="highlighter-rouge">cameraInput</code> is not an HDR texture so we’ll use an SDR format for the new <code class="highlighter-rouge">Texture2D</code>. We’ll then call the <code class="highlighter-rouge">ProcessImage()</code> method with new <code class="highlighter-rouge">Texture2D</code> as input.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\process_input_image.png" alt="process_input_image" /></p>
 
 <h3 id="perform-inference">Perform Inference</h3>
 
-<p>Next, we’ll feed the <code class="highlighter-rouge">processedImage</code> to the model and get the output. We first need to convert the <code class="highlighter-rouge">processedImage</code> to a <code class="highlighter-rouge">Tensor</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\perform_inference_pt1.png" alt="perform_inference_pt1" /></p>
-
 <p>We’ll then use the <code class="highlighter-rouge">engine.Execute()</code> method to run the model with the current <code class="highlighter-rouge">input</code>. We can store the raw output from the model in a new <code class="highlighter-rouge">Tensor</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\perform_inference_pt2.png" alt="perform_inference_pt2" /></p>
 
 <h3 id="process-the--output">Process the  Output</h3>
 
-<p>We need to process the raw output from the model before we can display it to the user. We’ll first copy the model output to a new HDR <code class="highlighter-rouge">RenderTexture</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\process_output_pt1.png" alt="process_output_pt1" /></p>
-
-<p>We’ll then copy the data to a <code class="highlighter-rouge">Texture2D</code> and pass it to the <code class="highlighter-rouge">ProcessImage()</code> method. This time we’ll be executing the <code class="highlighter-rouge">ProcessOutput()</code> function on the <code class="highlighter-rouge">ComputeShader</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\process_output_pt2.png" alt="process_output_pt2" /></p>
+<p>We need to process the raw output from the model before we can display it to the user. We’ll first copy the model output to sdfklja.</p>
 
 <h3 id="display-the-processed-output">Display the Processed Output</h3>
 
-<p>We can finally display the stylized image by using the <code class="highlighter-rouge">Graphics.Blit()</code> method to copy the final image to <code class="highlighter-rouge">processedOutput</code>.</p>
+<h2 id="attach-script-to-camera">Attach Script to Camera</h2>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\display_output.png" alt="display_output" /></p>
+<p>To run the <code class="highlighter-rouge">StyleTransfer</code> script, we need to attach it to the active <code class="highlighter-rouge">Camera</code> in the scene.</p>
 
-<p>Next, we’ll need to modify the project scene to use the <code class="highlighter-rouge">StyleTransfer</code> script.</p>
-
-<h2 id="open-the-biped-scene">Open the <code class="highlighter-rouge">Biped</code> Scene</h2>
+<h3 id="open-the-biped-scene">Open the <code class="highlighter-rouge">Biped</code> Scene</h3>
 
 <p>In the <code class="highlighter-rouge">Assets</code> window, open the <code class="highlighter-rouge">Scenes</code> folder and double-click on the <code class="highlighter-rouge">Biped.unity</code> asset. You don’t need to save the current scene if you get prompted to do so.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png" alt="select_biped_scene" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png" alt="select_biped_scene" /></p>
 
-<h2 id="create-style-converter">Create Style Converter</h2>
-
-<p>To run the <code class="highlighter-rouge">StyleTransfer</code> script, we need to attach it to a <code class="highlighter-rouge">GameObject</code> in the scene.</p>
-
-<h3 id="create-an-empty-gameobject">Create an Empty <code class="highlighter-rouge">GameObject</code></h3>
-
-<p>In the Hierarchy tab, right-click an empty space and select <code class="highlighter-rouge">Create Empty</code> from the menu. Name the empty GameObject <code class="highlighter-rouge">StyleConverter</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\create_empyt_gameObject.png" alt="create_empyt_gameObject" /></p>
+<h3 id="select-the-camera">Select the Camera</h3>
 
 <h3 id="attach-the-styletransfer-script">Attach the <code class="highlighter-rouge">StyleTransfer</code> Script</h3>
 
 <p>With the <code class="highlighter-rouge">StyleConverter</code> object selected, drag and drop the <code class="highlighter-rouge">StyleTransfer</code> script into the <code class="highlighter-rouge">Inspector</code> tab.</p>
 
-<p><img src="\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png" alt="attach_styleTransfer_script" /></p>
+<p><img src="..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png" alt="attach_styleTransfer_script" /></p>
 
 <h3 id="assign-the-assets">Assign the Assets</h3>
-
-<p>We need to assign the render textures, compute shader and one of the ONNX files to their respective parameters in the <code class="highlighter-rouge">Inspector</code> tab. I’ll start with the mosaic model. We’ll also set the <code class="highlighter-rouge">Worker Type</code> to <code class="highlighter-rouge">Compute Precompiled</code>.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script_full.png" alt="attach_styleTransfer_script_full" /></p>
-
-<h2 id="set-camera-target-texture">Set Camera Target Texture</h2>
-
-<p>Select the <code class="highlighter-rouge">_Scene</code> object in the <code class="highlighter-rouge">Hierarchy</code> tab. In the dropdown, select the <code class="highlighter-rouge">Main Camera</code> object.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\assign_camera_target_texture.png" alt="assign_camera_target_texture" /></p>
-
-<h2 id="create-a-screen">Create a Screen</h2>
-
-<p>Right-click an empty space in the <code class="highlighter-rouge">Hierarchy</code> tab and select <code class="highlighter-rouge">Raw Image</code> in the <code class="highlighter-rouge">UI</code> submenu. Name it Screen.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\create_raw_image.png" alt="create_raw_image" /></p>
-
-<h3 id="adjust-the-anchor-presets">Adjust the Anchor Presets</h3>
-
-<p>With the <code class="highlighter-rouge">Screen</code> object selected, click on the anchor presets box in the <code class="highlighter-rouge">Inspector</code> tab outlined below.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt1.png" alt="stretch_screen_pt1" /></p>
-
-<p>Select the option in the bottom right corner that’s outlined below.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\stretch_screen_pt2.png" alt="stretch_screen_pt2" /></p>
-
-<p>Next we need to set all the <code class="highlighter-rouge">Rect Transform</code> values to zero. This will cause the <code class="highlighter-rouge">Screen</code> to take up the entire display.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\set_anchors_to_zero.png" alt="set_anchors_to_zero" /></p>
-
-<h3 id="set-the-screen-texture">Set the Screen Texture</h3>
-
-<p>With the Screen object still selected, drag and drop the <code class="highlighter-rouge">ProcessedOutput</code> asset into the <code class="highlighter-rouge">Texture</code> parameter in the <code class="highlighter-rouge">Inspector</code> tab.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\assign_screen_texture.png" alt="assign_screen_texture" /></p>
-
-<h3 id="adjust-the-game-tab">Adjust the Game Tab</h3>
-
-<p>Our last step is to set up the game tab for our chosen resolution.</p>
-
-<h4 id="set-the-aspect-ratio">Set the Aspect Ratio</h4>
-
-<p>My chosen resolution of <code class="highlighter-rouge">720 x 540</code> has a <code class="highlighter-rouge">4:3</code> aspect ratio. You can change the aspect ratio in the drop-down menu.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\set_aspect_ratio.png" alt="set_aspect_ratio" /></p>
-
-<h4 id="disable-warning">Disable Warning</h4>
-
-<p>You might see a warning saying that there isn’t a camera rendering. This would be because we set the camera to render to <code class="highlighter-rouge">CameraInput</code>. If you do, right-click the <code class="highlighter-rouge">Game</code> tab and uncheck the <code class="highlighter-rouge">Warn if No Cameras Rendering</code> option.</p>
-
-<p><img src="\images\basic-in-game-style-transfer-tutorial\disable_no_camera_warning.png" alt="disable_no_camera_warning" /></p>
 
 <h2 id="test-it-out">Test it Out</h2>
 
 <p>We can finally press the play button and see how it looks.</p>
 
-<p><img src="..\images\basic-in-game-style-transfer-tutorial\basic_in_game_style_transfer_4.gif" alt="basic_in_game_style_transfer_4" /></p>
+<h2 id="conclusion">Conclusion</h2>
 
-<h2 id="summary">Summary</h2>
-
-<p>We now have a basic implementation of in-game style transfer. It’s pretty inefficient and probably needs a seizure warning. I started with this model architecture for it’s relative simplicity but it was not designed for real-time video. I was surprised to get playable frame rates even at this low of a resolution.</p>
-
-<p>Despite it’s shortcomings, this little demo provides a glimpse at what’s possible. It can also serve as a decent testing environment for trying out different styles. It’s worth noting that the models used in this tutorial were trained on datasets of real-world photos and not video games. I might try making an training dataset using screenshots from video games and see what impact that has on the stylized images.</p>
-
-<p>I already have another style transfer <a href="https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training">project</a> that I want to try to get working in Unity. This project does a great job of generating consistent video output (i.e. no seizure warning). In the mean time, I recommend checking out Unity’s sample <a href="https://github.com/UnityLabs/barracuda-style-transfer">project</a>. They put a lot of work into optimizing it for playable frame rates at more reasonable resolutions.</p>
-
-<h4 id="github-repository"><a href="https://github.com/cj-mills/Basic-In-Game-Style-Transfer">GitHub Repository</a></h4>
+<h4 id="github-repository"><a href="">GitHub Repository</a></h4>
 
 
   </div><!-- from https://github.com/utterance/utterances -->
