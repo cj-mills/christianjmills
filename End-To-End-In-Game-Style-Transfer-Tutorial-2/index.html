@@ -276,6 +276,16 @@ window.onload = wrap_img;
     <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
     <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
+<span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+    <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    <span class="n">filters</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">filters_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">filters</span> <span class="ow">or</span> <span class="n">filters</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))]</span>
+    <span class="n">res_blocks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'.'</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s">'resnets'</span> <span class="ow">in</span> <span class="n">k</span><span class="p">))</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">TransformerNet</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="n">filters_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">res_blocks</span><span class="o">=</span><span class="n">res_blocks</span><span class="p">)</span> 
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+
 <span class="k">def</span> <span class="nf">stylize</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">input_image</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_image</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content_scale</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
             <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s">"cpu"</span><span class="p">,</span> <span class="n">export_onnx</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="s">"""Load a TransformerNet checkpoint, stylize an image and save the output"""</span>
@@ -289,13 +299,7 @@ window.onload = wrap_img;
     <span class="n">content_image</span> <span class="o">=</span> <span class="n">content_image</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="n">filters_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">filters</span> <span class="ow">or</span> <span class="n">filters</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))]</span>
-        <span class="n">res_blocks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'.'</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s">'resnets'</span> <span class="ow">in</span> <span class="n">k</span><span class="p">))</span>
-        <span class="n">style_model</span> <span class="o">=</span> <span class="n">TransformerNet</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="n">filters_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">res_blocks</span><span class="o">=</span><span class="n">res_blocks</span><span class="p">)</span> 
-        <span class="n">style_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">style_model</span> <span class="o">=</span> <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
         <span class="n">style_model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
          
         <span class="k">if</span> <span class="n">export_onnx</span><span class="p">:</span>
@@ -590,7 +594,7 @@ window.onload = wrap_img;
 
 <p>When you run the code cell below, you will be prompted to open a link to allow Google Colab to access your Drive.</p>
 
-<p>Once you allow access you will be provided with an authorization code. Copy and past the code into text box that appears in the output of the code cell.</p>
+<p>Once you allow access you will be provided with an authorization code. Copy and paste the code into text box that appears in the output of the code cell and press Enter.</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s">'/content/drive'</span><span class="p">)</span>
 </code></pre></div></div>
@@ -901,7 +905,7 @@ Estimated Total Size (MB): 4397.69
 </span><span class="n">content_weight</span> <span class="o">=</span> <span class="mf">1e5</span>
 <span class="c1"># The influence from the style image on the stylized image
 # Default: 1e10
-</span><span class="n">style_weight</span> <span class="o">=</span> <span class="mf">1e10</span>
+</span><span class="n">style_weight</span> <span class="o">=</span> <span class="mf">2e9</span>
 
 <span class="c1"># (test_image resolution) / content_scale
 </span><span class="n">content_scale</span> <span class="o">=</span> <span class="mf">1.0</span>
@@ -940,9 +944,13 @@ Estimated Total Size (MB): 4397.69
 
 <p><strong>Note:</strong> You will get a warning after running the code cell below recommending that you use ONNX opset 11 or above. Unity has prioritized support for opset 9 for Barracuda and higher opsets are not fully supported.</p>
 
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">f</span><span class="s">"{checkpoints_dir}/final.pth"</span>
+<span class="n">style_model</span> <span class="o">=</span> <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
+</code></pre></div></div>
+
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">960</span><span class="p">,</span> <span class="mi">540</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
 
-<span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>     <span class="c1">#  Model being run
+<span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">style_model</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>     <span class="c1">#  Model being run
 </span>                  <span class="n">x</span><span class="p">,</span>                           <span class="c1"># Sample input
 </span>                  <span class="n">f</span><span class="s">"{project_dir}/final.onnx"</span><span class="p">,</span> <span class="c1"># Path to save ONNX file
 </span>                  <span class="n">export_params</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>          <span class="c1"># Store trained weights
