@@ -158,7 +158,7 @@ Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we ne
 
 ### Create `ProcessInput` Function
 
-The style transfer models expect RGB channel values to be in range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
+The style transfer models expect RGB channel values to be in the range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
 
 ![processInput_compute_shader](\images\basic-in-game-style-transfer-tutorial\processInput_compute_shader.png)
 
