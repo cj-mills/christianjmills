@@ -204,7 +204,17 @@ We need to manually release the resources that get allocated for the inference `
 
 ### Create `ProcessImage()` Method
 
-Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
+Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`. 
+
+#### Method Steps
+
+1. Get the `ComputeShader` index for the specified function
+2. Create a temporary `RenderTexture` with random write access enabled to store the processed image
+3. Execute the `ComputeShader`
+4. Copy the processed image back into the original `RenderTexture`
+5. Release the temporary `RenderTexture`
+
+#### Complete Method
 
 ![unity-ProcessImage-method](..\images\end-to-end-in-game-style-transfer-tutorial\unity-ProcessImage-method.png)
 
@@ -212,35 +222,37 @@ Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput
 
 ### Create `StylizeImage()` Method
 
+We'll create a new method to handle stylizing individual frames from the camera. This method will take in the `src` `RenderTexture` from the game camera and copy the stylized image back into that same `RenderTexture`.
 
+#### Method Steps:
 
-#### Process Input Image
+1. Resize the camera input to the `targetHeight`
 
+   If the height of `src` is larger than the `targetHeight`, we'll calculate the new dimensions to downscale the camera input. We'll then adjust the new dimensions to be multiples of 8. This is to make sure we don't loose parts of the image after applying the processing steps with the `Compute shader`.
 
+2. Apply preprocessing steps to the image
 
+   We'll call the `ProcessImage()` method and pass `rTex` along with the name for the `ProcessInput()` method in the `ComputeShader`. The result will be stored in `rTex`.
 
+3. Execute the model
 
-#### Perform Inference
+   We'll use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
 
-We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
+4. Apply the postprocessing steps to the model output
 
+   We'll call the `ProcessImage()` method and pass `rTex` along with the name for the `ProcessOutput()` method in the `ComputeShader`. The result will be stored in `rTex`.
 
+5. Copy the stylized image to the `src` `RenderTexture`
 
-#### Process the  Output
+   We'll use the `Graphics.Blit()` method to copy the final stylized image into the `src` `RenderTexure`.
 
-We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to sdfklja.
+6. Release the temporary `RenderTexture`
 
-
+   Finally, we'll release the temporary `RenderTexture`.
 
 #### Complete Method
 
 ![unity-StylizeImage-method](..\images\end-to-end-in-game-style-transfer-tutorial\unity-StylizeImage-method.png)
-
-
-
-
-
-
 
 
 
