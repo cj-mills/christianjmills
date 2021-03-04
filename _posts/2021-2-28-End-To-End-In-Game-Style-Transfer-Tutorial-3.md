@@ -269,15 +269,13 @@ We'll be calling the `StylizeImage()` method from the `OnRenderImage()` method i
 
 <img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-OnRenderImage-method.png" alt="unity-OnRenderImage-method" style="zoom: 30%;" />
 
-That completes the `StyleTransfer` script. Now we need to attach it the active camera in the scene.
+That completes the `StyleTransfer` script. Next we'll attach it to the active camera in the scene.
 
 
 
 ## Attach Script to Camera
 
 To run the `StyleTransfer` script, we need to attach it to the active `Camera` in the scene.
-
-
 
 ### Open the `Biped` Scene
 
