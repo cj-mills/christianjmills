@@ -93,7 +93,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      6 min read
+      7 min read
     
 </span></p>
 
@@ -315,21 +315,60 @@ window.onload = wrap_img;
 
 <p>Next, we’ll make a new method to execute the <code class="highlighter-rouge">ProcessInput()</code> and <code class="highlighter-rouge">ProcessOutput()</code> functions in our <code class="highlighter-rouge">ComputeShader</code>. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We’ll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of <code class="highlighter-rouge">[0, 1]</code>. As mentioned previously, the model expects values in the range of <code class="highlighter-rouge">[0, 255]</code>.</p>
 
+<h4 id="method-steps">Method Steps</h4>
+
+<ol>
+  <li>Get the <code class="highlighter-rouge">ComputeShader</code> index for the specified function</li>
+  <li>Create a temporary <code class="highlighter-rouge">RenderTexture</code> with random write access enabled to store the processed image</li>
+  <li>Execute the <code class="highlighter-rouge">ComputeShader</code></li>
+  <li>Copy the processed image back into the original <code class="highlighter-rouge">RenderTexture</code></li>
+  <li>Release the temporary <code class="highlighter-rouge">RenderTexture</code></li>
+</ol>
+
+<h4 id="complete-method">Complete Method</h4>
+
 <p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-ProcessImage-method.png" alt="unity-ProcessImage-method" /></p>
 
 <h3 id="create-stylizeimage-method">Create <code class="highlighter-rouge">StylizeImage()</code> Method</h3>
 
-<h4 id="process-input-image">Process Input Image</h4>
+<p>We’ll create a new method to handle stylizing individual frames from the camera. This method will take in the <code class="highlighter-rouge">src</code> <code class="highlighter-rouge">RenderTexture</code> from the game camera and copy the stylized image back into that same <code class="highlighter-rouge">RenderTexture</code>.</p>
 
-<h4 id="perform-inference">Perform Inference</h4>
+<h4 id="method-steps-1">Method Steps:</h4>
 
-<p>We’ll then use the <code class="highlighter-rouge">engine.Execute()</code> method to run the model with the current <code class="highlighter-rouge">input</code>. We can store the raw output from the model in a new <code class="highlighter-rouge">Tensor</code>.</p>
+<ol>
+  <li>
+    <p>Resize the camera input to the <code class="highlighter-rouge">targetHeight</code></p>
 
-<h4 id="process-the--output">Process the  Output</h4>
+    <p>If the height of <code class="highlighter-rouge">src</code> is larger than the <code class="highlighter-rouge">targetHeight</code>, we’ll calculate the new dimensions to downscale the camera input. We’ll then adjust the new dimensions to be multiples of 8. This is to make sure we don’t loose parts of the image after applying the processing steps with the <code class="highlighter-rouge">Compute shader</code>.</p>
+  </li>
+  <li>
+    <p>Apply preprocessing steps to the image</p>
 
-<p>We need to process the raw output from the model before we can display it to the user. We’ll first copy the model output to sdfklja.</p>
+    <p>We’ll call the <code class="highlighter-rouge">ProcessImage()</code> method and pass <code class="highlighter-rouge">rTex</code> along with the name for the <code class="highlighter-rouge">ProcessInput()</code> method in the <code class="highlighter-rouge">ComputeShader</code>. The result will be stored in <code class="highlighter-rouge">rTex</code>.</p>
+  </li>
+  <li>
+    <p>Execute the model</p>
 
-<h4 id="complete-method">Complete Method</h4>
+    <p>We’ll use the <code class="highlighter-rouge">engine.Execute()</code> method to run the model with the current <code class="highlighter-rouge">input</code>. We can store the raw output from the model in a new <code class="highlighter-rouge">Tensor</code>.</p>
+  </li>
+  <li>
+    <p>Apply the postprocessing steps to the model output</p>
+
+    <p>We’ll call the <code class="highlighter-rouge">ProcessImage()</code> method and pass <code class="highlighter-rouge">rTex</code> along with the name for the <code class="highlighter-rouge">ProcessOutput()</code> method in the <code class="highlighter-rouge">ComputeShader</code>. The result will be stored in <code class="highlighter-rouge">rTex</code>.</p>
+  </li>
+  <li>
+    <p>Copy the stylized image to the <code class="highlighter-rouge">src</code> <code class="highlighter-rouge">RenderTexture</code></p>
+
+    <p>We’ll use the <code class="highlighter-rouge">Graphics.Blit()</code> method to copy the final stylized image into the <code class="highlighter-rouge">src</code> <code class="highlighter-rouge">RenderTexure</code>.</p>
+  </li>
+  <li>
+    <p>Release the temporary <code class="highlighter-rouge">RenderTexture</code></p>
+
+    <p>Finally, we’ll release the temporary <code class="highlighter-rouge">RenderTexture</code>.</p>
+  </li>
+</ol>
+
+<h4 id="complete-method-1">Complete Method</h4>
 
 <p><img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-StylizeImage-method.png" alt="unity-StylizeImage-method" /></p>
 
