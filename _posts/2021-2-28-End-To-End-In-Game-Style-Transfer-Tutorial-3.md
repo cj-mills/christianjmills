@@ -100,7 +100,7 @@ Now that we’ve created our `ComputeShader`, we need to execute it using a `C#`
 
 ## Create `StyleTransfer` Script
 
-We need to make a new `C#` script to perform inference with the style transfer models. This script will load the model, process the input, runt the model, and process the output.
+We need to make a new `C#` script to perform inference with the style transfer model. This script will load the model, process the input, runt the model, and process the output.
 
 ### Create the Asset File
 
