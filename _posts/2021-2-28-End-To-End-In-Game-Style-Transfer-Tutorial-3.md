@@ -293,7 +293,7 @@ Now we just need to assign the ComputeShader and model assets as well as set the
 
 ### Reduce Flickering
 
-The style transfer model used in this tutorial series does not account for consistency between frames. This results in a flickering effect that can be distracting. Getting rid of this flickering entirely would require using a different (and likely less efficient) model. However, we can minimize flickering when the camera isn't moving by disabling the `Post-process layer` attached to the `Main Camera` object.
+The style transfer model used in this tutorial series does not account for consistency between frames. This results in a flickering effect that can be distracting. Getting rid of this flickering entirely would require using a different (and likely less efficient) model. However, we can minimize flickering when the camera isn't moving by disabling the `Post-process Layer` attached to the `Main Camera` object.
 
 ![unity-disable-post-process-layer](..\images\end-to-end-in-game-style-transfer-tutorial\unity-disable-post-process-layer.png)
 
