@@ -214,7 +214,7 @@ Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput
 4. Copy the processed image back into the original `RenderTexture`
 5. Release the temporary `RenderTexture`
 
-#### Complete Method
+#### Method Code
 
 ![unity-ProcessImage-method](..\images\end-to-end-in-game-style-transfer-tutorial\unity-ProcessImage-method.png)
 
@@ -232,7 +232,7 @@ We'll create a new method to handle stylizing individual frames from the camera.
 
 2. Apply preprocessing steps to the image
 
-   We'll call the `ProcessImage()` method and pass `rTex` along with the name for the `ProcessInput()` method in the `ComputeShader`. The result will be stored in `rTex`.
+   We'll call the `ProcessImage()` method and pass `rTex` along with the name for the `ProcessInput()` function in the `ComputeShader`. The result will be stored in `rTex`.
 
 3. Execute the model
 
@@ -240,7 +240,7 @@ We'll create a new method to handle stylizing individual frames from the camera.
 
 4. Apply the postprocessing steps to the model output
 
-   We'll call the `ProcessImage()` method and pass `rTex` along with the name for the `ProcessOutput()` method in the `ComputeShader`. The result will be stored in `rTex`.
+   We'll call the `ProcessImage()` method and pass `rTex` along with the name for the `ProcessOutput()` function in the `ComputeShader`. The result will be stored in `rTex`.
 
 5. Copy the stylized image to the `src` `RenderTexture`
 
@@ -250,7 +250,7 @@ We'll create a new method to handle stylizing individual frames from the camera.
 
    Finally, we'll release the temporary `RenderTexture`.
 
-#### Complete Method
+#### Method Code
 
 ![unity-StylizeImage-method](..\images\end-to-end-in-game-style-transfer-tutorial\unity-StylizeImage-method.png)
 
@@ -258,9 +258,18 @@ We'll create a new method to handle stylizing individual frames from the camera.
 
 ### Define `OnRenderImage()` Method
 
-We'll be calling the `StylizeImage()` method from the `OnRenderImage()` method instead of the `Update()` method. Give us access to the `RenderTexture` for the game camera as well as the `RenderTexture` for the target display.
+We'll be calling the `StylizeImage()` method from the `OnRenderImage()` method instead of the `Update()` method. This gives us access to the `RenderTexture` for the game camera as well as the `RenderTexture` for the target display. We'll only call the the `StylizeImage()` method if `stylizeImage` is set to `true`. You can delete the empty `Update()` method as it's not needed in this tutorial.
 
+#### Method Steps:
 
+1. Stylize the `RenderTexture` for the game camera
+2. Copy the `RenderTexture` for the camera to the `RenderTexture` for the target display. 
+
+#### Method Code
+
+<img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-OnRenderImage-method.png" alt="unity-OnRenderImage-method" style="zoom: 30%;" />
+
+That completes the `StyleTransfer` script. Now we need to attach it the active camera in the scene.
 
 
 
