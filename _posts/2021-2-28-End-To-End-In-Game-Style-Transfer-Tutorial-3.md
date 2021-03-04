@@ -56,7 +56,7 @@ Open the `Style_Transfer` folder and make a new folder called `Models`.
 
 ![create-models-folder](..\images\end-to-end-in-game-style-transfer-tutorial\create-models-folder.png)
 
-Drag and drop the ONNX files into the `Models` folder.
+Drag and drop the ONNX file into the `Models` folder.
 
 ![unity-import-onnx-file](..\images\end-to-end-in-game-style-transfer-tutorial\unity-import-onnx-file.png)
 
