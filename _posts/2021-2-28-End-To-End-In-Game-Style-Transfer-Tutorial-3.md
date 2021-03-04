@@ -150,7 +150,7 @@ Now we need to add a few variables to perform inference with the style transfer 
 
 #### Create `modelAsset` Variable
 
-Make a new public `NNModel` variable called `modelAsset`. We’ll assign one of the ONNX files to this variable in the Unity Editor.
+Make a new public `NNModel` variable called `modelAsset`. We’ll assign the ONNX file to this variable in the Unity Editor.
 
 ![unity-modelAsset-variable](..\images\end-to-end-in-game-style-transfer-tutorial\unity-modelAsset-variable.png)
 
