@@ -42,7 +42,7 @@ We'll place all our additions to the project in a new asset folder called `Style
 
 ## Import Model
 
-Next, we need to import the trained ONNX file that we trained in Part 2.
+Next, we need to import the trained ONNX file that we created in Part 2.
 
 ### Download ONNX Files
 
