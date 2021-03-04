@@ -28,8 +28,6 @@ search_exclude: false
 
 * [Conclusion](#conclusion)
 
-  
-
 ## Introduction
 
 In this post we'll implement our trained style transfer model in Unity. 
@@ -299,7 +297,7 @@ The style transfer model used in this tutorial series does not account for consi
 
 ## Test it Out
 
-At last, we can press the play button and see how it runs.
+At last, we can press the play button and see how it runs. If you went through my [previous](https://christianjmills.com/Basic-In-Game-Style-Transfer-Tutorial/) in-game style transfer tutorial, you should see significantly higher frame rates this time.
 
 ![unity-style-transfer-screenshot](..\images\end-to-end-in-game-style-transfer-tutorial\unity-style-transfer-screenshot.png)
 
@@ -307,5 +305,11 @@ At last, we can press the play button and see how it runs.
 
 ## Conclusion
 
+We now have a complete workflow for implementing in-game style transfer in Unity. We can train as many style transfer models as we want using the Colab Notebook and drop them into our project. I wasn't expecting to get such a significant improvement in frame rate compared to my first attempt at in-game style transfer. This implementation might actually be usable on non-flagship graphics cards.
 
+There are still two major drawbacks to the approach covered in this tutorial. First, you need to train separate models for each specific style image. Second, the flickering is still present.
+
+There is a more recent variant of the style transfer model used in this tutorial that can perform apply the style of arbitrary images. However, that version takes significantly more time to fully train. That version also still results in the same flickering effect.
+
+I had planned to use a [style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that provides more consistency between frames for this tutorial. Unfortunately, I wasn't able to consistently get satisfying results and decided to exclude it. I still plan to make a stand alone post covering how to adapt the project from this tutorial series to use that model. 
 
