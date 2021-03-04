@@ -48,6 +48,14 @@ Right-click the `final.onnx` in your Google Drive project folder and click `Down
 
 ![gdrive-download-onnx-file](..\images\end-to-end-in-game-style-transfer-tutorial\gdrive-download-onnx-file.png)
 
+
+
+Alternatively, you can download the model that I'll be using from the link below.
+
+* [Mosaic Style Transfer Model](https://drive.google.com/file/d/1YM_PG2XFXUJnhj8eOZtpxEyXMR8rRBE5/view?usp=sharing)
+
+
+
 ### Import ONNX Files to Assets
 
 Open the `Style_Transfer` folder and make a new folder called `Models`.
