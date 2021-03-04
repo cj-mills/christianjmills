@@ -18,19 +18,11 @@ search_exclude: false
 
 * [Import Model](#import-model)
 
-* [](#)
-
 * [Create Compute Shader](#create-compute-shader)
 
 * [Create `StyleTransfer` Script](#create-styletransfer-script)
 
 * [Attach Script to Camera](#attach-script-to-camera)
-
-* [](#)
-
-* [](#)
-
-* [](#)
 
 * [Test it Out](#test-it-out)
 
@@ -269,7 +261,7 @@ We'll be calling the `StylizeImage()` method from the `OnRenderImage()` method i
 
 <img src="..\images\end-to-end-in-game-style-transfer-tutorial\unity-OnRenderImage-method.png" alt="unity-OnRenderImage-method" style="zoom: 30%;" />
 
-That completes the `StyleTransfer` script. Next we'll attach it to the active camera in the scene.
+That completes the `StyleTransfer` script. Next, we'll attach it to the active camera in the scene.
 
 
 
@@ -277,41 +269,43 @@ That completes the `StyleTransfer` script. Next we'll attach it to the active ca
 
 To run the `StyleTransfer` script, we need to attach it to the active `Camera` in the scene.
 
-### Open the `Biped` Scene
-
-In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.unity` asset. You don't need to save the current scene if you get prompted to do so.
-
-![select_biped_scene](..\images\basic-in-game-style-transfer-tutorial\select_biped_scene.png)
-
-
-
 ### Select the Camera
 
+Open the `Biped` scene and expand the `_Scene` object in the `Hierarchy` tab. Select the `Main Camera` object from the dropdown list.
 
+![unity-select-main-camera-object](..\images\end-to-end-in-game-style-transfer-tutorial\unity-select-main-camera-object.png)
+
+**Note:** If you're following along with the FPS Microgame, the Main Camera is a child of the `Player` object. However, the active camera is actually the `WeaponCamera` object which is a child of the `Main Camera`.
 
 ### Attach the `StyleTransfer` Script
 
-With the `StyleConverter` object selected, drag and drop the `StyleTransfer` script into the `Inspector` tab.
+With the `Main Camera` object still selected, drag and drop the `StyleTransfer` script into the bottom of the `Inspector` tab.
 
-![attach_styleTransfer_script](..\images\basic-in-game-style-transfer-tutorial\attach_styleTransfer_script.png)
+![unity-attach-StyleTransfer-script](..\images\end-to-end-in-game-style-transfer-tutorial\unity-attach-StyleTransfer-script.png)
 
 ### Assign the Assets
 
+Now we just need to assign the ComputeShader and model assets as well as set the inference backend. Drag and drop the `StyleTransferShader` asset into the `StyleTransferShader` spot in the `Inspector` tab. Then, drag and drop the `final.onnx` asset into the `Model Asset` spot in the `Inspector` tab. Finally, select `Compute Precompiled` from the `WorkerType` dropdown.
+
+![unity-configure-StyleTransfer-component](..\images\end-to-end-in-game-style-transfer-tutorial\unity-configure-StyleTransfer-component.png)
 
 
 
+### Reduce Flickering
+
+The style transfer model used in this tutorial series does not account for consistency between frames. This results in a flickering effect that can be distracting. Getting rid of this flickering entirely would require using a different (and likely less efficient) model. However, we can minimize flickering when the camera isn't moving by disabling the `Post-process layer` attached to the `Main Camera` object.
+
+![unity-disable-post-process-layer](..\images\end-to-end-in-game-style-transfer-tutorial\unity-disable-post-process-layer.png)
 
 ## Test it Out
 
-We can finally press the play button and see how it looks.
+At last, we can press the play button and see how it runs.
 
-
+![unity-style-transfer-screenshot](..\images\end-to-end-in-game-style-transfer-tutorial\unity-style-transfer-screenshot.png)
 
 
 
 ## Conclusion
 
 
-
-#### [GitHub Repository]()
 
