@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post covers how implement the style transfer model in Unity with the Barracuda library.
 categories: [style_transfer, pytorch, unity, tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
