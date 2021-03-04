@@ -136,7 +136,7 @@ We'll also add a public `bool` variable to indicate whether we want to stylize t
 
 ### Create TargetHeight Variable
 
-Getting playable frame rates at higher resolutions can be difficult even when using a smaller model. We can help out our GPU by scaling down the camera input to a lower resolution before feeding it to the model. We would then scale the output image back up to the source resolution. This can also yield results closer to what during training if you trained the model with lower resolution images.
+Getting playable frame rates at higher resolutions can be difficult even when using a smaller model. We can help out our GPU by scaling down the camera input to a lower resolution before feeding it to the model. We would then scale the output image back up to the source resolution. This can also yield results closer to the test results during training if you trained the model with lower resolution images.
 
 Create a new public `int` variable named `targetHeight`. We'll set the default value to `540` which is the same as the test image used in the Colab Notebook.
 
