@@ -37,7 +37,82 @@ After I update the PoseNet tutorial, I plan to work on getting a facial pose est
 
 ## Links of the Last Few Weeks
 
-### PyTorch3D
+### [PyTorch3D: A library for deep learning with 3D data](https://pytorch3d.org/)
+
+![](https://raw.githubusercontent.com/facebookresearch/pytorch3d/master/.github/dolphin_deform.gif)
+
+Last year, the FacebookAI research team introduced a deep learning library that aims to make working with 3D data a lot easier. I didn't learn about it until I decided to click on a video YouTube had been recommending for weeks. The library supports batching of inputs with different sizes. This is helpful since cropping a 3D mesh isn't as straight forward as cropping 2D images. The library also supports several common operations for 3D data as well as a differentiable rendering API. My mind instantly jumped to wondering what it would take to integrate this with Blender. I'll plan to make time soon so that I can work through the [available tutorials](https://github.com/facebookresearch/pytorch3d#tutorials).
 
 
 
+### [Neural Body: Implicit Neural Representations with Structured Latent Codes for Novel View Synthesis of Dynamic Humans](https://github.com/zju3dv/neuralbody)
+
+![](https://camo.githubusercontent.com/b1b6429cb394905284abe3b365e6bec6233592e9fdfb46df61660b65b7f0a6b3/68747470733a2f2f7a6a753364762e6769746875622e696f2f6e657572616c626f64792f696d616765732f6d6f6e6f63756c61722e676966)
+
+
+
+### [Dev Simulator: A Coding RPG](https://simulator.dev/)
+
+This is an upcoming RPG where players build a real full stack web app while playing through the storyline with 8-bit co-workers.
+
+
+
+### [Training models on Multiple GPUs using fastai](https://jarvislabs.ai/blogs/multiGPUs)
+
+This blog post explores different approaches to training models using multiple GPUs.
+
+
+
+### [Git scraping](https://simonwillison.net/2021/Mar/5/git-scraping/)
+
+This five minute video demonstrates how to schedule web scrapers using GitHub Actions.
+
+
+
+[PyTorch 1.8](https://pytorch.org/blog/pytorch-1.8-released/)
+
+The latest version of PyTorch has been released and comes with a lot of new updates including beta support for AMD GPUs.
+
+
+
+### [Introducing Noisy Imagenette](https://tmabraham.github.io/blog/noisy_imagenette)
+
+This is a new version of the Imagenette library with noisy labels.
+
+
+
+### [Taming Transformers for High-Resolution Image Synthesis](https://github.com/CompVis/taming-transformers)
+
+This is an impressive new model that can be trained to perform a wide variety of image generation tasks. Check out the related [Two Minute Papers video](https://www.youtube.com/watch?v=o7dqGcLDf0A) to see what it can do.
+
+
+
+### [StyleGAN Components](https://isaac-flath.github.io/fastblog/computer%20vision/gan/2021/03/01/StyleGanComponents.html)
+
+This blog post covers the key components of a StyleGAN model and uses them to build a basic version of the model.
+
+
+
+[Manim](https://github.com/ManimCommunity/manim)
+
+An animation engine for creating precise animations in Python. This is a fork of the animation engine used in the videos on the 3Blue1Brown YouTube channel.
+
+
+
+### [Building Simulation Applications with Unreal Engine](https://www.twitch.tv/videos/936853835)
+
+
+
+### [How to use Nvidia DLSS in Unreal Engine](https://www.twitch.tv/videos/945514664)
+
+
+
+### [All of the python 3.9 standard library](https://gist.github.com/jph00/d5981f649a83a754946964cf22322cb2)
+
+Organized and hyperlinked index to every module, function, and class in the Python standard library  
+
+
+
+### [Multimodal Neurons in Artificial Neural Networks](https://openai.com/blog/multimodal-neurons/)
+
+A recent post by OpenAI that explores how their Contrastive Language-Image Pre-Training (CLIP) model responds to the same concept whether presented literally, symbolically, or conceptually.
