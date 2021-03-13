@@ -59,7 +59,7 @@ This blog post explores different approaches to training models using multiple G
 
 #### [Introducing Noisy Imagenette](https://tmabraham.github.io/blog/noisy_imagenette)
 
-This is a new version of the Imagenette library with noisy labels.
+This is a new version of the [Imagenette](https://github.com/fastai/imagenette) library with noisy labels.
 
 #### [Taming Transformers for High-Resolution Image Synthesis](https://github.com/CompVis/taming-transformers)
 
