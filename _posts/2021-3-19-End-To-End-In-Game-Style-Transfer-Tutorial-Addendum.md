@@ -59,10 +59,6 @@ If you make new functions, be sure to replace the function names in the `StyleTr
 
 
 
-
-
-
-
 ### Replace the `modelAsset`
 
 Download the ONNX file from your Google Drive just like in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#download-onnx-files) and drop it into your `Models` folder. You can also download the model I'll be using from the link below.
