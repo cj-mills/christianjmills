@@ -14,7 +14,7 @@ search_exclude: false
 
 * [Introduction](#introduction)
 * [Open Google Colab Notebook](#open-google-colab-notebook)
-* [Continue in the Notebook](#continue-in-the-notebook)
+* [Modify the Unity Project](#modify-the-unity-project)
 * [Conclusion](#conclusion)
 
 ## Introduction
