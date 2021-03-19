@@ -39,19 +39,31 @@ First, you need to get your own copy of the Colab Notebook. Open the notebook us
 
 ### Continue in the Notebook
 
-Now you can follow the directions in the notebook for training the video style transfer model. Return to this post once you have exported the trained model
+Follow the directions in the notebook to train your video style transfer model. Return to this post once you have exported the trained model.
+
+### Download the  ONNX file
+
+
 
 
 
 ## Modify the Unity Project
 
-The only thing we need to add to the Unity project are some new image processing functions in the `ComputeShader` we made in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#create-compute-shader). This time, we need to remap the RGB values from `[0,1]` to `[-1, 1]` instead of `[0,255]`. You can either swap out the code for the existing processing functions or make new ones like in the image below.
+
+
+### Update the `ComputeShader`
+
+The only thing we need to add to the Unity project are some new image processing functions in the `ComputeShader` we made in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#create-compute-shader). This time, we need to remap the RGB values from `[0,1]` to `[-1,1]` instead of `[0,255]`. You can either swap out the code for the existing processing functions or make new ones like in the image below.
 
 
 
 If you make new functions, be sure to replace the function names in the `StyleTransfer.cs` script.
 
 
+
+### Replace the `modelAsset`
+
+Download the ONNX file from your Google Drive just like in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#download-onnx-files) and drop it into your `Models` folder.
 
 Now we just need to assign the ONNX file to the `modelAsset` variable in the `Inspector` tab.
 
