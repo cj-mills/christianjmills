@@ -41,15 +41,11 @@ First, you need to get your own copy of the Colab Notebook. Open the notebook us
 
 Follow the directions in the notebook to train your video style transfer model. Return to this post once you have exported the trained model.
 
-### Download the  ONNX file
-
-
-
 
 
 ## Modify the Unity Project
 
-
+Now we just need to updated our Unity project to support the new model.
 
 ### Update the `ComputeShader`
 
