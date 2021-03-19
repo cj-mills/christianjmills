@@ -3,7 +3,7 @@ title: End-to-End In-Game Style Transfer Tutorial Addendum
 layout: post
 toc: false
 comments: true
-description: This post covers how to use a different style transfer model meant for video instead of the model used in this tutorial series.
+description: This post covers how to use a different style transfer model that is specialized for video.
 categories: [style_transfer, pytorch, unity, tutorial]
 hide: true
 permalink: /:title/
