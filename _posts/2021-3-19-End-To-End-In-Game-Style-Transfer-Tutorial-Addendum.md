@@ -72,9 +72,3 @@ Now we just need to assign the ONNX file to the `modelAsset` variable in the `In
 ## Conclusion
 
 
-
-
-
-
-
-[GitHub Repository](https://github.com/cj-mills/End-to-End-In-Game-Style-Transfer-Tutorial)
