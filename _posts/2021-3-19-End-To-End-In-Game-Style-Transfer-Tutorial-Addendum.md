@@ -13,7 +13,7 @@ search_exclude: false
 ### Previous: [Part 1](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-1/) [Part 1.5](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-1-5/)
 
 * [Introduction](#introduction)
-* [Open Google Colab Notebook](#open-google-colab-notebook)
+* [Train the Model](#train-the-model)
 * [Modify the Unity Project](#modify-the-unity-project)
 * [Conclusion](#conclusion)
 
@@ -31,7 +31,7 @@ We'll be using a modified version of the Google Colab notebook from [Part 2](htt
 
 
 
-## Open Google Colab Notebook
+## Train the Model
 
 First, you need to get your own copy of the Colab Notebook. Open the notebook using the link below and save your own copy just like in [Part 2](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-2/#open-google-colab-notebook).
 
@@ -39,7 +39,7 @@ First, you need to get your own copy of the Colab Notebook. Open the notebook us
 
 ### Continue in the Notebook
 
-Follow the directions in the notebook to train your video style transfer model. Return to this post once you have exported the trained model.
+Follow the directions in the notebook to train your own video style transfer model. Return to this post once you have exported the trained model.
 
 
 
@@ -53,15 +53,21 @@ The only thing we need to add to the Unity project are some new image processing
 
 ![unity-updated-compute-shader](..\images\end-to-end-in-game-style-transfer-tutorial\unity-updated-compute-shader.png)
 
-
-
 If you make new functions, be sure to replace the function names in the `StyleTransfer.cs` script.
+
+![unity-update-styleTransfer-script](..\images\end-to-end-in-game-style-transfer-tutorial\unity-update-styleTransfer-script.png)
+
+
+
+
 
 
 
 ### Replace the `modelAsset`
 
-Download the ONNX file from your Google Drive just like in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#download-onnx-files) and drop it into your `Models` folder.
+Download the ONNX file from your Google Drive just like in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#download-onnx-files) and drop it into your `Models` folder. You can also download the model I'll be using from the link below.
+
+* 
 
 Now we just need to assign the ONNX file to the `modelAsset` variable in the `Inspector` tab.
 
