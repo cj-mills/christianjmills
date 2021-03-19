@@ -55,6 +55,8 @@ Follow the directions in the notebook to train your video style transfer model. 
 
 The only thing we need to add to the Unity project are some new image processing functions in the `ComputeShader` we made in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#create-compute-shader). This time, we need to remap the RGB values from `[0,1]` to `[-1,1]` instead of `[0,255]`. You can either swap out the code for the existing processing functions or make new ones like in the image below.
 
+![unity-updated-compute-shader](..\images\end-to-end-in-game-style-transfer-tutorial\unity-updated-compute-shader.png)
+
 
 
 If you make new functions, be sure to replace the function names in the `StyleTransfer.cs` script.
