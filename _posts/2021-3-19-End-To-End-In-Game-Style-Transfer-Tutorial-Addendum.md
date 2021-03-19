@@ -19,7 +19,7 @@ search_exclude: false
 
 ## Introduction
 
-When I was first planning out this tutorial series, I had intended to use a [different style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training). This other model was designed to generate more consistent output to better work with video. Unfortunately, I found I was unable to reliably get good results with that model in a Unity environment. Since I already dumped so much time into working with this model, I figured I might as well make a tutorial for anyone that wants to mess around with it.
+When I was first planning out this tutorial series, I had intended to use a [different style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training). This other model is designed to generate more consistent output to better work with video. Unfortunately, I found I was unable to reliably get good results with that model in a Unity environment. Since I already dumped so much time into working with this model, I figured I might as well make a tutorial for anyone that wants to mess around with it.
 
 **Important:** This post assumes that you have already gone through the previous parts of this tutorial series. You can go to the start of this series by clicking the link below.
 
@@ -63,11 +63,11 @@ If you make new functions, be sure to replace the function names in the `StyleTr
 
 Download the ONNX file from your Google Drive just like in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#download-onnx-files) and drop it into your `Models` folder. You can also download the model I'll be using from the link below.
 
-* 
+* [Mosaic Style Transfer Model](https://drive.google.com/file/d/1Q3RQSri3RURgfpjK2WEcQr8EBrkeoK9n/view?usp=sharing)
 
-Now we just need to assign the ONNX file to the `modelAsset` variable in the `Inspector` tab.
+Now we just need to assign the ONNX file to the `modelAsset` variable in the `Inspector` tab. This model is much less efficient than the one use earlier in this series so we'll lower the `targetHeight` as well.
 
- 
+![unity-inspector-add-video-final](..\images\end-to-end-in-game-style-transfer-tutorial\unity-inspector-add-video-final.png)
 
 ## Conclusion
 
