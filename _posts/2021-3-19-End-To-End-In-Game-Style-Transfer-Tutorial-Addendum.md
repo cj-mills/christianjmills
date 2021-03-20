@@ -10,7 +10,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-### Previous: [Part 1](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-1/) [Part 1.5](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-1-5/)
+### Previous: [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/)
 
 * [Introduction](#introduction)
 * [Train the Model](#train-the-model)
@@ -20,7 +20,7 @@ search_exclude: false
 
 ## Introduction
 
-When I was first planning out this tutorial series, I had intended to use a [different style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training). This other model is designed to generate more consistent output to better work with video. Unfortunately, I found I was unable to reliably get good results with that model in a Unity environment. Since I already dumped so much time into working with this model, I figured I might as well make a tutorial for anyone that wants to mess around with it.
+When I was first planning out this tutorial series, I had intended to use a [different style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training). This other model is designed to reduce flickering to better work with video. Unfortunately, I found I was unable to reliably get good results with that model in a Unity environment. I figured I might as well make a tutorial for anyone that wants to mess around that model since I already dumped so much time into it.
 
 **Important:** This post assumes that you have already gone through the previous parts of this tutorial series. You can go to the start of this series by clicking the link below.
 
@@ -76,9 +76,7 @@ Now we just need to assign the ONNX file to the `modelAsset` variable in the `In
 
 You'll probably notice that the in-game output for this model it less detailed than for the other model. It also doesn't completely get rid of the flickering. These are some of the reasons I ended up not using this model for the main tutorial.
 
-
-
-
+ 
 
 ## Conclusion
 
