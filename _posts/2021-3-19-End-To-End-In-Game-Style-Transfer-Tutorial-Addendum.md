@@ -15,6 +15,7 @@ search_exclude: false
 * [Introduction](#introduction)
 * [Train the Model](#train-the-model)
 * [Modify the Unity Project](#modify-the-unity-project)
+* [Test it Out](#test-it-out)
 * [Conclusion](#conclusion)
 
 ## Introduction
@@ -69,6 +70,16 @@ Now we just need to assign the ONNX file to the `modelAsset` variable in the `In
 
 ![unity-inspector-add-video-final](..\images\end-to-end-in-game-style-transfer-tutorial\unity-inspector-add-video-final.png)
 
+
+
+## Test it Out
+
+You'll probably notice that the in-game output for this model it less detailed than for the other model. It also doesn't completely get rid of the flickering. These are some of the reasons I ended up not using this model for the main tutorial.
+
+
+
+
+
 ## Conclusion
 
-
+This model works great for videos where the scene doesn't change too drastically. Unfortunately, it isn't well suited for a dynamic, real-time, video game environment. The default model is way too large to get playable frame rates and it quickly loses detail when its size is reduced.
