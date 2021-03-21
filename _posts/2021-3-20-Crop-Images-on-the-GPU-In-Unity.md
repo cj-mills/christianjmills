@@ -71,17 +71,21 @@ We'll determine what part of `rTex` we need to copy by calculating either `(imag
 We can copy part of `rTex` to `tempTex` using the `Graphics.CopyTexture()` method. We need to specify several parameters in order to use this method to crop images.
 
 1. `src`: The original image
-2. `dst`: An empty square `RenderTexture`
+2. `srcElement`: The source texture element, set to `0`
+   * Not relevant for our use case
 3. `srcMip`: The mipmap level for the image `RenderTexture`, set to `0`
    * Not relevant for our use case
-4. `dstElement`: The destination texture element, set to `0`
+4. `srcX`: The X coordinate of the top left corner of the center square of the original image
+5. `srcY`: The Y coordinate of the top left corner of the center square of the original image
+6. `srcWidth`: Width of the new square image
+7. `srcHeight`: Height of the new square image
+8. `dst`: An empty square `RenderTexture`
+9. `dstElement`: The destination texture element, set to `0`
    * Not relevant for our use case
-5. `srcX`: The X coordinate of the top left corner of the center square of the original image
-6. `srcY`: The Y coordinate of the top left corner of the center square of the original image
-7. `srcWidth`: Width of the new square image
-8. `srcHeight`: Height of the new square image
-9. `dstX`: The X coordinate of the new square image to start copying to
-10. `dstY`: The Y coordinate of the new square image to start copying to
+10. `dstMip`: The mipmap level for destination texture, set to `0`
+    * Not relevant for our use case
+11. `dstX`: The X coordinate of the top left corner of the new square image
+12. `dstY`: The Y coordinate of the top left corner of the new square image
 
 After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `screen` with the new square image and adjust the shape of the screen to fit the new image. 
 
