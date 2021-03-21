@@ -11,8 +11,10 @@ search_exclude: false
 ---
 
 * [Introduction](#introduction)
-* [Train the Model](#train-the-model)
-* [Modify the Unity Project](#modify-the-unity-project)
+* [Create a 2D Unity Project](#create-2d-unity-project)
+* [Create `Crop.cs` Script](#create-crop.cs-script)
+* [Create Screen GameObject](#create-screen-gameobject)
+* [Create ImageCropper](#create-imagecropper)
 * [Test it Out](#test-it-out)
 * [Conclusion](#conclusion)
 
