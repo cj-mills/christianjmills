@@ -52,7 +52,7 @@ Create a public `GameObject` variable called `screen`. We'll be using this scree
 
 ### Define `Start()` Method
 
-In the `Start()` method, we'll store a copy the original test image in the `image` `RenderTexture`. We can do so by getting a reference to the `Texture` attached to the `screen` and using the `Graphics.Blit()` method. We'll also adjust the camera so that we can see the entire image. 
+In the `Start()` method, we'll store a copy the original test image in the `image` `RenderTexture`. We can do so by getting a reference to the `Texture` attached to the `screen` and using the [`Graphics.Blit()`](https://docs.unity3d.com/ScriptReference/Graphics.Blit.html) method. We'll also adjust the camera so that we can see the entire image. 
 
 ![crop-script-start-method](..\images\crop-images-on-gpu-tutorial.png\crop-script-start-method.png)
 
@@ -60,7 +60,7 @@ In the `Start()` method, we'll store a copy the original test image in the `imag
 
 ### Define `Update()` Method
 
-First, we need to make another copy of the original image so that we can edit it. We'll store this copy in a temporary `RenderTexture` called `rTex` that will get released at the end of the method. 
+First, we need to make another copy of the original image so that we can edit it. We'll store this copy in a [temporary](https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html) `RenderTexture` called `rTex` that will get released at the end of the method. 
 
 We can't change the dimensions of a `RenderTexture` after it's been created. Instead, we'll create a cropped image by copying part of `rTex` to another temporary `RenderTexture` called `tempTex` that will be square. We can copy the square image to `rTex` after we release the current `RenderTexture` assigned to `rTex` and make a new square one.
 
@@ -68,7 +68,7 @@ The size of `tempTex` will depend on whether the original image is wider or tall
 
 We'll determine what part of `rTex` we need to copy by calculating either `(image.width - image.height) / 2f` or `(image.height - image.width) / 2f` depending on whether the image is wider or taller.
 
-We can copy part of `rTex` to `tempTex` using the `Graphics.CopyTexture()` method. We need to specify several parameters in order to use this method to crop images.
+We can copy part of `rTex` to `tempTex` using the [`Graphics.CopyTexture()`](https://docs.unity3d.com/ScriptReference/Graphics.CopyTexture.html) method. We need to specify several parameters in order to use this method to crop images.
 
 1. `src`: The original image
 2. `srcElement`: The source texture element, set to `0`
