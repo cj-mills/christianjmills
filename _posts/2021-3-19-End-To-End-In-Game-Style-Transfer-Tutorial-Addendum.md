@@ -76,7 +76,7 @@ Now we just need to assign the ONNX file to the `modelAsset` variable in the `In
 
 You'll probably notice that this model doesn't preserve as much fine detail as the other model. This is because I had to significantly reduce the size of the model to get playable frame rates. The full size model is able to preserve much more detail, but is too large to get playable frame rates on any modern graphics card. Additionally, the model doesn't completely get rid of the flickering effect.
 
-
+![unity-video-style-transfer-screenshot](..\images\end-to-end-in-game-style-transfer-tutorial\unity-video-style-transfer-screenshot.png)
 
  
 
