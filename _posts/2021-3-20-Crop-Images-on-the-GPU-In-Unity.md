@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post covers how to efficiently crop images in Unity with a GPU.
 categories: [unity, tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
