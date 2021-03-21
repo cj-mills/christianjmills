@@ -1,5 +1,5 @@
 ---
-title: How to Crop Images with a GPU in Unity
+title: How to Crop Images With a GPU in Unity
 layout: post
 toc: false
 comments: true
