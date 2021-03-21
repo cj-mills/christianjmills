@@ -11,8 +11,8 @@ search_exclude: false
 ---
 
 * [Introduction](#introduction)
-* [Create a 2D Unity Project](#create-2d-unity-project)
-* [Create `Crop.cs` Script](#create-crop.cs-script)
+* [Create a 2D Unity Project](#create-a-2d-unity-project)
+* [Create `Crop` Script](#create-crop-script)
 * [Create Screen GameObject](#create-screen-gameobject)
 * [Create ImageCropper](#create-imagecropper)
 * [Test it Out](#test-it-out)
@@ -36,7 +36,7 @@ Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, b
 
 
 
-## Create `Crop.cs` Script
+## Create `Crop` Script
 
 In Unity, right-click an empty space in the Assets folder and select `C# Script` in the `Create` submenu. Name the new script, `Crop` and open it in your code editor.
 
