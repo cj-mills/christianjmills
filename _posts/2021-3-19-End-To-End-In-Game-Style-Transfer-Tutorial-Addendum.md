@@ -20,7 +20,7 @@ search_exclude: false
 
 ## Introduction
 
-When I was first planning out this tutorial series, I had intended to use a [different style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training). This other model is designed to reduce flickering to better work with video. Unfortunately, I found I was unable to reliably get good results with that model in a Unity environment. I figured I might as well make a tutorial for anyone that wants to mess around that model since I already dumped so much time into it.
+When I was first planning out this tutorial series, I had intended to use a [different style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training). This other model is designed to reduce flickering to better work with video. Unfortunately, I was unable to reliably get good results with that model at a playable frame rate. I figured I might as well make a tutorial for anyone who wants to mess around that model since I already dumped so much time into it.
 
 **Important:** This post assumes that you have already gone through the previous parts of this tutorial series. You can go to the start of this series by clicking the link below.
 
@@ -62,11 +62,11 @@ If you make new functions, be sure to replace the function names in the `StyleTr
 
 ### Replace the `modelAsset`
 
-Download the ONNX file from your Google Drive just like in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#download-onnx-files) and drop it into your `Models` folder. You can also download the model I'll be using from the link below.
+Download the ONNX file from your Google Drive just like in [Part 3](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-3/#download-onnx-files) and drop it into the `Models` folder. You can also download the model I'll be using from the link below.
 
-* [Mosaic Style Transfer Model](https://drive.google.com/file/d/1Q3RQSri3RURgfpjK2WEcQr8EBrkeoK9n/view?usp=sharing)
+* [Mosaic Style Transfer Model](https://drive.google.com/file/d/1s82LEQtX9sIQOGKTzpfa73CQztWoiJgv/view?usp=sharing)
 
-Now we just need to assign the ONNX file to the `modelAsset` variable in the `Inspector` tab. This model is much less efficient than the one use earlier in this series so we'll lower the `targetHeight` as well.
+Now we just need to assign the ONNX file to the `modelAsset` variable in the `Inspector` tab. This model is less efficient than the one used earlier in this series so we'll lower the `targetHeight` as well.
 
 ![unity-inspector-add-video-final](..\images\end-to-end-in-game-style-transfer-tutorial\unity-inspector-add-video-final.png)
 
@@ -74,10 +74,12 @@ Now we just need to assign the ONNX file to the `modelAsset` variable in the `In
 
 ## Test it Out
 
-You'll probably notice that the in-game output for this model it less detailed than for the other model. It also doesn't completely get rid of the flickering. These are some of the reasons I ended up not using this model for the main tutorial.
+You'll probably notice that this model doesn't preserve as much fine detail as the other model. This is because I had to significantly reduce the size of the model to get playable frame rates. The full size model is able to preserve much more detail, but is too large to get playable frame rates on any modern graphics card. Additionally, the model doesn't completely get rid of the flickering effect.
+
+
 
  
 
 ## Conclusion
 
-This model works great for videos where the scene doesn't change too drastically. Unfortunately, it isn't well suited for a dynamic, real-time, video game environment. The default model is way too large to get playable frame rates and it quickly loses detail when its size is reduced.
+This model works great for videos where the scene doesn't change too drastically. Unfortunately, it does not seem well suited for a dynamic, real-time, environment. The default model is way too large to get playable frame rates and it quickly loses detail when its size is reduced. Still, the process of trying to make it work was educational at the very least.
