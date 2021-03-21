@@ -130,7 +130,7 @@ We'll need some test images to try out the `ImageCropper`. You can use your own 
 
 
 
-Next, we need to set our Screen to use an `Unlit` shader. Otherwise it will be a bit dim. With the Screen object selected, open the `Shader` drop-down in the `Inspector` tab and select `Unlit`. 
+Next, we need to set our Screen to use an `Unlit` shader. Otherwise it will be a bit dim. With the Screen object selected, open the `Shader` drop-down menu in the `Inspector` tab and select `Unlit`. 
 
 
 
