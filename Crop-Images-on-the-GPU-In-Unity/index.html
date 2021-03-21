@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>How to Crop Images on the GPU in Unity | Christian Mills</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="How to Crop Images on the GPU in Unity" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This post covers how to efficiently crop images in Unity with a GPU." />
+<meta property="og:description" content="This post covers how to efficiently crop images in Unity with a GPU." />
+<link rel="canonical" href="https://christianjmills.com/Crop-Images-on-the-GPU-In-Unity/" />
+<meta property="og:url" content="https://christianjmills.com/Crop-Images-on-the-GPU-In-Unity/" />
+<meta property="og:site_name" content="Christian Mills" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-03-20T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"This post covers how to efficiently crop images in Unity with a GPU.","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/Crop-Images-on-the-GPU-In-Unity/"},"@type":"BlogPosting","url":"https://christianjmills.com/Crop-Images-on-the-GPU-In-Unity/","headline":"How to Crop Images on the GPU in Unity","dateModified":"2021-03-20T00:00:00-05:00","datePublished":"2021-03-20T00:00:00-05:00","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Christian Mills</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">How to Crop Images on the GPU in Unity</h1><p class="page-description">This post covers how to efficiently crop images in Unity with a GPU.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-03-20T00:00:00-05:00" itemprop="datePublished">
+        Mar 20, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      2 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#unity">unity</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#tutorial">tutorial</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#train-the-model">Train the Model</a></li>
+  <li><a href="#modify-the-unity-project">Modify the Unity Project</a></li>
+  <li><a href="#test-it-out">Test it Out</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In this post, we’ll cover how to create a square crop of an image in Unity. The approach used in this tutorial can be adapted to crop other sections of an image as well.</p>
+
+<h2 id="create-a-2d-unity-project">Create a 2D Unity Project</h2>
+
+<p>Open the Unity Hub and create a new 2D project. I’m using <code class="highlighter-rouge">Unity 2019.4.20f1</code>, but you should be fine using other versions.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-hub-create-new-project.png" alt="unity-hub-create-new-project" /></p>
+
+<h2 id="create-cropcs-script">Create <code class="highlighter-rouge">Crop.cs</code> Script</h2>
+
+<p>In Unity, right-click an empty space in the Assets folder and select <code class="highlighter-rouge">C# Script</code> in the <code class="highlighter-rouge">Create</code> submenu. Name the new script, <code class="highlighter-rouge">Crop</code> and open it in your code editor.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-create-flip-script.png" alt="unity-create-flip-script" /></p>
+
+<h3 id="define-variables">Define Variables</h3>
+
+<p>Create a public <code class="highlighter-rouge">GameObject</code> called <code class="highlighter-rouge">screen</code>. We’ll be using this screen to confirm our script is correctly cropping the test images. Add a public <code class="highlighter-rouge">bool</code> variable called <code class="highlighter-rouge">cropImage</code> as well. This will let us toggle whether to crop the image during runtime. Lastly, we’ll create a private <code class="highlighter-rouge">RenderTexture</code> called <code class="highlighter-rouge">image</code> to store a copy of the original  test image.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\crop-script-define-variables.png" alt="crop-script-public-variables" /></p>
+
+<h3 id="define-start-method">Define <code class="highlighter-rouge">Start()</code> Method</h3>
+
+<p>In the <code class="highlighter-rouge">Start()</code> method, we’ll store a copy the original test image in the <code class="highlighter-rouge">image</code> <code class="highlighter-rouge">RenderTexture</code>. We can do so by getting a reference to the <code class="highlighter-rouge">Texture</code> attached to the <code class="highlighter-rouge">screen</code> and using the <code class="highlighter-rouge">Graphics.Blit()</code> method. We’ll also adjust the camera so that we can see the entire image.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\crop-script-start-method.png" alt="crop-script-start-method" /></p>
+
+<h3 id="define-update-method">Define <code class="highlighter-rouge">Update()</code> Method</h3>
+
+<p>First, we need make another copy of the original image so that we can edit it. We’ll store this copy in a temporary <code class="highlighter-rouge">RenderTexture</code> that will get released at the end of the method. We’ll then check if <code class="highlighter-rouge">cropImage</code> is set to <code class="highlighter-rouge">true</code>.</p>
+
+<p>We can use the <code class="highlighter-rouge">Graphics.CopyTexture()</code> method included with Unity. We need to specify several parameters in order to use this method to crop images.</p>
+
+<ol>
+  <li><code class="highlighter-rouge">src</code>: The original image</li>
+  <li><code class="highlighter-rouge">dst</code>: An empty square <code class="highlighter-rouge">RenderTexture</code></li>
+  <li><code class="highlighter-rouge">srcMip</code>: The mipmap level for the image <code class="highlighter-rouge">RenderTexture</code>, set to <code class="highlighter-rouge">0</code>
+    <ul>
+      <li>Not relevant for our use case</li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">dstElement</code>: The destination texture element, set to <code class="highlighter-rouge">0</code>
+    <ul>
+      <li>Not relevant to our use case</li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">srcX</code>: The X coordinate of the original image to start copying from
+    <ul>
+      <li>This will vary depending on if the tall or wide</li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">srcY</code>: The Y coordinate of the original image to start copying from
+    <ul>
+      <li>This will vary depending on if the tall or wide</li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">srcWidth</code>: Width of the new square image</li>
+  <li><code class="highlighter-rouge">srcHeight</code>: Height of the new square image</li>
+  <li><code class="highlighter-rouge">dstX</code>: The X coordinate of the new square image to start copying to</li>
+  <li><code class="highlighter-rouge">dstY</code>: The Y coordinate of the new square image to start copying to</li>
+</ol>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\crop-script-update-method.png" alt="crop-script-update-method" /></p>
+
+<h2 id="create-screen-gameobject">Create Screen GameObject</h2>
+
+<h2 id="create-imagecropper">Create ImageCropper</h2>
+
+<h2 id="test-it-out">Test it Out</h2>
+
+<h2 id="conclusion">Conclusion</h2>
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="cj-mills/christianjmills"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/Crop-Images-on-the-GPU-In-Unity/" hidden></a>
+</article>
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>My personal blog</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/cj-mills" title="cj-mills"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/Innominate817" title="Innominate817"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
