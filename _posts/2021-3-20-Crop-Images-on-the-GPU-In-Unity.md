@@ -44,7 +44,7 @@ In Unity, right-click an empty space in the Assets folder and select `C# Script`
 
 ### Define Variables
 
-Create a public `GameObject` called `screen`. We'll be using this screen to confirm our script is correctly cropping the test images. Add a public `bool` variable called `cropImage` as well. This will let us toggle whether to crop the image during runtime. Lastly, we'll create a private `RenderTexture` called `image` to store a copy of the original  test image.
+Create a public `GameObject` variable called `screen`. We'll be using this screen to confirm our script is correctly cropping the test images. Add a public `bool` variable called `cropImage` as well. This will let us toggle whether to crop the image during runtime. Lastly, we'll create a private `RenderTexture` called `image` to store a copy of the original  test image.
 
 ![crop-script-public-variables](..\images\crop-images-on-gpu-tutorial.png\crop-script-define-variables.png)
 
