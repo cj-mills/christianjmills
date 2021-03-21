@@ -75,7 +75,7 @@ We can copy part of `rTex` to `tempTex` using the `Graphics.CopyTexture()` metho
 3. `srcMip`: The mipmap level for the image `RenderTexture`, set to `0`
    * Not relevant for our use case
 4. `dstElement`: The destination texture element, set to `0`
-   * Not relevant to our use case
+   * Not relevant for our use case
 5. `srcX`: The X coordinate of the top left corner of the center square of the original image
 6. `srcY`: The Y coordinate of the top left corner of the center square of the original image
 7. `srcWidth`: Width of the new square image
