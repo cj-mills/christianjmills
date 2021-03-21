@@ -95,7 +95,7 @@ After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `scree
 
 ## Create Screen GameObject
 
-Back in Unity, right-click an empty space In the `Hierarchy` tab and select `Quad` from the `3D Object` submenu. Name the new object `Screen`. The size will be updated automatically by the `Crop.cs` script.
+Back in Unity, right-click an empty space in the `Hierarchy` tab and select `Quad` from the `3D Object` submenu. Name the new object `Screen`. The size will be updated automatically by the `Crop.cs` script.
 
 ![unity-create-screen-object](..\images\crop-images-on-gpu-tutorial.png\unity-create-screen-object.png)
 
