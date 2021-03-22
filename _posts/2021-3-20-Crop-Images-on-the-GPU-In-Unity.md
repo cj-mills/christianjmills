@@ -40,7 +40,7 @@ Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, b
 
 In Unity, right-click an empty space in the Assets folder and select `C# Script` in the `Create` submenu. Name the new script, `Crop` and open it in your code editor.
 
-![unity-create-flip-script](..\images\crop-images-on-gpu-tutorial.png\unity-create-flip-script.png)
+![unity-create-crop-script](..\images\crop-images-on-gpu-tutorial.png\unity-create-flip-script.png)
 
 
 
