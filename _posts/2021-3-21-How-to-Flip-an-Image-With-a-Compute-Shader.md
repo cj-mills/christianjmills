@@ -120,15 +120,11 @@ To execute the compute shader, we need to first get the kernel index for the spe
 
 ### Define `Update()` Method
 
-First, we need to make another copy of the original image so that we can edit it. We'll store this copy in a [temporary](https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html) `RenderTexture` called `rTex` that will get released at the end of the method. 
+First, we need to make another copy of the original image so that we can edit it. We'll store this copy in a [temporary](https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html) `RenderTexture` called `rTex` that will get released at the end of the method.
 
-We can't change the dimensions of a `RenderTexture` after it's been created. Instead, we'll create a cropped image by copying part of `rTex` to another temporary `RenderTexture` called `tempTex` that will be square. We can copy the square image to `rTex` after we release the current `RenderTexture` assigned to `rTex` and make a new square one.
+The steps are basically the same for performing all three flip operations. We first allocate an temporary `RenderTexture` called `tempTex` to store the flipped image. We then call the `FlipImage` method. Next, we copy the flipped image to `rTex` after clearing it current values. Finally, we release resources allocated for `tempTex`. The steps for flipping the image across the diagonal axis is slightly different as we can't directly copy a flipped image with different dimensions back to `rTex`. Instead, we have to directly assign the currently active `RenderTexture` to `rTex` after clearing its current values.
 
-The size of `tempTex` will depend on whether the original image is wider or taller. We want to use the smallest side of the original image. 
-
-
-
-After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `screen` with the new square image and adjust the shape of the screen to fit the new image. 
+After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `screen` with the flipped image and adjust the shape of the screen to fit the new dimensions.
 
 ![flip-script-update-method](..\images\flip-image-compute-shader-tutorial\flip-script-update-method.png)
 
