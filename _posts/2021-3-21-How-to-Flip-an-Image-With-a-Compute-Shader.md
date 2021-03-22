@@ -138,7 +138,7 @@ Back in Unity, right-click an empty space in the `Hierarchy` tab and select `Qua
 
 ## Create ImageFlipper
 
-Right-click an empty space in the `Hierarchy` tab and select `Create Empty` from the pop-up menu. Name the empty object `ImageCropper`
+Right-click an empty space in the `Hierarchy` tab and select `Create Empty` from the pop-up menu. Name the empty object `ImageFlipper`
 
 ![unity-create-image-cropper-object](..\images\crop-images-on-gpu-tutorial.png\unity-create-image-cropper-object.png)
 
@@ -154,7 +154,7 @@ Drag and drop the `Screen` object from the `Hierarchy` tab as well as the `FlipS
 
 ## Test it Out
 
-We'll need some test images to try out the `ImageCropper`. You can use your own or download the one I used for this tutorial.
+We'll need a test image to try out the `ImageFlipper`. You can use your own or download the one I used for this tutorial.
 
 * [Test Image](https://drive.google.com/file/d/18_e6CpvsZcGuym66bGXsioAPEB0We8zV/view?usp=sharing)
 
