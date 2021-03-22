@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>How to Flip an Image With a Compute Shader | Christian Mills</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="How to Flip an Image With a Compute Shader" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This post covers how to flip an image with a compute shader in Unity." />
+<meta property="og:description" content="This post covers how to flip an image with a compute shader in Unity." />
+<link rel="canonical" href="https://christianjmills.com/How-to-Flip-an-Image-With-a-Compute-Shader/" />
+<meta property="og:url" content="https://christianjmills.com/How-to-Flip-an-Image-With-a-Compute-Shader/" />
+<meta property="og:site_name" content="Christian Mills" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-03-21T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"This post covers how to flip an image with a compute shader in Unity.","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/How-to-Flip-an-Image-With-a-Compute-Shader/"},"@type":"BlogPosting","url":"https://christianjmills.com/How-to-Flip-an-Image-With-a-Compute-Shader/","headline":"How to Flip an Image With a Compute Shader","dateModified":"2021-03-21T00:00:00-05:00","datePublished":"2021-03-21T00:00:00-05:00","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Christian Mills</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">How to Flip an Image With a Compute Shader</h1><p class="page-description">This post covers how to flip an image with a compute shader in Unity.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-03-21T00:00:00-05:00" itemprop="datePublished">
+        Mar 21, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      5 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/categories/#unity">unity</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/categories/#tutorial">tutorial</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#create-a-2d-unity-project">Create a 2D Unity Project</a></li>
+  <li><a href="#create-compute-shader">Create Compute Shader</a></li>
+  <li><a href="#create-Flip-script">Create <code class="highlighter-rouge">Flip</code> Script</a></li>
+  <li><a href="#create-screen-gameobject">Create Screen GameObject</a></li>
+  <li><a href="#create-imagecropper">Create ImageFlipper</a></li>
+  <li><a href="#test-it-out">Test it Out</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In this post, we’ll cover how to use a <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">compute shader</a> to flip an image across the x-axis, y-axis, and diagonal axis. We will also demonstrate how these operations can be combined to rotate an image.</p>
+
+<h2 id="create-a-2d-unity-project">Create a 2D Unity Project</h2>
+
+<p>Open the Unity Hub and create a new 2D project. I’m using <code class="highlighter-rouge">Unity 2019.4.20f1</code>, but you should be fine using other versions.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-hub-create-project.png" alt="unity-hub-create-project" /></p>
+
+<h2 id="create-compute-shader">Create Compute Shader</h2>
+
+<p>In Unity, right-click an empty space in the Assets folder and open the <code class="highlighter-rouge">Create</code> submenu. Select <code class="highlighter-rouge">ComputeShader</code> from the <code class="highlighter-rouge">Shader</code> submenu and name it <code class="highlighter-rouge">FlipShader</code>.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-create-compute-shader.png" alt="unity-create-compute-shader" /></p>
+
+<p>Open the new compute shader in your code editor. By default, compute shaders contain the following code.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flipshader-default-code.png" alt="flipshader-default-code" /></p>
+
+<p>We’ll delete the <code class="highlighter-rouge">CSMain</code> function and create a new one for each of our three flip operations.</p>
+
+<h3 id="define-variables">Define Variables</h3>
+
+<p>Before we create our functions, we need to define some extra variables.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Texture2D&lt;float4&gt; InputImage</code>: stores the original image</li>
+  <li><code class="highlighter-rouge">int height</code>: the height of the input image</li>
+  <li><code class="highlighter-rouge">int width</code>: the width of the input image</li>
+  <li><code class="highlighter-rouge">int2 coords</code>: stores the new <code class="highlighter-rouge">(x,y)</code> coordinates for individual pixel values</li>
+</ul>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flipshader-define-variables.png" alt="flipshader-define-variables" /></p>
+
+<h3 id="define-flip-functions">Define Flip Functions</h3>
+
+<p>The individual flip operations quite simple. They determine the coordinates of the pixel that will replace the values for a given pixel in the image. The RGB pixel values at the calculated coordinates will be stored at the current coordinates in the <code class="highlighter-rouge">Result</code> variable.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Flip x-axis</code>: subtract the x value for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates from the width of the image</li>
+  <li><code class="highlighter-rouge">Flip y-axis</code>: subtract the y value for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates from the height of the image</li>
+  <li><code class="highlighter-rouge">Flip diagonal</code>: swap the x and y values for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates</li>
+</ul>
+
+<p>These operations are performed on each pixel in parallel on the GPU. We’ll use the default <code class="highlighter-rouge">numthreads(8, 8, 1)</code> for each function.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-shader-define-functions.png" alt="flip-shader-define-functions" /></p>
+
+<h2 id="create-flip-script">Create <code class="highlighter-rouge">Flip</code> Script</h2>
+
+<p>Back in Unity, right-click an empty space in the Assets folder and select <code class="highlighter-rouge">C# Script</code> in the <code class="highlighter-rouge">Create</code> submenu. Name the new script, <code class="highlighter-rouge">Flip</code> and open it in your code editor.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-create-flip-script.png" alt="unity-create-flip-script" /></p>
+
+<h3 id="define-variables-1">Define Variables</h3>
+
+<p>We’ll define the following variables at the top of the script.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">public ComputeShader computeShader</code>: The compute shader that contains the flip operations</li>
+  <li><code class="highlighter-rouge">public GameObject screen</code>: The screen to which the test image is attached</li>
+  <li><code class="highlighter-rouge">public bool flipXAxis</code>: Toggle whether to flip the image across the x-axis</li>
+  <li><code class="highlighter-rouge">public bool flipYAxis</code>: Toggle whether to flip the image across the y-axis</li>
+  <li><code class="highlighter-rouge">public bool flipDiag</code>: Toggle whether to flip the image across the diagonal axis</li>
+  <li><code class="highlighter-rouge">private GameObject mainCamera</code>: Stores a reference to the Main Camera object</li>
+  <li><code class="highlighter-rouge">private RenderTexture image</code>: A copy of the original test image</li>
+</ul>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-script-define-variables.png" alt="flip-script-define-variables" /></p>
+
+<h3 id="define-start-method">Define <code class="highlighter-rouge">Start()</code> Method</h3>
+
+<p>In the <code class="highlighter-rouge">Start()</code> method, we’ll store a copy the original test image in the <code class="highlighter-rouge">image</code> <code class="highlighter-rouge">RenderTexture</code>. We can do so by getting a reference to the <code class="highlighter-rouge">Texture</code> attached to the <code class="highlighter-rouge">screen</code> and using the <a href="https://docs.unity3d.com/ScriptReference/Graphics.Blit.html"><code class="highlighter-rouge">Graphics.Blit()</code></a> method. We’ll also get a reference to the camera so that we can adjust the view to fit the current image.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-script-start-method.png" alt="flip-script-start-method" /></p>
+
+<h3 id="define-flipimage-method">Define <code class="highlighter-rouge">FlipImage()</code> Method</h3>
+
+<p>Next, we’ll define a new method called <code class="highlighter-rouge">FlipImage</code> to handle executing the compute shader. This method will take in the image to be flipped, an empty <code class="highlighter-rouge">RenderTexture</code> to store the flipped image, and the name of the function to execute on the compute shader.</p>
+
+<p>To execute the compute shader, we need to first get the kernel index for the specified function and initialize the variables we defined in the compute shader. Once we execute the compute shader using the <code class="highlighter-rouge">computeShader.Dispatch()</code> method, we can copy the result to the empty <code class="highlighter-rouge">RenderTexture</code> we passed in. We could copy the result directly to the <code class="highlighter-rouge">RenderTexture</code> containing the original image. However, this would cause an error when flipping non-square images across the diagonal axis. This is because a <code class="highlighter-rouge">RenderTexture</code> can not dynamically change dimensions.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-script-flipImage-method.png" alt="flip-script-flipImage-method" /></p>
+
+<h3 id="define-update-method">Define <code class="highlighter-rouge">Update()</code> Method</h3>
+
+<p>First, we need to make another copy of the original image so that we can edit it. We’ll store this copy in a <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html">temporary</a> <code class="highlighter-rouge">RenderTexture</code> called <code class="highlighter-rouge">rTex</code> that will get released at the end of the method.</p>
+
+<p>We can’t change the dimensions of a <code class="highlighter-rouge">RenderTexture</code> after it’s been created. Instead, we’ll create a cropped image by copying part of <code class="highlighter-rouge">rTex</code> to another temporary <code class="highlighter-rouge">RenderTexture</code> called <code class="highlighter-rouge">tempTex</code> that will be square. We can copy the square image to <code class="highlighter-rouge">rTex</code> after we release the current <code class="highlighter-rouge">RenderTexture</code> assigned to <code class="highlighter-rouge">rTex</code> and make a new square one.</p>
+
+<p>The size of <code class="highlighter-rouge">tempTex</code> will depend on whether the original image is wider or taller. We want to use the smallest side of the original image.</p>
+
+<p>After we copy <code class="highlighter-rouge">tempTex</code> back to <code class="highlighter-rouge">rTex</code> we’ll update the <code class="highlighter-rouge">Texture</code> for the <code class="highlighter-rouge">screen</code> with the new square image and adjust the shape of the screen to fit the new image.</p>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-script-update-method.png" alt="flip-script-update-method" /></p>
+
+<h2 id="create-screen-gameobject">Create Screen GameObject</h2>
+
+<p>Back in Unity, right-click an empty space in the <code class="highlighter-rouge">Hierarchy</code> tab and select <code class="highlighter-rouge">Quad</code> from the <code class="highlighter-rouge">3D Object</code> submenu. Name the new object <code class="highlighter-rouge">Screen</code>. The size will be updated automatically by the <code class="highlighter-rouge">Crop.cs</code> script.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-create-screen-object.png" alt="unity-create-screen-object" /></p>
+
+<h2 id="create-imagecropper">Create ImageCropper</h2>
+
+<p>Right-click an empty space in the <code class="highlighter-rouge">Hierarchy</code> tab and select <code class="highlighter-rouge">Create Empty</code> from the pop-up menu. Name the empty object <code class="highlighter-rouge">ImageCropper</code></p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-create-image-cropper-object.png" alt="unity-create-image-cropper-object" /></p>
+
+<p>With the <code class="highlighter-rouge">ImageCropper</code> selected drag and drop the <code class="highlighter-rouge">Crop.cs</code> script into the <code class="highlighter-rouge">Inspector</code> tab.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-attach-crop-script.png" alt="unity-attach-crop-script" /></p>
+
+<p>Drag and drop the <code class="highlighter-rouge">Screen</code> object from the <code class="highlighter-rouge">Hierarchy</code> tab onto the <code class="highlighter-rouge">Screen</code> parameter in the <code class="highlighter-rouge">Inspector</code> tab.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-assign-screen.png" alt="unity-inspector-tab-assign-screen" /></p>
+
+<h2 id="test-it-out">Test it Out</h2>
+
+<p>We’ll need some test images to try out the <code class="highlighter-rouge">ImageCropper</code>. You can use your own or download the ones I used for this tutorial.</p>
+
+<ul>
+  <li><a href="https://drive.google.com/file/d/1abd1RJTu5GvyRqrRfrNjePNX7WPq8mBQ/view?usp=sharing">Wide Image</a></li>
+  <li><a href="https://drive.google.com/file/d/1gQZr0vlPYFbvccRSryv0Zou1mPKd5wHj/view?usp=sharing">Tall Image</a></li>
+</ul>
+
+<p>Drag and drop the test images into the <code class="highlighter-rouge">Assets</code> folder. Select one of the images and drag it onto the <code class="highlighter-rouge">Screen</code> in the <code class="highlighter-rouge">Scene</code>.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-import-images.png" alt="unity-import-images" /></p>
+
+<p>Next, we need to set our Screen to use an <code class="highlighter-rouge">Unlit</code> shader. Otherwise it will be a bit dim. With the Screen object selected, open the <code class="highlighter-rouge">Shader</code> drop-down menu in the <code class="highlighter-rouge">Inspector</code> tab and select <code class="highlighter-rouge">Unlit</code>.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-shader-drop-down.png" alt="unity-inspector-tab-shader-drop-down" /></p>
+
+<p>Select <code class="highlighter-rouge">Texture</code> from the <code class="highlighter-rouge">Unlit</code> submenu.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-unlit-texture.png" alt="unity-inspector-tab-unlit-texture" /></p>
+
+<p>Now we can click the Play button and toggle the <code class="highlighter-rouge">Crop Image</code> checkbox to confirm our script is working properly. If you check the performance stats, you should see that there is basically no performance hit from cropping the image.</p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\crop_image_on_gpu_unity_1.gif" alt="crop_image_on_gpu_unity_1" /></p>
+
+<p><img src="..\images\crop-images-on-gpu-tutorial.png\crop_image_on_gpu_unity_2.gif" alt="crop_image_on_gpu_unity_2" /></p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>That is one method to efficiently crop images on the GPU in Unity. As mentioned earlier, this method can be adapted to crop different parts of the image. You can do so by changing the values for the <code class="highlighter-rouge">Graphics.CopyTexture()</code> method to adjust what part of the source image gets copied and where in the target image it gets copied to.</p>
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="cj-mills/christianjmills"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/How-to-Flip-an-Image-With-a-Compute-Shader/" hidden></a>
+</article>
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>My personal blog</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/cj-mills" title="cj-mills"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/Innominate817" title="Innominate817"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
