@@ -68,7 +68,7 @@ The individual flip operations quite simple. They determine the coordinates of t
 
 These operations are performed on each pixel in parallel on the GPU. We'll use the default `numthreads(8, 8, 1)` for each function.
 
-![flip-shader-define-functions](..\images\flip-image-compute-shader-tutorial\flip-shader-define-functions.png)
+![flip-shader-define-functions](..\images\flip-image-compute-shader-tutorial\flip-shader-define-functions-2.png)
 
 
 
