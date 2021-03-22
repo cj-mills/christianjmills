@@ -1,5 +1,5 @@
 ---
-title: How to Flip an Image With a Compute Shader
+title: How to Flip an Image With a ComputeShader
 layout: post
 toc: false
 comments: true
