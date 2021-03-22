@@ -62,8 +62,8 @@ Before we create our functions, we need to define some extra variables.
 
 The individual flip operations quite simple. They determine the coordinates of the pixel that will replace the values for a given pixel in the image. The RGB pixel values at the calculated coordinates will be stored at the current coordinates in the `Result` variable.
 
-* `Flip x-axis`: subtract the x value for the current pixel's `(x,y)` coordinates from the width of the image
-* `Flip y-axis`: subtract the y value for the current pixel's `(x,y)` coordinates from the height of the image
+* `Flip x-axis`: subtract the y value for the current pixel's `(x,y)` coordinates from the height of the image
+* `Flip y-axis`: subtract the x value for the current pixel's `(x,y)` coordinates from the width of the image
 * `Flip diagonal`: swap the x and y values for the current pixel's `(x,y)` coordinates
 
 These operations are performed on each pixel in parallel on the GPU. We'll use the default `numthreads(8, 8, 1)` for each function.
@@ -122,7 +122,7 @@ To execute the compute shader, we need to first get the kernel index for the spe
 
 First, we need to make another copy of the original image so that we can edit it. We'll store this copy in a [temporary](https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html) `RenderTexture` called `rTex` that will get released at the end of the method.
 
-The steps are basically the same for performing all three flip operations. We first allocate an temporary `RenderTexture` called `tempTex` to store the flipped image. We then call the `FlipImage` method. Next, we copy the flipped image to `rTex` after clearing it current values. Finally, we release resources allocated for `tempTex`. The steps for flipping the image across the diagonal axis is slightly different as we can't directly copy a flipped image with different dimensions back to `rTex`. Instead, we have to directly assign the currently active `RenderTexture` to `rTex` after clearing its current values.
+The steps are basically the same for performing each of the three flip operations. We first allocate a temporary `RenderTexture` called `tempTex` to store the flipped image. We then call the `FlipImage` method with the appropriate function name. Next, we copy the flipped image to `rTex`. Finally, we release the resources allocated for `tempTex`. The steps for flipping the image across the diagonal axis is slightly different as we can't directly copy a flipped image with different dimensions back to `rTex`. Instead, we have to directly assign the currently active `RenderTexture` to `rTex`.
 
 After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `screen` with the flipped image and adjust the shape of the screen to fit the new dimensions.
 
@@ -136,58 +136,85 @@ Back in Unity, right-click an empty space in the `Hierarchy` tab and select `Qua
 
 ![unity-create-screen-object](..\images\crop-images-on-gpu-tutorial.png\unity-create-screen-object.png)
 
-## Create ImageCropper
+## Create ImageFlipper
 
 Right-click an empty space in the `Hierarchy` tab and select `Create Empty` from the pop-up menu. Name the empty object `ImageCropper`
 
 ![unity-create-image-cropper-object](..\images\crop-images-on-gpu-tutorial.png\unity-create-image-cropper-object.png)
 
-With the `ImageCropper` selected drag and drop the `Crop.cs` script into the `Inspector` tab.
+With the `ImageFlipper` selected, drag and drop the `Flip.cs` script into the `Inspector` tab.
 
-![unity-attach-crop-script](..\images\crop-images-on-gpu-tutorial.png\unity-attach-crop-script.png)
+![unity-inspector-attach-flip-script](..\images\flip-image-compute-shader-tutorial\unity-inspector-attach-flip-script.png)
 
-Drag and drop the `Screen` object from the `Hierarchy` tab onto the `Screen` parameter in the `Inspector` tab.
+Drag and drop the `Screen` object from the `Hierarchy` tab as well as the `FlipShader` from the `Assets` folder onto their respective spots in the `Inspector` tab.
 
-![unity-inspector-tab-assign-screen](..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-assign-screen.png)
+![unity-inspector-assign-parameters](..\images\flip-image-compute-shader-tutorial\unity-inspector-assign-parameters.png)
 
 
 
 ## Test it Out
 
-We'll need some test images to try out the `ImageCropper`. You can use your own or download the ones I used for this tutorial.
+We'll need some test images to try out the `ImageCropper`. You can use your own or download the one I used for this tutorial.
 
-* [Wide Image](https://drive.google.com/file/d/1abd1RJTu5GvyRqrRfrNjePNX7WPq8mBQ/view?usp=sharing)
-* [Tall Image](https://drive.google.com/file/d/1gQZr0vlPYFbvccRSryv0Zou1mPKd5wHj/view?usp=sharing)
+* [Test Image](https://drive.google.com/file/d/18_e6CpvsZcGuym66bGXsioAPEB0We8zV/view?usp=sharing)
 
- Drag and drop the test images into the `Assets` folder. Select one of the images and drag it onto the `Screen` in the `Scene`. 
+ Drag and drop the test image into the `Assets` folder. Then drag it onto the `Screen` in the `Scene`. 
+
+![unity-import-image](..\images\flip-image-compute-shader-tutorial\unity-import-image.png)
 
 
-
-![unity-import-images](..\images\crop-images-on-gpu-tutorial.png\unity-import-images.png)
 
 
 
 Next, we need to set our Screen to use an `Unlit` shader. Otherwise it will be a bit dim. With the Screen object selected, open the `Shader` drop-down menu in the `Inspector` tab and select `Unlit`. 
 
-
-
-![unity-inspector-tab-shader-drop-down](..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-shader-drop-down.png)
+![unity-inspector-tab-shader-drop-down](..\images\flip-image-compute-shader-tutorial\unity-inspector-tab-shader-drop-down.png)
 
 
 
 Select `Texture` from the `Unlit` submenu.
 
-![unity-inspector-tab-unlit-texture](..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-unlit-texture.png)
+![unity-inspector-tab-unlit-texture](..\images\flip-image-compute-shader-tutorial\unity-inspector-tab-unlit-texture.png)
 
 
 
-Now we can click the Play button and toggle the `Crop Image` checkbox to confirm our script is working properly. If you check the performance stats, you should see that there is basically no performance hit from cropping the image.
+Now we can click the Play button and toggle the different flip checkboxes to confirm our script is working properly. If you check the performance stats, you should see that there is a negligible performance hit from flipping the image even when performing all three operations at once.
 
-![crop_image_on_gpu_unity_1](..\images\crop-images-on-gpu-tutorial.png\crop_image_on_gpu_unity_1.gif)
+### Default Image
+
+![default-image](..\images\flip-image-compute-shader-tutorial\default-image.png)
+
+### Flip X-Axis
+
+![flip-x-axis](..\images\flip-image-compute-shader-tutorial\flip-x-axis.png)
+
+### Flip Y-Axis
+
+![flip-y-axis](..\images\flip-image-compute-shader-tutorial\flip-y-axis.png)
 
 
 
-![crop_image_on_gpu_unity_2](..\images\crop-images-on-gpu-tutorial.png\crop_image_on_gpu_unity_2.gif)
+### Flip Diagonal Axis
+
+![flip-diagonal-axis](..\images\flip-image-compute-shader-tutorial\flip-diagonal-axis.png)
+
+
+
+### Flip X-Axis and Y-Axis
+
+![flip-x-axis-and-y-axis](..\images\flip-image-compute-shader-tutorial\flip-x-axis-and-y-axis.png)
+
+### Flip X-Axis and Diagonal Axis
+
+![flip-x-axis-and-diagonal-axis](..\images\flip-image-compute-shader-tutorial\flip-x-axis-and-diagonal-axis.png)
+
+### Flip Y-Axis and Diagonal Axis
+
+![flip-y-axis-and-diagonal-axis](..\images\flip-image-compute-shader-tutorial\flip-y-axis-and-diagonal-axis.png)
+
+### Flip X-Axis, Y-Axis and Diagonal Axis
+
+![flip-x-axis-y-axis-and-diagonal-axis](..\images\flip-image-compute-shader-tutorial\flip-x-axis-y-axis-and-diagonal-axis.png)
 
 
 
