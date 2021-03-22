@@ -13,7 +13,7 @@ search_exclude: false
 * [Introduction](#introduction)
 * [Create a 2D Unity Project](#create-a-2d-unity-project)
 * [Create Compute Shader](#create-compute-shader)
-* [Create `Flip` Script](#create-Flip-script)
+* [Create `Flip` Script](#create-flip-script)
 * [Create Screen GameObject](#create-screen-gameobject)
 * [Create ImageFlipper](#create-imagecropper)
 * [Test it Out](#test-it-out)
