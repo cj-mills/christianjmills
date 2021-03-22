@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post covers how to flip an image with a compute shader in Unity.
 categories: [unity, tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
