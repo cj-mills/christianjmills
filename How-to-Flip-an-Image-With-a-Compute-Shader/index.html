@@ -163,8 +163,8 @@ window.onload = wrap_img;
 <p>The individual flip operations quite simple. They determine the coordinates of the pixel that will replace the values for a given pixel in the image. The RGB pixel values at the calculated coordinates will be stored at the current coordinates in the <code class="highlighter-rouge">Result</code> variable.</p>
 
 <ul>
-  <li><code class="highlighter-rouge">Flip x-axis</code>: subtract the x value for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates from the width of the image</li>
-  <li><code class="highlighter-rouge">Flip y-axis</code>: subtract the y value for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates from the height of the image</li>
+  <li><code class="highlighter-rouge">Flip x-axis</code>: subtract the y value for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates from the height of the image</li>
+  <li><code class="highlighter-rouge">Flip y-axis</code>: subtract the x value for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates from the width of the image</li>
   <li><code class="highlighter-rouge">Flip diagonal</code>: swap the x and y values for the current pixel’s <code class="highlighter-rouge">(x,y)</code> coordinates</li>
 </ul>
 
@@ -212,7 +212,7 @@ window.onload = wrap_img;
 
 <p>First, we need to make another copy of the original image so that we can edit it. We’ll store this copy in a <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html">temporary</a> <code class="highlighter-rouge">RenderTexture</code> called <code class="highlighter-rouge">rTex</code> that will get released at the end of the method.</p>
 
-<p>The steps are basically the same for performing all three flip operations. We first allocate an temporary <code class="highlighter-rouge">RenderTexture</code> called <code class="highlighter-rouge">tempTex</code> to store the flipped image. We then call the <code class="highlighter-rouge">FlipImage</code> method. Next, we copy the flipped image to <code class="highlighter-rouge">rTex</code> after clearing it current values. Finally, we release resources allocated for <code class="highlighter-rouge">tempTex</code>. The steps for flipping the image across the diagonal axis is slightly different as we can’t directly copy a flipped image with different dimensions back to <code class="highlighter-rouge">rTex</code>. Instead, we have to directly assign the currently active <code class="highlighter-rouge">RenderTexture</code> to <code class="highlighter-rouge">rTex</code> after clearing its current values.</p>
+<p>The steps are basically the same for performing each of the three flip operations. We first allocate a temporary <code class="highlighter-rouge">RenderTexture</code> called <code class="highlighter-rouge">tempTex</code> to store the flipped image. We then call the <code class="highlighter-rouge">FlipImage</code> method with the appropriate function name. Next, we copy the flipped image to <code class="highlighter-rouge">rTex</code>. Finally, we release the resources allocated for <code class="highlighter-rouge">tempTex</code>. The steps for flipping the image across the diagonal axis is slightly different as we can’t directly copy a flipped image with different dimensions back to <code class="highlighter-rouge">rTex</code>. Instead, we have to directly assign the currently active <code class="highlighter-rouge">RenderTexture</code> to <code class="highlighter-rouge">rTex</code>.</p>
 
 <p>After we copy <code class="highlighter-rouge">tempTex</code> back to <code class="highlighter-rouge">rTex</code> we’ll update the <code class="highlighter-rouge">Texture</code> for the <code class="highlighter-rouge">screen</code> with the flipped image and adjust the shape of the screen to fit the new dimensions.</p>
 
@@ -224,46 +224,73 @@ window.onload = wrap_img;
 
 <p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-create-screen-object.png" alt="unity-create-screen-object" /></p>
 
-<h2 id="create-imagecropper">Create ImageCropper</h2>
+<h2 id="create-imageflipper">Create ImageFlipper</h2>
 
 <p>Right-click an empty space in the <code class="highlighter-rouge">Hierarchy</code> tab and select <code class="highlighter-rouge">Create Empty</code> from the pop-up menu. Name the empty object <code class="highlighter-rouge">ImageCropper</code></p>
 
 <p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-create-image-cropper-object.png" alt="unity-create-image-cropper-object" /></p>
 
-<p>With the <code class="highlighter-rouge">ImageCropper</code> selected drag and drop the <code class="highlighter-rouge">Crop.cs</code> script into the <code class="highlighter-rouge">Inspector</code> tab.</p>
+<p>With the <code class="highlighter-rouge">ImageFlipper</code> selected, drag and drop the <code class="highlighter-rouge">Flip.cs</code> script into the <code class="highlighter-rouge">Inspector</code> tab.</p>
 
-<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-attach-crop-script.png" alt="unity-attach-crop-script" /></p>
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-inspector-attach-flip-script.png" alt="unity-inspector-attach-flip-script" /></p>
 
-<p>Drag and drop the <code class="highlighter-rouge">Screen</code> object from the <code class="highlighter-rouge">Hierarchy</code> tab onto the <code class="highlighter-rouge">Screen</code> parameter in the <code class="highlighter-rouge">Inspector</code> tab.</p>
+<p>Drag and drop the <code class="highlighter-rouge">Screen</code> object from the <code class="highlighter-rouge">Hierarchy</code> tab as well as the <code class="highlighter-rouge">FlipShader</code> from the <code class="highlighter-rouge">Assets</code> folder onto their respective spots in the <code class="highlighter-rouge">Inspector</code> tab.</p>
 
-<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-assign-screen.png" alt="unity-inspector-tab-assign-screen" /></p>
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-inspector-assign-parameters.png" alt="unity-inspector-assign-parameters" /></p>
 
 <h2 id="test-it-out">Test it Out</h2>
 
-<p>We’ll need some test images to try out the <code class="highlighter-rouge">ImageCropper</code>. You can use your own or download the ones I used for this tutorial.</p>
+<p>We’ll need some test images to try out the <code class="highlighter-rouge">ImageCropper</code>. You can use your own or download the one I used for this tutorial.</p>
 
 <ul>
-  <li><a href="https://drive.google.com/file/d/1abd1RJTu5GvyRqrRfrNjePNX7WPq8mBQ/view?usp=sharing">Wide Image</a></li>
-  <li><a href="https://drive.google.com/file/d/1gQZr0vlPYFbvccRSryv0Zou1mPKd5wHj/view?usp=sharing">Tall Image</a></li>
+  <li><a href="https://drive.google.com/file/d/18_e6CpvsZcGuym66bGXsioAPEB0We8zV/view?usp=sharing">Test Image</a></li>
 </ul>
 
-<p>Drag and drop the test images into the <code class="highlighter-rouge">Assets</code> folder. Select one of the images and drag it onto the <code class="highlighter-rouge">Screen</code> in the <code class="highlighter-rouge">Scene</code>.</p>
+<p>Drag and drop the test image into the <code class="highlighter-rouge">Assets</code> folder. Then drag it onto the <code class="highlighter-rouge">Screen</code> in the <code class="highlighter-rouge">Scene</code>.</p>
 
-<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-import-images.png" alt="unity-import-images" /></p>
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-import-image.png" alt="unity-import-image" /></p>
 
 <p>Next, we need to set our Screen to use an <code class="highlighter-rouge">Unlit</code> shader. Otherwise it will be a bit dim. With the Screen object selected, open the <code class="highlighter-rouge">Shader</code> drop-down menu in the <code class="highlighter-rouge">Inspector</code> tab and select <code class="highlighter-rouge">Unlit</code>.</p>
 
-<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-shader-drop-down.png" alt="unity-inspector-tab-shader-drop-down" /></p>
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-inspector-tab-shader-drop-down.png" alt="unity-inspector-tab-shader-drop-down" /></p>
 
 <p>Select <code class="highlighter-rouge">Texture</code> from the <code class="highlighter-rouge">Unlit</code> submenu.</p>
 
-<p><img src="..\images\crop-images-on-gpu-tutorial.png\unity-inspector-tab-unlit-texture.png" alt="unity-inspector-tab-unlit-texture" /></p>
+<p><img src="..\images\flip-image-compute-shader-tutorial\unity-inspector-tab-unlit-texture.png" alt="unity-inspector-tab-unlit-texture" /></p>
 
-<p>Now we can click the Play button and toggle the <code class="highlighter-rouge">Crop Image</code> checkbox to confirm our script is working properly. If you check the performance stats, you should see that there is basically no performance hit from cropping the image.</p>
+<p>Now we can click the Play button and toggle the different flip checkboxes to confirm our script is working properly. If you check the performance stats, you should see that there is a negligible performance hit from flipping the image even when performing all three operations at once.</p>
 
-<p><img src="..\images\crop-images-on-gpu-tutorial.png\crop_image_on_gpu_unity_1.gif" alt="crop_image_on_gpu_unity_1" /></p>
+<h3 id="default-image">Default Image</h3>
 
-<p><img src="..\images\crop-images-on-gpu-tutorial.png\crop_image_on_gpu_unity_2.gif" alt="crop_image_on_gpu_unity_2" /></p>
+<p><img src="..\images\flip-image-compute-shader-tutorial\default-image.png" alt="default-image" /></p>
+
+<h3 id="flip-x-axis">Flip X-Axis</h3>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-x-axis.png" alt="flip-x-axis" /></p>
+
+<h3 id="flip-y-axis">Flip Y-Axis</h3>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-y-axis.png" alt="flip-y-axis" /></p>
+
+<h3 id="flip-diagonal-axis">Flip Diagonal Axis</h3>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-diagonal-axis.png" alt="flip-diagonal-axis" /></p>
+
+<h3 id="flip-x-axis-and-y-axis">Flip X-Axis and Y-Axis</h3>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-x-axis-and-y-axis.png" alt="flip-x-axis-and-y-axis" /></p>
+
+<h3 id="flip-x-axis-and-diagonal-axis">Flip X-Axis and Diagonal Axis</h3>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-x-axis-and-diagonal-axis.png" alt="flip-x-axis-and-diagonal-axis" /></p>
+
+<h3 id="flip-y-axis-and-diagonal-axis">Flip Y-Axis and Diagonal Axis</h3>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-y-axis-and-diagonal-axis.png" alt="flip-y-axis-and-diagonal-axis" /></p>
+
+<h3 id="flip-x-axis-y-axis-and-diagonal-axis">Flip X-Axis, Y-Axis and Diagonal Axis</h3>
+
+<p><img src="..\images\flip-image-compute-shader-tutorial\flip-x-axis-y-axis-and-diagonal-axis.png" alt="flip-x-axis-y-axis-and-diagonal-axis" /></p>
 
 <h2 id="conclusion">Conclusion</h2>
 
