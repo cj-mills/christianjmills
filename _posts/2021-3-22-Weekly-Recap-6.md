@@ -80,7 +80,7 @@ A free setup for an Android-based virtual camera.
 
 ### Astronomy
 
-### [Milky Way, 12 years, 1250 hours of exposures and 125 x 22 degrees of sky](https://astroanarchy.blogspot.com/2021/03/gigapixel-mosaic-of-milky-way-1250.html?m=1)
+#### [Milky Way, 12 years, 1250 hours of exposures and 125 x 22 degrees of sky](https://astroanarchy.blogspot.com/2021/03/gigapixel-mosaic-of-milky-way-1250.html?m=1)
 
 An incredible gigapixel mosaic image of the Milky Way.
 
