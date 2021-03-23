@@ -34,7 +34,7 @@ I had worked out how to efficiently crop images in Unity with a GPU while workin
 
 I also worked out how to flip images using Compute Shaders while working on my PoseNet tutorial. Again, I ended up not using it in the tutorial. I realized after the fact that I could just flip the output of the model instead. This is much less work than flipping the whole image. 
 
-I had actually started to write a tutorial for this a while ago but ended up scrapping it. For some reason, Google still picked up the page and someone apparently tried to view it. I felt bad that there was nothing but a 404 page waiting for them so I ended up making this over weekend as well.
+I had actually started to write a tutorial for this a while ago but ended up scrapping it. For some reason, Google still picked up the page and someone apparently tried to view it recently. I felt bad that there was nothing but a 404 page waiting for them so I ended up making this over weekend as well.
 
 
 
