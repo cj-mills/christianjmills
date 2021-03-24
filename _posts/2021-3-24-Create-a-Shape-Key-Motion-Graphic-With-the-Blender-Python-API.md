@@ -93,7 +93,7 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 
 
-## Add keyframes to animate the plane
+## Add Keyframes to Animate the Plane
 
 
 
