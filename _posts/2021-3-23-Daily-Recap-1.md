@@ -28,6 +28,6 @@ I've started cleaning up the code for the small [motion graphics](https://christ
 
 ## Compute Shader Course
 
-I purchased the [compute shader course](https://www.udemy.com/course/compute-shaders/) on Udemy that I listed in the [last weekly recap](https://christianjmills.com/Weekly-Recap-6/#learn-to-write-unity-compute-shaders). Udemy was running one of their big sales so I got it for $11.99. I have only used compute shaders for basic image operations so far and I would like to learn how to do more. I have not come across many resources for learning how to fully utilize compute shaders so I'm looking forward to the course. I plan to make some tutorials based on what I learn from the course as well.
+I purchased the [compute shader course](https://www.udemy.com/course/compute-shaders/) on Udemy that I listed in the [last weekly recap](https://christianjmills.com/Weekly-Recap-6/#learn-to-write-unity-compute-shaders). Udemy was running one of their big sales so I got it for $11.99. I have only used compute shaders for basic image operations so far and I would like to learn how to do more. I have not come across many resources explaining how to fully utilize compute shaders so I'm looking forward to the course. I plan to make some tutorials based on what I learn from the course as well.
 
 
