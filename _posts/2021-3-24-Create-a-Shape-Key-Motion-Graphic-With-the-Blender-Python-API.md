@@ -13,7 +13,6 @@ search_exclude: false
 * [Introduction](#introduction)
 * [Import Dependencies](import-dependencies)
 * [Define Helper Functions](#define-helper-functions)
-* [Reset the Scene](#reset-the-scene)
 * [Create and Position a New Camera](#create-and-position-a-new-camera)
 * [Create a Material With an Emission Shader](#create-a-material-with-an-emission-shader)
 * [Create a New Plane With the Material](#create-a-new-plane-with-the-material)
@@ -34,13 +33,21 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 
 
+
+
+![import-dependencies](..\images\shape-key-motion-graphic-bpy\import-dependencies.png)
+
+
+
 ## Define Helper Functions
 
 
 
+![define-helper-functions](..\images\shape-key-motion-graphic-bpy\define-helper-functions.png)
 
 
-## Reset the Scene
+
+
 
 
 
@@ -48,7 +55,17 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 
 
+![create-camera](..\images\shape-key-motion-graphic-bpy\create-camera.png)
+
+
+
+
+
 ## Create a Material With an Emission Shader
+
+
+
+![create-emission-material](..\images\shape-key-motion-graphic-bpy\create-emission-material.png)
 
 
 
@@ -56,7 +73,15 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 
 
+![create-plane](..\images\shape-key-motion-graphic-bpy\create-plane.png)
+
+
+
 ## Cut Out a Center Square From the Plane
+
+
+
+![cut-out-center-square](..\images\shape-key-motion-graphic-bpy\cut-out-center-square.png)
 
 
 
@@ -64,7 +89,15 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 
 
+![add-shape-keys](..\images\shape-key-motion-graphic-bpy\add-shape-keys.png)
+
+
+
 ## Add keyframes to animate the plane
+
+
+
+![add-keyframes](..\images\shape-key-motion-graphic-bpy\add-keyframes.png)
 
 
 
