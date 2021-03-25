@@ -92,8 +92,6 @@ Next, I remove the default `Principled_BSDF` node as well as any `Emission` node
 
 The `Emission` node needs to be linked to the first slot in the `Material Output` node. Nodes are linked using the `material.node_tree.links.new()` method.
 
-
-
 ![create-emission-material](..\images\shape-key-motion-graphic-bpy\create-emission-material.png)
 
 
