@@ -60,7 +60,7 @@ Lastly, I made a function to easily add sequences of keyframes to a given object
 
 ## Set up Scene
 
-The first thing I do is set the Color Management property, View Transform, from the default value of Filmic to Standard. This setting can be accessed at `bpy.data.scenes["Scene"].view_settings.view_transform`.
+The first thing I do is set the Color Management property, View Transform, from the default value of `Filmic` to `Standard`. This setting can be accessed at `bpy.data.scenes["Scene"].view_settings.view_transform`.
 
 Next, I set the background to the desired color. In my case, it's pure black. The background color is stored in `bpy.data.worlds['World'].node_tree.nodes["Background"].inputs[0].default_value`.
 
