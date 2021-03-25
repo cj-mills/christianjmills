@@ -180,7 +180,6 @@ The shape keys for the plane are stored in `bpy.context.selected_objects[0].data
 
 
 
-
-
 ## Conclusion
 
+I feel like this exercise was worthwhile as it forced me to learn about multiple parts of the API as I needed them. It took quite a bit longer than the nine minute length of the tutorial video to track down all the parts of the API needed to replicate it. Finding out how to properly add the Emission shader was particularly time consuming. I did not realize that the name used to create the Emission shader was different than the name used to reference it. Fortunately, Blender has been around for a while and someone on the internet had already asked how to do most of the individual steps.
