@@ -26,9 +26,9 @@ search_exclude: false
 
 I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZcFk-dZA&list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&index=11) from YouTube to practice using the Blender Python API. This post goes through the code I came up with to replicate the tutorial plus some small additions.
 
-![shape_key_mg](..\images\shape-key-motion-graphic-bpy\shape_key_mg.gif)
+![shape_key_mg](..\images\shape-key-motion-graphic-bpy\shape_key_mg_2.gif)
 
-
+0
 
 ## Import Dependencies
 
@@ -152,11 +152,27 @@ Before adding the keyframes, I set the render frame rate as well the start and e
 
 The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` and `bpy.data.scenes['Scene'].frame_end` respectively. 
 
+![set-up-animation](..\images\shape-key-motion-graphic-bpy\set-up-animation.png)
+
+
+
 The shape keys for the plane are stored in `bpy.context.selected_objects[0].data.shape_keys`. Individual shape keys can be accessed with ``bpy.context.selected_objects[0].data.shape_keys.key_blocks[index]`.
 
-The helper function I made makes it a lot easier to manage keyframes as it lets me organize the updates sequentially. All the values and target frames can be stored in lists. 
+![add-keyframes-first-shape-key](..\images\shape-key-motion-graphic-bpy\add-keyframes-first-shape-key.png)
 
-![add-keyframes](..\images\shape-key-motion-graphic-bpy\add-keyframes.png)
+
+
+![add-keyframes-second-shape-key](..\images\shape-key-motion-graphic-bpy\add-keyframes-second-shape-key.png)
+
+
+
+![add-keyframes-plane](..\images\shape-key-motion-graphic-bpy\add-keyframes-plane.png)
+
+
+
+![add-keyframes-color](..\images\shape-key-motion-graphic-bpy\add-keyframes-color.png)
+
+
 
 
 
