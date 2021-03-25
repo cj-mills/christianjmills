@@ -136,9 +136,11 @@ Unlike the tutorial video, I just set the positions for the inner vertices direc
 
 After freeing the BMesh representation, we can enter object mode with `bpy.ops.object.mode_set(mode="OBJECT")`.
 
+#### First Shape Key
+
 ![add-shape-keys](..\images\shape-key-motion-graphic-bpy\add-shape-key-1v2.png)
 
-
+### Second Shape Key
 
 The process for the second shape key is identical except it only move two of the inner vertices.
 
@@ -156,19 +158,23 @@ The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` an
 
 
 
+### Shape Keys
+
 The shape keys for the plane are stored in `bpy.context.selected_objects[0].data.shape_keys`. Individual shape keys can be accessed with ``bpy.context.selected_objects[0].data.shape_keys.key_blocks[index]`.
+
+#### First Shape Key
 
 ![add-keyframes-first-shape-key](..\images\shape-key-motion-graphic-bpy\add-keyframes-first-shape-key.png)
 
-
+#### Second Shape Key
 
 ![add-keyframes-second-shape-key](..\images\shape-key-motion-graphic-bpy\add-keyframes-second-shape-key.png)
 
-
+### Plane Rotation
 
 ![add-keyframes-plane](..\images\shape-key-motion-graphic-bpy\add-keyframes-plane.png)
 
-
+### Material Color
 
 ![add-keyframes-color](..\images\shape-key-motion-graphic-bpy\add-keyframes-color.png)
 
