@@ -126,9 +126,15 @@ The mesh then needs to be updated with these alterations using `bm.to_mesh(mesh)
 
 ## Add Shape Keys
 
-We can add shape keys with the `bpy.ops.object.shape_key_add()` method.
+We can add shape keys with the `bpy.ops.object.shape_key_add()` method. To deform the plane, we need to access its vertices. We can do this in edit mode with the `bmesh` module.
 
-To deform the plane, we need to access its vertices. We can do this in edit mode with the `bmesh` module as well. Unlike the tutorial video, I just set the positions for the inner vertices directly. It took some trial and error to determine the correct indices for the inner vertices.
+We first enter edit mode for the plane with `bpy.ops.object.mode_set(mode="EDIT")`. We can then create a new BMesh representation for the current mesh in edit mode using `bm = bmesh.from_edit_mesh(mesh)`.
+
+The vertices are stored in `bm.verts`, but we need to create our own list index it directly.
+
+Unlike the tutorial video, I just set the positions for the inner vertices directly. It took some trial and error to determine the correct indices for the inner vertices.
+
+After freeing the BMesh representation, we can enter object mode with `bpy.ops.object.mode_set(mode="OBJECT")`.
 
 ![add-shape-keys](..\images\shape-key-motion-graphic-bpy\add-shape-key-1v2.png)
 
