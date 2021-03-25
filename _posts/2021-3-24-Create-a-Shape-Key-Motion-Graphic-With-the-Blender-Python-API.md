@@ -28,7 +28,7 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 ![shape_key_mg](..\images\shape-key-motion-graphic-bpy\shape_key_mg_2.gif)
 
-0
+
 
 ## Import Dependencies
 
@@ -175,6 +175,8 @@ The shape keys for the plane are stored in `bpy.context.selected_objects[0].data
 ![add-keyframes-plane](..\images\shape-key-motion-graphic-bpy\add-keyframes-plane.png)
 
 ### Material Color
+
+The color for the Emision shader can be accessed at `material.node_tree.nodes["Emission"].inputs["Color"].default_value`.
 
 ![add-keyframes-color](..\images\shape-key-motion-graphic-bpy\add-keyframes-color.png)
 
