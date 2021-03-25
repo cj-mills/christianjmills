@@ -140,7 +140,7 @@ After freeing the BMesh representation, we can enter object mode with `bpy.ops.o
 
 ### Second Shape Key
 
-The process for the second shape key is identical except it only move two of the inner vertices.
+The process for the second shape key is identical except it only moves two of the inner vertices.
 
 ![add-shape-key-2](..\images\shape-key-motion-graphic-bpy\add-shape-key-2v2.png)
 
