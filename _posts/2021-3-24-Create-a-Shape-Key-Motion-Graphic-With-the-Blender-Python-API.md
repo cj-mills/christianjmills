@@ -42,7 +42,7 @@ The only dependencies strictly required for this tutorial are `bpy` and `bmesh`.
 
 I made some wrapper functions for the standard location, rotation, and scale transformations as well as getting the name of the active object.
 
-You can get the name of the active object with `bpy.context.active_object.name` which gets a bit irritating to write out multiple times.
+You can get the name of the active object with `bpy.context.active_object.name`.
 
 The three standard transformations can be accessed for individual objects with the following:
 
