@@ -86,7 +86,7 @@ I decided to add some color to the motion graphic so I needed to create a new ma
 
 `material = bpy.data.materials.get(material_name) or bpy.data.materials.new(material_name)`
 
-Since there's is no light, I'll add an `Emission` shader. This requires enabling nodes for the material with `material.user_nodes = True`. 
+Since there's is no light, I'll add an `Emission` shader. This requires enabling nodes for the material with `material.use_nodes = True`. 
 
 Next, I remove the default `Principled_BSDF` node as well as any `Emission` nodes from earlier runs. Nodes can be removed using the `material.node_tree.nodes.remove()` method.
 
