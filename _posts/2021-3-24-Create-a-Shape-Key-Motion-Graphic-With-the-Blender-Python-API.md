@@ -140,17 +140,21 @@ After freeing the BMesh representation, we can enter object mode with `bpy.ops.o
 
 
 
-
+The process for the second shape key is identical except it only move two of the inner vertices.
 
 ![add-shape-key-2](..\images\shape-key-motion-graphic-bpy\add-shape-key-2v2.png)
 
 
 
-
-
 ## Add Keyframes
 
-Before adding the keyframes, I set the render frame rate as well the start and end frames for the scene. The helper function I made makes it a lot easier to manage keyframes as it lets me organize the updates sequentially. All the values and target frames can be stored in lists. 
+Before adding the keyframes, I set the render frame rate as well the start and end frames for the scene. The frame rate is stored at `bpy.context.scene.render.fps`.
+
+The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` and `bpy.data.scenes['Scene'].frame_end` respectively. 
+
+The shape keys for the plane are stored in `bpy.context.selected_objects[0].data.shape_keys`. Individual shape keys can be accessed with ``bpy.context.selected_objects[0].data.shape_keys.key_blocks[index]`.
+
+The helper function I made makes it a lot easier to manage keyframes as it lets me organize the updates sequentially. All the values and target frames can be stored in lists. 
 
 ![add-keyframes](..\images\shape-key-motion-graphic-bpy\add-keyframes.png)
 
