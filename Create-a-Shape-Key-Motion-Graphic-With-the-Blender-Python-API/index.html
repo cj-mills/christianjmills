@@ -93,7 +93,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      1 min read
+      3 min read
     
 </span></p>
 
@@ -130,39 +130,65 @@ window.onload = wrap_img;
 
 <h2 id="introduction">Introduction</h2>
 
-<p>I decided to recreate this <a href="https://www.youtube.com/watch?v=N3FZcFk-dZA&amp;list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&amp;index=11">short tutorial</a> from YouTube to practice using the Blender Python API. This post goes through the code I came up with to replicate the tutorial.</p>
+<p>I decided to recreate this <a href="https://www.youtube.com/watch?v=N3FZcFk-dZA&amp;list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&amp;index=11">short tutorial</a> from YouTube to practice using the Blender Python API. This post goes through the code I came up with to replicate the tutorial with some small additions.</p>
 
 <p><img src="..\images\shape-key-motion-graphic-bpy\shape_key_mg.gif" alt="shape_key_mg" /></p>
 
 <h2 id="import-dependencies">Import Dependencies</h2>
 
+<p>The only dependencies strictly required for this tutorial are <code class="highlighter-rouge">bpy</code> and <code class="highlighter-rouge">bmesh</code>. The <code class="highlighter-rouge">bpy</code> package is the base API for Blender and the <code class="highlighter-rouge">bmesh</code> module provides access to Blender’s internal mesh editing API. I also added the <code class="highlighter-rouge">math</code> module from the Python Standard Library for one of my helper functions.</p>
+
 <p><img src="..\images\shape-key-motion-graphic-bpy\import-dependencies.png" alt="import-dependencies" /></p>
 
 <h2 id="define-helper-functions">Define Helper Functions</h2>
+
+<p>I made some wrapper functions for the standard location, rotation, and scale transformations. These can be updated for individual objects with the following:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">bpy.data.objects["object_name"].location</code></li>
+  <li><code class="highlighter-rouge">bpy.data.objects["object_name"].rotation_euler</code></li>
+  <li><code class="highlighter-rouge">bpy.data.objects["object_name"].scale</code></li>
+</ul>
+
+<p>I also made a couple functions to reset the scene. Specifically, the <code class="highlighter-rouge">reset_scene()</code> function sets the color management view transform to Standard, empties the default collection, and sets the background color. I run the <code class="highlighter-rouge">reset_scene()</code> method at the start of the script so that nothing gets duplicated.</p>
+
+<p>Finally, I made a function to easily add sequences of keyframes to a given object. The function uses the built-in <code class="highlighter-rouge">setattr()</code> method to set the desired value for the target object and uses the <code class="highlighter-rouge">object.keyframe_insert()</code> method to add the keyframe.</p>
 
 <p><img src="..\images\shape-key-motion-graphic-bpy\define-helper-functions.png" alt="define-helper-functions" /></p>
 
 <h2 id="create-and-position-a-new-camera">Create and Position a New Camera</h2>
 
+<p>After resetting the scene, the first thing I do is set up the camera. Cameras can be added using the <code class="highlighter-rouge">bpy.ops.object.camera_add()</code> method.</p>
+
 <p><img src="..\images\shape-key-motion-graphic-bpy\create-camera.png" alt="create-camera" /></p>
 
 <h2 id="create-a-material-with-an-emission-shader">Create a Material With an Emission Shader</h2>
+
+<p>I decided to add some color to the motion graphic so I needed to create a new material. It is recommended to check if the material exists before trying to create it. Since there’s is no light I’ll add an <code class="highlighter-rouge">Emission</code> shader. This requires enabling nodes for the material first. Next, I remove the default <code class="highlighter-rouge">Principled_BSDF</code> node as well as any <code class="highlighter-rouge">Emission</code> nodes from earlier runs. The <code class="highlighter-rouge">Emission</code> node needs to be linked to the first slot in the <code class="highlighter-rouge">Material Output</code> node.</p>
 
 <p><img src="..\images\shape-key-motion-graphic-bpy\create-emission-material.png" alt="create-emission-material" /></p>
 
 <h2 id="create-a-new-plane-with-the-material">Create a New Plane With the Material</h2>
 
+<p>The main object of the above motion graphic is a plain. Plains can be added using the <code class="highlighter-rouge">bpy.ops.mesh.primitive_plane_add()</code> method. I then assign the previously created material to the plane.</p>
+
 <p><img src="..\images\shape-key-motion-graphic-bpy\create-plane.png" alt="create-plane" /></p>
 
 <h2 id="cut-out-a-center-square-from-the-plane">Cut Out a Center Square From the Plane</h2>
+
+<p>The next step is to cut the square whole in the plane like in the above Gif. This requires going into edit mode and modifying the mesh for the plane. Meshes can be edited using the <code class="highlighter-rouge">bmesh</code> module. We can make the square by adding a new inset to the plane and then deleting the new face that gets created as a result. The mesh then needs to be updated with these alterations.</p>
 
 <p><img src="..\images\shape-key-motion-graphic-bpy\cut-out-center-square.png" alt="cut-out-center-square" /></p>
 
 <h2 id="add-shape-keys-to-deform-the-plane">Add Shape Keys to Deform the Plane</h2>
 
+<p>To deform the plane, we need to access its vertices. We can do this in edit mode with the <code class="highlighter-rouge">bmesh</code> module as well. Unlike the tutorial video, I just set the positions for the inner vertices directly. It took some trial and error to determine the correct indices for the inner vertices.</p>
+
 <p><img src="..\images\shape-key-motion-graphic-bpy\add-shape-keys.png" alt="add-shape-keys" /></p>
 
 <h2 id="add-keyframes-to-animate-the-plane">Add Keyframes to Animate the Plane</h2>
+
+<p>Before adding the keyframes, I set the render frame rate as well the start and end frames for the scene. The helper function I made makes it a lot easier to manage keyframes as it lets me organize the updates sequentially. All the values and target frames can be stored in lists.</p>
 
 <p><img src="..\images\shape-key-motion-graphic-bpy\add-keyframes.png" alt="add-keyframes" /></p>
 
