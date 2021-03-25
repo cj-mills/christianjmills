@@ -128,7 +128,7 @@ We can add shape keys with the `bpy.ops.object.shape_key_add()` method. To defor
 
 We first enter edit mode for the plane with `bpy.ops.object.mode_set(mode="EDIT")`. We can then create a new BMesh representation for the current mesh in edit mode using `bm = bmesh.from_edit_mesh(mesh)`.
 
-The vertices are stored in `bm.verts`, but we need to create our own list index it directly.
+The vertices are stored in `bm.verts`, but we need to create our own list since we can't index it directly.
 
 Unlike the tutorial video, I just set the positions for the inner vertices directly. It took some trial and error to determine the correct indices for the inner vertices.
 
