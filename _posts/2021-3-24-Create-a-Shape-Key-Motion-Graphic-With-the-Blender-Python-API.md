@@ -52,7 +52,7 @@ The three standard transformations can be accessed for individual objects with t
 
 I also made a function to empty the default collection so that nothing gets duplicated. Collections can be accessed with `bpy.data.collections["collection_name"]` or `bpy.data.collections[index]`.
 
-Finally, I made a function to easily add sequences of keyframes to a given object. The function uses the built-in `setattr()` method to set the desired value for the target object and uses the `object.keyframe_insert()` method to add the keyframe. 
+Lastly, I made a function to easily add sequences of keyframes to a given object. The function uses the built-in `setattr()` method to set the desired value for the target object and uses the `object.keyframe_insert()` method to add the keyframe. 
 
 ![define-helper-functions](..\images\shape-key-motion-graphic-bpy\define-helper-functions_2.png)
 
