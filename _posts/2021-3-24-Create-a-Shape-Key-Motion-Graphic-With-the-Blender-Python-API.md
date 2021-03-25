@@ -116,11 +116,9 @@ Mesh data for the currently selected object is stored at `bpy.context.object.dat
 
 To edit the mesh, we need to get a BMesh representation. We first create an empty BMesh with `bm = bmesh.new()` and then fill it with the mesh using `bm.from_mesh(mesh)`.
 
+We can make the square by adding a new inset to the plane using the `bmesh.ops.inset_individual()` method. Then, we delete the new face that gets created with `bmesh.ops.delete()`. 
 
-
-
-
-We can make the square by adding a new inset to the plane and then deleting the new face that gets created as a result. The mesh then needs to be updated with these alterations.
+The mesh then needs to be updated with these alterations using `bm.to_mesh(mesh)`. Finally, we need to free the BMesh representation we created with `bm.free()`.
 
 ![cut-out-center-square](..\images\shape-key-motion-graphic-bpy\cut-out-center-square_2.png)
 
