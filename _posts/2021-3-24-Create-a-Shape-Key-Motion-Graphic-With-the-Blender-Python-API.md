@@ -158,7 +158,7 @@ The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` an
 
 ### Shape Keys
 
-The shape keys for the plane are stored in `bpy.context.selected_objects[0].data.shape_keys`. Individual shape keys can be accessed with ``bpy.context.selected_objects[0].data.shape_keys.key_blocks[index]`.
+The shape keys for the plane are stored in `bpy.context.selected_objects[0].data.shape_keys`. Individual shape keys can be accessed with `bpy.context.selected_objects[0].data.shape_keys.key_blocks[index]`.
 
 #### First Shape Key
 
