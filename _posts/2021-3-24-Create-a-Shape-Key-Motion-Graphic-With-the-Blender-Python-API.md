@@ -32,7 +32,7 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 ## Import Dependencies
 
-The only dependencies strictly required for this tutorial are `bpy` and `bmesh`. The `bpy` package is the base API for Blender and the `bmesh` module provides access to Blender's internal mesh editing API. I also added the `math` module from the Python Standard Library for one of my helper functions. 
+The only dependencies strictly required for this tutorial are `bpy` and `bmesh`. The `bpy` package is the base API for Blender and the `bmesh` module provides access to Blender's internal mesh editing API. I also used the `math` module from the Python Standard Library for one of my helper functions. 
 
 ![import-dependencies](..\images\shape-key-motion-graphic-bpy\import-dependencies.png)
 
