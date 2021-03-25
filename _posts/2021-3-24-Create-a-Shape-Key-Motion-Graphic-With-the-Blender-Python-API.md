@@ -98,7 +98,7 @@ The `Emission` node needs to be linked to the first slot in the `Material Output
 
 ## Create a Plane With the Material
 
-The main object of the above motion graphic is a plain. Plains can be added using the `bpy.ops.mesh.primitive_plane_add()` method. 
+The object in the above motion graphic is a plain. Plains can be added using the `bpy.ops.mesh.primitive_plane_add()` method. 
 
 I then assign the previously created material to the plane. Materials can be added to an object with `object.data.materials.append(material)`.
 
