@@ -108,7 +108,7 @@ I then assign the previously created material to the plane. Materials can be add
 
 ## Cut Out Center From Plane
 
-The next step is to cut the square hole in the plane like in the above Gif. This requires modifying the mesh for the plane. 
+The next step is to cut a square hole in the plane like in the above Gif. This requires modifying the mesh for the plane. 
 
 Mesh data for the currently selected object is stored at `bpy.context.object.data`.
 
