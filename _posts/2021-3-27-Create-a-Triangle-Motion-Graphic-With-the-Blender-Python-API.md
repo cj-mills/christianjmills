@@ -101,7 +101,7 @@ The `Emission` node needs to be linked to the first slot in the `Material Output
 
 ## Create a Cone With the Material
 
-The motion graphic is made of two triangles. The original triangle started off as a cone with `3` vertices. Cones can be added using the `bpy.ops.mesh.primitive_cone_add()` method. 
+The motion graphic is made of two triangles with one being a duplicate of the first. The original triangle started off as a cone with `3` vertices. Cones can be added using the `bpy.ops.mesh.primitive_cone_add()` method. 
 
 I then assign the previously created material to the cone. Materials can be added to an object with `object.data.materials.append(material)`.
 
