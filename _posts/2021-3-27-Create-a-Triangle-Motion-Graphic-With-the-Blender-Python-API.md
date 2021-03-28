@@ -111,9 +111,7 @@ I then assign the previously created material to the cone. Materials can be adde
 
 ## Turn the Cone Into a Triangle
 
-The next step is to remove the tip of the cone. This requires modifying the mesh for the cone. 
-
-Mesh data for the currently selected object is stored at `bpy.context.object.data`.
+The next step is to remove the tip of the cone. This requires modifying its mesh. Mesh data for the currently selected object is stored at `bpy.context.object.data`.
 
 To edit the mesh, we need to get a BMesh representation. We first create an empty BMesh with `bm = bmesh.new()` and then fill it with the mesh using `bm.from_mesh(mesh)`.
 
@@ -123,7 +121,7 @@ The mesh then needs to be updated with these alterations using `bm.to_mesh(mesh)
 
 Finally, I reset the origin of the triangle with `bpy.ops.object.origin_set()`.
 
-![cone-to-triangle](..\images\triangle-motion-graphic-bpy\cone-to-triangle.png)
+![cone-to-triangle](..\images\triangle-motion-graphic-bpy\cone-to-triangle-2.png)
 
 
 
