@@ -69,7 +69,7 @@ Next, I set the background to the desired color. In my case, it's pure black. Th
 
 The last setup step is to clear any objects added from the last time the script was run with the `clear_collection()` function.
 
-![set-up-scene](F:\Projects\GitHub\christianjmills\images\triangle-motion-graphic-bpy\set-up-scene.png)
+![set-up-scene](..\images\triangle-motion-graphic-bpy\set-up-scene.png)
 
 
 
