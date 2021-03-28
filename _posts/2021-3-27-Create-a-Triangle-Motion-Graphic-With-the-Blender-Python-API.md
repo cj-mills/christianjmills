@@ -129,7 +129,7 @@ Finally, I reset the origin of the triangle with `bpy.ops.object.origin_set()`.
 
 We can make the second triangle with `bpy.ops.object.duplicate()`.
 
-![duplicate-triangle](..\images\triangle-motion-graphic-bpy\duplicate-triangle.png)
+![duplicate-triangle](..\images\triangle-motion-graphic-bpy\duplicate-triangle_2.png)
 
 
 
