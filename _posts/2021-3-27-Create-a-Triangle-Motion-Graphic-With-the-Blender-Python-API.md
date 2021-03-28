@@ -147,7 +147,7 @@ Before adding the keyframes, I set the render frame rate as well the start and e
 
 The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` and `bpy.data.scenes['Scene'].frame_end` respectively. 
 
-![set-up-animation](..\images\triangle-motion-graphic-bpy\set-up-animation.png)
+![set-up-animation](..\images\triangle-motion-graphic-bpy\set-up-animation_2.png)
 
 
 
