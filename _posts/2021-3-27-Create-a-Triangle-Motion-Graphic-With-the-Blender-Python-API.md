@@ -155,7 +155,7 @@ The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` an
 
 We only need to animate the rotation and scale for the x-ray triangle.
 
-![add-keyframes](..\images\triangle-motion-graphic-bpy\add-keyframes.png)
+![add-keyframes](..\images\triangle-motion-graphic-bpy\add-keyframes_2.png)
 
 
 
