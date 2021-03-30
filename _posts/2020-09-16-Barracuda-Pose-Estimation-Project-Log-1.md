@@ -10,6 +10,8 @@ hide: false
 search_exclude: false
 ---
 
+### Update 3/29/2021: [Barracuda PoseNet Tutorial](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
+
 ## Background
 
 I've been learning how to get pose estimation working in Unity using their new inference library called [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html). I think the name might be a reference to Nvidia's CUDA library. Apparently, barracuda are really fast swimmers so maybe inference speed is a priority for the library as well. I have difficulty coming up with names for things so I'm always looking for new methods. 
