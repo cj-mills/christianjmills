@@ -10,6 +10,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+### Update 3/29/2021: [End-to-End In-Game Style Transfer Tutorial](https://christianjmills.com/End-To-End-In-Game-Style-Transfer-Tutorial-1/)
+
 * [Introduction](#introduction)
 * [Select a Unity Project](#select-a-unity-project)
 * [Install Barracuda Package](#install-barracuda-package)
