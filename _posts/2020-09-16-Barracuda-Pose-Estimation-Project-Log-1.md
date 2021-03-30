@@ -1,7 +1,7 @@
 ---
 title: Barracuda Pose Estimation Project Log Pt. 1
 layout: post
-toc: true
+toc: false
 comments: true
 image: images/pexels_peter_simmons_66218_1080p.jpg
 description: The journey so far.
@@ -11,6 +11,14 @@ search_exclude: false
 ---
 
 ### Update 3/29/2021: [Barracuda PoseNet Tutorial](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
+
+* [Background](#background)
+* [The Project](#the-project)
+* [Current Progress](#current-progress)
+* [Next Steps](#next-steps)
+* [Conclusion](#conclusion)
+
+
 
 ## Background
 
