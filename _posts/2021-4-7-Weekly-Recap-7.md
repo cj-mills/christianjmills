@@ -18,13 +18,13 @@ search_exclude: false
 
 ## Compute Shader Course
 
-I've been making my first pass through the compute shader course on Udemy. I'm just watching the videos the first time and I'll go back through more slowly afterwards. The course moves a bit quickly if, like me, you are pretty new to compute shaders and haven't worked with other types of shaders at all. I'm tempted to take their other [course](https://www.udemy.com/course/unity-shaders/) on shader development as other types of shaders get used throughout the course. While it's going to take me some time to fully internalize all the concepts, I'm enjoying learning about all the things you can do with compute shaders.
+I've been making my first pass through the [compute shader course](https://www.udemy.com/course/compute-shaders/) on Udemy. I'm just watching the videos the first time and I'll go back through more slowly afterwards. The course moves a bit quickly if, like me, you are pretty new to compute shaders and haven't worked with other types of shaders at all. I'm tempted to take their other [course](https://www.udemy.com/course/unity-shaders/) on shader development as other types of shaders get used throughout the course. While it's going to take me some time to fully internalize all the concepts, I'm enjoying learning about all the things you can do with compute shaders.
 
 
 
 ## Unreal Engine First Impressions
 
-I finally installed Unreal Engine and checked out one of the starter projects. The first big difference I noticed compared to Unity, is that new projects take a much longer time to open. It takes so long that I might look at replacing my quad-core CPU if I start using Unreal Engine on a regular basis. My computer also crashed the first time. Fortunately, existing projects seem to open pretty quickly. I have not had time to play around with Unreal Engine beyond that, but hopefully I will soon.
+I finally installed Unreal Engine and checked out one of the starter projects. The first big difference I noticed compared to Unity, is that new projects take a much longer time to open. It takes so long that I might look at replacing my quad-core CPU if I start using Unreal Engine on a regular basis. My computer also crashed the first time. Fortunately, existing projects seem to open pretty quickly. The interface and keyboard navigation feel pretty similar to Unity so it shouldn't take too long to get comfortable with it. I have not had time to play around with Unreal Engine beyond that, but hopefully I will soon.
 
 
 
