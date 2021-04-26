@@ -12,7 +12,7 @@ search_exclude: false
 
 * [Introduction](#introduction)
 * [Experimenting with AsyncGPUReadback](#experimenting-with-asyncgpureadback)
-* [Unreal Engine First Impressions](#unreal-engine-first-impressions)
+* [Pixel Effects with JavaScript and HTML Canvas](#pixel-effects-with-javascript-and-html-canvas)
 * [Links of the Week](#links-of-the-week)
 
 
