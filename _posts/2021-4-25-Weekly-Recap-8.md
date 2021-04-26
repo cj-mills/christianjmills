@@ -49,7 +49,7 @@ Well it's been just over a month since my first "daily recap" and I have not pos
 
 Well it looks like [Keijiro Takahashi](https://github.com/keijiro) beat me to implementing the [Facemesh](https://google.github.io/mediapipe/solutions/face_mesh) model with the Barracuda library. Looking at his recent projects on GitHub, he appears to be working on implementing every mode from the [MediaPipe](https://google.github.io/mediapipe/) library. I guess I'll have to put a bit more effort into my future tutorials on those so that they add something new. 
 
-### Deep Learing
+### Deep Learning
 
 #### [fastdebug](https://muellerzr.github.io/fastdebug/)
 
