@@ -13,6 +13,7 @@ search_exclude: false
 * [Introduction](#introduction)
 * [Experimenting with AsyncGPUReadback](#experimenting-with-asyncgpureadback)
 * [Pixel Effects with JavaScript and HTML Canvas](#pixel-effects-with-javascript-and-html-canvas)
+* [Conclusion](#conclusion)
 * [Links of the Week](#links-of-the-week)
 
 
