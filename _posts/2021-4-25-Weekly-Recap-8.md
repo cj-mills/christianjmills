@@ -55,3 +55,9 @@ Well it looks like [Keijiro Takahashi](https://github.com/keijiro) beat me to im
 #### [fastdebug](https://muellerzr.github.io/fastdebug/)
 
 A helpful library that is meant to make life easier when dealing with Pytorch and fastai errors.
+
+### Blender
+
+#### [HyperBole! The Hyperball Hates You](https://www.youtube.com/watch?v=AqA71cWs1WA)
+
+A master applying their craft.
