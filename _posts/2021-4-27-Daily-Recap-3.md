@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: A summary of what I worked on today.
 categories: [recap]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
