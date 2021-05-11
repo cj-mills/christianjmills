@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
 <title>Using PyTorch with CUDA on WSL2 | Christian Mills</title>
-<meta name="generator" content="Jekyll v4.0.0" />
+<meta name="generator" content="Jekyll v4.1.1" />
 <meta property="og:title" content="Using PyTorch with CUDA on WSL2" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="This post covers my experience getting PyTorch to run with CUDA on WSL2." />
@@ -16,14 +16,14 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-12-31T00:00:00-06:00" />
 <script type="application/ld+json">
-{"datePublished":"2020-12-31T00:00:00-06:00","url":"https://christianjmills.com/Using-PyTorch-with-CUDA-on-WSL2/","@type":"BlogPosting","dateModified":"2020-12-31T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/Using-PyTorch-with-CUDA-on-WSL2/"},"headline":"Using PyTorch with CUDA on WSL2","description":"This post covers my experience getting PyTorch to run with CUDA on WSL2.","@context":"https://schema.org"}</script>
+{"url":"https://christianjmills.com/Using-PyTorch-with-CUDA-on-WSL2/","@type":"BlogPosting","headline":"Using PyTorch with CUDA on WSL2","dateModified":"2020-12-31T00:00:00-06:00","datePublished":"2020-12-31T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://christianjmills.com/Using-PyTorch-with-CUDA-on-WSL2/"},"description":"This post covers my experience getting PyTorch to run with CUDA on WSL2.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
-<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://christianjmills.com/feed.xml" title="Christian Mills" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         renderMathInElement( document.body, {
@@ -166,7 +166,7 @@ window.onload = wrap_img;
 
 <h3 id="install-cuda-toolkit">Install CUDA Toolkit</h3>
 
-<p>The next step was to install the CUDA toolkit. Nvidia lists <code class="highlighter-rouge">WSL-Ubuntu</code> as a separate distribution. I don’t know what makes it functionally different than the regular <code class="highlighter-rouge">Ubuntu</code> distribution. Both worked and performed the same for me when training models. You can view the instructions I followed for both by clicking the links below.</p>
+<p>The next step was to install the CUDA toolkit. Nvidia lists <code class="language-plaintext highlighter-rouge">WSL-Ubuntu</code> as a separate distribution. I don’t know what makes it functionally different than the regular <code class="language-plaintext highlighter-rouge">Ubuntu</code> distribution. Both worked and performed the same for me when training models. You can view the instructions I followed for both by clicking the links below.</p>
 
 <ul>
   <li><a href="https://developer.nvidia.com/cuda-downloads?target_os=Linux&amp;target_arch=x86_64&amp;target_distro=Ubuntu&amp;target_version=2004&amp;target_type=deblocal">Ubuntu</a></li>
@@ -203,7 +203,7 @@ Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda <span class="nb">install</span> <span class="nt">-c</span> fastai <span class="nt">-c</span> pytorch <span class="nt">-c</span> anaconda fastai gh anaconda
 </code></pre></div></div>
 
-<p>I was able to confirm that PyTorch could access the GPU using the <code class="highlighter-rouge">torch.cuda.is_available()</code> method.</p>
+<p>I was able to confirm that PyTorch could access the GPU using the <code class="language-plaintext highlighter-rouge">torch.cuda.is_available()</code> method.</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Python 3.8.5 <span class="o">(</span>default, Sep  4 2020, 07:30:14<span class="o">)</span>
 <span class="o">[</span>GCC 7.3.0] :: Anaconda, Inc. on linux
@@ -214,7 +214,7 @@ True
 <span class="o">&gt;&gt;&gt;</span>
 </code></pre></div></div>
 
-<p>I opened up a jupyter notebook and trained a ResNet50 model to confirm that the GPU was actually being used. The Task Manager in Windows accurately displays the available GPU memory and temperature but not GPU usage for WSL applications. The <code class="highlighter-rouge">nvidia-smi</code> command doesn’t work yet in WSL either. I believe Nvidia is planning on adding that functionality in a future release. However, the <code class="highlighter-rouge">nvidia-smi.exe</code> command does accurately show GPU usage.</p>
+<p>I opened up a jupyter notebook and trained a ResNet50 model to confirm that the GPU was actually being used. The Task Manager in Windows accurately displays the available GPU memory and temperature but not GPU usage for WSL applications. The <code class="language-plaintext highlighter-rouge">nvidia-smi</code> command doesn’t work yet in WSL either. I believe Nvidia is planning on adding that functionality in a future release. However, the <code class="language-plaintext highlighter-rouge">nvidia-smi.exe</code> command does accurately show GPU usage.</p>
 
 <h2 id="the-headaches">The Headaches</h2>
 
@@ -222,9 +222,9 @@ True
 
 <h3 id="memory-usage">Memory Usage</h3>
 
-<p>By default, WSL distributions will take up as much system memory as is available and not release it. This problem is compounded since Windows already takes up a decent chuck of memory. This seems to be something Microsoft is still <a href="https://github.com/microsoft/WSL/issues/4166">working on</a>. However, you can limit the amount of memory WSL can access. The <a href="https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261">workaround</a> involves creating a <code class="highlighter-rouge">.wslconfig</code> file and adding it to you Windows user folder (e.g. <code class="highlighter-rouge">C:\Users\Username</code>). You can see the contents for an example config file below.</p>
+<p>By default, WSL distributions will take up as much system memory as is available and not release it. This problem is compounded since Windows already takes up a decent chuck of memory. This seems to be something Microsoft is still <a href="https://github.com/microsoft/WSL/issues/4166">working on</a>. However, you can limit the amount of memory WSL can access. The <a href="https://github.com/microsoft/WSL/issues/4166#issuecomment-526725261">workaround</a> involves creating a <code class="language-plaintext highlighter-rouge">.wslconfig</code> file and adding it to you Windows user folder (e.g. <code class="language-plaintext highlighter-rouge">C:\Users\Username</code>). You can see the contents for an example config file below.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[wsl2]
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[wsl2]
 memory=6GB
 </code></pre></div></div>
 
@@ -234,7 +234,7 @@ memory=6GB
 
 <p>This is where things started to get more inconvenient for my use case. The way in which WSL handles permissions for files in attached drives isn’t readily apparent for new users. I didn’t have any problem accessing the previously mentioned jupyter notebook or the image dataset I used to train the model. However, I couldn’t access the images in a different dataset when training a different model.</p>
 
-<p>I tried adding the necessary permissions in Ubuntu but that didn’t work. I even tried copying the dataset to the Ubuntu home directory. I ended up finding a solution on <a href="https://superuser.com/a/1392722">Stack Exchange</a>. It involves adding another config file, this time to Ubuntu. I needed to create a <code class="highlighter-rouge">wsl.conf</code> file in the <code class="highlighter-rouge">/etc/</code> directory. This one enables metadata for the files so that changes in permission actually work.</p>
+<p>I tried adding the necessary permissions in Ubuntu but that didn’t work. I even tried copying the dataset to the Ubuntu home directory. I ended up finding a solution on <a href="https://superuser.com/a/1392722">Stack Exchange</a>. It involves adding another config file, this time to Ubuntu. I needed to create a <code class="language-plaintext highlighter-rouge">wsl.conf</code> file in the <code class="language-plaintext highlighter-rouge">/etc/</code> directory. This one enables metadata for the files so that changes in permission actually work.</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>automount]
 enabled <span class="o">=</span> <span class="nb">true
@@ -242,7 +242,7 @@ enabled <span class="o">=</span> <span class="nb">true
 options <span class="o">=</span> <span class="s2">"metadata,umask=22,fmask=11"</span>
 </code></pre></div></div>
 
-<p>I had to restart my computer after creating the file for it to take effect. You can learn more about <code class="highlighter-rouge">wsl.conf</code> files and the settings in the above example at the links below.</p>
+<p>I had to restart my computer after creating the file for it to take effect. You can learn more about <code class="language-plaintext highlighter-rouge">wsl.conf</code> files and the settings in the above example at the links below.</p>
 
 <ul>
   <li><a href="https://devblogs.microsoft.com/commandline/automatically-configuring-wsl/">Automatically Configuring WSL</a></li>
@@ -258,7 +258,7 @@ options <span class="o">=</span> <span class="s2">"metadata,umask=22,fmask=11"</
   <li>Open PowerShell as an Administrator.</li>
   <li>Navigate to the folder containing the virtual hard drive file for your distribution.</li>
   <li>Shutdown WSL.</li>
-  <li>Run <a href="https://docs.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd?view=win10-ps"><code class="highlighter-rouge">optimize-vhd</code></a> for the virtual hard drive.</li>
+  <li>Run <a href="https://docs.microsoft.com/en-us/powershell/module/hyper-v/optimize-vhd?view=win10-ps"><code class="language-plaintext highlighter-rouge">optimize-vhd</code></a> for the virtual hard drive.</li>
 </ol>
 
 <div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">cd</span><span class="w"> </span><span class="nx">C:\Users\UserName_Here\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState</span><span class="w">
@@ -282,8 +282,6 @@ options <span class="o">=</span> <span class="s2">"metadata,umask=22,fmask=11"</
         async>
 </script><a class="u-url" href="/Using-PyTorch-with-CUDA-on-WSL2/" hidden></a>
 </article>
-
-
       </div>
     </main><footer class="site-footer h-card">
   <data class="u-url" href="/"></data>
