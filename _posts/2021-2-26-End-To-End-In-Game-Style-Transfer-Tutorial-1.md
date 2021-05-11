@@ -1,5 +1,6 @@
 ---
 title: End-to-End In-Game Style Transfer Tutorial Pt.1
+sticky_rank: 2
 layout: post
 toc: false
 comments: true
