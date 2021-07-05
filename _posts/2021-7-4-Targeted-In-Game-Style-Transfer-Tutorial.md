@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post covers how to select which game objects get stylized in the Unity scene.
 categories: [style_transfer, unity, tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
