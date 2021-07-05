@@ -176,10 +176,6 @@ Next, we will add a new function to our compute shader that will select what par
 
 First, we need to add three new Texture2D variables. Two of these will store the depth data from the `Style Depth` and `Source Depth` cameras. The third will store the original image for the current frame.
 
-![shader_add_new_texture2d_variables](..\images\targeted-in-game-style-transfer\shader_add_new_texture2d_variables.png)
-
-
-
 ```c#
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel ProcessInput
@@ -213,8 +209,6 @@ void ProcessInput(uint3 id : SV_DispatchThreadID)
 
 Now we can add the new function. We'll call it `Merge` since it merges the original and stylized frame. This function compares the pixel values from the StyleDepth and SrcDepth textures. If they match, that means a target GameObject is present and there is nothing in front of it. However, this does not account for parts of the scene with infinite depth like the sky. We can add another check to see if the current pixel value for the StyleDepth texture is greater than zero.
 
-![shader_merge_function](..\images\targeted-in-game-style-transfer\shader_merge_function.png)
-
 ```c#
 [numthreads(8, 8, 1)]
 void Merge(uint3 id : SV_DispatchThreadID)
@@ -233,10 +227,6 @@ void Merge(uint3 id : SV_DispatchThreadID)
 
 
 Now we just need to add the `#pragma kernel Merge` line at the top of the file.
-
-![shader_add_pragma_kernel_merge](..\images\targeted-in-game-style-transfer\shader_add_pragma_kernel_merge.png)
-
-
 
 ```c#
 // Each #kernel tells which function to compile; you can have many kernels
@@ -260,10 +250,6 @@ The next step is to modify the `StyleTransfer` script. The script is located in 
 #### Add Depth Camera Variables
 
 The only new variables we need to add are for the two depth cameras. We'll name them `styleDepth` and `sourceDepth` respectively. We can also add another `bool` variable to toggle the targeted stylization.
-
-![script_add_depth_camera_variables](..\images\targeted-in-game-style-transfer\script-add-new-variables.png)
-
-
 
 ```c#
 public class StyleTransfer : MonoBehaviour
@@ -299,8 +285,6 @@ public class StyleTransfer : MonoBehaviour
 
 Currently, the depth cameras are just capturing standard color data. We need to manually assign `Depth` textures to the `targetTexture` property for both of the cameras. We'll do this at the top of the `Start()` method. The textures need to have the same dimensions as target screen. We can access this in `Screen.width` and `Screen.height`.
 
-![script_assign_depth_textures](..\images\targeted-in-game-style-transfer\script_assign_depth_textures.png)
-
 ```c#
 // Start is called before the first frame update
 void Start()
@@ -332,8 +316,6 @@ void Start()
 
 If the screen resolution changes while the project is running, the resolution for the depth textures will need to be updated as well. We can check if the screen resolution has changed in the `Update()` method.
 
-![script-update-depth-texture-dimensions](..\images\targeted-in-game-style-transfer\script-update-depth-texture-dimensions.png)
-
 ```c#
 private void Update()
 {
@@ -355,8 +337,6 @@ private void Update()
 
 We will release the temporary Depth textures in the `OnDisable()` method.
 
-![script_release_depth_textures](..\images\targeted-in-game-style-transfer\script_release_depth_textures.png)
-
 ```c#
 // OnDisable is called when the MonoBehavior becomes disabled or inactive
 private void OnDisable()
@@ -375,10 +355,6 @@ private void OnDisable()
 #### Create `Merge()` Method
 
 Next, we need to add a new method to dispatch the Merge function in the compute shader. This method will be nearly identical to the existing `ProcessImage()` method except that it will also set the values for the `StyleDepth`, `SrcDepth`, and `SrcImage` variables.
-
-
-
-![script_merge_method](..\images\targeted-in-game-style-transfer\script_merge_method.png)
 
 ```c#
 /// <summary>
@@ -429,10 +405,6 @@ private void Merge(RenderTexture styleImage, RenderTexture sourceImage)
 #### Update `OnRenderImage()` Method
 
 We'll call the `Merge()` method inside the `OnRenderImage()` method. First, we need to create a copy of the current frame before it gets stylized. The `Merge()` method will only be called when `targetedStylization` is set to `true` and `stylizeImage` is set to `true`. Lastly, we need to release the temporary `RenderTexture` for the copy of the current frame.
-
-![script_onRenderImage_method - Copy](..\images\targeted-in-game-style-transfer\script-onRenderImage-method.png)
-
-
 
 ```c#
 /// <summary>
