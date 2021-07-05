@@ -253,8 +253,6 @@ window.onload = wrap_img;
 
 <p>First, we need to add three new Texture2D variables. Two of these will store the depth data from the <code class="language-plaintext highlighter-rouge">Style Depth</code> and <code class="language-plaintext highlighter-rouge">Source Depth</code> cameras. The third will store the original image for the current frame.</p>
 
-<p><img src="..\images\targeted-in-game-style-transfer\shader_add_new_texture2d_variables.png" alt="shader_add_new_texture2d_variables" /></p>
-
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Each #kernel tells which function to compile; you can have many kernels</span>
 <span class="cp">#pragma kernel ProcessInput
 #pragma kernel ProcessOutput
@@ -283,8 +281,6 @@ window.onload = wrap_img;
 
 <p>Now we can add the new function. We’ll call it <code class="language-plaintext highlighter-rouge">Merge</code> since it merges the original and stylized frame. This function compares the pixel values from the StyleDepth and SrcDepth textures. If they match, that means a target GameObject is present and there is nothing in front of it. However, this does not account for parts of the scene with infinite depth like the sky. We can add another check to see if the current pixel value for the StyleDepth texture is greater than zero.</p>
 
-<p><img src="..\images\targeted-in-game-style-transfer\shader_merge_function.png" alt="shader_merge_function" /></p>
-
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="nf">numthreads</span><span class="p">(</span><span class="m">8</span><span class="p">,</span> <span class="m">8</span><span class="p">,</span> <span class="m">1</span><span class="p">)]</span>
 <span class="k">void</span> <span class="nf">Merge</span><span class="p">(</span><span class="n">uint3</span> <span class="n">id</span> <span class="p">:</span> <span class="n">SV_DispatchThreadID</span><span class="p">)</span>
 <span class="p">{</span>
@@ -301,8 +297,6 @@ window.onload = wrap_img;
 
 <p>Now we just need to add the <code class="language-plaintext highlighter-rouge">#pragma kernel Merge</code> line at the top of the file.</p>
 
-<p><img src="..\images\targeted-in-game-style-transfer\shader_add_pragma_kernel_merge.png" alt="shader_add_pragma_kernel_merge" /></p>
-
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Each #kernel tells which function to compile; you can have many kernels</span>
 <span class="cp">#pragma kernel ProcessInput
 #pragma kernel ProcessOutput
@@ -318,8 +312,6 @@ window.onload = wrap_img;
 <h4 id="add-depth-camera-variables">Add Depth Camera Variables</h4>
 
 <p>The only new variables we need to add are for the two depth cameras. We’ll name them <code class="language-plaintext highlighter-rouge">styleDepth</code> and <code class="language-plaintext highlighter-rouge">sourceDepth</code> respectively. We can also add another <code class="language-plaintext highlighter-rouge">bool</code> variable to toggle the targeted stylization.</p>
-
-<p><img src="..\images\targeted-in-game-style-transfer\script-add-new-variables.png" alt="script_add_depth_camera_variables" /></p>
 
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">StyleTransfer</span> <span class="p">:</span> <span class="n">MonoBehaviour</span>
 <span class="p">{</span>
@@ -352,8 +344,6 @@ window.onload = wrap_img;
 
 <p>Currently, the depth cameras are just capturing standard color data. We need to manually assign <code class="language-plaintext highlighter-rouge">Depth</code> textures to the <code class="language-plaintext highlighter-rouge">targetTexture</code> property for both of the cameras. We’ll do this at the top of the <code class="language-plaintext highlighter-rouge">Start()</code> method. The textures need to have the same dimensions as target screen. We can access this in <code class="language-plaintext highlighter-rouge">Screen.width</code> and <code class="language-plaintext highlighter-rouge">Screen.height</code>.</p>
 
-<p><img src="..\images\targeted-in-game-style-transfer\script_assign_depth_textures.png" alt="script_assign_depth_textures" /></p>
-
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Start is called before the first frame update</span>
 <span class="k">void</span> <span class="nf">Start</span><span class="p">()</span>
 <span class="p">{</span>
@@ -380,8 +370,6 @@ window.onload = wrap_img;
 
 <p>If the screen resolution changes while the project is running, the resolution for the depth textures will need to be updated as well. We can check if the screen resolution has changed in the <code class="language-plaintext highlighter-rouge">Update()</code> method.</p>
 
-<p><img src="..\images\targeted-in-game-style-transfer\script-update-depth-texture-dimensions.png" alt="script-update-depth-texture-dimensions" /></p>
-
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">void</span> <span class="nf">Update</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">styleDepth</span><span class="p">.</span><span class="n">targetTexture</span><span class="p">.</span><span class="n">width</span> <span class="p">!=</span> <span class="n">Screen</span><span class="p">.</span><span class="n">width</span> <span class="p">||</span> <span class="n">styleDepth</span><span class="p">.</span><span class="n">targetTexture</span><span class="p">.</span><span class="n">height</span> <span class="p">!=</span> <span class="n">Screen</span><span class="p">.</span><span class="n">height</span><span class="p">)</span>
@@ -400,8 +388,6 @@ window.onload = wrap_img;
 
 <p>We will release the temporary Depth textures in the <code class="language-plaintext highlighter-rouge">OnDisable()</code> method.</p>
 
-<p><img src="..\images\targeted-in-game-style-transfer\script_release_depth_textures.png" alt="script_release_depth_textures" /></p>
-
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// OnDisable is called when the MonoBehavior becomes disabled or inactive</span>
 <span class="k">private</span> <span class="k">void</span> <span class="nf">OnDisable</span><span class="p">()</span>
 <span class="p">{</span>
@@ -417,8 +403,6 @@ window.onload = wrap_img;
 <h4 id="create-merge-method">Create <code class="language-plaintext highlighter-rouge">Merge()</code> Method</h4>
 
 <p>Next, we need to add a new method to dispatch the Merge function in the compute shader. This method will be nearly identical to the existing <code class="language-plaintext highlighter-rouge">ProcessImage()</code> method except that it will also set the values for the <code class="language-plaintext highlighter-rouge">StyleDepth</code>, <code class="language-plaintext highlighter-rouge">SrcDepth</code>, and <code class="language-plaintext highlighter-rouge">SrcImage</code> variables.</p>
-
-<p><img src="..\images\targeted-in-game-style-transfer\script_merge_method.png" alt="script_merge_method" /></p>
 
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">/// &lt;summary&gt;</span>
 <span class="c1">/// Merge the stylized frame and the original frame on the GPU</span>
@@ -466,8 +450,6 @@ window.onload = wrap_img;
 <h4 id="update-onrenderimage-method">Update <code class="language-plaintext highlighter-rouge">OnRenderImage()</code> Method</h4>
 
 <p>We’ll call the <code class="language-plaintext highlighter-rouge">Merge()</code> method inside the <code class="language-plaintext highlighter-rouge">OnRenderImage()</code> method. First, we need to create a copy of the current frame before it gets stylized. The <code class="language-plaintext highlighter-rouge">Merge()</code> method will only be called when <code class="language-plaintext highlighter-rouge">targetedStylization</code> is set to <code class="language-plaintext highlighter-rouge">true</code> and <code class="language-plaintext highlighter-rouge">stylizeImage</code> is set to <code class="language-plaintext highlighter-rouge">true</code>. Lastly, we need to release the temporary <code class="language-plaintext highlighter-rouge">RenderTexture</code> for the copy of the current frame.</p>
-
-<p><img src="..\images\targeted-in-game-style-transfer\script-onRenderImage-method.png" alt="script_onRenderImage_method - Copy" /></p>
 
 <div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">/// &lt;summary&gt;</span>
 <span class="c1">/// OnRenderImage is called after the Camera had finished rendering </span>
