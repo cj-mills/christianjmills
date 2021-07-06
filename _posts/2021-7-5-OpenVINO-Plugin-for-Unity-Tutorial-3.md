@@ -31,7 +31,7 @@ search_exclude: false
 
 ## Overview
 
-Create unity project.
+In [Part 1](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-1/) of the tutorial, we first installed Unity, OpenVINO, and its prerequisite software. We then demonstrated how to use the python conversion script included with the OpenVINO™ Toolkit to convert a pretrained model from [ONNX](https://onnx.ai/) format to the OpenVINO [Intermediate Representation](https://docs.openvinotoolkit.org/latest/openvino_docs_MO_DG_IR_and_opsets.html) format. In [Part 2](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-2/), we walked through the steps needed to create a [Dynamic link library (DLL)](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library) in Visual Studio to perform [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) with the pretrained deep learning model. In this part, we will demonstrate how to access the DLL as a plugin inside a Unity project.
 
 
 
@@ -1483,6 +1483,8 @@ Now we can finally test the application. Go back to the main build folder and do
 
 ## Conclusion
 
+We now have a general workflow for leveraging the OpenVINO™ Toolkit inside the Unity game engine. The style transfer model used in this tutorial is extremely demanding and can push even high-end graphics cards to their limit. The performance improvements from using OpenVINO make these types of models accessible to a wider audience. Less demanding models can even be offloaded to the integrated graphics or CPU. Tools like Unity are capable of much more than making games and it is exciting to see what will be possible by combining efficient deep learning models with real-time development platforms.
 
+**Project Resources:**
 
 [GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
