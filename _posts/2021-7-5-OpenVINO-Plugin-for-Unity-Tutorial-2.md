@@ -28,7 +28,9 @@ search_exclude: false
 
 ## Overview
 
-Now, we can create the DLL that will contain the functionality for the Unity plugin. We will create the DLL inside Visual Studio.
+In [Part 1](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-1/) of the tutorial, we first installed Unity, OpenVINO, and its prerequisite software. We then demonstrated how to use the python conversion script included with the OpenVINO™ Toolkit to convert a pretrained model from [ONNX](https://onnx.ai/) format to the OpenVINO [Intermediate Representation](https://docs.openvinotoolkit.org/latest/openvino_docs_MO_DG_IR_and_opsets.html) format.
+
+In this part, we will walk through the steps needed to create a [Dynamic link library (DLL)](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library) in Visual Studio to perform [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) with the pretrained deep learning model.
 
 ## Create a New Visual Studio Project
 
@@ -607,7 +609,11 @@ You can download a folder containing the `OpenVINO_Plugin.dll` file and its depe
 
 ## Conclusion
 
-Now we can move on to the Unity project.
+That is everything we need for the OpenVINO functionality. In the next part, we will demonstrate how to access this functionality as a plugin inside a Unity project.
+
+**Project Resources:**
+
+[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
 
 
 
