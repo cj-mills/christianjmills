@@ -7,7 +7,7 @@ description: This tutorial series covers how to create an OpenVINO plugin for Un
 categories: [style_transfer, unity, tutorial]
 hide: true
 permalink: /:title/
-search_exclude: true
+search_exclude: false
 ---
 
 * [Overview](#overview)
