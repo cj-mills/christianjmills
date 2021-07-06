@@ -19,9 +19,11 @@ search_exclude: false
 
 ## Overview
 
-In this tutorial, we will cover how to create a [plugin](https://docs.unity3d.com/Manual/NativePlugins.html) that leverages the [OpenVINO™ Toolkit](https://docs.openvinotoolkit.org/latest/index.html) for the [Unity](https://unity.com/products/unity-platform) game engine. We will first create a [Dynamic link library (DLL)](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library) in Visual Studio to perform [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) with a pretrained deep learning model. We will then demonstrate how to access this DLL inside a Unity application.
+In this tutorial series, we will cover how to create a [plugin](https://docs.unity3d.com/Manual/NativePlugins.html) that leverages the [OpenVINO™ Toolkit](https://docs.openvinotoolkit.org/latest/index.html) for the [Unity](https://unity.com/products/unity-platform) game engine. We will first create a [Dynamic link library (DLL)](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library) in Visual Studio to perform [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) with a pretrained deep learning model. We will then demonstrate how to access this DLL inside a Unity application.
 
 We will be using a computationally demanding [style transfer](https://github.com/pytorch/examples/tree/master/fast_neural_style#models) model to demonstrate the potential performance benefits from using the OpenVINO inference engine. The model takes in a single RGB image as input and has been trained to generate a stylized version of the image based on a specific style image. The steps for training this type of model are covered in an [earlier tutorial](https://software.intel.com/content/www/us/en/develop/articles/in-game-style-transfer-tutorial-leveraging-unity.html/).
+
+In this first part, we will ensure the prerequisite software is installed on our system and convert a pretrained model from [ONNX](https://onnx.ai/) format to the OpenVINO [Intermediate Representation](https://docs.openvinotoolkit.org/latest/openvino_docs_MO_DG_IR_and_opsets.html) format.
 
 ## Prerequisites
 
@@ -176,13 +178,12 @@ The `.bin` file stores the constant values for the model learned during the trai
 
 ## Conclusion
 
+That takes care of the required setup. In the next part, we will cover how to create a [Dynamic link library (DLL)](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library) in Visual Studio to perform [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) with the OpenVINO IR model.
 
+**Project Resources:**
 
-
+[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
 
 
 
 ### Next: [Part 2](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-2/)
-
-[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
-
