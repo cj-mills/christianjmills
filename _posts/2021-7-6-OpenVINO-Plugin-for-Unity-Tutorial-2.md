@@ -3,7 +3,7 @@ title: OpenVINO Plugin for Unity Tutorial Pt.2
 layout: post
 toc: false
 comments: true
-description: This tutorial series covers how to create an OpenVINO plugin for Unity.
+description: This post walks through the steps needed to create a Dynamic link library (DLL) in Visual Studio to perform inference with the pretrained deep learning model.
 categories: [openvino, style_transfer, tutorial, unity]
 hide: true
 permalink: /:title/
