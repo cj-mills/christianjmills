@@ -619,5 +619,3 @@ That is everything we need for the OpenVINO functionality. In the next part, we 
 
 ### Next: [Part 3](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-3/)
 
-[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
-
