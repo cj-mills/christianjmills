@@ -4,11 +4,13 @@ layout: post
 toc: false
 comments: true
 description: This tutorial series covers how to create an OpenVINO plugin for Unity.
-categories: [style_transfer, unity, tutorial]
+categories: [openvino, style_transfer, tutorial, unity]
 hide: true
 permalink: /:title/
 search_exclude: false
 ---
+
+### Previous: [Part 2](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-2/)
 
 * [Overview](#overview)
 * [Create New Project](#create-new-project)
@@ -1481,3 +1483,6 @@ Now we can finally test the application. Go back to the main build folder and do
 
 ## Conclusion
 
+
+
+[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
