@@ -10,6 +10,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+### Previous: [Part 1](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-1/)
+
 * [Overview](#overview)
 * [Create a New Visual Studio Project](#create-a-new-visual-studio-project)
 * [Configure Project](#configure-project)
@@ -606,3 +608,10 @@ You can download a folder containing the `OpenVINO_Plugin.dll` file and its depe
 ## Conclusion
 
 Now we can move on to the Unity project.
+
+
+
+### Next: [Part 3](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-3/)
+
+[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
+
