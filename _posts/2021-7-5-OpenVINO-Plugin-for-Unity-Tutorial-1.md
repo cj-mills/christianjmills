@@ -176,3 +176,13 @@ The `.bin` file stores the constant values for the model learned during the trai
 
 ## Conclusion
 
+
+
+
+
+
+
+### Next: [Part 2](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-2/)
+
+[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
+
