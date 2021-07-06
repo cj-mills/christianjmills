@@ -3,7 +3,7 @@ title: OpenVINO Plugin for Unity Tutorial Pt.1
 layout: post
 toc: false
 comments: true
-description: This tutorial series covers how to create an OpenVINO plugin for Unity.
+description: This post covers the prerequisite software that need to be installed and how to convert a pretrained model from ONNX format to the OpenVINO Intermediate Representation format.
 categories: [openvino, style_transfer, tutorial, unity]
 hide: true
 permalink: /:title/
