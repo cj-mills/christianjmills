@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post demonstrates how to access the DLL as a plugin inside a Unity project.
 categories: [openvino, style_transfer, tutorial, unity]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
