@@ -1,6 +1,5 @@
 ---
 title: Barracuda PoseNet Tutorial Pt. 1
-sticky_rank: 1
 layout: post
 toc: false
 comments: true
