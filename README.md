@@ -11,9 +11,3 @@ https://christianjmills.com/
 
 _powered by [fastpages](https://github.com/fastai/fastpages)_
 
-
-
-
-
-{% include youtube.html content="https://youtu.be/nEoCAVl6yAI" %}
-
