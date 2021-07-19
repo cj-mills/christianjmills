@@ -21,9 +21,7 @@ search_exclude: false
 
 
 
-
-
-\> youtube: https://youtu.be/nEoCAVl6yAI
+> youtube: https://youtu.be/nEoCAVl6yAI
 
 
 
