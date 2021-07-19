@@ -183,9 +183,18 @@ Drag and drop the two video files from the file explorer into the `Videos` folde
 
 ## Import ONNX Models
 
+We will cover how to use two different versions of the PoseNet model. The [MobileNet](https://paperswithcode.com/method/mobilenetv2) version is optimized to run efficiently on CPUs at the cost of some accuracy. The [ResNet50](https://paperswithcode.com/method/resnet) model is noticeably more accurate, but is more computationally demanding. 
 
+### Download Files
 
+The model files used in this tutorial series can be downloaded from the links below.
 
+* **MobileNet**: ([download](https://drive.google.com/file/d/1vWZ-Y7xUvKmoNZUwKAmRT8JLZBZonZ_s/view?usp=sharing))
+* **ResNet50**: ([download](https://drive.google.com/file/d/1Xc6Hw2UfkbH26pdarR8FuvcM8Xlx8G4R/view?usp=sharing))
+
+### Add Files to Assets
+
+Back in the Assets section, create a new folder called `Models`. Drag and drop the ONNX files from the File Explorer into the `Models` folder.
 
 ![unity-add-onnx-models](..\images\barracuda-posenet-tutorial-v2\part-1\unity-add-onnx-models.png)
 
