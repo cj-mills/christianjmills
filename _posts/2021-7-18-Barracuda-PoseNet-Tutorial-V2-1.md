@@ -33,31 +33,29 @@ This tutorial series provides step-by-step instructions for how to perform human
 
 {% include youtube.html content="https://youtu.be/F995ZadTZik" %}
 
-
-
 ## Overview
 
 This post demonstrates how to play and view videos inside Unity. We'll later perform pose estimation on individual frames while the video is playing. We can gauge the model's accuracy by comparing the estimated key point locations to the source video.
 
 ## Prerequisites
 
-I recommend checking the following prerequisites if you want to follow along on your own computer.
+The following prerequisites are required to complete this tutorial.
 
 ### Unity
 
-This tutorial assumes that you have Unity installed. You can get acquainted with Unity by clicking on one of the tutorials listed below.
-
-#### How to Make a Game - Unity Beginner Tutorial
-
-* [Unity 2020.1](https://www.youtube.com/watch?v=Lu76c85LhGY)
-
-**Note:** You can download the exact version of Unity used for this tutorial by clicking the link below. 
+This tutorial assumes that Unity is already installed on the system. The exact version of Unity used for this tutorial can be downloaded from the link below. 
 
 * [Unity 2020.3.14](unityhub://2020.3.14f1/d0d1bb862f9d)
 
+Anyone who has never used Unity before can become acquainted with the basics by following the tutorial below. It will walk through the installation process all the way to making an Angry Birds clone.
+
+- [How to Make a Game - Unity Beginner Tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY)
+
 ### Hardware
 
-We'll be performing [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) on the GPU for this series. If possible, use a graphics card from a recent generation.
+We will be covering how to perform [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) on either the CPU or GPU. If possible, use a graphics card from a recent generation.
+
+
 
 ## Create a New Project
 
