@@ -3,7 +3,7 @@ title: Barracuda PoseNet Tutorial 2nd Edition Pt. 1
 layout: post
 toc: false
 comments: true
-description: This tutorial series provides step-by-step instructions for how to perform human [pose estimation](https://www.fritz.ai/pose-estimation/) in [Unity](https://unity.com/) with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/manual/index.html) inference library.
+description: This tutorial series provides step-by-step instructions for how to perform human pose estimation in Unity with the Barracuda inference library.
 categories: [unity,barracuda,tutorial]
 hide: true
 permalink: /:title/
