@@ -21,7 +21,7 @@ search_exclude: false
 
 
 
-<video height="480" src="..\videos\multipose-demo-1.mp4" controls></video>
+<video width=auto height=auto src="..\videos\multipose-demo-1.mp4" controls></video>
 
 ## Introduction
 
