@@ -1,4 +1,4 @@
-[//]: # (This template replaces README.md when someone creates a new repo with the fastpages template.)
+[//]: # "This template replaces README.md when someone creates a new repo with the fastpages template."
 
 ![](https://github.com/cj-mills/christianjmills/workflows/CI/badge.svg) 
 ![](https://github.com/cj-mills/christianjmills/workflows/GH-Pages%20Status/badge.svg) 
@@ -10,3 +10,10 @@ https://christianjmills.com/
 
 
 _powered by [fastpages](https://github.com/fastai/fastpages)_
+
+
+
+
+
+{% include youtube.html content="https://youtu.be/nEoCAVl6yAI" %}
+
