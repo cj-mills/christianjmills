@@ -11,12 +11,14 @@ search_exclude: false
 ---
 
 * [Introduction](#introduction)
+* [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Create a New Project](#create-a-new-project)
+* [Install Barracuda Package](#install-barracuda-package)
 * [Import Video Files](#import-video-files)
+* [Import ONNX Models](#import-onnx-models)
 * [Create the Video Player](#create-the-video-player)
 * [Create the Video Screen](#create-the-video-screen)
-* [Test the Video Player](#test-the-video-player)
 * [Summary](#summary)
 
 
@@ -33,9 +35,13 @@ This tutorial series provides step-by-step instructions for how to perform human
 
 {% include youtube.html content="https://youtu.be/F995ZadTZik" %}
 
+
+
 ## Overview
 
-This post demonstrates how to play and view videos inside Unity. We'll later perform pose estimation on individual frames while the video is playing. We can gauge the model's accuracy by comparing the estimated key point locations to the source video.
+This post covers the installation process for the Barracuda package, importing the required asset files, and creating the video player. We'll later perform pose estimation on individual frames while the video is playing. We can gauge the model's accuracy by comparing the estimated key point locations to the source video.
+
+
 
 ## Prerequisites
 
@@ -69,53 +75,33 @@ First, we need to create a new Unity project. We can use the default 3D template
 
 ## Install Barracuda Package
 
-Open the `Window` menu at the top of the Unity Editor and select `Package Manager`.
-
-
+We will start by installing the Barracuda package. This will allows us to import the PoseNet models into the project. Open the `Window` menu at the top of the Unity Editor and select `Package Manager`.
 
 ![open-package-manager](..\images\barracuda-posenet-tutorial-v2\part-1\open-package-manager.png)
-
-
 
 There might be a message in the console indicating that there is a new version of the Visual Studio Editor package. 
 
 ![unity-update-visual-studio-editor-package-prompt](..\images\barracuda-posenet-tutorial-v2\part-1\unity-update-visual-studio-editor-package-prompt.png)
 
-
-
 Feel free to update the package by selecting it in the Package Manager and click the `Update` button.
 
 ![update-visual-studio-editor](..\images\barracuda-posenet-tutorial-v2\part-1\update-visual-studio-editor.png)
 
-
-
-We will be using version `2.1.0` of the Barracuda package. Unity has this version marked as preview, so we will need to enable preview packages to install it.
-
-Click the small gear icon and select the `Advanced Project Settings` option. 
+We will be using version `2.1.0` of the Barracuda package. Unity has this version marked as preview, so we will need to enable preview packages to install it. Click the small gear icon and select the `Advanced Project Settings` option. 
 
 ![package-manager-open-advanced-settings](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-open-advanced-settings.png)
 
-
-
 Tick the `Enable Preview Packages` checkbox so that we can install the latest version of Barracuda.
-
-
 
 ![package-manager-enable-preview-packages](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-enable-preview-packages.png)
 
-A popup window will appear warning us that preview packages might not be ready for production. However, one of the reasons we are using the latest version of Barracuda is that it contains bug fixes that are not present in the `Verified` version, so click `I understand` in the popup window.
-
-
+A popup window will appear, warning us that preview packages might not be ready for production. However, the latest version of Barracuda contains bug fixes that are not present in the `Verified` version, so click `I understand` in the popup window.
 
 ![package-manager-enable-preview-packages-popup](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-enable-preview-packages-popup.png)
-
-
 
 Even though there is a verified version of Barracuda, it is not available in the package manager by default. We need to either install a package that has it as a dependency (e.g. ML Agents) or add it directly with a git URL. Click on the `+` icon in the upper-left corner and select `Add package from git URL...`.
 
 ![package-manager-add-git-package](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-add-git-package.png)
-
-
 
 Enter `com.unity.barracuda` into the text box and click `Add`. This will install the latest `Verified` version of the package. Unfortunately, there is a bug with this version that causes an error when performing inference on the CPU. This is resolved in later versions.
 
@@ -125,27 +111,17 @@ We can view more recent versions of the package by clicking `See other versions`
 
 ![barracuda-package-see-other-versions](..\images\barracuda-posenet-tutorial-v2\part-1\barracuda-package-see-other-versions.png)
 
-
-
-Scroll all the way up to version `2.1.0-preview` and click the `Update to 2.1.0-preview` button in the bottom-right corner. 
+Scroll all the way up to version `2.1.0-preview` and click the `Update to 2.1.0-preview` button in the bottom-right corner.
 
 ![barracuda-select-latest-version](..\images\barracuda-posenet-tutorial-v2\part-1\barracuda-select-latest-version.png)
-
-
 
 During the installation process a popup window will appear indicating that the version of the [Burst compiler](https://docs.unity3d.com/Packages/com.unity.burst@1.3/manual/index.html) has changed. Click OK to close the window. Once the installation process has finished, close Unity and then reopen the project.
 
 ![burst-package-update-detected](..\images\barracuda-posenet-tutorial-v2\part-1\burst-package-update-detected.png)
 
-
-
 Unity seems to be concerned that anyone who jumps through the multiple hoops to install a preview package might forget that they are indeed using a preview package. To eliminate this possibility, they have added a reminder at the top of the editor that can not be permanently removed.
 
 ![unity-preview-packages-in-use-message](..\images\barracuda-posenet-tutorial-v2\part-1\unity-preview-packages-in-use-message.png)
-
-
-
-
 
 
 
@@ -177,10 +153,6 @@ Drag and drop the two video files from the file explorer into the `Videos` folde
 
 
 
-
-
-
-
 ## Import ONNX Models
 
 We will cover how to use two different versions of the PoseNet model. The [MobileNet](https://paperswithcode.com/method/mobilenetv2) version is optimized to run efficiently on CPUs at the cost of some accuracy. The [ResNet50](https://paperswithcode.com/method/resnet) model is noticeably more accurate, but is more computationally demanding. 
@@ -197,10 +169,6 @@ The model files used in this tutorial series can be downloaded from the links be
 Back in the Assets section, create a new folder called `Models`. Drag and drop the ONNX files from the File Explorer into the `Models` folder.
 
 ![unity-add-onnx-models](..\images\barracuda-posenet-tutorial-v2\part-1\unity-add-onnx-models.png)
-
-
-
-
 
 
 
@@ -233,8 +201,6 @@ We need to make a "screen" in Unity to watch the video. We'll use a [`Quad`](htt
 Since we are only working in 2D, we can switch the scene to 2D view by clicking the `2D` button in the scene tab.
 
 ![unity-toggle-2D-scene-view](..\images\barracuda-posenet-tutorial-v2\part-1\unity-toggle-2D-scene-view.png)
-
-
 
 
 
