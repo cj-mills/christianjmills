@@ -17,8 +17,6 @@ search_exclude: false
 * [Install Barracuda Package](#install-barracuda-package)
 * [Import Video Files](#import-video-files)
 * [Import ONNX Models](#import-onnx-models)
-* [Create the Video Player](#create-the-video-player)
-* [Create the Video Screen](#create-the-video-screen)
 * [Summary](#summary)
 
 
