@@ -47,6 +47,8 @@ This tutorial assumes that Unity is already installed on the system. The exact v
 
 * [Unity 2020.3.14](unityhub://2020.3.14f1/d0d1bb862f9d)
 
+**Note:** The version of Barracuda that we will be using in this tutorial is not available in Unity 2021 at the time of writing.
+
 Anyone who has never used Unity before can become acquainted with the basics by following the tutorial below. It will walk through the installation process all the way to making a Flappy Bird clone.
 
 - [Make Your First Video Game - Ultimate Beginner Unity3D Tutorial](https://www.youtube.com/watch?v=8rdfcq-jePw)
