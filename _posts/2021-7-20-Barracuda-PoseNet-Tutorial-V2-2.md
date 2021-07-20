@@ -21,15 +21,49 @@ search_exclude: false
 
 This post demonstrates how to play and view videos inside Unity from both video files and a webcam. We'll later perform pose estimation on individual frames while the video is playing. We can gauge the model's accuracy by comparing the estimated key point locations to the source video.
 
+
+
 ## Create the Video Player
 
-In the `Hierarchy` tab, right-click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`.
+To start, we will create new `GameObject` to play and view a video. 
 
-![unity-create-video-player](..\images\barracuda-posenet-tutorial-v2\part-2\unity-create-video-player.png)
+### Create the Video Screen
 
-### Set Video Clip
+We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
 
-Select the `Video Player` object in the `Hierarchy` tab. Then, drag and drop the `pexels_boardslides` file into the `Video Clip` parameter in the `Inspector` tab.
+![unity-create-quad](..\images\barracuda-posenet-tutorial-v2\part-2\unity-create-quad.png)
+
+Since we are only working in 2D, we can switch the scene to 2D view by clicking the `2D` button in the scene tab.
+
+![unity-toggle-2D-scene-view](..\images\barracuda-posenet-tutorial-v2\part-2\unity-toggle-2D-scene-view.png)
+
+
+
+
+
+![unity-2D-scene-view](..\images\barracuda-posenet-tutorial-v2\part-2\unity-2D-scene-view.png)
+
+
+
+
+
+### Add Video Player Component
+
+With the `VideoScreen` object selected in the Hierarchy tab, click the `Add Component` button in the Inspector tab.
+
+![videoScreen-add-component](..\images\barracuda-posenet-tutorial-v2\part-2\videoScreen-add-component.png)
+
+Type video into the search box and select `Video Player` from the search results.
+
+![videoScreen-add-video-player-component](..\images\barracuda-posenet-tutorial-v2\part-2\videoScreen-add-video-player-component.png)
+
+
+
+
+
+### Assign Video Clip
+
+Video files can be assigned by dragging them from the Assets section into the `Video Clip` spot in the Inspector tab. We will start with the `pexels_boardslides` file.
 
 ![unity-assign-video-clip](..\images\barracuda-posenet-tutorial-v2\part-2\unity-assign-video-clip.png)
 
@@ -41,15 +75,7 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 
 
-## Create the Video Screen
 
-We need to make a "screen" in Unity to watch the video. We'll use a [`Quad`](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
-
-![unity-create-quad](..\images\barracuda-posenet-tutorial-v2\part-2\unity-create-quad.png)
-
-Since we are only working in 2D, we can switch the scene to 2D view by clicking the `2D` button in the scene tab.
-
-![unity-toggle-2D-scene-view](..\images\barracuda-posenet-tutorial-v2\part-2\unity-toggle-2D-scene-view.png)
 
 
 
@@ -100,9 +126,6 @@ public class PoseEstimator : MonoBehaviour
     [Tooltip("Use webcam feed as input")]
     public bool useWebcam = false;
 
-    [Tooltip("The GameObject with the video player component")]
-    public GameObject videoPlayer;
-
     [Tooltip("The screen for viewing preprocessed images")]
     public Transform videoScreen;
 ```
@@ -140,15 +163,12 @@ public class PoseEstimator : MonoBehaviour
             // Flip the VideoScreen around the Y-Axis
             videoScreen.rotation = Quaternion.Euler(0, 180, 0);
             // Invert the scale value for the Z-Axis
-            videoScreen.localScale = new Vector3(videoScreen.localScale.x,
-                                                 videoScreen.localScale.y, -1f);
+            videoScreen.localScale = new Vector3(videoScreen.localScale.x, videoScreen.localScale.y, -1f);
         }
 
         // Apply the new videoTexture to the VideoScreen Gameobject
-        videoScreen.gameObject.GetComponent<MeshRenderer>().material.shader =
-            Shader.Find("Unlit/Texture");
-        videoScreen.gameObject.GetComponent<MeshRenderer>().material.SetTexture(
-            "_MainTex", videoTexture);
+        videoScreen.gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("Unlit/Texture");
+        videoScreen.gameObject.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", videoTexture);
         // Adjust the VideoScreen dimensions for the new videoTexture
         videoScreen.localScale = new Vector3(width, height, videoScreen.localScale.z);
         // Adjust the VideoScreen position for the new videoTexture
@@ -169,9 +189,7 @@ public class PoseEstimator : MonoBehaviour
         // Get a reference to the Main Camera GameObject
         GameObject mainCamera = GameObject.Find("Main Camera");
         // Adjust the camera position to account for updates to the VideoScreen
-        mainCamera.transform.position = new Vector3(videoDims.x / 2, 
-                                                    videoDims.y / 2, 
-                                                    -(videoDims.x / 2));
+        mainCamera.transform.position = new Vector3(videoDims.x / 2, videoDims.y / 2, -(videoDims.x / 2));
         // Increase draw distance for camera
         mainCamera.GetComponent<Camera>().farClipPlane = (videoDims.x / 2) + 100;
         // Render objects with no perspective (i.e. 2D)
@@ -198,7 +216,7 @@ public class PoseEstimator : MonoBehaviour
             webcamTexture.Play();
 
             // Deactivate the Video Player
-            videoPlayer.SetActive(false);
+            videoScreen.gameObject.SetActive(false);
 
             // Update the videoDims.y
             videoDims.y = (int)webcamTexture.height;
@@ -209,17 +227,16 @@ public class PoseEstimator : MonoBehaviour
         else
         {
             // Update the videoDims.y
-            videoDims.y = (int)videoPlayer.GetComponent<VideoPlayer>().height;
+            videoDims.y = (int)videoScreen.GetComponent<VideoPlayer>().height;
             // Update the videoDims.x
-            videoDims.x = (int)videoPlayer.GetComponent<VideoPlayer>().width;
+            videoDims.x = (int)videoScreen.GetComponent<VideoPlayer>().width;
         }
 
         // Create a new videoTexture using the current video dimensions
-        videoTexture = RenderTexture.GetTemporary(videoDims.x, videoDims.y, 24,
-                                                  RenderTextureFormat.ARGBHalf);
+        videoTexture = RenderTexture.GetTemporary(videoDims.x, videoDims.y, 24, RenderTextureFormat.ARGBHalf);
 
         // Use new videoTexture for Video Player
-        videoPlayer.GetComponent<VideoPlayer>().targetTexture = videoTexture;
+        videoScreen.GetComponent<VideoPlayer>().targetTexture = videoTexture;
 
         // Initialize the videoScreen
         InitializeVideoScreen(videoDims.x, videoDims.y, useWebcam);
