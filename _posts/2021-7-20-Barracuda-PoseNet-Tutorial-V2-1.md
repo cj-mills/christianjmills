@@ -37,7 +37,7 @@ This tutorial series provides step-by-step instructions for how to perform human
 
 ## Overview
 
-This post covers the installation process for the Barracuda package and importing the required video files and PoseNet models into the project.
+This post covers the process for installing the Barracuda package as well as importing the required video files and PoseNet models into the project.
 
 
 
@@ -135,15 +135,13 @@ We'll be using these two videos available on [Pexels](https://www.pexels.com/), 
 
    **Note:** Renamed to `pexels_teens_riding_skateboard_doing_grind_rail`
 
-### Create the Videos Folder
+### Add Files to Assets
 
-In the `Assets` section, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`.
+In the `Assets` section, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`. Double-click the `Videos` folder to open it.
 
 ![unity-create-folder](..\images\barracuda-posenet-tutorial-v2\part-1\unity-create-folder.png)
 
-Double-click the `Videos` folder to open it.
 
-### Add Video Files
 
 Drag and drop the two video files from the file explorer into the `Videos` folder.
 
