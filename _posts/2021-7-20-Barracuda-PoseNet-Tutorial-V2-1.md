@@ -49,13 +49,13 @@ This tutorial assumes that Unity is already installed on the system. The exact v
 
 **Note:** The version of Barracuda that we will be using in this tutorial is not available in Unity 2021 at the time of writing.
 
-Anyone who has never used Unity before can become acquainted with the basics by following the tutorial below. It will walk through the installation process all the way to making a Flappy Bird clone.
+Anyone who has never used Unity before can become acquainted with the basics by following the tutorial below. It will walk through the installation process all the way to making an Angry Birds clone.
 
-- [Make Your First Video Game - Ultimate Beginner Unity3D Tutorial](https://www.youtube.com/watch?v=8rdfcq-jePw)
+- [How to Make a Game - Unity Beginner Tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY)
 
 ### Hardware
 
-We will be covering how to perform [inference](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/deep-learning-training-and-inference.html) on either the CPU or GPU. If possible, use a graphics card from a recent generation.
+There appears to be a [known issue](https://forum.unity.com/threads/video-player-throws-got-null-handle-from-idxgiresource-getsharedhandle-on-some-windows-computers.890032/) with playing videos in Unity on AMD GPUs. Therefore, an Intel or Nvidia GPU is recommended. However, webcams seem to work fine on AMD GPUs.
 
 
 
