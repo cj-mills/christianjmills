@@ -172,7 +172,7 @@ Back in the Assets section, create a new folder called `Models`. Drag and drop t
 
 ## Summary
 
-That takes care of the preliminary setup for the projects. In the next post we will cover how to play and view videos inside Unity from both video files and a webcam.
+That takes care of the preliminary setup for the project. In the next post we will cover how to play and view videos inside Unity from both video files and a webcam.
 
 
 
