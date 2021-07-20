@@ -252,6 +252,7 @@ public class PoseEstimator : MonoBehaviour
     {
         RenderTexture.ReleaseTemporary(videoTexture);
     }
+}
 ```
 
 
@@ -280,7 +281,7 @@ public class PoseEstimator : MonoBehaviour
 
 
 
-
+![video-player-test-3](..\images\barracuda-posenet-tutorial-v2\part-2\video-player-test-3.gif)
 
 
 
