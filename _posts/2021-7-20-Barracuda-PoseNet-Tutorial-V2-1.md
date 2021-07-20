@@ -37,7 +37,7 @@ This tutorial series provides step-by-step instructions for how to perform human
 
 ## Overview
 
-This post covers the installation process for the Barracuda package, importing the required asset files, and creating the video player. We'll later perform pose estimation on individual frames while the video is playing. We can gauge the model's accuracy by comparing the estimated key point locations to the source video.
+This post covers the installation process for the Barracuda package and importing the required video files and PoseNet models into the project.
 
 
 
