@@ -57,7 +57,9 @@ Since we are only working in 2D, we can switch the scene to 2D view by clicking 
 
 We now have a video player that we can use to feed input to the PoseNet model. The next post covers how to ____.
 
-### [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+**Previous:** [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/)
 
-## Next: [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-2/)
+**Next:** [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-3/)
+
+**Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
