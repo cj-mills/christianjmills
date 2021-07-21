@@ -621,6 +621,12 @@ Final Code
 
 
 
+![inspector-tab-assign-shader](..\images\barracuda-posenet-tutorial-v2\part-3\inspector-tab-assign-shader.png)
+
+
+
+
+
 ## Summary
 
 __.
