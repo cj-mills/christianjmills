@@ -89,6 +89,8 @@ Double-click the new script to open it in the code editor.
 
 
 
+### Add Required Namespace
+
 We first need to add the `UnityEngine.Video` namespace to access the functionality for the `Video Player` component. Add the line `using UnityEngine.Video;` at the top of the script.
 
 ```c#
@@ -97,6 +99,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 ```
+
+
+
+### Define Public Variables
 
 We can specify a desired resolution and framerate for webcams in Unity. If the provided resolution and framerate is not supported by the hardware, Unity will use a default resolution.
 
@@ -124,7 +130,7 @@ public class PoseEstimator : MonoBehaviour
     public Transform videoScreen;
 ```
 
-
+### Define Private Variables
 
 We need a `private` [WebCamTexture](https://docs.unity3d.com/ScriptReference/WebCamTexture.html) variable to access the video feed from a webcam.
 
@@ -145,7 +151,19 @@ The last variable we need is a `private RenderTexture` variable called `videoTex
 
 
 
+### Create `InitializeVideoScreen()` Method
 
+We will update the position, orientation, and size of the `VideoScreen` object in a new method called `InitializeVideoScreen`. The method will take in width and height value along with a `bool` to indicate whether to mirror the screen. When using a webcam, we need to mirror the `VideoScreen` object so that the user's position is mirrored on screen (e.g. their right side is on the right side of the screen).
+
+When `mirrorScreen` is set to `true` the `VideoScreen` will be rotated `180` around the Y-Axis and scaled by `-1` along the Z-Axis.
+
+The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assigned to the `VideoScreen` object needs to be replaced with an `Unlit/Texture` shader. This will remove the need for the screen to be lit by an in-game light.
+
+We will then assign the `videoTexture` created earlier as the texture for the `VideoScreen`.
+
+We can adjust the dimensions of the `VideoScreen` object by updating it's [localScale](https://docs.unity3d.com/ScriptReference/Transform-localScale.html) attribute.
+
+The last step is to reposition the screen based on the the new dimensions, so that the bottom left corner is at `X:0, Y:0, Z:0`. This will simplify the process for updating the positions of objects with the estimated key point locations.
 
 ```c#
 	/// <summary>
