@@ -300,6 +300,8 @@ private void OnDisable()
 
 
 
+## Create `PoseEstimator` Object
+
 
 
 
@@ -308,13 +310,19 @@ private void OnDisable()
 
 
 
+### Attach `PoseEstimator` Script
 
+With the `PoseEstimator` object selected in the Hierarchy tab, drag and drop the `PoseEstimator` script into the Inspector tab.
 
 ![attach-pose-estimator-script](..\images\barracuda-posenet-tutorial-v2\part-2\attach-pose-estimator-script.png)
 
 
 
+### 
 
+#### Assign `VideoScreen` Object
+
+Drag and drop the VideoScreen object from the Hierarchy tab into the `Video Screen` spot in the Inspector tab.
 
 ![populate-pose-estimator-component](..\images\barracuda-posenet-tutorial-v2\part-2\populate-pose-estimator-component.png)
 
@@ -322,7 +330,9 @@ private void OnDisable()
 
 
 
+## Test it Out
 
+Now we can press the play button to test out the video player. 
 
 ![video-player-test-3](..\images\barracuda-posenet-tutorial-v2\part-2\video-player-test-3.gif)
 
