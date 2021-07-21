@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This tutorial series provides step-by-step instructions for how to perform human pose estimation in Unity with the Barracuda inference library.
 categories: [unity,barracuda,tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
