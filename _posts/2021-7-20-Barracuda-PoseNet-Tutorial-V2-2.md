@@ -166,7 +166,7 @@ We can adjust the dimensions of the `VideoScreen` object by updating it's [local
 The last step is to reposition the screen based on the the new dimensions, so that the bottom left corner is at `X:0, Y:0, Z:0`. This will simplify the process for updating the positions of objects with the estimated key point locations.
 
 ```c#
-	/// <summary>
+/// <summary>
     /// Prepares the videoScreen GameObject to display the chosen video source.
     /// </summary>
     /// <param name="width"></param>
@@ -205,7 +205,7 @@ The camera also needs to be set to `orthographic` mode to remove perspective.
 Lastly, we need to update the size of the camera. The `orthographicSize` attribute is actually the half size, so we need to divide `videoDims.y` by `2` as well.
 
 ```c#
-	/// <summary>
+/// <summary>
     /// Resizes and positions the in-game Camera to accommodate the video dimensions
     /// </summary>
     private void InitializeCamera()
@@ -223,7 +223,7 @@ Lastly, we need to update the size of the camera. The `orthographicSize` attribu
 
 
 
-### Modify Start() Method
+### Modify `Start()` Method
 
 
 
@@ -271,6 +271,8 @@ Lastly, we need to update the size of the camera. The `orthographicSize` attribu
 
 
 
+### Modify `Update()` Method
+
 
 
 ```c#
@@ -283,6 +285,8 @@ Lastly, we need to update the size of the camera. The `orthographicSize` attribu
 ```
 
 
+
+### Create `OnDisable()` Method
 
 
 
