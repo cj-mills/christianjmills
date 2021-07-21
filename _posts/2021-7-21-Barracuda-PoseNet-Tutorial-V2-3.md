@@ -310,7 +310,29 @@ public class PoseEstimator : MonoBehaviour
 
 
 
+### Update Start Method
 
+
+
+
+
+```c#
+// Adjust the input dimensions to maintain the source aspect ratio
+        aspectRatioScale = (float)videoTexture.width / videoTexture.height;
+        targetDims.x = (int)(imageDims.y * aspectRatioScale);
+        imageDims.x = targetDims.x;
+
+        // Initialize the RenderTexture that will store the processed input image
+        rTex = RenderTexture.GetTemporary(imageDims.x, imageDims.y, 24, RenderTextureFormat.ARGBHalf);
+```
+
+
+
+
+
+
+
+Final Code
 
 ```c#
 // Start is called before the first frame update
@@ -367,7 +389,229 @@ public class PoseEstimator : MonoBehaviour
 
 
 
+### Create ProcessImageGPU Method
 
+
+
+```c#
+/// <summary>
+    /// Process the provided image using the specified function on the GPU
+    /// </summary>
+    /// <param name="image"></param>
+    /// <param name="functionName"></param>
+    /// <returns></returns>
+    private void ProcessImageGPU(RenderTexture image, string functionName)
+    {
+        // Specify the number of threads on the GPU
+        int numthreads = 8;
+        // Get the index for the specified function in the ComputeShader
+        int kernelHandle = posenetShader.FindKernel(functionName);
+        // Define a temporary HDR RenderTexture
+        RenderTexture result = RenderTexture.GetTemporary(image.width, image.height, 24, RenderTextureFormat.ARGBHalf);
+        // Enable random write access
+        result.enableRandomWrite = true;
+        // Create the HDR RenderTexture
+        result.Create();
+
+        // Set the value for the Result variable in the ComputeShader
+        posenetShader.SetTexture(kernelHandle, "Result", result);
+        // Set the value for the InputImage variable in the ComputeShader
+        posenetShader.SetTexture(kernelHandle, "InputImage", image);
+
+        // Execute the ComputeShader
+        posenetShader.Dispatch(kernelHandle, result.width / numthreads, result.height / numthreads, 1);
+
+        // Copy the result into the source RenderTexture
+        Graphics.Blit(result, image);
+
+        // Release the temporary RenderTexture
+        RenderTexture.ReleaseTemporary(result);
+    }
+```
+
+
+
+
+
+
+
+### Create ProcessImage Method
+
+
+
+
+
+```c#
+/// <summary>
+    /// Calls the appropriate preprocessing function to prepare
+    /// the input for the selected model and hardware
+    /// </summary>
+    /// <param name="image"></param>
+    private void ProcessImage(RenderTexture image)
+    {
+        if (useGPU)
+        {
+            // Apply preprocessing steps
+            ProcessImageGPU(image, preProcessFunction);
+
+            // Create a Tensor of shape [1, processedImage.height, processedImage.width, 3]
+            input = new Tensor(image, channels: 3);
+        }
+        else
+        {
+            input = new Tensor(image, channels: 3);
+            float[] tensor_array = input.data.Download(input.shape);
+
+            if (modelType == ModelType.MobileNet)
+            {
+                Utils.PreprocessMobilenet(tensor_array);
+            }
+            else
+            {
+                Utils.PreprocessResnet(tensor_array);
+            }
+            input = new Tensor(input.shape.batch,
+                               input.shape.height,
+                               input.shape.width,
+                               input.shape.channels,
+                               tensor_array);
+        }
+    }
+```
+
+
+
+
+
+### Modify Update Method
+
+
+
+
+
+```c#
+// Prevent the input dimensions from going too low for the model
+        imageDims.x = Mathf.Max(imageDims.x, 64);
+        imageDims.y = Mathf.Max(imageDims.y, 64);
+```
+
+
+
+
+
+```c#
+// Update the input dimensions while maintaining the source aspect ratio
+        if (imageDims.x != targetDims.x)
+        {
+            aspectRatioScale = (float)videoTexture.height / videoTexture.width;
+            targetDims.y = (int)(imageDims.x * aspectRatioScale);
+            imageDims.y = targetDims.y;
+            targetDims.x = imageDims.x;
+        }
+        if (imageDims.y != targetDims.y)
+        {
+            aspectRatioScale = (float)videoTexture.width / videoTexture.height;
+            targetDims.x = (int)(imageDims.y * aspectRatioScale);
+            imageDims.x = targetDims.x;
+            targetDims.y = imageDims.y;
+        }
+```
+
+
+
+
+
+```c#
+// Update the rTex dimensions to the new input dimensions
+        if (imageDims.x != rTex.width || imageDims.y != rTex.height)
+        {
+            RenderTexture.ReleaseTemporary(rTex);
+            // Assign a temporary RenderTexture with the new dimensions
+            rTex = RenderTexture.GetTemporary(imageDims.x, imageDims.y, 24, rTex.format);
+        }
+
+        // Copy the src RenderTexture to the new rTex RenderTexture
+        Graphics.Blit(videoTexture, rTex);
+```
+
+
+
+
+
+```c#
+// Copy the src RenderTexture to the new rTex RenderTexture
+        Graphics.Blit(videoTexture, rTex);
+
+        if (modelType == ModelType.ResNet50)
+        {
+            preProcessFunction = "PreprocessResNet";
+        }
+        else
+        {
+            preProcessFunction = "PreprocessMobileNet";
+        }
+
+        // Prepare the input image to be fed to the selected model
+        ProcessImage(rTex);
+```
+
+
+
+
+
+Final Code
+
+```c#
+// Update is called once per frame
+    void Update()
+    {
+        // Copy webcamTexture to videoTexture if using webcam
+        if (useWebcam) Graphics.Blit(webcamTexture, videoTexture);
+
+        // Prevent the input dimensions from going too low for the model
+        imageDims.x = Mathf.Max(imageDims.x, 64);
+        imageDims.y = Mathf.Max(imageDims.y, 64);
+
+        // Update the input dimensions while maintaining the source aspect ratio
+        if (imageDims.x != targetDims.x)
+        {
+            aspectRatioScale = (float)videoTexture.height / videoTexture.width;
+            targetDims.y = (int)(imageDims.x * aspectRatioScale);
+            imageDims.y = targetDims.y;
+            targetDims.x = imageDims.x;
+        }
+        if (imageDims.y != targetDims.y)
+        {
+            aspectRatioScale = (float)videoTexture.width / videoTexture.height;
+            targetDims.x = (int)(imageDims.y * aspectRatioScale);
+            imageDims.x = targetDims.x;
+            targetDims.y = imageDims.y;
+        }
+
+        // Update the rTex dimensions to the new input dimensions
+        if (imageDims.x != rTex.width || imageDims.y != rTex.height)
+        {
+            RenderTexture.ReleaseTemporary(rTex);
+            // Assign a temporary RenderTexture with the new dimensions
+            rTex = RenderTexture.GetTemporary(imageDims.x, imageDims.y, 24, rTex.format);
+        }
+
+        // Copy the src RenderTexture to the new rTex RenderTexture
+        Graphics.Blit(videoTexture, rTex);
+
+        if (modelType == ModelType.ResNet50)
+        {
+            preProcessFunction = "PreprocessResNet";
+        }
+        else
+        {
+            preProcessFunction = "PreprocessMobileNet";
+        }
+
+        // Prepare the input image to be fed to the selected model
+        ProcessImage(rTex);
+    }
+```
 
 
 
