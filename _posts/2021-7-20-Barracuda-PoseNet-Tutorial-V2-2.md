@@ -139,14 +139,14 @@ We will store the final dimensions from either the video or webcam feed in a `pr
 The last variable we need is a `private RenderTexture` variable called `videoTexture`. This will store the pixel data for the current video or webcam frame.
 
 ```c#
-	// Live video input from a webcam
-    private WebCamTexture webcamTexture;
+// Live video input from a webcam
+private WebCamTexture webcamTexture;
 
-    // The dimensions of the current video source
-    private Vector2Int videoDims;
+// The dimensions of the current video source
+private Vector2Int videoDims;
 
-    // The source video texture
-    private RenderTexture videoTexture;
+// The source video texture
+private RenderTexture videoTexture;
 ```
 
 
@@ -167,29 +167,29 @@ The last step is to reposition the screen based on the the new dimensions, so th
 
 ```c#
 /// <summary>
-    /// Prepares the videoScreen GameObject to display the chosen video source.
-    /// </summary>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="mirrorScreen"></param>
-    private void InitializeVideoScreen(int width, int height, bool mirrorScreen)
+/// Prepares the videoScreen GameObject to display the chosen video source.
+/// </summary>
+/// <param name="width"></param>
+/// <param name="height"></param>
+/// <param name="mirrorScreen"></param>
+private void InitializeVideoScreen(int width, int height, bool mirrorScreen)
+{
+    if (mirrorScreen)
     {
-        if (mirrorScreen)
-        {
-            // Flip the VideoScreen around the Y-Axis
-            videoScreen.rotation = Quaternion.Euler(0, 180, 0);
-            // Invert the scale value for the Z-Axis
-            videoScreen.localScale = new Vector3(videoScreen.localScale.x, videoScreen.localScale.y, -1f);
-        }
-
-        // Apply the new videoTexture to the VideoScreen Gameobject
-        videoScreen.gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("Unlit/Texture");
-        videoScreen.gameObject.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", videoTexture);
-        // Adjust the VideoScreen dimensions for the new videoTexture
-        videoScreen.localScale = new Vector3(width, height, videoScreen.localScale.z);
-        // Adjust the VideoScreen position for the new videoTexture
-        videoScreen.position = new Vector3(width / 2, height / 2, 1);
+        // Flip the VideoScreen around the Y-Axis
+        videoScreen.rotation = Quaternion.Euler(0, 180, 0);
+        // Invert the scale value for the Z-Axis
+        videoScreen.localScale = new Vector3(videoScreen.localScale.x, videoScreen.localScale.y, -1f);
     }
+
+    // Apply the new videoTexture to the VideoScreen Gameobject
+    videoScreen.gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("Unlit/Texture");
+    videoScreen.gameObject.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", videoTexture);
+    // Adjust the VideoScreen dimensions for the new videoTexture
+    videoScreen.localScale = new Vector3(width, height, videoScreen.localScale.z);
+    // Adjust the VideoScreen position for the new videoTexture
+    videoScreen.position = new Vector3(width / 2, height / 2, 1);
+}
 ```
 
 
@@ -206,19 +206,19 @@ Lastly, we need to update the size of the camera. The `orthographicSize` attribu
 
 ```c#
 /// <summary>
-    /// Resizes and positions the in-game Camera to accommodate the video dimensions
-    /// </summary>
-    private void InitializeCamera()
-    {
-        // Get a reference to the Main Camera GameObject
-        GameObject mainCamera = GameObject.Find("Main Camera");
-        // Adjust the camera position to account for updates to the VideoScreen
-        mainCamera.transform.position = new Vector3(videoDims.x / 2, videoDims.y / 2, 0f);
-        // Render objects with no perspective (i.e. 2D)
-        mainCamera.GetComponent<Camera>().orthographic = true;
-        // Adjust the camera size to account for updates to the VideoScreen
-        mainCamera.GetComponent<Camera>().orthographicSize = videoDims.y / 2;
-    }
+/// Resizes and positions the in-game Camera to accommodate the video dimensions
+/// </summary>
+private void InitializeCamera()
+{
+    // Get a reference to the Main Camera GameObject
+    GameObject mainCamera = GameObject.Find("Main Camera");
+    // Adjust the camera position to account for updates to the VideoScreen
+    mainCamera.transform.position = new Vector3(videoDims.x / 2, videoDims.y / 2, 0f);
+    // Render objects with no perspective (i.e. 2D)
+    mainCamera.GetComponent<Camera>().orthographic = true;
+    // Adjust the camera size to account for updates to the VideoScreen
+    mainCamera.GetComponent<Camera>().orthographicSize = videoDims.y / 2;
+}
 ```
 
 
@@ -228,45 +228,45 @@ Lastly, we need to update the size of the camera. The `orthographicSize` attribu
 
 
 ```c#
-	// Start is called before the first frame update
-    void Start()
+// Start is called before the first frame update
+void Start()
+{
+    if (useWebcam)
     {
-        if (useWebcam)
-        {
-            // Create a new WebCamTexture
-            webcamTexture = new WebCamTexture(webcamDims.x, webcamDims.y, webcamFPS);
+        // Create a new WebCamTexture
+        webcamTexture = new WebCamTexture(webcamDims.x, webcamDims.y, webcamFPS);
 
-            // Start the Camera
-            webcamTexture.Play();
+        // Start the Camera
+        webcamTexture.Play();
 
-            // Deactivate the Video Player
-            videoScreen.gameObject.SetActive(false);
+        // Deactivate the Video Player
+        videoScreen.gameObject.SetActive(false);
 
-            // Update the videoDims.y
-            videoDims.y = (int)webcamTexture.height;
-            // Update the videoDims.x
-            videoDims.x = (int)webcamTexture.width;
-        }
-        else
-        {
-            // Update the videoDims.y
-            videoDims.y = (int)videoScreen.GetComponent<VideoPlayer>().height;
-            // Update the videoDims.x
-            videoDims.x = (int)videoScreen.GetComponent<VideoPlayer>().width;
-        }
-
-        // Create a new videoTexture using the current video dimensions
-        videoTexture = RenderTexture.GetTemporary(videoDims.x, videoDims.y, 24, RenderTextureFormat.ARGBHalf);
-
-        // Use new videoTexture for Video Player
-        videoScreen.GetComponent<VideoPlayer>().targetTexture = videoTexture;
-
-        // Initialize the videoScreen
-        InitializeVideoScreen(videoDims.x, videoDims.y, useWebcam);
-
-        // Adjust the camera based on the source video dimensions
-        InitializeCamera();
+        // Update the videoDims.y
+        videoDims.y = (int)webcamTexture.height;
+        // Update the videoDims.x
+        videoDims.x = (int)webcamTexture.width;
     }
+    else
+    {
+        // Update the videoDims.y
+        videoDims.y = (int)videoScreen.GetComponent<VideoPlayer>().height;
+        // Update the videoDims.x
+        videoDims.x = (int)videoScreen.GetComponent<VideoPlayer>().width;
+    }
+
+    // Create a new videoTexture using the current video dimensions
+    videoTexture = RenderTexture.GetTemporary(videoDims.x, videoDims.y, 24, RenderTextureFormat.ARGBHalf);
+
+    // Use new videoTexture for Video Player
+    videoScreen.GetComponent<VideoPlayer>().targetTexture = videoTexture;
+
+    // Initialize the videoScreen
+    InitializeVideoScreen(videoDims.x, videoDims.y, useWebcam);
+
+    // Adjust the camera based on the source video dimensions
+    InitializeCamera();
+}
 ```
 
 
@@ -276,12 +276,12 @@ Lastly, we need to update the size of the camera. The `orthographicSize` attribu
 
 
 ```c#
-	// Update is called once per frame
-    void Update()
-    {
-        // Copy webcamTexture to videoTexture if using webcam
-        if (useWebcam) Graphics.Blit(webcamTexture, videoTexture);
-    }
+// Update is called once per frame
+void Update()
+{
+    // Copy webcamTexture to videoTexture if using webcam
+    if (useWebcam) Graphics.Blit(webcamTexture, videoTexture);
+}
 ```
 
 
@@ -291,11 +291,10 @@ Lastly, we need to update the size of the camera. The `orthographicSize` attribu
 
 
 ```c#
-	// OnDisable is called when the MonoBehavior becomes disabled or inactive
-    private void OnDisable()
-    {
-        RenderTexture.ReleaseTemporary(videoTexture);
-    }
+// OnDisable is called when the MonoBehavior becomes disabled or inactive
+private void OnDisable()
+{
+    RenderTexture.ReleaseTemporary(videoTexture);
 }
 ```
 
