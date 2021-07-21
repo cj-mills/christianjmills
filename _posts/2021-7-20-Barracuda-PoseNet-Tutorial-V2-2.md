@@ -326,7 +326,7 @@ Now we can press the play button to test out the video player.
 
 ## Summary
 
-We now have a video player that we can use to feed input to the PoseNet model. In the next post, we will implement the preprocessing steps for the PoseNet models and execute the model with the processed input.
+We now have a video player that we can use to feed input to the PoseNet model. In the next post, we will implement the preprocessing steps for the PoseNet models.
 
 **Previous:** [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/)
 
