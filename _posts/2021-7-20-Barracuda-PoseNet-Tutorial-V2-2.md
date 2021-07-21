@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This pose covers how to set up a video player in Unity. We'll be using the video player to check the accuracy of the PoseNet model.
 categories: [unity,barracuda,tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
