@@ -12,7 +12,7 @@ search_exclude: false
 
 * [Overview](#overview)
 * [Create the Video Player](#create-the-video-player)
-* [Create the Video Screen](#create-the-video-screen)
+* [Create `PoseEstimator` Script](#create-poseestimator-script)
 * [Summary](#summary)
 
 
@@ -25,11 +25,11 @@ This post demonstrates how to play and view videos inside Unity from both video 
 
 ## Create the Video Player
 
-To start, we will create new `GameObject` to play and view a video. 
+To start, we will create new `GameObject` to play and view a video feed. 
 
 ### Create the Video Screen
 
-We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
+We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right-click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
 
 ![unity-create-quad](..\images\barracuda-posenet-tutorial-v2\part-2\unity-create-quad.png)
 
@@ -37,23 +37,19 @@ Since we are only working in 2D, we can switch the scene to 2D view by clicking 
 
 ![unity-toggle-2D-scene-view](..\images\barracuda-posenet-tutorial-v2\part-2\unity-toggle-2D-scene-view.png)
 
-
-
-
+This will remove perspective from the scene view and align it with the `VideoScreen`.
 
 ![unity-2D-scene-view](..\images\barracuda-posenet-tutorial-v2\part-2\unity-2D-scene-view.png)
 
-
-
-
+We will be updating the `VideoScreen` dimensions in code based on the resolution of the video or webcam feed.
 
 ### Add Video Player Component
 
-With the `VideoScreen` object selected in the Hierarchy tab, click the `Add Component` button in the Inspector tab.
+Unity has a [Video Player component](https://docs.unity3d.com/Manual/class-VideoPlayer.html) that provides the functionality to attach video files to the `VideoScreen`. With the `VideoScreen` object selected in the Hierarchy tab, click the `Add Component` button in the Inspector tab.
 
 ![videoScreen-add-component](..\images\barracuda-posenet-tutorial-v2\part-2\videoScreen-add-component.png)
 
-Type video into the search box and select `Video Player` from the search results.
+Type `video` into the search box and select `Video Player` from the search results.
 
 ![videoScreen-add-video-player-component](..\images\barracuda-posenet-tutorial-v2\part-2\videoScreen-add-video-player-component.png)
 
@@ -79,29 +75,21 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 
 
+## Create `PoseEstimator` Script
 
+We will be adjusting both the `VideoScreen` and `Main Camera` objects in the same script in which we will be executing the PoseNet model.
 
-
-
-
-
-
+Create a new folder in the Assets section and name it `Scripts`. Enter the Scripts folder and right-click an empty space. Select `C# Script` in the `Create` submenu and name it `PoseEstimator`.
 
 ![create-csharp-script](..\images\barracuda-posenet-tutorial-v2\part-2\create-csharp-script.png)
 
-
-
-
-
-
+Double-click the new script to open it in the code editor.
 
 ![create-pose-estimator-script](..\images\barracuda-posenet-tutorial-v2\part-2\create-pose-estimator-script.png)
 
 
 
-
-
-
+We first need to add the `UnityEngine.Video` namespace to access the functionality for the `Video Player` component. Add the line `using UnityEngine.Video;` at the top of the script.
 
 ```c#
 using System.Collections;
@@ -110,9 +98,15 @@ using UnityEngine;
 using UnityEngine.Video;
 ```
 
+We can specify a desired resolution and framerate for webcams in Unity. If the provided resolution and framerate is not supported by the hardware, Unity will use a default resolution.
 
+We will specify the desired webcam resolution using a `public Vector2Int` variable called `webcamDims`. Set the default values to `1280x720`.
 
+Next, create a `public int` variable called `webcamFPS` and give it a default value of `60`.
 
+We will use a `public bool` variable to toggle between using a video file or webcam as input for the model. Set the default value to `false` as we will be starting with a video file.
+
+Lastly, create a `public Transform` variable called `videoScreen`. We will use this variable to access the `VideoScreen` object and its `Video Player` component.
 
 ```c#
 public class PoseEstimator : MonoBehaviour
@@ -132,7 +126,11 @@ public class PoseEstimator : MonoBehaviour
 
 
 
+We need a `private` [WebCamTexture](https://docs.unity3d.com/ScriptReference/WebCamTexture.html) variable to access the video feed from a webcam.
 
+We will store the final dimensions from either the video or webcam feed in a `private Vector2Int` variable called `videoDims`.
+
+The last variable we need is a `private RenderTexture` variable called `videoTexture`. This will store the pixel data for the current video or webcam frame.
 
 ```c#
 	// Live video input from a webcam
@@ -222,7 +220,6 @@ public class PoseEstimator : MonoBehaviour
             videoDims.y = (int)webcamTexture.height;
             // Update the videoDims.x
             videoDims.x = (int)webcamTexture.width;
-
         }
         else
         {
