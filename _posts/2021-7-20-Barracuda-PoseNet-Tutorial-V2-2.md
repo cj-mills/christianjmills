@@ -198,11 +198,11 @@ private void InitializeVideoScreen(int width, int height, bool mirrorScreen)
 
 Once the `VideoScreen` has been updated, we need to resize and reposition the in-game camera. We will do so in a new method called `InitializeCamera`. 
 
-We can access the `Main Camera` object with `GameObject.Find("Main Camera")`.  We will set the `X` and `Y` coordinates to the same as the `VideoScreen`.
+We can access the `Main Camera` object with `GameObject.Find("Main Camera")`.  We will set the `X` and `Y` coordinates to the same as the `VideoScreen` position.
 
 The camera also needs to be set to `orthographic` mode to remove perspective.
 
-Lastly, we need to update the size of the camera. The `orthographicSize` attribute is actually the half size, so we need to divide `videoDims.y` by `2` as well.
+Lastly, we need to update the size of the camera. The `orthographicSize` attribute is actually the half size, so we need to divide `videoDims.y` (i.e. the height) by `2` as well.
 
 ```c#
 /// <summary>
@@ -225,9 +225,13 @@ private void InitializeCamera()
 
 ### Modify `Start()` Method
 
+In the `Start` method, we will first check if `useWebcam` is set to `true`. If it is, we will first limit the target framerate to the same as the target framerate for the webcam. We will then initialize the `webcamTexture` with the specified resolution and framerate. We will also disable the `Video Player` component. Lastly, we will update the values for `videoDims` with the final dimensions for the `webcamTexture`.
 
+If we are not using a webcam, we will instead update `videoDims` with the dimensions from the `Video Player` component.
 
+Next, we need to initialize the `videoTexture` with the new dimensions and the `ARGBHalf` HDR texture format. We need to use an HDR texture format so that we can store color values outside the standard Unity range of `[0,1]`. The MobileNet version of the PoseNet model expects values to be in the range `[-1,1]` while the ResNet50 version expects values in the range `[0,255]`.
 
+We will then call the `InitializeVideoScreen()` and `InitializeCamera()` methods. 
 
 ```c#
 // Start is called before the first frame update
@@ -235,6 +239,9 @@ void Start()
 {
     if (useWebcam)
     {
+        // Limit application framerate to the target webcam framerate
+        Application.targetFrameRate = webcamFPS;
+        
         // Create a new WebCamTexture
         webcamTexture = new WebCamTexture(webcamDims.x, webcamDims.y, webcamFPS);
 
@@ -242,7 +249,7 @@ void Start()
         webcamTexture.Play();
 
         // Deactivate the Video Player
-        videoScreen.gameObject.SetActive(false);
+        videoScreen.GetComponent<VideoPlayer>().enabled = false;
 
         // Update the videoDims.y
         videoDims.y = (int)webcamTexture.height;
@@ -260,9 +267,6 @@ void Start()
     // Create a new videoTexture using the current video dimensions
     videoTexture = RenderTexture.GetTemporary(videoDims.x, videoDims.y, 24, RenderTextureFormat.ARGBHalf);
 
-    // Use new videoTexture for Video Player
-    videoScreen.GetComponent<VideoPlayer>().targetTexture = videoTexture;
-
     // Initialize the videoScreen
     InitializeVideoScreen(videoDims.x, videoDims.y, useWebcam);
 
@@ -275,7 +279,7 @@ void Start()
 
 ### Modify `Update()` Method
 
-
+For now, the only thing we need to do in the `Update` method is to "copy" the pixel data from `webcamTexture` to `videoTexture` when using a webcam.
 
 ```c#
 // Update is called once per frame
@@ -288,25 +292,11 @@ void Update()
 
 
 
-### Create `OnDisable()` Method
-
-
-
-```c#
-// OnDisable is called when the MonoBehavior becomes disabled or inactive
-private void OnDisable()
-{
-    RenderTexture.ReleaseTemporary(videoTexture);
-}
-```
-
 
 
 ## Create `PoseEstimator` Object
 
-
-
-
+With the required code completed, we just need to attach the script to a `GameObject`. Right-click an empty space in the Hierarchy tab and select `Create Empty`. Name the new object `PoseEstimator`.
 
 ![create-empty-gameobject](..\images\barracuda-posenet-tutorial-v2\part-2\create-empty-gameobject.png)
 
@@ -318,19 +308,11 @@ With the `PoseEstimator` object selected in the Hierarchy tab, drag and drop the
 
 ![attach-pose-estimator-script](..\images\barracuda-posenet-tutorial-v2\part-2\attach-pose-estimator-script.png)
 
-
-
-### 
-
 #### Assign `VideoScreen` Object
 
 Drag and drop the VideoScreen object from the Hierarchy tab into the `Video Screen` spot in the Inspector tab.
 
 ![populate-pose-estimator-component](..\images\barracuda-posenet-tutorial-v2\part-2\populate-pose-estimator-component.png)
-
-
-
-
 
 ## Test it Out
 
@@ -344,11 +326,9 @@ Now we can press the play button to test out the video player.
 
 ## Summary
 
-We now have a video player that we can use to feed input to the PoseNet model. The next post covers how to ____.
+We now have a video player that we can use to feed input to the PoseNet model. In the next post, we will implement the preprocessing steps for the PoseNet models and execute the model with the processed input.
 
 **Previous:** [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/)
-
-**Next:** [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-3/)
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
