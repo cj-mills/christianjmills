@@ -159,7 +159,7 @@ When `mirrorScreen` is set to `true` the `VideoScreen` will be rotated `180` aro
 
 The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assigned to the `VideoScreen` object needs to be replaced with an `Unlit/Texture` shader. This will remove the need for the screen to be lit by an in-game light.
 
-We will then assign the `videoTexture` created earlier as the texture for the `VideoScreen`.
+We will then assign the `videoTexture` created earlier as the texture for the `VideoScreen`. This will allow us to access to pixel data for the current video frame.
 
 We can adjust the dimensions of the `VideoScreen` object by updating it's [localScale](https://docs.unity3d.com/ScriptReference/Transform-localScale.html) attribute.
 
@@ -194,7 +194,15 @@ The last step is to reposition the screen based on the the new dimensions, so th
 
 
 
+### Create `InitializeCamera()` Method
 
+Once the `VideoScreen` has been updated, we need to resize and reposition the in-game camera. We will do so in a new method called `InitializeCamera`. 
+
+We can access the `Main Camera` object with `GameObject.Find("Main Camera")`.  We will set the `X` and `Y` coordinates to the same as the `VideoScreen`.
+
+The camera also needs to be set to `orthographic` mode to remove perspective.
+
+Lastly, we need to update the size of the camera. The `orthographicSize` attribute is actually the half size, so we need to divide `videoDims.y` by `2` as well.
 
 ```c#
 	/// <summary>
@@ -205,9 +213,7 @@ The last step is to reposition the screen based on the the new dimensions, so th
         // Get a reference to the Main Camera GameObject
         GameObject mainCamera = GameObject.Find("Main Camera");
         // Adjust the camera position to account for updates to the VideoScreen
-        mainCamera.transform.position = new Vector3(videoDims.x / 2, videoDims.y / 2, -(videoDims.x / 2));
-        // Increase draw distance for camera
-        mainCamera.GetComponent<Camera>().farClipPlane = (videoDims.x / 2) + 100;
+        mainCamera.transform.position = new Vector3(videoDims.x / 2, videoDims.y / 2, 0f);
         // Render objects with no perspective (i.e. 2D)
         mainCamera.GetComponent<Camera>().orthographic = true;
         // Adjust the camera size to account for updates to the VideoScreen
@@ -216,6 +222,8 @@ The last step is to reposition the screen based on the the new dimensions, so th
 ```
 
 
+
+### Modify Start() Method
 
 
 
