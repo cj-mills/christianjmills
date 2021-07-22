@@ -26,7 +26,13 @@ The MobileNet and ResNet50 versions of the PoseNet model require different prepr
 
 
 
-## Create Compute Shader
+
+
+## Preprocessing on GPU
+
+We will start with implementing preprocessing in a compute shader to run them on a GPU. 
+
+### Create Compute Shader
 
 In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
 
@@ -55,19 +61,21 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 ### Specify Function Names
 
-We will first add the `#pragma kernel` lines for each of our functions. These lines indicate what functions we want to be compiled. Without them, we can not access these functions from the `PoseEstimator` script.
+We will first add the `#pragma kernel` lines for each of our functions. These lines indicate what functions we want to be compiled. Without them, we can not access these functions from the `PoseEstimator` script. We'll call the two functions `PreprocessMobileNet` and `PreprocessResNet` respectively.
 
 ```c#
 // Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel PreprocessResNet
 #pragma kernel PreprocessMobileNet
+#pragma kernel PreprocessResNet
 ```
 
 
 
 ### Define Variables
 
-We will need a [Texture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [half4](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector
+We will need a [Texture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [half4](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector. Each 4D Vector will contain the RGBA color and alpha values for a single pixel.
+
+We also need a [RWTexture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-rwtexture2d) so that we can write the processed image data back to a RenderTexture in the PoseEstimator script.
 
 ```c#
 // The pixel data for the input image
@@ -82,7 +90,9 @@ RWTexture2D<half4> Result;
 
 ### Create PreprocessMobileNet Function
 
+Now we can define the functions we named earlier. We will stick with the default values for [numthreads](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-attributes-numthreads).
 
+The MobileNet version of the model expects color values to be in the range `[-1,1]`. By default color values in Unity are in the range `[0,1]`. 
 
 ```c#
 [numthreads(8, 8, 1)]
@@ -93,7 +103,6 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
     Result[id.xy] = half4((2.0h * (InputImage[id.xy].r) / (1.0h) - 1.0h),
         (2.0h * (InputImage[id.xy].g) / (1.0h) - 1.0h),
         (2.0h * (InputImage[id.xy].b) / (1.0h) - 1.0h), InputImage[id.xy].a);
-
 }
 ```
 
