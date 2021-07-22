@@ -168,11 +168,13 @@ void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 
 ## Create Utils Script
 
-We will be placing the preprocessing and postprocessing steps inside a separate `C#` script called `Utils`.
+We will be placing the CPU preprocessing and postprocessing methods inside a separate `C#` script called `Utils`, to prevent the `PoseEstimator` script from getting too long. 
 
 
 
 ### Remove MonoBehaviour Inheritance
+
+The `Utils` class does not need to inherit from [Monobehavior](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html). 
 
 ```c#
 public class Utils
@@ -183,6 +185,10 @@ public class Utils
 
 
 ### Create PreprocessMobilenet Method
+
+The Barracuda library uses [Tensors](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html#methods) to store data. These are like multidimensional arrays. We can download the data stored in a Tensor to a regular `float` array. We will pass this array as input to the preprocessing methods and then upload the new values to a Tensor.
+
+
 
 ```c#
 	/// <summary>
@@ -202,6 +208,8 @@ public class Utils
 
 
 ### Create PreprocessResnet Method
+
+The color data for pixels is stored sequentially in the tensor array. For example, the first three values in the array would be the red, green, and blue color values for the first pixel in the image. The tensor data will not have an alpha channel, so we do not need to account for it here.
 
 ```c#
 	///// <summary>
@@ -234,6 +242,8 @@ public class Utils
 
 ### Add Barracuda Namespace
 
+We only need to add the `Unity.Barracuda` namespace to implement the preprocessing code.
+
 ```c#
 using System.Collections;
 using System.Collections.Generic;
@@ -245,6 +255,8 @@ using Unity.Barracuda;
 
 
 ### Add Public Variables
+
+
 
 ```c#
 public class PoseEstimator : MonoBehaviour
@@ -281,6 +293,8 @@ public Vector2Int imageDims = new Vector2Int(256, 256);
 
 
 ### Add Private Variables
+
+
 
 ```c#
 // Target dimensions for model input
