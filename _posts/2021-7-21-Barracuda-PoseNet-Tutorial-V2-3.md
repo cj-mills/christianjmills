@@ -75,7 +75,7 @@ We will first add the `#pragma kernel` lines for each of our functions. These li
 
 We will need a [Texture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [half4](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector. Each 4D Vector will contain the RGBA color and alpha values for a single pixel.
 
-We also need a [RWTexture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-rwtexture2d) so that we can write the processed image data back to a RenderTexture in the PoseEstimator script.
+We also need a [RWTexture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-rwtexture2d) so that we can write the processed image data back to a RenderTexture in the PoseEstimator script. Give it a data type of half4 as well.
 
 ```c#
 // The pixel data for the input image
@@ -86,13 +86,11 @@ RWTexture2D<half4> Result;
 
 
 
-
-
 ### Create PreprocessMobileNet Function
 
-Now we can define the functions we named earlier. We will stick with the default values for [numthreads](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-attributes-numthreads).
+Now we can define the functions we named earlier. We will stick with the default values for [numthreads](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-attributes-numthreads) of `(8,8,1)`.
 
-The MobileNet version of the model expects color values to be in the range `[-1,1]`. By default color values in Unity are in the range `[0,1]`. 
+The MobileNet version of the model expects color values to be in the range `[-1,1]`. By default color values in Unity are in the range `[0,1]`. The alpha channel is not used by the model, so the value does not matter.
 
 ```c#
 [numthreads(8, 8, 1)]
@@ -108,11 +106,9 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 
 
 
-
-
 ### Create PreprocessResNet Function
 
-
+The ResNet50 version of the model expects color values to be in the range `[0,255]`. We also need to add the mean RGB color values for the ImageNet dataset to the pixel values. 
 
 ```c#
 [numthreads(8, 8, 1)]
@@ -124,10 +120,6 @@ void PreprocessResNet(uint3 id : SV_DispatchThreadID)
         (InputImage[id.xy].b * 255.0h) + (-103.06h), InputImage[id.xy].a);
 }
 ```
-
-
-
-
 
 
 
@@ -175,6 +167,8 @@ void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 
 
 ## Create Utils Script
+
+We will be placing the preprocessing and postprocessing steps inside a separate `C#` script called `Utils`.
 
 
 
