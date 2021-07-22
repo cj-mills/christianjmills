@@ -403,7 +403,17 @@ void Start()
 
 ### Create ProcessImageGPU Method
 
+Next, we’ll make a new method to execute the functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. As mentioned previously, we need to store the processed images in textures with HDR formats to use color values outside the default range of `[0, 1]`.
 
+#### Method Steps
+
+1. Get the `ComputeShader` index for the specified function
+2. Create a temporary `RenderTexture` with random write access enabled to store the processed image
+3. Execute the `ComputeShader`
+4. Copy the processed image back into the original `RenderTexture`
+5. Release the temporary `RenderTexture`
+
+#### Code
 
 ```c#
 /// <summary>
@@ -453,6 +463,12 @@ private void ProcessImageGPU(RenderTexture image, string functionName)
 
 
 
+#### Method Steps
+
+
+
+#### Code
+
 ```c#
 /// <summary>
 /// Calls the appropriate preprocessing function to prepare
@@ -498,6 +514,8 @@ private void ProcessImage(RenderTexture image)
 
 
 
+#### Clamp Input Dimensions
+
 
 
 ```c#
@@ -507,6 +525,8 @@ imageDims.y = Mathf.Max(imageDims.y, 64);
 ```
 
 
+
+#### Calculate Input Dimensions
 
 
 
@@ -530,6 +550,8 @@ if (imageDims.y != targetDims.y)
 
 
 
+#### Update `rTex` Dimensions
+
 
 
 ```c#
@@ -547,12 +569,11 @@ Graphics.Blit(videoTexture, rTex);
 
 
 
+#### Call ProcessImage Method
+
 
 
 ```c#
-// Copy the src RenderTexture to the new rTex RenderTexture
-Graphics.Blit(videoTexture, rTex);
-
 if (modelType == ModelType.MobileNet)
 {
     preProcessFunction = "PreprocessMobileNet";
@@ -570,7 +591,7 @@ ProcessImage(rTex);
 
 
 
-Final Code
+#### Final Code
 
 ```c#
 // Update is called once per frame
