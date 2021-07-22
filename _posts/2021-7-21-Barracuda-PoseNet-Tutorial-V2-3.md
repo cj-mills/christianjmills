@@ -67,7 +67,7 @@ We will first add the `#pragma kernel` lines for each of our functions. These li
 
 ### Define Variables
 
-
+We will need a [Texture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [half4](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector
 
 ```c#
 // The pixel data for the input image
@@ -90,9 +90,9 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 {
     // Normalize the color values to the range [-1,1]
     //2 * (value - min) / (max - min) - 1
-    Result[id.xy] = half4((2.0h * (InputImage[id.xy].x) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].y) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].z) / (1.0h) - 1.0h), 1.0h);
+    Result[id.xy] = half4((2.0h * (InputImage[id.xy].r) / (1.0h) - 1.0h),
+        (2.0h * (InputImage[id.xy].g) / (1.0h) - 1.0h),
+        (2.0h * (InputImage[id.xy].b) / (1.0h) - 1.0h), InputImage[id.xy].a);
 
 }
 ```
@@ -110,9 +110,9 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 {
     // Scale each color value to the range [0,255] and add the ImageNet mean value
-    Result[id.xy] = half4((InputImage[id.xy].x * 255.0h) + (-123.15h),
-        (InputImage[id.xy].y * 255.0h) + (-115.90h),
-        (InputImage[id.xy].z * 255.0h) + (-103.06h), 1.0h);
+    Result[id.xy] = half4((InputImage[id.xy].r * 255.0h) + (-123.15h),
+        (InputImage[id.xy].g * 255.0h) + (-115.90h),
+        (InputImage[id.xy].b * 255.0h) + (-103.06h), InputImage[id.xy].a);
 }
 ```
 
@@ -139,9 +139,9 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 {
     // Normalize the color values to the range [-1,1]
     //2 * (value - min) / (max - min) - 1
-    Result[id.xy] = half4((2.0h * (InputImage[id.xy].x) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].y) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].z) / (1.0h) - 1.0h), 1.0h);
+    Result[id.xy] = half4((2.0h * (InputImage[id.xy].r) / (1.0h) - 1.0h),
+        (2.0h * (InputImage[id.xy].g) / (1.0h) - 1.0h),
+        (2.0h * (InputImage[id.xy].b) / (1.0h) - 1.0h), InputImage[id.xy].a);
 
 }
 
@@ -149,9 +149,9 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 {
     // Scale each color value to the range [0,255] and add the ImageNet mean value
-    Result[id.xy] = half4((InputImage[id.xy].x * 255.0h) + (-123.15h),
-        (InputImage[id.xy].y * 255.0h) + (-115.90h),
-        (InputImage[id.xy].z * 255.0h) + (-103.06h), 1.0h);
+    Result[id.xy] = half4((InputImage[id.xy].r * 255.0h) + (-123.15h),
+        (InputImage[id.xy].g * 255.0h) + (-115.90h),
+        (InputImage[id.xy].b * 255.0h) + (-103.06h), InputImage[id.xy].a);
 }
 ```
 
@@ -182,7 +182,7 @@ public class Utils
 ### Create PreprocessMobilenet Method
 
 ```c#
-/// <summary>
+	/// <summary>
     /// Applies the preprocessing steps for the MobileNet model on the CPU
     /// </summary>
     /// <param name="tensor">Pixel data from the input tensor</param>
@@ -191,9 +191,7 @@ public class Utils
         // Normaliz the values to the range [-1, 1]
         System.Threading.Tasks.Parallel.For(0, tensor.Length, (int i) =>
         {
-
             tensor[i] = (float)(2.0f * tensor[i] / 1.0f) - 1.0f;
-
         });
     }
 ```
@@ -203,7 +201,7 @@ public class Utils
 ### Create PreprocessResnet Method
 
 ```c#
-///// <summary>
+	///// <summary>
     ///// Applies the preprocessing steps for the ResNet50 model on the CPU
     ///// </summary>
     ///// <param name="tensor">Pixel data from the input tensor</param>
@@ -214,11 +212,9 @@ public class Utils
 
         System.Threading.Tasks.Parallel.For(0, tensor.Length / 3, (int i) =>
         {
-
             tensor[i * 3 + 0] = (float)tensor[i * 3 + 0] * 255f + imagenetMean[0];
             tensor[i * 3 + 1] = (float)tensor[i * 3 + 1] * 255f + imagenetMean[1];
             tensor[i * 3 + 2] = (float)tensor[i * 3 + 2] * 255f + imagenetMean[2];
-
         });
     }
 ```
