@@ -256,7 +256,7 @@ using Unity.Barracuda;
 
 ### Add Public Variables
 
-
+We can define a `public` [enum](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/enum) for the two different model versions. We can use this to create a dropdown menu in the inspector tab to switch between the two options. We will name it `ModelType`.
 
 ```c#
 public class PoseEstimator : MonoBehaviour
@@ -268,11 +268,13 @@ public class PoseEstimator : MonoBehaviour
     }
 ```
 
+Next, we will need a `public ComputeShader` variable so that we can access the PoseNetShader. 
 
+We can create a dropdown for selecting the model type by defining a `public ModelType` variable. We will set the default value to `ModelType.ResNet50`.
 
+We also need a `public bool` variable to toggle between using the CPU and GPU for processing input.
 
-
-
+Lastly, we need a `public VectorInt` variable to specify the dimensions of the input image. Using the original resolution of the video feed could significantly impact performance, so we will downscale the input image before feeding it to the model. 
 
 ```c#
 [Tooltip("The ComputeShader that will perform the model-specific preprocessing")]
@@ -290,9 +292,17 @@ public Vector2Int imageDims = new Vector2Int(256, 256);
 
 
 
-
-
 ### Add Private Variables
+
+We will be maintaining the aspect ratio of the source video feed when downscaling the input image. We need to keep track of the current input dimensions so that we know when to calculate the new dimensions. Create a new `private Vector2Int` variable called `targetDims`.
+
+Next, create a `private float` variable called aspectRatioScale. This will store the scaling value to update the `targetDims`.
+
+The pixel data for the input image will be stored in a new `private RenderTexture` variable called `rTex`.
+
+ 
+
+
 
 
 
@@ -321,9 +331,7 @@ private Tensor input;
 
 ### Update Start Method
 
-
-
-
+At the bottom of the start method, we need to adjust the input dimensions to maintain the source aspect ratio. We will use the height value to update the width for the input dimensions. We can then initialize `rTex` with the new input dimensions.
 
 ```c#
 // Adjust the input dimensions to maintain the source aspect ratio
@@ -337,11 +345,7 @@ rTex = RenderTexture.GetTemporary(imageDims.x, imageDims.y, 24, RenderTextureFor
 
 
 
-
-
-
-
-Final Code
+#### Final Code
 
 ```c#
 // Start is called before the first frame update
