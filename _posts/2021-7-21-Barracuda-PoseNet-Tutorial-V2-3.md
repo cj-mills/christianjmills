@@ -32,11 +32,7 @@ In the Assets section, create a new folder called `Shaders`. Enter the Shaders f
 
 ![unity-create-compute-shader](..\images\barracuda-posenet-tutorial-v2\part-3\unity-create-compute-shader.png)
 
-
-
-
-
-Double-click the new shader to open it in the code editor. By default, Compute shaders contain the following code.
+Double-click the new shader to open it in the code editor. By default, Compute shaders contain the following code. Go ahead and delete all the default code.
 
 ```c#
 // Each #kernel tells which function to compile; you can have many kernels
@@ -59,7 +55,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 ### Specify Function Names
 
-
+We will first add the `#pragma kernel` lines for each of our functions. These lines indicate what functions we want to be compiled. Without them, we can not access these functions from the `PoseEstimator` script.
 
 ```c#
 // Each #kernel tells which function to compile; you can have many kernels
