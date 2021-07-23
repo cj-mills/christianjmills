@@ -628,8 +628,6 @@ void Update()
 
 
 
-
-
 ## Assign `PoseNetShader`
 
 The last step we need to take before pressing play is to assign the `PoseNetShader` asset. Select the `PoseEstimator` object in the Hierarchy tab. Then, drag and drop the `PoseNetShader` asset from the Assets section onto its spot in the Inspector tab. 
