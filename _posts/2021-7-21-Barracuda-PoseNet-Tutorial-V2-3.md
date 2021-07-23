@@ -644,5 +644,5 @@ __.
 
 **Previous:** [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-2/)
 
-**Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+**Project Resources:** [GitHub Repository - Version 1](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
