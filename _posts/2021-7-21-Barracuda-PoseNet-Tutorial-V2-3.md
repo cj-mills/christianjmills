@@ -14,6 +14,7 @@ search_exclude: false
 * [Create Compute Shader](#create-compute-shader)
 * [Create Utils Script](#create-utils-script)
 * [Update `PoseEstimator` Script](#update-poseestimator-script)
+* [Assign `PoseNetShader`](#assign-posenetshader)
 * [Summary](#summary)
 
 
@@ -23,8 +24,6 @@ search_exclude: false
 The MobileNet and ResNet50 versions of the PoseNet model require different preprocessing steps. While it is more efficient to perform theses steps on a GPU with a [Compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html), this may not be supported on the target platform. Therefore, we will also cover how to perform the preprocessing steps on the CPU as well. 
 
 **Note:** We will be manually toggling between using the CPU and GPU in this tutorial. For real-world applications, we can determine if the target system supports compute shaders with the [SystemInfo](https://docs.unity3d.com/ScriptReference/SystemInfo.html).[supportsComputeShaders](https://docs.unity3d.com/ScriptReference/SystemInfo-supportsComputeShaders.html) property.
-
-
 
 
 
@@ -302,10 +301,6 @@ The pixel data for the input image will be stored in a new `private RenderTextur
 
  
 
-
-
-
-
 ```c#
 // Target dimensions for model input
 private Vector2Int targetDims;
@@ -322,10 +317,6 @@ private string preProcessFunction;
 // Stores the input data for the model
 private Tensor input;
 ```
-
-
-
-
 
 
 
@@ -453,17 +444,21 @@ private void ProcessImageGPU(RenderTexture image, string functionName)
 
 
 
-
-
-
-
 ### Create ProcessImage Method
 
-
-
-
+We will call the preprocessing functions inside a new method called `ProcessImage`. The method will take in a `RenderTexture` update the `input` Tensor
 
 #### Method Steps
+
+1. Check whether to use the GPU
+2. If using GPU 
+   1. Call `ProcessImageGPU()` method
+   2. Initialize `input` with pixel data from `rTex`
+3. If using CPU
+   1. Initialize `input` with pixel data from `rTex`
+   2. download Tensor data to `float` array
+   3. Call the appropriate preprocessing function for the current model type
+   4. Update `input` with the new color values
 
 
 
@@ -479,6 +474,14 @@ private void ProcessImage(RenderTexture image)
 {
     if (useGPU)
     {
+        if (modelType == ModelType.MobileNet)
+        {
+            preProcessFunction = "PreprocessMobileNet";
+        }
+        else
+        {
+            preProcessFunction = "PreprocessResNet";
+        }
         // Apply preprocessing steps
         ProcessImageGPU(image, preProcessFunction);
         // Create a Tensor of shape [1, image.height, image.width, 3]
@@ -516,17 +519,19 @@ private void ProcessImage(RenderTexture image)
 
 #### Clamp Input Dimensions
 
-
+The model will not return useable output with input below 130px in size. There just isn't enough for information for the model to work with at that low of a resolution. Also, the model downscales the input internally by a set amount and might error out if the input is too low. To prevent this, we will clamp the input dimensions from dropping below `130x130`.  
 
 ```c#
 // Prevent the input dimensions from going too low for the model
-imageDims.x = Mathf.Max(imageDims.x, 64);
-imageDims.y = Mathf.Max(imageDims.y, 64);
+imageDims.x = Mathf.Max(imageDims.x, 130);
+imageDims.y = Mathf.Max(imageDims.y, 130);
 ```
 
 
 
 #### Calculate Input Dimensions
+
+We need to adjust the input dimensions to maintain the source aspect ratio whenever they are updated by the user. We will check if the values for `inputDims` have changed by comparing them to `targetDims`.
 
 
 
@@ -552,7 +557,7 @@ if (imageDims.y != targetDims.y)
 
 #### Update `rTex` Dimensions
 
-
+We will also need to update `rTex` with the new input dimensions and copy the pixel data from the source `videoTexture` to it.
 
 ```c#
 // Update the rTex dimensions to the new input dimensions
@@ -571,23 +576,12 @@ Graphics.Blit(videoTexture, rTex);
 
 #### Call ProcessImage Method
 
-
+Finally, we can call the `ProcessImage` method and pass `rTex` as input.
 
 ```c#
-if (modelType == ModelType.MobileNet)
-{
-    preProcessFunction = "PreprocessMobileNet";
-}
-else
-{
-    preProcessFunction = "PreprocessResNet";
-}
-
 // Prepare the input image to be fed to the selected model
 ProcessImage(rTex);
 ```
-
-
 
 
 
@@ -631,15 +625,6 @@ void Update()
     // Copy the src RenderTexture to the new rTex RenderTexture
     Graphics.Blit(videoTexture, rTex);
 
-    if (modelType == ModelType.MobileNet)
-    {
-        preProcessFunction = "PreprocessMobileNet";
-    }
-    else
-    {
-        preProcessFunction = "PreprocessResNet";
-    }
-
     // Prepare the input image to be fed to the selected model
     ProcessImage(rTex);
 }
@@ -649,13 +634,11 @@ void Update()
 
 
 
+## Assign `PoseNetShader`
 
-
-
+The last step we need to take before pressing play is to assign the `PoseNetShader` asset. Select the `PoseEstimator` object in the Hierarchy tab. Then, drag and drop the `PoseNetShader` asset from the Assets section onto its spot in the Inspector tab. 
 
 ![inspector-tab-assign-shader](..\images\barracuda-posenet-tutorial-v2\part-3\inspector-tab-assign-shader.png)
-
-
 
 
 
