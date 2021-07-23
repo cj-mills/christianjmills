@@ -25,15 +25,11 @@ The MobileNet and ResNet50 versions of the PoseNet model require different prepr
 
 **Note:** We will be manually toggling between using the CPU and GPU in this tutorial. For real-world applications, we can determine if the target system supports compute shaders with the [SystemInfo](https://docs.unity3d.com/ScriptReference/SystemInfo.html).[supportsComputeShaders](https://docs.unity3d.com/ScriptReference/SystemInfo-supportsComputeShaders.html) property.
 
+ 
 
+## Create Compute Shader
 
-## Preprocessing on GPU
-
-We will start with implementing preprocessing in a compute shader to run them on a GPU. 
-
-### Create Compute Shader
-
-In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
+We will start with implementing preprocessing in a compute shader to run them on a GPU. In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
 
 ![unity-create-compute-shader](..\images\barracuda-posenet-tutorial-v2\part-3\unity-create-compute-shader.png)
 
