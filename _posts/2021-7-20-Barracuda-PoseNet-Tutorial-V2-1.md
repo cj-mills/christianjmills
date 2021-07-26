@@ -103,7 +103,6 @@ Enter `com.unity.barracuda` into the search box and click `Add`. This will insta
 
 ![package-manager-add-barracuda-git-package](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-add-barracuda-git-package.png)
 
-````
 > :warning: **Note:** The version of Barracuda that we will be using in this tutorial is not available through the package manager in Unity 2021 at the time of writing. You will need to manually update the value for `"com.unity.barracuda"` in the `Project_Folder/Packages/manifest.json` file from `"1.0.4"` to `"2.1.0-preview"` as shown below. The package will be marked as `Experimental` in the editor.
 
 ```json
@@ -114,7 +113,6 @@ Enter `com.unity.barracuda` into the search box and click `Add`. This will insta
     "com.unity.ide.visualstudio": "2.0.11",
     "com.unity.ide.vscode": "1.2.3",
 ```
-````
 
 We can view more recent versions of the package by clicking `See other versions`.
 
