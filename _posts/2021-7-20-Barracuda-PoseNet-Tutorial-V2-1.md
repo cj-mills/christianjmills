@@ -23,7 +23,7 @@ search_exclude: false
 
 ## Introduction
 
-This tutorial series provides step-by-step instructions for how to perform human [pose estimation](https://www.fritz.ai/pose-estimation/) in [Unity](https://unity.com/) with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/manual/index.html) inference library. We'll be using a pretrained [PoseNet](https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5) model to estimate the 2D locations of key points on the bodies of one or more individuals in a [video frame](https://en.wikipedia.org/wiki/Film_frame). We will then use the output from the model to control the locations of [`GameObjects`](https://docs.unity3d.com/ScriptReference/GameObject.html) in a scene.
+This tutorial series provides step-by-step instructions for how to perform human [pose estimation](https://www.fritz.ai/pose-estimation/) in [Unity](https://unity.com/) with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/manual/index.html) inference library. We will be using a pretrained [PoseNet](https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5) model to estimate the 2D locations of key points on the bodies of one or more individuals in a [video frame](https://en.wikipedia.org/wiki/Film_frame). We will then use the output from the model to control the locations of [`GameObjects`](https://docs.unity3d.com/ScriptReference/GameObject.html) in a scene.
 
 ### Single Pose Demo
 
@@ -73,7 +73,7 @@ First, we need to create a new Unity project. We can use the default 3D template
 
 ## Install Barracuda Package
 
-We will start by installing the Barracuda package. This will allows us to import the PoseNet models into the project. Open the `Window` menu at the top of the Unity Editor and select `Package Manager`.
+We will start by installing the Barracuda package. This will allow us to import the PoseNet models into the project. Open the `Window` menu at the top of the Unity Editor and select `Package Manager`.
 
 ![open-package-manager](..\images\barracuda-posenet-tutorial-v2\part-1\open-package-manager.png)
 
@@ -81,7 +81,7 @@ There might be a message in the console indicating that there is a new version o
 
 ![unity-update-visual-studio-editor-package-prompt](..\images\barracuda-posenet-tutorial-v2\part-1\unity-update-visual-studio-editor-package-prompt.png)
 
-Feel free to update the package by selecting it in the Package Manager and click the `Update` button.
+Feel free to update the package by selecting it in the Package Manager and clicking the `Update` button.
 
 ![update-visual-studio-editor](..\images\barracuda-posenet-tutorial-v2\part-1\update-visual-studio-editor.png)
 
@@ -97,7 +97,7 @@ A popup window will appear, warning us that preview packages might not be ready 
 
 ![package-manager-enable-preview-packages-popup](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-enable-preview-packages-popup.png)
 
-Even though there is a verified version of Barracuda, it is not available in the package manager by default. We need to either install a package that has it as a dependency (e.g. ML Agents) or add it directly with a git URL. Click on the `+` icon in the upper-left corner and select `Add package from git URL...`.
+Even though there is a verified version of Barracuda, it is not available in the package manager by default. We need to either install a package that has it as a dependency (e.g. [ML Agents](https://unity.com/products/machine-learning-agents)) or add it directly with a git URL. Click on the `+` icon in the upper-left corner and select `Add package from git URL...`.
 
 ![package-manager-add-git-package](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-add-git-package.png)
 
@@ -140,15 +140,15 @@ Unity seems to be concerned that anyone who jumps through the multiple hoops to 
 
 ## Import Video Files
 
-We'll be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is for testing single pose estimation and only has one person in frame at a time. The second video is meant for testing multipose estimation and has several individuals in frame at varying distances from the camera. Download the videos in `Full HD` resolution.
+We will be using these two videos available on [Pexels](https://www.pexels.com/), a free stock photos & videos site. The first one is for testing single pose estimation and only has one person in frame at a time. The second video is meant for testing multipose estimation and has several individuals in frame at varying distances from the camera. Download the videos in `Full HD` resolution.
 
 1. [Two Young Men Doing a Boardslide Over a Railing](https://www.pexels.com/video/two-young-men-doing-a-boardslide-over-a-railing-4824358/)
 
-   **Note:** Renamed to `pexels_boardslides`
+   > **Note:** Renamed to `pexels_boardslides`
 
 2. [Teens Riding Skateboard Doing Grind Rail](https://www.pexels.com/video/teens-riding-skateboard-doing-grind-rail-5039831/)
 
-   **Note:** Renamed to `pexels_teens_riding_skateboard_doing_grind_rail`
+   > **Note:** Renamed to `pexels_teens_riding_skateboard_doing_grind_rail`
 
 ### Add Files to Assets
 
@@ -158,7 +158,7 @@ In the `Assets` section, right-click an empty space, select the `Create` option,
 
 
 
-Drag and drop the two video files from the file explorer into the `Videos` folder.
+Drag and drop the two video files from the File Explorer into the `Videos` folder.
 
 ![unity-add-video-files](..\images\barracuda-posenet-tutorial-v2\part-1\unity-add-video-files.png)
 
@@ -166,7 +166,7 @@ Drag and drop the two video files from the file explorer into the `Videos` folde
 
 ## Import ONNX Models
 
-We will cover how to use two different versions of the PoseNet model. The [MobileNet](https://paperswithcode.com/method/mobilenetv2) version is optimized to run efficiently on CPUs at the cost of some accuracy. The [ResNet50](https://paperswithcode.com/method/resnet) model is noticeably more accurate, but is more computationally demanding. 
+We will cover how to use two different versions of the PoseNet model. The [MobileNet](https://paperswithcode.com/method/mobilenetv2) version is optimized to run efficiently on CPUs at the cost of some accuracy. The [ResNet50](https://paperswithcode.com/method/resnet) version is noticeably more accurate, but is more computationally demanding. 
 
 ### Download Files
 
@@ -185,7 +185,7 @@ Back in the Assets section, create a new folder called `Models`. Drag and drop t
 
 ## Summary
 
-That takes care of the preliminary setup for the project. In the next post we will cover how to play and view videos inside Unity from both video files and a webcam.
+That takes care of the preliminary setup for the project. The next post will cover how to play and view videos inside Unity from both video files and a webcam.
 
 **Next:** [Part 2](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-2/)
 
