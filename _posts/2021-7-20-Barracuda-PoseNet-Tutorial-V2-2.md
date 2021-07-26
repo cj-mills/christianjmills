@@ -248,9 +248,9 @@ void Start()
         videoScreen.GetComponent<VideoPlayer>().enabled = false;
 
         // Update the videoDims.y
-        videoDims.y = (int)webcamTexture.height;
+        videoDims.y = webcamTexture.height;
         // Update the videoDims.x
-        videoDims.x = (int)webcamTexture.width;
+        videoDims.x = webcamTexture.width;
     }
     else
     {
