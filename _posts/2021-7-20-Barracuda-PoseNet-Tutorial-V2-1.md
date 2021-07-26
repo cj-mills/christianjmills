@@ -78,6 +78,8 @@ There appears to be a [known issue](https://forum.unity.com/threads/video-player
 
 First, we need to create a new Unity project. We can use the default 3D template.
 
+> **Note:** There appears to currently be an issues with the 2D template where Barrauda does not work when the project is built.
+
 ![create-project](..\images\barracuda-posenet-tutorial-v2\part-1\create-project.png)
 
 
@@ -115,6 +117,21 @@ Even though there is a verified version of Barracuda, it is not available in the
 Enter `com.unity.barracuda` into the search box and click `Add`. This will install the latest `Verified` version of the package. Unfortunately, there is a bug with this version that causes an error when performing inference on the CPU. This is resolved in later versions.
 
 ![package-manager-add-barracuda-git-package](..\images\barracuda-posenet-tutorial-v2\part-1\package-manager-add-barracuda-git-package.png)
+
+
+
+> :warning: **Note:** The version of Barracuda that we will be using in this tutorial is not available through the package manager in Unity **2021** at the time of writing. You will need to manually update the value for `"com.unity.barracuda"` in the `Project_Folder/Packages/manifest.json` file from `"1.0.4"` to `"2.1.0-preview"` as shown below. The package will be marked as `Experimental` in the editor.
+
+```json
+"dependencies": {
+    "com.unity.barracuda": "2.1.0-preview",
+    "com.unity.collab-proxy": "1.5.7",
+    "com.unity.ide.rider": "2.0.7",
+    "com.unity.ide.visualstudio": "2.0.11",
+    "com.unity.ide.vscode": "1.2.3",
+```
+
+
 
 We can view more recent versions of the package by clicking `See other versions`.
 
