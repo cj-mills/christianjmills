@@ -418,7 +418,7 @@ private void ProcessImageGPU(RenderTexture image, string functionName)
 
 ### Create ProcessImage Method
 
-We will call the preprocessing functions inside a new method called `ProcessImage`. The method will take in a `RenderTexture` update the `input` Tensor
+We will call the preprocessing functions inside a new method called `ProcessImage`. The method will take in a `RenderTexture` and update the `input` Tensor data.
 
 #### Method Steps
 
@@ -428,7 +428,7 @@ We will call the preprocessing functions inside a new method called `ProcessImag
    2. Initialize `input` with pixel data from `rTex`
 3. If using CPU
    1. Initialize `input` with pixel data from `rTex`
-   2. download Tensor data to `float` array
+   2. Download Tensor data to `float` array
    3. Call the appropriate preprocessing function for the current model type
    4. Update `input` with the new color values
 
@@ -487,7 +487,7 @@ private void ProcessImage(RenderTexture image)
 
 ### Modify Update Method
 
-
+We will update the input dimensions and process the input inside the `Update` method. 
 
 #### Clamp Input Dimensions
 
