@@ -21,15 +21,15 @@ search_exclude: false
 
 ## Overview
 
-The MobileNet and ResNet50 versions of the PoseNet model require different preprocessing steps. While it is more efficient to perform theses steps on a GPU with a [Compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html), this may not be supported on the target platform. Therefore, we will also cover how to perform the preprocessing steps on the CPU as well. 
+The MobileNet and ResNet50 versions of the PoseNet model require different preprocessing steps. While it is more efficient to perform theses steps on a GPU with a [Compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html), this may not be supported by the target platform. Therefore, we will also cover how to perform the preprocessing steps on the CPU as well. 
 
-**Note:** We will be manually toggling between using the CPU and GPU in this tutorial. For real-world applications, we can determine if the target system supports compute shaders with the [SystemInfo](https://docs.unity3d.com/ScriptReference/SystemInfo.html).[supportsComputeShaders](https://docs.unity3d.com/ScriptReference/SystemInfo-supportsComputeShaders.html) property.
+> **Note:** We will be manually toggling between using the CPU and GPU in this tutorial. For real-world applications, we can determine if the target system supports compute shaders with the [SystemInfo](https://docs.unity3d.com/ScriptReference/SystemInfo.html).[supportsComputeShaders](https://docs.unity3d.com/ScriptReference/SystemInfo-supportsComputeShaders.html) property.
 
  
 
 ## Create Compute Shader
 
-We will start with implementing preprocessing in a compute shader to run them on a GPU. In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
+We will start with implementing the preprocessing steps in a compute shader to execute them on a GPU. In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
 
 ![unity-create-compute-shader](..\images\barracuda-posenet-tutorial-v2\part-3\unity-create-compute-shader.png)
 
@@ -56,7 +56,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 ### Specify Function Names
 
-We will first add the `#pragma kernel` lines for each of our functions. These lines indicate what functions we want to be compiled. Without them, we can not access these functions from the `PoseEstimator` script. We'll call the two functions `PreprocessMobileNet` and `PreprocessResNet` respectively.
+We will first add the [`#pragma`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-appendix-pre-pragma) [`kernel`](https://docs.unity3d.com/ScriptReference/ComputeShader.FindKernel.html) lines to indicate what functions we want to be compiled. Without them, we can not access these functions from the `PoseEstimator` script. We'll call the two functions `PreprocessMobileNet` and `PreprocessResNet` respectively.
 
 ```c#
 // Each #kernel tells which function to compile; you can have many kernels
@@ -68,9 +68,9 @@ We will first add the `#pragma kernel` lines for each of our functions. These li
 
 ### Define Variables
 
-We will need a [Texture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [half4](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector. Each 4D Vector will contain the RGBA color and alpha values for a single pixel.
+We will need a [`Texture2D`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [`half4`](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector. Each 4D Vector will contain the RGBA color and alpha values for a single pixel.
 
-We also need a [RWTexture2D](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-rwtexture2d) so that we can write the processed image data back to a RenderTexture in the PoseEstimator script. Give it a data type of half4 as well.
+We also need a [`RWTexture2D`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-rwtexture2d) so that we can write the processed image data back to a RenderTexture in the PoseEstimator script. Give it a data type of half4 as well.
 
 ```c#
 // The pixel data for the input image
@@ -83,7 +83,7 @@ RWTexture2D<half4> Result;
 
 ### Create PreprocessMobileNet Function
 
-Now we can define the functions we named earlier. We will stick with the default values for [numthreads](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-attributes-numthreads) of `(8,8,1)`.
+Now we can define the functions we named earlier. We will stick with the default values for [`numthreads`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-attributes-numthreads) of `(8,8,1)`.
 
 The MobileNet version of the model expects color values to be in the range `[-1,1]`. By default color values in Unity are in the range `[0,1]`. The alpha channel is not used by the model, so the value does not matter.
 
@@ -93,9 +93,11 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 {
     // Normalize the color values to the range [-1,1]
     //2 * (value - min) / (max - min) - 1
-    Result[id.xy] = half4((2.0h * (InputImage[id.xy].r) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].g) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].b) / (1.0h) - 1.0h), InputImage[id.xy].a);
+    Result[id.xy] = half4(
+        2.0h * InputImage[id.xy].r / 1.0h - 1.0h,
+        2.0h * InputImage[id.xy].g / 1.0h - 1.0h,
+        2.0h * InputImage[id.xy].b / 1.0h - 1.0h, 
+        InputImage[id.xy].a);
 }
 ```
 
@@ -103,16 +105,19 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 
 ### Create PreprocessResNet Function
 
-The ResNet50 version of the model expects color values to be in the range `[0,255]`. We also need to add the mean RGB color values for the ImageNet dataset to the pixel values. 
+The ResNet50 version of the model expects color values to be in the range `[0,255]`. We also need to subtract the mean RGB color values for the [ImageNet dataset](https://image-net.org/about.php) to the pixel values. 
 
 ```c#
 [numthreads(8, 8, 1)]
 void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 {
-    // Scale each color value to the range [0,255] and add the ImageNet mean value
-    Result[id.xy] = half4((InputImage[id.xy].r * 255.0h) + (-123.15h),
-        (InputImage[id.xy].g * 255.0h) + (-115.90h),
-        (InputImage[id.xy].b * 255.0h) + (-103.06h), InputImage[id.xy].a);
+    // Scale each color value to the range [0,255]
+    // and add the ImageNet mean value
+    Result[id.xy] = half4(
+        InputImage[id.xy].r * 255.0h - 123.15h,
+        InputImage[id.xy].g * 255.0h - 115.90h,
+        InputImage[id.xy].b * 255.0h - 103.06h, 
+        InputImage[id.xy].a);
 }
 ```
 
@@ -135,19 +140,23 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 {
     // Normalize the color values to the range [-1,1]
     //2 * (value - min) / (max - min) - 1
-    Result[id.xy] = half4((2.0h * (InputImage[id.xy].r) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].g) / (1.0h) - 1.0h),
-        (2.0h * (InputImage[id.xy].b) / (1.0h) - 1.0h), InputImage[id.xy].a);
-
+    Result[id.xy] = half4(
+        2.0h * InputImage[id.xy].r / 1.0h - 1.0h,
+        2.0h * InputImage[id.xy].g / 1.0h - 1.0h,
+        2.0h * InputImage[id.xy].b / 1.0h - 1.0h, 
+        InputImage[id.xy].a);
 }
 
 [numthreads(8, 8, 1)]
 void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 {
-    // Scale each color value to the range [0,255] and add the ImageNet mean value
-    Result[id.xy] = half4((InputImage[id.xy].r * 255.0h) + (-123.15h),
-        (InputImage[id.xy].g * 255.0h) + (-115.90h),
-        (InputImage[id.xy].b * 255.0h) + (-103.06h), InputImage[id.xy].a);
+    // Scale each color value to the range [0,255]
+    // and add the ImageNet mean value
+    Result[id.xy] = half4(
+        InputImage[id.xy].r * 255.0h - 123.15h,
+        InputImage[id.xy].g * 255.0h - 115.90h,
+        InputImage[id.xy].b * 255.0h - 103.06h, 
+        InputImage[id.xy].a);
 }
 ```
 
@@ -213,14 +222,11 @@ The color data for pixels is stored sequentially in the tensor array. For exampl
     ///// <param name="tensor">Pixel data from the input tensor</param>
     public static void PreprocessResnet(float[] tensor)
     {
-
-        float[] imagenetMean = new float[] { -123.15f, -115.90f, -103.06f };
-
         System.Threading.Tasks.Parallel.For(0, tensor.Length / 3, (int i) =>
         {
-            tensor[i * 3 + 0] = (float)tensor[i * 3 + 0] * 255f + imagenetMean[0];
-            tensor[i * 3 + 1] = (float)tensor[i * 3 + 1] * 255f + imagenetMean[1];
-            tensor[i * 3 + 2] = (float)tensor[i * 3 + 2] * 255f + imagenetMean[2];
+            tensor[i * 3 + 0] = (float)tensor[i * 3 + 0] * 255f - 123.15f;
+            tensor[i * 3 + 1] = (float)tensor[i * 3 + 1] * 255f - 115.90f;
+            tensor[i * 3 + 2] = (float)tensor[i * 3 + 2] * 255f - 103.06f;
         });
     }
 ```
