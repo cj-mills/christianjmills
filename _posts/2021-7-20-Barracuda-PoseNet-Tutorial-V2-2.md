@@ -59,7 +59,7 @@ Type `video` into the search box and select `Video Player` from the search resul
 
 ### Assign Video Clip
 
-Video files can be assigned by dragging them from the Assets section into the `Video Clip` spot in the Inspector tab. We will start with the `pexels_boardslides` file.
+Video files can be assigned by dragging them from the Assets section into the [`Video Clip`](https://docs.unity3d.com/ScriptReference/Video.VideoClip.html) spot in the Inspector tab. We will start with the `pexels_boardslides` file.
 
 ![unity-assign-video-clip](..\images\barracuda-posenet-tutorial-v2\part-2\unity-assign-video-clip.png)
 
