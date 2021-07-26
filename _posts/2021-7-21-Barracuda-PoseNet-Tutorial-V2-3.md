@@ -491,7 +491,7 @@ We will update the input dimensions and process the input inside the `Update` me
 
 #### Clamp Input Dimensions
 
-The model will not return useable output with input below 130px in size. There just isn't enough for information for the model to work with at that low of a resolution. Also, the model downscales the input internally by a set amount and might error out if the input is too low. To prevent this, we will clamp the input dimensions from dropping below `130x130`.  
+The model will not return useable output with input below 130px in size. There just isn't enough for information for the model to work with at that low of a resolution. Also, the model downscales the input internally by a set amount and might error out if the input is too low. To prevent this, we will ensure the input dimensions are at least `130x130`.  
 
 ```c#
 // Prevent the input dimensions from going too low for the model
