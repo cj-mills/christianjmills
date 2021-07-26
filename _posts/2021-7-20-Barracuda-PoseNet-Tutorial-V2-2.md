@@ -225,7 +225,7 @@ In the [`Start`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.ht
 
 If we are not using a webcam, we will instead update `videoDims` with the dimensions from the `Video Player` component.
 
-Next, we need to initialize the `videoTexture` with the new dimensions and the [`ARGBHalf`](https://docs.unity3d.com/ScriptReference/RenderTextureFormat.ARGBHalf.html) HDR texture format. We need to use an HDR texture format so that we can store color values outside the standard Unity range of `[0,1]`. The MobileNet version of the PoseNet model expects values to be in the range `[-1,1]` while the ResNet50 version expects values in the range `[0,255]`.
+Next, we need to initialize the `videoTexture` with the new dimensions and the [`ARGBHalf`](https://docs.unity3d.com/ScriptReference/RenderTextureFormat.ARGBHalf.html) HDR texture format. We [need](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html#Unity_Barracuda_Tensor__ctor_UnityEngine_Texture_System_Int32_System_String_) to use an HDR texture format so that we can store color values outside the standard Unity range of `[0,1]`. The MobileNet version of the PoseNet model expects values to be in the range `[-1,1]` while the ResNet50 version expects values in the range `[0,255]`.
 
 We will then call the `InitializeVideoScreen()` and `InitializeCamera()` methods. 
 
