@@ -3,7 +3,7 @@ title: Barracuda PoseNet Tutorial 2nd Edition Pt. 2
 layout: post
 toc: false
 comments: true
-description: This post covers how to set up a video player in Unity. We'll be using the video player to check the accuracy of the PoseNet model.
+description: This post covers how to set up a video player and webcam in Unity. We'll be using the video player to check the accuracy of the PoseNet model.
 categories: [unity,barracuda,tutorial]
 hide: false
 permalink: /:title/
@@ -25,11 +25,11 @@ This post demonstrates how to play and view videos inside Unity from both video 
 
 ## Create the Video Player
 
-To start, we will create new `GameObject` to play and view a video feed. 
+To start, we will create a new `GameObject` to play and view a video feed. 
 
 ### Create the Video Screen
 
-We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right-click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
+We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right-click an empty space in the `Hierarchy` tab. Select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
 
 ![unity-create-quad](..\images\barracuda-posenet-tutorial-v2\part-2\unity-create-quad.png)
 
@@ -77,7 +77,7 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 ## Create `PoseEstimator` Script
 
-We will be adjusting both the `VideoScreen` and `Main Camera` objects in the same script in which we will be executing the PoseNet model.
+We will be adjusting both the `VideoScreen` and `Main Camera` objects in the script where the PoseNet model will be executed.
 
 Create a new folder in the Assets section and name it `Scripts`. Enter the Scripts folder and right-click an empty space. Select `C# Script` in the `Create` submenu and name it `PoseEstimator`.
 
@@ -106,13 +106,13 @@ using UnityEngine.Video;
 
 We can specify a desired resolution and framerate for webcams in Unity. If the provided resolution and framerate is not supported by the hardware, Unity will use a default resolution.
 
-We will specify the desired webcam resolution using a `public Vector2Int` variable called `webcamDims`. Set the default values to `1280x720`.
+We will specify the desired webcam resolution using a `public` [`Vector2Int`](https://docs.unity3d.com/ScriptReference/Vector2Int.html) variable called `webcamDims`. Set the default values to `1280x720`.
 
-Next, create a `public int` variable called `webcamFPS` and give it a default value of `60`.
+Next, create a `public` [`int`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/integral-numeric-types) variable called `webcamFPS` and give it a default value of `60`.
 
-We will use a `public bool` variable to toggle between using a video file or webcam as input for the model. Set the default value to `false` as we will be starting with a video file.
+We will use a `public` [`bool`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool) variable to toggle between using a video file or webcam as input for the model. Set the default value to `false` as we will be starting with a video file.
 
-Lastly, create a `public Transform` variable called `videoScreen`. We will use this variable to access the `VideoScreen` object and its `Video Player` component.
+Lastly, create a `public` [`Transform`](https://docs.unity3d.com/ScriptReference/Transform.html) variable called `videoScreen`. We will use this variable to access the `VideoScreen` object and its `Video Player` component.
 
 ```c#
 public class PoseEstimator : MonoBehaviour
@@ -132,11 +132,11 @@ public class PoseEstimator : MonoBehaviour
 
 ### Define Private Variables
 
-We need a `private` [WebCamTexture](https://docs.unity3d.com/ScriptReference/WebCamTexture.html) variable to access the video feed from a webcam.
+We need a `private` [`WebCamTexture`](https://docs.unity3d.com/ScriptReference/WebCamTexture.html) variable to access the video feed from a webcam.
 
 We will store the final dimensions from either the video or webcam feed in a `private Vector2Int` variable called `videoDims`.
 
-The last variable we need is a `private RenderTexture` variable called `videoTexture`. This will store the pixel data for the current video or webcam frame.
+The last variable we need is a `private` [`RenderTexture`](https://docs.unity3d.com/ScriptReference/RenderTexture.html) variable called `videoTexture`. This will store the pixel data for the current video or webcam frame.
 
 ```c#
 // Live video input from a webcam
@@ -161,7 +161,7 @@ The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assig
 
 We will then assign the `videoTexture` created earlier as the texture for the `VideoScreen`. This will allow us to access to pixel data for the current video frame.
 
-We can adjust the dimensions of the `VideoScreen` object by updating it's [localScale](https://docs.unity3d.com/ScriptReference/Transform-localScale.html) attribute.
+We can adjust the dimensions of the `VideoScreen` object by updating it's [`localScale`](https://docs.unity3d.com/ScriptReference/Transform-localScale.html) attribute.
 
 The last step is to reposition the screen based on the the new dimensions, so that the bottom left corner is at `X:0, Y:0, Z:0`. This will simplify the process for updating the positions of objects with the estimated key point locations.
 
@@ -198,11 +198,11 @@ private void InitializeVideoScreen(int width, int height, bool mirrorScreen)
 
 Once the `VideoScreen` has been updated, we need to resize and reposition the in-game camera. We will do so in a new method called `InitializeCamera`. 
 
-We can access the `Main Camera` object with `GameObject.Find("Main Camera")`.  We will set the `X` and `Y` coordinates to the same as the `VideoScreen` position.
+We can access the `Main Camera` object with [`GameObject.Find("Main Camera")`](https://docs.unity3d.com/ScriptReference/GameObject.Find.html).  We will set the `X` and `Y` coordinates to the same as the `VideoScreen` position.
 
-The camera also needs to be set to `orthographic` mode to remove perspective.
+The camera also needs to be set to [`orthographic`](https://docs.unity3d.com/ScriptReference/Camera-orthographic.html) mode to remove perspective.
 
-Lastly, we need to update the size of the camera. The `orthographicSize` attribute is actually the half size, so we need to divide `videoDims.y` (i.e. the height) by `2` as well.
+Lastly, we need to update the size of the camera. The [`orthographicSize`](https://docs.unity3d.com/ScriptReference/Camera-orthographicSize.html) attribute is actually the half size, so we need to divide `videoDims.y` (i.e. the height) by `2` as well.
 
 ```c#
 /// <summary>
@@ -225,11 +225,11 @@ private void InitializeCamera()
 
 ### Modify `Start()` Method
 
-In the `Start` method, we will first check if `useWebcam` is set to `true`. If it is, we will first limit the target framerate to the same as the target framerate for the webcam. We will then initialize the `webcamTexture` with the specified resolution and framerate. We will also disable the `Video Player` component. Lastly, we will update the values for `videoDims` with the final dimensions for the `webcamTexture`.
+In the [`Start`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html) method, we will first check if `useWebcam` is set to `true`. If it is, we will first limit the target framerate to the same as the target framerate for the webcam. We will then initialize the `webcamTexture` with the specified resolution and framerate. We will also disable the `Video Player` component. Lastly, we will update the values for `videoDims` with the final dimensions for the `webcamTexture`.
 
 If we are not using a webcam, we will instead update `videoDims` with the dimensions from the `Video Player` component.
 
-Next, we need to initialize the `videoTexture` with the new dimensions and the `ARGBHalf` HDR texture format. We need to use an HDR texture format so that we can store color values outside the standard Unity range of `[0,1]`. The MobileNet version of the PoseNet model expects values to be in the range `[-1,1]` while the ResNet50 version expects values in the range `[0,255]`.
+Next, we need to initialize the `videoTexture` with the new dimensions and the [`ARGBHalf`](https://docs.unity3d.com/ScriptReference/RenderTextureFormat.ARGBHalf.html) HDR texture format. We need to use an HDR texture format so that we can store color values outside the standard Unity range of `[0,1]`. The MobileNet version of the PoseNet model expects values to be in the range `[-1,1]` while the ResNet50 version expects values in the range `[0,255]`.
 
 We will then call the `InitializeVideoScreen()` and `InitializeCamera()` methods. 
 
@@ -279,7 +279,7 @@ void Start()
 
 ### Modify `Update()` Method
 
-For now, the only thing we need to do in the `Update` method is to "copy" the pixel data from `webcamTexture` to `videoTexture` when using a webcam.
+For now, the only thing we need to do in the [`Update`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.Update.html) method is to "copy" the pixel data from `webcamTexture` to `videoTexture` when using a webcam.
 
 ```c#
 // Update is called once per frame
@@ -316,7 +316,9 @@ Drag and drop the VideoScreen object from the Hierarchy tab into the `Video Scre
 
 ## Test it Out
 
-Now we can press the play button to test out the video player. 
+Now we can press the play button to test out the video player.
+
+> **Note:** By default the `Aspect` for the [Game view](https://docs.unity3d.com/Manual/GameView.html) is set to `Free Aspect`, so the `VideoScreen` might not fill the entire view.
 
 ![video-player-test-3](..\images\barracuda-posenet-tutorial-v2\part-2\video-player-test-3.gif)
 
