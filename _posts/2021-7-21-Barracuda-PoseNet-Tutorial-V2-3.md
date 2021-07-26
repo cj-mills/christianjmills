@@ -15,6 +15,7 @@ search_exclude: false
 * [Create Utils Script](#create-utils-script)
 * [Update `PoseEstimator` Script](#update-poseestimator-script)
 * [Assign `PoseNetShader`](#assign-posenetshader)
+* [Test it Out](#test-it-out)
 * [Summary](#summary)
 
 
@@ -612,9 +613,33 @@ The last step we need to take before pressing play is to assign the `PoseNetShad
 
 
 
+## Test it Out
+
+Now when we press play, we can see that the value for `Image Dims` gets updated in the inspector to maintain the source aspect ratio.
+
+![inspector-tab-assign-shader](..\images\barracuda-posenet-tutorial-v2\part-3\inspector-tab-assign-shader.png)
+
+
+
+We can view the frame rate by pressing the `stats` button in the Game View. If we toggle `Use GPU` in the Inspector tab, we can see why it is preferrable to perform the preprocessing steps on the GPU. The frame rate drops significantly when using the CPU.
+
+### GPU
+
+![preprocess-gpu-frame-rate](..\images\barracuda-posenet-tutorial-v2\part-3\preprocess-gpu-frame-rate.png)
+
+
+
+### CPU
+
+![preprocess-cpu-frame-rate](..\images\barracuda-posenet-tutorial-v2\part-3\preprocess-cpu-frame-rate.png)
+
+
+
+
+
 ## Summary
 
-__.
+Now that we have prepared the input, we are ready to feed it to the model. In the next post, we will cover how to initialize, modify, and execute the PoseNet models.
 
 
 
