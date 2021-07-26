@@ -168,7 +168,7 @@ public class Utils
 
 ### Create PreprocessMobilenet Method
 
-The Barracuda library uses [Tensors](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html#methods) to store data. These are like multidimensional arrays. We can download the data stored in a Tensor to a regular `float` array. We will pass this array as input to the preprocessing methods and then upload the new values to a Tensor.
+The Barracuda library uses [Tensors](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html) to store data. These are like multidimensional arrays. We can download the data stored in a Tensor to a regular `float` array. We will pass this array as input to the preprocessing methods and then upload the new values to a Tensor.
 
 ```c#
 /// <summary>
@@ -211,11 +211,11 @@ public static void PreprocessResnet(float[] tensor)
 
 ## Update PoseEstimator Script
 
-Now we can call the preprocessing inside the `PoseEstimator` script. However, we first need to make some other additions.
+Now we can call the preprocessing methods inside the `PoseEstimator` script. However, we first need to make some other additions.
 
 ### Add Barracuda Namespace
 
-We only need to add the `Unity.Barracuda` namespace to implement the preprocessing code.
+We need to add the `Unity.Barracuda` namespace so that we can work with [Tensors](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html).
 
 ```c#
 using System.Collections;
@@ -245,7 +245,7 @@ We can create a dropdown for selecting the model type by defining a `public Mode
 
 We also need a `public bool` variable to toggle between using the CPU and GPU for processing input.
 
-Lastly, we need a `public VectorInt` variable to specify the dimensions of the input image. Using the original resolution of the video feed could significantly impact performance, so we will downscale the input image before feeding it to the model. 
+Lastly, we need a `public VectorInt` variable to specify the dimensions of the input image. Using the original resolution of the video feed could significantly impact performance, so we will downscale the input image before feeding it to the model.
 
 ```c#
 [Tooltip("The ComputeShader that will perform the model-specific preprocessing")]
@@ -294,7 +294,7 @@ private Tensor input;
 
 ### Update Start Method
 
-At the bottom of the start method, we need to adjust the input dimensions to maintain the source aspect ratio. We will use the height value to update the width for the input dimensions. We can then initialize `rTex` with the new input dimensions.
+At the bottom of the `Start` method, we need to adjust the input dimensions to maintain the source aspect ratio. We will use the height value to update the width for the input dimensions. We can then initialize `rTex` with the new input dimensions.
 
 ```c#
 // Adjust the input dimensions to maintain the source aspect ratio
@@ -329,9 +329,9 @@ void Start()
         videoScreen.GetComponent<VideoPlayer>().enabled = false;
 
         // Update the videoDims.y
-        videoDims.y = (int)webcamTexture.height;
+        videoDims.y = webcamTexture.height;
         // Update the videoDims.x
-        videoDims.x = (int)webcamTexture.width;
+        videoDims.x = webcamTexture.width;
     }
     else
     {
