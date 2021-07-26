@@ -71,10 +71,6 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 
 
-
-
-
-
 ## Create `PoseEstimator` Script
 
 We will be adjusting both the `VideoScreen` and `Main Camera` objects in the script where the PoseNet model will be executed.
