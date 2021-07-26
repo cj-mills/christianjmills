@@ -47,7 +47,7 @@ The following prerequisites are required to complete this tutorial.
 
 ### Unity
 
-This tutorial assumes that Unity is already installed on the system. The exact version of Unity used for this tutorial can be downloaded from the link below. 
+This tutorial assumes that Unity is already installed on the system. We will be using Unity **2020**, and the exact version can be downloaded from the link below. 
 
 * [Unity 2020.3.14](unityhub://2020.3.14f1/d0d1bb862f9d)
 
