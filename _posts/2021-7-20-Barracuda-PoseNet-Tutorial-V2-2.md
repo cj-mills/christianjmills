@@ -13,6 +13,7 @@ search_exclude: false
 * [Overview](#overview)
 * [Create the Video Player](#create-the-video-player)
 * [Create `PoseEstimator` Script](#create-poseestimator-script)
+* [Test it Out](#test-it-out)
 * [Summary](#summary)
 
 
