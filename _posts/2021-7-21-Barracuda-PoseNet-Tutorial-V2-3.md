@@ -21,7 +21,7 @@ search_exclude: false
 
 ## Overview
 
-The MobileNet and ResNet50 versions of the PoseNet model require different preprocessing steps. While it is more efficient to perform theses steps on a GPU with a [Compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html), this may not be supported by the target platform. Therefore, we will also cover how to perform the preprocessing steps on the CPU as well. 
+The MobileNet and ResNet50 versions of the PoseNet model require different preprocessing steps. While it is more efficient to perform these steps on a GPU with a [Compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html), this may not be supported by the target platform. Therefore, we will also cover how to perform the preprocessing steps on the CPU as well. 
 
 > **Note:** We will be manually toggling between using the CPU and GPU in this tutorial. For real-world applications, we can determine if the target system supports compute shaders with the [SystemInfo](https://docs.unity3d.com/ScriptReference/SystemInfo.html).[supportsComputeShaders](https://docs.unity3d.com/ScriptReference/SystemInfo-supportsComputeShaders.html) property.
 
@@ -29,7 +29,7 @@ The MobileNet and ResNet50 versions of the PoseNet model require different prepr
 
 ## Create Compute Shader
 
-We will start with implementing the preprocessing steps in a compute shader to execute them on a GPU. In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
+We will start by implementing the preprocessing steps in a compute shader to execute them on a GPU. In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
 
 ![unity-create-compute-shader](..\images\barracuda-posenet-tutorial-v2\part-3\unity-create-compute-shader.png)
 
@@ -52,8 +52,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 }
 ```
 
-
-
 ### Specify Function Names
 
 We will first add the [`#pragma`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-appendix-pre-pragma) [`kernel`](https://docs.unity3d.com/ScriptReference/ComputeShader.FindKernel.html) lines to indicate what functions we want to be compiled. Without them, we can not access these functions from the `PoseEstimator` script. We'll call the two functions `PreprocessMobileNet` and `PreprocessResNet` respectively.
@@ -64,11 +62,9 @@ We will first add the [`#pragma`](https://docs.microsoft.com/en-us/windows/win32
 #pragma kernel PreprocessResNet
 ```
 
-
-
 ### Define Variables
 
-We will need a [`Texture2D`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [`half4`](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector. Each 4D Vector will contain the RGBA color and alpha values for a single pixel.
+We will need a [`Texture2D`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d) variable to store the pixel data for the input image that will be passed from the `PoseEstimator` script. We will give it a data type of [`half4`](https://docs.unity3d.com/Manual/SL-DataTypesAndPrecision.html), which is a medium precision 4D vector. Each 4D Vector will contain the [RGBA](https://en.wikipedia.org/wiki/RGBA_color_model) color and alpha values for a single pixel.
 
 We also need a [`RWTexture2D`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-rwtexture2d) so that we can write the processed image data back to a RenderTexture in the PoseEstimator script. Give it a data type of half4 as well.
 
@@ -78,8 +74,6 @@ Texture2D<half4> InputImage;
 // The pixel data for the processed image
 RWTexture2D<half4> Result;
 ```
-
-
 
 ### Create PreprocessMobileNet Function
 
@@ -101,8 +95,6 @@ void PreprocessMobileNet(uint3 id : SV_DispatchThreadID)
 }
 ```
 
-
-
 ### Create PreprocessResNet Function
 
 The ResNet50 version of the model expects color values to be in the range `[0,255]`. We also need to subtract the mean RGB color values for the [ImageNet dataset](https://image-net.org/about.php) to the pixel values. 
@@ -120,8 +112,6 @@ void PreprocessResNet(uint3 id : SV_DispatchThreadID)
         InputImage[id.xy].a);
 }
 ```
-
-
 
 ### Final Code
 
@@ -164,71 +154,55 @@ void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 
 
 
-
-
-
-
-
-
 ## Create Utils Script
 
 We will be placing the CPU preprocessing and postprocessing methods inside a separate `C#` script called `Utils`, to prevent the `PoseEstimator` script from getting too long. 
 
-
-
 ### Remove MonoBehaviour Inheritance
 
-The `Utils` class does not need to inherit from [Monobehavior](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html). 
+The `Utils` class does not need to inherit from [Monobehavior](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html) as it will not be directly attached to a `GameObject`.
 
 ```c#
 public class Utils
 ```
 
-
-
-
-
 ### Create PreprocessMobilenet Method
 
 The Barracuda library uses [Tensors](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html#methods) to store data. These are like multidimensional arrays. We can download the data stored in a Tensor to a regular `float` array. We will pass this array as input to the preprocessing methods and then upload the new values to a Tensor.
 
-
-
 ```c#
-	/// <summary>
-    /// Applies the preprocessing steps for the MobileNet model on the CPU
-    /// </summary>
-    /// <param name="tensor">Pixel data from the input tensor</param>
-    public static void PreprocessMobilenet(float[] tensor)
-    {
-        // Normaliz the values to the range [-1, 1]
-        System.Threading.Tasks.Parallel.For(0, tensor.Length, (int i) =>
-        {
-            tensor[i] = (float)(2.0f * tensor[i] / 1.0f) - 1.0f;
-        });
-    }
+/// <summary>
+/// Applies the preprocessing steps for the MobileNet model on the CPU
+/// </summary>
+/// <param name="tensor">Pixel data from the input tensor</param>
+public static void PreprocessMobilenet(float[] tensor)
+{
+    // Normaliz the values to the range [-1, 1]
+    System.Threading.Tasks.Parallel.For(0, tensor.Length, (int i) =>
+	{
+        tensor[i] = (float)(2.0f * tensor[i] / 1.0f) - 1.0f;
+    });
+}
 ```
-
-
 
 ### Create PreprocessResnet Method
 
 The color data for pixels is stored sequentially in the tensor array. For example, the first three values in the array would be the red, green, and blue color values for the first pixel in the image. The tensor data will not have an alpha channel, so we do not need to account for it here.
 
 ```c#
-	///// <summary>
-    ///// Applies the preprocessing steps for the ResNet50 model on the CPU
-    ///// </summary>
-    ///// <param name="tensor">Pixel data from the input tensor</param>
-    public static void PreprocessResnet(float[] tensor)
-    {
-        System.Threading.Tasks.Parallel.For(0, tensor.Length / 3, (int i) =>
-        {
-            tensor[i * 3 + 0] = (float)tensor[i * 3 + 0] * 255f - 123.15f;
-            tensor[i * 3 + 1] = (float)tensor[i * 3 + 1] * 255f - 115.90f;
-            tensor[i * 3 + 2] = (float)tensor[i * 3 + 2] * 255f - 103.06f;
-        });
-    }
+///// <summary>
+///// Applies the preprocessing steps for the ResNet50 model on the CPU
+///// </summary>
+///// <param name="tensor">Pixel data from the input tensor</param>
+public static void PreprocessResnet(float[] tensor)
+{
+    System.Threading.Tasks.Parallel.For(0, tensor.Length / 3, (int i) =>
+	{
+        tensor[i * 3 + 0] = (float)tensor[i * 3 + 0] * 255f - 123.15f;
+        tensor[i * 3 + 1] = (float)tensor[i * 3 + 1] * 255f - 115.90f;
+        tensor[i * 3 + 2] = (float)tensor[i * 3 + 2] * 255f - 103.06f;
+    });
+}
 ```
 
 
@@ -237,9 +211,7 @@ The color data for pixels is stored sequentially in the tensor array. For exampl
 
 ## Update PoseEstimator Script
 
-
-
-
+Now we can call the preprocessing inside the `PoseEstimator` script. However, we first need to make some other additions.
 
 ### Add Barracuda Namespace
 
@@ -252,8 +224,6 @@ using UnityEngine;
 using UnityEngine.Video;
 using Unity.Barracuda;
 ```
-
-
 
 ### Add Public Variables
 
