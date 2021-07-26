@@ -51,19 +51,6 @@ This tutorial assumes that Unity is already installed on the system. The exact v
 
 * [Unity 2020.3.14](unityhub://2020.3.14f1/d0d1bb862f9d)
 
-**Note:** The version of Barracuda that we will be using in this tutorial is not available through the package manager in Unity 2021 at the time of writing. You will need to manually update the value for `"com.unity.barracuda"` in the `Project_Folder/Packages/manifest.json` file from `"1.0.4"` to `"2.1.0-preview"` as shown below. The package will be marked as `Experimental` in the editor.
-
-```json
-"dependencies": {
-    "com.unity.barracuda": "2.1.0-preview",
-    "com.unity.collab-proxy": "1.5.7",
-    "com.unity.ide.rider": "2.0.7",
-    "com.unity.ide.visualstudio": "2.0.11",
-    "com.unity.ide.vscode": "1.2.3",
-```
-
-
-
 Anyone who has never used Unity before can become acquainted with the basics by following the tutorial below. It will walk through the installation process all the way to making an Angry Birds clone.
 
 - [How to Make a Game - Unity Beginner Tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY)
