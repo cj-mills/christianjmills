@@ -153,8 +153,6 @@ void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 
 
 
-
-
 ## Create Utils Script
 
 We will be placing the CPU preprocessing and postprocessing methods inside a separate `C#` script called `Utils`, to prevent the `PoseEstimator` script from getting too long. 
@@ -205,8 +203,6 @@ public static void PreprocessResnet(float[] tensor)
     });
 }
 ```
-
-
 
 
 
@@ -262,8 +258,6 @@ public bool useGPU = true;
 public Vector2Int imageDims = new Vector2Int(256, 256);
 ```
 
-
-
 ### Add Private Variables
 
 We will be maintaining the aspect ratio of the source video feed when downscaling the input image. We need to keep track of the current input dimensions so that we know when to calculate the new dimensions. Create a new `private Vector2Int` variable called `targetDims`.
@@ -271,8 +265,6 @@ We will be maintaining the aspect ratio of the source video feed when downscalin
 Next, create a `private float` variable called aspectRatioScale. This will store the scaling value to update the `targetDims`.
 
 The pixel data for the input image will be stored in a new `private RenderTexture` variable called `rTex`.
-
- 
 
 ```c#
 // Target dimensions for model input
@@ -291,8 +283,6 @@ private string preProcessFunction;
 private Tensor input;
 ```
 
-
-
 ### Update Start Method
 
 At the bottom of the `Start` method, we need to adjust the input dimensions to maintain the source aspect ratio. We will use the height value to update the width for the input dimensions. We can then initialize `rTex` with the new input dimensions.
@@ -306,8 +296,6 @@ imageDims.x = targetDims.x;
 // Initialize the RenderTexture that will store the processed input image
 rTex = RenderTexture.GetTemporary(imageDims.x, imageDims.y, 24, RenderTextureFormat.ARGBHalf);
 ```
-
-
 
 #### Final Code
 
@@ -361,10 +349,6 @@ void Start()
 }
 ```
 
-
-
-
-
 ### Create ProcessImageGPU Method
 
 Next, we’ll make a new method to execute the functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. As mentioned previously, we need to store the processed images in textures with HDR formats to use color values outside the default range of `[0, 1]`.
@@ -415,8 +399,6 @@ private void ProcessImageGPU(RenderTexture image, string functionName)
 }
 ```
 
-
-
 ### Create ProcessImage Method
 
 We will call the preprocessing functions inside a new method called `ProcessImage`. The method will take in a `RenderTexture` and update the `input` Tensor data.
@@ -432,8 +414,6 @@ We will call the preprocessing functions inside a new method called `ProcessImag
    2. Download Tensor data to `float` array
    3. Call the appropriate preprocessing function for the current model type
    4. Update `input` with the new color values
-
-
 
 #### Code
 
@@ -482,10 +462,6 @@ private void ProcessImage(RenderTexture image)
 }
 ```
 
-
-
-
-
 ### Modify Update Method
 
 We will update the input dimensions and process the input inside the `Update` method. 
@@ -500,13 +476,9 @@ imageDims.x = Mathf.Max(imageDims.x, 130);
 imageDims.y = Mathf.Max(imageDims.y, 130);
 ```
 
-
-
 #### Calculate Input Dimensions
 
 We need to adjust the input dimensions to maintain the source aspect ratio whenever they are updated by the user. We will check if the values for `inputDims` have changed by comparing them to `targetDims`.
-
-
 
 ```c#
 // Update the input dimensions while maintaining the source aspect ratio
@@ -526,8 +498,6 @@ if (imageDims.y != targetDims.y)
 }
 ```
 
-
-
 #### Update `rTex` Dimensions
 
 We will also need to update `rTex` with the new input dimensions and copy the pixel data from the source `videoTexture` to it.
@@ -545,8 +515,6 @@ if (imageDims.x != rTex.width || imageDims.y != rTex.height)
 Graphics.Blit(videoTexture, rTex);
 ```
 
-
-
 #### Call ProcessImage Method
 
 Finally, we can call the `ProcessImage` method and pass `rTex` as input.
@@ -555,8 +523,6 @@ Finally, we can call the `ProcessImage` method and pass `rTex` as input.
 // Prepare the input image to be fed to the selected model
 ProcessImage(rTex);
 ```
-
-
 
 #### Final Code
 
@@ -615,11 +581,9 @@ The last step we need to take before pressing play is to assign the `PoseNetShad
 
 ## Test it Out
 
-Now when we press play, we can see that the value for `Image Dims` gets updated in the inspector to maintain the source aspect ratio.
+Now when we press play, we can see that the values for `Image Dims` get updated in the Inspector tab to maintain the source aspect ratio.
 
 ![inspector-tab-assign-shader](..\images\barracuda-posenet-tutorial-v2\part-3\inspector-tab-updated-image-dims.png)
-
-
 
 We can view the frame rate by pressing the `stats` button in the Game View. If we toggle `Use GPU` in the Inspector tab, we can see why it is preferrable to perform the preprocessing steps on the GPU. The frame rate drops significantly when using the CPU.
 
@@ -627,13 +591,9 @@ We can view the frame rate by pressing the `stats` button in the Game View. If w
 
 ![preprocess-gpu-frame-rate](..\images\barracuda-posenet-tutorial-v2\part-3\preprocess-gpu-frame-rate.png)
 
-
-
 ### CPU
 
 ![preprocess-cpu-frame-rate](..\images\barracuda-posenet-tutorial-v2\part-3\preprocess-cpu-frame-rate.png)
-
-
 
 
 
