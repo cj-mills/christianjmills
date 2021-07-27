@@ -581,7 +581,7 @@ The last step we need to take before pressing play is to assign the `PoseNetShad
 
 ## Test it Out
 
-Now when we press play, we can see that the values for `Image Dims` get updated in the Inspector tab to maintain the source aspect ratio.
+Now when we press play, we can see that the values for `Image Dims` get updated in the Inspector tab to maintain the source aspect ratio. We can change either the `X` or `Y` values and the other dimension will be automatically adjusted.
 
 ![inspector-tab-assign-shader](..\images\barracuda-posenet-tutorial-v2\part-3\inspector-tab-updated-image-dims.png)
 
