@@ -320,11 +320,21 @@ private void OnDisable()
 
 
 
+
+
+### ResNet50
+
+
+
+#### GPU Preprocessing and GPU Inference
+
 ![resnet-compute-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-compute-usegpu.png)
 
 
 
 
+
+#### CPU Preprocessing and GPU Inference
 
 ![resnet-compute-usecpu](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-compute-usecpu.png)
 
@@ -332,11 +342,21 @@ private void OnDisable()
 
 
 
+
+
+#### GPU Preprocessing and CPU Inference
+
 ![resnet-burst](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-burst.png)
 
 
 
 
+
+### MobileNet
+
+
+
+#### GPU Preprocessing and GPU Inference
 
 ![mobilenet-compute-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\mobilenet-compute-usegpu.png)
 
@@ -344,7 +364,7 @@ private void OnDisable()
 
 
 
-
+#### GPU Preprocessing and CPU Inference
 
 ![mobilenet-burst-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\mobilenet-burst-usegpu.png)
 
