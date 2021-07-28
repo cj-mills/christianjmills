@@ -1,11 +1,11 @@
 ---
-title: Barracuda PoseNet Tutorial 2nd Edition Pt. 4 - Unpublished
+title: Barracuda PoseNet Tutorial 2nd Edition Pt. 4
 layout: post
 toc: false
 comments: true
 description: This post covers how to initialize, modify, and execute the PoseNet models.
 categories: [unity,barracuda,tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -26,7 +26,7 @@ In this post, we will cover how to initialize, modify, and execute the PoseNet m
 
 ## Update `PoseEstimator` Script
 
-Before we can execute the models, we need to add some new variables and add a new layer to the end of the model.
+Before we can execute the models, we need to add some new variables and add a new layer to the end of the selected model.
 
 ### Add Public Variables
 
@@ -47,23 +47,23 @@ public WorkerFactory.Type workerType = WorkerFactory.Type.Auto;
 
 ### Add Private Variables
 
-To perform inference with the Barracuda library, we first need to load a model asset as an [object-orientated representation](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Model.html#methods). We then create an [`IWorker`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html) interface to handle model execution.
+To perform inference with the Barracuda library, we first need to generate an [object-orientated representation](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Model.html#methods) of the model. We then create an [`IWorker`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html) interface to handle model execution.
 
 In order to switch between models or backends while the project is running, we will need to keep track of the current model and backend. Whenever we switch between models or backends, we will need to initialize the `IWorker` with the new model and backend.
 
-We will define a new [`struct`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/structs) called `Engine` to keep track of the current backend, model type, and `IWorker`.
+We will define a new [`struct`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/structs) called `Engine` (for inference engine) to keep track of the current backend, model type, and `IWorker`.
 
 The PoseNet model has four outputs: heatmaps, offsets, displacementFWDLayer, and displacementBWDLayer. 
 
 The heatmaps are basically low resolution versions of the input image where each pixel contains a value indicating how confident the model is that a given key point is in that spot. There is a heatmap for each key point predicted by the model. 
 
-The offsets are used to refine the rough locations from the heatmaps. There are two offsets for each key point. They correspond to the `X` and `Y` axes. These values are added to the locations estimated by the heatmaps to scale the locations back up to the input resolution and give a more accurate location.
+The offsets are used to refine the rough locations from the heatmaps. There are two offsets for each key point. They correspond to the `X` and `Y` axes. These values are added to the coordinates (i.e. heatmap indices) estimated by the heatmaps to scale the coordinates back up to the input resolution and give a more accurate position.
 
 The last two outputs are needed specifically for multi-pose estimation and are used to identify key points that belong to the same body in an image. These will be explored further in the post covering the post processing steps for multi-pose estimation.
 
 The names of these output layers are different for the MobileNet and ResNet models so we will need to keep track of them as well.
 
-We will also be adding a new layer to the model that will take the values from the heatmaps and remap them to the range `[0,1]`. This will make it easier to tell how confident the model is about its predictions. For example, a value of `0` would indicate the the model is certain that a given key point is not in that location. A value of `1` would indicate it is 100% certain the key point is there. 
+We will also be adding a new layer to the model that will take the values from the heatmaps and remap them to the range `[0,1]`. This will make it easier to tell how confident the model is about its predictions. For example, a value of `0` would indicate the the model is certain that a given key point is not in that location. A value of `0.95` would indicate it is 95% certain the key point is there.
 
 ```c#
 /// <summary>
@@ -122,7 +122,7 @@ We will perform the initialization steps for Barracuda in a new method called `I
 
 6. Create a new instance of the `Engine` `struct`
 
-   1. Store the backend
+   1. Store the backend type
    2. Initialize the `IWorker` with the selected backend and model
    3. Store the selected model type
 
@@ -238,7 +238,7 @@ void Start()
 
 ### Modify `Update` Method
 
-In the `Update` method we can delete the temporary `if/else` statement from the last part.
+In the `Update` method we can delete the temporary `if/else` statement from the [last part](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-3/#call-processimage-method).
 
 ```c#
 if (modelType == ModelType.MobileNet)
@@ -262,7 +262,7 @@ if (engine.modelType != modelType || engine.workerType != workerType)
 }
 ```
 
-Then, we can finally execute the model by calling the [`IWorker.Execute`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_) method with the `input` Tensor. Once we have executed the model, we need to release the system resources allocated for the`input` Tensor to avoid memory leaks. 
+Then, we can finally execute the model by calling the [`IWorker.Execute`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_) method with the `input` Tensor. Once we have executed the model, we need to release the system resources allocated for the `input` Tensor to avoid memory leaks. 
 
 ```c#
 // Execute neural network with the provided input
@@ -383,7 +383,7 @@ If we uncheck the `Use GPU` box, we can see that the frame rate drops significan
 
 #### GPU Preprocessing and CPU Inference
 
-The ResNet50 model is not optimized for CPU inference and will not get playable frame rate on most CPUs.
+The ResNet50 model is not optimized for CPU inference and will not get playable frame rates on most CPUs.
 
 ![resnet-burst](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-burst.png)
 
@@ -399,7 +399,7 @@ As with the ResNet50 model, performing preprocessing and inference on the GPU yi
 
 #### GPU Preprocessing and CPU Inference
 
-Unlike the Resnet50 model, the MobileNet model get playable framerates even on the CPU.
+Unlike the Resnet50 model, the MobileNet model gets playable framerates on the CPU.
 
 ![mobilenet-burst-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\mobilenet-burst-usegpu.png)
 
