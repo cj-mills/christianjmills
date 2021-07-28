@@ -329,5 +329,7 @@ We now have a video player that we can use to feed input to the PoseNet model. I
 
 **Previous:** [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/)
 
+**Next:** [Part 3](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-3/)
+
 **Project Resources:** [GitHub Repository - Version 1](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
