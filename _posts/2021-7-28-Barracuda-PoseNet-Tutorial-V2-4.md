@@ -3,7 +3,7 @@ title: Barracuda PoseNet Tutorial 2nd Edition Pt. 4
 layout: post
 toc: false
 comments: true
-description: This post covers how to initialize, modify, and execute the PoseNet models.
+description: This post covers how to load, modify, and execute the PoseNet models.
 categories: [unity,barracuda,tutorial]
 hide: false
 permalink: /:title/
@@ -20,7 +20,7 @@ search_exclude: false
 
 ## Overview
 
-In this post, we will cover how to initialize, modify, and execute the PoseNet models. We will also be comparing the relative efficiency of the ResNet50 and MobileNet versions of the model using the GPU and CPU [backends](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.WorkerFactory.Type.html) for the Barracuda library.
+In this post, we will cover how to load, modify, and execute the PoseNet models. We will also be comparing the relative efficiency of the ResNet50 and MobileNet versions of the model using the GPU and CPU [backends](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.WorkerFactory.Type.html) for the Barracuda library.
 
 
 
