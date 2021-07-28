@@ -13,8 +13,6 @@ search_exclude: false
 * [Overview](#overview)
 * [Update `PoseEstimator` Script](#update-poseestimator-script)
 * [Assign Model Assets](#assign-model-assets)
-* [](#)
-* [](#)
 * [Test it Out](#test-it-out)
 * [Summary](#summary)
 
