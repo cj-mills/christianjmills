@@ -282,7 +282,7 @@ private float aspectRatioScale;
 // The texture used to create input tensor
 private RenderTexture rTex;
 
-// The name of the compute shader function to proces model input
+// The preprocessing function for the current model type
 private System.Action<float[]> preProcessFunction;
 
 // Stores the input data for the model
