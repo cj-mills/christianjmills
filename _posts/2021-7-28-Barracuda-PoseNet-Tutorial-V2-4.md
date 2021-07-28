@@ -49,7 +49,7 @@ public WorkerFactory.Type workerType = WorkerFactory.Type.Auto;
 
 ### Add Private Variables
 
-To perform inference with the Barracuda library, we first need to load a model asset as an object-[orientated representation](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Model.html#methods). We then create an [`IWorker`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html) interface to handle model execution.
+To perform inference with the Barracuda library, we first need to load a model asset as an [object-orientated representation](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Model.html#methods). We then create an [`IWorker`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html) interface to handle model execution.
 
 In order to switch between models or backends while the project is running, we will need to keep track of the current model and backend. Whenever we switch between models or backends, we will need to initialize the `IWorker` with the new model and backend.
 
@@ -65,7 +65,7 @@ The last two outputs are needed specifically for multi-pose estimation and are u
 
 The names of these output layers are different for the MobileNet and ResNet models so we will need to keep track of them as well.
 
-We will also be adding a new layer to the model that will take the values from the heatmaps and remap them to the range `[0,1]`. This will make it easier to tell how confident the model is about its predictions. For example, a value of `0` would indicate the the model is certain that a given key point is not in that location while a value of `1` would indicate the opposite. 
+We will also be adding a new layer to the model that will take the values from the heatmaps and remap them to the range `[0,1]`. This will make it easier to tell how confident the model is about its predictions. For example, a value of `0` would indicate the the model is certain that a given key point is not in that location. A value of `1` would indicate it is 100% certain the key point is there. 
 
 ```c#
 /// <summary>
@@ -108,7 +108,29 @@ private string predictionLayer = "heatmap_predictions";
 
 ### Create `InitializeBarracuda` Method
 
+We will perform the initialization steps for Barracuda in a new method called `InitializeBarracuda`. This method will be called in the `Start` method and whenever the user switches models or backends.
 
+#### Method Steps
+
+1. Declare a new [`Model`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Model.html) variable to store the object-oriented representation of the selected model asset.
+
+2. Update the values for the preprocessing method and output layers based on the selected model.
+
+   > **Note:** While the heatmap and offset layers are in the same order for both models, the two displacement layers are swapped.
+
+3. Create a new [`ModelBuilder`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.ModelBuilder.html) to modify the model
+
+4. Add a [`Sigmoid`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.ModelBuilder.html#Unity_Barracuda_ModelBuilder_Sigmoid_System_String_System_Object_) layer to remap the output from the heatmaps to the range `[0,1]`
+
+5. Confirm whether the selected backend is supported by the current platform
+
+6. Create a new instance of the `Engine` `struct`
+
+   1. Store the backend
+   2. Initialize the `IWorker` with the selected backend and model
+   3. Store the selected model type
+
+#### Code
 
 ```c#
 /// <summary>
