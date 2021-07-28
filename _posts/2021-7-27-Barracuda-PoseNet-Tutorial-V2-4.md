@@ -312,11 +312,41 @@ private void OnDisable()
 
 
 
-
+![inspector-tab-assign-model-assets](..\images\barracuda-posenet-tutorial-v2\part-4\inspector-tab-assign-model-assets.png)
 
 
 
 ## Test it Out
+
+
+
+![resnet-compute-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-compute-usegpu.png)
+
+
+
+
+
+![resnet-compute-usecpu](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-compute-usecpu.png)
+
+
+
+
+
+![resnet-burst](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-burst.png)
+
+
+
+
+
+![mobilenet-compute-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\mobilenet-compute-usegpu.png)
+
+
+
+
+
+
+
+![mobilenet-burst-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\mobilenet-burst-usegpu.png)
 
 
 
