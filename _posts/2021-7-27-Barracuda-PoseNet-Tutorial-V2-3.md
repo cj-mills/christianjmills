@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post covers how to implement the preprocessing steps for the PoseNet models.
 categories: [unity,barracuda,tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
