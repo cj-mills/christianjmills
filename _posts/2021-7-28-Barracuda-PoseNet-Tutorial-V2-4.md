@@ -32,7 +32,7 @@ Before we can execute the models, we need to add some new variables and add a ne
 
 The ONNX files that we imported into the Assets section in part 1 are automatically converted into Barracuda model assets called [`NNModels`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.NNModel.html). We need to add a couple `public NNModel` variables for the MobileNet and ResNet models.
 
-We will also add a `public` [`WorkerFactory.Type`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.WorkerFactory.Type.html) variable so that we can switch between the available Barracuda backends while the project is running.
+We will also add a `public` [`WorkerFactory.Type`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.WorkerFactory.Type.html) variable so that we can switch between the available Barracuda backends while the project is running. Give this variable a default value of `WorkerFactory.Type.Auto`. This will automatically select the best backend for the platform.
 
 ```c#
 [Tooltip("The MobileNet model asset file to use when performing inference")]
@@ -44,8 +44,6 @@ public NNModel resnetModelAsset;
 [Tooltip("The backend to use when performing inference")]
 public WorkerFactory.Type workerType = WorkerFactory.Type.Auto;
 ```
-
-
 
 ### Add Private Variables
 
@@ -103,8 +101,6 @@ private string displacementBWDLayer;
 // The name for the Sigmoid layer that returns the heatmap predictions
 private string predictionLayer = "heatmap_predictions";
 ```
-
-
 
 ### Create `InitializeBarracuda` Method
 
@@ -176,8 +172,6 @@ private void InitializeBarracuda()
 }
 ```
 
-
-
 ### Modify `Start` Method
 
 We will call the `InitializeBarracuda` at the bottom of the `Start` method. 
@@ -241,10 +235,6 @@ void Start()
     InitializeBarracuda();
 }
 ```
-
-
-
-
 
 ### Modify `Update` Method
 
@@ -348,8 +338,6 @@ void Update()
 }
 ```
 
-
-
 ### Define `OnDisable` Method
 
 We need to add some cleanup code for when the application closes. As with calling the `InitializeBarracuda` method,  we need to release the resources allocated for the `IWorker` to avoid memory leaks. We will do so in the [`OnDisable()`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnDisable.html) method. This method is called when the `MonoBehavior` becomes disabled.
@@ -367,7 +355,7 @@ private void OnDisable()
 
 ## Assign Model Assets
 
-
+Now we just need to assign the model assets in the Inspector tab. Open the `Models` folder in the Assets section. With the `PoseEstimator` object selected in the Hierarchy tab, drag the model assets onto their associated spots in the Inspector tab.
 
 ![inspector-tab-assign-model-assets](..\images\barracuda-posenet-tutorial-v2\part-4\inspector-tab-assign-model-assets.png)
 
@@ -375,65 +363,51 @@ private void OnDisable()
 
 ## Test it Out
 
-
-
-
+If we press the Play button in the Game View, we can compare the inference speed of the models and backends.
 
 ### ResNet50
 
-
+If we look at the Inspector tab, we can see that the `Compute Precompiled` backend was automatically selected. This is the fastest GPU backend with the least CPU overhead.
 
 #### GPU Preprocessing and GPU Inference
+
+For the best possible performance, both the preprocessing and inference should be performed on the GPU.
 
 ![resnet-compute-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-compute-usegpu.png)
 
-
-
-
-
 #### CPU Preprocessing and GPU Inference
+
+If we uncheck the `Use GPU` box, we can see that the frame rate drops significantly, even when using the same backend.
 
 ![resnet-compute-usecpu](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-compute-usecpu.png)
 
-
-
-
-
-
-
 #### GPU Preprocessing and CPU Inference
+
+The ResNet50 model is not optimized for CPU inference and will not get playable frame rate on most CPUs.
 
 ![resnet-burst](..\images\barracuda-posenet-tutorial-v2\part-4\resnet-burst.png)
 
-
-
-
-
 ### MobileNet
 
-
+As it's name suggests, the MobileNet model is optimized to run on mobile hardware. With a desktop GPU, performance is likely to be CPU bottlenecked.
 
 #### GPU Preprocessing and GPU Inference
 
+As with the ResNet50 model, performing preprocessing and inference on the GPU yields the best performance.
+
 ![mobilenet-compute-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\mobilenet-compute-usegpu.png)
 
-
-
-
-
 #### GPU Preprocessing and CPU Inference
+
+Unlike the Resnet50 model, the MobileNet model get playable framerates even on the CPU.
 
 ![mobilenet-burst-usegpu](..\images\barracuda-posenet-tutorial-v2\part-4\mobilenet-burst-usegpu.png)
 
 
 
-
-
-
-
 ## Summary
 
-_.
+We now have a general idea of how both models perform on GPU and CPU. In the next post we will implement the post processing steps for single pose estimation. 
 
 
 
