@@ -180,14 +180,12 @@ private void InitializeBarracuda()
 
 ### Modify `Start` Method
 
-
+We will call the `InitializeBarracuda` at the bottom of the `Start` method. 
 
 ```c#
 // Initialize the Barracuda inference engine based on the selected model
 InitializeBarracuda();
 ```
-
-
 
 #### Final Code
 
@@ -250,16 +248,38 @@ void Start()
 
 ### Modify `Update` Method
 
+In the `Update` method we can delete the temporary `if/else` statement from the last part.
 
+```c#
+if (modelType == ModelType.MobileNet)
+{
+    preProcessFunction = Utils.PreprocessMobileNet;
+}
+else
+{
+    preProcessFunction = Utils.PreprocessResNet;
+}
+```
+
+We will replace it with a new `if` statement that will call the `InitializeBarracuda` method whenever the user switches models or backends. Before calling the `InitializeBarracuda` method,  we need to release the resources allocated for the `IWorker` to avoid memory leaks.
+
+```c#
+// Reinitialize Barracuda with the selected model and backend 
+if (engine.modelType != modelType || engine.workerType != workerType)
+{
+    engine.worker.Dispose();
+    InitializeBarracuda();
+}
+```
+
+Then, we can finally execute the model by calling the [`IWorker.Execute`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_) method with the `input` Tensor. Once we have executed the model, we need to release the system resources allocated for the`input` Tensor to avoid memory leaks. 
 
 ```c#
 // Execute neural network with the provided input
 engine.worker.Execute(input);
-// Release GPU resources allocated for the Tensor
+// Release resources allocated for the Tensor
 input.Dispose();
 ```
-
-
 
 #### Final Code
 
@@ -332,7 +352,7 @@ void Update()
 
 ### Define `OnDisable` Method
 
-
+We need to add some cleanup code for when the application closes. As with calling the `InitializeBarracuda` method,  we need to release the resources allocated for the `IWorker` to avoid memory leaks. We will do so in the [`OnDisable()`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnDisable.html) method. This method is called when the `MonoBehavior` becomes disabled.
 
 ```c#
 // OnDisable is called when the MonoBehavior becomes disabled or inactive
@@ -342,8 +362,6 @@ private void OnDisable()
     engine.worker.Dispose();
 }
 ```
-
-
 
 
 
