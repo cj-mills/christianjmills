@@ -155,7 +155,7 @@ void PreprocessResNet(uint3 id : SV_DispatchThreadID)
 
 ## Create Utils Script
 
-We will be placing the CPU preprocessing and postprocessing methods inside a separate `C#` script called `Utils`, to prevent the `PoseEstimator` script from getting too long. 
+We will be placing the CPU preprocessing and postprocessing methods inside a separate `C#` script called `Utils`, to prevent the `PoseEstimator` script from getting too long.
 
 ### Remove MonoBehaviour Inheritance
 
@@ -165,16 +165,18 @@ The `Utils` class does not need to inherit from [Monobehavior](https://docs.unit
 public class Utils
 ```
 
-### Create PreprocessMobilenet Method
+### Create`PreprocessMobileNet` Method
 
 The Barracuda library uses [Tensors](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html) to store data. These are like multidimensional arrays. We can download the data stored in a Tensor to a regular `float` array. We will pass this array as input to the preprocessing methods and then upload the new values to a Tensor.
+
+> **Note:** Make sure to use the exact names for the methods as those in the Compute shader. 
 
 ```c#
 /// <summary>
 /// Applies the preprocessing steps for the MobileNet model on the CPU
 /// </summary>
 /// <param name="tensor">Pixel data from the input tensor</param>
-public static void PreprocessMobilenet(float[] tensor)
+public static void PreprocessMobileNet(float[] tensor)
 {
     // Normaliz the values to the range [-1, 1]
     System.Threading.Tasks.Parallel.For(0, tensor.Length, (int i) =>
@@ -184,7 +186,7 @@ public static void PreprocessMobilenet(float[] tensor)
 }
 ```
 
-### Create PreprocessResnet Method
+### Create `PreprocessResNet` Method
 
 The color data for pixels is stored sequentially in the tensor array. For example, the first three values in the array would be the red, green, and blue color values for the first pixel in the image. The tensor data will not have an alpha channel, so we do not need to account for it here.
 
@@ -193,7 +195,7 @@ The color data for pixels is stored sequentially in the tensor array. For exampl
 ///// Applies the preprocessing steps for the ResNet50 model on the CPU
 ///// </summary>
 ///// <param name="tensor">Pixel data from the input tensor</param>
-public static void PreprocessResnet(float[] tensor)
+public static void PreprocessResNet(float[] tensor)
 {
     System.Threading.Tasks.Parallel.For(0, tensor.Length / 3, (int i) =>
 	{
@@ -266,6 +268,10 @@ Next, create a `private float` variable called aspectRatioScale. This will store
 
 The pixel data for the input image will be stored in a new `private RenderTexture` variable called `rTex`.
 
+We will be encapsulating the appropriate preprocessing method using the [`Action<T>`](https://docs.microsoft.com/en-us/dotnet/api/system.action-1?view=net-5.0) [delegate](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/).
+
+The last new variable we need is a Barracuda `Tensor` to store the input data for the model.
+
 ```c#
 // Target dimensions for model input
 private Vector2Int targetDims;
@@ -277,7 +283,7 @@ private float aspectRatioScale;
 private RenderTexture rTex;
 
 // The name of the compute shader function to proces model input
-private string preProcessFunction;
+private System.Action<float[]> preProcessFunction;
 
 // Stores the input data for the model
 private Tensor input;
@@ -351,7 +357,7 @@ void Start()
 
 ### Create ProcessImageGPU Method
 
-Next, we’ll make a new method to execute the functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. As mentioned previously, we need to store the processed images in textures with HDR formats to use color values outside the default range of `[0, 1]`.
+Next, we’ll make a new method to execute the functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. As mentioned previously, we need to store the processed images in textures with HDR formats to use color values outside the default range of `[0,1]`.
 
 #### Method Steps
 
@@ -406,14 +412,14 @@ We will call the preprocessing functions inside a new method called `ProcessImag
 #### Method Steps
 
 1. Check whether to use the GPU
-2. If using GPU 
-   1. Call `ProcessImageGPU()` method
-   2. Initialize `input` with pixel data from `rTex`
-3. If using CPU
-   1. Initialize `input` with pixel data from `rTex`
-   2. Download Tensor data to `float` array
-   3. Call the appropriate preprocessing function for the current model type
-   4. Update `input` with the new color values
+   1. If using GPU 
+      1. Call `ProcessImageGPU()` method using the name of the `preProcessFunction`
+      2. Initialize `input` with pixel data from `rTex`
+   2. If using CPU
+      1. Initialize `input` with pixel data from `rTex`
+      2. Download Tensor data to `float` array
+      3. Call the appropriate preprocessing function for the current model type
+      4. Update `input` with the new color values
 
 #### Code
 
@@ -427,32 +433,20 @@ private void ProcessImage(RenderTexture image)
 {
     if (useGPU)
     {
-        if (modelType == ModelType.MobileNet)
-        {
-            preProcessFunction = "PreprocessMobileNet";
-        }
-        else
-        {
-            preProcessFunction = "PreprocessResNet";
-        }
         // Apply preprocessing steps
-        ProcessImageGPU(image, preProcessFunction);
+        ProcessImageGPU(image, preProcessFunction.Method.Name);
         // Create a Tensor of shape [1, image.height, image.width, 3]
         input = new Tensor(image, channels: 3);
     }
     else
     {
+        // Create a Tensor of shape [1, image.height, image.width, 3]
         input = new Tensor(image, channels: 3);
+        // Download the tensor data to an array
         float[] tensor_array = input.data.Download(input.shape);
-
-        if (modelType == ModelType.MobileNet)
-        {
-            Utils.PreprocessMobilenet(tensor_array);
-        }
-        else
-        {
-            Utils.PreprocessResnet(tensor_array);
-        }
+        // Apply preprocessing steps
+        preProcessFunction(tensor_array);
+        // Update input tensor with new color data
         input = new Tensor(input.shape.batch,
                            input.shape.height,
                            input.shape.width,
@@ -517,6 +511,19 @@ Graphics.Blit(videoTexture, rTex);
 
 #### Call ProcessImage Method
 
+The `preProcessFunction` variable will be upated in a new function that will be covered in the next post. For now, we can add a temporary `if/else` statement to test the preprocessing functions. We will delete this statement in the next part of the tutorial.
+
+```c#
+if (modelType == ModelType.MobileNet)
+{
+    preProcessFunction = Utils.PreprocessMobileNet;
+}
+else
+{
+    preProcessFunction = Utils.PreprocessResNet;
+}
+```
+
 Finally, we can call the `ProcessImage` method and pass `rTex` as input.
 
 ```c#
@@ -564,8 +571,24 @@ void Update()
     // Copy the src RenderTexture to the new rTex RenderTexture
     Graphics.Blit(videoTexture, rTex);
 
+
+    if (modelType == ModelType.MobileNet)
+    {
+        preProcessFunction = Utils.PreprocessMobileNet;
+    }
+    else
+    {
+        preProcessFunction = Utils.PreprocessResNet;
+    }
+
     // Prepare the input image to be fed to the selected model
     ProcessImage(rTex);
+}
+
+// OnDisable is called when the MonoBehavior becomes disabled or inactive
+private void OnDisable()
+{
+    //RenderTexture.ReleaseTemporary(videoTexture);
 }
 ```
 
