@@ -584,12 +584,6 @@ void Update()
     // Prepare the input image to be fed to the selected model
     ProcessImage(rTex);
 }
-
-// OnDisable is called when the MonoBehavior becomes disabled or inactive
-private void OnDisable()
-{
-    //RenderTexture.ReleaseTemporary(videoTexture);
-}
 ```
 
 
