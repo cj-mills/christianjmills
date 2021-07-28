@@ -67,7 +67,7 @@ We will also be adding a new layer to the model that will take the values from t
 
 ```c#
 /// <summary>
-/// 
+/// Keeps track of the current inference backend, model execution interface, and model /// type
 /// </summary>
 private struct Engine
 {
