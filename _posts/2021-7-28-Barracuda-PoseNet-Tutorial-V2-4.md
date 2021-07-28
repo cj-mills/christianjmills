@@ -20,17 +20,19 @@ search_exclude: false
 
 ## Overview
 
+In this post, we will cover how to initialize, modify, and execute the PoseNet models. We will also be comparing the relative efficiency of the ResNet50 and MobileNet versions of the model using the GPU and CPU [backends](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.WorkerFactory.Type.html) for the Barracuda library.
+
 
 
 ## Update `PoseEstimator` Script
 
-
-
-
+Before we can execute the models, we need to add some new variables and add a new layer to the end of the model.
 
 ### Add Public Variables
 
+The ONNX files that we imported into the Assets section in part 1 are automatically converted into Barracuda model assets called [`NNModels`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.NNModel.html). We need to add a couple `public NNModel` variables for the MobileNet and ResNet models.
 
+We will also add a `public` [`WorkerFactory.Type`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.WorkerFactory.Type.html) variable so that we can switch between the available Barracuda backends while the project is running.
 
 ```c#
 [Tooltip("The MobileNet model asset file to use when performing inference")]
@@ -47,7 +49,23 @@ public WorkerFactory.Type workerType = WorkerFactory.Type.Auto;
 
 ### Add Private Variables
 
+To perform inference with the Barracuda library, we first need to load a model asset as an object-[orientated representation](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Model.html#methods). We then create an [`IWorker`](https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.IWorker.html) interface to handle model execution.
 
+In order to switch between models or backends while the project is running, we will need to keep track of the current model and backend. Whenever we switch between models or backends, we will need to initialize the `IWorker` with the new model and backend.
+
+We will define a new [`struct`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/structs) called `Engine` to keep track of the current backend, model type, and `IWorker`.
+
+The PoseNet model has four outputs: heatmaps, offsets, displacementFWDLayer, and displacementBWDLayer. 
+
+The heatmaps are basically low resolution versions of the input image where each pixel contains a value indicating how confident the model is that a given key point is in that spot. There is a heatmap for each key point predicted by the model. 
+
+The offsets are used to refine the rough locations from the heatmaps. There are two offsets for each key point. They correspond to the `X` and `Y` axes. These values are added to the locations estimated by the heatmaps to scale the locations back up to the input resolution and give a more accurate location.
+
+The last two outputs are needed specifically for multi-pose estimation and are used to identify key points that belong to the same body in an image. These will be explored further in the post covering the post processing steps for multi-pose estimation.
+
+The names of these output layers are different for the MobileNet and ResNet models so we will need to keep track of them as well.
+
+We will also be adding a new layer to the model that will take the values from the heatmaps and remap them to the range `[0,1]`. This will make it easier to tell how confident the model is about its predictions. For example, a value of `0` would indicate the the model is certain that a given key point is not in that location while a value of `1` would indicate the opposite. 
 
 ```c#
 /// <summary>
