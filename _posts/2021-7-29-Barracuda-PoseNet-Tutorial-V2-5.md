@@ -1,11 +1,11 @@
 ---
-title: Barracuda PoseNet Tutorial 2nd Edition Pt. 5 - Unpublished
+title: Barracuda PoseNet Tutorial 2nd Edition Pt. 5
 layout: post
 toc: false
 comments: true
 description: This post covers how to implement the post processing steps for single pose estimation.
 categories: [unity,barracuda,tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -335,7 +335,7 @@ void Update()
 
 ## Summary
 
-That is all we need to perform pose estimation when there is a single person in the input image. In the next post we will implement the post processing steps for multi-pose estimation. 
+That is all we need to perform pose estimation when there is a single person in the input image. In the next post, we will implement the post processing steps for multi-pose estimation. 
 
 
 
