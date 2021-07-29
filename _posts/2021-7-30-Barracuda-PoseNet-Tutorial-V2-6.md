@@ -31,7 +31,7 @@ In this post, we will cover how to implement the post processing steps for multi
 
 ### Add Required Namespace
 
-
+We need to add the [`System`](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0) namespace to access the [`Tuple`](https://docs.microsoft.com/en-us/dotnet/api/system.tuple-2?view=net-5.0) class. We also need to access the [`System.Linq`](https://docs.microsoft.com/en-us/dotnet/api/system.linq?view=net-5.0) namespace to access classes and interfaces for querying data structures.
 
 ```c#
 using System.Collections;
