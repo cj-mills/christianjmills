@@ -21,17 +21,15 @@ search_exclude: false
 
 In this post, we will cover how to implement the post processing steps for multi-pose estimation. This method is more complex than what is required to perform multi-pose estimation. However, it can produce more reliable results.
 
-
+> **Note:** The original JavaScript code for decoding multiple poses can be found in the official [tfjs-models](https://github.com/tensorflow/tfjs-models/tree/master/posenet/src/multi_pose) repository on GitHub. The code has been modified for this tutorial to better take advantage of functionality provided by Unity.
 
 ## Update `Utils` Script
 
-
-
-
+There are a couple new variables and several methods that we will need to add to decode multiple poses from the model output.
 
 ### Add Required Namespace
 
-We need to add the [`System`](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0) namespace to access the [`Tuple`](https://docs.microsoft.com/en-us/dotnet/api/system.tuple-2?view=net-5.0) class. We also need to access the [`System.Linq`](https://docs.microsoft.com/en-us/dotnet/api/system.linq?view=net-5.0) namespace to access classes and interfaces for querying data structures.
+First, we need to add the [`System`](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0) namespace to access the [`Tuple`](https://docs.microsoft.com/en-us/dotnet/api/system.tuple-2?view=net-5.0) class. We also need to access the [`System.Linq`](https://docs.microsoft.com/en-us/dotnet/api/system.linq?view=net-5.0) namespace to access classes and interfaces for querying data structures.
 
 ```c#
 using System.Collections;
@@ -44,26 +42,16 @@ using System.Linq;
 
 
 
-
-
 ### Add Public Variables
 
+When iterating through the heatmaps from the model output, we will only be considering heatmap indices with the highest confidence score within a local radius called `kLocalMaximumRadius`. Naturally, setting this value to be larger than the dimensions of the heatmap would not do any good. The [original code](https://github.com/tensorflow/tfjs-models/blob/c3f5aa3ff74787457082f6683655c9d0c7cf3df7/posenet/src/multi_pose/decode_multiple_poses.ts#L54) sets this radius to a constant value of `1` so we will do the same.
 
+When decoding the key point locations for a single body, we will need to traverse from the current key point to its neighboring key point. For example, the nose neighbors both the left eye and right eye. We will keep track of which key points neighbor each other in a `TupleTuple<int, int>` array, where the values are the key point id numbers.
 
 ```c#
-// The names of the body parts that will be detected by the PoseNet model
-public static string[] partNames = new string[]{
-    "nose", "leftEye", "rightEye", "leftEar", "rightEar", "leftShoulder",
-    "rightShoulder", "leftElbow", "rightElbow", "leftWrist", "rightWrist",
-    "leftHip", "rightHip", "leftKnee", "rightKnee", "leftAnkle", "rightAnkle"
-};
-
-public static int NUM_KEYPOINTS = partNames.Length;
-
 /// <summary>
-/// A point (y, x) is considered as root part candidate if its score is a
-/// maximum in a window |y - y'| <= kLocalMaximumRadius, |x - x'| <=
-/// kLocalMaximumRadius. 
+/// Defines the size of the local window in the heatmap to look for
+/// confidence scores higher than the one at the current heatmap coordinate
 /// </summary>
 const int kLocalMaximumRadius = 1;
 
@@ -104,10 +92,6 @@ public static Tuple<int, int>[] parentChildrenTuples = new Tuple<int, int>[]{
     // Right Knee to Right Ankle
     Tuple.Create(14, 16)
 };
-
-
-public static int[] parentToChildEdges = parentChildrenTuples.Select(x => x.Item2).ToArray();
-public static int[] childToParentEdges = parentChildrenTuples.Select(x => x.Item1).ToArray();
 ```
 
 
@@ -248,15 +232,14 @@ static Keypoint[] DecodePose(Keypoint root, Tensor scores, Tensor offsets,
 
     instanceKeypoints[root.id] = new Keypoint(root.score, rootPoint, root.id);
 
-
-    int numEdges = parentToChildEdges.Length;
+    int numEdges = parentChildrenTuples.Length;
 
     // Decode the part positions upwards in the tree, following the backward
     // displacements.
     for (int edge = numEdges - 1; edge >= 0; --edge)
     {
-        int sourceKeypointId = parentToChildEdges[edge];
-        int targetKeypointId = childToParentEdges[edge];
+        int sourceKeypointId = parentChildrenTuples[edge].Item2;
+        int targetKeypointId = parentChildrenTuples[edge].Item1;
         if (instanceKeypoints[sourceKeypointId].score > 0.0f &&
             instanceKeypoints[targetKeypointId].score == 0.0f)
         {
@@ -270,8 +253,8 @@ static Keypoint[] DecodePose(Keypoint root, Tensor scores, Tensor offsets,
     // displacements.
     for (int edge = 0; edge < numEdges; ++edge)
     {
-        int sourceKeypointId = childToParentEdges[edge];
-        int targetKeypointId = parentToChildEdges[edge];
+        int sourceKeypointId = parentChildrenTuples[edge].Item1;
+        int targetKeypointId = parentChildrenTuples[edge].Item2;
         if (instanceKeypoints[sourceKeypointId].score > 0.0f &&
             instanceKeypoints[targetKeypointId].score == 0.0f)
         {
@@ -372,6 +355,8 @@ static bool ScoreIsMaximumInLocalWindow(int keypointId, float score, int heatmap
 ### Create `BuildPartList` Method
 
 
+
+Much like the `DecodeSinglePose` method, we will iterate through the entire heatmap Tensor. This time we will only consider heatmap indices with a value above the provided score threshold. When we get to an index with a value that meets this threshold, we will call the `ScoreIsMaximumInLocalWindow` method to confirm that it is the highest score in its local area. If it is the highest
 
 ```c#
 /// <summary>
