@@ -180,6 +180,187 @@ public static Keypoint[] DecodeSinglePose(Tensor heatmaps, Tensor offsets, int s
 
 
 
+### Add Public Variables
+
+```c#
+public enum EstimationType
+{
+    MultiPose,
+    SinglePose
+}
+
+[Tooltip("The type of pose estimation to be performed")]
+public EstimationType estimationType = EstimationType.SinglePose;
+```
+
+
+
+
+
+### Add Private Variables
+
+```c#
+// Stores the current estimated 2D keypoint locations in videoTexture
+private Utils.Keypoint[][] poses;
+
+// The value used to scale the key point locations up to the source resolution
+private float scale;
+```
+
+
+
+
+
+
+
+### Create `ProcessOutput` Method
+
+
+
+```c#
+/// <summary>
+/// Obtains the model output and either decodes single or mutlple poses
+/// </summary>
+/// <param name="engine"></param>
+private void ProcessOutput(IWorker engine)
+{
+    // Get the model output
+    Tensor heatmaps = engine.PeekOutput(predictionLayer);
+    Tensor offsets = engine.PeekOutput(offsetsLayer);
+    Tensor displacementFWD = engine.PeekOutput(displacementFWDLayer);
+    Tensor displacementBWD = engine.PeekOutput(displacementBWDLayer);
+
+    // Calculate the stride used to scale down the inputImage
+    int stride = (imageDims.y - 1) / (heatmaps.shape.height - 1);
+    stride -= (stride % 8);
+
+    if (estimationType == EstimationType.SinglePose)
+    {
+        poses = new Utils.Keypoint[1][];
+
+        // Determine the key point locations
+        poses[0] = Utils.DecodeSinglePose(heatmaps, offsets, stride);
+    }
+    else
+    {
+        
+    }
+
+    heatmaps.Dispose();
+    offsets.Dispose();
+    displacementFWD.Dispose();
+    displacementBWD.Dispose();
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+### Modify `Update` Method
+
+
+
+```c#
+// The smallest dimension of the videoTexture
+int minDimension = Mathf.Min(videoTexture.width, videoTexture.height);
+
+// The value used to scale the key point locations up to the source resolution
+scale = (float)minDimension / Mathf.Min(imageDims.x, imageDims.y);
+
+// Decode the keypoint coordinates from the model output
+ProcessOutput(engine.worker);
+```
+
+
+
+#### Full Code
+
+
+
+```c#
+void Update()
+{
+    // Copy webcamTexture to videoTexture if using webcam
+    if (useWebcam) Graphics.Blit(webcamTexture, videoTexture);
+
+    // Prevent the input dimensions from going too low for the model
+    imageDims.x = Mathf.Max(imageDims.x, 64);
+    imageDims.y = Mathf.Max(imageDims.y, 64);
+
+    // Update the input dimensions while maintaining the source aspect ratio
+    if (imageDims.x != targetDims.x)
+    {
+        aspectRatioScale = (float)videoTexture.height / videoTexture.width;
+        targetDims.y = (int)(imageDims.x * aspectRatioScale);
+        imageDims.y = targetDims.y;
+        targetDims.x = imageDims.x;
+    }
+    if (imageDims.y != targetDims.y)
+    {
+        aspectRatioScale = (float)videoTexture.width / videoTexture.height;
+        targetDims.x = (int)(imageDims.y * aspectRatioScale);
+        imageDims.x = targetDims.x;
+        targetDims.y = imageDims.y;
+    }
+
+    // Update the rTex dimensions to the new input dimensions
+    if (imageDims.x != rTex.width || imageDims.y != rTex.height)
+    {
+        RenderTexture.ReleaseTemporary(rTex);
+        // Assign a temporary RenderTexture with the new dimensions
+        rTex = RenderTexture.GetTemporary(imageDims.x, imageDims.y, 24, rTex.format);
+    }
+
+    // Copy the src RenderTexture to the new rTex RenderTexture
+    Graphics.Blit(videoTexture, rTex);
+
+
+    if (modelType == ModelType.MobileNet)
+    {
+        preProcessFunction = Utils.PreprocessMobileNet;
+    }
+    else
+    {
+        preProcessFunction = Utils.PreprocessResNet;
+    }
+
+    // Prepare the input image to be fed to the selected model
+    ProcessImage(rTex);
+
+    // Update the rTex dimensions to the new input dimensions
+    if (engine.modelType != modelType || engine.workerType != workerType)
+    {
+        engine.worker.Dispose();
+        InitializeBarracuda();
+    }
+
+    // Execute neural network with the provided input
+    engine.worker.Execute(input);
+    // Release GPU resources allocated for the Tensor
+    input.Dispose();
+
+    // The smallest dimension of the videoTexture
+    int minDimension = Mathf.Min(videoTexture.width, videoTexture.height);
+
+    // The value used to scale the key point locations up to the source resolution
+    scale = (float)minDimension / Mathf.Min(imageDims.x, imageDims.y);
+
+    // Decode the keypoint coordinates from the model output
+    ProcessOutput(engine.worker);
+}
+```
+
+
+
+
+
 
 
 
