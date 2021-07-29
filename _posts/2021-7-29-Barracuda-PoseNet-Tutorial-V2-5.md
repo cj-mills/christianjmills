@@ -113,11 +113,11 @@ public static Vector2 GetImageCoords(Keypoint part, int stride, Tensor offsets)
 
 
 
-
-
 ### Create `DecodeSinglePose` Method
 
-For single pose estimation, we will iterate through the heatmaps from the model output and keep track of the indices with the highest confidence value for each key point. Once we have the heatmap location with the highest confidence value, we can call the `GetImageCoords` method to calculate the position of the key point in the input image. We will store each key point in a `Keypoint` list.
+This is the method that will be called from the `PoseEstimator` script after executing the model. It will take in the heatmaps and tensor outputs from the model along with the stride value for the model as input.
+
+For single pose estimation, we will iterate through the heatmaps from the model output and keep track of the indices with the highest confidence value for each key point. Once we have the heatmap location with the highest confidence value, we can call the `GetImageCoords` method to calculate the position of the key point in the input image. We will store each key point in a `Keypoint` array.
 
 ```c#
 /// <summary>
@@ -169,17 +169,13 @@ public static Keypoint[] DecodeSinglePose(Tensor heatmaps, Tensor offsets, int s
 
 
 
-
-
-
-
-
-
 ## Update `PoseEstimator` Script
 
-
+In the `PoseEstimator` script, we need to add some new variables before we can call the `DecodeSinglePose` method.
 
 ### Add Public Variables
+
+First, we will define a new `public enum` so that we can choose whether to perform single or multi-pose estimation from the inspector tab.
 
 ```c#
 public enum EstimationType
@@ -198,15 +194,14 @@ public EstimationType estimationType = EstimationType.SinglePose;
 
 ### Add Private Variables
 
+We will store the `Keypoint` arrays returned by the post processing methods in an array of `Keypoint` arrays. There will only be one array stored for single pose estimation, but there will be several for multi-pose estimation.
+
+
+
 ```c#
 // Stores the current estimated 2D keypoint locations in videoTexture
 private Utils.Keypoint[][] poses;
-
-// The value used to scale the key point locations up to the source resolution
-private float scale;
 ```
-
-
 
 
 
@@ -269,9 +264,6 @@ private void ProcessOutput(IWorker engine)
 ```c#
 // The smallest dimension of the videoTexture
 int minDimension = Mathf.Min(videoTexture.width, videoTexture.height);
-
-// The value used to scale the key point locations up to the source resolution
-scale = (float)minDimension / Mathf.Min(imageDims.x, imageDims.y);
 
 // Decode the keypoint coordinates from the model output
 ProcessOutput(engine.worker);
