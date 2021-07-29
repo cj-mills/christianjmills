@@ -312,20 +312,10 @@ void Update()
     // Copy the src RenderTexture to the new rTex RenderTexture
     Graphics.Blit(videoTexture, rTex);
 
-
-    if (modelType == ModelType.MobileNet)
-    {
-        preProcessFunction = Utils.PreprocessMobileNet;
-    }
-    else
-    {
-        preProcessFunction = Utils.PreprocessResNet;
-    }
-
     // Prepare the input image to be fed to the selected model
     ProcessImage(rTex);
 
-    // 
+    // Reinitialize Barracuda with the selected model and backend 
     if (engine.modelType != modelType || engine.workerType != workerType)
     {
         engine.worker.Dispose();
