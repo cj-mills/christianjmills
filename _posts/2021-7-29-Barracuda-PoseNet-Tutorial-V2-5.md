@@ -196,14 +196,10 @@ public EstimationType estimationType = EstimationType.SinglePose;
 
 We will store the `Keypoint` arrays returned by the post processing methods in an array of `Keypoint` arrays. There will only be one array stored for single pose estimation, but there will be several for multi-pose estimation.
 
-
-
 ```c#
 // Stores the current estimated 2D keypoint locations in videoTexture
 private Utils.Keypoint[][] poses;
 ```
-
-
 
 
 
@@ -251,29 +247,16 @@ private void ProcessOutput(IWorker engine)
 
 
 
-
-
-
-
-
-
 ### Modify `Update` Method
 
 
 
 ```c#
-// The smallest dimension of the videoTexture
-int minDimension = Mathf.Min(videoTexture.width, videoTexture.height);
-
 // Decode the keypoint coordinates from the model output
 ProcessOutput(engine.worker);
 ```
 
-
-
 #### Full Code
-
-
 
 ```c#
 void Update()
@@ -336,12 +319,6 @@ void Update()
     engine.worker.Execute(input);
     // Release GPU resources allocated for the Tensor
     input.Dispose();
-
-    // The smallest dimension of the videoTexture
-    int minDimension = Mathf.Min(videoTexture.width, videoTexture.height);
-
-    // The value used to scale the key point locations up to the source resolution
-    scale = (float)minDimension / Mathf.Min(imageDims.x, imageDims.y);
 
     // Decode the keypoint coordinates from the model output
     ProcessOutput(engine.worker);
