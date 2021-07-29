@@ -96,13 +96,9 @@ public static Tuple<int, int>[] parentChildrenTuples = new Tuple<int, int>[]{
 
 
 
-
-
 ### Create `GetStridedIndexNearPoint` Method
 
-
-
-
+In order to traverse between neighboring key points and we will need downscale the key point position back down to the heatmap resolution. We can calculate the nearest heatmap indices by dividing the position by the stride value for the model.
 
 ```c#
 /// <summary>
@@ -125,13 +121,9 @@ static Vector2Int GetStridedIndexNearPoint(Vector2 point, int stride, int height
 
 
 
-
-
-
-
 ### Create `GetDisplacement` Method
 
-
+The displacement layers from the model output are use to find the location of the nearest neighboring key point. Much like the offset layer, they provide vectors that we then add to the current key point position.
 
 ```c#
 /// <summary>
@@ -157,7 +149,17 @@ static Vector2 GetDisplacement(int edgeId, Vector2Int point, Tensor displacement
 
 ### Create `TraverseToTargetKeypoint` Method
 
+We can use the `GetStridedIndexNearPoint` and `GetDisplacement` methods to find the location of the neighboring key point for a given `Keypoint`.
 
+#### Method Steps
+
+1. Get the nearest heatmap indices for the current key point position
+2. Get the displacement vector for the nearest heatmap indices
+3. Calculate the position for the neighboring key point
+4. Get the nearest heatmap indices for the displaced point
+5. Refine the location key point location with the associated offset vector
+6. Get the confidence score for the neighboring key point
+7. Return the neighboring `Keypoint`
 
 ```c#
 /// <summary>
