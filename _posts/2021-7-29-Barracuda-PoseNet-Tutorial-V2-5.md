@@ -42,7 +42,7 @@ using Unity.Barracuda;
 
 ### Add Public Variables
 
-
+Each key point predicted by the model has a confidence score, position, and id number associated with it. For example a nose has the id number `0`. We will create a new `struct` to keep track of these values for each key point.
 
 ```c#
 /// <summary>
@@ -67,7 +67,7 @@ public struct Keypoint
 
 ### Create `GetOffsetVector` Method
 
-
+Next, we will create a new method to obtain the offset values associated with a given heatmap coordinate. The method will take in the X and Y values for a heatmap coordinate, the current key point id number, and the offset values from the model output.
 
 ```c#
 /// <summary>
@@ -81,7 +81,7 @@ public struct Keypoint
 public static Vector2 GetOffsetVector(int y, int x, int keypoint, Tensor offsets)
 {
     // Get the offset values for the provided heatmap coordinates
-    return new Vector2(offsets[0, y, x, keypoint + NUM_KEYPOINTS], offsets[0, y, x, keypoint]);
+    return new Vector2(offsets[0, y, x, keypoint + 17], offsets[0, y, x, keypoint]);
 }
 ```
 
@@ -89,11 +89,11 @@ public static Vector2 GetOffsetVector(int y, int x, int keypoint, Tensor offsets
 
 ### Create `GetImageCoords` Method
 
-
+We can calculate the estimated location of a key point in the input image by multiplying the heatmap coordinate by the stride value for the model and then adding the associated offset values. We will calculate the stride value for the current model in the `PoseEstimator` script.
 
 ```c#
  /// <summary>
-/// Calculate the position of the provided keypoint in the input image
+/// Calculate the position of the provided key point in the input image
 /// </summary>
 /// <param name="part"></param>
 /// <param name="stride"></param>
@@ -117,7 +117,7 @@ public static Vector2 GetImageCoords(Keypoint part, int stride, Tensor offsets)
 
 ### Create `DecodeSinglePose` Method
 
-
+For single pose estimation, we will iterate through the heatmaps from the model output and keep track of the indices with the highest confidence value for each key point. Once we have the heatmap location with the highest confidence value, we can call the `GetImageCoords` method to calculate the position of the key point in the input image. We will store each key point in a `Keypoint` list.
 
 ```c#
 /// <summary>
