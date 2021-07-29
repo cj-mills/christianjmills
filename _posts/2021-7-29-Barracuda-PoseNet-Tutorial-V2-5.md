@@ -19,7 +19,7 @@ search_exclude: false
 
 ## Overview
 
-In this post, we will cover how to implement the post processing steps for single pose estimation.
+In this post, we will cover how to implement the post processing steps for single pose estimation. This method is much simpler than what is required to perform multi-pose estimation. However, it should only be used when there is a single person in the input image.
 
 
 
@@ -29,7 +29,7 @@ We will implement the methods for processing the model output in the `Utils` scr
 
 ### Add Required Namespace
 
-We need to add the `Unity.Barracuda` namespace since we will be working with Tensors.
+First, we need to add the `Unity.Barracuda` namespace since we will be working with Tensors.
 
 ```c#
 using System.Collections;
@@ -42,7 +42,7 @@ using Unity.Barracuda;
 
 ### Add Public Variables
 
-Each key point predicted by the model has a confidence score, position, and id number associated with it. For example a nose has the id number `0`. We will create a new `struct` to keep track of these values for each key point.
+Each key point predicted by the model has a confidence score, position, and id number associated with it. For example a nose has the id number `0`. We will define a new `struct` to keep track of these values for each key point.
 
 ```c#
 /// <summary>
@@ -105,7 +105,7 @@ public static Vector2 GetImageCoords(Keypoint part, int stride, Tensor offsets)
     Vector2 offsetVector = GetOffsetVector((int)part.position.y, (int)part.position.x,
                                            part.id, offsets);
 
-    // Scale the coordinates up to the inputImage resolution
+    // Scale the coordinates up to the input image resolution
     // Add the offset vectors to refine the key point location
     return (part.position * stride) + offsetVector;
 }
@@ -115,9 +115,11 @@ public static Vector2 GetImageCoords(Keypoint part, int stride, Tensor offsets)
 
 ### Create `DecodeSinglePose` Method
 
-This is the method that will be called from the `PoseEstimator` script after executing the model. It will take in the heatmaps and tensor outputs from the model along with the stride value for the model as input.
+This is the method that will be called from the `PoseEstimator` script after executing the model. It will take in the heatmaps and offsets from the model output along with the stride value for the model as input.
 
 For single pose estimation, we will iterate through the heatmaps from the model output and keep track of the indices with the highest confidence value for each key point. Once we have the heatmap location with the highest confidence value, we can call the `GetImageCoords` method to calculate the position of the key point in the input image. We will store each key point in a `Keypoint` array.
+
+> **Note:** This approach should only be used when there is a single person in the input image. It is unlikely that the key points with the highest confidence scores will belong to the same body when multiple people are visible.
 
 ```c#
 /// <summary>
@@ -205,7 +207,19 @@ private Utils.Keypoint[][] poses;
 
 ### Create `ProcessOutput` Method
 
+We will call the postprocessing methods inside a new method called `ProcessOutput`. This method will take in the `IWorker` from `engine`.
 
+#### Method Steps
+
+1. Get the four model outputs
+
+2. Calculate the stride for the current model
+
+3. Call the appropriate post processing method for the selected estimation type
+
+   > **Note:** We will fill in the `else` statement when we implement the post processing steps for multi-pose estimation.
+
+4. Release the resources allocated for the output Tensors.
 
 ```c#
 /// <summary>
@@ -226,6 +240,7 @@ private void ProcessOutput(IWorker engine)
 
     if (estimationType == EstimationType.SinglePose)
     {
+        // Initialize the array of Keypoint arrays
         poses = new Utils.Keypoint[1][];
 
         // Determine the key point locations
@@ -235,7 +250,8 @@ private void ProcessOutput(IWorker engine)
     {
         
     }
-
+	
+    // Release the resources allocated for the output Tensors
     heatmaps.Dispose();
     offsets.Dispose();
     displacementFWD.Dispose();
@@ -249,7 +265,7 @@ private void ProcessOutput(IWorker engine)
 
 ### Modify `Update` Method
 
-
+We will call the `ProcessOutput` method at the end of the `Update` method.
 
 ```c#
 // Decode the keypoint coordinates from the model output
@@ -317,15 +333,9 @@ void Update()
 
 
 
-
-
-
-
-
-
 ## Summary
 
-In the next post we will implement the post processing steps for multi-pose estimation. 
+That is all we need to perform pose estimation when there is a single person in the input image. In the next post we will implement the post processing steps for multi-pose estimation. 
 
 
 
