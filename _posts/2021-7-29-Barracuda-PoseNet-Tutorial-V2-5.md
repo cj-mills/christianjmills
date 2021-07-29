@@ -27,6 +27,10 @@ In this post, we will cover how to implement the post processing steps for singl
 
 
 
+### Add Required Namespace
+
+
+
 ```c#
 using System.Collections;
 using System.Collections.Generic;
@@ -35,6 +39,8 @@ using Unity.Barracuda;
 ```
 
 
+
+### Add Public Variables
 
 
 
@@ -48,6 +54,10 @@ public static string[] partNames = new string[]{
 
 public static int NUM_KEYPOINTS = partNames.Length;
 ```
+
+
+
+### Add Private Variables
 
 
 
@@ -72,6 +82,8 @@ public struct Keypoint
 
 
 
+### Create `GetOffsetVector` Method
+
 
 
 ```c#
@@ -91,6 +103,8 @@ public static Vector2 GetOffsetVector(int y, int x, int keypoint, Tensor offsets
 ```
 
 
+
+### Create `GetImageCoords` Method
 
 
 
@@ -117,6 +131,8 @@ public static Vector2 GetImageCoords(Keypoint part, int stride, Tensor offsets)
 
 
 
+
+### Create `DecodeSinglePose` Method
 
 
 
