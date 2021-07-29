@@ -491,13 +491,24 @@ public static Keypoint[][] DecodeMultiplePoses(
 
 
 
+
+
 ### Add Public Variables
 
 
 
+```c#
+[Tooltip("The maximum number of posees to estimate")]
+[Range(1, 20)]
+public int maxPoses = 20;
 
+[Tooltip("The score threshold for multipose estimation")]
+[Range(0, 1.0f)]
+public float scoreThreshold = 0.25f;
 
-### Add Private Variables
+[Tooltip("Non-maximum suppression part distance")]
+public int nmsRadius = 20;
+```
 
 
 
@@ -507,9 +518,63 @@ public static Keypoint[][] DecodeMultiplePoses(
 
 
 
+```c#
+// Determine the key point locations
+poses = Utils.DecodeMultiplePoses(
+    heatmaps, offsets,
+    displacementFWD, displacementBWD,
+    stride: stride, maxPoseDetections: maxPoses,
+    scoreThreshold: scoreThreshold, 
+    nmsRadius: nmsRadius);
+```
 
 
-### Modify `Update` Method
+
+#### Full Code
+
+```c#
+/// <summary>
+/// Obtains the model output and either decodes single or mutlple poses
+/// </summary>
+/// <param name="engine"></param>
+private void ProcessOutput(IWorker engine)
+{
+    // Get the model output
+    Tensor heatmaps = engine.PeekOutput(predictionLayer);
+    Tensor offsets = engine.PeekOutput(offsetsLayer);
+    Tensor displacementFWD = engine.PeekOutput(displacementFWDLayer);
+    Tensor displacementBWD = engine.PeekOutput(displacementBWDLayer);
+
+    // Calculate the stride used to scale down the inputImage
+    int stride = (imageDims.y - 1) / (heatmaps.shape.height - 1);
+    stride -= (stride % 8);
+
+    if (estimationType == EstimationType.SinglePose)
+    {
+        poses = new Utils.Keypoint[1][];
+
+        // Determine the key point locations
+        poses[0] = Utils.DecodeSinglePose(heatmaps, offsets, stride);
+    }
+    else
+    {
+        // Determine the key point locations
+        poses = Utils.DecodeMultiplePoses(
+            heatmaps, offsets,
+            displacementFWD, displacementBWD,
+            stride: stride, maxPoseDetections: maxPoses,
+            scoreThreshold: scoreThreshold, 
+            nmsRadius: nmsRadius);
+    }
+
+    heatmaps.Dispose();
+    offsets.Dispose();
+    displacementFWD.Dispose();
+    displacementBWD.Dispose();
+}
+```
+
+
 
 
 
