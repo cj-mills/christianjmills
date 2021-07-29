@@ -21,7 +21,7 @@ search_exclude: false
 
 In this post, we will cover how to implement the post processing steps for multi-pose estimation. This method is more complex than what is required to perform multi-pose estimation. However, it can produce more reliable results.
 
-> **Note:** The original JavaScript code for decoding multiple poses can be found in the official [tfjs-models](https://github.com/tensorflow/tfjs-models/tree/master/posenet/src/multi_pose) repository on GitHub. The code has been modified for this tutorial to better take advantage of functionality provided by Unity.
+> **Note:** The original JavaScript code for decoding multiple poses can be found in the official [tfjs-models](https://github.com/tensorflow/tfjs-models/tree/master/posenet/src/multi_pose) repository on GitHub. The code has been modified for this tutorial to better take advantage of functionality provided by Unity and [.NET](https://docs.microsoft.com/en-us/dotnet/).
 
 ## Update `Utils` Script
 
@@ -155,7 +155,7 @@ We can use the `GetStridedIndexNearPoint` and `GetDisplacement` methods to find 
 
 1. Get the nearest heatmap indices for the current key point position
 2. Get the displacement vector for the nearest heatmap indices
-3. Calculate the position for the neighboring key point
+3. Calculate the position for a neighboring key point using the displacement vector
 4. Get the nearest heatmap indices for the displaced point
 5. Refine the location key point location with the associated offset vector
 6. Get the confidence score for the neighboring key point
@@ -209,7 +209,17 @@ static Keypoint TraverseToTargetKeypoint(
 
 ### Create `DecodePose` Method
 
+We don't know which key point (e.g. nose, left shoulder, right wrist) we will start from when decoding a single pose. Therefore, we will need to travers the list of neighboring key point both forwards and backwards to get all 17 of the key points for an individual in the input image.
 
+#### Method Steps
+
+1.  Initialize a new `Keypoint` array
+2. Get the input image coordinates for the starting key point
+3. Store the starting key point in the `Keypoint` array
+4. Iterate through the list of neighboring key points both forwards and backwards
+   1. Call the `TraverseToTargetKeypoint` method to obtain the neighboring key point
+   2. Store the neighboring key point in the `Keypoint` array according to its id number
+5. Return the `Keypoint` array
 
 ```c#
 /// <summary>
@@ -274,36 +284,16 @@ static Keypoint[] DecodePose(Keypoint root, Tensor scores, Tensor offsets,
 
 
 
-
-
-### Create `WithinNmsRadiusOfCorrespondingPoint` Method
-
-
-
-```c#
-/// <summary>
-/// Check if the provided image coordinates are too close to any keypoints in existing poses
-/// </summary>
-/// <param name="poses"></param>
-/// <param name="squaredNmsRadius"></param>
-/// <param name="vec"></param>
-/// <param name="keypointId"></param>
-/// <returns>True if there are any existing poses too close to the provided coords</returns>
-static bool WithinNmsRadiusOfCorrespondingPoint(
-    List<Keypoint[]> poses, float squaredNmsRadius, Vector2 vec, int keypointId)
-{
-    // SquaredDistance
-    return poses.Any(pose => (vec - pose[keypointId].position).sqrMagnitude <= squaredNmsRadius);
-}
-```
-
-
-
-
-
 ### Create `ScoreIsMaximumInLocalWindow` Method
 
+As mentioned earlier, we only consider key points with the highest confidence score in their local area. We will determine whether a given key point has the highest score in a new method called `ScoreIsMaximumInLocalWindow`.
 
+#### Method Steps
+
+1. Calculate the starting and ending indices for the local heatmap window
+2. Iterate through the heatmap indices within the local window
+3. Compare each confidence score in the local window to the score for the provided key point
+   1. Return `false` if any higher scores are found
 
 ```c#
 /// <summary>
@@ -356,9 +346,9 @@ static bool ScoreIsMaximumInLocalWindow(int keypointId, float score, int heatmap
 
 ### Create `BuildPartList` Method
 
+Much like the `DecodeSinglePose` method, we will iterate through the entire heatmap Tensor. This time, we will only consider heatmap indices with a value above the provided score threshold. When we get to an index with a value that meets this threshold, we will call the `ScoreIsMaximumInLocalWindow` method to confirm that it is the highest score in its local area. 
 
-
-Much like the `DecodeSinglePose` method, we will iterate through the entire heatmap Tensor. This time we will only consider heatmap indices with a value above the provided score threshold. When we get to an index with a value that meets this threshold, we will call the `ScoreIsMaximumInLocalWindow` method to confirm that it is the highest score in its local area. If it is the highest
+The heatmap indices with the highest local score will be added to a `Keypoint` `List`. This list will be used to determine the starting key points will be passed to the `DecodePose` method. 
 
 ```c#
 /// <summary>
@@ -404,7 +394,36 @@ static List<Keypoint> BuildPartList(float scoreThreshold, int localMaximumRadius
 
 
 
+### Create `WithinNmsRadiusOfCorrespondingPoint` Method
+
+
+
+```c#
+/// <summary>
+/// Check if the provided image coordinates are too close to any keypoints in existing poses
+/// </summary>
+/// <param name="poses"></param>
+/// <param name="squaredNmsRadius"></param>
+/// <param name="vec"></param>
+/// <param name="keypointId"></param>
+/// <returns>True if there are any existing poses too close to the provided coords</returns>
+static bool WithinNmsRadiusOfCorrespondingPoint(
+    List<Keypoint[]> poses, float squaredNmsRadius, Vector2 vec, int keypointId)
+{
+    // SquaredDistance
+    return poses.Any(pose => (vec - pose[keypointId].position).sqrMagnitude <= squaredNmsRadius);
+}
+```
+
+
+
+
+
+
+
 ### Create `DecodeMultiplePoses` Method
+
+This is the method that will be called from the `PoseEstimator` script after executing the model.
 
 
 
