@@ -25,11 +25,11 @@ In this post, we will cover how to implement the post processing steps for singl
 
 ## Update `Utils` Script
 
-
+We will implement the methods for processing the model output in the `Utils` script.
 
 ### Add Required Namespace
 
-
+We need to add the `Unity.Barracuda` namespace since we will be working with Tensors.
 
 ```c#
 using System.Collections;
@@ -41,23 +41,6 @@ using Unity.Barracuda;
 
 
 ### Add Public Variables
-
-
-
-```c#
-// The names of the body parts that will be detected by the PoseNet model
-public static string[] partNames = new string[]{
-    "nose", "leftEye", "rightEye", "leftEar", "rightEar", "leftShoulder",
-    "rightShoulder", "leftElbow", "rightElbow", "leftWrist", "rightWrist",
-    "leftHip", "rightHip", "leftKnee", "rightKnee", "leftAnkle", "rightAnkle"
-};
-
-public static int NUM_KEYPOINTS = partNames.Length;
-```
-
-
-
-### Add Private Variables
 
 
 
