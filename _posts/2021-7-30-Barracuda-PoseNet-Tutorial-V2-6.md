@@ -1,11 +1,11 @@
 ---
-title: Barracuda PoseNet Tutorial 2nd Edition Pt. 6 - Unpublished
+title: Barracuda PoseNet Tutorial 2nd Edition Pt. 6
 layout: post
 toc: false
 comments: true
 description: This post covers how to implement the post processing steps for multi-pose estimation.
 categories: [unity,barracuda,tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -39,8 +39,6 @@ using Unity.Barracuda;
 using System;
 using System.Linq;
 ```
-
-
 
 ### Add Public Variables
 
@@ -94,8 +92,6 @@ public static Tuple<int, int>[] parentChildrenTuples = new Tuple<int, int>[]{
 };
 ```
 
-
-
 ### Create `GetStridedIndexNearPoint` Method
 
 In order to traverse from a key point to its neighboring key point, we will need to downscale the key point position back down to the heatmap resolution. We can calculate the nearest heatmap indices by dividing the position by the stride value for the model and clamping the result.
@@ -118,8 +114,6 @@ static Vector2Int GetStridedIndexNearPoint(Vector2 point, int stride, int height
     );
 }
 ```
-
-
 
 ### Create `GetDisplacement` Method
 
@@ -144,8 +138,6 @@ static Vector2 GetDisplacement(int edgeId, Vector2Int point, Tensor displacement
     );
 }
 ```
-
-
 
 ### Create `TraverseToTargetKeypoint` Method
 
@@ -212,8 +204,6 @@ static Keypoint TraverseToTargetKeypoint(
     return new Keypoint(score, targetKeypoint, targetKeypointId);
 }
 ```
-
-
 
 ### Create `DecodePose` Method
 
@@ -302,10 +292,6 @@ static Keypoint[] DecodePose(Keypoint root, Tensor scores, Tensor offsets,
 }
 ```
 
-
-
-
-
 ### Create `ScoreIsMaximumInLocalWindow` Method
 
 As mentioned earlier, we only consider key points with the highest confidence score in their local area as potential starting key points. We will determine whether a given key point has the highest score in a new method called `ScoreIsMaximumInLocalWindow`.
@@ -367,10 +353,6 @@ static bool ScoreIsMaximumInLocalWindow(int keypointId, float score, int heatmap
 }
 ```
 
-
-
-
-
 ### Create `BuildPartList` Method
 
 This is where we will build the list of potential starting key points that be passed to the `DecodePose` method. 
@@ -417,10 +399,6 @@ static List<Keypoint> BuildPartList(float scoreThreshold, int localMaximumRadius
 }
 ```
 
-
-
-
-
 ### Create `WithinNmsRadiusOfCorrespondingPoint` Method
 
 We want to make sure that any key points that have already been assigned to a body do not get used again. We can prevent this by only sending key points to the `DecodePose` method that are not too close to any key points in an existing `Keypoint` array.
@@ -442,17 +420,9 @@ static bool WithinNmsRadiusOfCorrespondingPoint(
 }
 ```
 
-
-
-
-
-
-
 ### Create `DecodeMultiplePoses` Method
 
 This is the method that will be called from the `PoseEstimator` script after executing the model. It will take in all four output Tensors from the model output along with the stride value, max number poses to decode, a minimum confidence score threshold, and the radius for determining if a key point is too close to an existing pose.
-
-
 
 #### Method Steps
 
@@ -533,10 +503,6 @@ public static Keypoint[][] DecodeMultiplePoses(
 
 
 
-
-
-
-
 ## Update `PoseEstimator` Script
 
 Now we can complete the `ProcessOutput` method in the `PoseEstimator` script.
@@ -557,10 +523,6 @@ public float scoreThreshold = 0.25f;
 [Tooltip("Non-maximum suppression part distance")]
 public int nmsRadius = 20;
 ```
-
-
-
-
 
 ### Modify `ProcessOutput` Method
 
@@ -622,11 +584,9 @@ private void ProcessOutput(IWorker engine)
 
 
 
-
-
 ## Summary
 
-In the next post, we will demonstrate how to add pose skeletons so that we can compare the estimated key point locations to the source video feed. 
+We now have everything need to perform pose estimation. However, we cannot currently gauge the accuracy of the estimated poses. In the next post, we will demonstrate how to add pose skeletons so that we can compare the estimated key point locations to the source video feed.
 
 
 
