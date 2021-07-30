@@ -25,11 +25,11 @@ In this post, we will cover how to create pose skeletons so that we can compare 
 
 ## Create `PoseSkeleton` Script
 
-
+We will implement the functionality for creating pose skeletons in a new script. Open the `Scripts` folder in the Assets section and create a new `C#` script called `PoseSkeleton`. The `PoseSkeleton` class will handle creating a single pose skeleton and updating the positions of its key points. We will be creating as many `PoseSkeleton` instances as is specified by the `maxPoses` variable in the `PoseEstimator` script. 
 
 ### Add Required Namespace
 
-
+We need to add the [`System`](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0) namespace as we will once again be using the [`Tuple`](https://docs.microsoft.com/en-us/dotnet/api/system.tuple-2?view=net-5.0) class.
 
 ```c#
 using System.Collections;
@@ -38,11 +38,19 @@ using UnityEngine;
 using System;
 ```
 
+### Remove `MonoBehaviour` Inheritance
 
+The `PoseSkeleton` class does not need to be a `MonoBehaviour` so we can remove it.
 
-
+```c#
+public class PoseSkeleton
+```
 
 ### Add Variables
+
+We will need a `Transform` array to keep track of the positions of the key point objects in the scene.
+
+We will also need a `GameObject` array to keep to store the lines connecting the key point objects.
 
 
 
@@ -52,9 +60,6 @@ public Transform[] keypoints;
 
 // The GameObjects that contain data for the lines between key points
 private GameObject[] lines;
-
-// The line renderers the draw the lines between key points
-private LineRenderer[] lineRenderers;
 
 // The names of the body parts that will be detected by the PoseNet model
 private static string[] partNames = new string[]{
@@ -155,8 +160,6 @@ public PoseSkeleton(float pointScale = 10f, float lineWidth = 5f)
     int numPairs = keypoints.Length + 1;
     // Initialize the lines array
     lines = new GameObject[numPairs];
-    // Initialize the lineRenderers array
-    lineRenderers = new LineRenderer[numPairs];
 
     // Initialize the pose skeleton
     InitializeSkeleton();
@@ -198,9 +201,9 @@ public void ToggleKeypoints(bool show)
 /// <param name="show"></param>
 public void ToggleLines(bool show)
 {
-    foreach (LineRenderer lineRenderer in lineRenderers)
+    foreach (GameObject line in lines)
     {
-        lineRenderer.enabled = show;
+        line.SetActive(show);
     }
 }
 ```
@@ -224,15 +227,9 @@ public void Cleanup()
         GameObject.Destroy(line);
     }
 
-    foreach (Transform transform in keypoints)
+    foreach (Transform keypoint in keypoints)
     {
-        GameObject.Destroy(transform.gameObject);
-    }
-
-
-    foreach (LineRenderer lineRenderer in lineRenderers)
-    {
-        GameObject.Destroy(lineRenderer.gameObject);
+        GameObject.Destroy(keypoint.gameObject);
     }
 }
 ```
@@ -266,19 +263,19 @@ private void InitializeLine(int pairIndex, float width, Color color)
     lines[pairIndex] = new GameObject(name);
 
     // Add LineRenderer component
-    lineRenderers[pairIndex] = lines[pairIndex].AddComponent<LineRenderer>();
+    LineRenderer lineRenderer = lines[pairIndex].AddComponent<LineRenderer>();
     // Make LineRenderer Shader Unlit
-    lineRenderers[pairIndex].material = new Material(Shader.Find("Unlit/Color"));
+    lineRenderer.material = new Material(Shader.Find("Unlit/Color"));
     // Set the material color
-    lineRenderers[pairIndex].material.color = color;
+    lineRenderer.material.color = color;
 
     // The line will consist of two points
-    lineRenderers[pairIndex].positionCount = 2;
+    lineRenderer.positionCount = 2;
 
     // Set the width from the start point
-    lineRenderers[pairIndex].startWidth = width;
+    lineRenderer.startWidth = width;
     // Set the width from the end point
-    lineRenderers[pairIndex].endWidth = width;
+    lineRenderer.endWidth = width;
 }
 ```
 
@@ -381,16 +378,18 @@ public void RenderSkeleton()
             endingKeyPoint.GetComponent<MeshRenderer>().enabled)
         {
             // Activate the line
-            lineRenderers[i].gameObject.SetActive(true);
+            lines[i].SetActive(true);
+
+            LineRenderer lineRenderer = lines[i].GetComponent<LineRenderer>();
             // Update the starting position
-            lineRenderers[i].SetPosition(0, startingKeyPoint.position);
+            lineRenderer.SetPosition(0, startingKeyPoint.position);
             // Update the ending position
-            lineRenderers[i].SetPosition(1, endingKeyPoint.position);
+            lineRenderer.SetPosition(1, endingKeyPoint.position);
         }
         else
         {
             // Deactivate the line
-            lineRenderers[i].gameObject.SetActive(false);
+            lines[i].SetActive(false);
         }
     }
 }
