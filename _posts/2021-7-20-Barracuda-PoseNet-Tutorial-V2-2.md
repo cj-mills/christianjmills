@@ -152,6 +152,8 @@ private RenderTexture videoTexture;
 
 We will update the position, orientation, and size of the `VideoScreen` object in a new method called `InitializeVideoScreen`. The method will take in width and height value along with a `bool` to indicate whether to mirror the screen. When using a webcam, we need to mirror the `VideoScreen` object so that the user's position is mirrored on screen (e.g. their right side is on the right side of the screen).
 
+First, we will set the video player component to render to a `RenderTexture` and set `videoTexture` as the target texture.
+
 When `mirrorScreen` is set to `true` the `VideoScreen` will be rotated `180` around the Y-Axis and scaled by `-1` along the Z-Axis.
 
 The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assigned to the `VideoScreen` object needs to be replaced with an `Unlit/Texture` shader. This will remove the need for the screen to be lit by an in-game light.
@@ -171,6 +173,12 @@ The last step is to reposition the screen based on the the new dimensions, so th
 /// <param name="mirrorScreen"></param>
 private void InitializeVideoScreen(int width, int height, bool mirrorScreen)
 {
+    // Set the render mode for the video player
+    videoScreen.GetComponent<VideoPlayer>().renderMode = VideoRenderMode.RenderTexture;
+
+    // Use new videoTexture for Video Player
+    videoScreen.GetComponent<VideoPlayer>().targetTexture = videoTexture;
+    
     if (mirrorScreen)
     {
         // Flip the VideoScreen around the Y-Axis
