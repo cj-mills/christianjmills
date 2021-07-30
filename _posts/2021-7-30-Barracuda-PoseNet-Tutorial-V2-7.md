@@ -48,7 +48,7 @@ public class PoseSkeleton
 
 ### Add Variables
 
-We will need a `Transform` array to keep track of the positions of the key point objects in the scene.
+We will need a [`Transform`](https://docs.unity3d.com/ScriptReference/Transform.html) array to keep track of the positions of the key point objects in the scene.
 
 We also need a `GameObject` array to store the lines connecting the key point objects.
 
@@ -66,7 +66,9 @@ Instead, we will make a pose skeleton that looks like this.
 
 
 
+To help distinguish the different body areas, we will create a [`Color`](https://docs.unity3d.com/ScriptReference/Color.html) array so that we can specify what color we want each line to be.
 
+Lastly, we need is a `float` variable to specify the line width for the pose skeleton lines.
 
 ```c#
 // The list of key point GameObjects that make up the pose skeleton
@@ -145,118 +147,19 @@ private Material keypointMat;
 
 
 
-
-
-### Create Constructor
-
-
-
-```c#
-public PoseSkeleton(float pointScale = 10f, float lineWidth = 5f)
-{
-    this.keypoints = new Transform[NUM_KEYPOINTS];
-
-    keypointMat = new Material(Shader.Find("Unlit/Color"));
-    keypointMat.color = Color.yellow;
-
-    for (int i = 0; i < NUM_KEYPOINTS; i++)
-    {
-        this.keypoints[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
-        this.keypoints[i].position = new Vector3(0, 0, 0);
-        this.keypoints[i].localScale = new Vector3(pointScale, pointScale, 0);
-        this.keypoints[i].gameObject.GetComponent<MeshRenderer>().material = keypointMat;
-        this.keypoints[i].gameObject.name = partNames[i];
-    }
-
-    this.lineWidth = lineWidth;
-
-    // The number of joint pairs
-    int numPairs = keypoints.Length + 1;
-    // Initialize the lines array
-    lines = new GameObject[numPairs];
-
-    // Initialize the pose skeleton
-    InitializeSkeleton();
-}
-```
-
-
-
-
-
-### Create `ToggleKeypoints` Method
-
-```c#
-/// <summary>
-/// Toggles visibility for the keypoint gameObjects 
-/// </summary>
-/// <param name="show"></param>
-public void ToggleKeypoints(bool show)
-{
-    foreach (Transform transform in keypoints)
-    {
-        transform.GetComponent<MeshRenderer>().enabled = show;
-    }
-}
-```
-
-
-
-
-
-### Create `ToggleLines` Method
-
-
-
-```c#
-/// <summary>
-/// Toggles visibility for the skeleton lines
-/// </summary>
-/// <param name="show"></param>
-public void ToggleLines(bool show)
-{
-    foreach (GameObject line in lines)
-    {
-        line.SetActive(show);
-    }
-}
-```
-
-
-
-
-
-### Create `Cleanup` Method
-
-
-
-```c#
-/// <summary>
-/// Clean up skeleton GameObjects
-/// </summary>
-public void Cleanup()
-{
-    foreach (GameObject line in lines)
-    {
-        GameObject.Destroy(line);
-    }
-
-    foreach (Transform keypoint in keypoints)
-    {
-        GameObject.Destroy(keypoint.gameObject);
-    }
-}
-```
-
-
-
-
-
-
-
 ### Create `InitializeLine` Method
 
+The first method we will create will handle the initialization of a single line in the pose skeleton.
 
+#### Method Steps
+
+1. Get the starting and ending joint pair indices to indicate what two key point are being connected
+2. Use the names of the two key points to create the name for the line object
+3. Create a new standard `GameObject`
+4. Add a [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.html) component to the new `GameObject`
+5. Create a new [`Material`](https://docs.unity3d.com/ScriptReference/Material.html) for the line with the appropriate color from the `Color` array
+6. Indicate that the line with only have two points
+7. Set the line width
 
 ```c#
 /// <summary>
@@ -293,13 +196,9 @@ private void InitializeLine(int pairIndex, float width, Color color)
 }
 ```
 
-
-
-
-
 ### Create `InitializeSkeleton` Method
 
-
+We will call the `InitializeLine` method for each joint pair in `jointPairs`.
 
 ```c#
 /// <summary>
@@ -314,13 +213,112 @@ private void InitializeSkeleton()
 }
 ```
 
+### Create Constructor
 
+Now we can define the class constructor that will initialize the pose skeleton.
 
+#### Method Steps
 
+1. Initialize the `keypoints` array
+2. Create a new material for the key point objects
+3. Create a new `GameObject` for each key point
+   1. Create a sphere `GameObject`
+   2. Set the position to the [origin](https://en.wikipedia.org/wiki/Origin_(mathematics))
+   3. Set the size of the `GameObject` using the provided `pointScale` value
+   4. Assign the new material
+   5. Set the name for the object
+4. Set the `lineWidth` value
+5. Initialize the `lines` array
+6. Call the the `InitializeSkeleton` method
+
+```c#
+public PoseSkeleton(float pointScale = 10f, float lineWidth = 5f)
+{
+    this.keypoints = new Transform[NUM_KEYPOINTS];
+
+    Material keypointMat = new Material(Shader.Find("Unlit/Color"));
+    keypointMat.color = Color.yellow;
+
+    for (int i = 0; i < NUM_KEYPOINTS; i++)
+    {
+        this.keypoints[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        this.keypoints[i].position = new Vector3(0, 0, 0);
+        this.keypoints[i].localScale = new Vector3(pointScale, pointScale, 0);
+        this.keypoints[i].gameObject.GetComponent<MeshRenderer>().material = keypointMat;
+        this.keypoints[i].gameObject.name = partNames[i];
+    }
+
+    this.lineWidth = lineWidth;
+
+    // The number of joint pairs
+    int numPairs = keypoints.Length + 1;
+    // Initialize the lines array
+    lines = new GameObject[numPairs];
+
+    // Initialize the pose skeleton
+    InitializeSkeleton();
+}
+```
+
+### Create `ToggleSkeleton` Method
+
+Just because we initialize a given number of pose skeletons based on the value for `maxPoses` does not mean that the model will find that many poses in an input image. We will need to hide the excess skeletons when they are not needed. We will hide the skeletons by deactivating the associated key point and line objects. We can use the same function to unhide the skeleton when it is needed. This method will be called from the `PoseEstimator` script, so it needs to be `public`.
+
+```c#
+/// <summary>
+/// Toggles visibility for the skeleton
+/// </summary>
+/// <param name="show"></param>
+public void ToggleSkeleton(bool show)
+{
+    for (int i= 0; i < jointPairs.Length; i++)
+    {
+        lines[i].SetActive(show);
+        keypoints[jointPairs[i].Item1].gameObject.SetActive(show);
+        keypoints[jointPairs[i].Item2].gameObject.SetActive(show);
+    }
+}
+```
+
+### Create `Cleanup` Method
+
+When we reduce the max number of poses to estimate, we should remove the skeletons that are no longer needed. This method is nearly identical to the `ToggleSkeleton` except that we will be destroying the objects rather than deactivating them.
+
+```c#
+/// <summary>
+/// Clean up skeleton GameObjects
+/// </summary>
+public void Cleanup()
+{
+    for (int i = 0; i < jointPairs.Length; i++)
+    {
+        GameObject.Destroy(lines[i]);
+        GameObject.Destroy(keypoints[jointPairs[i].Item1].gameObject);
+        GameObject.Destroy(keypoints[jointPairs[i].Item2].gameObject);
+    }
+}
+```
 
 ### Create `UpdateKeyPointPositions` Method
 
+We will update the key point positions with the latest model output in a new method called `UpdateKeyPointPositions`. 
 
+This method will take in the following as input:
+
+1. `Keypoint` array for a single pose
+2. The scale value to scale the key point positions from the input resolution to the source resolution
+3. The source `RenderTexture`
+4. A `bool` to indicate whether to mirror the key point positions when using a webcam
+5. A `float` value to indicate the minimum confidence score a key point needs to have to be displayed
+
+#### Method Steps
+
+1. Iterate through the `Keypoint` array
+2. Hide the key point objects that do not meet the minimum confidence score
+3. Scale the key point positions from the input resolution up to the source resolution
+4. Flip the `Y` axis coordinates vertically to compensate for the difference between heatmap indices and scene coordinates
+5. Mirror the `X` axis coordinates if using a webcam
+6. Update the key point object positions with the new coordinate values 
 
 ```c#
 /// <summary>
@@ -365,19 +363,25 @@ public void UpdateKeyPointPositions(Utils.Keypoint[] keypoints,
 }
 ```
 
+### Create `UpdateLines` Method
 
+Once we have update the positions of the key point objects in the scene, we need to update the starting and ending coordinates for the skeleton lines. We will do so in a new method called `UpdateLines`.
 
+#### Method Steps
 
-
-### Create `RenderSkeleton` Method
-
-
+1. Get references to the starting and ending key point objects
+2. Check if both the starting and ending key point objects are visible
+   1. If true
+      1. Make the line object active
+      2. Update the starting position for the line
+      3. Update the ending positions for the line
+   2. if false, deactivate the line object
 
 ```c#
 /// <summary>
 /// Draw the pose skeleton based on the latest location data
 /// </summary>
-public void RenderSkeleton()
+public void UpdateLines()
 {
     // Iterate through the joint pairs
     for (int i = 0; i < jointPairs.Length; i++)
@@ -417,7 +421,7 @@ public void RenderSkeleton()
 
 ## Update `PoseEstimator` Script
 
-
+Back in the `PoseEstimator` script, we need to add some new variables to use the `PoseSkeleton` class.
 
 
 
