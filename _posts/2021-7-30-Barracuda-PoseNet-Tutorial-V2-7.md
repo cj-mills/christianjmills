@@ -209,6 +209,40 @@ public void ToggleLines(bool show)
 
 
 
+### Create `Cleanup` Method
+
+
+
+```c#
+/// <summary>
+/// Clean up skeleton GameObjects
+/// </summary>
+public void Cleanup()
+{
+    foreach (GameObject line in lines)
+    {
+        GameObject.Destroy(line);
+    }
+
+    foreach (Transform transform in keypoints)
+    {
+        GameObject.Destroy(transform.gameObject);
+    }
+
+
+    foreach (LineRenderer lineRenderer in lineRenderers)
+    {
+        GameObject.Destroy(lineRenderer.gameObject);
+    }
+}
+```
+
+
+
+
+
+
+
 ### Create `InitializeLine` Method
 
 
@@ -405,17 +439,38 @@ private PoseSkeleton[] skeletons;
 
 
 
+
+
+### Create `InitializeSkeletons` Method
+
+
+
+```c#
+/// <summary>
+/// Initialize pose skeletons
+/// </summary>
+private void InitializeSkeletons()
+{
+    // Initialize the list of pose skeletons
+    if (estimationType == EstimationType.SinglePose) maxPoses = 1;
+    skeletons = new PoseSkeleton[maxPoses];
+
+    // Populate the list of pose skeletons
+    for (int i = 0; i < maxPoses; i++) skeletons[i] = new PoseSkeleton(pointScale, lineWidth);
+}
+```
+
+
+
+
+
 ### Modify `Start` Method
 
 
 
 ```c#
-// Initialize the list of pose skeletons
-if (estimationType == EstimationType.SinglePose) maxPoses = 1;
-skeletons = new PoseSkeleton[maxPoses];
-
-// Populate the list of pose skeletons
-for (int i = 0; i < maxPoses; i++) skeletons[i] = new PoseSkeleton(pointScale, lineWidth);
+// Initialize pose skeletons
+InitializeSkeletons();
 ```
 
 
@@ -473,12 +528,8 @@ void Start()
     // Initialize the Barracuda inference engine based on the selected model
     InitializeBarracuda();
 
-    // Initialize the list of pose skeletons
-    if (estimationType == EstimationType.SinglePose) maxPoses = 1;
-    skeletons = new PoseSkeleton[maxPoses];
-
-    // Populate the list of pose skeletons
-    for (int i = 0; i < maxPoses; i++) skeletons[i] = new PoseSkeleton(pointScale, lineWidth);
+    // Initialize pose skeletons
+    InitializeSkeletons();
 }
 ```
 
@@ -491,6 +542,18 @@ void Start()
 
 
 ```c#
+// Reinitialize pose skeletons
+if (maxPoses != skeletons.Length)
+{
+    foreach (PoseSkeleton skeleton in skeletons)
+    {
+        skeleton.Cleanup();
+    }
+
+    // Initialize pose skeletons
+    InitializeSkeletons();
+}
+
 // The smallest dimension of the videoTexture
 int minDimension = Mathf.Min(videoTexture.width, videoTexture.height);
 
@@ -575,6 +638,18 @@ void Update()
 
     // Decode the keypoint coordinates from the model output
     ProcessOutput(engine.worker);
+    
+    // Reinitialize pose skeletons
+    if (maxPoses != skeletons.Length)
+    {
+        foreach (PoseSkeleton skeleton in skeletons)
+        {
+            skeleton.Cleanup();
+        }
+
+        // Initialize pose skeletons
+        InitializeSkeletons();
+    }
 
     // The smallest dimension of the videoTexture
     int minDimension = Mathf.Min(videoTexture.width, videoTexture.height);
