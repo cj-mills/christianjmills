@@ -521,7 +521,7 @@ public int maxPoses = 20;
 public float scoreThreshold = 0.25f;
 
 [Tooltip("Non-maximum suppression part distance")]
-public int nmsRadius = 20;
+public int nmsRadius = 100;
 ```
 
 ### Modify `ProcessOutput` Method
