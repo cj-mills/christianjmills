@@ -50,7 +50,21 @@ public class PoseSkeleton
 
 We will need a `Transform` array to keep track of the positions of the key point objects in the scene.
 
-We will also need a `GameObject` array to keep to store the lines connecting the key point objects.
+We also need a `GameObject` array to store the lines connecting the key point objects.
+
+Next, we will create a `static string` array to store the names of the key points predicted by the model. The names will be ordered based on their key point id number (e.g. nose is in index `0`).
+
+The number of key point predicted by the model will not change, so we will store the number in a `static int` variable.
+
+Much like the `parentChildrenTuples` variable in the `Utils` script, we will create a `Tuple` array to keep track of which key points should be connected by lines. We could actually just use the pairs from `parentChildrenTuples`, but the skeleton would look a bit weird.
+
+![parentChildrenTuples-skeleton](..\images\barracuda-posenet-tutorial-v2\part-7\parentChildrenTuples-skeleton.png)
+
+Instead, we will make a pose skeleton that looks like this.
+
+![jointPairs-skeleton](..\images\barracuda-posenet-tutorial-v2\part-7\jointPairs-skeleton.png)
+
+
 
 
 
