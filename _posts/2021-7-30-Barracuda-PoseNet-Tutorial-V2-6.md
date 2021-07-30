@@ -539,13 +539,11 @@ public static Keypoint[][] DecodeMultiplePoses(
 
 ## Update `PoseEstimator` Script
 
-
-
-
+Now we can complete the `ProcessOutput` method in the `PoseEstimator` script.
 
 ### Add Public Variables
 
-
+First, we will add some public variables so that we can adjust the max number of poses to decode, score threshold, and radius for determining whether a key point is too close to an existing pose from the Inspector tab.
 
 ```c#
 [Tooltip("The maximum number of posees to estimate")]
@@ -566,7 +564,7 @@ public int nmsRadius = 20;
 
 ### Modify `ProcessOutput` Method
 
-
+We will assign the output from the `DecodeMultiplePoses` to the `poses` variable.
 
 ```c#
 // Determine the key point locations
@@ -577,8 +575,6 @@ poses = Utils.DecodeMultiplePoses(
     scoreThreshold: scoreThreshold, 
     nmsRadius: nmsRadius);
 ```
-
-
 
 #### Full Code
 
