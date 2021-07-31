@@ -175,7 +175,7 @@ If you press the play button, you should see something like this.
 
 We now have a complete pose skeleton that we can use for debugging or demos. In the next post, we'll add the option to use a live webcam feed as input instead of a prerecorded video.
 
-### [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+### [GitHub Repository - Version 1](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial/tree/Version-1)
 
 ### Next: [Part  7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-7/)
 
