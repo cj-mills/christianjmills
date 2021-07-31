@@ -8,9 +8,12 @@ description: The journey so far.
 categories: [unity,project,log]
 hide: false
 search_exclude: false
+permalink: /:title/
 ---
 
 ### Update 3/29/2021: [Barracuda PoseNet Tutorial](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)
+
+### Update 7/31/2021: [Barracuda PoseNet Tutorial 2nd Edition](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/)
 
 * [Background](#background)
 * [The Project](#the-project)
