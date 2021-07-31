@@ -592,5 +592,7 @@ We now have everything need to perform pose estimation. However, we cannot curre
 
 **Previous:** [Part 5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-5/)
 
-**Project Resources:** [GitHub Repository - Version 1](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+**Next:** [Part 7](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-7/)
+
+**Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
