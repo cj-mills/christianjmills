@@ -415,19 +415,15 @@ public void UpdateLines()
 
 
 
-
-
-
-
 ## Update `PoseEstimator` Script
 
 Back in the `PoseEstimator` script, we need to add some new variables to use the `PoseSkeleton` class.
 
-
-
 ### Add Public Variables
 
+We will add a couple `public float` variables for setting the size of the key point objects and the width of the skeleton lines.
 
+We will also add a `public int` variable to specify the minimum confidence value a key point need to have for it to be used for the pose skeleton.
 
 ```c#
 [Tooltip("The size of the pose skeleton key points")]
@@ -441,26 +437,18 @@ public float lineWidth = 5f;
 public int minConfidence = 70;
 ```
 
-
-
-
-
 ### Add Private Variables
 
-
+Lastly we will declare a `PoseSkeleton` array to store the pose skeletons.
 
 ```c#
 // Array of pose skeletons
 private PoseSkeleton[] skeletons;
 ```
 
-
-
-
-
 ### Create `InitializeSkeletons` Method
 
-
+We will create a new method called `InitializeSkeletons` to populate the `skeletons` array. When the performing single pose estimation, the max number of poses will be set to `1`. This method will be called in the `Start` method as well as any time the `maxPoses` value gets updated.
 
 ```c#
 /// <summary>
@@ -477,20 +465,14 @@ private void InitializeSkeletons()
 }
 ```
 
-
-
-
-
 ### Modify `Start` Method
 
-
+We will call the `InitializeSkeletons` method at the end of the `Start` method. 
 
 ```c#
 // Initialize pose skeletons
 InitializeSkeletons();
 ```
-
-
 
 #### Full Code
 
@@ -550,13 +532,13 @@ void Start()
 }
 ```
 
-
-
-
-
 ### Modify `Update` Method
 
+At the end of the `Update` method, we need to first check if the `maxPoses` value has been updated.
 
+We then need to calculate the scale value to upscale the key point positions from the input image resolution to the source video resolution.
+
+We can then iterate through the pose skeletons in the `skeleton` array. If there are more pose skeletons than poses returned by the `ProcessOutput` method, we will hide the extra pose skeletons.
 
 ```c#
 // Reinitialize pose skeletons
@@ -582,16 +564,15 @@ for (int i = 0; i < skeletons.Length; i++)
 {
     if (i <= poses.Length - 1)
     {
-        skeletons[i].ToggleLines(true);
+        skeletons[i].ToggleSkeleton(true);
 
         // Update the positions for the key point GameObjects
         skeletons[i].UpdateKeyPointPositions(poses[i], scale, videoTexture, useWebcam, minConfidence);
-        skeletons[i].RenderSkeleton();
+        skeletons[i].UpdateLines();
     }
     else
     {
-        skeletons[i].ToggleKeypoints(false);
-        skeletons[i].ToggleLines(false);
+        skeletons[i].ToggleSkeleton(false);
     }
 }
 ```
@@ -679,20 +660,39 @@ void Update()
     {
         if (i <= poses.Length - 1)
         {
-            skeletons[i].ToggleLines(true);
+            skeletons[i].ToggleSkeleton(true);
 
             // Update the positions for the key point GameObjects
             skeletons[i].UpdateKeyPointPositions(poses[i], scale, videoTexture, useWebcam, minConfidence);
-            skeletons[i].RenderSkeleton();
+            skeletons[i].UpdateLines();
         }
         else
         {
-            skeletons[i].ToggleKeypoints(false);
-            skeletons[i].ToggleLines(false);
+            skeletons[i].ToggleSkeleton(false);
         }
     }
 }
 ```
+
+
+
+## Test it Out
+
+Now we can finally see how the model is performing by comparing the pose skeletons to the source video feed.
+
+
+
+### Single Pose
+
+
+
+
+
+
+
+### Multi-Pose
+
+
 
 
 
