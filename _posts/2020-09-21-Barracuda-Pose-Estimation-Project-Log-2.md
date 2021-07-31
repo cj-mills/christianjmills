@@ -7,7 +7,10 @@ description: Trying to remove bottlenecks.
 categories: [unity,project,log]
 hide: false
 search_exclude: false
+permalink: /:title/
 ---
+
+### Update 7/31/2021: [Barracuda PoseNet Tutorial 2nd Edition](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/)
 
 I didn't make much actual progress yesterday. Although, it was fairly educational. I spent the day trying to create a PyTorch model that would help speed up the post processing steps for the pose estimation model. The model outputs a heatmap and offsets for each of the 17 key points. Each element in a heatmap contains a confidence level for whether the relevant key point is in that cell. The offsets contain x and y vectors that are used to refine the coarse location from the heatmap. The part that seems to create a bottleneck is extracting the index value for the heatmap element that contains the highest confidence estimate. Currently, I need to iterate through every element in each of the heatmaps. This isn't a huge issue when using a very small input image as the size of the heatmap is limited by input resolution. However, larger input images can yield more accurate predictions. Even when using 540p input images, the size of the heatmap increases quite a bit compared to a 300p image. 
 
