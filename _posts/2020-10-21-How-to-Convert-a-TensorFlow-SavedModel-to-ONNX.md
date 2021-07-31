@@ -7,6 +7,7 @@ description: This post covers how to use tf2onnx to convert a TensorFlow SavedMo
 categories: [tensorflow,onnx,tutorial]
 hide: false
 search_exclude: false
+permalink: /:title/
 ---
 
 ## Requirements
