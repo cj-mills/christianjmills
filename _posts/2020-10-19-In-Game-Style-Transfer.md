@@ -7,6 +7,7 @@ description: Some optimization is still required.
 categories: [unity,style_transfer]
 hide: false
 search_exclude: false
+permalink: /:title/
 ---
 
 I've been fascinated with style transfer models ever since I first learned about them a few years ago. Most available style transfer applications are meant for single images. Interestingly, Unity seems to have another use case in mind. The home page for the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html) library has an image of what appears to be in-game style transfer.
