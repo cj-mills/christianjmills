@@ -158,7 +158,7 @@ When `mirrorScreen` is set to `true` the `VideoScreen` will be rotated `180` aro
 
 The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assigned to the `VideoScreen` object needs to be replaced with an `Unlit/Texture` shader. This will remove the need for the screen to be lit by an in-game light.
 
-> **Important:** By default the `Unlit/Texture` shader is not included in project bulds. We need to manually add include in the project settings
+> **Important:** By default, the `Unlit/Texture` shader is not included in project builds. We need to manually include it in the project settings
 >
 > Open the `Edit` menu in the Unity Editor and select `Project Settings`
 >
@@ -172,7 +172,7 @@ The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assig
 >
 > ![select-bottom-shader-spot](..\images\barracuda-posenet-tutorial-v2\part-2\select-bottom-shader-spot.png)
 >
-> Type `Unlit/Texture` shader into the `Select Shader` window and select the `Unlit/Texture` from the available options. We can then close the `Select Shader` window.
+> Type `Unlit/Texture` shader into the `Select Shader` window and select `Unlit/Texture` from the available options. We can then close the `Select Shader` window.
 >
 > ![select-unlit-texture-shader](..\images\barracuda-posenet-tutorial-v2\part-2\select-unlit-texture-shader.png)
 >
