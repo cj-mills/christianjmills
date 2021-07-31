@@ -343,5 +343,5 @@ That is all we need to perform pose estimation when there is a single person in 
 
 **Previous:** [Part 6](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-6/)
 
-**Project Resources:** [GitHub Repository - Version 1](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+**Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
