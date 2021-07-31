@@ -165,7 +165,7 @@ We'll call the method in `Update()` just after `ProcessOutput()`.
 
 We now have a useful debugging tool to gauge our model's performance. In the next post, we'll create a complete pose skeleton by drawing lines connecting the key point objects we made in this post.
 
-### [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+### [GitHub Repository - Version 1](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial/tree/Version-1)
 
 ### Next: [Part 6](https://christianjmills.com/Barracuda-PoseNet-Tutorial-6/)
 
