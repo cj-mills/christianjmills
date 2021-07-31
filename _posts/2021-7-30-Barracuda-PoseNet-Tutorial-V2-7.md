@@ -1,11 +1,11 @@
 ---
-title: Barracuda PoseNet Tutorial 2nd Edition Pt. 7 - Unpublished
+title: Barracuda PoseNet Tutorial 2nd Edition Pt. 7
 layout: post
 toc: false
 comments: true
 description: This post covers how to poses skeletons and manipulate them using output from the model.
 categories: [unity,barracuda,tutorial]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
