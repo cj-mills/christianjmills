@@ -676,29 +676,9 @@ void Update()
 
 
 
-## Test it Out
-
-Now we can finally see how the model is performing by comparing the pose skeletons to the source video feed.
-
-
-
-### Single Pose
-
-
-
-
-
-
-
-### Multi-Pose
-
-
-
-
-
 ## Summary
 
-_.
+Now we can compare the estimated key point locations to the source video feed.
 
 
 
