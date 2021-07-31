@@ -147,5 +147,5 @@ Now we can test the modifications on some vertical videos from [Pexels](https://
 
 Now we can use video sources with different aspect ratios without needing to manually change any parameters.
 
-### [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
+### [GitHub Repository - Version 1](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial/tree/Version-1)
 
