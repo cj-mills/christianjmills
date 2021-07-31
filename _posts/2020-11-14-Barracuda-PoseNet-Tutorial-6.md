@@ -10,6 +10,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+**Version 2:** [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/) 
+
 **Last Updated:** Nov 30, 2020
 
 ### Previous: [Part 5](https://christianjmills.com/Barracuda-PoseNet-Tutorial-5/)
