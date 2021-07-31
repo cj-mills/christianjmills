@@ -158,11 +158,37 @@ When `mirrorScreen` is set to `true` the `VideoScreen` will be rotated `180` aro
 
 The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assigned to the `VideoScreen` object needs to be replaced with an `Unlit/Texture` shader. This will remove the need for the screen to be lit by an in-game light.
 
+> **Important:** By default the `Unlit/Texture` shader is not included in project bulds. We need to manually add include in the project settings
+>
+> Open the `Edit` menu in the Unity Editor and select `Project Settings`
+>
+> <img src="..\images\barracuda-posenet-tutorial-v2\part-2\editor-open-project-settings.png" alt="editor-open-project-settings" style="zoom:80%;" />
+>
+> In the Project Settings window, select the `Graphics` submenu and scroll down to the `Always Included Shaders` section. Update the `Size` value to add an extra `Element` spot.
+>
+> ![project-settings-increase-included-shaders-size](..\images\barracuda-posenet-tutorial-v2\part-2\project-settings-increase-included-shaders-size.png)
+>
+> Select the new bottom shader spot.
+>
+> ![select-bottom-shader-spot](..\images\barracuda-posenet-tutorial-v2\part-2\select-bottom-shader-spot.png)
+>
+> Type `Unlit/Texture` shader into the `Select Shader` window and select the `Unlit/Texture` from the available options. We can then close the `Select Shader` window.
+>
+> ![select-unlit-texture-shader](..\images\barracuda-posenet-tutorial-v2\part-2\select-unlit-texture-shader.png)
+>
+> We will also need the `Unlit/Color` shader later in this series so repeat these steps to add it as well.
+>
+> ![add-unlit-color-shader](..\images\barracuda-posenet-tutorial-v2\part-2\add-unlit-color-shader.png)
+
+
+
 We will then assign the `videoTexture` created earlier as the texture for the `VideoScreen`. This will allow us to access to pixel data for the current video frame.
 
 We can adjust the dimensions of the `VideoScreen` object by updating it's [`localScale`](https://docs.unity3d.com/ScriptReference/Transform-localScale.html) attribute.
 
 The last step is to reposition the screen based on the the new dimensions, so that the bottom left corner is at `X:0, Y:0, Z:0`. This will simplify the process for updating the positions of objects with the estimated key point locations.
+
+
 
 ```c#
 /// <summary>
