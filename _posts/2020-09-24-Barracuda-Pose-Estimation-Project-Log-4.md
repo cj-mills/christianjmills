@@ -7,7 +7,10 @@ description: I'm an idiot.
 categories: [unity,project,log]
 hide: false
 search_exclude: false
+permalink: /:title/
 ---
+
+### Update 7/31/2021: [Barracuda PoseNet Tutorial 2nd Edition](https://christianjmills.com/Barracuda-PoseNet-Tutorial-V2-1/)
 
 ## I Fixed the Offset Vectors...
 
