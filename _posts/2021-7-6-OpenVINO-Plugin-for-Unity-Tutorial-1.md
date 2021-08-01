@@ -25,6 +25,8 @@ We will be using a computationally demanding [style transfer](https://github.com
 
 In this first part, we will ensure the prerequisite software is installed on our system and convert a pretrained model from [ONNX](https://onnx.ai/) format to the OpenVINO [Intermediate Representation](https://docs.openvinotoolkit.org/latest/openvino_docs_MO_DG_IR_and_opsets.html) format.
 
+{% include youtube.html content="https://youtu.be/uSmczpnPam8" %}
+
 ## Prerequisites
 
 The following prerequisites are required to complete this tutorial.
