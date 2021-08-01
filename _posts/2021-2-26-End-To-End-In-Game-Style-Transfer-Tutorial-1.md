@@ -22,6 +22,8 @@ This tutorial series covers how to train your own style transfer model and imple
 
 In this first post, we'll download our Unity project and install the Barracuda library. We'll also create a folder for our project in Google Drive. This is where we'll store our style images, test images and model checkpoints.
 
+{% include youtube.html content="https://youtu.be/JhFivpJhV-Q" %}
+
 ## Select a Unity Project
 
 I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. I was planning on using the lightweight FPS Microgame that's available in Unity Hub. However, the environment ended up being so simple that there wasn't much to stylize. Feel free to follow along with that project though. The steps are identical and it takes much less time to open.
