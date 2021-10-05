@@ -28,7 +28,7 @@ These models can be trained to detect arbitrary types of objects provided there 
 
 We will be using the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) model developed by Megvii. YOLOX builds on the [YOLO (You Only Look Once)](https://www.youtube.com/watch?v=ag3DLKsl2vk) family of real-time object detection models and implements multiple recent advancements from object detection research. The YOLOX model provides one of the best tradeoffs between accuracy and inference speed at the time of writing.
 
-Check out the video below to see how the model performs in different settings using Intel® Iris® Xe MAX Graphics.
+Check out the video below to see how the model performs in different settings.
 
 {% include youtube.html content="https://youtu.be/opClIrHumzI" %}
 
