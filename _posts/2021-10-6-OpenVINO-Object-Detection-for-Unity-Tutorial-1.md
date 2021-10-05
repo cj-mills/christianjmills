@@ -54,19 +54,19 @@ The target platform for this project is Windows 10 64-bit. The OpenVINO™ Toolk
 
 The first prerequisite we will want to set up is Unity. The Unity Editor can be installed through the Unity Hub, which can be downloaded from the link below.
 
-•       Unity Hub: ([download](https://store.unity.com/download?ref=personal))
+* Unity Hub: ([download](https://store.unity.com/download?ref=personal))
 
 We will be using **Unity 2020 LTS**. The exact version can be downloaded from the links below. 
 
-•       Unity LTS Releases: ([download](https://unity3d.com/unity/qa/lts-releases))
+* Unity LTS Releases: ([download](https://unity3d.com/unity/qa/lts-releases))
 
-•       Download Unity 2020.3.18 (LTS): ([download](about:blank))
+* Download Unity 2020.3.18 (LTS): ([download](about:blank))
 
 **Note:** The installation process will also install Visual Studio, one of the other prerequisites.
 
 The tutorial below walks through the basics of Unity, from the installation process all the way to making an Angry Birds clone.
 
-•       [How to Make a Game - Unity Beginner Tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY)
+* [How to Make a Game - Unity Beginner Tutorial](https://www.youtube.com/watch?v=Lu76c85LhGY)
 
  
 
@@ -74,19 +74,19 @@ The tutorial below walks through the basics of Unity, from the installation proc
 
 Unity automatically includes Visual Studio when installing the Editor. However it can also be downloaded directly from the link below.
 
-•       Visual Studio Community 2019: ([download](https://visualstudio.microsoft.com/))
+* Visual Studio Community 2019: ([download](https://visualstudio.microsoft.com/))
 
 ## Visual C++ Redistributables
 
 The Visual C++ Redistributables should be installed along with Visual Studio. If not, they can be downloaded from the link below.
 
-•       Latest C++ Redistributables: ([link](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0))
+* Latest C++ Redistributables: ([link](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0))
 
 ## CMake
 
 The official OpenVINO™ installation guide lists CMake as a requirement. However, we do not need it for this project. Still, the latest release of CMake 64-bit is available at the link below.
 
-•       CMake: [link](https://cmake.org/download/)
+* CMake: [link](https://cmake.org/download/)
 
 **Note:** Make sure to select one of the Add CMake to the system PATH options during the installation process.
 
@@ -98,7 +98,7 @@ The official OpenVINO™ installation guide lists CMake as a requirement. Howeve
 
 Python 3.6, 3.7, or 3.8 64-bit are needed to convert a model from [ONNX format](https://onnx.ai/) to OpenVINO's [intermediate representation (IR)](https://docs.openvinotoolkit.org/latest/openvino_docs_MO_DG_IR_and_opsets.html). We can install Python 3.8 from the Windows Store. This method automatically configures the Python installation to be accessible from the command line.
 
-•       Windows Store Python 3.8: ([link](https://www.microsoft.com/en-us/p/python-38/9mssztt1n39l?activetab=pivot:overviewtab))
+* Windows Store Python 3.8: ([link](https://www.microsoft.com/en-us/p/python-38/9mssztt1n39l?activetab=pivot:overviewtab))
 
 The YOLOX models are already available in OpenVINO IR format, so Python is not required for this tutorial. However, models trained on custom datasets will need to be converted. The steps for converting models from ONNX format to OpenVINO IR are covered in a [previous tutorial](https://software.intel.com/content/www/us/en/develop/articles/developing-openvino-inferencing-plugin-for-unity.html#inpage-nav-3). The YOLOX models are also available in ONNX format on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/ONNXRuntime).
 
@@ -108,9 +108,9 @@ The YOLOX models are already available in OpenVINO IR format, so Python is not r
 
 We now have all the required prerequisites to install OpenVINO. We'll be using OpenVINO 2021.3 for this tutorial. First time users need to fill out a registration form to download the toolkit.
 
-•       [Registration Link](https://software.seek.intel.com/openvino-toolkit)
+* [Registration Link](https://software.seek.intel.com/openvino-toolkit)
 
-•       [Download Link](https://registrationcenter.intel.com/en/products/postregistration/?sn=C5RC-BZX263HW&Sequence=632852&encema=Wg/bUFJY2qspv9ef8QA1f1BOLNxZ1m3iLsVPacdcuTnDhAsIxOgbt1LgCVHooFk3zSUt/6VQWTA=&dnld=t&pass=yes)
+* [Download Link](https://registrationcenter.intel.com/en/products/postregistration/?sn=C5RC-BZX263HW&Sequence=632852&encema=Wg/bUFJY2qspv9ef8QA1f1BOLNxZ1m3iLsVPacdcuTnDhAsIxOgbt1LgCVHooFk3zSUt/6VQWTA=&dnld=t&pass=yes)
 
  
 
@@ -120,15 +120,15 @@ Megvii has already converted several variants of the YOLOX model to OpenVINO IR 
 
 Download the folder containing the models from the link below. We will be using this folder in the final Unity application.
 
-•       [Google Drive Link](https://drive.google.com/file/d/1N4GuHcKyBpDzJQ1r0LulzD3KRE3GRnAe/view?usp=sharing)
+* [Google Drive Link](https://drive.google.com/file/d/1N4GuHcKyBpDzJQ1r0LulzD3KRE3GRnAe/view?usp=sharing)
 
 Each variant of the model has three files associated with it:
 
-•       yolox_10.bin
+* yolox_10.bin
 
-•       yolox_10.mapping
+* yolox_10.mapping
 
-•       yolox_10.xml
+* yolox_10.xml
 
  
 
