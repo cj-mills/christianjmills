@@ -18,7 +18,7 @@ search_exclude: false
 
 
 
-![Picture1](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\yolox_example.jpg)
+![yolox_example](..\images\openvino-yolox-unity\yolox_example.jpg)
 
 # Overview
 
