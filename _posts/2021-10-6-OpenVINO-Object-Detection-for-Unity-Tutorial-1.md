@@ -18,7 +18,7 @@ search_exclude: false
 
 
 
-![yolox_example](..\images\openvino-yolox-unity\yolox_example.jpg)
+![yolox_example_1](..\images\openvino-yolox-unity\yolox_example_1.jpg)
 
 # Overview
 
