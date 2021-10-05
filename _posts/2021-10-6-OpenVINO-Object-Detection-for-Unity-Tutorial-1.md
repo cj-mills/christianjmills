@@ -100,7 +100,7 @@ Python 3.6, 3.7, or 3.8 64-bit are needed to convert a model from [ONNX format](
 
 * Windows Store Python 3.8: ([link](https://www.microsoft.com/en-us/p/python-38/9mssztt1n39l?activetab=pivot:overviewtab))
 
-The YOLOX models are already available in OpenVINO IR format, so Python is not required for this tutorial. However, models trained on custom datasets will need to be converted. The steps for converting models from ONNX format to OpenVINO IR are covered in a [previous tutorial](https://software.intel.com/content/www/us/en/develop/articles/developing-openvino-inferencing-plugin-for-unity.html#inpage-nav-3). The YOLOX models are also available in ONNX format on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/ONNXRuntime).
+The YOLOX models are already available in OpenVINO IR format, so Python is not required for this tutorial. However, models trained on custom datasets will need to be converted. The steps for converting models from ONNX format to OpenVINO IR are covered in a [previous tutorial](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-1/#convert-onnx-model-to-openvino-ir). The YOLOX models are also available in ONNX format on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/ONNXRuntime).
 
  
 
