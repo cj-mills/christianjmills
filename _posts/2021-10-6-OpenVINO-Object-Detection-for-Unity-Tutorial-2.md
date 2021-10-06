@@ -949,7 +949,7 @@ Open the Build menu at the top of the Visual Studio window and click Build Solut
 
 Navigate to that folder in the File Explorer and open the Release child folder. Inside, we can see the .dll file along with a few other files that will not be needed.
 
-![visual_studio_dll_file_location](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\visual_studio_dll_file_location.png)
+![visual_studio_dll_file_location](..\images\openvino-yolox-unity\visual_studio_dll_file_location.png)
 
  
 
@@ -1013,15 +1013,11 @@ A folder containing the OpenVINO_Plugin.dll file and its dependencies is also av
 
 That is everything we need for the OpenVINO™ functionality. In the next part, we will demonstrate how to access this functionality as a plugin inside a Unity project.
 
- 
+**Project Resources:**
 
- 
-
-------
-
- https://github.com/cj-mills/Unity-OpenVINO-Plugin)
+[GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-YOLOX)
 
 
 
-### Next: [Part 3](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-3/)
+### Next: [Part 3]()
 
