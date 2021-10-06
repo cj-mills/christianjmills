@@ -43,15 +43,13 @@ In this part, we will demonstrate how to create a Unity project to access the DL
 
 Open Unity Hub and click the New button. 
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image002.gif)
+![unity-hub-click-new](..\images\openvino-yolox-unity\unity-hub-click-new.png)
 
- 
+ We can stick with the default 3D template and name the project OpenVINO_YOLOX_Demo. Take note of where the project will be generated and click Create.
 
-We can stick with the default 3D template and name the project OpenVINO_YOLOX_Demo. Take note of where the project will be generated and click Create.
+![unity-hub-create-project](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-hub-create-project.png)
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image004.gif)
 
- 
 
  
 
@@ -63,23 +61,23 @@ For now, we need to build our Unity project without the plugin files, and then a
 
 We will be using the free [Graphy](https://assetstore.unity.com/packages/tools/gui/graphy-ultimate-fps-counter-stats-monitor-debugger-105778) asset to display frame rate and other performance metrics at runtime. A simple user interface is already set up in the [prefab](https://docs.unity3d.com/Manual/Prefabs.html) linked below.
 
-•       [Canvas Prefab](https://drive.google.com/file/d/1e7hYBM7rBsqhvjWThfpMKbYbUVCBUPLM/view?usp=sharing)
+* [Canvas Prefab](https://drive.google.com/file/d/1e7hYBM7rBsqhvjWThfpMKbYbUVCBUPLM/view?usp=sharing)
 
 ### Import Canvas Prefab
 
 Download the Canvas.prefab file from the above link and drop it into the assets folder in the Unity editor.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image006.jpg)
+![unity-editor-add-canvas-prefab](..\images\openvino-unity-plugin\unity-editor-add-canvas-prefab.png)
 
  
 
 Drag and drop the prefab from the Assets folder into the Hierarchy tab. A TMP Importer popup window will appear. Click Import TMP Essentials. Close the popup window once the import is complete.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image008.gif)
+![unity-editor-import-tmp-essentials](..\images\openvino-unity-plugin\unity-editor-import-tmp-essentials.png)
 
 If we select the Game tab, we can see the interface we just added. Don't worry if it looks squished.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image010.jpg)
+![unity-editor-view-canvas](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-editor-view-canvas.png)
 
  
 
@@ -87,9 +85,9 @@ If we select the Game tab, we can see the interface we just added. Don't worry i
 
 This next step requires being signed into a Unity account. Open the link to the Graphy Unity Store page below and click Add to My Assets.
 
-•       Graphy Asset Store Page: ([link](https://assetstore.unity.com/packages/tools/gui/graphy-ultimate-fps-counter-stats-monitor-debugger-105778))
+* Graphy Asset Store Page: ([link](https://assetstore.unity.com/packages/tools/gui/graphy-ultimate-fps-counter-stats-monitor-debugger-105778))
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image012.gif)
+![unity-store-add-graphy](..\images\openvino-unity-plugin\unity-store-add-graphy.png)
 
  
 
@@ -97,31 +95,33 @@ The Add to My Assets button should change to Open In Unity. Click the button aga
 
 The Package Manager window should popup in the editor with the Graphy asset selected. Click the download button in the bottom right corner.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image014.gif)
+![package-manager-download-graphy](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\package-manager-download-graphy.png)
 
  
 
 Click Import once the package is finished downloading. An Import Unity Package popup window will appear.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image016.gif)
+![package-manager-import-graphy](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\package-manager-import-graphy.png)
+
+
 
  
 
 Click Import in the popup window. Close the Package Manager window once the import is complete. There should now be a new folder called Graphy - Ultimate Stats Monitor in the Assets folder.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image018.gif)
+![import-unity-package-graphy](..\images\openvino-unity-plugin\import-unity-package-graphy.png)
 
  
 
 Inside the new folder, open the Prefab folder and drag the [Graphy] prefab into the Hierarchy tab. We will see that our game scene gets updated.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image020.jpg)
+![unity-assets-graphy-prefab](..\images\openvino-unity-plugin\unity-assets-graphy-prefab.png)
 
  
 
 With the [Graphy] object still selected in the Hierarchy tab. Scroll down in the Inspector tab to the Graphy Manager (Script) section. Open the Graph modules position dropdown and select TOP_LEFT. Nothing will change in the game view, but the position will be updated when we build the project. 
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image022.jpg)
+![graphy-set-module-position](..\images\openvino-unity-plugin\graphy-set-module-position.png)
 
  
 
@@ -135,7 +135,7 @@ For this demo, we will obtain our input images from a video or webcam feed playi
 
 In the Assets window, right-click an empty space, select the Create option, and click Folder. Name the folder Videos.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image024.jpg)
+![unity-editor-create-folder](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-editor-create-folder.png)
 
  
 
@@ -145,7 +145,7 @@ Double-click the Videos folder to open it.
 
 Drag and drop any video files from the file explorer into the Videos folder. We will be using the file names to populate the dropdown menu in the UI, so rename the files according to their target object class.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image026.jpg)
+![unity-editor-add-video-files](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-editor-add-video-files.png)
 
  
 
@@ -153,7 +153,7 @@ Drag and drop any video files from the file explorer into the Videos folder. We 
 
 We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right-click an empty space in the Hierarchy tab. Select the 3D Object section and click Quad. We can just name it VideoScreen.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image028.jpg)
+![unity-create-quad](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-create-quad.png)
 
  
 
@@ -163,13 +163,13 @@ We will be updating the VideoScreen dimensions in code based on the resolution o
 
 Unity has a [Video Player component](https://docs.unity3d.com/Manual/class-VideoPlayer.html) that provides the functionality to attach video files to the VideoScreen. With the VideoScreen object selected in the Hierarchy tab, click the Add Component button in the Inspector tab.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image030.jpg)
+![videoScreen-add-component](F:/Projects/GitHub/christianjmills/images/barracuda-posenet-tutorial-v2/part-2/videoScreen-add-component.png)
 
  
 
 Type video into the search box and select Video Player from the search results.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image032.jpg)
+![videoScreen-add-video-player-component](F:/Projects/GitHub/christianjmills/images/barracuda-posenet-tutorial-v2/part-2/videoScreen-add-video-player-component.png)
 
  
 
@@ -179,7 +179,7 @@ We do not need to manually assign a video clip as this will be done in code.
 
 Tick the Loop checkbox in the Inspector tab to make the video repeat when the project is running.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image034.jpg)
+![unity-loop-video](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-loop-video.png)
 
  
 
@@ -358,9 +358,9 @@ Create a new assets folder called Scripts. In the Scripts folder, right-click an
 
 We will start by adding the required namespaces at the top of the script.
 
-•       [System](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0): Contains fundamental classes and base classes that define commonly-used value and reference data types, events and event handlers, interfaces, attributes, and processing exceptions. 
+* [System](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0): Contains fundamental classes and base classes that define commonly-used value and reference data types, events and event handlers, interfaces, attributes, and processing exceptions. 
 
-•       [System.Runtime.InteropServices](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices?view=net-5.0): Provides a wide variety of members that support COM interop and platform invoke services.
+* [System.Runtime.InteropServices](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices?view=net-5.0): Provides a wide variety of members that support COM interop and platform invoke services.
 
 ```c#
 using UnityEngine;
@@ -516,7 +516,7 @@ We will implement the functionality for creating bounding boxes in a new script 
 
 #### Required Namespaces
 
-•       [TMPro](https://docs.unity3d.com/Packages/com.unity.textmeshpro@1.3/api/TMPro.html): Provides advanced text rendering capabilities
+* [TMPro](https://docs.unity3d.com/Packages/com.unity.textmeshpro@1.3/api/TMPro.html): Provides advanced text rendering capabilities
 
 ```c#
 using UnityEngine;
@@ -527,23 +527,23 @@ using TMPro;
 
 #### Properties
 
-•       bbox: A new [GameObject](https://docs.unity3d.com/ScriptReference/GameObject.html) will be created for each bounding box.
+* bbox: A new [GameObject](https://docs.unity3d.com/ScriptReference/GameObject.html) will be created for each bounding box.
 
-•       text: The text showing the labe and confidence score will be stored in a separate GameObject as it needs to be attached to a Canvas
+* text: The text showing the labe and confidence score will be stored in a separate GameObject as it needs to be attached to a Canvas
 
-•       canvas: We will store a reference to the Label Canvas object so that we can attach the text object to it. 
+* canvas: We will store a reference to the Label Canvas object so that we can attach the text object to it. 
 
-•       info: This will store the Object struct for the bounding box.
+* info: This will store the Object struct for the bounding box.
 
-•       color: This will store the color specific to the current object class
+* color: This will store the color specific to the current object class
 
-•       lineWidth: We shall set the line thickness for the bounding box based on the current screen size. Feel free to make this larger or smaller based on personal preference.
+* lineWidth: We shall set the line thickness for the bounding box based on the current screen size. Feel free to make this larger or smaller based on personal preference.
 
-•       fontSize: We shall also set the font size for the bounding box text based on the current screen size. Again, feel free to adjust this based on personal preference.
+* fontSize: We shall also set the font size for the bounding box text based on the current screen size. Again, feel free to adjust this based on personal preference.
 
-•       textContent: We can display the text for the bounding using the [TextMeshProUGUI](https://docs.unity3d.com/Packages/com.unity.textmeshpro@1.1/api/TMPro.TextMeshProUGUI.html) component. We will attach this component to the text object.
+* textContent: We can display the text for the bounding using the [TextMeshProUGUI](https://docs.unity3d.com/Packages/com.unity.textmeshpro@1.1/api/TMPro.TextMeshProUGUI.html) component. We will attach this component to the text object.
 
-•       lineRenderer: We can draw the bounding box itself using a [LineRenderer](https://docs.unity3d.com/Manual/class-LineRenderer.html) component. We will attach this component to the bbox object.
+* lineRenderer: We can draw the bounding box itself using a [LineRenderer](https://docs.unity3d.com/Manual/class-LineRenderer.html) component. We will attach this component to the bbox object.
 
 ##### Code:
 
@@ -771,15 +771,15 @@ We will implement the functionality for calling the plugin functions and handlin
 
 #### Add Required Namespaces
 
-•       [System](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0): Contains fundamental classes and base classes that define commonly-used value and reference data types, events and event handlers, interfaces, attributes, and processing exceptions. 
+* [System](https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0): Contains fundamental classes and base classes that define commonly-used value and reference data types, events and event handlers, interfaces, attributes, and processing exceptions. 
 
-•       [System.Runtime.InteropServices](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices?view=net-5.0): Provides a wide variety of members that support COM interop and platform invoke services. 
+* [System.Runtime.InteropServices](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices?view=net-5.0): Provides a wide variety of members that support COM interop and platform invoke services. 
 
-•       [UnityEngine.UI](https://docs.unity3d.com/Packages/com.unity.ugui@1.0/api/UnityEngine.UI.html): Provides access to UI elements.
+* [UnityEngine.UI](https://docs.unity3d.com/Packages/com.unity.ugui@1.0/api/UnityEngine.UI.html): Provides access to UI elements.
 
-•       UnityEngine.Video: Provides access to the functionality for the Video Player component.
+* UnityEngine.Video: Provides access to the functionality for the Video Player component.
 
-•       [UnityEngine.Rendering](https://docs.unity3d.com/Packages/com.unity.render-pipelines.core@5.9/api/UnityEngine.Rendering.html): Provides access to the elements of the rendering pipeline.
+* [UnityEngine.Rendering](https://docs.unity3d.com/Packages/com.unity.render-pipelines.core@5.9/api/UnityEngine.Rendering.html): Provides access to the elements of the rendering pipeline.
 
 ##### Code:
 
@@ -795,25 +795,25 @@ using UnityEngine.UI;
 
 #### Add Public Variables
 
-•       videoScreen: We need a reference to the VideoScreen object so that we can update its dimensions and access the VideoPlayer component.
+* videoScreen: We need a reference to the VideoScreen object so that we can update its dimensions and access the VideoPlayer component.
 
-•       imageProcessingShader: We need a reference to the imageProcessing shader so that we can access the FlipXAxis function.
+* imageProcessingShader: We need a reference to the imageProcessing shader so that we can access the FlipXAxis function.
 
-•       deviceDropdown: We need access to the device dropdown menu, and update the list of available compute devices. 
+* deviceDropdown: We need access to the device dropdown menu, and update the list of available compute devices. 
 
-•       modelDropdown: The script will look for available model files when the application first starts. We will update the menu options based on what model files are found.
+* modelDropdown: The script will look for available model files when the application first starts. We will update the menu options based on what model files are found.
 
-•       videoDropdown:
+* videoDropdown:
 
-•       inference: The Inference toggle button in the UI will be used to indicate whether we want to execute the mode or just play the video feed.
+* inference: The Inference toggle button in the UI will be used to indicate whether we want to execute the mode or just play the video feed.
 
-•       useWebcam: The Webcam toggle button in the UI will be used to switch between using a video file or webcam feed as input for the model.
+* useWebcam: The Webcam toggle button in the UI will be used to switch between using a video file or webcam feed as input for the model.
 
-•       useAsync: The Use Async toggle button will be used to turn asynchronous GPU readback on and off (more on this later).
+* useAsync: The Use Async toggle button will be used to turn asynchronous GPU readback on and off (more on this later).
 
-•       consoleText: We don't have direct access to the console while running the application. However, we can capture the text that gets sent to the console and display it in the user interface. This can be useful for debugging purposes.
+* consoleText: We don't have direct access to the console while running the application. However, we can capture the text that gets sent to the console and display it in the user interface. This can be useful for debugging purposes.
 
-•       videoClips: We will select which video files we want to have available in the Inspector tab.
+* videoClips: We will select which video files we want to have available in the Inspector tab.
 
 ##### Code:
 
@@ -891,51 +891,51 @@ private static extern void SetConfidenceThreshold(float threshold);
 
 #### Add Private Variables
 
-•       webcamDims: We will set the target resolution for a webcam to 1280x720
+* webcamDims: We will set the target resolution for a webcam to 1280x720
 
-•       videoDims: We need to keep track of the dimensions of the video screen for different methods in the script.
+* videoDims: We need to keep track of the dimensions of the video screen for different methods in the script.
 
-•       targetDims: We will set the default target dims to 640x640. However, this will get updated to maintain the aspect ratio for the current video source.
+* targetDims: We will set the default target dims to 640x640. However, this will get updated to maintain the aspect ratio for the current video source.
 
-•       imageDims: This will store the unpadded dimensions of the image being fed to the model.
+* imageDims: This will store the unpadded dimensions of the image being fed to the model.
 
-•       webcamTexture: This will provide access to live video input from a webcam.
+* webcamTexture: This will provide access to live video input from a webcam.
 
-•       videoTexture: This will store the current source video texture.
+* videoTexture: This will store the current source video texture.
 
-•       rTex: This will store the texture used to create the input texture.
+* rTex: This will store the texture used to create the input texture.
 
-•       inputTex: This contains the input texture that will be sent to the OpenVINO inference engine.
+* inputTex: This contains the input texture that will be sent to the OpenVINO inference engine.
 
-•       performInference: Keeps track of whether to execute the OpenVINO model.
+* performInference: Keeps track of whether to execute the OpenVINO model.
 
-•       webcamFPS: We will set the target frame rate for the webcam to 60fps.
+* webcamFPS: We will set the target frame rate for the webcam to 60fps.
 
-•       aspectRatioScale: Used to scale the input image dimensions while maintaining aspect ratio.
+* aspectRatioScale: Used to scale the input image dimensions while maintaining aspect ratio.
 
-•       currentDevice: Current compute device for OpenVINO.
+* currentDevice: Current compute device for OpenVINO.
 
-•       inputData: Stores the raw pixel data for inputTex.
+* inputData: Stores the raw pixel data for inputTex.
 
-•       objectInfoArray: This is the Object array that we will update using the PopulateObjectsArray() function in the plugin. 
+* objectInfoArray: This is the Object array that we will update using the PopulateObjectsArray() function in the plugin. 
 
-•       boundingBoxes: Stores the bounding boxes for detected objects.
+* boundingBoxes: Stores the bounding boxes for detected objects.
 
-•       deviceList: Parsed list of compute devices for OpenVINO.
+* deviceList: Parsed list of compute devices for OpenVINO.
 
-•       openVINOPaths: File paths for the OpenVINO IR models
+* openVINOPaths: File paths for the OpenVINO IR models
 
-•       openvinoModels: Names of the OpenVINO IR model
+* openvinoModels: Names of the OpenVINO IR model
 
-•       videoNames: Names of the available video files 
+* videoNames: Names of the available video files 
 
-•       canvas: A reference to the canvas for the user interface
+* canvas: A reference to the canvas for the user interface
 
-•       graphy: A reference to the Graphy on-screen metrics
+* graphy: A reference to the Graphy on-screen metrics
 
-•       width: A references to the width input field for the target image dimensions
+* width: A references to the width input field for the target image dimensions
 
-•       height: A references to the height input field for the target image dimensions
+* height: A references to the height input field for the target image dimensions
 
 ##### Code:
 
