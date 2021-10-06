@@ -1,5 +1,5 @@
 ---
-title: OpenVINO Plugin for Unity Tutorial Pt.2
+title: OpenVINO Object Detection for Unity Tutorial Pt.2
 layout: post
 toc: false
 comments: true
