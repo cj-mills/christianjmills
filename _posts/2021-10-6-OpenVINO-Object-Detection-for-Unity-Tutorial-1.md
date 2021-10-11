@@ -197,4 +197,4 @@ That takes care of the required setup. In the next part, we will cover how to cr
 
 
 
-### Next: [Part 2]()
+### Next: [Part 2](https://christianjmills.com/OpenVINO-Object-Detection-for-Unity-Tutorial-2/)
