@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post walks through the steps needed to create a Dynamic link library (DLL) in Visual Studio to perform inference with the pretrained deep learning model.
 categories: [openvino, object-detection, yolox, tutorial, unity]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
