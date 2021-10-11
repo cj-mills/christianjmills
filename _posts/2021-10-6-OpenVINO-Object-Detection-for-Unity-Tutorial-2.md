@@ -42,7 +42,7 @@ Type `DLL` into the search bar. Select the `Dynamic-Link Library (DLL)` option a
 
 ![visual_studio_select_dll_template](..\images\openvino-unity-plugin\visual_studio_select_dll_template.png)
 
-In the next window, we'll name the new project `OpenVINO_Plugin`. Take note of the `Location` the project will be saved to and click `Create`. The default location can be replaced, but we will need to access the project folder to get the generated DLL file.
+In the next window, we'll name the new project `OpenVINO_YOLOX_DLL`. Take note of the `Location` the project will be saved to and click `Create`. The default location can be replaced, but we will need to access the project folder to get the generated DLL file.
 
 ![visual_studio_create_OpenVINO_YOLOX_DLL](..\images\openvino-yolox-unity\visual_studio_create_OpenVINO_YOLOX_DLL.png)
 
@@ -169,7 +169,11 @@ The pch.h file is a [Precompiled Header file](https://docs.microsoft.com/en-us/c
 
 
 #endif //PCH_H
-We'll add the required header files below #include "framework.h". Each one can be explored by selecting that line and pressing F12 as well.
+```
+
+We'll add the required header files below `#include "framework.h"`. Each one can be explored by selecting that line and pressing F12 as well.
+
+```c++
 // add headers that you want to pre-compile here
 #include "framework.h"
 // A header file that provides a set minimal required Inference Engine API.
@@ -180,7 +184,7 @@ We'll add the required header files below #include "framework.h". Each one can b
 #include <regex>
 ```
 
- 
+
 
 ## Update dllmain
 
@@ -194,7 +198,11 @@ using namespace InferenceEngine;
 
 // Create a macro to quickly mark a function for export
 #define DLLExport __declspec (dllexport)
+```
+
 We need to wrap the code in extern "C" to prevent name - mangling issues with the compiler.
+
+```c++
 // Create a macro to quickly mark a function for export
 #define DLLExport __declspec (dllexport)
 
@@ -210,47 +218,47 @@ extern "C" {
 
 Inside the wrapper, we'll declare the persistent variables needed for the DLL.
 
-* Object: The YOLOX model predicts the coordinates and dimensions for a bounding box that contains a detected object, along with the predicted object class and the confidence for that prediction. We will store this information for each prediction in a [struct](https://www.cplusplus.com/doc/tutorial/structures/) called Object. We will create a corresponding struct in Unity.
+* `Object`: The YOLOX model predicts the coordinates and dimensions for a bounding box that contains a detected object, along with the predicted object class and the confidence for that prediction. We will store this information for each prediction in a [struct](https://www.cplusplus.com/doc/tutorial/structures/) called Object. We will create a corresponding struct in Unity.
 
-* GridAndStride: The model input is divided into grid cells which correspond to sections of the input image. We need to keep track of these grid cells to scale the predicted object locations back up to the source input resolution. We will keep track of this information using a new [struct](https://www.cplusplus.com/doc/tutorial/structures/) called GridAndStride.
+* `GridAndStride`: The model input is divided into grid cells which correspond to sections of the input image. We need to keep track of these grid cells to scale the predicted object locations back up to the source input resolution. We will keep track of this information using a new [struct](https://www.cplusplus.com/doc/tutorial/structures/) called GridAndStride.
 
-* img_w: We need to keep track of the width of the input image to scale the model output back up to the source resolution.
+* `img_w`: We need to keep track of the width of the input image to scale the model output back up to the source resolution.
 
-* img_h: We need to keep track of the height of the input image to scale the model output back up to the source resolution.
+* `img_h`: We need to keep track of the height of the input image to scale the model output back up to the source resolution.
 
-* input_w: We need to keep track of the current input width for the model to generate the GridAndStride values as well as padding and resizing the input images.
+* `input_w`: We need to keep track of the current input width for the model to generate the GridAndStride values as well as padding and resizing the input images.
 
-* input_h: We need to keep track of the current input height for the model to generate the GridAndStride values as well as padding and resizing the input images.
+* `input_h`: We need to keep track of the current input height for the model to generate the GridAndStride values as well as padding and resizing the input images.
 
-* count: We will be passing the object predictions to Unity by populating an Object array from Unity. We need to know how many objects have been detected, so that we can initialize the array before filling it.
+* `count`: We will be passing the object predictions to Unity by populating an Object array from Unity. We need to know how many objects have been detected, so that we can initialize the array before filling it.
 
-* scale: We need to keep track of the difference between the input image and the input dimensions of the model, so that we can scale up the model output back to the source resolution.
+* `scale`: We need to keep track of the difference between the input image and the input dimensions of the model, so that we can scale up the model output back to the source resolution.
 
-* bbox_conf_thresh: We will only consider model predictions with confidence scores above a specified threshold.
+* `bbox_conf_thresh`: We will only consider model predictions with confidence scores above a specified threshold.
 
-* nms_thresh: The way that the model detects objects makes it possible to detect the same object more than once. We can filter through multiple detections of the same object by checking how much two predicted bounding boxes overlap. If a bounding box overlaps one with a higher confidence too much, we can ignore it. This technique is called [Non Maximum Suppression (NMS)](https://learnopencv.com/non-maximum-suppression-theory-and-implementation-in-pytorch/).
+* `nms_thresh`: The way that the model detects objects makes it possible to detect the same object more than once. We can filter through multiple detections of the same object by checking how much two predicted bounding boxes overlap. If a bounding box overlaps one with a higher confidence too much, we can ignore it. This technique is called [Non Maximum Suppression (NMS)](https://learnopencv.com/non-maximum-suppression-theory-and-implementation-in-pytorch/).
 
-* available_devices_str: We will pass a list of compute devices available for performing inference to Unity as a comma separated string. We need to make this string a global variable to keep the data persistent in memory.
+* `available_devices_str`: We will pass a list of compute devices available for performing inference to Unity as a comma separated string. We need to make this string a global variable to keep the data persistent in memory.
 
-* available_devices: We will store the unparsed list of available devices in a [vector](https://www.cplusplus.com/reference/vector/vector/).
+* `available_devices`: We will store the unparsed list of available devices in a [vector](https://www.cplusplus.com/reference/vector/vector/).
 
-* grid_strides: We will store the grid and stride values for scaling predicted object locations back up to the current input dimensions in a GridAndStride vector.
+* `grid_strides`: We will store the grid and stride values for scaling predicted object locations back up to the current input dimensions in a GridAndStride vector.
 
-* proposals: We will store the object proposals with high enough confidence scores in an Object vector.
+* `proposals`: We will store the object proposals with high enough confidence scores in an Object vector.
 
-* picked: We will keep track of which object proposals we want to keep in a separate vector.
+* `picked`: We will keep track of which object proposals we want to keep in a separate vector.
 
-* ie: To use the OpenVINO inference engine, we first need to create a [Core](https://docs.openvinotoolkit.org/latest/classInferenceEngine_1_1Core.html) instance called ie. We'll use this variable to read the model file, get the available compute devices, change configuration settings, and load the model onto the target compute device.
+* `ie`: To use the OpenVINO inference engine, we first need to create a [Core](https://docs.openvinotoolkit.org/latest/classInferenceEngine_1_1Core.html) instance called ie. We'll use this variable to read the model file, get the available compute devices, change configuration settings, and load the model onto the target compute device.
 
-* network: We'll store the information from the .xml and .bin file in a [CNNNetwork](https://docs.openvinotoolkit.org/latest/classInferenceEngine_1_1CNNNetwork.html) variable.
+* `network`: We'll store the information from the .xml and .bin file in a [CNNNetwork](https://docs.openvinotoolkit.org/latest/classInferenceEngine_1_1CNNNetwork.html) variable.
 
-* executable_network: We need to create an executable version of the network before we can perform inference.
+* `executable_network`: We need to create an executable version of the network before we can perform inference.
 
-* infer_request: After that, we will create an [InferRequest](https://docs.openvinotoolkit.org/latest/ie_c_api/group__InferRequest.html) variable to initiate inference for the model.
+* `infer_request`: After that, we will create an [InferRequest](https://docs.openvinotoolkit.org/latest/ie_c_api/group__InferRequest.html) variable to initiate inference for the model.
 
-* minput: Once we create the inference request, we will require write access to the input [tensor](https://docs.openvinotoolkit.org/latest/classInferenceEngine_1_1TensorDesc.html) for the model. We can access the input tensor using a [MemoryBlob::Ptr](https://docs.openvinotoolkit.org/2021.3/classInferenceEngine_1_1MemoryBlob.html#public_types) variable.
+* `minput`: Once we create the inference request, we will require write access to the input [tensor](https://docs.openvinotoolkit.org/latest/classInferenceEngine_1_1TensorDesc.html) for the model. We can access the input tensor using a [MemoryBlob::Ptr](https://docs.openvinotoolkit.org/2021.3/classInferenceEngine_1_1MemoryBlob.html#public_types) variable.
 
-* moutput: After executing the model, we will need read access to the output tensor for the model. We can access the output tensor using a [MemoryBlob::CPtr](https://docs.openvinotoolkit.org/2021.3/classInferenceEngine_1_1MemoryBlob.html#public_types) variable.
+* `moutput`: After executing the model, we will need read access to the output tensor for the model. We can access the output tensor using a [MemoryBlob::CPtr](https://docs.openvinotoolkit.org/2021.3/classInferenceEngine_1_1MemoryBlob.html#public_types) variable.
 
 #### Code :
 
