@@ -135,7 +135,7 @@ For this demo, we will obtain our input images from a video or webcam feed playi
 
 In the Assets window, right-click an empty space, select the Create option, and click Folder. Name the folder Videos.
 
-![unity-editor-create-folder](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-editor-create-folder.png)
+![unity-editor-create-folder](..\images\openvino-yolox-unity\unity-editor-create-folder.png)
 
  
 
@@ -145,7 +145,7 @@ Double-click the Videos folder to open it.
 
 Drag and drop any video files from the file explorer into the Videos folder. We will be using the file names to populate the dropdown menu in the UI, so rename the files according to their target object class.
 
-![unity-editor-add-video-files](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-editor-add-video-files.png)
+![unity-editor-add-video-files](..\images\openvino-yolox-unity\unity-editor-add-video-files.png)
 
  
 
@@ -153,7 +153,7 @@ Drag and drop any video files from the file explorer into the Videos folder. We 
 
 We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right-click an empty space in the Hierarchy tab. Select the 3D Object section and click Quad. We can just name it VideoScreen.
 
-![unity-create-quad](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-create-quad.png)
+![unity-create-quad](..\images\openvino-yolox-unity\unity-create-quad.png)
 
  
 
@@ -163,13 +163,13 @@ We will be updating the VideoScreen dimensions in code based on the resolution o
 
 Unity has a [Video Player component](https://docs.unity3d.com/Manual/class-VideoPlayer.html) that provides the functionality to attach video files to the VideoScreen. With the VideoScreen object selected in the Hierarchy tab, click the Add Component button in the Inspector tab.
 
-![videoScreen-add-component](F:/Projects/GitHub/christianjmills/images/barracuda-posenet-tutorial-v2/part-2/videoScreen-add-component.png)
+![videoScreen-add-component](../images/barracuda-posenet-tutorial-v2/part-2/videoScreen-add-component.png)
 
  
 
 Type video into the search box and select Video Player from the search results.
 
-![videoScreen-add-video-player-component](F:/Projects/GitHub/christianjmills/images/barracuda-posenet-tutorial-v2/part-2/videoScreen-add-video-player-component.png)
+![videoScreen-add-video-player-component](../images/barracuda-posenet-tutorial-v2/part-2/videoScreen-add-video-player-component.png)
 
  
 
@@ -179,7 +179,7 @@ We do not need to manually assign a video clip as this will be done in code.
 
 Tick the Loop checkbox in the Inspector tab to make the video repeat when the project is running.
 
-![unity-loop-video](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-loop-video.png)
+![unity-loop-video](..\images\openvino-yolox-unity\unity-loop-video.png)
 
  
 
@@ -189,7 +189,7 @@ We will attach the labels for each bounding box to a separate Canvas rather than
 
 Right-click an empty space in the Hierarchy tab. Select the UI section and click Canvas. We can just name it Label Canvas.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image036.jpg)
+![unity-create-label-canvas](..\images\openvino-yolox-unity\unity-create-label-canvas.png)
 
  
 
@@ -197,21 +197,21 @@ Right-click an empty space in the Hierarchy tab. Select the UI section and click
 
 In order to pass references to Unity variables to the OpenVINO plugin we will need to enable [unsafe](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/unsafe) code. Open the Edit menu at the top of the Unity Editor and select Project Settings.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image038.jpg)
+![unity-open-project-settings](..\images\openvino-yolox-unity\unity-open-project-settings.png)
 
- 
+
 
 Select Player from the side menu and open the Other Settings dropdown menu.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image040.jpg)
+![unity-project-settings-player](..\images\openvino-unity-plugin\unity-project-settings-player.png)
 
- 
+
 
 Scroll down to the Allow 'unsafe' Code checkbox and enable it.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image042.jpg)
+![unity-player-settings-allow-unsafe-code](..\images\openvino-unity-plugin\unity-player-settings-allow-unsafe-code.png)
 
- 
+
 
  
 
@@ -221,25 +221,27 @@ We will be using Unlit shaders for both the video screen and the bounding boxes.
 
 While still in the Project Settings window, select the Graphics submenu and scroll down to the Always Included Shaders section. Update the Size value to add an extra Element spot.
 
- ![fig:](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image044.gif)
+![project-settings-increase-included-shaders-size](..\images\barracuda-posenet-tutorial-v2\part-2\project-settings-increase-included-shaders-size.png)
+
+
 
  Select the new bottom shader spot.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image046.jpg)
+![select-bottom-shader-spot](..\images\barracuda-posenet-tutorial-v2\part-2\select-bottom-shader-spot.png)
 
- 
+
 
 Type Unlit/Texture shader into the Select Shader window and select Unlit/Texture from the available options. We can then close the Select Shader window.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image048.jpg)
+![select-unlit-texture-shader](..\images\barracuda-posenet-tutorial-v2\part-2\select-unlit-texture-shader.png)
 
  
 
 We will also need the Unlit/Color shader for the bounding boxes so repeat these steps to add it as well.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image050.gif)
+![add-unlit-color-shader](..\images\barracuda-posenet-tutorial-v2\part-2\add-unlit-color-shader.png)
 
- 
+
 
 Now we can close the project settings window.
 
@@ -251,21 +253,19 @@ One last thing we can do to make things a bit cleaner is to set the background c
 
 Select the Main Camera object in the Hierarchy tab. Over in the Inspector tab, open the Clear Flags dropdown and select Solid Color.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image052.jpg)
+![unity-set-clear-flags](..\images\openvino-yolox-unity\unity-set-clear-flags.png)
 
  
 
 Click on the color bar next to Background to set the color. 
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image054.jpg)
+![unity-select-background-color](..\images\openvino-yolox-unity\unity-select-background-color.png)
 
  
 
 We can make it pure black by setting the RGB color values to 0.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image056.jpg)
-
- 
+![unity-set-background-to-black](..\images\openvino-yolox-unity\unity-set-background-to-black.png)
 
  
 
@@ -1930,33 +1930,31 @@ That takes care of the required code for this project.
 
 To use the ObjectDetector script, we need to attach it to a GameObject. Right-click an empty space in the Hierarchy tab and select Create Empty. Name the new object Object Detector.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image058.jpg)
+![unity-create-empty](..\images\openvino-yolox-unity\unity-create-empty.png)
 
- 
+
 
 With the object still selected, drag and drop the ObjectDetector script into the Hierarchy tab.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image060.jpg)
+![unity-attach-object-detector-script](..\images\openvino-yolox-unity\unity-attach-object-detector-script.png)
 
- 
+
 
 Now we can drag and drop the objects in the Hierarchy tab into their associated spots in the Inspector tab.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image062.jpg)
+![unity-assign-hierarchy-objects](..\images\openvino-yolox-unity\unity-assign-hierarchy-objects.png)
 
- 
+
 
 Next, we will need to click the small lock button at the top of the Inspector tab to keep the Object Detector selected.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image064.jpg)
+![unity-lock-object-detector-inspector](..\images\openvino-yolox-unity\unity-lock-object-detector-inspector.png)
 
- 
+
 
 Now we can add the video files by selecting all of them in the Assets section and dragging them onto the Video Clips slot in the Inspector tab. We can unlock the Inspector tab after we have added the videos.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image066.jpg)
-
- 
+![unity-add-video-clips-inspector](..\images\openvino-yolox-unity\unity-add-video-clips-inspector.png)
 
  
 
@@ -1968,35 +1966,41 @@ The last step needed before we can build the project is to assign the UI events.
 
 Open the UpdateInputDims container inside the Canvas object and select Width. 
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image068.jpg)
+![unity-select-width-object](..\images\openvino-yolox-unity\unity-select-width-object.png)
 
- 
+
 
 In the Inspector tab, scroll down to On End Edit.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image070.jpg)
+![width-inspector-on-end-edit-empty](..\images\openvino-yolox-unity\width-inspector-on-end-edit-empty.png)
 
- 
+
 
 Drag and drop the Object Detector object from the Hierarchy tab onto the None (Object) slot.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image072.jpg)
+![width-inspector-on-end-edit-attach-object](..\images\openvino-yolox-unity\width-inspector-on-end-edit-attach-object.png)
 
- 
+
 
 Click on the No Function dropdown menu and open the ObjectDetector section. Select the UpdateInputDims() method from the list.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image074.jpg)
+![width-inspector-on-end-edit-select-function](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\width-inspector-on-end-edit-select-function.png)
+
+
 
 Perform the same steps for the Height object.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image076.jpg)
+![height-inspector-on-end-edit-select-function](..\images\openvino-yolox-unity\height-inspector-on-end-edit-select-function.png)
+
+
 
 ### NMS Threshold
 
-Open the UpdateNMSThreshold container inside the Canvas object and select Threshold. 
+Open the UpdateNMSThreshold container inside the Canvas object and select Threshold.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image078.jpg)
+![unity-select-nms-thresh-object](..\images\openvino-yolox-unity\unity-select-nms-thresh-object.png)
+
+
 
 In the Inspector tab, scroll down to On End Edit. Drag and drop the Object Detector object from the Hierarchy tab onto the None (Object) slot. This time, select the UpdateNMSThreshold(TMP_InputField) option from the function menu.
 
@@ -2008,7 +2012,9 @@ Open the UpdateConfidenceThreshold container inside the Canvas object and select
 
 Select the Device object inside the Canvas. In the Inspector tab, scroll down to On Value Changed (Int32). Drag and drop the Object Detector object from the Hierarchy tab onto the None (Object) slot. This time, select the InitializeOpenVINO() option from the function menu.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image080.jpg)
+![device-inspector-on-end-edit-select-function](..\images\openvino-yolox-unity\device-inspector-on-end-edit-select-function.png)
+
+
 
 ### Model Dropdown
 
@@ -2036,33 +2042,43 @@ Select the Quit object inside the Canvas. In the Inspector tab, scroll down to O
 
 Now we can build the completed project. First, press Ctrl+s to save the project. Open the File menu and select Build Settings...
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image082.jpg)
+![unity-open-build-settings](..\images\openvino-yolox-unity\unity-open-build-settings.png)
 
- 
+
 
 Click build in the popup window. You will be prompted to select a folder to store the files generated during the build.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image084.gif)
+![build-settings-build-project](..\images\openvino-unity-plugin\build-settings-build-project.png)
+
+
 
 Create a new folder in the default location and name it Build. Click Select Folder. 
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image086.gif)
+![create-build-folder](..\images\openvino-yolox-unity\create-build-folder.png)
 
-Once the build is complete, a File Explorer window will open with the project executable selected. 
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image088.gif)
+
+Once the build is complete, a File Explorer window will open with the project executable selected.
+
+![unity-project-executable](..\images\openvino-yolox-unity\unity-project-executable.png)
+
+
 
 ## Add Models Folder
 
-Copy and paste models folder from part 1 into the folder with the project executable.
+Copy and paste `models` folder from part 1 into the folder with the project executable.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image090.gif)
+![build-folder-add-models](..\images\openvino-yolox-unity\build-folder-add-models.png)
+
+
 
 ## Add the Plugins folder
 
 Open the OpenVINO_YOLOX_Demo_Data folder inside the Build directory. Copy and paste the Plugins folder from part 2.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image092.gif)
+![build-folder-add-plugins](..\images\openvino-yolox-unity\build-folder-add-plugins.png)
+
+
 
 ## Run the Application
 
