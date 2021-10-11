@@ -49,7 +49,7 @@ Open Unity Hub and click the New button.
 
  We can stick with the default 3D template and name the project OpenVINO_YOLOX_Demo. Take note of where the project will be generated and click Create.
 
-![unity-hub-create-project](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-hub-create-project.png)
+![unity-hub-create-project](..\images\openvino-yolox-unity\unity-hub-create-project.png)
 
 
 
@@ -79,7 +79,7 @@ Drag and drop the prefab from the Assets folder into the Hierarchy tab. A TMP Im
 
 If we select the Game tab, we can see the interface we just added. Don't worry if it looks squished.
 
-![unity-editor-view-canvas](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\unity-editor-view-canvas.png)
+![unity-editor-view-canvas](..\images\openvino-yolox-unity\unity-editor-view-canvas.png)
 
  
 
@@ -97,13 +97,13 @@ The Add to My Assets button should change to Open In Unity. Click the button aga
 
 The Package Manager window should popup in the editor with the Graphy asset selected. Click the download button in the bottom right corner.
 
-![package-manager-download-graphy](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\package-manager-download-graphy.png)
+![package-manager-download-graphy](..\images\openvino-yolox-unity\package-manager-download-graphy.png)
 
  
 
 Click Import once the package is finished downloading. An Import Unity Package popup window will appear.
 
-![package-manager-import-graphy](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\package-manager-import-graphy.png)
+![package-manager-import-graphy](..\images\openvino-yolox-unity\package-manager-import-graphy.png)
 
 
 
@@ -121,7 +121,7 @@ Inside the new folder, open the Prefab folder and drag the [Graphy] prefab into 
 
  
 
-With the [Graphy] object still selected in the Hierarchy tab. Scroll down in the Inspector tab to the Graphy Manager (Script) section. Open the Graph modules position dropdown and select TOP_LEFT. Nothing will change in the game view, but the position will be updated when we build the project. 
+With the `[Graphy]` object still selected in the Hierarchy tab. Scroll down in the Inspector tab to the Graphy Manager (Script) section. Open the Graph modules position dropdown and select TOP_LEFT. Nothing will change in the game view, but the position will be updated when we build the project. 
 
 ![graphy-set-module-position](..\images\openvino-unity-plugin\graphy-set-module-position.png)
 
@@ -1986,7 +1986,7 @@ Drag and drop the Object Detector object from the Hierarchy tab onto the None (O
 
 Click on the No Function dropdown menu and open the ObjectDetector section. Select the UpdateInputDims() method from the list.
 
-![width-inspector-on-end-edit-select-function](F:\Projects\GitHub\christianjmills\images\openvino-yolox-unity\width-inspector-on-end-edit-select-function.png)
+![width-inspector-on-end-edit-select-function](..\images\openvino-yolox-unity\width-inspector-on-end-edit-select-function.png)
 
 
 
