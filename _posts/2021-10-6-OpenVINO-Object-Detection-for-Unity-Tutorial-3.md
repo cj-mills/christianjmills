@@ -27,7 +27,6 @@ search_exclude: false
 * [Add Models Folder](#add-models-folder)
 * [Add Plugins folder](#add-plugins-folder)
 * [Run the Application](#run-the-application)
-* [Conclusion](#conclusion)
 * [Next Steps](#next-steps)
 
 
@@ -2087,21 +2086,19 @@ Open the OpenVINO_YOLOX_Demo_Data folder inside the Build directory. Copy and pa
 
 At last, we can test our project. Double-click the executable to run it. Remember that the first time the application launches will be slow as the cache files are generated.
 
-# Conclusion
 
-We now have a general workflow for implementing real-time object detection with the OpenVINO™ Toolkit inside the Unity game engine. The performance improvements from using OpenVINO™ make the larger variants of the YOLOX model usable without high-end GPUs. The XMX engines in upcoming ARC GPUs will make it possible to run these models without taking away compute resources from the main application.
 
 # Next Steps
 
-As mentioned previously, these models can be trained for a wide variety of applications. They can even be combined with other models to add new capabilities like[ ](https://blog.roboflow.com/zero-shot-object-tracking/)[tracking](https://blog.roboflow.com/zero-shot-object-tracking/) unique objects across multiple frames.
+We now have a general workflow for implementing real-time object detection with the OpenVINO™ Toolkit inside the Unity game engine.
+
+As mentioned previously, these models can be trained for a wide variety of applications. They can even be combined with other models to add new capabilities like [tracking](https://blog.roboflow.com/zero-shot-object-tracking/) unique objects across multiple frames.
 
 Instructions for training these models on custom datasets can be found in the[ official documentation](https://yolox.readthedocs.io/en/latest/train_custom_data.html). Alternatively, online services like[ ](https://blog.roboflow.com/how-to-train-yolox-on-a-custom-dataset/)[roboflow](https://blog.roboflow.com/how-to-train-yolox-on-a-custom-dataset/) can make training more convenient. Trained models need to be converted from PyTorch to ONNX ([instructions](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/ONNXRuntime)), before being converted to OpenVINO ([instructions](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/OpenVINO/cpp)).
 
- 
+  
 
- 
-
-Project Resources:
+**Project Resources:**
 
 [GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-YOLOX)
 
