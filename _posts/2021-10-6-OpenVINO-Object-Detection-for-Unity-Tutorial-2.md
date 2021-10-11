@@ -977,7 +977,7 @@ Here are the dependencies needed to use our .dll.
 
 * libhwloc-5.dll
 
-* MKLDNNPlugin
+* MKLDNNPlugin.dll
 
 * ngraph.dll
 
@@ -1019,5 +1019,5 @@ That is everything we need for the OpenVINO™ functionality. In the next part, 
 
 
 
-### Next: [Part 3]()
+### Next: [Part 3](https://christianjmills.com/OpenVINO-Object-Detection-for-Unity-Tutorial-3/)
 
