@@ -14,18 +14,21 @@ search_exclude: false
 
 * [Overview](#overview)
 * [Create New Project](#create-new-project)
-* [Install Barracuda Package](#install-barracuda-package)
 * [Add GUI](#add-gui)
 * [Create Video Player](#create-video-player)
-* [Set Up Style Transfer Code](#set-up-style-transfer-code)
+* [Add Label Canvas](#add-label-canvas)
 * [Enable Unsafe Code](#enable-unsafe-code)
-* [Attach Script to Camera](#attach-script-to-camera)
+* [Include Unlit Shaders](#include-unlit-shaders)
+* [Set Background Color](#set-background-color)
+* [Set Up Project Code](#set-up-project-code)
+* [Attach Script to GameObject](#attach-script-to-gameobject)
 * [Assign UI Events](#assign-ui-events)
 * [Build the Project](#build-the-project)
 * [Add Models Folder](#add-models-folder)
 * [Add Plugins folder](#add-plugins-folder)
 * [Run the Application](#run-the-application)
 * [Conclusion](#conclusion)
+* [Next Steps](#next-steps)
 
 
 
