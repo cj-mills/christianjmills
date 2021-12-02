@@ -127,13 +127,13 @@ The `mo.py` script requires a few additional python packages. You can install th
 
 Once those are installed, we'll run the `mo.py` script with the following parameters.
 
-`python mo.py --input_model <path-to-ONNX-model>  --model_name <openvino-model-name> --output-dir <path-to-save-openvino-model> --data_type FP16`
+`python mo.py --input_model <path-to-ONNX-model>  --model_name <openvino-model-name> --output_dir <path-to-save-openvino-model> --data_type FP16`
 
 **Note:** [FP16](https://en.wikipedia.org/wiki/Half-precision_floating-point_format) or half precision is recommended for GPU inference. It reduces the size of the model and can increase inference speed.
 
 Here is an example where `User_Name` would be replaced with the current Windows username.
 
-`python mo.py --input_model C:\Users\User_Name\Downloads\final.onnx  --model_name mesh-shader_fp16 --output-dir C:\Users\User_Name\Downloads\ --data_type FP16`
+`python mo.py --input_model C:\Users\User_Name\Downloads\final.onnx  --model_name mesh-shader_fp16 --output_dir C:\Users\User_Name\Downloads\ --data_type FP16`
 
 We can also specify the input resolution with the `--input_shape [N,C,H,W]` parameter. For example, we could specify an input resolution of `960 x 540` with  `--input_shape [1,3,540,960]`. However, this is not required as we will be updating the input resolution from the Unity application at runtime.
 
