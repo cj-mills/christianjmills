@@ -13,7 +13,7 @@ search_exclude: false
 ### Previous: [Part 3](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-3/)
 
 * [Overview](#overview)
-* [Install New OpenVINO Version](#Install-new-openvino-version)
+* [Install New OpenVINO Version](#install-new-openvino-version)
 * [Update OpenVINO Project](#update-openvino-project)
 * [Modify Unity Project](#modify-unity-project)
 * [Run In Editor](#run-in-editor)
