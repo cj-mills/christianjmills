@@ -53,7 +53,7 @@ Once the download is complete, open the OpenVINO_YOLOX_DLL folder and double-cli
 
 We need to tell Visual Studio where the new version of OpenVINO is located. In the Solution Explorer panel, right-click the project name.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg)
+![solutions_explorer_select_project_name](..\images\openvino-yolox-unity-in-editor\solutions_explorer_select_project_name.png)
 
  
 
@@ -61,7 +61,7 @@ We need to tell Visual Studio where the new version of OpenVINO is located. In t
 
 Select the Properties in the popup menu.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image004.jpg)
+![solutions_explorer_open_properties](..\images\openvino-yolox-unity-in-editor\solutions_explorer_open_properties.png)
 
  
 
@@ -69,7 +69,7 @@ Select the Properties in the popup menu.
 
 In the Properties Window, open the C++ dropdown and click on All Options. Select the Additional Include Directories section and click on <Edit..> in the dropdown. 
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image006.gif)
+![properties_c++_all_options](..\images\openvino-yolox-unity-in-editor\properties_c++_all_options.png)
 
  
 
@@ -85,7 +85,7 @@ Replace the existing Include Directories with the ones below.
 
 Next, open the Linker dropdown in the Properties window and select All Options. Scroll up to the top of the All Options section and select Additional Dependencies.
 
-![img](file:///C:/Users/Personal/AppData/Local/Temp/msohtmlclip1/01/clip_image008.gif)
+![linker_additional_dependencies](..\images\openvino-yolox-unity-in-editor\linker_additional_dependencies.png)
 
  
 
