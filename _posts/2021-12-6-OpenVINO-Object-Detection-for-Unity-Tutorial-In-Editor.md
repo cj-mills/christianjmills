@@ -520,8 +520,6 @@ We will call the `FreeResources()` method we created earlier in the `OnDisable()
 
 
 
-
-
 ## Run In Editor
 
 Those are all the changes we need to make. Now we can try out the project in the editor.
