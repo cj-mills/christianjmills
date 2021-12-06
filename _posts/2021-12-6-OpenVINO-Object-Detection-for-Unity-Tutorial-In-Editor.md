@@ -13,7 +13,7 @@ search_exclude: false
 ### Previous: [Part 3](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-3/)
 
 * [Overview](#overview)
-* [Install OpenVINO 2021.4.2](#Install-openvino-2021.4.2)
+* [Install New OpenVINO Version](#Install-new-openvino-version)
 * [Update OpenVINO Project](#update-openvino-project)
 * [Modify Unity Project](#modify-unity-project)
 * [Run In Editor](#run-in-editor)
@@ -27,7 +27,7 @@ In this follow up to the YOLOX tutorial, we will update the OpenVINO and Unity c
 
 
 
-## Install OpenVINO 2021.4.2
+## Install New OpenVINO Version
 
 To use the OpenVINO plugin inside the Unity editor, we will first update the OpenVINO project to [OpenVINO 2021.4.2](https://www.intel.com/content/www/us/en/developer/articles/release-notes/openvino-2021-4-lts-relnotes.html). This resolves the dependency conflict mentioned in the last part of this tutorial series.
 
