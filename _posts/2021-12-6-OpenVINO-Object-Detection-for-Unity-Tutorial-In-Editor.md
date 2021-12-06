@@ -540,7 +540,7 @@ Those are all the changes we need to make. Now we can try out the project in the
 
 
 
-#### Build the Project
+## Build the Project
 
 With the modifications we made, we can now build and run the project like any other Unity project without needing to manually copy files anymore.
 
