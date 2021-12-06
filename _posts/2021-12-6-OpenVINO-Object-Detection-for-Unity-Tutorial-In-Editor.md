@@ -18,7 +18,6 @@ search_exclude: false
 * [Modify Unity Project](#modify-unity-project)
 * [Run In Editor](#run-in-editor)
 * [Build the Project](#build-the-project)
-* [Next Steps](#next-steps)
 
 
 
