@@ -506,6 +506,10 @@ With the modifications we made, we can now build and run the project like any ot
 
 
 
+### Next: [In-Game Camera](https://christianjmills.com/OpenVINO-Object-Detection-for-Unity-Tutorial-In-Game-Camera/)
+
+
+
 **Project Resources:**
 
 [GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-YOLOX-In-Editor)
