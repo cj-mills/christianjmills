@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: This post covers the changes needed to use the in-game camera as input for the YOLOX model.
 categories: [openvino, object-detection, yolox, tutorial, unity]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
