@@ -3,7 +3,7 @@ title: OpenVINO Object Detection in the Unity Editor
 layout: post
 toc: false
 comments: true
-description: This covers how to modify the existing project so that the plugin can be using in the Unity Editor.
+description: This post covers how to modify the existing YOLOX project so that the plugin can be using in the Unity Editor.
 categories: [openvino, object-detection, yolox, tutorial, unity]
 hide: true
 permalink: /:title/
@@ -23,7 +23,7 @@ search_exclude: false
 
 ## Overview
 
-In this follow up to the YOLOX tutorial, we will update the OpenVINO and Unity code so that we can use the plugin directly in the Unity Editor
+In this follow-up to the YOLOX tutorial, we will update the OpenVINO and Unity code so that we can use the plugin directly in the Unity Editor. We will also make some additional changes to remove the need to manually move any files when building the Unity project.
 
 
 
@@ -41,7 +41,7 @@ New users can register for OpenVINO or download it directly from the links below
 
 ## Update OpenVINO Project
 
-The code from the previous tutorial can be downloaded directly from the link below.
+The code from the previous tutorial can be found at the repository linked below.
 
 •       [GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-YOLOX)
 
@@ -113,9 +113,7 @@ We will still reverse available_devices so any GPU devices are selected first.
 
 The method to set the location for the cache directory has changed from previous versions of OpenVINO. Now, we can set the directory for all GPUs using a single line. 
 
-Lastly, we will return the final number of available compute devices to Unity. 
-
- 
+Lastly, we will return the final number of available compute devices to Unity.
 
 #### Code:
 
@@ -158,7 +156,7 @@ DLLExport std::string* GetDeviceName(int index) {
 
 ### Create FreeResources()
 
-The memory used for the variables might not get automatically freed when running the project in the Unity Editor. This can cause issues when entering Play mode in the editor multiple times. To avoid this, we will manually clear the memory for the vectors by calling the [clear()](https://www.cplusplus.com/reference/vector/vector/clear/) method for each. 
+The memory used for the variables might not get automatically freed when running the project in the Unity Editor. This can cause issues when entering Play mode in the editor multiple times. To avoid this, we will manually clear the memory for the vectors by calling the [clear()](https://www.cplusplus.com/reference/vector/vector/clear/) method for each.
 
 #### Code:
 
@@ -173,7 +171,7 @@ DLLExport void FreeResources() {
 
  
 
-Now, we can build the project as we did in the previous tutorial. Open the Build menu at the top of the Visual Studio window and click Build Solution. 
+Now we can build the project as we did in the previous tutorial. Open the Build menu at the top of the Visual Studio window and click Build Solution. 
 
 Navigate to the x64 build folder in the File Explorer and open the Release child folder. Inside, we can see the new OpenVINO_YOLOX_DLL.dll file.
 
@@ -233,25 +231,17 @@ A folder containing the OpenVINO_YOLOX_DLL.dll file and its dependencies is also
 
  
 
-
-
 ## Modify Unity Project
 
-Now we can update the Unity project to accommodate the changes we made to the OpenVINO project. There are also some additional changes we will implement to make things easier when building the project
-
-
+Now we can update the Unity project to accommodate the changes we made to the OpenVINO project. There are also some additional changes we will implement to make things easier when building the project.
 
 ### Open the Project
 
 Open the OpenVINO_YOLOX_Demo project in the Unity Editor.
 
-
-
 ### Add Editor Tools
 
 Next, create a new folder in the Assets section called Editor. Inside the Editor folder, create a new script called PrepareAssets. Open the script in the code editor.
-
-
 
 #### Required Namespaces
 
@@ -261,8 +251,6 @@ Next, create a new folder in the Assets section called Editor. Inside the Editor
 using UnityEngine;
 using UnityEditor;
 ```
-
-
 
 #### Create Refresh() Method
 
@@ -276,8 +264,6 @@ static void Refresh()
     Debug.Log("Refreshing Asset Database.");
 }
 ```
-
-
 
 #### Create CopyToStreamingAssets() Method
 
@@ -313,13 +299,9 @@ static void CopyToStreamingAssets()
 
 
 
-
-
 ### Import OpenVINO Plugins
 
 Back in the Assets section, create a new folder called OpenVINO. Drag and drop the Plugins folder from the file explorer into the OpenVINO folder.
-
-
 
 #### Import YOLOX Models
 
@@ -327,9 +309,9 @@ Download the folder containing the models from the link below.
 
 •       [Google Drive Link](https://drive.google.com/file/d/1N4GuHcKyBpDzJQ1r0LulzD3KRE3GRnAe/view)
 
-Extract the models folder from models.tar and drag it into the OpenVINO folder.
+Extract the models folder from `models.tar` and drag it into the OpenVINO folder.
 
-Open the Tools->OpenVINO submenu at the top of the Editor. Click the Refresh button to ensure the DLL files are loaded.
+Open the Tools &rarr; OpenVINO submenu at the top of the Editor. Click the Refresh button to ensure the DLL files are loaded.
 
 Then click the Copy to StreamingAssets button to copy the models folder and plugins.xml file to the StreamingAssets folder.
 
@@ -341,7 +323,7 @@ We can remove the Graphy tool since we can now use the in-editor performance met
 
 
 
-### Remove the Console View (Options)
+### Remove the Console View (Optional)
 
 Likewise, we can remove the `Console View` object in the Canvas. Again, make sure to remove any references in the `ObjectDetector.cs` script.
 
@@ -351,11 +333,7 @@ Likewise, we can remove the `Console View` object in the Canvas. Again, make sur
 
 Open the `ObjectDetector.cs` script in the code editor.
 
-
-
-
-
-### Update DLL Method Declarations
+#### Update DLL Method Declarations
 
 Next, we need to replace the old DLL method declarations with the new functions we added earlier.
 
@@ -393,13 +371,11 @@ private static extern void FreeResources();
 
 
 
-
-
-### Define Awake() Method
+#### Define Awake() Method
 
 When the built application first starts, we will check if the plugins.xml file is in the Plugins folder. If not, we will move the file from the StreamingAssets folder to the Plugins folder.
 
-#### Code:
+##### Code:
 
 ```c#
 public void Awake()
@@ -431,11 +407,11 @@ public void Awake()
 
 
 
-### Update GetOpenVINOModels() Method
+#### Update GetOpenVINOModels() Method
 
 We need to modify the `GetOpenVINOModels()` so that it searches the `StreamingAssets` folder. The path for the `StreamingAssets` folder is stored in the `Application.streamingAssetsPath` property.
 
-#### Code:
+##### Code:
 
 ```c#
 /// <summary>
@@ -474,13 +450,11 @@ private void GetOpenVINOModels()
 
 
 
-
-
-### Update Start() Method
+#### Update Start() Method
 
 We need to update the `if` statement in the `Start()` method so that it calls the new `FindAvailableDevices()` and `GetDeviceName()` functions we created earlier.
 
-#### Code:
+##### Code:
 
 ```c#
 if (processorType.Contains("Intel") || graphicsDeviceName.Contains("Intel"))
@@ -505,9 +479,7 @@ else
 
 
 
-
-
-### Call FreeResources() Method
+#### Call FreeResources() Method
 
 We will call the `FreeResources()` method we created earlier in the `OnDisable()` method. 
 
