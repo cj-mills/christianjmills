@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes from Etienne Carrier's overview of the procedural tools developed to create Far Cry 5.
 categories: [procedural-generation, game-dev, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -30,15 +30,6 @@ I recently started learning about tools and techniques used for procedural gener
 
 ## Introduction
 
-
-Procedural Level Design: Houdini
-      
-
-​    [Procedural World Generation of Ubisoft's Far Cry 5 | Etienne Carrier | Houdini HIVE Utrecht](https://www.youtube.com/watch?v=NfizT369g60)
-​    
-
-## Introduction
-
 - How to maintain quality of features like forests through multiple terrain iterations without manually updating them.
 
 ## Goal of the pipeline
@@ -60,7 +51,7 @@ Procedural Level Design: Houdini
 
 ## User point of view
 
-1. Terrain Terraforming Pass: 
+1. Terrain Terraforming Pass
 2. Freshwater: Artist lays down fresh water network using curves and splines
 3. Cliffs: based on terrain slope
 4. Vegetation: Artist uses biome painter → color density = forest density?
@@ -122,7 +113,7 @@ Procedural Level Design: Houdini
 
 ### Stratification
 
-[stratification | geology](https://www.britannica.com/science/stratification-geology)
+[stratification](https://www.britannica.com/science/stratification-geology)
 
 - Visible horizontal lines formed by the accumulation of sedimentary rock and soil
 - Slice input geometry into strata chunks
