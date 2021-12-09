@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes from the NATS KubeCon + CloudNativeCon NA 2019 Keynote.
 categories: [nats, cloud, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
