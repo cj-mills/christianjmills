@@ -252,4 +252,4 @@ I finally got around to making my [GitHub profile](https://github.com/cj-mills) 
 
 **References:**
 
-* [Next Level GitHub Profile README (NEW) | How To Create An Amazing Profile ReadMe With GitHub Actions](https://www.youtube.com/watch?v=ECuqb5Tv9qI)
+* [How To Create An Amazing Profile ReadMe With GitHub Actions](https://www.youtube.com/watch?v=ECuqb5Tv9qI)
