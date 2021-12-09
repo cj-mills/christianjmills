@@ -10,7 +10,7 @@ permalink: /:title/
 search_exclude: false
 ---
 
-* [Introduction](#introduction)
+* [Overview](#overview)
 * [What is NATS](#what-is-nats)
 * [NATS Ecosystem](#nats-ecosystem)
 * [Usage Examples](#usage-examples)
@@ -18,7 +18,7 @@ search_exclude: false
 
 
 
-## Introduction
+## Overview
 
 I recently heard about [NATS](https://nats.io/), a "message oriented middleware". It is a software infrastructure that provides the exchange of data that is segmented into messages among computer applications and services. I was curious about it's potential in applications that involve streaming real-world sensor data, so I decided to check out there [2019 keynote](https://www.youtube.com/watch?v=lHQXEqyH57U). Below are some notes I took while watching.
 
