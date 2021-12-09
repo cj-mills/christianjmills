@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes from learning how to customize my GitHub profile.
 categories: [github, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
