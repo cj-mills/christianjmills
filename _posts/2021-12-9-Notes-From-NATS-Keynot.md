@@ -1,5 +1,5 @@
 ---
-title: Notes from NATS Keynote
+title: Notes From NATS Keynote
 layout: post
 toc: false
 comments: true
