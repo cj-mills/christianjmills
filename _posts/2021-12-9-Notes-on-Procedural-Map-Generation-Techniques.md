@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes on Herbert Wolverson's talk on procedural map generation techniques from the 2020 virtual Roguelike Celebration.
 categories: [gamedev, procedural-generation, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -178,8 +178,10 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 - Can be used for effective city generation
     - Apocalypse Taxi
+        - ![https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg](https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg)
         - Uses the edges of the generated cells to determine where the roads went
         - Randomly populated the content of each cell with something like "heavy industrial city", "light industrial city", etc.
+    
     
     [Apocalypse Taxi](https://thebracket.itch.io/apocalypse-taxi)
     
