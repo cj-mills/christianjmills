@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes from Ben Berman's 2017 talk on machine learning and level generation.
 categories: [ai, gamedev, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -102,7 +102,7 @@ Ian Holmes's games and microsites use cellular automata and heuristics and to ge
       
         [Super Mario as a String: Platformer Level Generation Via LSTMs](https://arxiv.org/abs/1603.00930)
         
-        [Building Mario Levels with Machine Learning | AI and Games](https://www.youtube.com/watch?v=U-CDQtIJ8eg)
+        [Building Mario Levels with Machine Learning](https://www.youtube.com/watch?v=U-CDQtIJ8eg)
         
     - Text representation of a level and the understanding that future parts of the level are somehow related to past parts.
     
@@ -122,20 +122,17 @@ Ian Holmes's games and microsites use cellular automata and heuristics and to ge
             
         - Presentation slides
           
-            [](https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2018/presentations/Holden_Daniel_CharacterControlWith.pdf)
+            [Slides (PDF)](https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2018/presentations/Holden_Daniel_CharacterControlWith.pdf)
         
     - Two Minute Papers (2017)
       
-        [Real-Time Character Control With Phase-Functioned Neural Networks | Two Minute Papers #154](https://www.youtube.com/watch?v=wlndIQHtiFw)
-        
+        [Real-Time Character Control With Phase-Functioned Neural Networks](https://www.youtube.com/watch?v=wlndIQHtiFw)
     
 - ### Daniel Ritchie's spaceship generator
   
     - User provides a blocked out shape for spaceship and it generates finer detail versions
     - PhD Thesis: Probabilistic Programming for Procedural Modeling and Design
-        - 
-        
-        [](https://dritchie.github.io/pdf/thesis.pdf)
+        - [PDF](https://dritchie.github.io/pdf/thesis.pdf)
         
     
 - ### Making it home, MCMC-based room layout
@@ -160,7 +157,11 @@ Ian Holmes's games and microsites use cellular automata and heuristics and to ge
 - Computer-made Feel: random placement
 - Hand-Made Feel: Symmetry in Architecture
     - Symmetry is really simple
-        - $-f(x)=f(-x)$
+        - $$
+          $-f(x)=f(-x)$
+          $$
+        
+          
 - Computer-made Feel: Overly Precise Numbers
 - Hand-Made Feel: Small Numbers
 
