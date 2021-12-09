@@ -195,6 +195,7 @@ I finally got around to making my [GitHub profile](https://github.com/cj-mills) 
 
 - Use GitHub Action
     - https://github.com/anuraghazra/github-readme-stats
+    
 - Add to `README.md`
     - Default
       
@@ -209,6 +210,7 @@ I finally got around to making my [GitHub profile](https://github.com/cj-mills) 
         ```
         
         - Options: `&hide=stars,commits,prs,issues,contribs`
+        
     - Include Private Contributions
       
         ```markdown
@@ -243,8 +245,9 @@ I finally got around to making my [GitHub profile](https://github.com/cj-mills) 
         
     - Add Most Used Languages
       
-        ```markdown
-        ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=<user-name>&show_icons=true&hide_border=true)
+        - ```markdown
+            ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=<user-name>&show_icons=true&hide_border=true)
+            ```
 
 
 
