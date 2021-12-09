@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes from an overview of the Learning Generative Models of 3D Structures paper.
 categories: [ai, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -31,8 +31,14 @@ I wanted to get an idea of where the research is at for using deep learning mode
 
 ## Generative models
 
-- generative: P(X) vs discriminative: P(Y|X)
+- generative: 
+  $$
+  P(X) \ vs \ discriminative: P(Y|X)
+  $$
+  
+
 - Instead of learning to predict some attribute Y given an input X, the generative model learns the entire input distribution, enabling them to sample objects directly from X
+
 - Can be useful in simulating real-world environments and synthetically generating training data
 
 ## Structure-Aware Representations
