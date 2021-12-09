@@ -216,7 +216,11 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Dijkstra Maps
 
-[![Dijk basic.png](http://www.roguebasin.com/images/7/7c/Dijk_basic.png)](http://www.roguebasin.com/index.php/File:Dijk_basic.png)
+<figure>  
+	<img src="../images/notes-procedural-map-generation-techniques/Dijk_basic.png" style="width:50%">  
+	<figcaption>Source: http://www.roguebasin.com/images/7/7c/Dijk_basic.png</figcaption>
+</figure> 
+
 
 1. [Explanation](http://www.roguebasin.com/index.php/The_Incredible_Power_of_Dijkstra_Maps)
 1. Start with 1 or more starting points.
