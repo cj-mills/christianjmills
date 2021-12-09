@@ -22,6 +22,8 @@ search_exclude: false
 
 I recently heard about [NATS](https://nats.io/), a "message oriented middleware". It is a software infrastructure that provides the exchange of data that is segmented into messages among computer applications and services. I was curious about it's potential in applications that involve streaming real-world sensor data, so I decided to check out there [2019 keynote](https://www.youtube.com/watch?v=lHQXEqyH57U). Below are some notes I took while watching.
 
+
+
 ## What is NATS
 
 NATS is a simple, reliable, cloud-native messaging system
@@ -67,6 +69,8 @@ Can support hundreds of thousands of nodes with really fast response times (700m
 - [Tinder](https://tinder.com/)
 - [Platform 9](https://platform9.com/)
 - [Qlik](https://www.qlik.com/us/)
+
+
 
 ## NATS Ecosystem
 
@@ -163,6 +167,8 @@ sub, err := nc.QueueSubscribe("bar", "v0.1", func(m * nats.Msg) {
 })
 
 ```
+
+
 
 ## NATS Community
 
