@@ -12,6 +12,8 @@ search_exclude: false
 
 ### Previous: [Part 2](https://christianjmills.com/OpenVINO-Plugin-for-Unity-Tutorial-2/)
 
+### Update 12/9/21: [In-Editor](https://christianjmills.com/OpenVINO-Object-Detection-for-Unity-Tutorial-In-Editor/)
+
 * [Overview](#overview)
 * [Create New Project](#create-new-project)
 * [Add GUI](#add-gui)
