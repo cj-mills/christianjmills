@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes from Andrew Price's talk at Blender Conference 2018 on how A.I. will change the 3D industry.
 categories: [ai, 3d, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -44,7 +44,7 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
     
 - Procedural Modeling Example: Procedural Lake Village by Anastasia Opera
   
-    [Procedural Lake Village | anastasiaopara](https://www.anastasiaopara.com/lakevillage)
+    [Procedural Lake Village](https://www.anastasiaopara.com/lakevillage)
     
     [Houdini Procedural Lake Houses Complete](https://anopara.gumroad.com/l/qaEZ)
     
@@ -61,7 +61,7 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
     
 - Procedural Level Design: Houdini
   
-    [Procedural World Generation of Ubisoft's Far Cry 5 | Etienne Carrier | Houdini HIVE Utrecht](https://www.youtube.com/watch?v=NfizT369g60)
+    [Procedural World Generation of Ubisoft's Far Cry 5](https://www.youtube.com/watch?v=NfizT369g60)
     
     - Create an ecosystem
         - Set rules to define where certain trees and plants would live
@@ -104,38 +104,38 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
     
     - Model input: outline of an object in an image and the ground truth image
     - Model output: generate variations of image
-    - https://github.com/junyanz/BicycleGAN
+    - [GitHub Repository](https://github.com/junyanz/BicycleGAN)
     - Toward Multi-modal Image-to-image translation
     
 - DivCo: Diverse Conditional Image Synthesis via Contrastive Generative Adversarial Network
-    - https://github.com/ruiliu-ai/DivCo
+    - [GitHub Repository](https://github.com/ruiliu-ai/DivCo)
     
 - Sketch to Image
     - pix2pix
       
         [Image-to-Image Demo - Affine Layer](https://affinelayer.com/pixsrv/index.html)
         
-        - https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix
+        - [GitHub Repository](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
     
 - StyleGAN2
-    - https://github.com/lucidrains/stylegan2-pytorch
-    - https://github.com/rosinality/stylegan2-pytorch
+    - [GitHub Repository](https://github.com/lucidrains/stylegan2-pytorch)
+    - [GitHub Repository](https://github.com/rosinality/stylegan2-pytorch)
     
 - Progressive Growing of GANS (PGAN)
-    - https://github.com/nashory/pggan-pytorch
+    - [GitHub Repository](https://github.com/nashory/pggan-pytorch)
     
     [PyTorch](https://pytorch.org/hub/facebookresearch_pytorch-gan-zoo_pgan/)
     
 - Text to Image
-    - https://github.com/hanzhanggit/StackGAN-v2 (2017)
-    - https://github.com/wtliao/text2image (April 2021)
-    - https://github.com/IIGROUP/TediGAN (March 2021)
-    - https://github.com/tobran/DF-GAN
+    - [StackGAN V2](https://github.com/hanzhanggit/StackGAN-v2) (2017)
+    - [text2image](https://github.com/wtliao/text2image) (April 2021)
+    - [TediGAN](https://github.com/IIGROUP/TediGAN) (March 2021)
+    - [DF-GAN](https://github.com/tobran/DF-GAN)
     
 - Style Transfer
     - A Style-Aware Content Loss for Real-time HD Style Transfer
-        - https://github.com/CompVis/adaptive-style-transfer (TensorFlow 2018)
-        - https://github.com/Tonyhuiii/color-transform (PyTorch 2019)
+        - [Adaptive Style Transfer](https://github.com/CompVis/adaptive-style-transfer) (TensorFlow 2018)
+        - [color-transform](https://github.com/Tonyhuiii/color-transform) (PyTorch 2019)
         
 
 
@@ -151,10 +151,10 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
     [Unsupervised 3D Neural Rendering of Minecraft Worlds](https://nvlabs.github.io/GANcraft/)
     
 - NeRS: Neural Reflectance Surfaces for Sparse-View 3D Reconstruction in the Wild (October 2021)
-    - https://github.com/jasonyzhang/ners
+    - [GitHub Repository](https://github.com/jasonyzhang/ners)
     
 - PIFuHD: Multi-Level Pixel-Aligned Implicit Function for High-Resolution 3D Human Digitization (2020)
-    - https://github.com/facebookresearch/pifuhd
+    - [GitHub Repository](https://github.com/facebookresearch/pifuhd)
       
         [Google Colaboratory](https://colab.research.google.com/drive/11z58bl3meSzo6kFqkahMa35G5jmh2Wgt)
         
@@ -164,6 +164,8 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
   
     ![https://nv-tlabs.github.io/3DStyleNet/assets/teaser.jpg](https://nv-tlabs.github.io/3DStyleNet/assets/teaser.jpg)
     
+    
+    
     [https://nv-tlabs.github.io/3DStyleNet/assets/animal-new.mp4](https://nv-tlabs.github.io/3DStyleNet/assets/animal-new.mp4)
     
     [3DStyleNet: Creating 3D Shapes with Geometric and Texture Style Variations](https://nv-tlabs.github.io/3DStyleNet/)
@@ -172,33 +174,33 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
   
     ![https://github.com/laughtervv/DISN/raw/master/result.png](https://github.com/laughtervv/DISN/raw/master/result.png)
     
-    - https://github.com/laughtervv/DISN (Tensorflow)
-    - https://github.com/cs674/pytorch-DISN (PyTorch)
+    - [GitHub Repository](https://github.com/laughtervv/DISN) (Tensorflow)
+    - [GitHub Repository](https://github.com/cs674/pytorch-DISN) (PyTorch)
     
 - Learning Linear Transformations for Fast Arbitrary Style Transfer
-    - https://github.com/sunshineatnoon/LinearStyleTransfer
+    - [GitHub Repository](https://github.com/sunshineatnoon/LinearStyleTransfer)
     
 - Neural Cages for Detail-Preserving 3D Deformations
-    - https://github.com/yifita/deep_cage
+    - [GitHub Repository](https://github.com/yifita/deep_cage)
     
 - Taming Transformers for High-Resolution Image Synthesis
-    - https://github.com/CompVis/taming-transformers
-    - https://github.com/sunshineatnoon/taming-transformers
+    - [GitHub Repository](https://github.com/CompVis/taming-transformers)
+    - [GitHub Repository](https://github.com/sunshineatnoon/taming-transformers)
     
     [[Overview] Taming Transformers for High-Resolution Image Synthesis](https://wandb.ai/ayush-thakur/taming-transformer/reports/-Overview-Taming-Transformers-for-High-Resolution-Image-Synthesis---Vmlldzo0NjEyMTY)
     
     [These Neural Networks Have Superpowers! 💪](https://www.youtube.com/watch?v=o7dqGcLDf0A)
     
 - Rethinking Style Transfer: From Pixels to Parameterized Brushstrokes
-    - https://github.com/CompVis/brushstroke-parameterized-style-transfer (TensorFlow)
-    - https://github.com/justanhduc/brushstroke-parameterized-style-transfer (PyTorch)
+    - [GitHub Repository](https://github.com/CompVis/brushstroke-parameterized-style-transfer) (TensorFlow)
+    - [GitHub Repository](https://github.com/justanhduc/brushstroke-parameterized-style-transfer) (PyTorch)
     
 - Network-to-Network Translation with Conditional Invertible Neural Networks
-    - https://github.com/CompVis/net2net
+    - [GitHub Repository](https://github.com/CompVis/net2net)
     
 - Artistic Style Transfer with Internal-external Learning and Contrastive Learning
-    - https://github.com/HalbertCH/IEContraAST
-    - Based on https://github.com/GlebSBrykin/SANET
+    - [GitHub Repository](https://github.com/HalbertCH/IEContraAST)
+    - Based on: [SANET](https://github.com/GlebSBrykin/SANET)
     
 - Synthetic Silviculture: Multi-scale Modeling of Plant Ecosystems
   
@@ -211,7 +213,7 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
     [Simulating A Virtual World...For A Thousand Years! 🤯](https://www.youtube.com/watch?v=8YOpFsZsR9w)
     
 - DualConvMesh-Net: Joint Geodesic and Euclidean Convolutions on 3D Meshes
-    - https://github.com/VisualComputingInstitute/dcm-net
+    - [GitHub Repository](https://github.com/VisualComputingInstitute/dcm-net)
     
 
 ### Other Applications
@@ -224,7 +226,7 @@ This will reduce the cost of production, enabling more productions overall
 
 - Rotoscoping
   
-    [What is rotoscoping animation and how to do it | Adobe](https://www.adobe.com/creativecloud/video/discover/rotoscoping-animation.html)
+    [What is rotoscoping animation and how to do it ](https://www.adobe.com/creativecloud/video/discover/rotoscoping-animation.html)
     
     - segmentaion
     
@@ -234,12 +236,12 @@ This will reduce the cost of production, enabling more productions overall
     
     - Appearance-Driven Automatic 3D Model Simplification (2021)
         - [https://research.nvidia.com/publication/2021-04_Appearance-Driven-Automatic-3D](https://research.nvidia.com/publication/2021-04_Appearance-Driven-Automatic-3D)
-        - https://github.com/NVlabs/nvdiffmodeling
+        - [GitHub Repository](https://github.com/NVlabs/nvdiffmodeling)
     
 - Human provides general outline/concept and a model fills in technical details
     - NVIDIA GauGAN2
         
-        [NVIDIA Research's GauGAN AI Art Demo Responds to Words | NVIDIA Blog](https://blogs.nvidia.com/blog/2021/11/22/gaugan2-ai-art-demo/)
+        [NVIDIA Research's GauGAN AI Art Demo Responds to Words](https://blogs.nvidia.com/blog/2021/11/22/gaugan2-ai-art-demo/)
         
     - NVIDIA Canvas
       
