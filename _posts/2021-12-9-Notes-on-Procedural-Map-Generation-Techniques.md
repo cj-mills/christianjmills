@@ -1,5 +1,5 @@
 ---
-title: Notes on Procedural Map Generation TEchniques
+title: Notes on Procedural Map Generation Techniques
 layout: post
 toc: false
 comments: true
