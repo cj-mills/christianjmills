@@ -1,5 +1,5 @@
 ---
-title: Notes on How A.I. Will Change the 3d Industry
+title: Notes on How A.I. Will Change the 3D Industry
 layout: post
 toc: false
 comments: true
