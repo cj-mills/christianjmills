@@ -3,9 +3,9 @@ title: Notes on Writing Resumes for Software Developer Jobs
 layout: post
 toc: false
 comments: true
-description: My notes from Mayuko Inoue's video on finding software developer job openings.
+description: My notes from Mayuko Inoue's video on finding software engineering job openings.
 categories: [career, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -19,9 +19,9 @@ search_exclude: false
 
 ## Overview
 
-[How to find Software Engineering job openings](https://www.youtube.com/watch?v=KObiuTFYTkM)
+Here are some notes I took while watching Mayuko's [video](https://www.youtube.com/watch?v=KObiuTFYTkM) on finding software engineering job openings
 
-Finding a job takes time.
+**Note:** Finding a job takes time.
 
 
 
