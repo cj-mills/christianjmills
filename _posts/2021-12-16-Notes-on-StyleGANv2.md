@@ -98,9 +98,7 @@ I recently started learning more about generative deep learning models for some 
 
 #### Adaptive Instance Normalization (StyleGANv1):
 
-$$AdaIN(x,y) = \sigma(y) \ \left(\frac{x - \mu(x)}{\sigma(x)}\right) + \mu(y)
-$$
-
+$AdaIN(x,y) = \sigma(y) \ \left(\frac{x - \mu(x)}{\sigma(x)}\right) + \mu(y)$
 - Introduced in [Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization](https://arxiv.org/abs/1703.06868)
   
 - Used in StyleGANv1 to have the latent vector $W$ influence the features of the generator model
@@ -139,15 +137,14 @@ $$
     - $$
         \mathbb{E}_{w,y  N(0,I)} \left(||J^{T}_{w}y||_{2}-a\right)^{2}
         $$
-    
-        
-    
+
     - Jacobian matrix $J_{w} = \partial g(w)/\partial w$
-        - sort of seeing the partial derivatives of output with respect to small changes in the latent vector that produces the images
-        - Use the small changes and the Jacobian matrix and multiply it by a random image $Y$ and is randomly sampled at each iteration
-        
+​        - sort of seeing the partial derivatives of output with respect to small changes in the latent vector that produces the images
+​        - Use the small changes and the Jacobian matrix and multiply it by a random image $Y$ and is randomly sampled at each iteration
+​        
+
     - Lazy regularization: only perform regularization every 16 steps
-    
+
 - Get away from progressive growing of the GAN
     - progressive growing requires a lot of hyper parameter search for the $\alpha$ value used to perform the element wise sum for the upsampled image
         - complicates training
@@ -168,30 +165,31 @@ $$
             - The deep fake detection algorithm cannot find the latent vector would reproduce the real images
         - Note: Might not be a robust solution for an actual deepfake detector
     
-    ## Recap
-    
-    ### StyleGANv2 Changes
-    
-    - Restructured Adaptive Instance Normalization
-    - Replaced Progressive Growing with skip connections
-    - Perceptual path length (PPL) normalization
-    - PPL norm results in easier latent space projection (Deepfake Detection)
-    
-    ### Training Speed Gains (1024x1024 resolution)
-    
-    - StyleGANv1 → 37 images per second
-    - V2 Config E → 61 images per second (40% faster)
-    - V2 Config F → 31 images per second (larger networks)
-    - V2 Config F → 9 days on 8 Tesla V100 GPUs for FFHQ dataset, 13 days for LSUN CAR dataset
-    
-    | Configuration | Resolution | Total kimg | 1 GPU | GPU Memory |
-    | --- | --- | --- | --- | --- |
-    | config-f | 1024x1024 | 25000 | 69d 23h | 13.3 GB |
-    | config-f | 1024x1024 | 10000 | 27d 23h | 13.3 GB |
-    | config-e | 1024x1024 | 25000 | 35d 11h | 8.6 GB |
-    | config-e | 1024x1024 | 10000 | 14d 4h | 8.6 GB |
-    | config-f | 256x256 | 25000 | 32d 13h | 6.4 GB |
-    | config-f | 256x256 | 10000 | 13d 0h | 6.4 GB |
+
+## Recap
+
+### StyleGANv2 Changes
+
+- Restructured Adaptive Instance Normalization
+- Replaced Progressive Growing with skip connections
+- Perceptual path length (PPL) normalization
+- PPL norm results in easier latent space projection (Deepfake Detection)
+
+### Training Speed Gains (1024x1024 resolution)
+
+- StyleGANv1 → 37 images per second
+- V2 Config E → 61 images per second (40% faster)
+- V2 Config F → 31 images per second (larger networks)
+- V2 Config F → 9 days on 8 Tesla V100 GPUs for FFHQ dataset, 13 days for LSUN CAR dataset
+
+| Configuration | Resolution | Total kimg | 1 GPU | GPU Memory |
+| --- | --- | --- | --- | --- |
+| config-f | 1024x1024 | 25000 | 69d 23h | 13.3 GB |
+| config-f | 1024x1024 | 10000 | 27d 23h | 13.3 GB |
+| config-e | 1024x1024 | 25000 | 35d 11h | 8.6 GB |
+| config-e | 1024x1024 | 10000 | 14d 4h | 8.6 GB |
+| config-f | 256x256 | 25000 | 32d 13h | 6.4 GB |
+| config-f | 256x256 | 10000 | 13d 0h | 6.4 GB |
 
 
 
