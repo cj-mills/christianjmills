@@ -3,7 +3,7 @@ title: Notes on Making Money as a Freelance Developer
 layout: post
 toc: false
 comments: true
-description: My notes on making money as a freelance developer by Luke Ciciliano on freeCodeCamp.
+description: My notes on some tips for making money as a freelance developer by Luke Ciciliano on freeCodeCamp.
 categories: [career, notes]
 hide: true
 permalink: /:title/
