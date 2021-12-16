@@ -114,7 +114,11 @@ $AdaIN(x,y) = \sigma(y) \ \left(\frac{x - \mu(x)}{\sigma(x)}\right) + \mu(y)$
 - Switch from using adaptive instance normalization to weight demodulation layers
     - Scale the weight parameters by using $w^\prime_{ijk}=s_i \cdot w_{ijk}$ where $s_i$ is  from the adaptive instance normalization from the $W$ latent vector
     - Demodulate it to assume that the features have unit variance (dividing all values by the standard deviation?)
-        - $w^{\prime\prime}_{ijk} = w^{\prime}_{ijk} / {\sqrt{\sum_{i,k}{w^\prime_{ijk}}^2+\epsilon}}$
+        - $$
+          w^{\prime\prime}_{ijk} = w^{\prime}_{ijk} / {\sqrt{\sum_{i,k}{w^\prime_{ijk}}^2+\epsilon}}
+          $$
+        
+          
     - Change the weight parameters of the 3x3 kernel size convolutional layer instead of having an intermediate modulation and normalizing layer
     - removing weight demodulation results in strange artifacts when interpolating between images
     
@@ -130,9 +134,9 @@ $AdaIN(x,y) = \sigma(y) \ \left(\frac{x - \mu(x)}{\sigma(x)}\right) + \mu(y)$
             
             [Texture vs Shape: The bias in CNNs](https://towardsdatascience.com/texture-vs-shape-the-bias-in-cnns-5ee423edf8db)
             
-        - https://github.com/rgeirhos/Stylized-ImageNet
+        - [Stylized Imgaenet](https://github.com/rgeirhos/Stylized-ImageNet)
         
-        - https://github.com/rgeirhos/texture-vs-shape
+        - [texture-vs-shape](https://github.com/rgeirhos/texture-vs-shape)
         
     - $$
         \mathbb{E}_{w,y  N(0,I)} \left(||J^{T}_{w}y||_{2}-a\right)^{2}
