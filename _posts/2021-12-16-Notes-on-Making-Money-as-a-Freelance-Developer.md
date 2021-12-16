@@ -14,7 +14,7 @@ search_exclude: false
 * [Characteristics of a Freelance Developer](#characteristics-of-a-freelance-developer)
 * [Standing Out From Other Freelance Developers](#standing-out-from-other-freelance-developers)
 * [How to Sell Your Services](#how-to-sell-your-services)
-* [Where to Sell Your Services](#where to-sell-your-services)
+* [Where to Sell Your Services](#where-to-sell-your-services)
 
 
 
