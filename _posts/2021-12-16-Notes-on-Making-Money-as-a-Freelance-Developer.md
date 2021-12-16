@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes on some tips for making money as a freelance developer by Luke Ciciliano on freeCodeCamp.
 categories: [career, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
