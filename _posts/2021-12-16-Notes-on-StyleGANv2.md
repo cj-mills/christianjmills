@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes on the overview of StyleGANv2 by Henry AI Labs.
 categories: [ai, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
