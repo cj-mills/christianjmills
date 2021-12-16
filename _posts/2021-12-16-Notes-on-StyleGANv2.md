@@ -3,7 +3,7 @@ title: Notes on StyleGANv2
 layout: post
 toc: false
 comments: true
-description: My notes from the overview of StyleGANv2 by Henry AI Labs.
+description: My notes on the overview of StyleGANv2 by Henry AI Labs.
 categories: [ai, notes]
 hide: true
 permalink: /:title/
@@ -157,7 +157,7 @@ $AdaIN(x,y) = \sigma(y) \ \left(\frac{x - \mu(x)}{\sigma(x)}\right) + \mu(y)$
           
             [MSG-GAN: Multi-Scale Gradients for Generative Adversarial Networks](https://arxiv.org/abs/1903.06048)
             
-        - https://github.com/akanimax/BMSG-GAN
+        - [BMSG-GAN](https://github.com/akanimax/BMSG-GAN)
         - StyleGANv2 does not use the exact same technique as MSG-GAN
             - Instead of feeding intermediate features from the generator to the discriminator, they have more of a ResNet style architecture
                 - Not a traditional skip connection: They flatten each intermediate feature map (e.g. 256x256, 512x512) to 3-channel RGB format and feed those into the skip connection
