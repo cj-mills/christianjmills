@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes from Mayuko Inoue's video on writing a resume for a software developer job.
 categories: [career, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
