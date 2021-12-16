@@ -136,7 +136,11 @@ $$
         
         - https://github.com/rgeirhos/texture-vs-shape
         
-    - $\mathbb{E}_{w,y  N(0,I)} \left(||J^{T}_{w}y||_{2}-a\right)^{2}$
+    - $$
+        \mathbb{E}_{w,y  N(0,I)} \left(||J^{T}_{w}y||_{2}-a\right)^{2}
+        $$
+    
+        
     
     - Jacobian matrix $J_{w} = \partial g(w)/\partial w$
         - sort of seeing the partial derivatives of output with respect to small changes in the latent vector that produces the images
