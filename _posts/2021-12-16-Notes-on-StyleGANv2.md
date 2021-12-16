@@ -186,6 +186,8 @@ $AdaIN(x,y) = \sigma(y) \ \left(\frac{x - \mu(x)}{\sigma(x)}\right) + \mu(y)$
 - V2 Config F → 31 images per second (larger networks)
 - V2 Config F → 9 days on 8 Tesla V100 GPUs for FFHQ dataset, 13 days for LSUN CAR dataset
 
+
+
 | Configuration | Resolution | Total kimg | 1 GPU | GPU Memory |
 | --- | --- | --- | --- | --- |
 | config-f | 1024x1024 | 25000 | 69d 23h | 13.3 GB |
