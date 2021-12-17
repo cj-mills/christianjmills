@@ -19,7 +19,7 @@ search_exclude: false
 
 ## Overview
 
-Here are some notes I took while watching Mayuko's [video](https://www.youtube.com/watch?v=KObiuTFYTkM) on finding software engineering job openings
+Here are some notes I took while watching Mayuko's [video](https://www.youtube.com/watch?v=KObiuTFYTkM) on finding software engineering job openings.
 
 **Note:** Finding a job takes time.
 
