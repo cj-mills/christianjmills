@@ -1,5 +1,5 @@
 ---
-title: Notes on Getting Your First Tech Job
+title: Notes on How To Speak
 layout: post
 toc: false
 comments: true
