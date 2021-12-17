@@ -1,5 +1,5 @@
 ---
-title: Notes on Writing Resumes for Software Developer Jobs
+title: Notes on Finding Software Engineering Job Openings
 layout: post
 toc: false
 comments: true
