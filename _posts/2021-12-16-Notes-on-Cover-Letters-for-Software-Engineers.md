@@ -17,7 +17,7 @@ search_exclude: false
 
 ## Overview
 
-Here are some notes I took while watching Mayuko's [video](https://www.youtube.com/watch?v=0USpL2kypUg) on finding software engineering job openings
+Here are some notes I took while watching Mayuko's [video](https://www.youtube.com/watch?v=0USpL2kypUg) on whether cover letters are worth it for software engineering jobs.
 
 
 
