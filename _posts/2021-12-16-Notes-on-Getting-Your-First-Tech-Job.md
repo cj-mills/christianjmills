@@ -53,7 +53,7 @@ Here are some notes I took while watching Mayuko's [video](https://www.youtube.c
     - Doing hackathons counts as experience
     - Working on open source projects counts as experience
     - Internships
-    - Projects you have
+    - Projects you have worked on
         - Name of the project
         - Bullet points
             - Your accomplishments
