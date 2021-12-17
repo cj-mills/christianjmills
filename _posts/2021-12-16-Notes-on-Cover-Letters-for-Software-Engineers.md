@@ -1,19 +1,17 @@
 ---
-title: Notes on Writing Resumes for Software Developer Jobs
+title: Notes on Cover Letters for Software Engineers
 layout: post
 toc: false
 comments: true
 description: My notes for Mayuko Inoue's video on whether cover letters are worth it for software engineering jobs.
 categories: [career, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
 
 * [Overview](#overview)
-* [Job Websites](#job-websites)
-* [Referrals](#referrals)
-* [Recruitment Events](#recruitment-events)
+* [Probably Not Worth It](#probably-not-worth-it)
 
 
 
