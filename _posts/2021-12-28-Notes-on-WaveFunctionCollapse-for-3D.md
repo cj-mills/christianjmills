@@ -3,7 +3,7 @@ title: Notes on WaveFunctionCollapse for 3D
 layout: post
 toc: false
 comments: true
-description: My notes from Martin Donald's video on using the WaveFunctionCollapse algorithms for 3D modules.
+description: My notes from Martin Donald's video on using the WaveFunctionCollapse algorithm for 3D modules.
 categories: [procedural-generation, notes]
 hide: false
 permalink: /:title/
