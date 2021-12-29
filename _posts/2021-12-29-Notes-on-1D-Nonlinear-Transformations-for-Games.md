@@ -3,7 +3,7 @@ title: Notes on 1D Nonlinear Transformations for Games
 layout: post
 toc: false
 comments: true
-description: My notes from Squirrel Eiserloh's video on 1D nonlinear transformations for game development.
+description: My notes from Squirrel Eiserloh's presentation on 1D nonlinear transformations for game development.
 categories: [game-dev, notes]
 hide: false
 permalink: /:title/
@@ -25,7 +25,7 @@ search_exclude: false
 
 ## Overview
 
-Here are some notes I took while watching Squirrel Eiserloh's [video](https://www.youtube.com/watch?v=mr5xkf6zSzk) covering how 1D nonlinear transformations can be used by game programmers.
+Here are some notes I took while watching Squirrel Eiserloh's [presentation](https://www.youtube.com/watch?v=mr5xkf6zSzk) covering how 1D nonlinear transformations can be used by game programmers.
 
 
 
