@@ -3,7 +3,7 @@ title: Notes on Practical Procedural Generation
 layout: post
 toc: false
 comments: true
-description: My notes from Kate Compton's video on practical techniques for procedural generation.
+description: My notes from Kate Compton's talk on practical techniques for procedural generation.
 categories: [procedural-generation, notes]
 hide: false
 permalink: /:title/
@@ -21,7 +21,7 @@ search_exclude: false
 
 ## Overview
 
-Here are some notes I took while watching Kate Compton's [video](https://www.youtube.com/watch?v=WumyfLEa6bU) covering practical procedural generation techniques.
+Here are some notes I took while watching Kate Compton's [talk](https://www.youtube.com/watch?v=WumyfLEa6bU) covering practical procedural generation techniques.
 
 
 
