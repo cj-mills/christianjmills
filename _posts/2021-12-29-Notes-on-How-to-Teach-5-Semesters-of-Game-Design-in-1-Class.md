@@ -110,7 +110,7 @@ Here are some notes I took while watching Jason Wiser's [talk](https://www.youtu
 - Innovation: What new gameplay to stimulate interest?
 - Immersion: Is the “story” compelling (implied in setting, art, music)?
 - Flow: Does the player feel constantly productive?
-    - A game that is to inhibit flow is taken and discussed on its intentions and merits
+    - A game that designed is to inhibit flow is taken and discussed on its intentions and merits
 - Fiero: Are there multiple big victory moments for players?
 - Grade is as much on collaboration, experimentation, risk taking, and design, as it is about the games being successful as games
 
