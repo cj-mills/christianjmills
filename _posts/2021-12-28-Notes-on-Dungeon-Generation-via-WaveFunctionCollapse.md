@@ -3,7 +3,7 @@ title: Notes on Dungeon Generation via WaveFunctionCollapse
 layout: post
 toc: false
 comments: true
-description: My notes from Brian Bucklew's video on procedurally generating dungeon levels using the WaveFunctionCollapse algorithm.
+description: My notes from Brian Bucklew's talk on procedurally generating dungeon levels using the WaveFunctionCollapse algorithm.
 categories: [procedural-generation, notes]
 hide: false
 permalink: /:title/
@@ -19,7 +19,7 @@ search_exclude: false
 
 ## Overview
 
-Here are some notes I took while watching Brian Bucklew's [video](https://www.youtube.com/watch?v=fnFj3dOKcIQ) covering how to use the WaveFunctionCollapse algorithm to procedurally generate dungeon levels.
+Here are some notes I took while watching Brian Bucklew's [talk](https://www.youtube.com/watch?v=fnFj3dOKcIQ) covering how to use the WaveFunctionCollapse algorithm to procedurally generate dungeon levels.
 
 
 ## WaveFunctionCollapse
