@@ -53,7 +53,7 @@ Here are some notes I took while watching Kate Compton's [talk](https://www.yout
 
 [V&A Design a Wig](https://www.vam.ac.uk/designawig/)
 
-[Toca Hair Salon | The Power of Play | Toca Boca](https://tocaboca.com/app/toca-hair-salon/)
+[Toca Hair Salon - The Power of Play - Toca Boca](https://tocaboca.com/app/toca-hair-salon/)
 
 - Lots of generative content uses extremely sophisticated and brilliant AI and fails anyway
 - Some of the best generative content is simple
@@ -118,7 +118,7 @@ Additive and Subtractive Methods
 - L-Systems (for geometry)
 - Replacement grammars
   
-    [Level design as model transformation | Proceedings of the 2nd International Workshop on Procedural Content Generation in Games](https://dl.acm.org/doi/10.1145/2000919.2000921)
+    [Level design as model transformation - Proceedings of the 2nd International Workshop on Procedural Content Generation in Games](https://dl.acm.org/doi/10.1145/2000919.2000921)
 
 #### Distribution
 
@@ -180,7 +180,7 @@ Additive and Subtractive Methods
 - Whitelist a catalog of **known good** content
     - It’s faster to verify questionable content than to build a testing function
 
-#### Ganerate and test
+#### Generate and test
 
 - If you can write an algorithm to judge “quality”
     - Throwaway vs ranking/prioritization
