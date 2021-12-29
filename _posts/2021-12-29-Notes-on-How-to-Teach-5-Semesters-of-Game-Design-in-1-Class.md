@@ -66,7 +66,7 @@ Here are some notes I took while watching Jason Wiser's [talk](https://www.youtu
     1. focus on mechanics
     2. form team and design a table top game inspired by weird boards and toys
 2. Playtesting and Radical Revision
-    1. find the fun
+    1. find the fun parts of the game
     2. discuss radical revision to refocus around that fun
 3. Disruption of Existing Games
     1. form a second two-week team
