@@ -154,7 +154,7 @@ out RangeMap(in, inStart, inEnd, outStart, outEnd)
     - flipping
     
 
-### $Mix(a, b, weightB, t)= a + b weightB(b-a)$
+### $Mix(a, b, weightB, t)= a + weightB(b-a)$
 
 - $Mix(SmoothStart2, SmoothStop2, blend, t)$
 - $SmoothStart2.2 = Mix(SmoothStart2, SmoothStart3, 0.2);$
