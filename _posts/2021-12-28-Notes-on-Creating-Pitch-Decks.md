@@ -27,13 +27,13 @@ Explain in simple terms that can be quickly consumed.
 
 2. Present yourself as the experts who can solve this problem.
 
-3. Describe your solution by walking b through a simple and clean user journey. What is the killer feature that distinguishes your solution.
+3. Describe your solution by walking through a simple and clean user journey. What is the killer feature that distinguishes your solution.
 
 4. Traction: What is the existing interest/usage for the solution? Revenue, profit, active users.
 
-5. Pitch the biggest vision that you can. Why is the going to change the world? What she the world look like when you are successful? Goes at the end.
+5. Pitch the biggest vision that you can. Why is this going to change the world? What would the world look like when you are successful? Goes at the end of the presentation.
 
-6. Have a clean deck design.
+6. Have a clean deck design. Does not need to be fancy.
 
 10/20/20 Rule
 
