@@ -177,5 +177,5 @@ Here are some notes I took while watching Martin Donald's [video](https://www.yo
 * [Infinite procedurally generated city with the Wave Function Collapse algorithm](https://marian42.de/article/wfc/)
 * [Wave - by Oskar Stålberg](https://oskarstalberg.com/game/wave/wave.html)
 * [WaveFunctionCollapse](https://github.com/mxgmn/WaveFunctionCollapse)
-* [The Wavefunction Collapse Algorithm explained very clearly | Robert Heaton](https://robertheaton.com/2018/12/17/wavefunction-collapse-algorithm/)
+* [The Wavefunction Collapse Algorithm explained very clearly](https://robertheaton.com/2018/12/17/wavefunction-collapse-algorithm/)
 * [Unity WaveFunctionCollapse](https://github.com/selfsame/unity-wave-function-collapse/)
