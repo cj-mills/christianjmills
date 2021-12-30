@@ -1,5 +1,5 @@
 ---
-title: Notes on Version Control
+title: Notes on FastAPI Basics
 layout: post
 toc: false
 comments: true
