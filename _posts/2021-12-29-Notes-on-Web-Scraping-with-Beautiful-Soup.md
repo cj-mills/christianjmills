@@ -117,7 +117,7 @@ import os
 
 **Find H5 Tags**
 
-**replit:** https://replit.com/@innominate817/Local-HTML-Scraping#main.py
+**replit:** [https://replit.com/@innominate817/Local-HTML-Scraping#main.py](https://replit.com/@innominate817/Local-HTML-Scraping#main.py)
 
 ```python
 # Open local html file
@@ -147,7 +147,7 @@ All h5 tags
 
 **Get a List of Courses in HTML File**
 
-**replit:** https://replit.com/@innominate817/Local-HTML-Scraping-2#main.py
+**replit:** [https://replit.com/@innominate817/Local-HTML-Scraping-2#main.py](https://replit.com/@innominate817/Local-HTML-Scraping-2#main.py)
 
 ```python
 # Open local html file
@@ -175,7 +175,7 @@ Python Machine Learning
 
 **Get Prices for Each Course**
 
-**replit:** https://replit.com/@innominate817/Local-HTML-Scraping-3#main.py
+**replit:** [https://replit.com/@innominate817/Local-HTML-Scraping-3#main.py](https://replit.com/@innominate817/Local-HTML-Scraping-3#main.py)
 
 ```python
 # Open local html file
@@ -216,7 +216,7 @@ soup = BeautifulSoup(html_text, 'lxml')
 
 **Get Most Recent Job Listing**
 
-**replit:** https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-1#main.py
+**replit:** [https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-1#main.py](https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-1#main.py)
 
 ```python
 jobs = soup.find_all('li', class_='clearfix job-bx wht-shd-bx')
@@ -240,7 +240,7 @@ Posted 4 days ago
 
 **Get Jobs Posted a Few Days Ago**
 
-**replit:** https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-2#main.py
+**replit:** [https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-2#main.py](https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-2#main.py)
 
 ```python
 jobs = soup.find_all('li', class_='clearfix job-bx wht-shd-bx')
@@ -294,7 +294,7 @@ Published: Posted few days ago
 
 **Save Job Listings to Files**
 
-**replit:** https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-3#main.py
+**replit:** [https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-3#main.py](https://replit.com/@innominate817/Website-Scraping-BeautifulSoup-3#main.py)
 
 ```python
 def find_jobs(unfamiliar_skill='None', path='./posts'):
