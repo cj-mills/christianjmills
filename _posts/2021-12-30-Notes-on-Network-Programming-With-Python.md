@@ -21,7 +21,7 @@ search_exclude: false
 
 ## Overview
 
-Here are some notes I took while watching Neural Nine's [video](https://www.youtube.com/watch?v=FGdiSJakIS4) providing an introduction to introduction to network programming with python.
+Here are some notes I took while watching Neural Nine's [video](https://www.youtube.com/watch?v=FGdiSJakIS4) providing an introduction to network programming with python.
 
 Colab Notebook
 
