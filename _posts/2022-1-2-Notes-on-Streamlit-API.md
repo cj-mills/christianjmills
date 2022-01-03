@@ -1,5 +1,5 @@
 ---
-title: Notes on Creating Data Science Apps With Streamlit
+title: Notes on the Streamlit API
 layout: post
 toc: false
 comments: true
