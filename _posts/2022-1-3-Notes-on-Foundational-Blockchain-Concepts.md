@@ -34,7 +34,7 @@ Here are some notes some notes I took while watching [Lesson 0](https://www.yout
 ## Bitcoin
 
 - one of the first protocols to use blockchain technology
-- too blockchain mainstream
+- took blockchain mainstream
 - [Bitcoin Whitepaper](https://bitcoin.org/bitcoin.pdf)
   - Published by the Pseudonymous Identity, Satoshi Nakamoto in 2008
     - outlines how Bitcoin could be used to make peer-to-peer transactions on a decentralized network
