@@ -231,7 +231,7 @@ Scrape NBA player stats from a website and perform exploratory data analysis.
 
 **Data Source**
 
-[Basketball Statistics and History | Basketball-Reference.com](https://www.basketball-reference.com/)
+[Basketball Statistics and History](https://www.basketball-reference.com/)
 
 **replit:** [EDA_Basketball](https://replit.com/@innominate817/EDABasketball#main.py)
 
@@ -771,7 +771,7 @@ st.pyplot(fig, bbox_inches='tight')
 
 ## Deploy App to Heroku
 
-[Cloud Application Platform | Heroku](https://www.heroku.com/)
+[Heroku](https://www.heroku.com/)
 
 `runtime.txt`
 
