@@ -24,4 +24,4 @@ I also have a strong passion for exploring alternative methods of education and 
 
 ## Reaching Out
 
-If you would like to discuss any of the topics mentioned above, feel free to reach out via [Email](mailto:christian@christianjmills.com).
+If you would like to discuss any of the topics mentioned above, feel free to reach out via Email at christian@christianjmills.com.
