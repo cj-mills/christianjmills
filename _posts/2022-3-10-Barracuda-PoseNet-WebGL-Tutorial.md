@@ -12,7 +12,7 @@ search_exclude: false
 
 * [Overview](#overview)
 * [Download GitHub Project](#download-github-project)
-* [Update Barracuda Library](#update-barracuda library)
+* [Update Barracuda Library](#update-barracuda-library)
 * [Remove Video Player](#remove-video-player)
 * [Add Image Effect Shaders](#add-image-effect-shaders)
 * [Create Scriptable Objects](#create-scriptable-objects)
