@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My notes for chapter 1 of Deep Learning for Coders with fastai & PyTorch
 categories: [ai, fastai, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
