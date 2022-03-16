@@ -303,7 +303,7 @@ tensor([[1.5000, 3.0000, 4.5000],
 
 ### NumPy Array Objects
 
-* https://numpy.org/doc/stable/reference/arrays.html
+* [https://numpy.org/doc/stable/reference/arrays.html](https://numpy.org/doc/stable/reference/arrays.html)
 * an N-dimensional array type, the ndarray, which describes a collection of “items” of the same type
 
 #### numpy.array function
