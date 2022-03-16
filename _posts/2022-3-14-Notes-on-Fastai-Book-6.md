@@ -45,7 +45,7 @@ from fastai.vision.all import *
 path = untar_data(URLs.PASCAL_2007)
 path
 ```
-```bash
+```text
 Path('/home/innom-dt/.fastai/data/pascal_2007')
 ```
 
@@ -125,7 +125,7 @@ Class lables are stored in a space-delimited string
 # Access rows and columns using the `iloc` property 
 df.iloc[:,0]
 ```
-```bash
+```text
 0       000005.jpg
 1       000007.jpg
 2       000009.jpg
@@ -147,7 +147,7 @@ df.iloc[0,:]
 #   so this is equivalent:
 df.iloc[0]
 ```
-```bash
+```text
 fname       000005.jpg
 labels           chair
 is_valid          True
@@ -159,7 +159,7 @@ Name: 0, dtype: object
 # Get a column by name
 df['fname']
 ```
-```bash
+```text
 0       000005.jpg
 1       000007.jpg
 2       000009.jpg
@@ -273,7 +273,7 @@ dsets = dblock.datasets(df)
 ```python
 len(dsets.train),len(dsets.valid)
 ```
-```bash
+```text
 (4009, 1002)
 ```
 
@@ -284,7 +284,7 @@ len(dsets.train),len(dsets.valid)
 x,y = dsets.train[0]
 x,y
 ```
-```bash
+```text
 (fname       008663.jpg
  labels      car person
  is_valid         False
@@ -299,7 +299,7 @@ x,y
 ```python
 x['fname']
 ```
-```bash
+```text
 '008663.jpg'
 ```
 
@@ -311,7 +311,7 @@ dblock = DataBlock(get_x = lambda r: r['fname'], get_y = lambda r: r['labels'])
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-```bash
+```text
 ('005620.jpg', 'aeroplane')
 ```
 
@@ -327,7 +327,7 @@ dblock = DataBlock(get_x = get_x, get_y = get_y)
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-```bash
+```text
 ('002549.jpg', 'tvmonitor')
 ```
 
@@ -341,7 +341,7 @@ dblock = DataBlock(get_x = get_x, get_y = get_y)
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-```bash
+```text
 (Path('/home/innom-dt/.fastai/data/pascal_2007/train/002844.jpg'), ['train'])
 ```
 
@@ -361,7 +361,7 @@ dsets.train[0]
 ```python
 ImageBlock
 ```
-```bash
+```text
 <function fastai.vision.data.ImageBlock(cls=<class 'fastai.vision.core.PILImage'>)>
 ```
 
@@ -369,7 +369,7 @@ ImageBlock
 ```python
 MultiCategoryBlock
 ```
-```bash
+```text
 <function fastai.data.block.MultiCategoryBlock(encoded=False, vocab=None, add_na=False)>
 ```
 
@@ -381,7 +381,7 @@ dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-```bash
+```text
 (PILImage mode=RGB size=500x375,
  TensorMultiCategory([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.]))
 ```
@@ -392,7 +392,7 @@ dsets.train[0]
 idxs = torch.where(dsets.train[0][1]==1.)[0]
 dsets.train.vocab[idxs]
 ```
-```bash
+```text
 (#1) ['dog']
 ```
 
@@ -412,7 +412,7 @@ dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-```bash
+```text
 (PILImage mode=RGB size=500x333,
  TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
 ```
@@ -438,7 +438,7 @@ dls.show_batch(nrows=1, ncols=3)
 ```python
 dblock.summary(df)
 ```
-```bash
+```text
 Setting-up type transforms pipelines
 Collecting items from            fname          labels  is_valid
 0     000005.jpg           chair      True
@@ -555,7 +555,7 @@ to_cpu(b)
 ```python
 to_cpu
 ```
-```bash
+```text
 <function fastai.torch_core.to_cpu(b)>
 ```
 
@@ -565,7 +565,7 @@ x,y = to_cpu(dls.train.one_batch())
 activs = learn.model(x)
 activs.shape
 ```
-```bash
+```text
 torch.Size([64, 20])
 ```
 
@@ -573,7 +573,7 @@ torch.Size([64, 20])
 ```python
 activs[0]
 ```
-```bash
+```text
 TensorBase([ 0.5674, -1.2013,  4.5409, -1.5284, -0.6600,  0.0999, -2.4757, -0.8773, -0.2934, -1.4746, -0.1738,  2.1763, -3.4473, -1.1407,  0.1783, -1.6922, -2.3396,  0.7602, -1.4213, -0.4334],
        grad_fn=<AliasBackward0>)
 ```
@@ -591,7 +591,7 @@ def binary_cross_entropy(inputs, targets):
 ```python
 binary_cross_entropy(activs, y)
 ```
-```bash
+```text
 TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```
 
@@ -608,7 +608,7 @@ nn.BCEWithLogitsLoss
 ```python
 nn.BCEWithLogitsLoss
 ```
-```bash
+```text
 torch.nn.modules.loss.BCEWithLogitsLoss
 ```
 
@@ -618,7 +618,7 @@ loss_func = nn.BCEWithLogitsLoss()
 loss = loss_func(activs, y)
 loss
 ```
-```bash
+```text
 TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```
 
@@ -632,7 +632,7 @@ TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```python
 partial
 ```
-```bash
+```text
 functools.partial
 ```
 
@@ -642,7 +642,7 @@ functools.partial
 def say_hello(name, say_what="Hello"): return f"{say_what} {name}."
 say_hello('Jeremy'),say_hello('Jeremy', 'Ahoy!')
 ```
-```bash
+```text
 ('Hello Jeremy.', 'Ahoy! Jeremy.')
 ```
 
@@ -651,7 +651,7 @@ say_hello('Jeremy'),say_hello('Jeremy', 'Ahoy!')
 f = partial(say_hello, say_what="Bonjour")
 f("Jeremy"),f("Sylvain")
 ```
-```bash
+```text
 ('Bonjour Jeremy.', 'Bonjour Sylvain.')
 ```
 
@@ -663,7 +663,7 @@ accuracy_multi
 ```python
 accuracy_multi
 ```
-```bash
+```text
 <function fastai.metrics.accuracy_multi(inp, targ, thresh=0.5, sigmoid=True)>
 ```
 
@@ -756,7 +756,7 @@ learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
 learn.metrics = partial(accuracy_multi, thresh=0.1)
 learn.validate()
 ```
-```bash
+```text
 (#2) [0.10356765240430832,0.9294222593307495]
 ```
 
@@ -765,7 +765,7 @@ learn.validate()
 learn.metrics = partial(accuracy_multi, thresh=0.99)
 learn.validate()
 ```
-```bash
+```text
 (#2) [0.10356765240430832,0.9427291750907898]
 ```
 
@@ -778,7 +778,7 @@ preds,targs = learn.get_preds()
 ```python
 accuracy_multi(preds, targs, thresh=0.9, sigmoid=False)
 ```
-```bash
+```text
 TensorBase(0.9566)
 ```
 
@@ -823,7 +823,7 @@ plt.plot(xs,accs);
 path = untar_data(URLs.BIWI_HEAD_POSE)
 path
 ```
-```bash
+```text
 Path('/home/innom-dt/.fastai/data/biwi_head_pose')
 ```
 
@@ -831,7 +831,7 @@ Path('/home/innom-dt/.fastai/data/biwi_head_pose')
 ```python
 path.ls().sorted()
 ```
-```bash
+```text
 (#50) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05.obj')...]
 ```
 
@@ -839,7 +839,7 @@ path.ls().sorted()
 ```python
 (path/'01').ls().sorted()
 ```
-```bash
+```text
 (#1000) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/depth.cal'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00007_pose.txt')...]
 ```
 
@@ -853,7 +853,7 @@ def img2pose(x): return Path(f'{str(x)[:-7]}pose.txt')
 pose_file = img2pose(img_files[0])
 pose_file
 ```
-```bash
+```text
 Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
 ```
 
@@ -861,7 +861,7 @@ Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
 ```python
 !cat $pose_file
 ```
-```bash
+```text
 0.999485 -0.00797222 -0.031067 
 -0.00416483 0.928156 -0.372168 
 0.031802 0.372106 0.927645 
@@ -874,7 +874,7 @@ Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
 im = PILImage.create(img_files[0])
 im.shape
 ```
-```bash
+```text
 (480, 640)
 ```
 
@@ -893,7 +893,7 @@ im.to_thumb(160)
 ```python
 np.genfromtxt
 ```
-```bash
+```text
 <function numpy.genfromtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None)>
 ```
 
@@ -904,7 +904,7 @@ np.genfromtxt
 cal = np.genfromtxt(path/'01'/'rgb.cal', skip_footer=6)
 cal
 ```
-```bash
+```text
 array([[517.679,   0.   , 320.   ],
        [  0.   , 517.679, 240.5  ],
        [  0.   ,   0.   ,   1.   ]])
@@ -926,7 +926,7 @@ def get_ctr(f):
 ```python
 np.genfromtxt(img2pose(img_files[0]), skip_header=3)
 ```
-```bash
+```text
 array([ 62.3638,  96.2159, 979.839 ])
 ```
 
@@ -934,7 +934,7 @@ array([ 62.3638,  96.2159, 979.839 ])
 ```python
 get_ctr(img_files[0])
 ```
-```bash
+```text
 tensor([352.9487, 291.3338])
 ```
 
@@ -949,7 +949,7 @@ tensor([352.9487, 291.3338])
 ```python
 PointBlock
 ```
-```bash
+```text
 <fastai.data.block.TransformBlock at 0x7fb65aaf5490>
 ```
 
@@ -980,7 +980,7 @@ dls.show_batch(max_n=9, figsize=(8,6))
 xb,yb = dls.one_batch()
 xb.shape,yb.shape
 ```
-```bash
+```text
 (torch.Size([64, 3, 240, 320]), torch.Size([64, 1, 2]))
 ```
 
@@ -989,7 +989,7 @@ xb.shape,yb.shape
 ```python
 yb[0]
 ```
-```bash
+```text
 TensorPoint([[-0.1246,  0.0960]], device='cuda:0')
 ```
 
@@ -1015,7 +1015,7 @@ plot_function(partial(sigmoid_range,lo=-1,hi=1), min=-4, max=4)
 ```python
 dls.loss_func
 ```
-```bash
+```text
 FlattenedLoss of MSELoss()
 ```
 
@@ -1029,7 +1029,7 @@ min_lr, steep_lr, valley = learn.lr_find(suggest_funcs=(minimum, steep, valley))
 ```python
 min_lr
 ```
-```bash
+```text
 0.006918309628963471
 ```
 
@@ -1037,7 +1037,7 @@ min_lr
 ```python
 steep_lr
 ```
-```bash
+```text
 2.0892961401841603e-05
 ```
 
@@ -1045,7 +1045,7 @@ steep_lr
 ```python
 valley
 ```
-```bash
+```text
 0.0010000000474974513
 ```
 
@@ -1111,7 +1111,7 @@ learn.fine_tune(3, lr)
 # Calculate the Root Mean Squared Error
 math.sqrt(0.000042)
 ```
-```bash
+```text
 0.00648074069840786
 ```
 
