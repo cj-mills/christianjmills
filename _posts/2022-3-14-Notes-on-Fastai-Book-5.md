@@ -61,7 +61,9 @@ matplotlib.rc('image', cmap='Greys')
 path = untar_data(URLs.PETS)
 path
 ```
-    Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
+```bash
+Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
+```
 
 <br>
 ```python
@@ -69,13 +71,17 @@ path
 Path.BASE_PATH = path
 path
 ```
-    Path('.')
+```bash
+Path('.')
+```
 
 <br>
 ```python
 path.ls()
 ```
-    (#2) [Path('images'),Path('annotations')]
+```bash
+(#2) [Path('images'),Path('annotations')]
+```
 
 <br>
 ```python
@@ -83,13 +89,17 @@ path.ls()
 # Not needed for classification
 (path/"annotations").ls()
 ```
-    (#7) [Path('annotations/trimaps'),Path('annotations/xmls'),Path('annotations/._trimaps'),Path('annotations/list.txt'),Path('annotations/test.txt'),Path('annotations/README'),Path('annotations/trainval.txt')]
+```bash
+(#7) [Path('annotations/trimaps'),Path('annotations/xmls'),Path('annotations/._trimaps'),Path('annotations/list.txt'),Path('annotations/test.txt'),Path('annotations/README'),Path('annotations/trainval.txt')]
+```
 
 <br>
 ```python
 (path/"images").ls()
 ```
-    (#7393) [Path('images/Birman_121.jpg'),Path('images/shiba_inu_131.jpg'),Path('images/Bombay_176.jpg'),Path('images/Bengal_199.jpg'),Path('images/beagle_41.jpg'),Path('images/beagle_27.jpg'),Path('images/great_pyrenees_181.jpg'),Path('images/Bengal_100.jpg'),Path('images/keeshond_124.jpg'),Path('images/havanese_115.jpg')...]
+```bash
+(#7393) [Path('images/Birman_121.jpg'),Path('images/shiba_inu_131.jpg'),Path('images/Bombay_176.jpg'),Path('images/Bengal_199.jpg'),Path('images/beagle_41.jpg'),Path('images/beagle_27.jpg'),Path('images/great_pyrenees_181.jpg'),Path('images/Bengal_100.jpg'),Path('images/keeshond_124.jpg'),Path('images/havanese_115.jpg')...]
+```
 
 Pet breed and species is indicated in the file name for each image
 * Cat breeds have capitalized file names and dog breeds have lowercase file names
@@ -99,7 +109,9 @@ Pet breed and species is indicated in the file name for each image
 fname = (path/"images").ls()[0]
 fname
 ```
-    Path('images/Birman_121.jpg')
+```bash
+Path('images/Birman_121.jpg')
+```
 
 
 
@@ -122,7 +134,9 @@ fname
 # Matches all instances of any group of characters before a sequence of digits right before '.jpg'
 re.findall(r'(.+)_\d+.jpg$', fname.name)
 ```
-    ['Birman']
+```bash
+['Birman']
+```
 
 #### fastai RegexLabeller:
 
@@ -132,13 +146,17 @@ re.findall(r'(.+)_\d+.jpg$', fname.name)
 ```python
 RegexLabeller
 ```
-    fastai.data.transforms.RegexLabeller
+```bash
+fastai.data.transforms.RegexLabeller
+```
 
 <br>
 ```python
 get_image_files
 ```
-    <function fastai.data.transforms.get_image_files(path, recurse=True, folders=None)>
+```bash
+<function fastai.data.transforms.get_image_files(path, recurse=True, folders=None)>
+```
 
 <br>
 ```python
@@ -155,7 +173,9 @@ dls = pets.dataloaders(path/"images")
 ```python
 dls.c
 ```
-    37
+```bash
+37
+```
 
 <br>
 ```python
@@ -368,7 +388,9 @@ dblock1 = DataBlock(blocks=(ImageBlock(), CategoryBlock()),
 ```python
 (Path.cwd()/'images'/'grizzly.jpg')
 ```
-    Path('/media/innom-dt/Samsung_T3/Projects/Current_Projects/fastbook/clean/images/grizzly.jpg')
+```bash
+Path('/media/innom-dt/Samsung_T3/Projects/Current_Projects/fastbook/clean/images/grizzly.jpg')
+```
 
 <br>
 ```python
@@ -377,8 +399,10 @@ dls1 = dblock1.dataloaders([(Path.cwd()/'images'/'grizzly.jpg')]*100, bs=8)
 print(len(dls1.items))
 print(dls1.categorize.vocab)
 ```
-    80
-    ['images']
+```bash
+80
+['images']
+```
 
 
 <br>
@@ -396,7 +420,9 @@ dls1.train.get_idxs = lambda: Inf.ones
 ```python
 type(Inf.ones)
 ```
-    itertools.cycle
+```bash
+itertools.cycle
+```
 
 #### fastai DataLoader.one_batch:
 
@@ -408,7 +434,9 @@ type(Inf.ones)
 ```python
 DataLoader.one_batch
 ```
-    <function fastai.data.load.DataLoader.one_batch(self)>
+```bash
+<function fastai.data.load.DataLoader.one_batch(self)>
+```
 
 <br>
 ```python
@@ -417,16 +445,20 @@ print(x.shape)
 print(y.shape)
 print(y)
 ```
-    torch.Size([8, 3, 460, 460])
-    torch.Size([8])
-    TensorCategory([0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
-
+```bash
+torch.Size([8, 3, 460, 460])
+torch.Size([8])
+TensorCategory([0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
+```
 
 <br>
+
 ```python
 print(TensorImage)
 ```
-    <class 'fastai.torch_core.TensorImage'>
+```bash
+<class 'fastai.torch_core.TensorImage'>
+```
 
 #### fastai TensorImage:
 
@@ -461,11 +493,13 @@ print(TensorImage.rotate)
 print(TensorImage.zoom)
 print(TensorImage.warp)
 ```
-    <class 'fastai.torch_core.TensorImage'>
-    <function TensorImage.affine_coord at 0x7fb370ba0940>
-    <function TensorImage.rotate at 0x7fb370ba8dc0>
-    <function TensorImage.zoom at 0x7fb370bb2160>
-    <function TensorImage.warp at 0x7fb370bb2820>
+```bash
+<class 'fastai.torch_core.TensorImage'>
+<function TensorImage.affine_coord at 0x7fb370ba0940>
+<function TensorImage.rotate at 0x7fb370ba8dc0>
+<function TensorImage.zoom at 0x7fb370bb2160>
+<function TensorImage.warp at 0x7fb370bb2820>
+```
 
 #### fastcore Pipeline:
 
@@ -478,7 +512,9 @@ print(TensorImage.warp)
 ```python
 Pipeline
 ```
-    fastcore.transform.Pipeline
+```bash
+fastcore.transform.Pipeline
+```
 
 <br>
 
@@ -532,61 +568,65 @@ pets1 = DataBlock(blocks = (ImageBlock, CategoryBlock),
 ```python
 DataBlock.summary
 ```
-    <function fastai.data.block.DataBlock.summary(self: fastai.data.block.DataBlock, source, bs=4, show_batch=False, **kwargs)>
+```v
+<function fastai.data.block.DataBlock.summary(self: fastai.data.block.DataBlock, source, bs=4, show_batch=False, **kwargs)>
+```
 
 <br>
 
 ```python
 pets1.summary(path/"images")
 ```
-    Setting-up type transforms pipelines
-    Collecting items from /home/innom-dt/.fastai/data/oxford-iiit-pet/images
-    Found 7390 items
-    2 datasets of sizes 5912,1478
-    Setting up Pipeline: PILBase.create
-    Setting up Pipeline: partial -> Categorize -- {'vocab': None, 'sort': True, 'add_na': False}
-    
-    Building one sample
-      Pipeline: PILBase.create
-        starting from
-          /home/innom-dt/.fastai/data/oxford-iiit-pet/images/great_pyrenees_182.jpg
-        applying PILBase.create gives
-          PILImage mode=RGB size=400x500
-      Pipeline: partial -> Categorize -- {'vocab': None, 'sort': True, 'add_na': False}
-        starting from
-          /home/innom-dt/.fastai/data/oxford-iiit-pet/images/great_pyrenees_182.jpg
-        applying partial gives
-          great_pyrenees
-        applying Categorize -- {'vocab': None, 'sort': True, 'add_na': False} gives
-          TensorCategory(21)
-    
-    Final sample: (PILImage mode=RGB size=400x500, TensorCategory(21))
-    
-    Collecting items from /home/innom-dt/.fastai/data/oxford-iiit-pet/images
-    Found 7390 items
-    2 datasets of sizes 5912,1478
-    Setting up Pipeline: PILBase.create
-    Setting up Pipeline: partial -> Categorize -- {'vocab': None, 'sort': True, 'add_na': False}
-    Setting up after_item: Pipeline: ToTensor
-    Setting up before_batch: Pipeline: 
-    Setting up after_batch: Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
-    
-    Building one batch
-    Applying item_tfms to the first sample:
-      Pipeline: ToTensor
-        starting from
-          (PILImage mode=RGB size=400x500, TensorCategory(21))
-        applying ToTensor gives
-          (TensorImage of size 3x500x400, TensorCategory(21))
-    
-    Adding the next 3 samples
-    
-    No before_batch transform to apply
-    
-    Collating items in a batch
-    Error! It's not possible to collate your items in a batch
-    Could not collate the 0-th members of your tuples because got the following shapes
-    torch.Size([3, 500, 400]),torch.Size([3, 334, 500]),torch.Size([3, 375, 500]),torch.Size([3, 500, 375])
+```bash
+Setting-up type transforms pipelines
+Collecting items from /home/innom-dt/.fastai/data/oxford-iiit-pet/images
+Found 7390 items
+2 datasets of sizes 5912,1478
+Setting up Pipeline: PILBase.create
+Setting up Pipeline: partial -> Categorize -- {'vocab': None, 'sort': True, 'add_na': False}
+
+Building one sample
+  Pipeline: PILBase.create
+    starting from
+      /home/innom-dt/.fastai/data/oxford-iiit-pet/images/great_pyrenees_182.jpg
+    applying PILBase.create gives
+      PILImage mode=RGB size=400x500
+  Pipeline: partial -> Categorize -- {'vocab': None, 'sort': True, 'add_na': False}
+    starting from
+      /home/innom-dt/.fastai/data/oxford-iiit-pet/images/great_pyrenees_182.jpg
+    applying partial gives
+      great_pyrenees
+    applying Categorize -- {'vocab': None, 'sort': True, 'add_na': False} gives
+      TensorCategory(21)
+
+Final sample: (PILImage mode=RGB size=400x500, TensorCategory(21))
+
+Collecting items from /home/innom-dt/.fastai/data/oxford-iiit-pet/images
+Found 7390 items
+2 datasets of sizes 5912,1478
+Setting up Pipeline: PILBase.create
+Setting up Pipeline: partial -> Categorize -- {'vocab': None, 'sort': True, 'add_na': False}
+Setting up after_item: Pipeline: ToTensor
+Setting up before_batch: Pipeline: 
+Setting up after_batch: Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
+
+Building one batch
+Applying item_tfms to the first sample:
+  Pipeline: ToTensor
+    starting from
+      (PILImage mode=RGB size=400x500, TensorCategory(21))
+    applying ToTensor gives
+      (TensorImage of size 3x500x400, TensorCategory(21))
+
+Adding the next 3 samples
+
+No before_batch transform to apply
+
+Collating items in a batch
+Error! It's not possible to collate your items in a batch
+Could not collate the 0-th members of your tuples because got the following shapes
+torch.Size([3, 500, 400]),torch.Size([3, 334, 500]),torch.Size([3, 375, 500]),torch.Size([3, 500, 375])
+```
 
 
 <br>
@@ -661,14 +701,18 @@ x,y = dls.one_batch()
 ```python
 y.shape
 ```
-    torch.Size([64])
+```bash
+torch.Size([64])
+```
 
 <br>
 ```python
 y
 ```
-    TensorCategory([31, 30,  5, 17,  6,  7,  4, 22,  4, 27,  2, 19, 12, 14, 11,  8,  5, 26, 14, 11, 28, 25, 35,  4, 22, 36, 31,  9, 27, 20, 23, 33,  2, 27,  0, 18, 12, 22, 17, 21, 25, 13, 16, 15, 33, 14, 20, 15,
-             8, 18, 36, 32,  7, 26,  4, 20, 36, 14, 25, 32,  4, 14, 25, 17], device='cuda:0')
+```bash
+TensorCategory([31, 30,  5, 17,  6,  7,  4, 22,  4, 27,  2, 19, 12, 14, 11,  8,  5, 26, 14, 11, 28, 25, 35,  4, 22, 36, 31,  9, 27, 20, 23, 33,  2, 27,  0, 18, 12, 22, 17, 21, 25, 13, 16, 15, 33, 14, 20, 15,
+         8, 18, 36, 32,  7, 26,  4, 20, 36, 14, 25, 32,  4, 14, 25, 17], device='cuda:0')
+```
 
 #### Learner.get_preds:
 
@@ -679,22 +723,28 @@ y
 ```python
 Learner.get_preds
 ```
-    <function fastai.learner.Learner.get_preds(self, ds_idx=1, dl=None, with_input=False, with_decoded=False, with_loss=False, act=None, inner=False, reorder=True, cbs=None, save_preds=None, save_targs=None, concat_dim=0)>
+```v
+<function fastai.learner.Learner.get_preds(self, ds_idx=1, dl=None, with_input=False, with_decoded=False, with_loss=False, act=None, inner=False, reorder=True, cbs=None, save_preds=None, save_targs=None, concat_dim=0)>
+```
 
 <br>
 ```python
 preds,_ = learn.get_preds(dl=[(x,y)])
 preds[0]
 ```
-    TensorBase([2.8917e-05, 1.6130e-08, 3.2022e-04, 1.7541e-05, 1.5420e-05, 3.5346e-06, 7.1617e-06, 1.0242e-04, 4.3236e-05, 7.5608e-05, 3.9862e-05, 7.9690e-07, 7.0372e-07, 4.5139e-08, 2.7499e-06, 4.2070e-06,
-            9.9794e-08, 1.6574e-06, 4.6330e-07, 5.7135e-06, 8.5598e-07, 8.1175e-02, 7.1706e-05, 1.1809e-05, 7.3426e-05, 9.2441e-06, 7.5984e-07, 2.6505e-06, 1.1533e-04, 4.2089e-07, 4.4916e-06, 9.1771e-01,
-            3.1806e-06, 7.8490e-06, 4.9332e-07, 1.4727e-04, 3.1404e-07])
+```bash
+TensorBase([2.8917e-05, 1.6130e-08, 3.2022e-04, 1.7541e-05, 1.5420e-05, 3.5346e-06, 7.1617e-06, 1.0242e-04, 4.3236e-05, 7.5608e-05, 3.9862e-05, 7.9690e-07, 7.0372e-07, 4.5139e-08, 2.7499e-06, 4.2070e-06,
+        9.9794e-08, 1.6574e-06, 4.6330e-07, 5.7135e-06, 8.5598e-07, 8.1175e-02, 7.1706e-05, 1.1809e-05, 7.3426e-05, 9.2441e-06, 7.5984e-07, 2.6505e-06, 1.1533e-04, 4.2089e-07, 4.4916e-06, 9.1771e-01,
+        3.1806e-06, 7.8490e-06, 4.9332e-07, 1.4727e-04, 3.1404e-07])
+```
 
 <br>
 ```python
 len(preds[0]),preds[0].sum()
 ```
-    (37, TensorBase(1.0000))
+```bash
+(37, TensorBase(1.0000))
+```
 
 
 
@@ -728,29 +778,35 @@ torch.random.manual_seed(42);
 acts = torch.randn((6,2))*2
 acts
 ```
-    tensor([[ 0.6734,  0.2576],
-            [ 0.4689,  0.4607],
-            [-2.2457, -0.3727],
-            [ 4.4164, -1.2760],
-            [ 0.9233,  0.5347],
-            [ 1.0698,  1.6187]])
+```bash
+tensor([[ 0.6734,  0.2576],
+        [ 0.4689,  0.4607],
+        [-2.2457, -0.3727],
+        [ 4.4164, -1.2760],
+        [ 0.9233,  0.5347],
+        [ 1.0698,  1.6187]])
+```
 
 <br>
 ```python
 acts.sigmoid()
 ```
-    tensor([[0.6623, 0.5641],
-            [0.6151, 0.6132],
-            [0.0957, 0.4079],
-            [0.9881, 0.2182],
-            [0.7157, 0.6306],
-            [0.7446, 0.8346]])
+```v
+tensor([[0.6623, 0.5641],
+        [0.6151, 0.6132],
+        [0.0957, 0.4079],
+        [0.9881, 0.2182],
+        [0.7157, 0.6306],
+        [0.7446, 0.8346]])
+```
 
 <br>
 ```python
 (acts[:,0]-acts[:,1]).sigmoid()
 ```
-    tensor([0.6025, 0.5021, 0.1332, 0.9966, 0.5959, 0.3661])
+```bash
+tensor([0.6025, 0.5021, 0.1332, 0.9966, 0.5959, 0.3661])
+```
 
 $\text{Softmax}(x_{i}) = \frac{\exp(x_i)}{\sum_j \exp(x_j)}$
 
@@ -759,20 +815,24 @@ $\text{Softmax}(x_{i}) = \frac{\exp(x_i)}{\sum_j \exp(x_j)}$
 def softmax(x): return 2.718**x / (2.718**x).sum(dim=1, keepdim=True)
 softmax(acts)
 ```
-    tensor([[0.6025, 0.3975],
-            [0.5021, 0.4979],
-            [0.1332, 0.8668],
-            [0.9966, 0.0034],
-            [0.5959, 0.4041],
-            [0.3661, 0.6339]])
+```bash
+tensor([[0.6025, 0.3975],
+        [0.5021, 0.4979],
+        [0.1332, 0.8668],
+        [0.9966, 0.0034],
+        [0.5959, 0.4041],
+        [0.3661, 0.6339]])
+```
 
 <br>
 ```python
 print(softmax(acts)[0])
 softmax(acts)[0].sum()
 ```
-    tensor([0.6025, 0.3975])
-    tensor(1.)
+```bash
+tensor([0.6025, 0.3975])
+tensor(1.)
+```
 
 #### torch.softmax
 
@@ -783,19 +843,23 @@ softmax(acts)[0].sum()
 ```python
 torch.softmax
 ```
-    <function _VariableFunctionsClass.softmax>
+```bash
+<function _VariableFunctionsClass.softmax>
+```
 
 <br>
 ```python
 sm_acts = torch.softmax(acts, dim=1)
 sm_acts
 ```
-    tensor([[0.6025, 0.3975],
-            [0.5021, 0.4979],
-            [0.1332, 0.8668],
-            [0.9966, 0.0034],
-            [0.5959, 0.4041],
-            [0.3661, 0.6339]])
+```bash
+tensor([[0.6025, 0.3975],
+        [0.5021, 0.4979],
+        [0.1332, 0.8668],
+        [0.9966, 0.0034],
+        [0.5959, 0.4041],
+        [0.3661, 0.6339]])
+```
 
 
 
@@ -823,19 +887,23 @@ targ = tensor([0,1,0,1,1,0])
 ```python
 sm_acts
 ```
-    tensor([[0.6025, 0.3975],
-            [0.5021, 0.4979],
-            [0.1332, 0.8668],
-            [0.9966, 0.0034],
-            [0.5959, 0.4041],
-            [0.3661, 0.6339]])
+```bash
+tensor([[0.6025, 0.3975],
+        [0.5021, 0.4979],
+        [0.1332, 0.8668],
+        [0.9966, 0.0034],
+        [0.5959, 0.4041],
+        [0.3661, 0.6339]])
+```
 
 <br>
 ```python
 idx = range(6)
 sm_acts[idx, targ]
 ```
-    tensor([0.6025, 0.4979, 0.1332, 0.0034, 0.4041, 0.3661])
+```bash
+tensor([0.6025, 0.4979, 0.1332, 0.0034, 0.4041, 0.3661])
+```
 
 <br>
 ```python
@@ -915,7 +983,9 @@ df
 ```python
 -sm_acts[idx, targ]
 ```
-    tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
+```bash
+tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
+```
 
 
 
@@ -930,13 +1000,17 @@ df
 ```python
 F.nll_loss
 ```
-    <function torch.nn.functional.nll_loss(input: torch.Tensor, target: torch.Tensor, weight: Optional[torch.Tensor] = None, size_average: Optional[bool] = None, ignore_index: int = -100, reduce: Optional[bool] = None, reduction: str = 'mean') -> torch.Tensor>
+```bash
+<function torch.nn.functional.nll_loss(input: torch.Tensor, target: torch.Tensor, weight: Optional[torch.Tensor] = None, size_average: Optional[bool] = None, ignore_index: int = -100, reduce: Optional[bool] = None, reduction: str = 'mean') -> torch.Tensor>
+```
 
 <br>
 ```python
 F.nll_loss(sm_acts, targ, reduction='none')
 ```
-    tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
+```bash
+tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
+```
 
 
 
@@ -953,7 +1027,9 @@ F.nll_loss(sm_acts, targ, reduction='none')
 ```python
 torch.log
 ```
-    <function _VariableFunctionsClass.log>
+```bash
+<function _VariableFunctionsClass.log>
+```
 
 <br>
 ```python
@@ -977,26 +1053,34 @@ loss_func = nn.CrossEntropyLoss()
 ```python
 loss_func(acts, targ)
 ```
-    tensor(1.8045)
+```bash
+tensor(1.8045)
+```
 
 <br>
 ```python
 F.cross_entropy(acts, targ)
 ```
-    tensor(1.8045)
+```bash
+tensor(1.8045)
+```
 
 <br>
 ```python
 -torch.log(-F.nll_loss(sm_acts, targ, reduction='none'))
 ```
-    tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
+```bash
+tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
+```
 
 <br>
 ```python
 # Do not take the mean
 nn.CrossEntropyLoss(reduction='none')(acts, targ)
 ```
-    tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
+```bash
+tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
+```
 
 
 
@@ -1015,7 +1099,9 @@ ClassificationInterpretation.from_learner
 ```python
 ClassificationInterpretation
 ```
-    fastai.interpret.ClassificationInterpretation
+```bash
+fastai.interpret.ClassificationInterpretation
+```
 
 <br>
 ```python
@@ -1028,10 +1114,12 @@ interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 ```python
 interp.most_confused(min_val=4)
 ```
-    [('Birman', 'Ragdoll', 4),
-     ('Ragdoll', 'Birman', 4),
-     ('Siamese', 'Birman', 4),
-     ('american_pit_bull_terrier', 'staffordshire_bull_terrier', 4)]
+```bash
+[('Birman', 'Ragdoll', 4),
+ ('Ragdoll', 'Birman', 4),
+ ('Siamese', 'Birman', 4),
+ ('american_pit_bull_terrier', 'staffordshire_bull_terrier', 4)]
+```
 
 
 
@@ -1118,14 +1206,18 @@ lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 ```python
 print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
 ```
-    Minimum/10: 1.00e-02, steepest point: 6.31e-03
-
+```bash
+Minimum/10: 1.00e-02, steepest point: 6.31e-03
+```
 
 <br>
+
 ```python
 lr_steep
 ```
-    0.0063095735386013985
+```bash
+0.0063095735386013985
+```
 
 <br>
 ```python
@@ -1258,7 +1350,9 @@ Learner.fine_tune
 ```python
 Learner.fine_tune
 ```
-    <function fastai.callback.schedule.Learner.fine_tune(self: fastai.learner.Learner, epochs, base_lr=0.002, freeze_epochs=1, lr_mult=100, pct_start=0.3, div=5.0, lr_max=None, div_final=100000.0, wd=None, moms=None, cbs=None, reset_opt=False)>
+```bash
+<function fastai.callback.schedule.Learner.fine_tune(self: fastai.learner.Learner, epochs, base_lr=0.002, freeze_epochs=1, lr_mult=100, pct_start=0.3, div=5.0, lr_max=None, div_final=100000.0, wd=None, moms=None, cbs=None, reset_opt=False)>
+```
 
 <br>
 ```python
@@ -1322,13 +1416,18 @@ lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 ```python
 lr_min
 ```
-    1.3182566908653825e-05
+```bash
+1.3182566908653825e-05
+```
 
 <br>
+
 ```python
 lr_steep
 ```
-    6.918309736647643e-06
+```bash
+6.918309736647643e-06
+```
 
 <br>
 ```python
