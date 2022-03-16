@@ -61,7 +61,7 @@ matplotlib.rc('image', cmap='Greys')
 path = untar_data(URLs.PETS)
 path
 ```
-```bash
+```text
 Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
 ```
 
@@ -71,7 +71,7 @@ Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
 Path.BASE_PATH = path
 path
 ```
-```bash
+```text
 Path('.')
 ```
 
@@ -79,7 +79,7 @@ Path('.')
 ```python
 path.ls()
 ```
-```bash
+```text
 (#2) [Path('images'),Path('annotations')]
 ```
 
@@ -89,7 +89,7 @@ path.ls()
 # Not needed for classification
 (path/"annotations").ls()
 ```
-```bash
+```text
 (#7) [Path('annotations/trimaps'),Path('annotations/xmls'),Path('annotations/._trimaps'),Path('annotations/list.txt'),Path('annotations/test.txt'),Path('annotations/README'),Path('annotations/trainval.txt')]
 ```
 
@@ -97,7 +97,7 @@ path.ls()
 ```python
 (path/"images").ls()
 ```
-```bash
+```text
 (#7393) [Path('images/Birman_121.jpg'),Path('images/shiba_inu_131.jpg'),Path('images/Bombay_176.jpg'),Path('images/Bengal_199.jpg'),Path('images/beagle_41.jpg'),Path('images/beagle_27.jpg'),Path('images/great_pyrenees_181.jpg'),Path('images/Bengal_100.jpg'),Path('images/keeshond_124.jpg'),Path('images/havanese_115.jpg')...]
 ```
 
@@ -109,7 +109,7 @@ Pet breed and species is indicated in the file name for each image
 fname = (path/"images").ls()[0]
 fname
 ```
-```bash
+```text
 Path('images/Birman_121.jpg')
 ```
 
@@ -134,7 +134,7 @@ Path('images/Birman_121.jpg')
 # Matches all instances of any group of characters before a sequence of digits right before '.jpg'
 re.findall(r'(.+)_\d+.jpg$', fname.name)
 ```
-```bash
+```text
 ['Birman']
 ```
 
@@ -146,7 +146,7 @@ re.findall(r'(.+)_\d+.jpg$', fname.name)
 ```python
 RegexLabeller
 ```
-```bash
+```text
 fastai.data.transforms.RegexLabeller
 ```
 
@@ -154,7 +154,7 @@ fastai.data.transforms.RegexLabeller
 ```python
 get_image_files
 ```
-```bash
+```text
 <function fastai.data.transforms.get_image_files(path, recurse=True, folders=None)>
 ```
 
@@ -173,7 +173,7 @@ dls = pets.dataloaders(path/"images")
 ```python
 dls.c
 ```
-```bash
+```text
 37
 ```
 
@@ -388,7 +388,7 @@ dblock1 = DataBlock(blocks=(ImageBlock(), CategoryBlock()),
 ```python
 (Path.cwd()/'images'/'grizzly.jpg')
 ```
-```bash
+```text
 Path('/media/innom-dt/Samsung_T3/Projects/Current_Projects/fastbook/clean/images/grizzly.jpg')
 ```
 
@@ -399,7 +399,7 @@ dls1 = dblock1.dataloaders([(Path.cwd()/'images'/'grizzly.jpg')]*100, bs=8)
 print(len(dls1.items))
 print(dls1.categorize.vocab)
 ```
-```bash
+```text
 80
 ['images']
 ```
@@ -420,7 +420,7 @@ dls1.train.get_idxs = lambda: Inf.ones
 ```python
 type(Inf.ones)
 ```
-```bash
+```text
 itertools.cycle
 ```
 
@@ -434,7 +434,7 @@ itertools.cycle
 ```python
 DataLoader.one_batch
 ```
-```bash
+```text
 <function fastai.data.load.DataLoader.one_batch(self)>
 ```
 
@@ -445,7 +445,7 @@ print(x.shape)
 print(y.shape)
 print(y)
 ```
-```bash
+```text
 torch.Size([8, 3, 460, 460])
 torch.Size([8])
 TensorCategory([0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
@@ -456,7 +456,7 @@ TensorCategory([0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
 ```python
 print(TensorImage)
 ```
-```bash
+```text
 <class 'fastai.torch_core.TensorImage'>
 ```
 
@@ -493,7 +493,7 @@ print(TensorImage.rotate)
 print(TensorImage.zoom)
 print(TensorImage.warp)
 ```
-```bash
+```text
 <class 'fastai.torch_core.TensorImage'>
 <function TensorImage.affine_coord at 0x7fb370ba0940>
 <function TensorImage.rotate at 0x7fb370ba8dc0>
@@ -512,7 +512,7 @@ print(TensorImage.warp)
 ```python
 Pipeline
 ```
-```bash
+```text
 fastcore.transform.Pipeline
 ```
 
@@ -577,7 +577,7 @@ DataBlock.summary
 ```python
 pets1.summary(path/"images")
 ```
-```bash
+```text
 Setting-up type transforms pipelines
 Collecting items from /home/innom-dt/.fastai/data/oxford-iiit-pet/images
 Found 7390 items
@@ -701,7 +701,7 @@ x,y = dls.one_batch()
 ```python
 y.shape
 ```
-```bash
+```text
 torch.Size([64])
 ```
 
@@ -709,7 +709,7 @@ torch.Size([64])
 ```python
 y
 ```
-```bash
+```text
 TensorCategory([31, 30,  5, 17,  6,  7,  4, 22,  4, 27,  2, 19, 12, 14, 11,  8,  5, 26, 14, 11, 28, 25, 35,  4, 22, 36, 31,  9, 27, 20, 23, 33,  2, 27,  0, 18, 12, 22, 17, 21, 25, 13, 16, 15, 33, 14, 20, 15,
          8, 18, 36, 32,  7, 26,  4, 20, 36, 14, 25, 32,  4, 14, 25, 17], device='cuda:0')
 ```
@@ -732,7 +732,7 @@ Learner.get_preds
 preds,_ = learn.get_preds(dl=[(x,y)])
 preds[0]
 ```
-```bash
+```text
 TensorBase([2.8917e-05, 1.6130e-08, 3.2022e-04, 1.7541e-05, 1.5420e-05, 3.5346e-06, 7.1617e-06, 1.0242e-04, 4.3236e-05, 7.5608e-05, 3.9862e-05, 7.9690e-07, 7.0372e-07, 4.5139e-08, 2.7499e-06, 4.2070e-06,
         9.9794e-08, 1.6574e-06, 4.6330e-07, 5.7135e-06, 8.5598e-07, 8.1175e-02, 7.1706e-05, 1.1809e-05, 7.3426e-05, 9.2441e-06, 7.5984e-07, 2.6505e-06, 1.1533e-04, 4.2089e-07, 4.4916e-06, 9.1771e-01,
         3.1806e-06, 7.8490e-06, 4.9332e-07, 1.4727e-04, 3.1404e-07])
@@ -742,7 +742,7 @@ TensorBase([2.8917e-05, 1.6130e-08, 3.2022e-04, 1.7541e-05, 1.5420e-05, 3.5346e-
 ```python
 len(preds[0]),preds[0].sum()
 ```
-```bash
+```text
 (37, TensorBase(1.0000))
 ```
 
@@ -778,7 +778,7 @@ torch.random.manual_seed(42);
 acts = torch.randn((6,2))*2
 acts
 ```
-```bash
+```text
 tensor([[ 0.6734,  0.2576],
         [ 0.4689,  0.4607],
         [-2.2457, -0.3727],
@@ -804,7 +804,7 @@ tensor([[0.6623, 0.5641],
 ```python
 (acts[:,0]-acts[:,1]).sigmoid()
 ```
-```bash
+```text
 tensor([0.6025, 0.5021, 0.1332, 0.9966, 0.5959, 0.3661])
 ```
 
@@ -815,7 +815,7 @@ $\text{Softmax}(x_{i}) = \frac{\exp(x_i)}{\sum_j \exp(x_j)}$
 def softmax(x): return 2.718**x / (2.718**x).sum(dim=1, keepdim=True)
 softmax(acts)
 ```
-```bash
+```text
 tensor([[0.6025, 0.3975],
         [0.5021, 0.4979],
         [0.1332, 0.8668],
@@ -829,7 +829,7 @@ tensor([[0.6025, 0.3975],
 print(softmax(acts)[0])
 softmax(acts)[0].sum()
 ```
-```bash
+```text
 tensor([0.6025, 0.3975])
 tensor(1.)
 ```
@@ -843,7 +843,7 @@ tensor(1.)
 ```python
 torch.softmax
 ```
-```bash
+```text
 <function _VariableFunctionsClass.softmax>
 ```
 
@@ -852,7 +852,7 @@ torch.softmax
 sm_acts = torch.softmax(acts, dim=1)
 sm_acts
 ```
-```bash
+```text
 tensor([[0.6025, 0.3975],
         [0.5021, 0.4979],
         [0.1332, 0.8668],
@@ -887,7 +887,7 @@ targ = tensor([0,1,0,1,1,0])
 ```python
 sm_acts
 ```
-```bash
+```text
 tensor([[0.6025, 0.3975],
         [0.5021, 0.4979],
         [0.1332, 0.8668],
@@ -901,7 +901,7 @@ tensor([[0.6025, 0.3975],
 idx = range(6)
 sm_acts[idx, targ]
 ```
-```bash
+```text
 tensor([0.6025, 0.4979, 0.1332, 0.0034, 0.4041, 0.3661])
 ```
 
@@ -983,7 +983,7 @@ df
 ```python
 -sm_acts[idx, targ]
 ```
-```bash
+```text
 tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```
 
@@ -1000,7 +1000,7 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```python
 F.nll_loss
 ```
-```bash
+```text
 <function torch.nn.functional.nll_loss(input: torch.Tensor, target: torch.Tensor, weight: Optional[torch.Tensor] = None, size_average: Optional[bool] = None, ignore_index: int = -100, reduce: Optional[bool] = None, reduction: str = 'mean') -> torch.Tensor>
 ```
 
@@ -1008,7 +1008,7 @@ F.nll_loss
 ```python
 F.nll_loss(sm_acts, targ, reduction='none')
 ```
-```bash
+```text
 tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```
 
@@ -1027,7 +1027,7 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```python
 torch.log
 ```
-```bash
+```text
 <function _VariableFunctionsClass.log>
 ```
 
@@ -1053,7 +1053,7 @@ loss_func = nn.CrossEntropyLoss()
 ```python
 loss_func(acts, targ)
 ```
-```bash
+```text
 tensor(1.8045)
 ```
 
@@ -1061,7 +1061,7 @@ tensor(1.8045)
 ```python
 F.cross_entropy(acts, targ)
 ```
-```bash
+```text
 tensor(1.8045)
 ```
 
@@ -1069,7 +1069,7 @@ tensor(1.8045)
 ```python
 -torch.log(-F.nll_loss(sm_acts, targ, reduction='none'))
 ```
-```bash
+```text
 tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 ```
 
@@ -1078,7 +1078,7 @@ tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 # Do not take the mean
 nn.CrossEntropyLoss(reduction='none')(acts, targ)
 ```
-```bash
+```text
 tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 ```
 
@@ -1099,7 +1099,7 @@ ClassificationInterpretation.from_learner
 ```python
 ClassificationInterpretation
 ```
-```bash
+```text
 fastai.interpret.ClassificationInterpretation
 ```
 
@@ -1114,7 +1114,7 @@ interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 ```python
 interp.most_confused(min_val=4)
 ```
-```bash
+```text
 [('Birman', 'Ragdoll', 4),
  ('Ragdoll', 'Birman', 4),
  ('Siamese', 'Birman', 4),
@@ -1206,7 +1206,7 @@ lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 ```python
 print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
 ```
-```bash
+```text
 Minimum/10: 1.00e-02, steepest point: 6.31e-03
 ```
 
@@ -1215,7 +1215,7 @@ Minimum/10: 1.00e-02, steepest point: 6.31e-03
 ```python
 lr_steep
 ```
-```bash
+```text
 0.0063095735386013985
 ```
 
@@ -1350,7 +1350,7 @@ Learner.fine_tune
 ```python
 Learner.fine_tune
 ```
-```bash
+```text
 <function fastai.callback.schedule.Learner.fine_tune(self: fastai.learner.Learner, epochs, base_lr=0.002, freeze_epochs=1, lr_mult=100, pct_start=0.3, div=5.0, lr_max=None, div_final=100000.0, wd=None, moms=None, cbs=None, reset_opt=False)>
 ```
 
@@ -1416,7 +1416,7 @@ lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 ```python
 lr_min
 ```
-```bash
+```text
 1.3182566908653825e-05
 ```
 
@@ -1425,7 +1425,7 @@ lr_min
 ```python
 lr_steep
 ```
-```bash
+```text
 6.918309736647643e-06
 ```
 
