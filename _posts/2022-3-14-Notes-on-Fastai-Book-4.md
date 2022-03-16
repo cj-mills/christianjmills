@@ -155,7 +155,7 @@ im3
 
 ### PIL Image Module
 
-* https://pillow.readthedocs.io/en/stable/reference/Image.html
+* [https://pillow.readthedocs.io/en/stable/reference/Image.html](https://pillow.readthedocs.io/en/stable/reference/Image.html)
 * provides a class with the same name which is used to represent a PIL image
 * provides a number of factory functions, including functions to load images from files, and to create new images
 
