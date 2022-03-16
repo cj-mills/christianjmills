@@ -168,7 +168,7 @@ key = os.environ.get('AZURE_SEARCH_KEY', 'f4be28837a074dfa90a1b72900a971ef')
 ```python
 search_images_bing
 ```
-```bash
+```text
 <function fastbook.search_images_bing(key, term, min_sz=128, max_images=150)>
 ```
 
@@ -183,7 +183,7 @@ print(type(results))
 print(f"Number of results: {len(results)}")
 ```
 
-```bash
+```text
 <class 'fastcore.foundation.L'>
 Number of results: 150
 ```
@@ -356,7 +356,7 @@ len(ims)
 ```
 
 
-```bash
+```text
 150
 ```
 
@@ -373,7 +373,7 @@ dest = 'images/grizzly.jpg'
 download_url(ims[0], dest)
 ```
 
-```bash
+```text
 Path('images/grizzly.jpg')
 ```
 
@@ -403,7 +403,7 @@ for b in bear_types:
     print(f"{path}/{b}")
 ```
 
-```bash
+```text
 /mnt/980SSD/Datasets/bears
 /mnt/980SSD/Datasets/bears/grizzly
 /mnt/980SSD/Datasets/bears/black
@@ -438,7 +438,7 @@ fns = get_image_files(path)
 print(fns[:5])
 ```
 
-```bash
+```text
 [Path('/mnt/980SSD/Datasets/bears/black/00000000.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000001.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000002.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000003.png'), Path('/mnt/980SSD/Datasets/bears/black/00000004.jpg')]
 ```
 
@@ -450,13 +450,13 @@ failed = verify_images(fns)
 print(failed[:5])
 ```
 
-```bash
+```text
 /home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/PIL/TiffImagePlugin.py:822: UserWarning: Corrupt EXIF data.  Expecting to read 2 bytes but only got 0. 
   warnings.warn(str(msg))
 ```
 
 
-```bash
+```text
 []
 ```
 
@@ -600,7 +600,7 @@ dls = bears.dataloaders(path)
 dls.train.show_batch(max_n=8, nrows=2, unique=True)
 ```
 
-```bash
+```text
 /home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/torch/_tensor.py:1051: UserWarning: torch.solve is deprecated in favor of torch.linalg.solveand will be removed in a future PyTorch release.
 torch.linalg.solve has its arguments reversed and does not return the LU factorization.
 To get the LU factorization see torch.lu, which can be used with torch.lu_solve or torch.lu_unpack.
@@ -731,7 +731,7 @@ interp.plot_top_losses(5, nrows=1)
 cleaner = ImageClassifierCleaner(learn)
 cleaner
 ```
-```bash
+```text
 VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), Dropdown(options=('Train', 'Val…
 ```
 
