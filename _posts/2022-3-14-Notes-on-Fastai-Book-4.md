@@ -331,6 +331,7 @@ print(tensor(im3)[4:10,4:10][0].dtype)
 # Full Image
 pd.DataFrame(tensor(im3))
 ```
+<div style="overflow-x:auto;">
 <table style="overflow-x:scroll; width: 600px;" border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1236,6 +1237,8 @@ pd.DataFrame(tensor(im3))
     </tr>
   </tbody>
 </table>
+</div>
+
 <br>
 
 ```python
@@ -1253,6 +1256,7 @@ df = pd.DataFrame(im3_t[4:15,4:22])
 # Color-code the values using a gradient
 df.style.set_properties(**{'font-size':'6pt'}).background_gradient('Greys')
 ```
+<div style="overflow-x:auto;">
 <table id="T_75288">
   <thead>
     <tr>
@@ -1511,6 +1515,8 @@ df.style.set_properties(**{'font-size':'6pt'}).background_gradient('Greys')
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 
@@ -2927,6 +2933,7 @@ lr
 ```python
 learn.fit(10, lr=lr)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -3010,6 +3017,8 @@ learn.fit(10, lr=lr)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## Adding a Nonlinearity
@@ -3085,6 +3094,7 @@ learn = Learner(dls, simple_net, opt_func=SGD,
 ```python
 learn.fit(40, 0.1)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -3378,6 +3388,8 @@ learn.fit(40, 0.1)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 #### matplotlib.pyplot.plot:
@@ -3451,6 +3463,7 @@ learn = cnn_learner(dls, resnet18, pretrained=False,
                     loss_func=F.cross_entropy, metrics=accuracy)
 learn.fit_one_cycle(1, 0.1)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -3471,9 +3484,12 @@ learn.fit_one_cycle(1, 0.1)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 <br>
+
 ```python
 learn.model
 ```
