@@ -100,6 +100,7 @@ model = xresnet50(n_out=dls.c)
 learn = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy)
 learn.fit_one_cycle(5, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -148,6 +149,8 @@ learn.fit_one_cycle(5, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 <br>
@@ -158,6 +161,7 @@ model = xresnet50(n_out=dls.c)
 learn = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy).to_fp16()
 learn.fit_one_cycle(5, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -206,6 +210,8 @@ learn.fit_one_cycle(5, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## Normalization
@@ -270,6 +276,7 @@ model = xresnet50(n_out=dls.c)
 learn = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy).to_fp16()
 learn.fit_one_cycle(5, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -318,6 +325,8 @@ learn.fit_one_cycle(5, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## Progressive Resizing
@@ -339,6 +348,7 @@ learn = Learner(dls, xresnet50(n_out=dls.c), loss_func=CrossEntropyLossFlat(),
                 metrics=accuracy).to_fp16()
 learn.fit_one_cycle(4, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -380,6 +390,8 @@ learn.fit_one_cycle(4, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 <br>
 ```python
@@ -534,6 +546,7 @@ model = xresnet50()
 learn = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy, cbs=MixUp).to_fp16()
 learn.fit_one_cycle(15, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -652,6 +665,8 @@ learn.fit_one_cycle(15, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## Label Smoothing
@@ -677,6 +692,7 @@ model = xresnet50()
 learn = Learner(dls, model, loss_func=LabelSmoothingCrossEntropy(), metrics=accuracy).to_fp16()
 learn.fit_one_cycle(15, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -795,6 +811,8 @@ learn.fit_one_cycle(15, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## Label Smoothing, Mixup and Progressive Resizing
@@ -805,6 +823,7 @@ model = xresnet50()
 learn = Learner(dls, model, loss_func=LabelSmoothingCrossEntropy(), metrics=accuracy, cbs=MixUp).to_fp16()
 learn.fit_one_cycle(15, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -923,12 +942,15 @@ learn.fit_one_cycle(15, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 <br>
 
 ```python
 learn.dls = get_dls(64, 224)
 learn.fine_tune(10, 1e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1032,6 +1054,8 @@ learn.fine_tune(10, 1e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 
