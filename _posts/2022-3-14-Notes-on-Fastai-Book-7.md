@@ -45,7 +45,9 @@ from fastai.vision.all import *
 path = untar_data(URLs.IMAGENETTE)
 path
 ```
-    Path('/home/innom-dt/.fastai/data/imagenette2')
+```bash
+Path('/home/innom-dt/.fastai/data/imagenette2')
+```
 
 #### parent_label
 
@@ -56,7 +58,9 @@ path
 ```python
 parent_label
 ```
-    <function fastai.data.transforms.parent_label(o)>
+```bash
+<function fastai.data.transforms.parent_label(o)>
+```
 
 <br>
 ```python
@@ -80,7 +84,9 @@ dls = dblock.dataloaders(path, bs=64, num_workers=8)
 ```python
 xresnet50
 ```
-    <function fastai.vision.models.xresnet.xresnet50(pretrained=False, **kwargs)>
+```bash
+<function fastai.vision.models.xresnet.xresnet50(pretrained=False, **kwargs)>
+```
 
 #### CrossEntropyLossFlat
 
@@ -91,7 +97,9 @@ xresnet50
 ```python
 CrossEntropyLossFlat
 ```
-    fastai.losses.CrossEntropyLossFlat
+```bash
+fastai.losses.CrossEntropyLossFlat
+```
 
 <br>
 ```python
@@ -225,8 +233,10 @@ learn.fit_one_cycle(5, 3e-3)
 x,y = dls.one_batch()
 x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
 ```
-    (TensorImage([0.4498, 0.4448, 0.4141], device='cuda:0'),
-     TensorImage([0.2893, 0.2792, 0.3022], device='cuda:0'))
+```bash
+(TensorImage([0.4498, 0.4448, 0.4141], device='cuda:0'),
+ TensorImage([0.2893, 0.2792, 0.3022], device='cuda:0'))
+```
 
 #### Normalize
 
@@ -237,13 +247,17 @@ x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
 ```python
 Normalize
 ```
-    fastai.data.transforms.Normalize
+```bash
+fastai.data.transforms.Normalize
+```
 
 <br>
 ```python
 Normalize.from_stats
 ```
-    <bound method Normalize.from_stats of <class 'fastai.data.transforms.Normalize'>>
+```bash
+<bound method Normalize.from_stats of <class 'fastai.data.transforms.Normalize'>>
+```
 
 <br>
 ```python
@@ -267,8 +281,10 @@ dls = get_dls(64, 224)
 x,y = dls.one_batch()
 x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
 ```
-    (TensorImage([-0.2055, -0.0843,  0.0192], device='cuda:0'),
-     TensorImage([1.1835, 1.1913, 1.2377], device='cuda:0'))
+```bash
+(TensorImage([-0.2055, -0.0843,  0.0192], device='cuda:0'),
+ TensorImage([1.1835, 1.1913, 1.2377], device='cuda:0'))
+```
 
 <br>
 ```python
@@ -483,14 +499,18 @@ Learner.tta
 ```python
 learn.tta
 ```
-    <bound method Learner.tta of <fastai.learner.Learner object at 0x7f75b4be5f40>>
+```bash
+<bound method Learner.tta of <fastai.learner.Learner object at 0x7f75b4be5f40>>
+```
 
 <br>
 ```python
 preds,targs = learn.tta()
 accuracy(preds, targs).item()
 ```
-    0.882001519203186
+```bash
+0.882001519203186
+```
 
 
 ## Mixup
