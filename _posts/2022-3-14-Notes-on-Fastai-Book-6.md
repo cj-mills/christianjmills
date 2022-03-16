@@ -45,13 +45,17 @@ from fastai.vision.all import *
 path = untar_data(URLs.PASCAL_2007)
 path
 ```
-    Path('/home/innom-dt/.fastai/data/pascal_2007')
+```bash
+Path('/home/innom-dt/.fastai/data/pascal_2007')
+```
 
 <br>
 ```python
 path.ls()
 ```
-    (#8) [Path('/home/innom-dt/.fastai/data/pascal_2007/segmentation'),Path('/home/innom-dt/.fastai/data/pascal_2007/test'),Path('/home/innom-dt/.fastai/data/pascal_2007/train.csv'),Path('/home/innom-dt/.fastai/data/pascal_2007/valid.json'),Path('/home/innom-dt/.fastai/data/pascal_2007/train'),Path('/home/innom-dt/.fastai/data/pascal_2007/train.json'),Path('/home/innom-dt/.fastai/data/pascal_2007/test.csv'),Path('/home/innom-dt/.fastai/data/pascal_2007/test.json')]
+```v
+(#8) [Path('/home/innom-dt/.fastai/data/pascal_2007/segmentation'),Path('/home/innom-dt/.fastai/data/pascal_2007/test'),Path('/home/innom-dt/.fastai/data/pascal_2007/train.csv'),Path('/home/innom-dt/.fastai/data/pascal_2007/valid.json'),Path('/home/innom-dt/.fastai/data/pascal_2007/train'),Path('/home/innom-dt/.fastai/data/pascal_2007/train.json'),Path('/home/innom-dt/.fastai/data/pascal_2007/test.csv'),Path('/home/innom-dt/.fastai/data/pascal_2007/test.json')]
+```
 
 <br>
 
@@ -121,18 +125,20 @@ Class lables are stored in a space-delimited string
 # Access rows and columns using the `iloc` property 
 df.iloc[:,0]
 ```
-    0       000005.jpg
-    1       000007.jpg
-    2       000009.jpg
-    3       000012.jpg
-    4       000016.jpg
-               ...    
-    5006    009954.jpg
-    5007    009955.jpg
-    5008    009958.jpg
-    5009    009959.jpg
-    5010    009961.jpg
-    Name: fname, Length: 5011, dtype: object
+```bash
+0       000005.jpg
+1       000007.jpg
+2       000009.jpg
+3       000012.jpg
+4       000016.jpg
+           ...    
+5006    009954.jpg
+5007    009955.jpg
+5008    009958.jpg
+5009    009959.jpg
+5010    009961.jpg
+Name: fname, Length: 5011, dtype: object
+```
 
 <br>
 ```python
@@ -141,28 +147,32 @@ df.iloc[0,:]
 #   so this is equivalent:
 df.iloc[0]
 ```
-    fname       000005.jpg
-    labels           chair
-    is_valid          True
-    Name: 0, dtype: object
+```bash
+fname       000005.jpg
+labels           chair
+is_valid          True
+Name: 0, dtype: object
+```
 
 <br>
 ```python
 # Get a column by name
 df['fname']
 ```
-    0       000005.jpg
-    1       000007.jpg
-    2       000009.jpg
-    3       000012.jpg
-    4       000016.jpg
-               ...    
-    5006    009954.jpg
-    5007    009955.jpg
-    5008    009958.jpg
-    5009    009959.jpg
-    5010    009961.jpg
-    Name: fname, Length: 5011, dtype: object
+```bash
+0       000005.jpg
+1       000007.jpg
+2       000009.jpg
+3       000012.jpg
+4       000016.jpg
+           ...    
+5006    009954.jpg
+5007    009955.jpg
+5008    009958.jpg
+5009    009959.jpg
+5010    009961.jpg
+Name: fname, Length: 5011, dtype: object
+```
 
 <br>
 
@@ -263,7 +273,9 @@ dsets = dblock.datasets(df)
 ```python
 len(dsets.train),len(dsets.valid)
 ```
-    (4009, 1002)
+```bash
+(4009, 1002)
+```
 
 <br>
 ```python
@@ -272,20 +284,24 @@ len(dsets.train),len(dsets.valid)
 x,y = dsets.train[0]
 x,y
 ```
-    (fname       008663.jpg
-     labels      car person
-     is_valid         False
-     Name: 4346, dtype: object,
-     fname       008663.jpg
-     labels      car person
-     is_valid         False
-     Name: 4346, dtype: object)
+```bash
+(fname       008663.jpg
+ labels      car person
+ is_valid         False
+ Name: 4346, dtype: object,
+ fname       008663.jpg
+ labels      car person
+ is_valid         False
+ Name: 4346, dtype: object)
+```
 
 <br>
 ```python
 x['fname']
 ```
-    '008663.jpg'
+```bash
+'008663.jpg'
+```
 
 <br>
 ```python
@@ -295,7 +311,9 @@ dblock = DataBlock(get_x = lambda r: r['fname'], get_y = lambda r: r['labels'])
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-    ('005620.jpg', 'aeroplane')
+```bash
+('005620.jpg', 'aeroplane')
+```
 
 **Note:** Do not use lambda functions if you need to export the Learner 
 
@@ -309,7 +327,9 @@ dblock = DataBlock(get_x = get_x, get_y = get_y)
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-    ('002549.jpg', 'tvmonitor')
+```bash
+('002549.jpg', 'tvmonitor')
+```
 
 **Note:** Need the full file path for the dependent variable and need to split the dependent variables on the space character
 
@@ -321,7 +341,9 @@ dblock = DataBlock(get_x = get_x, get_y = get_y)
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-    (Path('/home/innom-dt/.fastai/data/pascal_2007/train/002844.jpg'), ['train'])
+```bash
+(Path('/home/innom-dt/.fastai/data/pascal_2007/train/002844.jpg'), ['train'])
+```
 
 #### ImageBlock
 
@@ -339,23 +361,30 @@ dsets.train[0]
 ```python
 ImageBlock
 ```
-    <function fastai.vision.data.ImageBlock(cls=<class 'fastai.vision.core.PILImage'>)>
+```bash
+<function fastai.vision.data.ImageBlock(cls=<class 'fastai.vision.core.PILImage'>)>
+```
 
 <br>
 ```python
 MultiCategoryBlock
 ```
-    <function fastai.data.block.MultiCategoryBlock(encoded=False, vocab=None, add_na=False)>
+```bash
+<function fastai.data.block.MultiCategoryBlock(encoded=False, vocab=None, add_na=False)>
+```
 
 <br>
+
 ```python
 dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
                    get_x = get_x, get_y = get_y)
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-    (PILImage mode=RGB size=500x375,
-     TensorMultiCategory([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.]))
+```bash
+(PILImage mode=RGB size=500x375,
+ TensorMultiCategory([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.]))
+```
 
 <br>
 ```python
@@ -363,7 +392,9 @@ dsets.train[0]
 idxs = torch.where(dsets.train[0][1]==1.)[0]
 dsets.train.vocab[idxs]
 ```
-    (#1) ['dog']
+```bash
+(#1) ['dog']
+```
 
 <br>
 ```python
@@ -381,8 +412,10 @@ dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
-    (PILImage mode=RGB size=500x333,
-     TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+```bash
+(PILImage mode=RGB size=500x333,
+ TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+```
 
 <br>
 ```python
@@ -405,96 +438,98 @@ dls.show_batch(nrows=1, ncols=3)
 ```python
 dblock.summary(df)
 ```
-    Setting-up type transforms pipelines
-    Collecting items from            fname          labels  is_valid
-    0     000005.jpg           chair      True
-    1     000007.jpg             car      True
-    2     000009.jpg    horse person      True
-    3     000012.jpg             car     False
-    4     000016.jpg         bicycle      True
-    ...          ...             ...       ...
-    5006  009954.jpg    horse person      True
-    5007  009955.jpg            boat      True
-    5008  009958.jpg  person bicycle      True
-    5009  009959.jpg             car     False
-    5010  009961.jpg             dog     False
-    
-    [5011 rows x 3 columns]
-    Found 5011 items
-    2 datasets of sizes 2501,2510
-    Setting up Pipeline: get_x -> PILBase.create
-    Setting up Pipeline: get_y -> MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} -> OneHotEncode -- {'c': None}
-    
-    Building one sample
-      Pipeline: get_x -> PILBase.create
-        starting from
-          fname       000012.jpg
-    labels             car
-    is_valid         False
-    Name: 3, dtype: object
-        applying get_x gives
-          /home/innom-dt/.fastai/data/pascal_2007/train/000012.jpg
-        applying PILBase.create gives
-          PILImage mode=RGB size=500x333
-      Pipeline: get_y -> MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} -> OneHotEncode -- {'c': None}
-        starting from
-          fname       000012.jpg
-    labels             car
-    is_valid         False
-    Name: 3, dtype: object
-        applying get_y gives
-          [car]
-        applying MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} gives
-          TensorMultiCategory([6])
-        applying OneHotEncode -- {'c': None} gives
-          TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
-    
-    Final sample: (PILImage mode=RGB size=500x333, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
-    
-    Collecting items from            fname          labels  is_valid
-    0     000005.jpg           chair      True
-    1     000007.jpg             car      True
-    2     000009.jpg    horse person      True
-    3     000012.jpg             car     False
-    4     000016.jpg         bicycle      True
-    ...          ...             ...       ...
-    5006  009954.jpg    horse person      True
-    5007  009955.jpg            boat      True
-    5008  009958.jpg  person bicycle      True
-    5009  009959.jpg             car     False
-    5010  009961.jpg             dog     False
-    
-    [5011 rows x 3 columns]
-    Found 5011 items
-    2 datasets of sizes 2501,2510
-    Setting up Pipeline: get_x -> PILBase.create
-    Setting up Pipeline: get_y -> MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} -> OneHotEncode -- {'c': None}
-    Setting up after_item: Pipeline: RandomResizedCrop -- {'size': (128, 128), 'min_scale': 0.35, 'ratio': (0.75, 1.3333333333333333), 'resamples': (2, 0), 'val_xtra': 0.14, 'max_scale': 1.0, 'p': 1.0} -> ToTensor
-    Setting up before_batch: Pipeline: 
-    Setting up after_batch: Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
-    
-    Building one batch
-    Applying item_tfms to the first sample:
-      Pipeline: RandomResizedCrop -- {'size': (128, 128), 'min_scale': 0.35, 'ratio': (0.75, 1.3333333333333333), 'resamples': (2, 0), 'val_xtra': 0.14, 'max_scale': 1.0, 'p': 1.0} -> ToTensor
-        starting from
-          (PILImage mode=RGB size=500x333, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
-        applying RandomResizedCrop -- {'size': (128, 128), 'min_scale': 0.35, 'ratio': (0.75, 1.3333333333333333), 'resamples': (2, 0), 'val_xtra': 0.14, 'max_scale': 1.0, 'p': 1.0} gives
-          (PILImage mode=RGB size=128x128, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
-        applying ToTensor gives
-          (TensorImage of size 3x128x128, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
-    
-    Adding the next 3 samples
-    
-    No before_batch transform to apply
-    
-    Collating items in a batch
-    
-    Applying batch_tfms to the batch built
-      Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
-        starting from
-          (TensorImage of size 4x3x128x128, TensorMultiCategory of size 4x20)
-        applying IntToFloatTensor -- {'div': 255.0, 'div_mask': 1} gives
-          (TensorImage of size 4x3x128x128, TensorMultiCategory of size 4x20)
+```bash
+Setting-up type transforms pipelines
+Collecting items from            fname          labels  is_valid
+0     000005.jpg           chair      True
+1     000007.jpg             car      True
+2     000009.jpg    horse person      True
+3     000012.jpg             car     False
+4     000016.jpg         bicycle      True
+...          ...             ...       ...
+5006  009954.jpg    horse person      True
+5007  009955.jpg            boat      True
+5008  009958.jpg  person bicycle      True
+5009  009959.jpg             car     False
+5010  009961.jpg             dog     False
+
+[5011 rows x 3 columns]
+Found 5011 items
+2 datasets of sizes 2501,2510
+Setting up Pipeline: get_x -> PILBase.create
+Setting up Pipeline: get_y -> MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} -> OneHotEncode -- {'c': None}
+
+Building one sample
+  Pipeline: get_x -> PILBase.create
+    starting from
+      fname       000012.jpg
+labels             car
+is_valid         False
+Name: 3, dtype: object
+    applying get_x gives
+      /home/innom-dt/.fastai/data/pascal_2007/train/000012.jpg
+    applying PILBase.create gives
+      PILImage mode=RGB size=500x333
+  Pipeline: get_y -> MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} -> OneHotEncode -- {'c': None}
+    starting from
+      fname       000012.jpg
+labels             car
+is_valid         False
+Name: 3, dtype: object
+    applying get_y gives
+      [car]
+    applying MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} gives
+      TensorMultiCategory([6])
+    applying OneHotEncode -- {'c': None} gives
+      TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+
+Final sample: (PILImage mode=RGB size=500x333, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+
+Collecting items from            fname          labels  is_valid
+0     000005.jpg           chair      True
+1     000007.jpg             car      True
+2     000009.jpg    horse person      True
+3     000012.jpg             car     False
+4     000016.jpg         bicycle      True
+...          ...             ...       ...
+5006  009954.jpg    horse person      True
+5007  009955.jpg            boat      True
+5008  009958.jpg  person bicycle      True
+5009  009959.jpg             car     False
+5010  009961.jpg             dog     False
+
+[5011 rows x 3 columns]
+Found 5011 items
+2 datasets of sizes 2501,2510
+Setting up Pipeline: get_x -> PILBase.create
+Setting up Pipeline: get_y -> MultiCategorize -- {'vocab': None, 'sort': True, 'add_na': False} -> OneHotEncode -- {'c': None}
+Setting up after_item: Pipeline: RandomResizedCrop -- {'size': (128, 128), 'min_scale': 0.35, 'ratio': (0.75, 1.3333333333333333), 'resamples': (2, 0), 'val_xtra': 0.14, 'max_scale': 1.0, 'p': 1.0} -> ToTensor
+Setting up before_batch: Pipeline: 
+Setting up after_batch: Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
+
+Building one batch
+Applying item_tfms to the first sample:
+  Pipeline: RandomResizedCrop -- {'size': (128, 128), 'min_scale': 0.35, 'ratio': (0.75, 1.3333333333333333), 'resamples': (2, 0), 'val_xtra': 0.14, 'max_scale': 1.0, 'p': 1.0} -> ToTensor
+    starting from
+      (PILImage mode=RGB size=500x333, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+    applying RandomResizedCrop -- {'size': (128, 128), 'min_scale': 0.35, 'ratio': (0.75, 1.3333333333333333), 'resamples': (2, 0), 'val_xtra': 0.14, 'max_scale': 1.0, 'p': 1.0} gives
+      (PILImage mode=RGB size=128x128, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+    applying ToTensor gives
+      (TensorImage of size 3x128x128, TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+
+Adding the next 3 samples
+
+No before_batch transform to apply
+
+Collating items in a batch
+
+Applying batch_tfms to the batch built
+  Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
+    starting from
+      (TensorImage of size 4x3x128x128, TensorMultiCategory of size 4x20)
+    applying IntToFloatTensor -- {'div': 255.0, 'div_mask': 1} gives
+      (TensorImage of size 4x3x128x128, TensorMultiCategory of size 4x20)
+```
 
 
 
@@ -520,7 +555,9 @@ to_cpu(b)
 ```python
 to_cpu
 ```
-    <function fastai.torch_core.to_cpu(b)>
+```bash
+<function fastai.torch_core.to_cpu(b)>
+```
 
 <br>
 ```python
@@ -528,14 +565,18 @@ x,y = to_cpu(dls.train.one_batch())
 activs = learn.model(x)
 activs.shape
 ```
-    torch.Size([64, 20])
+```bash
+torch.Size([64, 20])
+```
 
 <br>
 ```python
 activs[0]
 ```
-    TensorBase([ 0.5674, -1.2013,  4.5409, -1.5284, -0.6600,  0.0999, -2.4757, -0.8773, -0.2934, -1.4746, -0.1738,  2.1763, -3.4473, -1.1407,  0.1783, -1.6922, -2.3396,  0.7602, -1.4213, -0.4334],
-           grad_fn=<AliasBackward0>)
+```bash
+TensorBase([ 0.5674, -1.2013,  4.5409, -1.5284, -0.6600,  0.0999, -2.4757, -0.8773, -0.2934, -1.4746, -0.1738,  2.1763, -3.4473, -1.1407,  0.1783, -1.6922, -2.3396,  0.7602, -1.4213, -0.4334],
+       grad_fn=<AliasBackward0>)
+```
 
 **Note:** The raw model activations are not scaled between `[0,1]`
 
@@ -550,7 +591,9 @@ def binary_cross_entropy(inputs, targets):
 ```python
 binary_cross_entropy(activs, y)
 ```
-    TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
+```bash
+TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
+```
 
 
 nn.BCELoss
@@ -565,7 +608,9 @@ nn.BCEWithLogitsLoss
 ```python
 nn.BCEWithLogitsLoss
 ```
-    torch.nn.modules.loss.BCEWithLogitsLoss
+```bash
+torch.nn.modules.loss.BCEWithLogitsLoss
+```
 
 <br>
 ```python
@@ -573,7 +618,9 @@ loss_func = nn.BCEWithLogitsLoss()
 loss = loss_func(activs, y)
 loss
 ```
-    TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
+```bash
+TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
+```
 
 
 #### Python Partial Functions
@@ -585,21 +632,28 @@ loss
 ```python
 partial
 ```
-    functools.partial
+```bash
+functools.partial
+```
 
 <br>
+
 ```python
 def say_hello(name, say_what="Hello"): return f"{say_what} {name}."
 say_hello('Jeremy'),say_hello('Jeremy', 'Ahoy!')
 ```
-    ('Hello Jeremy.', 'Ahoy! Jeremy.')
+```bash
+('Hello Jeremy.', 'Ahoy! Jeremy.')
+```
 
 <br>
 ```python
 f = partial(say_hello, say_what="Bonjour")
 f("Jeremy"),f("Sylvain")
 ```
-    ('Bonjour Jeremy.', 'Bonjour Sylvain.')
+```bash
+('Bonjour Jeremy.', 'Bonjour Sylvain.')
+```
 
 accuracy_multi
 * https://docs.fast.ai/metrics.html#accuracy_multi
@@ -609,7 +663,9 @@ accuracy_multi
 ```python
 accuracy_multi
 ```
-    <function fastai.metrics.accuracy_multi(inp, targ, thresh=0.5, sigmoid=True)>
+```bash
+<function fastai.metrics.accuracy_multi(inp, targ, thresh=0.5, sigmoid=True)>
+```
 
 <br>
 ```python
@@ -700,14 +756,18 @@ learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
 learn.metrics = partial(accuracy_multi, thresh=0.1)
 learn.validate()
 ```
-    (#2) [0.10356765240430832,0.9294222593307495]
+```bash
+(#2) [0.10356765240430832,0.9294222593307495]
+```
 
 <br>
 ```python
 learn.metrics = partial(accuracy_multi, thresh=0.99)
 learn.validate()
 ```
-    (#2) [0.10356765240430832,0.9427291750907898]
+```bash
+(#2) [0.10356765240430832,0.9427291750907898]
+```
 
 <br>
 ```python
@@ -718,7 +778,9 @@ preds,targs = learn.get_preds()
 ```python
 accuracy_multi(preds, targs, thresh=0.9, sigmoid=False)
 ```
-    TensorBase(0.9566)
+```bash
+TensorBase(0.9566)
+```
 
 <br>
 
@@ -761,19 +823,25 @@ plt.plot(xs,accs);
 path = untar_data(URLs.BIWI_HEAD_POSE)
 path
 ```
-    Path('/home/innom-dt/.fastai/data/biwi_head_pose')
+```bash
+Path('/home/innom-dt/.fastai/data/biwi_head_pose')
+```
 
 <br>
 ```python
 path.ls().sorted()
 ```
-    (#50) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05.obj')...]
+```bash
+(#50) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05.obj')...]
+```
 
 <br>
 ```python
 (path/'01').ls().sorted()
 ```
-    (#1000) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/depth.cal'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00007_pose.txt')...]
+```bash
+(#1000) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/depth.cal'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00007_pose.txt')...]
+```
 
 
 <br>
@@ -785,24 +853,30 @@ def img2pose(x): return Path(f'{str(x)[:-7]}pose.txt')
 pose_file = img2pose(img_files[0])
 pose_file
 ```
-    Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
+```bash
+Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
+```
 
 <br>
 ```python
 !cat $pose_file
 ```
-    0.999485 -0.00797222 -0.031067 
-    -0.00416483 0.928156 -0.372168 
-    0.031802 0.372106 0.927645 
-    
-    62.3638 96.2159 979.839 
+```bash
+0.999485 -0.00797222 -0.031067 
+-0.00416483 0.928156 -0.372168 
+0.031802 0.372106 0.927645 
+
+62.3638 96.2159 979.839 
+```
 
 <br>
 ```python
 im = PILImage.create(img_files[0])
 im.shape
 ```
-    (480, 640)
+```bash
+(480, 640)
+```
 
 <br>
 ```python
@@ -819,7 +893,9 @@ im.to_thumb(160)
 ```python
 np.genfromtxt
 ```
-    <function numpy.genfromtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None)>
+```bash
+<function numpy.genfromtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None)>
+```
 
 <br>
 ```python
@@ -828,9 +904,11 @@ np.genfromtxt
 cal = np.genfromtxt(path/'01'/'rgb.cal', skip_footer=6)
 cal
 ```
-    array([[517.679,   0.   , 320.   ],
-           [  0.   , 517.679, 240.5  ],
-           [  0.   ,   0.   ,   1.   ]])
+```bash
+array([[517.679,   0.   , 320.   ],
+       [  0.   , 517.679, 240.5  ],
+       [  0.   ,   0.   ,   1.   ]])
+```
 
 <br>
 ```python
@@ -848,13 +926,17 @@ def get_ctr(f):
 ```python
 np.genfromtxt(img2pose(img_files[0]), skip_header=3)
 ```
-    array([ 62.3638,  96.2159, 979.839 ])
+```bash
+array([ 62.3638,  96.2159, 979.839 ])
+```
 
 <br>
 ```python
 get_ctr(img_files[0])
 ```
-    tensor([352.9487, 291.3338])
+```bash
+tensor([352.9487, 291.3338])
+```
 
 #### PointBlock
 
@@ -867,9 +949,12 @@ get_ctr(img_files[0])
 ```python
 PointBlock
 ```
-    <fastai.data.block.TransformBlock at 0x7fb65aaf5490>
+```bash
+<fastai.data.block.TransformBlock at 0x7fb65aaf5490>
+```
 
 <br>
+
 ```python
 # Construct custom DataBlock
 biwi = DataBlock(
@@ -895,13 +980,18 @@ dls.show_batch(max_n=9, figsize=(8,6))
 xb,yb = dls.one_batch()
 xb.shape,yb.shape
 ```
-    (torch.Size([64, 3, 240, 320]), torch.Size([64, 1, 2]))
+```bash
+(torch.Size([64, 3, 240, 320]), torch.Size([64, 1, 2]))
+```
 
 <br>
+
 ```python
 yb[0]
 ```
-    TensorPoint([[-0.1246,  0.0960]], device='cuda:0')
+```bash
+TensorPoint([[-0.1246,  0.0960]], device='cuda:0')
+```
 
 ### Training a Model
 
@@ -925,7 +1015,9 @@ plot_function(partial(sigmoid_range,lo=-1,hi=1), min=-4, max=4)
 ```python
 dls.loss_func
 ```
-    FlattenedLoss of MSELoss()
+```bash
+FlattenedLoss of MSELoss()
+```
 
 <br>
 ```python
@@ -937,19 +1029,25 @@ min_lr, steep_lr, valley = learn.lr_find(suggest_funcs=(minimum, steep, valley))
 ```python
 min_lr
 ```
-    0.006918309628963471
+```bash
+0.006918309628963471
+```
 
 <br>
 ```python
 steep_lr
 ```
-    2.0892961401841603e-05
+```bash
+2.0892961401841603e-05
+```
 
 <br>
 ```python
 valley
 ```
-    0.0010000000474974513
+```bash
+0.0010000000474974513
+```
 
 <br>
 ```python
@@ -1013,7 +1111,9 @@ learn.fine_tune(3, lr)
 # Calculate the Root Mean Squared Error
 math.sqrt(0.000042)
 ```
-    0.00648074069840786
+```bash
+0.00648074069840786
+```
 
 <br>
 
