@@ -79,8 +79,10 @@ print(URLs.MNIST_SAMPLE)
 path = untar_data(URLs.MNIST_SAMPLE)
 print(path)
 ```
-    https://s3.amazonaws.com/fast-ai-sample/mnist_sample.tgz
-    /home/innom-dt/.fastai/data/mnist_sample
+```bash
+https://s3.amazonaws.com/fast-ai-sample/mnist_sample.tgz
+/home/innom-dt/.fastai/data/mnist_sample
+```
 
 <br>
 
@@ -90,11 +92,14 @@ Path.BASE_PATH = path
 ```
 
 <br>
+
 ```python
 # A custom fastai method that returns the contents of path as a list
 path.ls()
 ```
-    (#3) [Path('labels.csv'),Path('train'),Path('valid')]
+```bash
+(#3) [Path('labels.csv'),Path('train'),Path('valid')]
+```
 
 
 
@@ -109,13 +114,17 @@ path.ls()
 ```python
 type(path.ls())
 ```
-    fastcore.foundation.L
+```bash
+fastcore.foundation.L
+```
 
 <br>
 ```python
 (path/'train').ls()
 ```
-    (#2) [Path('train/3'),Path('train/7')]
+```bash
+(#2) [Path('train/3'),Path('train/7')]
+```
 
 <br>
 
@@ -124,7 +133,9 @@ threes = (path/'train'/'3').ls().sorted()
 sevens = (path/'train'/'7').ls().sorted()
 threes
 ```
-    (#6131) [Path('train/3/10.png'),Path('train/3/10000.png'),Path('train/3/10011.png'),Path('train/3/10031.png'),Path('train/3/10034.png'),Path('train/3/10042.png'),Path('train/3/10052.png'),Path('train/3/1007.png'),Path('train/3/10074.png'),Path('train/3/10091.png')...]
+```bash
+(#6131) [Path('train/3/10.png'),Path('train/3/10000.png'),Path('train/3/10011.png'),Path('train/3/10031.png'),Path('train/3/10034.png'),Path('train/3/10042.png'),Path('train/3/10052.png'),Path('train/3/1007.png'),Path('train/3/10074.png'),Path('train/3/10091.png')...]
+```
 
 <br>
 
@@ -134,7 +145,9 @@ print(im3_path)
 im3 = Image.open(im3_path)
 im3
 ```
-    /home/innom-dt/.fastai/data/mnist_sample/train/3/10000.png
+```bash
+/home/innom-dt/.fastai/data/mnist_sample/train/3/10000.png
+```
 
 ![png](../images/notes-fastai-book/chapter-4/output_10_1.png)
 
@@ -152,8 +165,10 @@ print(type(im3))
 print(im3.size)
 ```
 
-    <class 'PIL.PngImagePlugin.PngImageFile'>
-    (28, 28)
+```bash
+<class 'PIL.PngImagePlugin.PngImageFile'>
+(28, 28)
+```
 
 <br>
 
@@ -161,12 +176,14 @@ print(im3.size)
 # Slice of the image from index 4 up to, but not including, index 10
 array(im3)[4:10,4:10]
 ```
-    array([[  0,   0,   0,   0,   0,   0],
-           [  0,   0,   0,   0,   0,  29],
-           [  0,   0,   0,  48, 166, 224],
-           [  0,  93, 244, 249, 253, 187],
-           [  0, 107, 253, 253, 230,  48],
-           [  0,   3,  20,  20,  15,   0]], dtype=uint8)
+```bash
+array([[  0,   0,   0,   0,   0,   0],
+       [  0,   0,   0,   0,   0,  29],
+       [  0,   0,   0,  48, 166, 224],
+       [  0,  93, 244, 249, 253, 187],
+       [  0, 107, 253, 253, 230,  48],
+       [  0,   3,  20,  20,  15,   0]], dtype=uint8)
+```
 
 
 
@@ -206,23 +223,29 @@ tns = tensor(data)
 ```python
 arr  # numpy
 ```
-    array([[1, 2, 3],
-           [4, 5, 6]])
+```bash
+array([[1, 2, 3],
+       [4, 5, 6]])
+```
 
 
 <br>
 ```python
 tns  # pytorch
 ```
-    tensor([[1, 2, 3],
-            [4, 5, 6]])
+```bash
+tensor([[1, 2, 3],
+        [4, 5, 6]])
+```
 
 <br>
 ```python
 # select a row
 tns[1]
 ```
-    tensor([4, 5, 6])
+```bash
+tensor([4, 5, 6])
+```
 
 <br>
 
@@ -230,7 +253,9 @@ tns[1]
 # select a column
 tns[:,1]
 ```
-    tensor([2, 5])
+```bash
+tensor([2, 5])
+```
 
 <br>
 
@@ -238,7 +263,9 @@ tns[:,1]
 # select a slice
 tns[1,1:3]
 ```
-    tensor([5, 6])
+```bash
+tensor([5, 6])
+```
 
 <br>
 
@@ -246,23 +273,29 @@ tns[1,1:3]
 # Perform element-wise addition
 tns+1
 ```
-    tensor([[2, 3, 4],
-            [5, 6, 7]])
+```bash
+tensor([[2, 3, 4],
+        [5, 6, 7]])
+```
 
 
 <br>
 ```python
 tns.type()
 ```
-    'torch.LongTensor'
+```bash
+'torch.LongTensor'
+```
 
 <br>
 ```python
 # Perform element-wise multiplication
 tns*1.5
 ```
-    tensor([[1.5000, 3.0000, 4.5000],
-            [6.0000, 7.5000, 9.0000]])
+```bash
+tensor([[1.5000, 3.0000, 4.5000],
+        [6.0000, 7.5000, 9.0000]])
+```
 
 
 
@@ -283,16 +316,20 @@ tns*1.5
 print(type(array(im3)[4:10,4:10]))
 array
 ```
-    <class 'numpy.ndarray'>
-    <function numpy.array>
+```bash
+<class 'numpy.ndarray'>
+<function numpy.array>
+```
 
 <br>
 ```python
 print(array(im3)[4:10,4:10][0].data)
 print(array(im3)[4:10,4:10][0].dtype)
 ```
-    <memory at 0x7f3c13a20dc0>
-    uint8
+```bash
+<memory at 0x7f3c13a20dc0>
+uint8
+```
 
 ### PyTorch Tensor
 
@@ -309,16 +346,20 @@ print(array(im3)[4:10,4:10][0].dtype)
 print(type(tensor(im3)[4:10,4:10][0]))
 tensor
 ```
-    <class 'torch.Tensor'>
-    <function fastai.torch_core.tensor(x, *rest, dtype=None, device=None, requires_grad=False, pin_memory=False)>
+```bash
+<class 'torch.Tensor'>
+<function fastai.torch_core.tensor(x, *rest, dtype=None, device=None, requires_grad=False, pin_memory=False)>
+```
 
 <br>
 ```python
 print(tensor(im3)[4:10,4:10][0].data)
 print(tensor(im3)[4:10,4:10][0].dtype)
 ```
-    tensor([0, 0, 0, 0, 0, 0], dtype=torch.uint8)
-    torch.uint8
+```bash
+tensor([0, 0, 0, 0, 0, 0], dtype=torch.uint8)
+torch.uint8
+```
 
 ### Pandas DataFrame
 
@@ -1244,7 +1285,9 @@ pd.DataFrame(tensor(im3))
 ```python
 tensor(im3).shape
 ```
-    torch.Size([28, 28])
+```bash
+torch.Size([28, 28])
+```
 
 <br>
 
@@ -1542,7 +1585,9 @@ seven_tensors = [tensor(Image.open(o)) for o in sevens]
 three_tensors = [tensor(Image.open(o)) for o in threes]
 len(three_tensors),len(seven_tensors)
 ```
-    (6131, 6265)
+```bash
+(6131, 6265)
+```
 
 
 fastai show_image function
@@ -1568,20 +1613,26 @@ stacked_sevens = torch.stack(seven_tensors).float()/255
 stacked_threes = torch.stack(three_tensors).float()/255
 stacked_threes.shape
 ```
-    torch.Size([6131, 28, 28])
+```bash
+torch.Size([6131, 28, 28])
+```
 
 <br>
 ```python
 len(stacked_threes.shape)
 ```
-    3
+```bash
+3
+```
 
 
 <br>
 ```python
 stacked_threes.ndim
 ```
-    3
+```bash
+3
+```
 
 <br>
 
@@ -1620,8 +1671,10 @@ dist_3_sqr = ((a_3 - mean3)**2).mean().sqrt()
 print(f"MAE: {dist_3_abs}")
 print(f"RMSE: {dist_3_sqr}")
 ```
-    MAE: 0.11143654584884644
-    RMSE: 0.20208320021629333
+```bash
+MAE: 0.11143654584884644
+RMSE: 0.20208320021629333
+```
 
 
 Khan Academy: [Understanding Square Roots](https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals/x2f8bb11595b61c86:radicals/v/understanding-square-roots)
@@ -1633,8 +1686,10 @@ dist_7_sqr = ((a_3 - mean7)**2).mean().sqrt()
 print(f"MAE: {dist_7_abs}")
 print(f"RMSE: {dist_7_sqr}")
 ```
-    MAE: 0.15861910581588745
-    RMSE: 0.30210891366004944
+```bash
+MAE: 0.15861910581588745
+RMSE: 0.30210891366004944
+```
 
 
 > **Note:** The error is larger when comparing the image of a `3` to the average pixel values for the digit `7`
@@ -1647,7 +1702,9 @@ print(f"RMSE: {dist_7_sqr}")
 ```python
 F
 ```
-    <module 'torch.nn.functional' from '/home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/torch/nn/functional.py'>
+```bash
+<module 'torch.nn.functional' from '/home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/torch/nn/functional.py'>
+```
 
 
 
@@ -1667,8 +1724,10 @@ print(F.l1_loss(a_3.float(),mean7))
 # Calculate the Root Mean Squared Error aka L2 norm
 print(F.mse_loss(a_3,mean7).sqrt())
 ```
-    tensor(0.1586)
-    tensor(0.3021)
+```bash
+tensor(0.1586)
+tensor(0.3021)
+```
 
 
 
@@ -1703,7 +1762,9 @@ valid_7_tens = valid_7_tens.float()/255
 
 valid_3_tens.shape,valid_7_tens.shape
 ```
-    (torch.Size([1010, 28, 28]), torch.Size([1028, 28, 28]))
+```bash
+(torch.Size([1010, 28, 28]), torch.Size([1028, 28, 28]))
+```
 
 <br>
 
@@ -1716,7 +1777,9 @@ def mnist_distance(a,b): return (a-b).abs().mean((-1,-2))
 # Calculate MAE for two single images
 mnist_distance(a_3, mean3)
 ```
-    tensor(0.1114)
+```bash
+tensor(0.1114)
+```
 
 <br>
 
@@ -1725,21 +1788,27 @@ mnist_distance(a_3, mean3)
 valid_3_dist = mnist_distance(valid_3_tens, mean3)
 valid_3_dist, valid_3_dist.shape
 ```
-    (tensor([0.1422, 0.1230, 0.1055,  ..., 0.1244, 0.1188, 0.1103]),
-     torch.Size([1010]))
+```bash
+(tensor([0.1422, 0.1230, 0.1055,  ..., 0.1244, 0.1188, 0.1103]),
+ torch.Size([1010]))
+```
 
 
 <br>
 ```python
 tensor([1,2,3]) + tensor([1,1,1])
 ```
-    tensor([2, 3, 4])
+```bash
+tensor([2, 3, 4])
+```
 
 <br>
 ```python
 (valid_3_tens-mean3).shape
 ```
-    torch.Size([1010, 28, 28])
+```bash
+torch.Size([1010, 28, 28])
+```
 
 <br>
 ```python
@@ -1751,14 +1820,18 @@ def is_3(x): return mnist_distance(x,mean3) < mnist_distance(x,mean7)
 ```python
 is_3(a_3), is_3(a_3).float()
 ```
-    (tensor(True), tensor(1.))
+```bash
+(tensor(True), tensor(1.))
+```
 
 <br>
 
 ```python
 is_3(valid_3_tens)
 ```
-    tensor([ True,  True,  True,  ..., False,  True,  True])
+```bash
+tensor([ True,  True,  True,  ..., False,  True,  True])
+```
 
 <br>
 
@@ -1768,7 +1841,9 @@ accuracy_7s = (1 - is_3(valid_7_tens).float()).mean()
 
 accuracy_3s,accuracy_7s,(accuracy_3s+accuracy_7s)/2
 ```
-    (tensor(0.9168), tensor(0.9854), tensor(0.9511))
+```bash
+(tensor(0.9168), tensor(0.9854), tensor(0.9511))
+```
 
 
 <br>
@@ -1776,17 +1851,21 @@ accuracy_3s,accuracy_7s,(accuracy_3s+accuracy_7s)/2
 print(f"Correct 3s: {accuracy_3s * valid_3_tens.shape[0]:.0f}")
 print(f"Incorrect 3s: {(1 - accuracy_3s) * valid_3_tens.shape[0]:.0f}")
 ```
-    Correct 3s: 926
-    Incorrect 3s: 84
-
+```bash
+Correct 3s: 926
+Incorrect 3s: 84
+```
 
 <br>
+
 ```python
 print(f"Correct 7s: {accuracy_7s * valid_7_tens.shape[0]:.0f}")
 print(f"Incorrect 7s: {(1 - accuracy_7s) * valid_7_tens.shape[0]:.0f}")
 ```
-    Correct 7s: 1013
-    Incorrect 7s: 15
+```bash
+Correct 7s: 1013
+Incorrect 7s: 15
+```
 
 
 
@@ -1807,12 +1886,7 @@ def pr_eight(x,w) = (x*w).sum()
 ```
 
 <br>
-```python
-gv('''
-init->predict->loss->gradient->step->stop
-step->predict[label=repeat]
-''')
-```
+
 ![svg](../images/notes-fastai-book/chapter-4/output_66_0.svg)
 
 <br>
@@ -1871,7 +1945,9 @@ xt = tensor(3.).requires_grad_()
 yt = f(xt)
 yt
 ```
-    tensor(9., grad_fn=<PowBackward0>)
+```bash
+tensor(9., grad_fn=<PowBackward0>)
+```
 
 
 
@@ -1883,7 +1959,9 @@ yt
 ```python
 yt.grad_fn
 ```
-    <PowBackward0 at 0x7f91e90a6670>
+```bash
+<PowBackward0 at 0x7f91e90a6670>
+```
 
 
 
@@ -1904,7 +1982,9 @@ The derivative of `f(x) = x**2` is `2x`, so the derivative at `x=3` is `6`
 ```python
 xt.grad
 ```
-    tensor(6.)
+```bash
+tensor(6.)
+```
 
 
 Derivatives should be `6`, `8`, `20`
@@ -1913,7 +1993,9 @@ Derivatives should be `6`, `8`, `20`
 xt = tensor([3.,4.,10.]).requires_grad_()
 xt
 ```
-    tensor([ 3.,  4., 10.], requires_grad=True)
+```bash
+tensor([ 3.,  4., 10.], requires_grad=True)
+```
 
 <br>
 ```python
@@ -1922,14 +2004,18 @@ def f(x): return (x**2).sum()
 yt = f(xt)
 yt
 ```
-    tensor(125., grad_fn=<SumBackward0>)
+```bash
+tensor(125., grad_fn=<SumBackward0>)
+```
 
 <br>
 ```python
 yt.backward()
 xt.grad
 ```
-    tensor([ 6.,  8., 20.])
+```bash
+tensor([ 6.,  8., 20.])
+```
 
 
 ### Stepping with a Learning Rate
@@ -1972,7 +2058,9 @@ xt.grad
 time = torch.arange(0,20).float();
 print(time)
 ```
-    tensor([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.])
+```bash
+tensor([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.])
+```
 
 #### torch.randn()
 
@@ -2012,7 +2100,9 @@ def mse(preds, targets): return ((preds-targets)**2).mean().sqrt()
 params = torch.randn(3).requires_grad_()
 params
 ```
-    tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
+```bash
+tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
+```
 
 <br>
 ```python
@@ -2026,9 +2116,11 @@ preds = f(time, params)
 print(preds.shape)
 preds
 ```
-    torch.Size([20])
-    tensor([ 1.3525e+00, -1.6391e-01, -3.2121e+00, -7.7919e+00, -1.3903e+01, -2.1547e+01, -3.0721e+01, -4.1428e+01, -5.3666e+01, -6.7436e+01, -8.2738e+01, -9.9571e+01, -1.1794e+02, -1.3783e+02,
-            -1.5926e+02, -1.8222e+02, -2.0671e+02, -2.3274e+02, -2.6029e+02, -2.8938e+02], grad_fn=<AddBackward0>)
+```bash
+torch.Size([20])
+tensor([ 1.3525e+00, -1.6391e-01, -3.2121e+00, -7.7919e+00, -1.3903e+01, -2.1547e+01, -3.0721e+01, -4.1428e+01, -5.3666e+01, -6.7436e+01, -8.2738e+01, -9.9571e+01, -1.1794e+02, -1.3783e+02,
+        -1.5926e+02, -1.8222e+02, -2.0671e+02, -2.3274e+02, -2.6029e+02, -2.8938e+02], grad_fn=<AddBackward0>)
+```
 
 
 <br>
@@ -2054,7 +2146,9 @@ show_preds(preds)
 loss = mse(preds, speed)
 loss
 ```
-    tensor(160.6979, grad_fn=<SqrtBackward0>)
+```bash
+tensor(160.6979, grad_fn=<SqrtBackward0>)
+```
 
 
 
@@ -2063,7 +2157,9 @@ loss
 loss.backward()
 params.grad
 ```
-    tensor([-165.5151,  -10.6402,   -0.7900])
+```bash
+tensor([-165.5151,  -10.6402,   -0.7900])
+```
 
 <br>
 
@@ -2077,13 +2173,17 @@ lr = 1e-5
 # Multiply the graients by the learning rate
 params.grad * lr
 ```
-    tensor([-1.6552e-03, -1.0640e-04, -7.8996e-06])
+```bash
+tensor([-1.6552e-03, -1.0640e-04, -7.8996e-06])
+```
 
 <br>
 ```python
 params
 ```
-    tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
+```bash
+tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
+```
 
 
 
@@ -2103,7 +2203,9 @@ params.grad = None
 preds = f(time,params)
 mse(preds, speed)
 ```
-    tensor(157.9476, grad_fn=<SqrtBackward0>)
+```bash
+tensor(157.9476, grad_fn=<SqrtBackward0>)
+```
 
 <br>
 
@@ -2129,19 +2231,21 @@ def apply_step(params, prn=True):
 ```python
 for i in range(10): apply_step(params)
 ```
-    157.9476318359375
-    155.1999969482422
-    152.45513916015625
-    149.71319580078125
-    146.97434997558594
-    144.23875427246094
-    141.50660705566406
-    138.77809143066406
-    136.05340576171875
-    133.33282470703125
-
+```bash
+157.9476318359375
+155.1999969482422
+152.45513916015625
+149.71319580078125
+146.97434997558594
+144.23875427246094
+141.50660705566406
+138.77809143066406
+136.05340576171875
+133.33282470703125
+```
 
 <br>
+
 ```python
 _,axs = plt.subplots(1,4,figsize=(12,3))
 for ax in axs: show_preds(apply_step(params, False), ax)
@@ -2174,12 +2278,6 @@ plt.tight_layout()
 - Multiply the gradients by a learning rate to control how big of a change to make for each update
 - Iterate
 
-```python
-gv('''
-init->predict->loss->gradient->step->stop
-step->predict[label=repeat]
-''')
-```
 ![svg](../images/notes-fastai-book/chapter-4/output_119_0.svg)
 
 
@@ -2214,7 +2312,9 @@ train_x = torch.cat([stacked_threes, stacked_sevens]).view(-1, 28*28)
 ```python
 train_x.shape
 ```
-    torch.Size([12396, 784])
+```bash
+torch.Size([12396, 784])
+```
 
 <br>
 ```python
@@ -2222,7 +2322,9 @@ train_x.shape
 train_y = tensor([1]*len(threes) + [0]*len(sevens)).unsqueeze(1)
 train_y.shape
 ```
-    torch.Size([12396, 1])
+```bash
+torch.Size([12396, 1])
+```
 
 <br>
 ```python
@@ -2231,7 +2333,9 @@ dset = list(zip(train_x,train_y))
 x,y = dset[0]
 x.shape,y
 ```
-    (torch.Size([784]), tensor([1]))
+```bash
+(torch.Size([784]), tensor([1]))
+```
 
 <br>
 ```python
@@ -2263,7 +2367,9 @@ bias = init_params(1)
 # Calculate a prediction for a single image
 (train_x[0]*weights.T).sum() + bias
 ```
-    tensor([-6.2330], grad_fn=<AddBackward0>)
+```bash
+tensor([-6.2330], grad_fn=<AddBackward0>)
+```
 
 
 
@@ -2294,14 +2400,16 @@ weights_clone = weights.clone().detach()
 # Matrix multiplication using @ operator
 (train_x_clone@weights_clone)[:5]
 ```
-    CPU times: user 2.35 ms, sys: 4.15 ms, total: 6.5 ms
-    Wall time: 5.29 ms
-    
-    tensor([[ -6.5802],
-            [-10.9860],
-            [-21.2337],
-            [-18.2173],
-            [ -1.7079]], device='cuda:0')
+```bash
+CPU times: user 2.35 ms, sys: 4.15 ms, total: 6.5 ms
+Wall time: 5.29 ms
+
+tensor([[ -6.5802],
+        [-10.9860],
+        [-21.2337],
+        [-18.2173],
+        [ -1.7079]], device='cuda:0')
+```
 
 <br>
 ```python
@@ -2309,21 +2417,25 @@ weights_clone = weights.clone().detach()
 # This is why you should avoid using loops
 mat_mul(train_x_clone, weights_clone)[:5]
 ```
-    CPU times: user 1min 37s, sys: 28 ms, total: 1min 37s
-    Wall time: 1min 37s
-    
-    [tensor(-6.5802, device='cuda:0'),
-     tensor(-10.9860, device='cuda:0'),
-     tensor(-21.2337, device='cuda:0'),
-     tensor(-18.2173, device='cuda:0'),
-     tensor(-1.7079, device='cuda:0')]
+```bash
+CPU times: user 1min 37s, sys: 28 ms, total: 1min 37s
+Wall time: 1min 37s
+
+[tensor(-6.5802, device='cuda:0'),
+ tensor(-10.9860, device='cuda:0'),
+ tensor(-21.2337, device='cuda:0'),
+ tensor(-18.2173, device='cuda:0'),
+ tensor(-1.7079, device='cuda:0')]
+```
 
 <br>
 ```python
 # Over 29,000 times slower with loops
 print(f"{(44.9 * 1000) / 1.53:,.2f}")
 ```
-    29,346.41
+```bash
+29,346.41
+```
 
 <br>
 ```python
@@ -2337,21 +2449,25 @@ weights_clone = weights_clone.to('cuda');
 %%time
 (train_x_clone@weights_clone)[:5]
 ```
-    CPU times: user 2.19 ms, sys: 131 µs, total: 2.32 ms
-    Wall time: 7.78 ms
-    
-    tensor([[ -6.5802],
-            [-10.9860],
-            [-21.2337],
-            [-18.2173],
-            [ -1.7079]], device='cuda:0')
+```bash
+CPU times: user 2.19 ms, sys: 131 µs, total: 2.32 ms
+Wall time: 7.78 ms
+
+tensor([[ -6.5802],
+        [-10.9860],
+        [-21.2337],
+        [-18.2173],
+        [ -1.7079]], device='cuda:0')
+```
 
 <br>
 ```python
 # Over 86,000 times faster on GPU
 print(f"{(44.9 * 1e+6) / 522:,.2f}")
 ```
-    86,015.33
+```bash
+86,015.33
+```
 
 <br>
 ```python
@@ -2361,13 +2477,15 @@ def linear1(xb): return xb@weights + bias
 preds = linear1(train_x)
 preds
 ```
-    tensor([[ -6.2330],
-            [-10.6388],
-            [-20.8865],
-            ...,
-            [-15.9176],
-            [ -1.6866],
-            [-11.3568]], grad_fn=<AddBackward0>)
+```bash
+tensor([[ -6.2330],
+        [-10.6388],
+        [-20.8865],
+        ...,
+        [-15.9176],
+        [ -1.6866],
+        [-11.3568]], grad_fn=<AddBackward0>)
+```
 
 <br>
 ```python
@@ -2375,20 +2493,24 @@ preds
 corrects = (preds>0.0).float() == train_y
 corrects
 ```
-    tensor([[False],
-            [False],
-            [False],
-            ...,
-            [ True],
-            [ True],
-            [ True]])
+```bash
+tensor([[False],
+        [False],
+        [False],
+        ...,
+        [ True],
+        [ True],
+        [ True]])
+```
 
 <br>
 ```python
 # Calculate the current model accuracy
 corrects.float().mean().item()
 ```
-    0.5379961133003235
+```bash
+0.5379961133003235
+```
 
 <br>
 ```python
@@ -2402,7 +2524,9 @@ with torch.no_grad():
 preds = linear1(train_x)
 ((preds>0.0).float() == train_y).float().mean().item()
 ```
-    0.5379961133003235
+```bash
+0.5379961133003235
+```
 
 <br>
 ```python
@@ -2431,19 +2555,26 @@ def mnist_loss(predictions, targets):
 ```python
 torch.where(trgts==1, 1-prds, prds)
 ```
-    tensor([0.1000, 0.4000, 0.8000])
+```bash
+tensor([0.1000, 0.4000, 0.8000])
+```
 
 <br>
 ```python
 mnist_loss(prds,trgts)
 ```
-    tensor(0.4333)
+```bash
+tensor(0.4333)
+```
 
 <br>
+
 ```python
 mnist_loss(tensor([0.9, 0.4, 0.8]),trgts)
 ```
-    tensor(0.2333)
+```bash
+tensor(0.2333)
+```
 
 
 
@@ -2464,8 +2595,10 @@ mnist_loss(tensor([0.9, 0.4, 0.8]),trgts)
 print(torch.exp(tensor(1)))
 print(torch.exp(tensor(2)))
 ```
-    tensor(2.7183)
-    tensor(7.3891)
+```bash
+tensor(2.7183)
+tensor(7.3891)
+```
 
 <br>
 ```python
@@ -2543,14 +2676,18 @@ In-Place Operations:
 ```python
 DataLoader
 ```
-    fastai.data.load.DataLoader
+```bash
+fastai.data.load.DataLoader
+```
 
 <br>
 ```python
 # Sample collection 
 coll = range(15)
 ```
-    range(0, 15)
+```bash
+range(0, 15)
+```
 
 <br>
 ```python
@@ -2559,9 +2696,11 @@ coll = range(15)
 dl = DataLoader(coll, batch_size=5, shuffle=True)
 list(dl)
 ```
-    [tensor([ 0,  7,  4,  5, 11]),
-     tensor([ 9,  3,  8, 14,  6]),
-     tensor([12,  2,  1, 10, 13])]
+```bash
+[tensor([ 0,  7,  4,  5, 11]),
+ tensor([ 9,  3,  8, 14,  6]),
+ tensor([12,  2,  1, 10, 13])]
+```
 
 <br>
 ```python
@@ -2569,18 +2708,22 @@ list(dl)
 ds = L(enumerate(string.ascii_lowercase))
 ds
 ```
-    (#26) [(0, 'a'),(1, 'b'),(2, 'c'),(3, 'd'),(4, 'e'),(5, 'f'),(6, 'g'),(7, 'h'),(8, 'i'),(9, 'j')...]
+```bash
+(#26) [(0, 'a'),(1, 'b'),(2, 'c'),(3, 'd'),(4, 'e'),(5, 'f'),(6, 'g'),(7, 'h'),(8, 'i'),(9, 'j')...]
+```
 
 <br>
 ```python
 dl = DataLoader(ds, batch_size=6, shuffle=True)
 list(dl)
 ```
-    [(tensor([20, 18, 21,  5,  6,  9]), ('u', 's', 'v', 'f', 'g', 'j')),
-     (tensor([13, 19, 12, 16, 25,  3]), ('n', 't', 'm', 'q', 'z', 'd')),
-     (tensor([15,  1,  0, 24, 10, 23]), ('p', 'b', 'a', 'y', 'k', 'x')),
-     (tensor([11, 22,  2,  4, 14, 17]), ('l', 'w', 'c', 'e', 'o', 'r')),
-     (tensor([7, 8]), ('h', 'i'))]
+```bash
+[(tensor([20, 18, 21,  5,  6,  9]), ('u', 's', 'v', 'f', 'g', 'j')),
+ (tensor([13, 19, 12, 16, 25,  3]), ('n', 't', 'm', 'q', 'z', 'd')),
+ (tensor([15,  1,  0, 24, 10, 23]), ('p', 'b', 'a', 'y', 'k', 'x')),
+ (tensor([11, 22,  2,  4, 14, 17]), ('l', 'w', 'c', 'e', 'o', 'r')),
+ (tensor([7, 8]), ('h', 'i'))]
+```
 
 
 
@@ -2605,7 +2748,9 @@ fastcore first():
 ```python
 first
 ```
-    <function fastcore.basics.first(x, f=None, negate=False, **kwargs)>
+```bash
+<function fastcore.basics.first(x, f=None, negate=False, **kwargs)>
+```
 
 <br>
 ```python
@@ -2613,7 +2758,9 @@ first
 xb,yb = first(dl)
 xb.shape,yb.shape
 ```
-    (torch.Size([256, 784]), torch.Size([256, 1]))
+```bash
+(torch.Size([256, 784]), torch.Size([256, 1]))
+```
 
 <br>
 ```python
@@ -2627,7 +2774,9 @@ valid_dl = DataLoader(valid_dset, batch_size=256)
 batch = train_x[:4]
 batch.shape
 ```
-    torch.Size([4, 784])
+```bash
+torch.Size([4, 784])
+```
 
 <br>
 ```python
@@ -2646,15 +2795,20 @@ preds
 loss = mnist_loss(preds, train_y[:4])
 loss
 ```
-    tensor(1.0000, grad_fn=<MeanBackward0>)
+```bash
+tensor(1.0000, grad_fn=<MeanBackward0>)
+```
 
 <br>
+
 ```python
 # Compute the gradients
 loss.backward()
 weights.grad.shape,weights.grad.mean(),bias.grad
 ```
-    (torch.Size([784, 1]), tensor(-3.5910e-06), tensor([-2.5105e-05]))
+```bash
+(torch.Size([784, 1]), tensor(-3.5910e-06), tensor([-2.5105e-05]))
+```
 
 <br>
 ```python
@@ -2669,7 +2823,9 @@ def calc_grad(xb, yb, model):
 calc_grad(batch, train_y[:4], linear1)
 weights.grad.mean(),bias.grad
 ```
-    (tensor(-7.1820e-06), tensor([-5.0209e-05]))
+```bash
+(tensor(-7.1820e-06), tensor([-5.0209e-05]))
+```
 
 > **Note:** loss.backward() adds the gradients of loss to any gradients that are currently stored. This means we need to zero the gradients first
 
@@ -2678,7 +2834,9 @@ weights.grad.mean(),bias.grad
 calc_grad(batch, train_y[:4], linear1)
 weights.grad.mean(),bias.grad
 ```
-    (tensor(-1.0773e-05), tensor([-7.5314e-05]))
+```bash
+(tensor(-1.0773e-05), tensor([-7.5314e-05]))
+```
 
 <br>
 ```python
@@ -2703,10 +2861,12 @@ def train_epoch(model, lr, params):
 # Calculate accuracy using broadcasting
 (preds>0.0).float() == train_y[:4]
 ```
-    tensor([[False],
-            [False],
-            [False],
-            [False]])
+```bash
+tensor([[False],
+        [False],
+        [False],
+        [False]])
+```
 
 <br>
 ```python
@@ -2720,9 +2880,12 @@ def batch_accuracy(xb, yb):
 ```python
 batch_accuracy(linear1(batch), train_y[:4])
 ```
-    tensor(0.)
+```bash
+tensor(0.)
+```
 
 <br>
+
 ```python
 def validate_epoch(model):
     accs = [batch_accuracy(model(xb), yb) for xb,yb in valid_dl]
@@ -2733,7 +2896,9 @@ def validate_epoch(model):
 ```python
 validate_epoch(linear1)
 ```
-    0.3407
+```bash
+0.3407
+```
 
 <br>
 ```python
@@ -2743,7 +2908,9 @@ params = weights,bias
 train_epoch(linear1, lr, params)
 validate_epoch(linear1)
 ```
-    0.6138
+```bash
+0.6138
+```
 
 <br>
 ```python
@@ -2752,7 +2919,9 @@ for i in range(20):
     train_epoch(linear1, lr, params)
     print(validate_epoch(linear1), end=' ')
 ```
-    0.7358 0.9052 0.9438 0.9575 0.9638 0.9692 0.9726 0.9741 0.975 0.976 0.9765 0.9765 0.9765 0.9779 0.9784 0.9784 0.9784 0.9784 0.9789 0.9784 
+```bash
+0.7358 0.9052 0.9438 0.9575 0.9638 0.9692 0.9726 0.9741 0.975 0.976 0.9765 0.9765 0.9765 0.9779 0.9784 0.9784 0.9784 0.9784 0.9789 0.9784 
+```
 
 **Note:** Accuracy improves from 0.7358 to 0.9784
 
@@ -2789,14 +2958,18 @@ Why we need Non-Linear activation functions
 ```python
 nn.Linear
 ```
-    torch.nn.modules.linear.Linear
+```bash
+torch.nn.modules.linear.Linear
+```
 
 <br>
 ```python
 linear_model = nn.Linear(28*28,1)
 linear_model
 ```
-    Linear(in_features=784, out_features=1, bias=True)
+```bash
+Linear(in_features=784, out_features=1, bias=True)
+```
 
 #### nn.Parameter():
 
@@ -2809,22 +2982,28 @@ linear_model
 w,b = linear_model.parameters()
 w.shape,b.shape
 ```
-    (torch.Size([1, 784]), torch.Size([1]))
+```bash
+(torch.Size([1, 784]), torch.Size([1]))
+```
 
 <br>
 ```python
 print(type(w))
 print(type(b))
 ```
-    <class 'torch.nn.parameter.Parameter'>
-    <class 'torch.nn.parameter.Parameter'>
+```bash
+<class 'torch.nn.parameter.Parameter'>
+<class 'torch.nn.parameter.Parameter'>
+```
 
 <br>
 ```python
 b
 ```
-    Parameter containing:
-    tensor([0.0062], requires_grad=True)
+```bash
+Parameter containing:
+tensor([0.0062], requires_grad=True)
+```
 
 <br>
 ```python
@@ -2858,9 +3037,12 @@ def train_epoch(model):
 ```python
 validate_epoch(linear_model)
 ```
-    0.4673
+```bash
+0.4673
+```
 
 <br>
+
 ```python
 def train_model(model, epochs):
     for i in range(epochs):
@@ -2872,7 +3054,9 @@ def train_model(model, epochs):
 ```python
 train_model(linear_model, 20)
 ```
-    0.4932 0.8193 0.8467 0.9155 0.935 0.9477 0.956 0.9629 0.9653 0.9682 0.9697 0.9731 0.9741 0.9751 0.9761 0.9765 0.9775 0.978 0.9785 0.9785 
+```bash
+0.4932 0.8193 0.8467 0.9155 0.935 0.9477 0.956 0.9629 0.9653 0.9682 0.9697 0.9731 0.9741 0.9751 0.9761 0.9765 0.9775 0.978 0.9785 0.9785 
+```
 
 **Note:** The PyTorch version arrives at almost exactly the same accuracy as the hand-crafted version
 
@@ -2886,7 +3070,9 @@ train_model(linear_model, 20)
 ```python
 SGD
 ```
-    <function fastai.optimizer.SGD(params, lr, mom=0.0, wd=0.0, decouple_wd=True)>
+```bash
+<function fastai.optimizer.SGD(params, lr, mom=0.0, wd=0.0, decouple_wd=True)>
+```
 
 <br>
 ```python
@@ -2894,7 +3080,9 @@ linear_model = nn.Linear(28*28,1)
 opt = SGD(linear_model.parameters(), lr)
 train_model(linear_model, 20)
 ```
-    0.4932 0.8135 0.8481 0.916 0.9341 0.9487 0.956 0.9634 0.9653 0.9673 0.9692 0.9717 0.9746 0.9751 0.9756 0.9765 0.9775 0.9775 0.978 0.978 
+```bash
+0.4932 0.8135 0.8481 0.916 0.9341 0.9487 0.956 0.9634 0.9653 0.9673 0.9692 0.9717 0.9746 0.9751 0.9756 0.9765 0.9775 0.9775 0.978 0.978 
+```
 
 <br>
 ```python
@@ -2910,7 +3098,9 @@ dls = DataLoaders(dl, valid_dl)
 ```python
 Learner
 ```
-    fastai.learner.Learner
+```bash
+fastai.learner.Learner
+```
 
 <br>
 ```python
@@ -2927,7 +3117,9 @@ learn = Learner(dls, nn.Linear(28*28,1), opt_func=SGD,
 ```python
 lr
 ```
-    1.0
+```bash
+1.0
+```
 
 <br>
 ```python
@@ -3052,7 +3244,9 @@ b2 = init_params(1)
 ```python
 F.relu
 ```
-    <function torch.nn.functional.relu(input: torch.Tensor, inplace: bool = False) -> torch.Tensor>
+```bash
+<function torch.nn.functional.relu(input: torch.Tensor, inplace: bool = False) -> torch.Tensor>
+```
 
 
 
@@ -3078,11 +3272,13 @@ simple_net = nn.Sequential(
 )
 simple_net
 ```
-    Sequential(
-      (0): Linear(in_features=784, out_features=30, bias=True)
-      (1): ReLU()
-      (2): Linear(in_features=30, out_features=1, bias=True)
-    )
+```bash
+Sequential(
+  (0): Linear(in_features=784, out_features=30, bias=True)
+  (1): ReLU()
+  (2): Linear(in_features=30, out_features=1, bias=True)
+)
+```
 
 <br>
 ```python
@@ -3401,7 +3597,9 @@ learn.fit(40, 0.1)
 ```python
 plt.plot
 ```
-    <function matplotlib.pyplot.plot(*args, scalex=True, scaley=True, data=None, **kwargs)>
+```bash
+<function matplotlib.pyplot.plot(*args, scalex=True, scaley=True, data=None, **kwargs)>
+```
 
 
 
@@ -3414,13 +3612,17 @@ plt.plot
 ```python
 learn.recorder
 ```
-    Recorder
+```bash
+Recorder
+```
 
 <br>
 ```python
 Recorder
 ```
-    fastai.learner.Recorder
+```bash
+fastai.learner.Recorder
+```
 
 #### fastcore L.itemgot():
 
@@ -3431,7 +3633,9 @@ Recorder
 ```python
 L.itemgot
 ```
-    <function fastcore.foundation.L.itemgot(self, *idxs)>
+```bash
+<function fastcore.foundation.L.itemgot(self, *idxs)>
+```
 
 <br>
 ```python
@@ -3444,7 +3648,9 @@ plt.plot(L(learn.recorder.values).itemgot(2));
 ```python
 learn.recorder.values[-1][2]
 ```
-    0.98233562707901
+```bash
+0.98233562707901
+```
 
 
 
@@ -3493,104 +3699,106 @@ learn.fit_one_cycle(1, 0.1)
 ```python
 learn.model
 ```
-    Sequential(
-      (0): Sequential(
-        (0): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-        (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU(inplace=True)
-        (3): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
-        (4): Sequential(
-          (0): BasicBlock(
-            (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-          (1): BasicBlock(
-            (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-        )
-        (5): Sequential(
-          (0): BasicBlock(
-            (conv1): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (downsample): Sequential(
-              (0): Conv2d(64, 128, kernel_size=(1, 1), stride=(2, 2), bias=False)
-              (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            )
-          )
-          (1): BasicBlock(
-            (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-        )
-        (6): Sequential(
-          (0): BasicBlock(
-            (conv1): Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (downsample): Sequential(
-              (0): Conv2d(128, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
-              (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            )
-          )
-          (1): BasicBlock(
-            (conv1): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-        )
-        (7): Sequential(
-          (0): BasicBlock(
-            (conv1): Conv2d(256, 512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (downsample): Sequential(
-              (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
-              (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            )
-          )
-          (1): BasicBlock(
-            (conv1): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            (relu): ReLU(inplace=True)
-            (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
-            (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          )
-        )
+```bash
+Sequential(
+  (0): Sequential(
+    (0): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): ReLU(inplace=True)
+    (3): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+    (4): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
       )
-      (1): Sequential(
-        (0): AdaptiveConcatPool2d(
-          (ap): AdaptiveAvgPool2d(output_size=1)
-          (mp): AdaptiveMaxPool2d(output_size=1)
-        )
-        (1): Flatten(full=False)
-        (2): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (3): Dropout(p=0.25, inplace=False)
-        (4): Linear(in_features=1024, out_features=512, bias=False)
-        (5): ReLU(inplace=True)
-        (6): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (7): Dropout(p=0.5, inplace=False)
-        (8): Linear(in_features=512, out_features=2, bias=False)
+      (1): BasicBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
       )
     )
+    (5): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(64, 128, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (6): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(128, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (7): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(256, 512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+  )
+  (1): Sequential(
+    (0): AdaptiveConcatPool2d(
+      (ap): AdaptiveAvgPool2d(output_size=1)
+      (mp): AdaptiveMaxPool2d(output_size=1)
+    )
+    (1): Flatten(full=False)
+    (2): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (3): Dropout(p=0.25, inplace=False)
+    (4): Linear(in_features=1024, out_features=512, bias=False)
+    (5): ReLU(inplace=True)
+    (6): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (7): Dropout(p=0.5, inplace=False)
+    (8): Linear(in_features=512, out_features=2, bias=False)
+  )
+)
+```
 
 
 
