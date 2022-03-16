@@ -567,6 +567,8 @@ Probability it's a cat: 1.000000
 
 - training a model to recognize the content of every single pixel in an image
 
+<br>
+
 ```python
 path = untar_data(URLs.CAMVID_TINY)
 print(path)
@@ -725,6 +727,10 @@ learn.show_results(max_n=6, figsize=(18,20))
 
 
 ## Text Classification
+
+* classify the sentiment of pieces of text
+
+<br>
 
 ```python
 from fastai.text.all import *
@@ -978,6 +984,8 @@ learn.predict("I really hated that movie!")
     - Comma-separated Values (CSV) files
 - model tries to predict the value of one column based on information in other columns
 
+<br>
+
 ```python
 from fastai.tabular.all import *
 ```
@@ -1213,6 +1221,8 @@ learn.fit_one_cycle(3)
 ### Recommendation Systems
 
 - model tries to predict the rating a user would give for something
+
+<br>
 
 ```python
 from fastai.collab import *
