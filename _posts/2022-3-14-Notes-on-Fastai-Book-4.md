@@ -79,7 +79,7 @@ print(URLs.MNIST_SAMPLE)
 path = untar_data(URLs.MNIST_SAMPLE)
 print(path)
 ```
-```bash
+```text
 https://s3.amazonaws.com/fast-ai-sample/mnist_sample.tgz
 /home/innom-dt/.fastai/data/mnist_sample
 ```
@@ -97,7 +97,7 @@ Path.BASE_PATH = path
 # A custom fastai method that returns the contents of path as a list
 path.ls()
 ```
-```bash
+```text
 (#3) [Path('labels.csv'),Path('train'),Path('valid')]
 ```
 
@@ -114,7 +114,7 @@ path.ls()
 ```python
 type(path.ls())
 ```
-```bash
+```text
 fastcore.foundation.L
 ```
 
@@ -122,7 +122,7 @@ fastcore.foundation.L
 ```python
 (path/'train').ls()
 ```
-```bash
+```text
 (#2) [Path('train/3'),Path('train/7')]
 ```
 
@@ -133,7 +133,7 @@ threes = (path/'train'/'3').ls().sorted()
 sevens = (path/'train'/'7').ls().sorted()
 threes
 ```
-```bash
+```text
 (#6131) [Path('train/3/10.png'),Path('train/3/10000.png'),Path('train/3/10011.png'),Path('train/3/10031.png'),Path('train/3/10034.png'),Path('train/3/10042.png'),Path('train/3/10052.png'),Path('train/3/1007.png'),Path('train/3/10074.png'),Path('train/3/10091.png')...]
 ```
 
@@ -145,7 +145,7 @@ print(im3_path)
 im3 = Image.open(im3_path)
 im3
 ```
-```bash
+```text
 /home/innom-dt/.fastai/data/mnist_sample/train/3/10000.png
 ```
 
@@ -165,7 +165,7 @@ print(type(im3))
 print(im3.size)
 ```
 
-```bash
+```text
 <class 'PIL.PngImagePlugin.PngImageFile'>
 (28, 28)
 ```
@@ -176,7 +176,7 @@ print(im3.size)
 # Slice of the image from index 4 up to, but not including, index 10
 array(im3)[4:10,4:10]
 ```
-```bash
+```text
 array([[  0,   0,   0,   0,   0,   0],
        [  0,   0,   0,   0,   0,  29],
        [  0,   0,   0,  48, 166, 224],
@@ -223,7 +223,7 @@ tns = tensor(data)
 ```python
 arr  # numpy
 ```
-```bash
+```text
 array([[1, 2, 3],
        [4, 5, 6]])
 ```
@@ -233,7 +233,7 @@ array([[1, 2, 3],
 ```python
 tns  # pytorch
 ```
-```bash
+```text
 tensor([[1, 2, 3],
         [4, 5, 6]])
 ```
@@ -243,7 +243,7 @@ tensor([[1, 2, 3],
 # select a row
 tns[1]
 ```
-```bash
+```text
 tensor([4, 5, 6])
 ```
 
@@ -253,7 +253,7 @@ tensor([4, 5, 6])
 # select a column
 tns[:,1]
 ```
-```bash
+```text
 tensor([2, 5])
 ```
 
@@ -263,7 +263,7 @@ tensor([2, 5])
 # select a slice
 tns[1,1:3]
 ```
-```bash
+```text
 tensor([5, 6])
 ```
 
@@ -273,7 +273,7 @@ tensor([5, 6])
 # Perform element-wise addition
 tns+1
 ```
-```bash
+```text
 tensor([[2, 3, 4],
         [5, 6, 7]])
 ```
@@ -283,7 +283,7 @@ tensor([[2, 3, 4],
 ```python
 tns.type()
 ```
-```bash
+```text
 'torch.LongTensor'
 ```
 
@@ -292,7 +292,7 @@ tns.type()
 # Perform element-wise multiplication
 tns*1.5
 ```
-```bash
+```text
 tensor([[1.5000, 3.0000, 4.5000],
         [6.0000, 7.5000, 9.0000]])
 ```
@@ -316,7 +316,7 @@ tensor([[1.5000, 3.0000, 4.5000],
 print(type(array(im3)[4:10,4:10]))
 array
 ```
-```bash
+```text
 <class 'numpy.ndarray'>
 <function numpy.array>
 ```
@@ -326,7 +326,7 @@ array
 print(array(im3)[4:10,4:10][0].data)
 print(array(im3)[4:10,4:10][0].dtype)
 ```
-```bash
+```text
 <memory at 0x7f3c13a20dc0>
 uint8
 ```
@@ -346,7 +346,7 @@ uint8
 print(type(tensor(im3)[4:10,4:10][0]))
 tensor
 ```
-```bash
+```text
 <class 'torch.Tensor'>
 <function fastai.torch_core.tensor(x, *rest, dtype=None, device=None, requires_grad=False, pin_memory=False)>
 ```
@@ -356,7 +356,7 @@ tensor
 print(tensor(im3)[4:10,4:10][0].data)
 print(tensor(im3)[4:10,4:10][0].dtype)
 ```
-```bash
+```text
 tensor([0, 0, 0, 0, 0, 0], dtype=torch.uint8)
 torch.uint8
 ```
@@ -1285,7 +1285,7 @@ pd.DataFrame(tensor(im3))
 ```python
 tensor(im3).shape
 ```
-```bash
+```text
 torch.Size([28, 28])
 ```
 
@@ -1585,7 +1585,7 @@ seven_tensors = [tensor(Image.open(o)) for o in sevens]
 three_tensors = [tensor(Image.open(o)) for o in threes]
 len(three_tensors),len(seven_tensors)
 ```
-```bash
+```text
 (6131, 6265)
 ```
 
@@ -1613,7 +1613,7 @@ stacked_sevens = torch.stack(seven_tensors).float()/255
 stacked_threes = torch.stack(three_tensors).float()/255
 stacked_threes.shape
 ```
-```bash
+```text
 torch.Size([6131, 28, 28])
 ```
 
@@ -1621,7 +1621,7 @@ torch.Size([6131, 28, 28])
 ```python
 len(stacked_threes.shape)
 ```
-```bash
+```text
 3
 ```
 
@@ -1630,7 +1630,7 @@ len(stacked_threes.shape)
 ```python
 stacked_threes.ndim
 ```
-```bash
+```text
 3
 ```
 
@@ -1671,7 +1671,7 @@ dist_3_sqr = ((a_3 - mean3)**2).mean().sqrt()
 print(f"MAE: {dist_3_abs}")
 print(f"RMSE: {dist_3_sqr}")
 ```
-```bash
+```text
 MAE: 0.11143654584884644
 RMSE: 0.20208320021629333
 ```
@@ -1686,7 +1686,7 @@ dist_7_sqr = ((a_3 - mean7)**2).mean().sqrt()
 print(f"MAE: {dist_7_abs}")
 print(f"RMSE: {dist_7_sqr}")
 ```
-```bash
+```text
 MAE: 0.15861910581588745
 RMSE: 0.30210891366004944
 ```
@@ -1702,7 +1702,7 @@ RMSE: 0.30210891366004944
 ```python
 F
 ```
-```bash
+```text
 <module 'torch.nn.functional' from '/home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/torch/nn/functional.py'>
 ```
 
@@ -1724,7 +1724,7 @@ print(F.l1_loss(a_3.float(),mean7))
 # Calculate the Root Mean Squared Error aka L2 norm
 print(F.mse_loss(a_3,mean7).sqrt())
 ```
-```bash
+```text
 tensor(0.1586)
 tensor(0.3021)
 ```
@@ -1762,7 +1762,7 @@ valid_7_tens = valid_7_tens.float()/255
 
 valid_3_tens.shape,valid_7_tens.shape
 ```
-```bash
+```text
 (torch.Size([1010, 28, 28]), torch.Size([1028, 28, 28]))
 ```
 
@@ -1777,7 +1777,7 @@ def mnist_distance(a,b): return (a-b).abs().mean((-1,-2))
 # Calculate MAE for two single images
 mnist_distance(a_3, mean3)
 ```
-```bash
+```text
 tensor(0.1114)
 ```
 
@@ -1788,7 +1788,7 @@ tensor(0.1114)
 valid_3_dist = mnist_distance(valid_3_tens, mean3)
 valid_3_dist, valid_3_dist.shape
 ```
-```bash
+```text
 (tensor([0.1422, 0.1230, 0.1055,  ..., 0.1244, 0.1188, 0.1103]),
  torch.Size([1010]))
 ```
@@ -1798,7 +1798,7 @@ valid_3_dist, valid_3_dist.shape
 ```python
 tensor([1,2,3]) + tensor([1,1,1])
 ```
-```bash
+```text
 tensor([2, 3, 4])
 ```
 
@@ -1806,7 +1806,7 @@ tensor([2, 3, 4])
 ```python
 (valid_3_tens-mean3).shape
 ```
-```bash
+```text
 torch.Size([1010, 28, 28])
 ```
 
@@ -1820,7 +1820,7 @@ def is_3(x): return mnist_distance(x,mean3) < mnist_distance(x,mean7)
 ```python
 is_3(a_3), is_3(a_3).float()
 ```
-```bash
+```text
 (tensor(True), tensor(1.))
 ```
 
@@ -1829,7 +1829,7 @@ is_3(a_3), is_3(a_3).float()
 ```python
 is_3(valid_3_tens)
 ```
-```bash
+```text
 tensor([ True,  True,  True,  ..., False,  True,  True])
 ```
 
@@ -1841,7 +1841,7 @@ accuracy_7s = (1 - is_3(valid_7_tens).float()).mean()
 
 accuracy_3s,accuracy_7s,(accuracy_3s+accuracy_7s)/2
 ```
-```bash
+```text
 (tensor(0.9168), tensor(0.9854), tensor(0.9511))
 ```
 
@@ -1851,7 +1851,7 @@ accuracy_3s,accuracy_7s,(accuracy_3s+accuracy_7s)/2
 print(f"Correct 3s: {accuracy_3s * valid_3_tens.shape[0]:.0f}")
 print(f"Incorrect 3s: {(1 - accuracy_3s) * valid_3_tens.shape[0]:.0f}")
 ```
-```bash
+```text
 Correct 3s: 926
 Incorrect 3s: 84
 ```
@@ -1862,7 +1862,7 @@ Incorrect 3s: 84
 print(f"Correct 7s: {accuracy_7s * valid_7_tens.shape[0]:.0f}")
 print(f"Incorrect 7s: {(1 - accuracy_7s) * valid_7_tens.shape[0]:.0f}")
 ```
-```bash
+```text
 Correct 7s: 1013
 Incorrect 7s: 15
 ```
@@ -1945,7 +1945,7 @@ xt = tensor(3.).requires_grad_()
 yt = f(xt)
 yt
 ```
-```bash
+```text
 tensor(9., grad_fn=<PowBackward0>)
 ```
 
@@ -1959,7 +1959,7 @@ tensor(9., grad_fn=<PowBackward0>)
 ```python
 yt.grad_fn
 ```
-```bash
+```text
 <PowBackward0 at 0x7f91e90a6670>
 ```
 
@@ -1982,7 +1982,7 @@ The derivative of `f(x) = x**2` is `2x`, so the derivative at `x=3` is `6`
 ```python
 xt.grad
 ```
-```bash
+```text
 tensor(6.)
 ```
 
@@ -1993,7 +1993,7 @@ Derivatives should be `6`, `8`, `20`
 xt = tensor([3.,4.,10.]).requires_grad_()
 xt
 ```
-```bash
+```text
 tensor([ 3.,  4., 10.], requires_grad=True)
 ```
 
@@ -2004,7 +2004,7 @@ def f(x): return (x**2).sum()
 yt = f(xt)
 yt
 ```
-```bash
+```text
 tensor(125., grad_fn=<SumBackward0>)
 ```
 
@@ -2013,7 +2013,7 @@ tensor(125., grad_fn=<SumBackward0>)
 yt.backward()
 xt.grad
 ```
-```bash
+```text
 tensor([ 6.,  8., 20.])
 ```
 
@@ -2058,7 +2058,7 @@ tensor([ 6.,  8., 20.])
 time = torch.arange(0,20).float();
 print(time)
 ```
-```bash
+```text
 tensor([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.])
 ```
 
@@ -2100,7 +2100,7 @@ def mse(preds, targets): return ((preds-targets)**2).mean().sqrt()
 params = torch.randn(3).requires_grad_()
 params
 ```
-```bash
+```text
 tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
 ```
 
@@ -2116,7 +2116,7 @@ preds = f(time, params)
 print(preds.shape)
 preds
 ```
-```bash
+```text
 torch.Size([20])
 tensor([ 1.3525e+00, -1.6391e-01, -3.2121e+00, -7.7919e+00, -1.3903e+01, -2.1547e+01, -3.0721e+01, -4.1428e+01, -5.3666e+01, -6.7436e+01, -8.2738e+01, -9.9571e+01, -1.1794e+02, -1.3783e+02,
         -1.5926e+02, -1.8222e+02, -2.0671e+02, -2.3274e+02, -2.6029e+02, -2.8938e+02], grad_fn=<AddBackward0>)
@@ -2146,7 +2146,7 @@ show_preds(preds)
 loss = mse(preds, speed)
 loss
 ```
-```bash
+```text
 tensor(160.6979, grad_fn=<SqrtBackward0>)
 ```
 
@@ -2157,7 +2157,7 @@ tensor(160.6979, grad_fn=<SqrtBackward0>)
 loss.backward()
 params.grad
 ```
-```bash
+```text
 tensor([-165.5151,  -10.6402,   -0.7900])
 ```
 
@@ -2173,7 +2173,7 @@ lr = 1e-5
 # Multiply the graients by the learning rate
 params.grad * lr
 ```
-```bash
+```text
 tensor([-1.6552e-03, -1.0640e-04, -7.8996e-06])
 ```
 
@@ -2181,7 +2181,7 @@ tensor([-1.6552e-03, -1.0640e-04, -7.8996e-06])
 ```python
 params
 ```
-```bash
+```text
 tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
 ```
 
@@ -2203,7 +2203,7 @@ params.grad = None
 preds = f(time,params)
 mse(preds, speed)
 ```
-```bash
+```text
 tensor(157.9476, grad_fn=<SqrtBackward0>)
 ```
 
@@ -2231,7 +2231,7 @@ def apply_step(params, prn=True):
 ```python
 for i in range(10): apply_step(params)
 ```
-```bash
+```text
 157.9476318359375
 155.1999969482422
 152.45513916015625
@@ -2312,7 +2312,7 @@ train_x = torch.cat([stacked_threes, stacked_sevens]).view(-1, 28*28)
 ```python
 train_x.shape
 ```
-```bash
+```text
 torch.Size([12396, 784])
 ```
 
@@ -2322,7 +2322,7 @@ torch.Size([12396, 784])
 train_y = tensor([1]*len(threes) + [0]*len(sevens)).unsqueeze(1)
 train_y.shape
 ```
-```bash
+```text
 torch.Size([12396, 1])
 ```
 
@@ -2333,7 +2333,7 @@ dset = list(zip(train_x,train_y))
 x,y = dset[0]
 x.shape,y
 ```
-```bash
+```text
 (torch.Size([784]), tensor([1]))
 ```
 
@@ -2367,7 +2367,7 @@ bias = init_params(1)
 # Calculate a prediction for a single image
 (train_x[0]*weights.T).sum() + bias
 ```
-```bash
+```text
 tensor([-6.2330], grad_fn=<AddBackward0>)
 ```
 
@@ -2400,7 +2400,7 @@ weights_clone = weights.clone().detach()
 # Matrix multiplication using @ operator
 (train_x_clone@weights_clone)[:5]
 ```
-```bash
+```text
 CPU times: user 2.35 ms, sys: 4.15 ms, total: 6.5 ms
 Wall time: 5.29 ms
 
@@ -2417,7 +2417,7 @@ tensor([[ -6.5802],
 # This is why you should avoid using loops
 mat_mul(train_x_clone, weights_clone)[:5]
 ```
-```bash
+```text
 CPU times: user 1min 37s, sys: 28 ms, total: 1min 37s
 Wall time: 1min 37s
 
@@ -2433,7 +2433,7 @@ Wall time: 1min 37s
 # Over 29,000 times slower with loops
 print(f"{(44.9 * 1000) / 1.53:,.2f}")
 ```
-```bash
+```text
 29,346.41
 ```
 
@@ -2449,7 +2449,7 @@ weights_clone = weights_clone.to('cuda');
 %%time
 (train_x_clone@weights_clone)[:5]
 ```
-```bash
+```text
 CPU times: user 2.19 ms, sys: 131 µs, total: 2.32 ms
 Wall time: 7.78 ms
 
@@ -2465,7 +2465,7 @@ tensor([[ -6.5802],
 # Over 86,000 times faster on GPU
 print(f"{(44.9 * 1e+6) / 522:,.2f}")
 ```
-```bash
+```text
 86,015.33
 ```
 
@@ -2477,7 +2477,7 @@ def linear1(xb): return xb@weights + bias
 preds = linear1(train_x)
 preds
 ```
-```bash
+```text
 tensor([[ -6.2330],
         [-10.6388],
         [-20.8865],
@@ -2493,7 +2493,7 @@ tensor([[ -6.2330],
 corrects = (preds>0.0).float() == train_y
 corrects
 ```
-```bash
+```text
 tensor([[False],
         [False],
         [False],
@@ -2508,7 +2508,7 @@ tensor([[False],
 # Calculate the current model accuracy
 corrects.float().mean().item()
 ```
-```bash
+```text
 0.5379961133003235
 ```
 
@@ -2524,7 +2524,7 @@ with torch.no_grad():
 preds = linear1(train_x)
 ((preds>0.0).float() == train_y).float().mean().item()
 ```
-```bash
+```text
 0.5379961133003235
 ```
 
@@ -2555,7 +2555,7 @@ def mnist_loss(predictions, targets):
 ```python
 torch.where(trgts==1, 1-prds, prds)
 ```
-```bash
+```text
 tensor([0.1000, 0.4000, 0.8000])
 ```
 
@@ -2563,7 +2563,7 @@ tensor([0.1000, 0.4000, 0.8000])
 ```python
 mnist_loss(prds,trgts)
 ```
-```bash
+```text
 tensor(0.4333)
 ```
 
@@ -2572,7 +2572,7 @@ tensor(0.4333)
 ```python
 mnist_loss(tensor([0.9, 0.4, 0.8]),trgts)
 ```
-```bash
+```text
 tensor(0.2333)
 ```
 
@@ -2595,7 +2595,7 @@ tensor(0.2333)
 print(torch.exp(tensor(1)))
 print(torch.exp(tensor(2)))
 ```
-```bash
+```text
 tensor(2.7183)
 tensor(7.3891)
 ```
@@ -2676,7 +2676,7 @@ In-Place Operations:
 ```python
 DataLoader
 ```
-```bash
+```text
 fastai.data.load.DataLoader
 ```
 
@@ -2685,7 +2685,7 @@ fastai.data.load.DataLoader
 # Sample collection 
 coll = range(15)
 ```
-```bash
+```text
 range(0, 15)
 ```
 
@@ -2696,7 +2696,7 @@ coll = range(15)
 dl = DataLoader(coll, batch_size=5, shuffle=True)
 list(dl)
 ```
-```bash
+```text
 [tensor([ 0,  7,  4,  5, 11]),
  tensor([ 9,  3,  8, 14,  6]),
  tensor([12,  2,  1, 10, 13])]
@@ -2708,7 +2708,7 @@ list(dl)
 ds = L(enumerate(string.ascii_lowercase))
 ds
 ```
-```bash
+```text
 (#26) [(0, 'a'),(1, 'b'),(2, 'c'),(3, 'd'),(4, 'e'),(5, 'f'),(6, 'g'),(7, 'h'),(8, 'i'),(9, 'j')...]
 ```
 
@@ -2717,7 +2717,7 @@ ds
 dl = DataLoader(ds, batch_size=6, shuffle=True)
 list(dl)
 ```
-```bash
+```text
 [(tensor([20, 18, 21,  5,  6,  9]), ('u', 's', 'v', 'f', 'g', 'j')),
  (tensor([13, 19, 12, 16, 25,  3]), ('n', 't', 'm', 'q', 'z', 'd')),
  (tensor([15,  1,  0, 24, 10, 23]), ('p', 'b', 'a', 'y', 'k', 'x')),
@@ -2748,7 +2748,7 @@ fastcore first():
 ```python
 first
 ```
-```bash
+```text
 <function fastcore.basics.first(x, f=None, negate=False, **kwargs)>
 ```
 
@@ -2758,7 +2758,7 @@ first
 xb,yb = first(dl)
 xb.shape,yb.shape
 ```
-```bash
+```text
 (torch.Size([256, 784]), torch.Size([256, 1]))
 ```
 
@@ -2774,7 +2774,7 @@ valid_dl = DataLoader(valid_dset, batch_size=256)
 batch = train_x[:4]
 batch.shape
 ```
-```bash
+```text
 torch.Size([4, 784])
 ```
 
@@ -2795,7 +2795,7 @@ preds
 loss = mnist_loss(preds, train_y[:4])
 loss
 ```
-```bash
+```text
 tensor(1.0000, grad_fn=<MeanBackward0>)
 ```
 
@@ -2806,7 +2806,7 @@ tensor(1.0000, grad_fn=<MeanBackward0>)
 loss.backward()
 weights.grad.shape,weights.grad.mean(),bias.grad
 ```
-```bash
+```text
 (torch.Size([784, 1]), tensor(-3.5910e-06), tensor([-2.5105e-05]))
 ```
 
@@ -2823,7 +2823,7 @@ def calc_grad(xb, yb, model):
 calc_grad(batch, train_y[:4], linear1)
 weights.grad.mean(),bias.grad
 ```
-```bash
+```text
 (tensor(-7.1820e-06), tensor([-5.0209e-05]))
 ```
 
@@ -2834,7 +2834,7 @@ weights.grad.mean(),bias.grad
 calc_grad(batch, train_y[:4], linear1)
 weights.grad.mean(),bias.grad
 ```
-```bash
+```text
 (tensor(-1.0773e-05), tensor([-7.5314e-05]))
 ```
 
@@ -2861,7 +2861,7 @@ def train_epoch(model, lr, params):
 # Calculate accuracy using broadcasting
 (preds>0.0).float() == train_y[:4]
 ```
-```bash
+```text
 tensor([[False],
         [False],
         [False],
@@ -2880,7 +2880,7 @@ def batch_accuracy(xb, yb):
 ```python
 batch_accuracy(linear1(batch), train_y[:4])
 ```
-```bash
+```text
 tensor(0.)
 ```
 
@@ -2896,7 +2896,7 @@ def validate_epoch(model):
 ```python
 validate_epoch(linear1)
 ```
-```bash
+```text
 0.3407
 ```
 
@@ -2908,7 +2908,7 @@ params = weights,bias
 train_epoch(linear1, lr, params)
 validate_epoch(linear1)
 ```
-```bash
+```text
 0.6138
 ```
 
@@ -2919,7 +2919,7 @@ for i in range(20):
     train_epoch(linear1, lr, params)
     print(validate_epoch(linear1), end=' ')
 ```
-```bash
+```text
 0.7358 0.9052 0.9438 0.9575 0.9638 0.9692 0.9726 0.9741 0.975 0.976 0.9765 0.9765 0.9765 0.9779 0.9784 0.9784 0.9784 0.9784 0.9789 0.9784 
 ```
 
@@ -2958,7 +2958,7 @@ Why we need Non-Linear activation functions
 ```python
 nn.Linear
 ```
-```bash
+```text
 torch.nn.modules.linear.Linear
 ```
 
@@ -2967,7 +2967,7 @@ torch.nn.modules.linear.Linear
 linear_model = nn.Linear(28*28,1)
 linear_model
 ```
-```bash
+```text
 Linear(in_features=784, out_features=1, bias=True)
 ```
 
@@ -2982,7 +2982,7 @@ Linear(in_features=784, out_features=1, bias=True)
 w,b = linear_model.parameters()
 w.shape,b.shape
 ```
-```bash
+```text
 (torch.Size([1, 784]), torch.Size([1]))
 ```
 
@@ -2991,7 +2991,7 @@ w.shape,b.shape
 print(type(w))
 print(type(b))
 ```
-```bash
+```text
 <class 'torch.nn.parameter.Parameter'>
 <class 'torch.nn.parameter.Parameter'>
 ```
@@ -3000,7 +3000,7 @@ print(type(b))
 ```python
 b
 ```
-```bash
+```text
 Parameter containing:
 tensor([0.0062], requires_grad=True)
 ```
@@ -3037,7 +3037,7 @@ def train_epoch(model):
 ```python
 validate_epoch(linear_model)
 ```
-```bash
+```text
 0.4673
 ```
 
@@ -3054,7 +3054,7 @@ def train_model(model, epochs):
 ```python
 train_model(linear_model, 20)
 ```
-```bash
+```text
 0.4932 0.8193 0.8467 0.9155 0.935 0.9477 0.956 0.9629 0.9653 0.9682 0.9697 0.9731 0.9741 0.9751 0.9761 0.9765 0.9775 0.978 0.9785 0.9785 
 ```
 
@@ -3070,7 +3070,7 @@ train_model(linear_model, 20)
 ```python
 SGD
 ```
-```bash
+```text
 <function fastai.optimizer.SGD(params, lr, mom=0.0, wd=0.0, decouple_wd=True)>
 ```
 
@@ -3080,7 +3080,7 @@ linear_model = nn.Linear(28*28,1)
 opt = SGD(linear_model.parameters(), lr)
 train_model(linear_model, 20)
 ```
-```bash
+```text
 0.4932 0.8135 0.8481 0.916 0.9341 0.9487 0.956 0.9634 0.9653 0.9673 0.9692 0.9717 0.9746 0.9751 0.9756 0.9765 0.9775 0.9775 0.978 0.978 
 ```
 
@@ -3098,7 +3098,7 @@ dls = DataLoaders(dl, valid_dl)
 ```python
 Learner
 ```
-```bash
+```text
 fastai.learner.Learner
 ```
 
@@ -3117,7 +3117,7 @@ learn = Learner(dls, nn.Linear(28*28,1), opt_func=SGD,
 ```python
 lr
 ```
-```bash
+```text
 1.0
 ```
 
@@ -3244,7 +3244,7 @@ b2 = init_params(1)
 ```python
 F.relu
 ```
-```bash
+```text
 <function torch.nn.functional.relu(input: torch.Tensor, inplace: bool = False) -> torch.Tensor>
 ```
 
@@ -3272,7 +3272,7 @@ simple_net = nn.Sequential(
 )
 simple_net
 ```
-```bash
+```text
 Sequential(
   (0): Linear(in_features=784, out_features=30, bias=True)
   (1): ReLU()
@@ -3597,7 +3597,7 @@ learn.fit(40, 0.1)
 ```python
 plt.plot
 ```
-```bash
+```text
 <function matplotlib.pyplot.plot(*args, scalex=True, scaley=True, data=None, **kwargs)>
 ```
 
@@ -3612,7 +3612,7 @@ plt.plot
 ```python
 learn.recorder
 ```
-```bash
+```text
 Recorder
 ```
 
@@ -3620,7 +3620,7 @@ Recorder
 ```python
 Recorder
 ```
-```bash
+```text
 fastai.learner.Recorder
 ```
 
@@ -3633,7 +3633,7 @@ fastai.learner.Recorder
 ```python
 L.itemgot
 ```
-```bash
+```text
 <function fastcore.foundation.L.itemgot(self, *idxs)>
 ```
 
@@ -3648,7 +3648,7 @@ plt.plot(L(learn.recorder.values).itemgot(2));
 ```python
 learn.recorder.values[-1][2]
 ```
-```bash
+```text
 0.98233562707901
 ```
 
@@ -3699,7 +3699,7 @@ learn.fit_one_cycle(1, 0.1)
 ```python
 learn.model
 ```
-```bash
+```text
 Sequential(
   (0): Sequential(
     (0): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
