@@ -178,6 +178,7 @@ import pandas as pd
 ```python
 pd.DataFrame(dls.categorize.vocab)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -336,6 +337,8 @@ pd.DataFrame(dls.categorize.vocab)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 
@@ -591,6 +594,7 @@ pets1.summary(path/"images")
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(2)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -638,6 +642,8 @@ learn.fine_tune(2)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## Cross-Entropy Loss
@@ -839,6 +845,7 @@ df['idx'] = idx
 df['loss'] = sm_acts[range(6), targ]
 df
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -901,6 +908,8 @@ df
     </tr>
   </tbody>
 </table>
+</div>
+
 
 <br>
 ```python
@@ -1045,6 +1054,7 @@ interp.most_confused(min_val=4)
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(1, base_lr=0.1)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1085,6 +1095,8 @@ learn.fine_tune(1, base_lr=0.1)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 Using a very high learning rate resulted in an increasing error rate
@@ -1120,6 +1132,7 @@ lr_steep
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(2, base_lr=lr_steep)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1167,12 +1180,15 @@ learn.fine_tune(2, base_lr=lr_steep)
     </tr>
   </tbody>
 </table>
+</div>
+
 <br>
 
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(2, base_lr=3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1220,6 +1236,8 @@ learn.fine_tune(2, base_lr=3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ### Unfreezing and Transfer Learning
@@ -1248,6 +1266,7 @@ learn = cnn_learner(dls, resnet34, metrics=error_rate)
 # Train new layers for 3 epochs
 learn.fit_one_cycle(3, 3e-3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1282,6 +1301,8 @@ learn.fit_one_cycle(3, 3e-3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 Learner.unfreeze()
@@ -1313,6 +1334,7 @@ lr_steep
 ```python
 learn.fit_one_cycle(6, lr_max=1e-5)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1368,6 +1390,8 @@ learn.fit_one_cycle(6, lr_max=1e-5)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ### Discriminative Learning Rates
@@ -1387,6 +1411,7 @@ learn.unfreeze()
 # Scale the learning rate for the in-between layers to gradually increase from 1e-6 up to 1e-4
 learn.fit_one_cycle(12, lr_max=slice(1e-6,1e-4))
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1518,6 +1543,8 @@ learn.fit_one_cycle(12, lr_max=slice(1e-6,1e-4))
     </tr>
   </tbody>
 </table>
+</div>
+
 <br>
 
 ```python
@@ -1559,6 +1586,7 @@ from fastai.callback.fp16 import *
 learn = cnn_learner(dls, resnet50, metrics=error_rate).to_fp16()
 learn.fine_tune(6, freeze_epochs=3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1648,6 +1676,8 @@ learn.fine_tune(6, freeze_epochs=3)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## References
