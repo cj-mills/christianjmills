@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My full notes for chapter 4 of Deep Learning for Coders with fastai & PyTorch
-categories: [ai, fastai, notes]
+categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
 search_exclude: false
@@ -105,7 +105,7 @@ path.ls()
 
 #### fastcore `L` Class
 
-* https://fastcore.fast.ai/foundation.html#L
+* [https://fastcore.fast.ai/foundation.html#L](https://fastcore.fast.ai/foundation.html#L)
 * Behaves like a list of `items` but can also index with list of indices or masks
 * Displays the number of items before printing the items
 
@@ -308,7 +308,7 @@ tensor([[1.5000, 3.0000, 4.5000],
 
 #### numpy.array function
 
-* https://numpy.org/doc/stable/reference/generated/numpy.array.html
+* [https://numpy.org/doc/stable/reference/generated/numpy.array.html](https://numpy.org/doc/stable/reference/generated/numpy.array.html)
 * creates an array
 
 <br>
@@ -333,12 +333,12 @@ uint8
 
 ### PyTorch Tensor
 
-* https://pytorch.org/docs/stable/tensors.html
+* [https://pytorch.org/docs/stable/tensors.html](https://pytorch.org/docs/stable/tensors.html)
 * a multi-dimensional matrix containing elements of a single data type
 
 #### fastai tensor function
 
-* https://docs.fast.ai/torch_core.html#tensor
+* [https://docs.fast.ai/torch_core.html#tensor](https://docs.fast.ai/torch_core.html#tensor)
 * Like [torch.as_tensor](https://pytorch.org/docs/stable/generated/torch.as_tensor.html#torch.as_tensor), but handle lists too, and can pass multiple vector elements directly.
 
 <br>
@@ -363,7 +363,7 @@ torch.uint8
 
 ### Pandas DataFrame
 
-* https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html
+* [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html)
 * Two-dimensional, size-mutable, potentially heterogeneous tabular data
 
 <br>
@@ -1590,8 +1590,8 @@ len(three_tensors),len(seven_tensors)
 ```
 
 
-fastai show_image function
-* https://docs.fast.ai/torch_core.html#show_image
+#### fastai show_image function
+* [https://docs.fast.ai/torch_core.html#show_image](https://docs.fast.ai/torch_core.html#show_image)
 * Display tensor as an image
 
 <br>
@@ -1601,8 +1601,8 @@ show_image(three_tensors[1]);
 ![png](../images/notes-fastai-book/chapter-4/output_27_0.png)
 
 
-PyTorch Stack Function
-* https://pytorch.org/docs/stable/generated/torch.stack.html
+#### PyTorch Stack Function
+* [https://pytorch.org/docs/stable/generated/torch.stack.html](https://pytorch.org/docs/stable/generated/torch.stack.html)
 * Concatenates a sequence of tensors along a new dimension
 
 <br>
@@ -1694,8 +1694,8 @@ RMSE: 0.30210891366004944
 
 > **Note:** The error is larger when comparing the image of a `3` to the average pixel values for the digit `7`
 
-`torch.nn.functional`
-* https://pytorch.org/docs/stable/nn.functional.html
+#### `torch.nn.functional`
+* [https://pytorch.org/docs/stable/nn.functional.html](https://pytorch.org/docs/stable/nn.functional.html)
 * Provides access to a variety of functions in PyTorch
 
 <br>
@@ -1708,12 +1708,12 @@ F
 
 
 
-PyTorch l1_loss function
-* https://pytorch.org/docs/stable/generated/torch.nn.functional.l1_loss.html#torch.nn.functional.l1_loss
+#### PyTorch l1_loss function
+* [https://pytorch.org/docs/stable/generated/torch.nn.functional.l1_loss.html#torch.nn.functional.l1_loss](https://pytorch.org/docs/stable/generated/torch.nn.functional.l1_loss.html#torch.nn.functional.l1_loss)
 * takes the mean element-wise absolute value difference
 
-PyTorch mse_loss function
-* https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss
+#### PyTorch mse_loss function
+* [https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss](https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss)
 * Measures the element-wise mean squared error
 * Penalizes bigger mistakes more heavily
 
@@ -1895,8 +1895,8 @@ def pr_eight(x,w) = (x*w).sum()
 def f(x): return x**2
 ```
 
-plot_function
-* https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70
+#### plot_function
+* [https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70](https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70)
 
 ```python
 plot_function(f, 'x', 'x**2')
@@ -1931,7 +1931,7 @@ plt.scatter(-1.5, f(-1.5), color='red');
 
 #### Tensor.requires_grad
 
-* https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad.html
+* [https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad.html](https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad.html)
 * is `True` if gradients need to be computed for the Tensor
 * here gradient refers to the value of a function's derivative at a particular argument value
 * The PyTorch API puts the focus onto the argument, not the function
@@ -1953,7 +1953,7 @@ tensor(9., grad_fn=<PowBackward0>)
 
 #### Tensor.grad_fn
 
-* https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history
+* [https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history](https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history)
 * references a function that has created a function
 
 ```python
@@ -1967,7 +1967,7 @@ yt.grad_fn
 
 #### Tensor.backward()
 
-* https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward
+* [https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward](https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward)
 * Computes the gradient of current tensor w.r.t. graph leaves.
     * uses the chain rule
 * backward refers to backpropagation
@@ -2051,7 +2051,7 @@ tensor([ 6.,  8., 20.])
 
 #### torch.arange()
 
-* https://pytorch.org/docs/stable/generated/torch.arange.html?highlight=arange#torch.arange
+* [https://pytorch.org/docs/stable/generated/torch.arange.html?highlight=arange#torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html?highlight=arange#torch.arange)
 * Returns a 1-D tensor of size $\left\lceil \frac{\text{end} - \text{start}}{\text{step}} \right\rceil$ with values from the interval `[start, end)` taken with common difference `step` beginning from `start`.
 
 ```python
@@ -2064,12 +2064,12 @@ tensor([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11., 12., 13., 14
 
 #### torch.randn()
 
-* https://pytorch.org/docs/stable/generated/torch.randn.html?highlight=randn#torch.randn
+* [https://pytorch.org/docs/stable/generated/torch.randn.html?highlight=randn#torch.randn](https://pytorch.org/docs/stable/generated/torch.randn.html?highlight=randn#torch.randn)
 * Returns a tensor filled with random numbers from a normal distribution with mean 0 and variance 1 (also called the standard normal distribution)
 
 #### matplotlib.pyplot.scatter()
 
-* https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
+* [https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html)
 * A scatter plot of y vs. x with varying marker size and/or color.
 
 <br>
@@ -2292,13 +2292,13 @@ plt.tight_layout()
 
 #### torch.cat()
 
-* https://pytorch.org/docs/stable/generated/torch.cat.html
+* [https://pytorch.org/docs/stable/generated/torch.cat.html](https://pytorch.org/docs/stable/generated/torch.cat.html)
 * Concatenates a given sequence of tensors in the specified dimension
 * All tensor must have the same shape except in the specified dimension
 
 #### Tensor.view()
 
-* https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view
+* [https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view](https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view)
 * Returns a new tensor with the same data as the self tensor but of a different shape.
 
 ```python
@@ -2536,7 +2536,7 @@ prds   = tensor([0.9, 0.4, 0.2])
 
 #### torch.where(condition, x, y)
 
-* https://pytorch.org/docs/stable/generated/torch.where.html
+* [https://pytorch.org/docs/stable/generated/torch.where.html](https://pytorch.org/docs/stable/generated/torch.where.html)
 * Return a tensor of elements selected from either `x` or `y`, depending on `condition`
 
 <br>
@@ -2586,7 +2586,7 @@ tensor(0.2333)
 
 #### torch.exp(x)
 
-* https://pytorch.org/docs/stable/generated/torch.exp.html
+*[ https://pytorch.org/docs/stable/generated/torch.exp.html]( https://pytorch.org/docs/stable/generated/torch.exp.html)
 * returns $e^{x}$ where $e$ is [Euler's number](https://en.wikipedia.org/wiki/E_(mathematical_constant)
 * $e \approx 2.7183$
 
@@ -2649,13 +2649,13 @@ In-Place Operations:
 
 #### PyTorch DataLoader:
 
-* https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
+* [https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
 * Combines a dataset and a sampler, and provides an iterable over the given dataset.
 * supports both map-style and iterable-style datasets with single- or multi-process loading, customizing loading order and optional automatic batching (collation) and memory pinning
 
 #### PyTorch Dataset:
 
-* https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset
+* [https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset](https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset)
 * an abstract class representing a dataset
 
 #### Map-style datasets:
@@ -2669,7 +2669,7 @@ In-Place Operations:
 
 #### fastai DataLoader:
 
-* https://docs.fast.ai/data.load.html#DataLoader
+* [https://docs.fast.ai/data.load.html#DataLoader](https://docs.fast.ai/data.load.html#DataLoader)
 * API compatible with PyTorch DataLoader, with a lot more callbacks and flexibility
 
 
@@ -2740,8 +2740,8 @@ bias = init_params(1)
 dl = DataLoader(dset, batch_size=256)
 ```
 
-fastcore first():
-* https://fastcore.fast.ai/basics.html#first
+#### fastcore first():
+* [https://fastcore.fast.ai/basics.html#first](https://fastcore.fast.ai/basics.html#first)
 * First element of x, optionally filtered by f, or None if missing
 
 <br>
@@ -2936,19 +2936,19 @@ Why we need Non-Linear activation functions
 
 #### torch.nn:
 
-* https://pytorch.org/docs/stable/nn.html
+* [https://pytorch.org/docs/stable/nn.html](https://pytorch.org/docs/stable/nn.html)
 * provides the basic building blocks for building PyTorch models
 
 #### nn.Linear():
 
-* https://pytorch.org/docs/stable/generated/torch.nn.Linear.html
+* [https://pytorch.org/docs/stable/generated/torch.nn.Linear.html](https://pytorch.org/docs/stable/generated/torch.nn.Linear.html)
 * Applies a linear transformation to the incoming data: $y=xA^{T}+b$
 * contains both the weights and biases in a single class
 * inherits from [nn.Module()](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module)
 
 #### nn.Module():
 
-* https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module
+* [https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module)
 * Base class for all neural network modules
 * any PyTorch models should subclass this class
 * modules can contain other modules
@@ -2973,7 +2973,7 @@ Linear(in_features=784, out_features=1, bias=True)
 
 #### nn.Parameter():
 
-* https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter
+* [https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter](https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter)
 * A Tensor sublcass
 * A kind of Tensor that is to be considered a module parameter.
 
@@ -3062,7 +3062,7 @@ train_model(linear_model, 20)
 
 #### fastai SGD():
 
-* https://docs.fast.ai/optimizer.html#SGD
+* [https://docs.fast.ai/optimizer.html#SGD](https://docs.fast.ai/optimizer.html#SGD)
 * An [Optimizer](https://docs.fast.ai/optimizer.html#Optimizer) for SGD with lr and mom and params
 * by default does the same thing as BasicOptim
 
@@ -3091,7 +3091,7 @@ dls = DataLoaders(dl, valid_dl)
 
 #### fastai Learner:
 
-* https://docs.fast.ai/learner.html#Learner
+* [https://docs.fast.ai/learner.html#Learner](https://docs.fast.ai/learner.html#Learner)
 * Group together a model, some data loaders, an optimizer and a loss function to handle training
 
 <br>
@@ -3110,7 +3110,7 @@ learn = Learner(dls, nn.Linear(28*28,1), opt_func=SGD,
 
 #### fastai Learner.fit:
 
-* https://docs.fast.ai/learner.html#Learner.fit
+* [https://docs.fast.ai/learner.html#Learner.fit](https://docs.fast.ai/learner.html#Learner.fit)
 * fit a model for a specifed number of epochs using a specified learning rate
 
 <br>
@@ -3236,7 +3236,7 @@ b2 = init_params(1)
 
 #### PyTorch F.relu:
 
-* https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu
+* [https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu](https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu)
 * Applies the rectified linear unit function element-wise.
 * $\text{ReLU}(x) = (x)^+ = \max(0, x)$
 
@@ -3258,7 +3258,7 @@ plot_function(F.relu)
 
 #### nn.Sequential:
 
-* https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential
+* [https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential](https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential)
 * A sequential container.
 * Treats the whole container as a single module
 * ouputs from the previous layer are fed as input to the next layer in the list
@@ -3590,7 +3590,7 @@ learn.fit(40, 0.1)
 
 #### matplotlib.pyplot.plot:
 
-* https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html
+* [https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html)
 * Plot y versus x as lines and/or markers
 
 <br>
@@ -3605,7 +3605,7 @@ plt.plot
 
 #### fastai learner.Recorder:
 
-* https://docs.fast.ai/learner.html#Recorder
+* [https://docs.fast.ai/learner.html#Recorder](https://docs.fast.ai/learner.html#Recorder)
 * Callback that registers statistics (lr, loss and metrics) during training
 
 <br>
@@ -3626,7 +3626,7 @@ fastai.learner.Recorder
 
 #### fastcore L.itemgot():
 
-* https://fastcore.fast.ai/foundation.html#L.itemgot
+* [https://fastcore.fast.ai/foundation.html#L.itemgot](https://fastcore.fast.ai/foundation.html#L.itemgot)
 * Create new L with item idx of all items
 
 <br>
