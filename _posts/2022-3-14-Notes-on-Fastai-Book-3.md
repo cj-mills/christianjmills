@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My full notes for chapter 3 of Deep Learning for Coders with fastai & PyTorch
-categories: [ai, fastai, notes]
+categories: [ai, ethics, fastai, notes]
 hide: false
 permalink: /:title/
 search_exclude: false
