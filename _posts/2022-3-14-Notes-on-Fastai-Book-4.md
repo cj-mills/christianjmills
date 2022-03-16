@@ -2774,10 +2774,12 @@ torch.Size([4, 784])
 preds = linear1(batch)
 preds
 ```
-    tensor([[ -9.2139],
-            [-20.0299],
-            [-16.8065],
-            [-14.1171]], grad_fn=<AddBackward0>)
+```text
+tensor([[ -9.2139],
+        [-20.0299],
+        [-16.8065],
+        [-14.1171]], grad_fn=<AddBackward0>)
+```
 
 <br>
 ```python
