@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 4
 layout: post
 toc: false
 comments: true
-description: My notes for chapter 4 of Deep Learning for Coders with fastai & PyTorch
+description: My full notes for chapter 4 of Deep Learning for Coders with fastai & PyTorch
 categories: [ai, fastai, notes]
 hide: false
 permalink: /:title/
