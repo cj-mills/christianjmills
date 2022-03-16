@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My full notes for chapter 5 of Deep Learning for Coders with fastai & PyTorch
-categories: [ai, fastai, notes]
+categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
 search_exclude: false
@@ -51,7 +51,7 @@ matplotlib.rc('image', cmap='Greys')
 
 #### The Oxford-IIIT Pet Dataset
 
-* https://www.robots.ox.ac.uk/~vgg/data/pets/
+* [https://www.robots.ox.ac.uk/~vgg/data/pets/](https://www.robots.ox.ac.uk/~vgg/data/pets/)
 * a 37 category pet dataset with roughly 200 images for each class
 * images have a large variations in scale, pose and lighting
 * all images have an associated ground truth annotation of breed, head ROI, and pixel level trimap segmentation
@@ -140,7 +140,7 @@ re.findall(r'(.+)_\d+.jpg$', fname.name)
 
 #### fastai RegexLabeller:
 
-* https://docs.fast.ai/data.transforms.html#RegexLabeller
+* [https://docs.fast.ai/data.transforms.html#RegexLabeller](https://docs.fast.ai/data.transforms.html#RegexLabeller)
 * label items using a regular expression pattern
 
 ```python
@@ -184,13 +184,13 @@ import pandas as pd
 
 #### fastai Categorize:
 
-* https://docs.fast.ai/data.transforms.html#Categorize
+* [https://docs.fast.ai/data.transforms.html#Categorize](https://docs.fast.ai/data.transforms.html#Categorize)
 * reversible transform of a category string to a vocab id
 * inherits from DisplayedTransform
 
 #### fastai DisplayedTransform
 
-* https://fastcore.fast.ai/transform#DisplayedTransform
+* [https://fastcore.fast.ai/transform#DisplayedTransform](https://fastcore.fast.ai/transform#DisplayedTransform)
 * A transform that shows its attributes
 
 <br>
@@ -413,7 +413,7 @@ dls1.train.get_idxs = lambda: Inf.ones
 
 #### itertools.cycle()
 
-* https://docs.python.org/3/library/itertools.html#itertools.cycle
+* [https://docs.python.org/3/library/itertools.html#itertools.cycle](https://docs.python.org/3/library/itertools.html#itertools.cycle)
 * Make an iterator returning elements from the iterable and saving a copy of each
 
 <br>
@@ -426,7 +426,7 @@ itertools.cycle
 
 #### fastai DataLoader.one_batch:
 
-* https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/data/load.py#L146
+* [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/data/load.py#L146](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/data/load.py#L146)
 * Return one batch from `DataLoader`
 
 <br>
@@ -462,28 +462,28 @@ print(TensorImage)
 
 #### fastai TensorImage:
 
-* https://docs.fast.ai/torch_core.html#TensorImage
+* [https://docs.fast.ai/torch_core.html#TensorImage](https://docs.fast.ai/torch_core.html#TensorImage)
 * A Tensor which support subclass pickling, and maintains metadata when casting or after methods
 
 #### TensorImage.affine_coord:
 
-* https://docs.fast.ai/vision.augment.html#AffineCoordTfm
-* https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L310
+* [https://docs.fast.ai/vision.augment.html#AffineCoordTfm](https://docs.fast.ai/vision.augment.html#AffineCoordTfm)
+* [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L310](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L310)
 
 #### TensorImage.rotate:
 
-* https://docs.fast.ai/vision.augment.html#Rotate
-* https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L549
+* [https://docs.fast.ai/vision.augment.html#Rotate](https://docs.fast.ai/vision.augment.html#Rotate)
+* [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L549](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L549)
 
 #### TensorImage.zoom:
 
-* https://docs.fast.ai/vision.augment.html#Zoom
-* https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L582
+* [https://docs.fast.ai/vision.augment.html#Zoom](https://docs.fast.ai/vision.augment.html#Zoom)
+* [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L582](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L582)
 
 #### TensorImage.warp:
 
-* https://docs.fast.ai/vision.augment.html#Warp
-* https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L656
+* [https://docs.fast.ai/vision.augment.html#Warp](https://docs.fast.ai/vision.augment.html#Warp)
+* [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L656](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L656)
 
 <br>
 ```python
@@ -503,7 +503,7 @@ print(TensorImage.warp)
 
 #### fastcore Pipeline:
 
-* https://fastcore.fast.ai/transform.html#Pipeline
+* [https://fastcore.fast.ai/transform.html#Pipeline](https://fastcore.fast.ai/transform.html#Pipeline)
 * A pipeline of composed (for encode/decode) transforms, setup with types
 * a wrapper for [compose_tfms](https://fastcore.fast.ai/transform.html#compose_tfms)
 
@@ -560,7 +560,7 @@ pets1 = DataBlock(blocks = (ImageBlock, CategoryBlock),
 
 #### DataBlock.summary():
 
-* https://docs.fast.ai/data.block.html#DataBlock.summary
+* [https://docs.fast.ai/data.block.html#DataBlock.summary](https://docs.fast.ai/data.block.html#DataBlock.summary)
 * Steps through the transform pipeline for one batch
 
 <br>
@@ -716,7 +716,7 @@ TensorCategory([31, 30,  5, 17,  6,  7,  4, 22,  4, 27,  2, 19, 12, 14, 11,  8, 
 
 #### Learner.get_preds:
 
-* https://docs.fast.ai/learner.html#Learner.get_preds
+* [https://docs.fast.ai/learner.html#Learner.get_preds](https://docs.fast.ai/learner.html#Learner.get_preds)
 * Get the predictions and targets using a dataset index or an iterator of batches
 
 <br>
@@ -836,7 +836,7 @@ tensor(1.)
 
 #### torch.softmax
 
-* https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html
+* [https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html](https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html)
 * Applies the Softmax function to an n-dimensional input Tensor rescaling them so that the elements of the n-dimensional output Tensor lie in the range [0,1] and sum to 1.
 
 <br>
@@ -991,7 +991,7 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 
 #### F.nll_loss
 
-* https://pytorch.org/docs/stable/generated/torch.nn.functional.nll_loss.html#torch.nn.functional.nll_loss
+* [https://pytorch.org/docs/stable/generated/torch.nn.functional.nll_loss.html#torch.nn.functional.nll_loss](https://pytorch.org/docs/stable/generated/torch.nn.functional.nll_loss.html#torch.nn.functional.nll_loss)
 * The negative log likelihood (nll) loss.
 * does not actually take the log, because it assumes you have already taken the log
 * designed to be used after [log_softmax](https://pytorch.org/docs/stable/generated/torch.nn.functional.log_softmax.html#torch-nn-functional-log-softmax)
@@ -1018,7 +1018,7 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 
 #### torch.log
 
-* https://pytorch.org/docs/stable/generated/torch.log.html
+* [https://pytorch.org/docs/stable/generated/torch.log.html](https://pytorch.org/docs/stable/generated/torch.log.html)
 * Returns a new tensor with the natural logarithm of the elements of input.
 * $y_{i} = \log_{e}{(x_{i})}$
 * $e = 2.718$
@@ -1039,7 +1039,7 @@ plot_function(torch.log, min=0,max=4)
 
 #### nn.CrossEntropyLoss
 
-* https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss
+* [https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
 * computes the cross entropy loss between input and target
 * takes the mean of the loss of all items by default
     * can be disabled with `reduction='none'`
@@ -1087,12 +1087,12 @@ tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 ## Model Interpretation
 - It is very hard to interpret loss functions directly as they are optimized for differentiation and optimization, not human consumption
 
-ClassificationInterpretation
-* https://docs.fast.ai/interpret.html#Interpretation
+#### ClassificationInterpretation
+* [https://docs.fast.ai/interpret.html#Interpretation](https://docs.fast.ai/interpret.html#Interpretation)
 * Interpretation base class for exploring predictions from trained models
 
-ClassificationInterpretation.from_learner
-* https://docs.fast.ai/interpret.html#Interpretation.from_learner
+#### ClassificationInterpretation.from_learner
+* [https://docs.fast.ai/interpret.html#Interpretation.from_learner](https://docs.fast.ai/interpret.html#Interpretation.from_learner)
 * Construct interpretation object from a learner
 
 <br>
@@ -1189,8 +1189,8 @@ learn.fine_tune(1, base_lr=0.1)
 
 Using a very high learning rate resulted in an increasing error rate
 
-Learner.lr_find
-* https://docs.fast.ai/callback.schedule.html#Learner.lr_find
+#### Learner.lr_find
+* [https://docs.fast.ai/callback.schedule.html#Learner.lr_find](https://docs.fast.ai/callback.schedule.html#Learner.lr_find)
 * Launch a mock training to find a good learning rate and return suggestions as a named tuple
 
 ```python
@@ -1342,8 +1342,8 @@ learn.fine_tune(2, base_lr=3e-3)
     4. unfreeze the pretrained layers
     5. train for a more epochs
 
-Learner.fine_tune
-* https://docs.fast.ai/callback.schedule.html#Learner.fine_tune
+#### Learner.fine_tune
+* [https://docs.fast.ai/callback.schedule.html#Learner.fine_tune](https://docs.fast.ai/callback.schedule.html#Learner.fine_tune)
 * Fine tune with Learner.freeze for freeze_epochs, then with Learner.unfreeze for epochs, using discriminative LR.
 
 <br>
@@ -1399,8 +1399,8 @@ learn.fit_one_cycle(3, 3e-3)
 
 
 
-Learner.unfreeze()
-* https://docs.fast.ai/learner.html#Learner.unfreeze
+#### Learner.unfreeze()
+* [https://docs.fast.ai/learner.html#Learner.unfreeze](https://docs.fast.ai/learner.html#Learner.unfreeze)
 * Unfreeze the entire model
 ```python
 learn.unfreeze()
@@ -1675,8 +1675,8 @@ learn.recorder.plot_loss()
     - might need to lower the batch size
 - take longer to train
 
-Learner.to_fp16
-* https://docs.fast.ai/callback.fp16.html#Learner.to_fp16
+#### Learner.to_fp16
+* [https://docs.fast.ai/callback.fp16.html#Learner.to_fp16](https://docs.fast.ai/callback.fp16.html#Learner.to_fp16)
 * [Mixed Precision Training](https://on-demand.gputechconf.com/gtc/2019/video/_/S9143/)
 
 <br>
