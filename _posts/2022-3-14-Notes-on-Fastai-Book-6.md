@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My full notes for chapter 6 of Deep Learning for Coders with fastai & PyTorch
-categories: [ai, fastai, notes]
+categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
 search_exclude: false
@@ -35,7 +35,7 @@ from fastai.vision.all import *
 
 #### The PASCAL Visual Object Classes Challenge 2007 Dataset
 
-* http://host.robots.ox.ac.uk/pascal/VOC/voc2007/
+* [http://host.robots.ox.ac.uk/pascal/VOC/voc2007/](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/)
 * contains twenty classes
 * multiple classes may be present in the same image
 * classification labels are stored in a CSV file
@@ -117,8 +117,8 @@ Class lables are stored in a space-delimited string
 
 ### Pandas and DataFrames
 
-* https://pandas.pydata.org/docs/index.html
-* https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html
+* [https://pandas.pydata.org/docs/index.html](https://pandas.pydata.org/docs/index.html)
+* [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html)
 
 
 ```python
@@ -347,12 +347,12 @@ dsets.train[0]
 
 #### ImageBlock
 
-* https://docs.fast.ai/vision.data.html#ImageBlock
+* [https://docs.fast.ai/vision.data.html#ImageBlock](https://docs.fast.ai/vision.data.html#ImageBlock)
 * A [TransformBlock](https://docs.fast.ai/data.block.html#TransformBlock) for images
 
 #### MultiCategoryBlock
 
-* https://docs.fast.ai/data.block.html#MultiCategoryBlock
+* [https://docs.fast.ai/data.block.html#MultiCategoryBlock](https://docs.fast.ai/data.block.html#MultiCategoryBlock)
 * A TransformBlock for multi-label categorical targets
 * Uses One-hot encoding
 * Expects to receive a list of strings
@@ -547,8 +547,8 @@ Applying batch_tfms to the batch built
 learn = cnn_learner(dls, resnet18)
 ```
 
-to_cpu(b)
-* https://docs.fast.ai/torch_core.html#to_cpu
+#### to_cpu(b)
+* [https://docs.fast.ai/torch_core.html#to_cpu](https://docs.fast.ai/torch_core.html#to_cpu)
 * Recursively map lists of tensors in `b` to the cpu.
 
 <br>
@@ -596,12 +596,12 @@ TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```
 
 
-nn.BCELoss
-* https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html#torch.nn.BCELoss
+#### nn.BCELoss
+* [https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html#torch.nn.BCELoss](https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html#torch.nn.BCELoss)
 * measures the binary cross entropy between the predictions and target
 
-nn.BCEWithLogitsLoss
-* https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss
+#### nn.BCEWithLogitsLoss
+* [https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss](https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss)
 * combines a sigmoid layer and the BCELoss in a single class
 
 <br>
@@ -624,7 +624,7 @@ TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 
 
 #### Python Partial Functions
-* https://docs.python.org/3/library/functools.html#functools.partial
+* [https://docs.python.org/3/library/functools.html#functools.partial](https://docs.python.org/3/library/functools.html#functools.partial)
 * return a new [partial object](https://docs.python.org/3/library/functools.html#partial-objects) that will behave like a function with the positional and keyword arguments
 * allows us to bind a function with some arguments or keyword arguments
 
@@ -655,8 +655,8 @@ f("Jeremy"),f("Sylvain")
 ('Bonjour Jeremy.', 'Bonjour Sylvain.')
 ```
 
-accuracy_multi
-* https://docs.fast.ai/metrics.html#accuracy_multi
+#### accuracy_multi
+* [https://docs.fast.ai/metrics.html#accuracy_multi](https://docs.fast.ai/metrics.html#accuracy_multi)
 * compute accuracy using a threshold value
 
 <br>
@@ -809,7 +809,7 @@ plt.plot(xs,accs);
 
 #### BIWI Kinect Head Pose Database
 
-* https://icu.ee.ethz.ch/research/datsets.html
+* [https://icu.ee.ethz.ch/research/datsets.html](https://icu.ee.ethz.ch/research/datsets.html)
 * over 15k images of 20 people recorded with a Kinect while turning their heads around freely
 * Depth and rgb images are provided for each frame
 * ground in the form of the 3D location of the head and its rotation angles
@@ -886,7 +886,7 @@ im.to_thumb(160)
 
 #### np.genfromtxt
 
-* https://numpy.org/doc/stable/reference/generated/numpy.genfromtxt.html
+* [https://numpy.org/doc/stable/reference/generated/numpy.genfromtxt.html](https://numpy.org/doc/stable/reference/generated/numpy.genfromtxt.html)
 * Load data from a text file
 
 <br>
@@ -940,8 +940,8 @@ tensor([352.9487, 291.3338])
 
 #### PointBlock
 
-* Documentation: https://docs.fast.ai/vision.data.html#PointBlock
-* Source Code: https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/data.py#L74
+* Documentation: [https://docs.fast.ai/vision.data.html#PointBlock](https://docs.fast.ai/vision.data.html#PointBlock)
+* Source Code: [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/data.py#L74](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/data.py#L74)
 * A TransfromBlock for points in an image
 * Lets fastai know to perform the same data augmentation steps to the key point values as to the images
 
