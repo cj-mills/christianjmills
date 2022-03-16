@@ -1901,12 +1901,10 @@ def f(x): return x**2
 ```python
 plot_function(f, 'x', 'x**2')
 ```
-    /home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/fastbook/__init__.py:74: UserWarning: Not providing a value for linspace's steps is deprecated and will throw a runtime error in a future release. This warning will appear only once per process. (Triggered internally at  ../aten/src/ATen/native/RangeFactories.cpp:23.)
-      x = torch.linspace(min,max)
 ![png](../images/notes-fastai-book/chapter-4/output_69_1.png)
 
-
 <br>
+
 ```python
 plot_function(f, 'x', 'x**2')
 plt.scatter(-1.5, f(-1.5), color='red');
