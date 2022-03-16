@@ -59,6 +59,7 @@ path.ls()
 df = pd.read_csv(path/'train.csv')
 df.head()
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr>
@@ -101,6 +102,8 @@ df.head()
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 
@@ -168,6 +171,7 @@ df['fname']
 tmp_df = pd.DataFrame({'a':[1,2], 'b':[3,4]})
 tmp_df
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr>
@@ -189,6 +193,8 @@ tmp_df
     </tr>
   </tbody>
 </table>
+</div>
+
 
 <br>
 
@@ -197,6 +203,7 @@ tmp_df
 tmp_df['c'] = tmp_df['a']+tmp_df['b']
 tmp_df
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr>
@@ -221,6 +228,8 @@ tmp_df
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ### Constructing a DataBlock
@@ -607,6 +616,7 @@ accuracy_multi
 learn = cnn_learner(dls, resnet50, metrics=partial(accuracy_multi, thresh=0.2))
 learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -682,8 +692,10 @@ learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
     </tr>
   </tbody>
 </table>
+</div>
 
 <br>
+
 ```python
 learn.metrics = partial(accuracy_multi, thresh=0.1)
 learn.validate()
@@ -944,6 +956,7 @@ valley
 lr = 1e-2
 learn.fine_tune(3, lr)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -992,6 +1005,8 @@ learn.fine_tune(3, lr)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 <br>
 ```python
