@@ -561,6 +561,92 @@ resnet34
 <br>
 
 ```python
+# based on https://github.com/sksq96/pytorch-summary/blob/master/torchsummary/torchsummary.py
+def get_total_params(model, input_size, batch_size=-1, device='cuda', dtypes=None):
+    
+    def register_hook(module):
+
+        def hook(module, input, output):
+            class_name = str(module.__class__).split(".")[-1].split("'")[0]
+            module_idx = len(summary)
+
+            m_key = f"{class_name}-{module_idx + 1}"
+            summary[m_key] = OrderedDict()
+
+            params = 0
+            if hasattr(module, "weight") and hasattr(module.weight, "size"):
+                params += torch.prod(torch.LongTensor(list(module.weight.size())))
+            if hasattr(module, "bias") and hasattr(module.bias, "size"):
+                params += torch.prod(torch.LongTensor(list(module.bias.size())))
+            summary[m_key]["nb_params"] = params
+
+        if (
+            not isinstance(module, nn.Sequential)
+            and not isinstance(module, nn.ModuleList)
+            and not (module == model)
+        ):
+            hooks.append(module.register_forward_hook(hook))
+
+    if device == "cuda" and torch.cuda.is_available():
+        dtype = torch.cuda.FloatTensor
+    else:
+        dtype = torch.FloatTensor
+
+    # multiple inputs to the network
+    if isinstance(input_size, tuple):
+        input_size = [input_size]
+
+    # batch_size of 2 for batchnorm
+    x = [torch.rand(2, *in_size).type(dtype) for in_size in input_size]
+    
+    # create properties
+    summary = OrderedDict()
+    hooks = []
+
+    # register hook
+    model.apply(register_hook)
+
+    # make a forward pass
+    model(*x)
+
+    # remove these hooks
+    for h in hooks:
+        h.remove()
+
+    total_params = 0
+    for layer in summary:
+        total_params += summary[layer]["nb_params"]
+                
+    return total_params
+```
+
+
+```python
+input_shape = (3, 224, 224)
+```
+
+
+```python
+print(f"ResNet18 Total params: {get_total_params(resnet18().cuda(), input_shape):,}")
+print(f"ResNet34 Total params: {get_total_params(resnet34().cuda(), input_shape):,}")
+print(f"ResNet50 Total params: {get_total_params(resnet50().cuda(), input_shape):,}")
+print(f"ResNet101 Total params: {get_total_params(resnet101().cuda(), input_shape):,}")
+print(f"ResNet152 Total params: {get_total_params(resnet152().cuda(), input_shape):,}")
+```
+
+```bash
+ResNet18 Total params: 11,689,512
+ResNet34 Total params: 21,797,672
+ResNet50 Total params: 25,557,032
+ResNet101 Total params: 44,549,160
+ResNet152 Total params: 60,192,808
+```
+
+
+
+<br>
+
+```python
 # 1 - accuracy
 error_rate
 ```
@@ -1171,7 +1257,6 @@ cat: write error: Broken pipe
 pd.read_csv(f"{path}/adult.csv").head()
 ```
 
-<div>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1286,7 +1371,7 @@ pd.read_csv(f"{path}/adult.csv").head()
     </tr>
   </tbody>
 </table>
-</div>
+
 
 
 <br>
