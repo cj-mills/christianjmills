@@ -525,7 +525,7 @@ accuracy(preds, targs).item()
     4. Take a weighted average of this image’s labels with your image’s labels, to server as your dependent variable
 - target needs to be one-hot encoded
 - $\tilde{x} = \lambda x_{i} + (1 - \lambda) x_{j} \text{, where } x_{i} \text{ and } x_{j} \text{ are raw input vectors}$
-- $\tilde{y} = \lambda y_{i} + (1 - \lambda) y_{j} \text{, where } y_{i} \text{ and } y_{j} \text{ are raw input vectors}$
+- $\tilde{y} = \lambda y_{i} + (1 - \lambda) y_{j} \text{, where } y_{i} \text{ and } y_{j} \text{ are one-hot label encodings}$
 - more difficult to train
 - less prone to overfitting
 - requires far more epochs to to train to get better accuracy
