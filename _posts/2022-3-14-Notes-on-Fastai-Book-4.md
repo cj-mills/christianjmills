@@ -2426,14 +2426,6 @@ Wall time: 1min 37s
  tensor(-1.7079, device='cuda:0')]
 ```
 
-<br>
-```python
-# Over 29,000 times slower with loops
-print(f"{(44.9 * 1000) / 1.53:,.2f}")
-```
-```text
-29,346.41
-```
 
 <br>
 ```python
