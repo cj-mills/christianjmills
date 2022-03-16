@@ -242,7 +242,7 @@ print(type(path))
 print(path)
 ```
 
-```bash
+```text
 <class 'pathlib.PosixPath'>
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images
 ```
@@ -257,7 +257,7 @@ URLs.PETS
 ```
 
 
-```bash
+```text
 'https://s3.amazonaws.com/fast-ai-imageclas/oxford-iiit-pet.tgz'
 ```
 
@@ -267,7 +267,7 @@ URLs.PETS
 !ls ~/.fastai/data
 ```
 
-```bash
+```text
 annotations  coco_sample  oxford-iiit-pet
 ```
 
@@ -277,7 +277,7 @@ annotations  coco_sample  oxford-iiit-pet
 !ls ~/.fastai/data/oxford-iiit-pet/images| head -5
 ```
 
-```bash
+```text
 Abyssinian_100.jpg
 Abyssinian_100.mat
 Abyssinian_101.jpg
@@ -300,7 +300,7 @@ str.isupper
 ```
 
 
-```bash
+```text
 <method 'isupper' of 'str' objects>
 ```
 
@@ -311,7 +311,7 @@ is_cat("word")
 ```
 
 
-```bash
+```text
 False
 ```
 
@@ -322,7 +322,7 @@ is_cat("Word")
 ```
 
 
-```bash
+```text
 True
 ```
 
@@ -333,7 +333,7 @@ is_cat("woRd")
 ```
 
 
-```bash
+```text
 False
 ```
 
@@ -344,7 +344,7 @@ False
 !ls ~/.fastai/data/oxford-iiit-pet/images/[[:upper:]]* | head -5
 ```
 
-```bash
+```text
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/Abyssinian_100.jpg
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/Abyssinian_100.mat
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/Abyssinian_101.jpg
@@ -361,7 +361,7 @@ ls: write error: Broken pipe
 !ls ~/.fastai/data/oxford-iiit-pet/images/[[:lower:]]* | head -5
 ```
 
-```bash
+```text
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/american_bulldog_100.jpg
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/american_bulldog_101.jpg
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/american_bulldog_102.jpg
@@ -395,7 +395,7 @@ for i in range(5):
     print(img_files[i])
 ```
 
-```bash
+```text
 7390
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/Birman_121.jpg
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/shiba_inu_131.jpg
@@ -412,7 +412,7 @@ dls.after_item
 ```
 
 
-```bash
+```text
 Pipeline: Resize -- {'size': (224, 224), 'method': 'crop', 'pad_mode': 'reflection', 'resamples': (2, 0), 'p': 1.0} -> ToTensor
 ```
 
@@ -423,7 +423,7 @@ dls.after_batch
 ```
 
 
-```bash
+```text
 Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
 ```
 
@@ -540,7 +540,7 @@ cnn_learner
 ```
 
 
-```bash
+```text
 <function fastai.vision.learner.cnn_learner(dls, arch, normalize=True, n_out=None, pretrained=True, config=None, loss_func=None, opt_func=<function Adam at 0x7f0e87aa2040>, lr=0.001, splitter=None, cbs=None, metrics=None, path=None, model_dir='models', wd=None, wd_bn_bias=False, train_bn=True, moms=(0.95, 0.85, 0.95), cut=None, n_in=3, init=<function kaiming_normal_ at 0x7f0ed3b4f820>, custom_head=None, concat_pool=True, lin_ftrs=None, ps=0.5, first_bn=True, bn_final=False, lin_first=False, y_range=None)>
 ```
 
@@ -554,7 +554,7 @@ resnet34
 ```
 
 
-```bash
+```text
 <function torchvision.models.resnet.resnet34(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> torchvision.models.resnet.ResNet>
 ```
 
@@ -634,7 +634,7 @@ print(f"ResNet101 Total params: {get_total_params(resnet101().cuda(), input_shap
 print(f"ResNet152 Total params: {get_total_params(resnet152().cuda(), input_shape):,}")
 ```
 
-```bash
+```text
 ResNet18 Total params: 11,689,512
 ResNet34 Total params: 21,797,672
 ResNet50 Total params: 25,557,032
@@ -652,7 +652,7 @@ error_rate
 ```
 
 
-```bash
+```text
 <function fastai.metrics.error_rate(inp, targ, axis=-1)>
 ```
 
@@ -665,7 +665,7 @@ accuracy
 ```
 
 
-```bash
+```text
 <function fastai.metrics.accuracy(inp, targ, axis=-1)>
 ```
 
@@ -681,7 +681,7 @@ uploader
 ```
 
 
-```bash
+```text
 FileUpload(value={}, description='Upload')
 ```
 
@@ -695,7 +695,7 @@ print(f"Type: {type(img)}")
 img
 ```
 
-```bash
+```text
 Type: <class 'fastai.vision.core.PILImage'>
 ```
 
@@ -712,7 +712,7 @@ print(f"Probability it's a cat: {probs[1].item():.6f}")
 ```
 
 
-```bash
+```text
 Is this a cat?: False.
 Probability it's a cat: 0.000024
 ```
@@ -725,7 +725,7 @@ uploader
 ```
 
 
-```bash
+```text
 FileUpload(value={}, description='Upload')
 ```
 
@@ -746,7 +746,7 @@ print(f"Is this a cat?: {is_cat}.")
 print(f"Probability it's a cat: {probs[1].item():.6f}")
 ```
 
-```bash
+```text
 Is this a cat?: True.
 Probability it's a cat: 1.000000
 ```
@@ -795,7 +795,7 @@ Probability it's a cat: 1.000000
 path = untar_data(URLs.CAMVID_TINY)
 print(path)
 ```
-```bash
+```text
 /home/innom-dt/.fastai/data/camvid_tiny
 ```
 
@@ -804,7 +804,7 @@ print(path)
 ```python
 !ls $path
 ```
-```bash
+```text
 codes.txt  images  labels
 ```
 
@@ -828,7 +828,7 @@ print(len(img_files))
 for i in range(5):
     print(img_files[i])
 ```
-```bash
+```text
 100
 /home/innom-dt/.fastai/data/camvid_tiny/images/0016E5_08155.png
 /home/innom-dt/.fastai/data/camvid_tiny/images/Seq05VD_f03210.png
@@ -842,7 +842,7 @@ for i in range(5):
 ```python
 path/'labels'/f'{img_files[0].stem}_P{img_files[0].suffix}'
 ```
-```bash
+```text
 Path('/home/innom-dt/.fastai/data/camvid_tiny/labels/0016E5_08155_P.png')
 ```
 
@@ -969,7 +969,7 @@ path
 ```
 
 
-```bash
+```text
 Path('/home/innom-dt/.fastai/data/imdb')
 ```
 
@@ -980,7 +980,7 @@ Path('/home/innom-dt/.fastai/data/imdb')
 !ls $path
 ```
 
-```bash
+```text
 imdb.vocab  README  test  tmp_clas  tmp_lm  train  unsup
 ```
 
@@ -999,7 +999,7 @@ len(dls.items)
 ```
 
 
-```bash
+```text
 25000
 ```
 
@@ -1011,7 +1011,7 @@ dls.after_iter
 ```
 
 
-```bash
+```text
 <bound method after_iter of <fastai.text.data.SortedDL object at 0x7f0f493cb9d0>>
 ```
 
@@ -1030,7 +1030,7 @@ SortedDL
 !ls $path/train
 ```
 
-```bash
+```text
 labeledBow.feat  neg  pos  unsupBow.feat
 ```
 
@@ -1040,7 +1040,7 @@ labeledBow.feat  neg  pos  unsupBow.feat
 !ls $path/train/pos | wc -l
 ```
 
-```bash
+```text
 12500
 ```
 
@@ -1050,7 +1050,7 @@ labeledBow.feat  neg  pos  unsupBow.feat
 !ls $path/train/pos | head -5
 ```
 
-```bash
+```text
 0_9.txt
 10000_8.txt
 10001_10.txt
@@ -1065,7 +1065,7 @@ ls: write error: Broken pipe
 !cat $path/train/pos/0_9.txt
 ```
 
-```bash
+```text
 Bromwell High is a cartoon comedy. It ran at the same time as some other programs about school life, such as "Teachers". My 35 years in the teaching profession lead me to believe that Bromwell High's satire is much closer to reality than is "Teachers". The scramble to survive financially, the insightful students who can see right through their pathetic teachers' pomp, the pettiness of the whole situation, all remind me of the schools I knew and their students. When I saw the episode in which a student repeatedly tried to burn down the school, I immediately recalled ......... at .......... High. A classic line: INSPECTOR: I'm here to sack one of your teachers. STUDENT: Welcome to Bromwell High. I expect that many adults of my age think that Bromwell High is far fetched. What a pity that it isn't!
 ```
 
@@ -1076,7 +1076,7 @@ Bromwell High is a cartoon comedy. It ran at the same time as some other program
 !ls $path/train/neg | wc -l
 ```
 
-```bash
+```text
 12500
 ```
 
@@ -1086,7 +1086,7 @@ Bromwell High is a cartoon comedy. It ran at the same time as some other program
 !ls $path/train/neg | head -5
 ```
 
-```bash
+```text
 0_3.txt
 10000_4.txt
 10001_4.txt
@@ -1101,7 +1101,7 @@ ls: write error: Broken pipe
 !cat $path/train/neg/0_3.txt
 ```
 
-```bash
+```text
 Story of a man who has unnatural feelings for a pig. Starts out with a opening scene that is a terrific example of absurd comedy. A formal orchestra audience is turned into an insane, violent mob by the crazy chantings of it's singers. Unfortunately it stays absurd the WHOLE time with no general narrative eventually making it just too off putting. Even those from the era should be turned off. The cryptic dialogue would make Shakespeare seem easy to a third grader. On a technical level it's better than you might think with some good cinematography by future great Vilmos Zsigmond. Future stars Sally Kirkland and Frederic Forrest can be seen briefly.
 ```
 
@@ -1181,7 +1181,7 @@ learn.fine_tune(4, 1e-2)
 learn.predict("I really liked that movie!")
 ```
 
-```bash
+```text
 ('pos', TensorText(1), TensorText([5.5877e-04, 9.9944e-01]))
 ```
 
@@ -1193,7 +1193,7 @@ learn.predict("I really hated that movie!")
 ```
 
 
-```bash
+```text
 ('neg', TensorText(0), TensorText([0.9534, 0.0466]))
 ```
 
@@ -1221,7 +1221,7 @@ path = untar_data(URLs.ADULT_SAMPLE)
 print(path)
 ```
 
-```bash
+```text
 /home/innom-dt/.fastai/data/adult_sample
 ```
 
@@ -1231,7 +1231,7 @@ print(path)
 !ls $path
 ```
 
-```bash
+```text
 adult.csv  export.pkl  models
 ```
 
@@ -1246,7 +1246,7 @@ import pandas as pd
 !cat $path/adult.csv | head -1
 ```
 
-```bash
+```text
 age,workclass,fnlwgt,education,education-num,marital-status,occupation,relationship,race,sex,capital-gain,capital-loss,hours-per-week,native-country,salary
 cat: write error: Broken pipe
 ```
@@ -1453,7 +1453,7 @@ path = untar_data(URLs.ML_SAMPLE)
 print(path)
 ```
 
-```bash
+```text
 /home/innom-dt/.fastai/data/movie_lens_sample
 ```
 
