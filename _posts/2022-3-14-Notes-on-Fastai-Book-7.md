@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My full notes for chapter 7 of Deep Learning for Coders with fastai & PyTorch
-categories: [ai, fastai, notes]
+categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
 search_exclude: false
@@ -31,7 +31,7 @@ search_exclude: false
 - the more experiments your can do the better
 
 ## Imagenette
-* https://docs.fast.ai/data.external.html
+* [https://docs.fast.ai/data.external.html](https://docs.fast.ai/data.external.html)
 * A smaller version of the [imagenet dataset](https://image-net.org/)
 * Useful for quick experimentation and iteration
 
@@ -51,7 +51,7 @@ Path('/home/innom-dt/.fastai/data/imagenette2')
 
 #### parent_label
 
-* https://docs.fast.ai/data.transforms.html#parent_label
+* [https://docs.fast.ai/data.transforms.html#parent_label](https://docs.fast.ai/data.transforms.html#parent_label)
 * Label item with the parent folder name.
 
 <br>
@@ -90,7 +90,7 @@ xresnet50
 
 #### CrossEntropyLossFlat
 
-* https://docs.fast.ai/losses.html#CrossEntropyLossFlat
+* [https://docs.fast.ai/losses.html#CrossEntropyLossFlat](https://docs.fast.ai/losses.html#CrossEntropyLossFlat)
 * Same as `nn.CrossEntropyLoss`, but flattens input and target.
 
 <br>
@@ -240,7 +240,7 @@ x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
 
 #### Normalize
 
-* https://docs.fast.ai/data.transforms.html#Normalize
+* [https://docs.fast.ai/data.transforms.html#Normalize](https://docs.fast.ai/data.transforms.html#Normalize)
 * Normalize/denormalize a bath of [TensorImage](https://docs.fast.ai/torch_core.html#TensorImage)
 
 
@@ -491,8 +491,8 @@ learn.fine_tune(5, 1e-3)
 - does not change the time required to train
 - will increase the amount of time required for validation or inference
 
-Learner.tta
-* https://docs.fast.ai/learner.html#Learner.tta
+#### Learner.tta
+* [https://docs.fast.ai/learner.html#Learner.tta](https://docs.fast.ai/learner.html#Learner.tta)
 * returns predictions using Test Time Augmentation
 
 
