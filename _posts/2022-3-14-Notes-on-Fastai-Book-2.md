@@ -193,7 +193,8 @@ Number of results: 150
 ```python
 pd.DataFrame(results).head()
 ```
-<table border="1" class="dataframe">
+<div style="overflow-x:auto;">
+    <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -343,6 +344,8 @@ pd.DataFrame(results).head()
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 <br>
@@ -641,7 +644,8 @@ learn = cnn_learner(dls, resnet18, metrics=error_rate)
 ```python
 learn.fine_tune(4)
 ```
-<table border="1" class="dataframe">
+<div style="overflow-x:auto;">
+    <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
       <th>epoch</th>
@@ -702,6 +706,8 @@ learn.fine_tune(4)
     </tr>
   </tbody>
 </table>
+</div>
+
 <br>
 
 ```python
