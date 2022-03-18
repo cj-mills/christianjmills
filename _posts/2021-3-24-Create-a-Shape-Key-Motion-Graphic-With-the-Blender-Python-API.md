@@ -183,3 +183,7 @@ The color for the Emision shader can be accessed at `material.node_tree.nodes["E
 ## Conclusion
 
 I feel like this exercise was worthwhile as it forced me to learn about multiple parts of the API. Although, it took quite a bit longer than the nine minute length of the tutorial video to track down all the required parts of the API. Finding out how to properly add the Emission shader was particularly time consuming. I did not realize that the name used to create the Emission shader was different than the name used to reference it. Fortunately, Blender has been around for a while and someone on the internet had already asked how to do most of the individual steps.
+
+
+
+**Tutorial Resources:** [GitHub Repository](https://github.com/cj-mills/Shape-Key-Motion-Graphic-Blender-API)
