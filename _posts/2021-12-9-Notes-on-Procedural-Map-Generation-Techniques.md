@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My notes on Herbert Wolverson's talk on procedural map generation techniques from the 2020 virtual Roguelike Celebration.
-categories: [gamedev, procedural-generation, notes]
+categories: [game-dev, procedural-generation, notes]
 hide: false
 permalink: /:title/
 search_exclude: false
