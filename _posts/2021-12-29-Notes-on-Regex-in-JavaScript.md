@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My notes from freeCodeCamp's video covering regular expressions in JavaScript.
-categories: [regex, notes]
+categories: [javascript, regex, notes]
 hide: false
 permalink: /:title/
 search_exclude: false
