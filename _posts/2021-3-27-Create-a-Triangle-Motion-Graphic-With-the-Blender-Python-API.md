@@ -162,3 +162,7 @@ We only need to animate the rotation and scale for the x-ray triangle.
 ## Conclusion
 
 This tutorial did not require learning any new parts of the API after the last tutorial I [replicated](https://christianjmills.com/Create-a-Shape-Key-Motion-Graphic-With-the-Blender-Python-API/). I guess in that sense, it was a waste of time. However, I still enjoyed working on it and I like the resulting motion graphic.
+
+
+
+**Tutorial Resources:** [GitHub Repository](https://github.com/cj-mills/Triangle-Motion-Graphic-Blender-API)
