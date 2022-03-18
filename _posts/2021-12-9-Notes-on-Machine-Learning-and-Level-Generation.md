@@ -4,7 +4,7 @@ layout: post
 toc: false
 comments: true
 description: My notes from Ben Berman's 2017 talk on machine learning and level generation.
-categories: [ai, gamedev, notes]
+categories: [ai, game-dev, notes]
 hide: false
 permalink: /:title/
 search_exclude: false
@@ -161,7 +161,7 @@ Ian Holmes's games and microsites use cellular automata and heuristics and to ge
           $-f(x)=f(-x)$
           $$
         
-          
+    
 - Computer-made Feel: Overly Precise Numbers
 - Hand-Made Feel: Small Numbers
 
