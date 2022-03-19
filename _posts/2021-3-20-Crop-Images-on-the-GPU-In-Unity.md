@@ -159,3 +159,7 @@ Now we can click the Play button and toggle the `Crop Image` checkbox to confirm
 ## Conclusion
 
 That is one method to efficiently crop images on the GPU in Unity. As mentioned earlier, this method can be adapted to crop different parts of the image. You can do so by changing the values for the `Graphics.CopyTexture()` method to adjust what part of the source image gets copied and where in the target image it gets copied to.
+
+
+
+**Project Resources:** [GitHub Repository](https://github.com/cj-mills/Crop-Image-on-GPU-Unity)
