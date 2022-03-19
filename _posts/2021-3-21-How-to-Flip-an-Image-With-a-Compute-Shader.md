@@ -221,3 +221,7 @@ Now we can click the Play button and toggle the different flip checkboxes to con
 ## Conclusion
 
 That is one approach to efficiently flip images on the GPU in Unity. As demonstrated above, the operations can be combined in different ways to rotate the image as well.
+
+
+
+**Project Resources:** [GitHub Repository](https://github.com/cj-mills/Flip-Image-Compute-Shader)
