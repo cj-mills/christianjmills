@@ -6,6 +6,48 @@ permalink: /about/
 
 
 
+## If you want to:
+
+- Integrate deep learning-powered features in a Unity project.
+- Understand the possible applications and use cases that deep learning enables in Unity.
+- Understand the real-world considerations and constraints of adding deep learning-powered features to your Unity project.
+- Understand and leverage the existing tools that can increase efficiency or reduce time-to-shipping features.
+
+
+
+## Then I can help:
+
+- Approach projects with a holistic perspective. Can see both sides (the Unity side and the deep learning side)
+- Assess viability and develop a proof-of-concept before committing to expensive coding.
+- Able to make good risk-management decisions about using immature tooling when it offers an innovation/speed/capabilities advantage.
+
+
+
+## I’m a good choice to help you because:
+
+- I have experience doing this (see these Github repos: [GitHub Profile](https://github.com/cj-mills))
+- I have experience providing decision-makers with actionable advice in this area.
+- I have been asked by Intel to write tutorials about this stuff, and you can see the results of this work here:
+  - How to perform object detection in the [Unity](https://unity.com/) game engine with the [OpenVINO™ Toolkit](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) ([link](https://www.intel.com/content/www/us/en/developer/articles/technical/developing-openvino-object-detection-unity-setup.html))
+  - How to create an in-game style transfer plugin that leverages the [OpenVINO™ Toolkit](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) for the [Unity](https://unity.com/) game engine ([link](https://www.intel.com/content/www/us/en/developer/articles/training/developing-openvino-inferencing-plugin-for-unity.html))
+  - How to perform targeted in-game style transfer in Unity ([link](https://www.intel.com/content/www/us/en/developer/articles/training/targeted-in-game-style-transfer-tutorial.html))
+  - How to perform human [pose estimation](https://www.fritz.ai/pose-estimation/) in [Unity](https://unity.com/) with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html) inference library ([link](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)) 
+- You can see my working style here [point out something specific and good and valuable about your working style]: LINKS to tutorial comment interaction
+
+
+
+## Reaching Out
+
+If you’ve got a project or job position that could benefit from my skills, I’d love to hear from you. Please email me at [christian@christianjmills.com](mailto:christian@christianjmills.com) or use the form below:
+
+
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdcUuir-xOVAVL1hgJb-nP2tylzoOLflSvFC8j3L_MRRG6U7A/viewform?embedded=true" width="640" height="900" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+
+
+
+## About Me
+
 My name is Christian Mills, but I go by C.J. when formality is not required. I started this blog in 2020 so that I would have a place to write about projects I work on as well as anything interesting I learn along the way. I have never enjoyed writing, but I can’t deny the value I have received through creating content for this site. Writing has helped me improve my own understanding of the topics I learn about and the site provides a convenient reference when I forget something.
 
 My work for this site has also provided opportunities to meet and collaborate with people in different countries. Global communication is nothing new, but I still find being able to talk with people on the other side of the planet to be pretty awesome.
@@ -22,6 +64,3 @@ I believe that combining deep learning with powerful creation tools has massive 
 
 I also have a strong passion for exploring alternative methods of education and making complex topics more approachable. I am especially excited about the potential of virtual environments as a teaching medium. Virtual environments make it possible to have classrooms where reality is fully customizable and can be tailored to specific lessons and even individual students.
 
-## Reaching Out
-
-If you would like to discuss any of the topics mentioned above, feel free to reach out via Email at [christian@christianjmills.com](mailto:christian@christianjmills.com).
