@@ -32,7 +32,6 @@ permalink: /about/
   - How to create an in-game style transfer plugin that leverages the [OpenVINO™ Toolkit](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) for the [Unity](https://unity.com/) game engine ([link](https://www.intel.com/content/www/us/en/developer/articles/training/developing-openvino-inferencing-plugin-for-unity.html))
   - How to perform targeted in-game style transfer in Unity ([link](https://www.intel.com/content/www/us/en/developer/articles/training/targeted-in-game-style-transfer-tutorial.html))
   - How to perform human [pose estimation](https://www.fritz.ai/pose-estimation/) in [Unity](https://unity.com/) with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html) inference library ([link](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/)) 
-- You can see my working style here [point out something specific and good and valuable about your working style]: LINKS to tutorial comment interaction
 
 
 
