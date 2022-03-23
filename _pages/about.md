@@ -17,7 +17,7 @@ permalink: /about/
 
 ## Then I can help:
 
-- Provide a cross-disciplinary perspective that considers the needs of the deep learning project and those of the larger Unity project.
+- Provide a cross-disciplinary perspective that considers the needs of the deep learning project, the larger Unity project, and the desired business outcomes.
 - Assess the viability of a deep learning feature and develop a proof-of-concept before committing to expensive coding.
 - Make risk-management decisions about using immature tooling when it offers an innovation, speed, or capabilities advantage.
 
