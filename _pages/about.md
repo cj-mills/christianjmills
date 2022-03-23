@@ -66,3 +66,7 @@ I believe that combining deep learning with powerful creation tools has massive 
 
 I also have a strong passion for exploring alternative methods of education and making complex topics more approachable. I am especially excited about the potential of virtual environments as a teaching medium. Virtual environments make it possible to have classrooms where reality is fully customizable and can be tailored to specific lessons and even individual students.
 
+
+<div>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
+</div>
