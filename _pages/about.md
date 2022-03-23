@@ -17,9 +17,9 @@ permalink: /about/
 
 ## Then I can help:
 
-- Approach projects with a holistic perspective. Can see both sides (the Unity side and the deep learning side)
-- Assess viability and develop a proof-of-concept before committing to expensive coding.
-- Able to make good risk-management decisions about using immature tooling when it offers an innovation, speed, or capabilities advantage.
+- Provide a cross-disciplinary perspective that considers the needs of the deep learning project and those of the larger Unity project.
+- Assess the viability of a deep learning feature and develop a proof-of-concept before committing to expensive coding.
+- Make risk-management decisions about using immature tooling when it offers an innovation, speed, or capabilities advantage.
 
 
 
