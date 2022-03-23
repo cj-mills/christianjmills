@@ -25,7 +25,7 @@ permalink: /about/
 
 ## I’m a good choice to help you because:
 
-- I have experience doing this (see these Github repos: [GitHub Profile](https://github.com/cj-mills))
+- I have experience doing this (see my [GitHub Profile](https://github.com/cj-mills))
 - I have experience providing decision-makers with actionable advice in this area.
 - I have been asked by Intel to write tutorials about this stuff, and you can see the results of this work here:
   - How to perform object detection in the [Unity](https://unity.com/) game engine with the [OpenVINO™ Toolkit](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) ([link](https://www.intel.com/content/www/us/en/developer/articles/technical/developing-openvino-object-detection-unity-setup.html))
