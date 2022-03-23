@@ -41,7 +41,7 @@ If you’ve got a project or job position that could benefit from my skills, I�
 
 
 
-<div style="margin: auto">
+<div style="margin: auto; overflow-x:auto;">
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdcUuir-xOVAVL1hgJb-nP2tylzoOLflSvFC8j3L_MRRG6U7A/viewform?embedded=true" width="640" height="900" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
 </div>
 
