@@ -8,7 +8,7 @@ permalink: /about/
 
 ## If you want to:
 
-- Integrate deep learning-powered features in a Unity project.
+- Integrate deep learning-powered features into a Unity project.
 - Understand the possible applications and use cases that deep learning enables in Unity.
 - Understand the real-world considerations and constraints of adding deep learning-powered features to your Unity project.
 - Understand and leverage the existing tools that can increase efficiency or reduce time-to-shipping features.
@@ -19,7 +19,7 @@ permalink: /about/
 
 - Approach projects with a holistic perspective. Can see both sides (the Unity side and the deep learning side)
 - Assess viability and develop a proof-of-concept before committing to expensive coding.
-- Able to make good risk-management decisions about using immature tooling when it offers an innovation/speed/capabilities advantage.
+- Able to make good risk-management decisions about using immature tooling when it offers an innovation, speed, or capabilities advantage.
 
 
 
