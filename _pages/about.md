@@ -48,7 +48,7 @@ If youâ€™ve got a project or job position that could benefit from my skills, Iâ€
 
 <div>
 <!-- Calendly inline widget begin -->
-<div class="calendly-inline-widget" data-url="https://calendly.com/christianjmills/strategy-consult" style="min-width:320px;height:630px;"></div>
+<div class="calendly-inline-widget" data-url="https://calendly.com/christianjmills/strategy-consult" style="width="100%";height:900px;"></div>
 <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
 <!-- Calendly inline widget end -->
 </div>
