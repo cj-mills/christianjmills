@@ -10,6 +10,8 @@ permalink: /:title/
 search_exclude: false
 ---
 
+### Last Updated: 3/23/2022
+
 * [Overview](#overview)
 * [Download GitHub Project](#download-github-project)
 * [Update Barracuda Library](#update-barracuda-library)
@@ -737,20 +739,21 @@ void Update()
             skeletons[i].ToggleSkeleton(false);
         }
     }
+    Resources.UnloadUnusedAssets();
+}
 ```
 
 
 
 ### Define OnDisable Method
 
-The `OnDisable` method is unchanged from the original project.
+For the `OnDisable` method, we only need to update the line to release the resources for the inference engine to `engine.Dispose()`.
 
 ```c#
-// OnDisable is called when the MonoBehavior becomes disabled or inactive
 private void OnDisable()
 {
     // Release the resources allocated for the inference engine
-    engine.worker.Dispose();
+    engine.Dispose();
 }
 ```
 
