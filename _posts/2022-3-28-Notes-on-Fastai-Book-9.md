@@ -24,6 +24,8 @@ search_exclude: false
 * [References](#references)
 
 
+
+
 ```python
 import fastbook
 fastbook.setup_book()
