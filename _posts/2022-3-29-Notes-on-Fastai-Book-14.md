@@ -1701,7 +1701,7 @@ learn.fit_one_cycle(100, 1e-3)
       <td>00:27</td>
     </tr>
   </tbody>
-</table><p>
+</table>
 </div>
 
 
