@@ -213,7 +213,9 @@ if not cred_path.exists():
 path = URLs.path('bluebook')
 path
 ```
-    Path('/home/innom-dt/.fastai/archive/bluebook')
+```text
+Path('/home/innom-dt/.fastai/archive/bluebook')
+```
 
 
 ```python
@@ -1162,7 +1164,9 @@ to1.items[['state', 'ProductGroup', 'Drive_System', 'Enclosure']].head(3)
 ```python
 to.classes['ProductSize']
 ```
-    ['#na#', 'Large', 'Large / Medium', 'Medium', 'Small', 'Mini', 'Compact']
+```text
+['#na#', 'Large', 'Large / Medium', 'Medium', 'Small', 'Mini', 'Compact']
+```
 
 
 #### fastcore save_pickle
