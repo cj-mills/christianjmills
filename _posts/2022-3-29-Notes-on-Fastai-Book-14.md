@@ -14,7 +14,7 @@ search_exclude: false
 
 * [ResNets](#resnets)
 * [Going Back to Imagenette](#going-back-to-imagenette)
-* [Building a Modern CNN: ResNet](#building-a-modern-cnn-resnets)
+* [Building a Modern CNN: ResNet](#building-a-modern-cnn-resnet)
 * [References](#references)
 
 
