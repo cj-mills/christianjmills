@@ -985,13 +985,17 @@ n_factors = 5
 user_factors = torch.randn(n_users, n_factors)
 movie_factors = torch.randn(n_movies, n_factors)
 ```
-    Number of users: 944
-    Numer of movies: 1665
+```text
+Number of users: 944
+Numer of movies: 1665
+```
 
 ```python
 one_hot
 ```
-    <function fastai.torch_core.one_hot(x, c)>
+```text
+<function fastai.torch_core.one_hot(x, c)>
+```
 
 #### fastai one_hot
 * [https://docs.fast.ai/torch_core.html#one_hot](https://docs.fast.ai/torch_core.html#one_hot)
