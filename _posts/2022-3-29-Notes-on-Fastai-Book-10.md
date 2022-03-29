@@ -113,7 +113,9 @@ from fastai.text.all import *
 ```python
 URLs.IMDB
 ```
-    'https://s3.amazonaws.com/fast-ai-nlp/imdb.tgz'
+```text
+'https://s3.amazonaws.com/fast-ai-nlp/imdb.tgz'
+```
 
 
 
@@ -122,7 +124,9 @@ URLs.IMDB
 path = untar_data(URLs.IMDB)
 path
 ```
-    Path('/home/innom-dt/.fastai/data/imdb')
+```text
+Path('/home/innom-dt/.fastai/data/imdb')
+```
 
 
 
@@ -134,7 +138,9 @@ path
 ```python
 get_text_files
 ```
-    <function fastai.data.transforms.get_text_files(path, recurse=True, folders=None)>
+```text
+<function fastai.data.transforms.get_text_files(path, recurse=True, folders=None)>
+```
 
 
 
@@ -142,9 +148,11 @@ get_text_files
 ```python
 print_source(get_text_files)
 ```
-    def get_text_files(path, recurse=True, folders=None):
-        "Get text files in `path` recursively, only in `folders`, if specified."
-        return get_files(path, extensions=['.txt'], recurse=recurse, folders=folders)
+```text
+def get_text_files(path, recurse=True, folders=None):
+    "Get text files in `path` recursively, only in `folders`, if specified."
+    return get_files(path, extensions=['.txt'], recurse=recurse, folders=folders)
+```
 
 
 
@@ -152,23 +160,25 @@ print_source(get_text_files)
 ```python
 print_source(get_files)
 ```
-    def get_files(path, extensions=None, recurse=True, folders=None, followlinks=True):
-        "Get all the files in `path` with optional `extensions`, optionally with `recurse`, only in `folders`, if specified."
-        path = Path(path)
-        folders=L(folders)
-        extensions = setify(extensions)
-        extensions = {e.lower() for e in extensions}
-        if recurse:
-            res = []
-            for i,(p,d,f) in enumerate(os.walk(path, followlinks=followlinks)): # returns (dirpath, dirnames, filenames)
-                if len(folders) !=0 and i==0: d[:] = [o for o in d if o in folders]
-                else:                         d[:] = [o for o in d if not o.startswith('.')]
-                if len(folders) !=0 and i==0 and '.' not in folders: continue
-                res += _get_files(p, f, extensions)
-        else:
-            f = [o.name for o in os.scandir(path) if o.is_file()]
-            res = _get_files(path, f, extensions)
-        return L(res)
+```text
+def get_files(path, extensions=None, recurse=True, folders=None, followlinks=True):
+    "Get all the files in `path` with optional `extensions`, optionally with `recurse`, only in `folders`, if specified."
+    path = Path(path)
+    folders=L(folders)
+    extensions = setify(extensions)
+    extensions = {e.lower() for e in extensions}
+    if recurse:
+        res = []
+        for i,(p,d,f) in enumerate(os.walk(path, followlinks=followlinks)): # returns (dirpath, dirnames, filenames)
+            if len(folders) !=0 and i==0: d[:] = [o for o in d if o in folders]
+            else:                         d[:] = [o for o in d if not o.startswith('.')]
+            if len(folders) !=0 and i==0 and '.' not in folders: continue
+            res += _get_files(p, f, extensions)
+    else:
+        f = [o.name for o in os.scandir(path) if o.is_file()]
+        res = _get_files(path, f, extensions)
+    return L(res)
+```
 
 
 
@@ -181,7 +191,9 @@ files = get_text_files(path, folders = ['train', 'test', 'unsup'])
 ```python
 len(files)
 ```
-    100000
+```text
+100000
+```
 
 
 
@@ -189,7 +201,9 @@ len(files)
 ```python
 txt = files[0].open().read(); txt[:75]
 ```
-    'This conglomeration fails so miserably on every level that it is difficult '
+```text
+'This conglomeration fails so miserably on every level that it is difficult '
+```
 
 
 
@@ -200,7 +214,9 @@ txt = files[0].open().read(); txt[:75]
 ```python
 WordTokenizer
 ```
-    fastai.text.core.SpacyTokenizer
+```text
+fastai.text.core.SpacyTokenizer
+```
 
 
 
@@ -208,16 +224,18 @@ WordTokenizer
 ```python
 print_source(WordTokenizer)
 ```
-    class SpacyTokenizer():
-        "Spacy tokenizer for `lang`"
-        def __init__(self, lang='en', special_toks=None, buf_sz=5000):
-            self.special_toks = ifnone(special_toks, defaults.text_spec_tok)
-            nlp = spacy.blank(lang)
-            for w in self.special_toks: nlp.tokenizer.add_special_case(w, [{ORTH: w}])
-            self.pipe,self.buf_sz = nlp.pipe,buf_sz
-    
-        def __call__(self, items):
-            return (L(doc).attrgot('text') for doc in self.pipe(map(str,items), batch_size=self.buf_sz))
+```text
+class SpacyTokenizer():
+    "Spacy tokenizer for `lang`"
+    def __init__(self, lang='en', special_toks=None, buf_sz=5000):
+        self.special_toks = ifnone(special_toks, defaults.text_spec_tok)
+        nlp = spacy.blank(lang)
+        for w in self.special_toks: nlp.tokenizer.add_special_case(w, [{ORTH: w}])
+        self.pipe,self.buf_sz = nlp.pipe,buf_sz
+
+    def __call__(self, items):
+        return (L(doc).attrgot('text') for doc in self.pipe(map(str,items), batch_size=self.buf_sz))
+```
 
 
 
@@ -225,7 +243,9 @@ print_source(WordTokenizer)
 ```python
 first
 ```
-    <function fastcore.basics.first(x, f=None, negate=False, **kwargs)>
+```text
+<function fastcore.basics.first(x, f=None, negate=False, **kwargs)>
+```
 
 
 
@@ -233,12 +253,14 @@ first
 ```python
 print_source(first)
 ```
-    <function first at 0x7fdb8da3de50>
-    def first(x, f=None, negate=False, **kwargs):
-        "First element of `x`, optionally filtered by `f`, or None if missing"
-        x = iter(x)
-        if f: x = filter_ex(x, f=f, negate=negate, gen=True, **kwargs)
-        return next(x, None)
+```text
+<function first at 0x7fdb8da3de50>
+def first(x, f=None, negate=False, **kwargs):
+    "First element of `x`, optionally filtered by `f`, or None if missing"
+    x = iter(x)
+    if f: x = filter_ex(x, f=f, negate=negate, gen=True, **kwargs)
+    return next(x, None)
+```
 
 
 
@@ -246,7 +268,9 @@ print_source(first)
 ```python
 coll_repr
 ```
-    <function fastcore.foundation.coll_repr(c, max_n=10)>
+```text
+<function fastcore.foundation.coll_repr(c, max_n=10)>
+```
 
 
 
@@ -254,10 +278,12 @@ coll_repr
 ```python
 print_source(coll_repr)
 ```
-    def coll_repr(c, max_n=10):
-        "String repr of up to `max_n` items of (possibly lazy) collection `c`"
-        return f'(#{len(c)}) [' + ','.join(itertools.islice(map(repr,c), max_n)) + (
-            '...' if len(c)>max_n else '') + ']'
+```text
+def coll_repr(c, max_n=10):
+    "String repr of up to `max_n` items of (possibly lazy) collection `c`"
+    return f'(#{len(c)}) [' + ','.join(itertools.islice(map(repr,c), max_n)) + (
+        '...' if len(c)>max_n else '') + ']'
+```
 
 
 
@@ -270,7 +296,9 @@ spacy = WordTokenizer()
 ```python
 spacy.buf_sz
 ```
-    5000
+```text
+5000
+```
 
 
 
@@ -278,7 +306,9 @@ spacy.buf_sz
 ```python
 spacy.pipe
 ```
-    <bound method Language.pipe of <spacy.lang.en.English object at 0x7fdb6545f1c0>>
+```text
+<bound method Language.pipe of <spacy.lang.en.English object at 0x7fdb6545f1c0>>
+```
 
 
 
@@ -286,15 +316,17 @@ spacy.pipe
 ```python
 spacy.special_toks
 ```
-    ['xxunk',
-     'xxpad',
-     'xxbos',
-     'xxeos',
-     'xxfld',
-     'xxrep',
-     'xxwrep',
-     'xxup',
-     'xxmaj']
+```text
+['xxunk',
+ 'xxpad',
+ 'xxbos',
+ 'xxeos',
+ 'xxfld',
+ 'xxrep',
+ 'xxwrep',
+ 'xxup',
+ 'xxmaj']
+```
 
 
 
@@ -304,14 +336,18 @@ spacy.special_toks
 toks = first(spacy([txt]))
 print(coll_repr(toks, 30))
 ```
-    (#174) ['This','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','It','does',"n't",'merit','one','line',',','much','less','ten',',','but'...]
+```text
+(#174) ['This','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','It','does',"n't",'merit','one','line',',','much','less','ten',',','but'...]
+```
 
 
 
 ```python
 first(spacy(['The U.S. dollar $1 is $1.00.']))
 ```
-    (#9) ['The','U.S.','dollar','$','1','is','$','1.00','.']
+```text
+(#9) ['The','U.S.','dollar','$','1','is','$','1.00','.']
+```
 
 
 
@@ -319,7 +355,9 @@ first(spacy(['The U.S. dollar $1 is $1.00.']))
 ```python
 Tokenizer
 ```
-    fastai.text.core.Tokenizer
+```text
+fastai.text.core.Tokenizer
+```
 
 
 
@@ -327,60 +365,62 @@ Tokenizer
 ```python
 print_source(Tokenizer)
 ```
-    class Tokenizer(Transform):
-        "Provides a consistent `Transform` interface to tokenizers operating on `DataFrame`s and folders"
-        input_types = (str, list, L, tuple, Path)
-        def __init__(self, tok, rules=None, counter=None, lengths=None, mode=None, sep=' '):
-            if isinstance(tok,type): tok=tok()
-            store_attr('tok,counter,lengths,mode,sep')
-            self.rules = defaults.text_proc_rules if rules is None else rules
-    
-        @classmethod
-        @delegates(tokenize_df, keep=True)
-        def from_df(cls, text_cols, tok=None, rules=None, sep=' ', **kwargs):
-            if tok is None: tok = WordTokenizer()
-            res = cls(tok, rules=rules, mode='df')
-            res.kwargs,res.train_setup = merge({'tok': tok}, kwargs),False
-            res.text_cols,res.sep = text_cols,sep
-            return res
-    
-        @classmethod
-        @delegates(tokenize_folder, keep=True)
-        def from_folder(cls, path, tok=None, rules=None, **kwargs):
-            path = Path(path)
-            if tok is None: tok = WordTokenizer()
-            output_dir = tokenize_folder(path, tok=tok, rules=rules, **kwargs)
-            res = cls(tok, counter=load_pickle(output_dir/fn_counter_pkl),
-                      lengths=load_pickle(output_dir/fn_lengths_pkl), rules=rules, mode='folder')
-            res.path,res.output_dir = path,output_dir
-            return res
-    
-        def setups(self, dsets):
-            if not self.mode == 'df' or not isinstance(dsets.items, pd.DataFrame): return
-            dsets.items,count = tokenize_df(dsets.items, self.text_cols, rules=self.rules, **self.kwargs)
-            if self.counter is None: self.counter = count
-            return dsets
-    
-        def encodes(self, o:Path):
-            if self.mode=='folder' and str(o).startswith(str(self.path)):
-                tok = self.output_dir/o.relative_to(self.path)
-                return L(tok.read_text(encoding='UTF-8').split(' '))
-            else: return self._tokenize1(o.read_text())
-    
-        def encodes(self, o:str): return self._tokenize1(o)
-        def _tokenize1(self, o): return first(self.tok([compose(*self.rules)(o)]))
-    
-        def get_lengths(self, items):
-            if self.lengths is None: return None
-            if self.mode == 'df':
-                if isinstance(items, pd.DataFrame) and 'text_lengths' in items.columns: return items['text_length'].values
-            if self.mode == 'folder':
-                try:
-                    res = [self.lengths[str(Path(i).relative_to(self.path))] for i in items]
-                    if len(res) == len(items): return res
-                except: return None
-    
-        def decodes(self, o): return TitledStr(self.sep.join(o))
+```text
+class Tokenizer(Transform):
+    "Provides a consistent `Transform` interface to tokenizers operating on `DataFrame`s and folders"
+    input_types = (str, list, L, tuple, Path)
+    def __init__(self, tok, rules=None, counter=None, lengths=None, mode=None, sep=' '):
+        if isinstance(tok,type): tok=tok()
+        store_attr('tok,counter,lengths,mode,sep')
+        self.rules = defaults.text_proc_rules if rules is None else rules
+
+    @classmethod
+    @delegates(tokenize_df, keep=True)
+    def from_df(cls, text_cols, tok=None, rules=None, sep=' ', **kwargs):
+        if tok is None: tok = WordTokenizer()
+        res = cls(tok, rules=rules, mode='df')
+        res.kwargs,res.train_setup = merge({'tok': tok}, kwargs),False
+        res.text_cols,res.sep = text_cols,sep
+        return res
+
+    @classmethod
+    @delegates(tokenize_folder, keep=True)
+    def from_folder(cls, path, tok=None, rules=None, **kwargs):
+        path = Path(path)
+        if tok is None: tok = WordTokenizer()
+        output_dir = tokenize_folder(path, tok=tok, rules=rules, **kwargs)
+        res = cls(tok, counter=load_pickle(output_dir/fn_counter_pkl),
+                  lengths=load_pickle(output_dir/fn_lengths_pkl), rules=rules, mode='folder')
+        res.path,res.output_dir = path,output_dir
+        return res
+
+    def setups(self, dsets):
+        if not self.mode == 'df' or not isinstance(dsets.items, pd.DataFrame): return
+        dsets.items,count = tokenize_df(dsets.items, self.text_cols, rules=self.rules, **self.kwargs)
+        if self.counter is None: self.counter = count
+        return dsets
+
+    def encodes(self, o:Path):
+        if self.mode=='folder' and str(o).startswith(str(self.path)):
+            tok = self.output_dir/o.relative_to(self.path)
+            return L(tok.read_text(encoding='UTF-8').split(' '))
+        else: return self._tokenize1(o.read_text())
+
+    def encodes(self, o:str): return self._tokenize1(o)
+    def _tokenize1(self, o): return first(self.tok([compose(*self.rules)(o)]))
+
+    def get_lengths(self, items):
+        if self.lengths is None: return None
+        if self.mode == 'df':
+            if isinstance(items, pd.DataFrame) and 'text_lengths' in items.columns: return items['text_length'].values
+        if self.mode == 'folder':
+            try:
+                res = [self.lengths[str(Path(i).relative_to(self.path))] for i in items]
+                if len(res) == len(items): return res
+            except: return None
+
+    def decodes(self, o): return TitledStr(self.sep.join(o))
+```
 
 
 
@@ -389,7 +429,9 @@ print_source(Tokenizer)
 tkn = Tokenizer(spacy)
 print(coll_repr(tkn(txt), 31))
 ```
-    (#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','xxmaj','it','does',"n't",'merit','one','line',',','much','less','ten'...]
+```text
+(#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','xxmaj','it','does',"n't",'merit','one','line',',','much','less','ten'...]
+```
 
 
 #### Special Tokens
@@ -405,14 +447,16 @@ print(coll_repr(tkn(txt), 31))
 ```python
 defaults.text_proc_rules
 ```
-    [<function fastai.text.core.fix_html(x)>,
-     <function fastai.text.core.replace_rep(t)>,
-     <function fastai.text.core.replace_wrep(t)>,
-     <function fastai.text.core.spec_add_spaces(t)>,
-     <function fastai.text.core.rm_useless_spaces(t)>,
-     <function fastai.text.core.replace_all_caps(t)>,
-     <function fastai.text.core.replace_maj(t)>,
-     <function fastai.text.core.lowercase(t, add_bos=True, add_eos=False)>]
+```text
+[<function fastai.text.core.fix_html(x)>,
+ <function fastai.text.core.replace_rep(t)>,
+ <function fastai.text.core.replace_wrep(t)>,
+ <function fastai.text.core.spec_add_spaces(t)>,
+ <function fastai.text.core.rm_useless_spaces(t)>,
+ <function fastai.text.core.replace_all_caps(t)>,
+ <function fastai.text.core.replace_maj(t)>,
+ <function fastai.text.core.lowercase(t, add_bos=True, add_eos=False)>]
+```
 
 
 
@@ -421,52 +465,54 @@ defaults.text_proc_rules
 for rule in defaults.text_proc_rules:
     print_source(rule)
 ```
-    def fix_html(x):
-        "Various messy things we've seen in documents"
-        x = x.replace('#39;', "'").replace('amp;', '&').replace('#146;', "'").replace('nbsp;', ' ').replace(
-            '#36;', '$').replace('\\n', "\n").replace('quot;', "'").replace('<br />', "\n").replace(
-            '\\"', '"').replace('<unk>',UNK).replace(' @.@ ','.').replace(' @-@ ','-').replace('...',' …')
-        return html.unescape(x)
-    
-    def replace_rep(t):
-        "Replace repetitions at the character level: cccc -- TK_REP 4 c"
-        def _replace_rep(m):
-            c,cc = m.groups()
-            return f' {TK_REP} {len(cc)+1} {c} '
-        return _re_rep.sub(_replace_rep, t)
-    
-    def replace_wrep(t):
-        "Replace word repetitions: word word word word -- TK_WREP 4 word"
-        def _replace_wrep(m):
-            c,cc,e = m.groups()
-            return f' {TK_WREP} {len(cc.split())+2} {c} {e}'
-        return _re_wrep.sub(_replace_wrep, t)
-    
-    def spec_add_spaces(t):
-        "Add spaces around / and #"
-        return _re_spec.sub(r' \1 ', t)
-    
-    def rm_useless_spaces(t):
-        "Remove multiple spaces"
-        return _re_space.sub(' ', t)
-    
-    def replace_all_caps(t):
-        "Replace tokens in ALL CAPS by their lower version and add `TK_UP` before."
-        def _replace_all_caps(m):
-            tok = f'{TK_UP} ' if len(m.groups()[1]) > 1 else ''
-            return f"{m.groups()[0]}{tok}{m.groups()[1].lower()}"
-        return _re_all_caps.sub(_replace_all_caps, t)
-    
-    def replace_maj(t):
-        "Replace tokens in Sentence Case by their lower version and add `TK_MAJ` before."
-        def _replace_maj(m):
-            tok = f'{TK_MAJ} ' if len(m.groups()[1]) > 1 else ''
-            return f"{m.groups()[0]}{tok}{m.groups()[1].lower()}"
-        return _re_maj.sub(_replace_maj, t)
-    
-    def lowercase(t, add_bos=True, add_eos=False):
-        "Converts `t` to lowercase"
-        return (f'{BOS} ' if add_bos else '') + t.lower().strip() + (f' {EOS}' if add_eos else '')
+```text
+def fix_html(x):
+    "Various messy things we've seen in documents"
+    x = x.replace('#39;', "'").replace('amp;', '&').replace('#146;', "'").replace('nbsp;', ' ').replace(
+        '#36;', '$').replace('\\n', "\n").replace('quot;', "'").replace('<br />', "\n").replace(
+        '\\"', '"').replace('<unk>',UNK).replace(' @.@ ','.').replace(' @-@ ','-').replace('...',' …')
+    return html.unescape(x)
+
+def replace_rep(t):
+    "Replace repetitions at the character level: cccc -- TK_REP 4 c"
+    def _replace_rep(m):
+        c,cc = m.groups()
+        return f' {TK_REP} {len(cc)+1} {c} '
+    return _re_rep.sub(_replace_rep, t)
+
+def replace_wrep(t):
+    "Replace word repetitions: word word word word -- TK_WREP 4 word"
+    def _replace_wrep(m):
+        c,cc,e = m.groups()
+        return f' {TK_WREP} {len(cc.split())+2} {c} {e}'
+    return _re_wrep.sub(_replace_wrep, t)
+
+def spec_add_spaces(t):
+    "Add spaces around / and #"
+    return _re_spec.sub(r' \1 ', t)
+
+def rm_useless_spaces(t):
+    "Remove multiple spaces"
+    return _re_space.sub(' ', t)
+
+def replace_all_caps(t):
+    "Replace tokens in ALL CAPS by their lower version and add `TK_UP` before."
+    def _replace_all_caps(m):
+        tok = f'{TK_UP} ' if len(m.groups()[1]) > 1 else ''
+        return f"{m.groups()[0]}{tok}{m.groups()[1].lower()}"
+    return _re_all_caps.sub(_replace_all_caps, t)
+
+def replace_maj(t):
+    "Replace tokens in Sentence Case by their lower version and add `TK_MAJ` before."
+    def _replace_maj(m):
+        tok = f'{TK_MAJ} ' if len(m.groups()[1]) > 1 else ''
+        return f"{m.groups()[0]}{tok}{m.groups()[1].lower()}"
+    return _re_maj.sub(_replace_maj, t)
+
+def lowercase(t, add_bos=True, add_eos=False):
+    "Converts `t` to lowercase"
+    return (f'{BOS} ' if add_bos else '') + t.lower().strip() + (f' {EOS}' if add_eos else '')
+```
 
 
 
@@ -477,9 +523,11 @@ for rule in defaults.text_proc_rules:
 for rule in defaults.text_postproc_rules:
     print_source(rule)
 ```
-    def replace_space(t):
-        "Replace embedded spaces in a token with unicode line char to allow for split/join"
-        return t.replace(' ', '▁')
+```text
+def replace_space(t):
+    "Replace embedded spaces in a token with unicode line char to allow for split/join"
+    return t.replace(' ', '▁')
+```
 
 
 
@@ -487,7 +535,9 @@ for rule in defaults.text_postproc_rules:
 ```python
 coll_repr(tkn('&copy;   Fast.ai www.fast.ai/INDEX'), 31)
 ```
-    "(#11) ['xxbos','©','xxmaj','fast.ai','xxrep','3','w','.fast.ai','/','xxup','index']"
+```text
+"(#11) ['xxbos','©','xxmaj','fast.ai','xxrep','3','w','.fast.ai','/','xxup','index']"
+```
 
 
 
@@ -506,7 +556,9 @@ txts = L(o.open().read() for o in files[:2000])
 ```python
 SubwordTokenizer
 ```
-    fastai.text.core.SentencePieceTokenizer
+```text
+fastai.text.core.SentencePieceTokenizer
+```
 
 
 
@@ -514,62 +566,64 @@ SubwordTokenizer
 ```python
 print_source(SubwordTokenizer)
 ```
-    class SentencePieceTokenizer():#TODO: pass the special tokens symbol to sp
-        "SentencePiece tokenizer for `lang`"
-        def __init__(self, lang='en', special_toks=None, sp_model=None, vocab_sz=None, max_vocab_sz=30000,
-                     model_type='unigram', char_coverage=None, cache_dir='tmp'):
-            try: from sentencepiece import SentencePieceTrainer,SentencePieceProcessor
-            except ImportError:
-                raise Exception('sentencepiece module is missing: run `pip install sentencepiece!=0.1.90,!=0.1.91`')
-            self.sp_model,self.cache_dir = sp_model,Path(cache_dir)
-            self.vocab_sz,self.max_vocab_sz,self.model_type = vocab_sz,max_vocab_sz,model_type
-            self.char_coverage = ifnone(char_coverage, 0.99999 if lang in eu_langs else 0.9998)
-            self.special_toks = ifnone(special_toks, defaults.text_spec_tok)
-            if sp_model is None: self.tok = None
-            else:
-                self.tok = SentencePieceProcessor()
-                self.tok.Load(str(sp_model))
-            os.makedirs(self.cache_dir, exist_ok=True)
-    
-        def _get_vocab_sz(self, raw_text_path):
-            cnt = Counter()
-            with open(raw_text_path, 'r') as f:
-                for line in f.readlines():
-                    cnt.update(line.split())
-                    if len(cnt)//4 > self.max_vocab_sz: return self.max_vocab_sz
-            res = len(cnt)//4
-            while res%8 != 0: res+=1
-            return max(res,29)
-    
-        def train(self, raw_text_path):
-            "Train a sentencepiece tokenizer on `texts` and save it in `path/tmp_dir`"
-            from sentencepiece import SentencePieceTrainer
-            vocab_sz = self._get_vocab_sz(raw_text_path) if self.vocab_sz is None else self.vocab_sz
-            spec_tokens = ['\u2581'+s for s in self.special_toks]
-            SentencePieceTrainer.Train(" ".join([
-                f"--input={raw_text_path} --vocab_size={vocab_sz} --model_prefix={self.cache_dir/'spm'}",
-                f"--character_coverage={self.char_coverage} --model_type={self.model_type}",
-                f"--unk_id={len(spec_tokens)} --pad_id=-1 --bos_id=-1 --eos_id=-1 --minloglevel=2",
-                f"--user_defined_symbols={','.join(spec_tokens)} --hard_vocab_limit=false"]))
-            raw_text_path.unlink()
-            return self.cache_dir/'spm.model'
-    
-        def setup(self, items, rules=None):
-            from sentencepiece import SentencePieceProcessor
-            if rules is None: rules = []
-            if self.tok is not None: return {'sp_model': self.sp_model}
-            raw_text_path = self.cache_dir/'texts.out'
-            with open(raw_text_path, 'w') as f:
-                for t in progress_bar(maps(*rules, items), total=len(items), leave=False):
-                    f.write(f'{t}\n')
-            sp_model = self.train(raw_text_path)
+```text
+class SentencePieceTokenizer():#TODO: pass the special tokens symbol to sp
+    "SentencePiece tokenizer for `lang`"
+    def __init__(self, lang='en', special_toks=None, sp_model=None, vocab_sz=None, max_vocab_sz=30000,
+                 model_type='unigram', char_coverage=None, cache_dir='tmp'):
+        try: from sentencepiece import SentencePieceTrainer,SentencePieceProcessor
+        except ImportError:
+            raise Exception('sentencepiece module is missing: run `pip install sentencepiece!=0.1.90,!=0.1.91`')
+        self.sp_model,self.cache_dir = sp_model,Path(cache_dir)
+        self.vocab_sz,self.max_vocab_sz,self.model_type = vocab_sz,max_vocab_sz,model_type
+        self.char_coverage = ifnone(char_coverage, 0.99999 if lang in eu_langs else 0.9998)
+        self.special_toks = ifnone(special_toks, defaults.text_spec_tok)
+        if sp_model is None: self.tok = None
+        else:
             self.tok = SentencePieceProcessor()
             self.tok.Load(str(sp_model))
-            return {'sp_model': sp_model}
-    
-        def __call__(self, items):
-            if self.tok is None: self.setup(items)
-            for t in items: yield self.tok.EncodeAsPieces(t)
+        os.makedirs(self.cache_dir, exist_ok=True)
+
+    def _get_vocab_sz(self, raw_text_path):
+        cnt = Counter()
+        with open(raw_text_path, 'r') as f:
+            for line in f.readlines():
+                cnt.update(line.split())
+                if len(cnt)//4 > self.max_vocab_sz: return self.max_vocab_sz
+        res = len(cnt)//4
+        while res%8 != 0: res+=1
+        return max(res,29)
+
+    def train(self, raw_text_path):
+        "Train a sentencepiece tokenizer on `texts` and save it in `path/tmp_dir`"
+        from sentencepiece import SentencePieceTrainer
+        vocab_sz = self._get_vocab_sz(raw_text_path) if self.vocab_sz is None else self.vocab_sz
+        spec_tokens = ['\u2581'+s for s in self.special_toks]
+        SentencePieceTrainer.Train(" ".join([
+            f"--input={raw_text_path} --vocab_size={vocab_sz} --model_prefix={self.cache_dir/'spm'}",
+            f"--character_coverage={self.char_coverage} --model_type={self.model_type}",
+            f"--unk_id={len(spec_tokens)} --pad_id=-1 --bos_id=-1 --eos_id=-1 --minloglevel=2",
+            f"--user_defined_symbols={','.join(spec_tokens)} --hard_vocab_limit=false"]))
+        raw_text_path.unlink()
+        return self.cache_dir/'spm.model'
+
+    def setup(self, items, rules=None):
+        from sentencepiece import SentencePieceProcessor
+        if rules is None: rules = []
+        if self.tok is not None: return {'sp_model': self.sp_model}
+        raw_text_path = self.cache_dir/'texts.out'
+        with open(raw_text_path, 'w') as f:
+            for t in progress_bar(maps(*rules, items), total=len(items), leave=False):
+                f.write(f'{t}\n')
+        sp_model = self.train(raw_text_path)
+        self.tok = SentencePieceProcessor()
+        self.tok.Load(str(sp_model))
+        return {'sp_model': sp_model}
+
+    def __call__(self, items):
+        if self.tok is None: self.setup(items)
+        for t in items: yield self.tok.EncodeAsPieces(t)
+```
 
 
 
@@ -602,11 +656,15 @@ def subword(sz):
 # Use a vocab size of 1000
 subword(1000)
 ```
-    sentencepiece_trainer.cc(177) LOG(INFO) Running command: --input=tmp/texts.out --vocab_size=1000 --model_prefix=tmp/spm --character_coverage=0.99999 --model_type=unigram --unk_id=9 --pad_id=-1 --bos_id=-1 --eos_id=-1 --minloglevel=2 --user_defined_symbols=▁xxunk,▁xxpad,▁xxbos,▁xxeos,▁xxfld,▁xxrep,▁xxwrep,▁xxup,▁xxmaj --hard_vocab_limit=false
+```text
+sentencepiece_trainer.cc(177) LOG(INFO) Running command: --input=tmp/texts.out --vocab_size=1000 --model_prefix=tmp/spm --character_coverage=0.99999 --model_type=unigram --unk_id=9 --pad_id=-1 --bos_id=-1 --eos_id=-1 --minloglevel=2 --user_defined_symbols=▁xxunk,▁xxpad,▁xxbos,▁xxeos,▁xxfld,▁xxrep,▁xxwrep,▁xxup,▁xxmaj --hard_vocab_limit=false
+```
 
 
 
-    "▁This ▁con g lo m er ation ▁fail s ▁so ▁mis er ably ▁on ▁every ▁level ▁that ▁it ▁is ▁di ff ic ul t ▁to ▁decide ▁what ▁to ▁say . ▁It ▁doesn ' t ▁me ri t ▁one ▁line ,"
+```text
+"▁This ▁con g lo m er ation ▁fail s ▁so ▁mis er ably ▁on ▁every ▁level ▁that ▁it ▁is ▁di ff ic ul t ▁to ▁decide ▁what ▁to ▁say . ▁It ▁doesn ' t ▁me ri t ▁one ▁line ,"
+```
 
 
 
@@ -617,7 +675,9 @@ subword(1000)
 # Use a vocab size of 200
 subword(200)
 ```
-    '▁ T h i s ▁c on g l o m er at ion ▁f a i l s ▁ s o ▁ m i s er a b ly ▁on ▁ e v er y ▁ le ve l'
+```text
+'▁ T h i s ▁c on g l o m er at ion ▁f a i l s ▁ s o ▁ m i s er a b ly ▁on ▁ e v er y ▁ le ve l'
+```
 
 
 
@@ -626,7 +686,9 @@ subword(200)
 # Use a vocab size of 10000
 subword(10000)
 ```
-    "▁This ▁con g l ome ration ▁fails ▁so ▁miserably ▁on ▁every ▁level ▁that ▁it ▁is ▁difficult ▁to ▁decide ▁what ▁to ▁say . ▁It ▁doesn ' t ▁merit ▁one ▁line , ▁much ▁less ▁ten , ▁but ▁to ▁adhere ▁to ▁the ▁rules"
+```text
+"▁This ▁con g l ome ration ▁fails ▁so ▁miserably ▁on ▁every ▁level ▁that ▁it ▁is ▁difficult ▁to ▁decide ▁what ▁to ▁say . ▁It ▁doesn ' t ▁merit ▁one ▁line , ▁much ▁less ▁ten , ▁but ▁to ▁adhere ▁to ▁the ▁rules"
+```
 
 
 
@@ -637,7 +699,9 @@ subword(10000)
 toks = tkn(txt)
 print(coll_repr(tkn(txt), 31))
 ```
-    (#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','xxmaj','it','does',"n't",'merit','one','line',',','much','less','ten'...]
+```text
+(#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','xxmaj','it','does',"n't",'merit','one','line',',','much','less','ten'...]
+```
 
 
 
@@ -645,7 +709,9 @@ print(coll_repr(tkn(txt), 31))
 toks200 = txts[:200].map(tkn)
 toks200[0]
 ```
-    (#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level'...]
+```text
+(#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level'...]
+```
 
 
 
@@ -656,7 +722,9 @@ toks200[0]
 ```python
 Numericalize
 ```
-    fastai.text.data.Numericalize
+```text
+fastai.text.data.Numericalize
+```
 
 
 
@@ -664,23 +732,25 @@ Numericalize
 ```python
 print_source(Numericalize)
 ```
-    class Numericalize(Transform):
-        "Reversible transform of tokenized texts to numericalized ids"
-        def __init__(self, vocab=None, min_freq=3, max_vocab=60000, special_toks=None):
-            store_attr('vocab,min_freq,max_vocab,special_toks')
-            self.o2i = None if vocab is None else defaultdict(int, {v:k for k,v in enumerate(vocab)})
-    
-        def setups(self, dsets):
-            if dsets is None: return
-            if self.vocab is None:
-                count = dsets.counter if getattr(dsets, 'counter', None) is not None else Counter(p for o in dsets for p in o)
-                if self.special_toks is None and hasattr(dsets, 'special_toks'):
-                    self.special_toks = dsets.special_toks
-                self.vocab = make_vocab(count, min_freq=self.min_freq, max_vocab=self.max_vocab, special_toks=self.special_toks)
-                self.o2i = defaultdict(int, {v:k for k,v in enumerate(self.vocab) if v != 'xxfake'})
-    
-        def encodes(self, o): return TensorText(tensor([self.o2i  [o_] for o_ in o]))
-        def decodes(self, o): return L(self.vocab[o_] for o_ in o)
+```text
+class Numericalize(Transform):
+    "Reversible transform of tokenized texts to numericalized ids"
+    def __init__(self, vocab=None, min_freq=3, max_vocab=60000, special_toks=None):
+        store_attr('vocab,min_freq,max_vocab,special_toks')
+        self.o2i = None if vocab is None else defaultdict(int, {v:k for k,v in enumerate(vocab)})
+
+    def setups(self, dsets):
+        if dsets is None: return
+        if self.vocab is None:
+            count = dsets.counter if getattr(dsets, 'counter', None) is not None else Counter(p for o in dsets for p in o)
+            if self.special_toks is None and hasattr(dsets, 'special_toks'):
+                self.special_toks = dsets.special_toks
+            self.vocab = make_vocab(count, min_freq=self.min_freq, max_vocab=self.max_vocab, special_toks=self.special_toks)
+            self.o2i = defaultdict(int, {v:k for k,v in enumerate(self.vocab) if v != 'xxfake'})
+
+    def encodes(self, o): return TensorText(tensor([self.o2i  [o_] for o_ in o]))
+    def decodes(self, o): return L(self.vocab[o_] for o_ in o)
+```
 
 
 
@@ -691,7 +761,9 @@ num = Numericalize()
 num.setup(toks200)
 coll_repr(num.vocab,20)
 ```
-    "(#1992) ['xxunk','xxpad','xxbos','xxeos','xxfld','xxrep','xxwrep','xxup','xxmaj','the','.',',','a','and','of','to','is','i','it','this'...]"
+```text
+"(#1992) ['xxunk','xxpad','xxbos','xxeos','xxfld','xxrep','xxwrep','xxup','xxmaj','the','.',',','a','and','of','to','is','i','it','this'...]"
+```
 
 
 
@@ -699,7 +771,9 @@ coll_repr(num.vocab,20)
 ```python
 TensorText
 ```
-    fastai.text.data.TensorText
+```text
+fastai.text.data.TensorText
+```
 
 
 
@@ -707,7 +781,9 @@ TensorText
 ```python
 print_source(TensorText)
 ```
-    class TensorText(TensorBase):   pass
+```text
+class TensorText(TensorBase):   pass
+```
 
 
 
@@ -715,7 +791,9 @@ print_source(TensorText)
 ```python
 nums = num(toks)[:20]; nums
 ```
-    TensorText([   2,    8,   19,    0,  585,   51, 1190,   36,  166,  586,   21,   18,   16,    0,   15,  663,   67,   15,  140,   10])
+```text
+TensorText([   2,    8,   19,    0,  585,   51, 1190,   36,  166,  586,   21,   18,   16,    0,   15,  663,   67,   15,  140,   10])
+```
 
 
 
@@ -723,7 +801,9 @@ nums = num(toks)[:20]; nums
 ```python
 ' '.join(num.vocab[o] for o in nums)
 ```
-    'xxbos xxmaj this xxunk fails so miserably on every level that it is xxunk to decide what to say .'
+```text
+'xxbos xxmaj this xxunk fails so miserably on every level that it is xxunk to decide what to say .'
+```
 
 
 
@@ -739,7 +819,9 @@ stream = "In this chapter, we will go back over the example of classifying movie
 tokens = tkn(stream)
 tokens
 ```
-    (#90) ['xxbos','xxmaj','in','this','chapter',',','we','will','go','back'...]
+```text
+(#90) ['xxbos','xxmaj','in','this','chapter',',','we','will','go','back'...]
+```
 
 
 
@@ -1038,7 +1120,9 @@ nums200 = toks200.map(num)
 ```python
 LMDataLoader
 ```
-    fastai.text.data.LMDataLoader
+```text
+fastai.text.data.LMDataLoader
+```
 
 
 
@@ -1046,43 +1130,45 @@ LMDataLoader
 ```python
 print_source(LMDataLoader)
 ```
-    @delegates()
-    class LMDataLoader(TfmdDL):
-        "A `DataLoader` suitable for language modeling"
-        def __init__(self, dataset, lens=None, cache=2, bs=64, seq_len=72, num_workers=0, **kwargs):
-            self.items = ReindexCollection(dataset, cache=cache, tfm=_maybe_first)
-            self.seq_len = seq_len
-            if lens is None: lens = _get_lengths(dataset)
-            if lens is None: lens = [len(o) for o in self.items]
-            self.lens = ReindexCollection(lens, idxs=self.items.idxs)
-            # The "-1" is to allow for final label, we throw away the end that's less than bs
-            corpus = round_multiple(sum(lens)-1, bs, round_down=True)
-            self.bl = corpus//bs #bl stands for batch length
-            self.n_batches = self.bl//(seq_len) + int(self.bl%seq_len!=0)
-            self.last_len = self.bl - (self.n_batches-1)*seq_len
-            self.make_chunks()
-            super().__init__(dataset=dataset, bs=bs, num_workers=num_workers, **kwargs)
-            self.n = self.n_batches*bs
-    
-        def make_chunks(self): self.chunks = Chunks(self.items, self.lens)
-        def shuffle_fn(self,idxs):
-            self.items.shuffle()
-            self.make_chunks()
-            return idxs
-    
-        def create_item(self, seq):
-            if seq is None: seq = 0
-            if seq>=self.n: raise IndexError
-            sl = self.last_len if seq//self.bs==self.n_batches-1 else self.seq_len
-            st = (seq%self.bs)*self.bl + (seq//self.bs)*self.seq_len
-            txt = self.chunks[st : st+sl+1]
-            return LMTensorText(txt[:-1]),txt[1:]
-    
-        @delegates(TfmdDL.new)
-        def new(self, dataset=None, seq_len=None, **kwargs):
-            lens = self.lens.coll if dataset is None else None
-            seq_len = self.seq_len if seq_len is None else seq_len
-            return super().new(dataset=dataset, lens=lens, seq_len=seq_len, **kwargs)
+```text
+@delegates()
+class LMDataLoader(TfmdDL):
+    "A `DataLoader` suitable for language modeling"
+    def __init__(self, dataset, lens=None, cache=2, bs=64, seq_len=72, num_workers=0, **kwargs):
+        self.items = ReindexCollection(dataset, cache=cache, tfm=_maybe_first)
+        self.seq_len = seq_len
+        if lens is None: lens = _get_lengths(dataset)
+        if lens is None: lens = [len(o) for o in self.items]
+        self.lens = ReindexCollection(lens, idxs=self.items.idxs)
+        # The "-1" is to allow for final label, we throw away the end that's less than bs
+        corpus = round_multiple(sum(lens)-1, bs, round_down=True)
+        self.bl = corpus//bs #bl stands for batch length
+        self.n_batches = self.bl//(seq_len) + int(self.bl%seq_len!=0)
+        self.last_len = self.bl - (self.n_batches-1)*seq_len
+        self.make_chunks()
+        super().__init__(dataset=dataset, bs=bs, num_workers=num_workers, **kwargs)
+        self.n = self.n_batches*bs
+
+    def make_chunks(self): self.chunks = Chunks(self.items, self.lens)
+    def shuffle_fn(self,idxs):
+        self.items.shuffle()
+        self.make_chunks()
+        return idxs
+
+    def create_item(self, seq):
+        if seq is None: seq = 0
+        if seq>=self.n: raise IndexError
+        sl = self.last_len if seq//self.bs==self.n_batches-1 else self.seq_len
+        st = (seq%self.bs)*self.bl + (seq//self.bs)*self.seq_len
+        txt = self.chunks[st : st+sl+1]
+        return LMTensorText(txt[:-1]),txt[1:]
+
+    @delegates(TfmdDL.new)
+    def new(self, dataset=None, seq_len=None, **kwargs):
+        lens = self.lens.coll if dataset is None else None
+        seq_len = self.seq_len if seq_len is None else seq_len
+        return super().new(dataset=dataset, lens=lens, seq_len=seq_len, **kwargs)
+```
 
 
 
@@ -1098,7 +1184,9 @@ dl = LMDataLoader(nums200)
 x,y = first(dl)
 x.shape,y.shape
 ```
-    (torch.Size([64, 72]), torch.Size([64, 72]))
+```text
+(torch.Size([64, 72]), torch.Size([64, 72]))
+```
 
 
 
@@ -1106,7 +1194,9 @@ x.shape,y.shape
 ```python
 ' '.join(num.vocab[o] for o in x[0][:20])
 ```
-    'xxbos xxmaj this xxunk fails so miserably on every level that it is xxunk to decide what to say .'
+```text
+'xxbos xxmaj this xxunk fails so miserably on every level that it is xxunk to decide what to say .'
+```
 
 
 
@@ -1114,7 +1204,9 @@ x.shape,y.shape
 ```python
 ' '.join(num.vocab[o] for o in y[0][:20])
 ```
-    'xxmaj this xxunk fails so miserably on every level that it is xxunk to decide what to say . xxmaj'
+```text
+'xxmaj this xxunk fails so miserably on every level that it is xxunk to decide what to say . xxmaj'
+```
 
 
 
@@ -1135,7 +1227,9 @@ x.shape,y.shape
 ```python
 TextBlock
 ```
-    fastai.text.data.TextBlock
+```text
+fastai.text.data.TextBlock
+```
 
 
 
@@ -1143,29 +1237,31 @@ TextBlock
 ```python
 print_source(TextBlock)
 ```
-    class TextBlock(TransformBlock):
-        "A `TransformBlock` for texts"
-        @delegates(Numericalize.__init__)
-        def __init__(self, tok_tfm, vocab=None, is_lm=False, seq_len=72, backwards=False, **kwargs):
-            type_tfms = [tok_tfm, Numericalize(vocab, **kwargs)]
-            if backwards: type_tfms += [reverse_text]
-            return super().__init__(type_tfms=type_tfms,
-                                    dl_type=LMDataLoader if is_lm else SortedDL,
-                                    dls_kwargs={'seq_len': seq_len} if is_lm else {'before_batch': Pad_Chunk(seq_len=seq_len)})
-    
-        @classmethod
-        @delegates(Tokenizer.from_df, keep=True)
-        def from_df(cls, text_cols, vocab=None, is_lm=False, seq_len=72, backwards=False, min_freq=3, max_vocab=60000, **kwargs):
-            "Build a `TextBlock` from a dataframe using `text_cols`"
-            return cls(Tokenizer.from_df(text_cols, **kwargs), vocab=vocab, is_lm=is_lm, seq_len=seq_len,
-                       backwards=backwards, min_freq=min_freq, max_vocab=max_vocab)
-    
-        @classmethod
-        @delegates(Tokenizer.from_folder, keep=True)
-        def from_folder(cls, path, vocab=None, is_lm=False, seq_len=72, backwards=False, min_freq=3, max_vocab=60000, **kwargs):
-            "Build a `TextBlock` from a `path`"
-            return cls(Tokenizer.from_folder(path, **kwargs), vocab=vocab, is_lm=is_lm, seq_len=seq_len,
-                       backwards=backwards, min_freq=min_freq, max_vocab=max_vocab)
+```text
+class TextBlock(TransformBlock):
+    "A `TransformBlock` for texts"
+    @delegates(Numericalize.__init__)
+    def __init__(self, tok_tfm, vocab=None, is_lm=False, seq_len=72, backwards=False, **kwargs):
+        type_tfms = [tok_tfm, Numericalize(vocab, **kwargs)]
+        if backwards: type_tfms += [reverse_text]
+        return super().__init__(type_tfms=type_tfms,
+                                dl_type=LMDataLoader if is_lm else SortedDL,
+                                dls_kwargs={'seq_len': seq_len} if is_lm else {'before_batch': Pad_Chunk(seq_len=seq_len)})
+
+    @classmethod
+    @delegates(Tokenizer.from_df, keep=True)
+    def from_df(cls, text_cols, vocab=None, is_lm=False, seq_len=72, backwards=False, min_freq=3, max_vocab=60000, **kwargs):
+        "Build a `TextBlock` from a dataframe using `text_cols`"
+        return cls(Tokenizer.from_df(text_cols, **kwargs), vocab=vocab, is_lm=is_lm, seq_len=seq_len,
+                   backwards=backwards, min_freq=min_freq, max_vocab=max_vocab)
+
+    @classmethod
+    @delegates(Tokenizer.from_folder, keep=True)
+    def from_folder(cls, path, vocab=None, is_lm=False, seq_len=72, backwards=False, min_freq=3, max_vocab=60000, **kwargs):
+        "Build a `TextBlock` from a `path`"
+        return cls(Tokenizer.from_folder(path, **kwargs), vocab=vocab, is_lm=is_lm, seq_len=seq_len,
+                   backwards=backwards, min_freq=min_freq, max_vocab=max_vocab)
+```
 
 
 
@@ -1218,7 +1314,9 @@ dls_lm.show_batch(max_n=2)
 ```python
 language_model_learner
 ```
-    <function fastai.text.learner.language_model_learner(dls, arch, config=None, drop_mult=1.0, backwards=False, pretrained=True, pretrained_fnames=None, loss_func=None, opt_func=<function Adam at 0x7fdb8123e430>, lr=0.001, splitter=<function trainable_params at 0x7fdb8d9171f0>, cbs=None, metrics=None, path=None, model_dir='models', wd=None, wd_bn_bias=False, train_bn=True, moms=(0.95, 0.85, 0.95))>
+```text
+<function fastai.text.learner.language_model_learner(dls, arch, config=None, drop_mult=1.0, backwards=False, pretrained=True, pretrained_fnames=None, loss_func=None, opt_func=<function Adam at 0x7fdb8123e430>, lr=0.001, splitter=<function trainable_params at 0x7fdb8d9171f0>, cbs=None, metrics=None, path=None, model_dir='models', wd=None, wd_bn_bias=False, train_bn=True, moms=(0.95, 0.85, 0.95))>
+```
 
 
 
@@ -1226,26 +1324,28 @@ language_model_learner
 ```python
 print_source(language_model_learner)
 ```
-    @delegates(Learner.__init__)
-    def language_model_learner(dls, arch, config=None, drop_mult=1., backwards=False, pretrained=True, pretrained_fnames=None, **kwargs):
-        "Create a `Learner` with a language model from `dls` and `arch`."
-        vocab = _get_text_vocab(dls)
-        model = get_language_model(arch, len(vocab), config=config, drop_mult=drop_mult)
-        meta = _model_meta[arch]
-        learn = LMLearner(dls, model, loss_func=CrossEntropyLossFlat(), splitter=meta['split_lm'], **kwargs)
-        url = 'url_bwd' if backwards else 'url'
-        if pretrained or pretrained_fnames:
-            if pretrained_fnames is not None:
-                fnames = [learn.path/learn.model_dir/f'{fn}.{ext}' for fn,ext in zip(pretrained_fnames, ['pth', 'pkl'])]
-            else:
-                if url not in meta:
-                    warn("There are no pretrained weights for that architecture yet!")
-                    return learn
-                model_path = untar_data(meta[url] , c_key='model')
-                try: fnames = [list(model_path.glob(f'*.{ext}'))[0] for ext in ['pth', 'pkl']]
-                except IndexError: print(f'The model in {model_path} is incomplete, download again'); raise
-            learn = learn.load_pretrained(*fnames)
-        return learn
+```text
+@delegates(Learner.__init__)
+def language_model_learner(dls, arch, config=None, drop_mult=1., backwards=False, pretrained=True, pretrained_fnames=None, **kwargs):
+    "Create a `Learner` with a language model from `dls` and `arch`."
+    vocab = _get_text_vocab(dls)
+    model = get_language_model(arch, len(vocab), config=config, drop_mult=drop_mult)
+    meta = _model_meta[arch]
+    learn = LMLearner(dls, model, loss_func=CrossEntropyLossFlat(), splitter=meta['split_lm'], **kwargs)
+    url = 'url_bwd' if backwards else 'url'
+    if pretrained or pretrained_fnames:
+        if pretrained_fnames is not None:
+            fnames = [learn.path/learn.model_dir/f'{fn}.{ext}' for fn,ext in zip(pretrained_fnames, ['pth', 'pkl'])]
+        else:
+            if url not in meta:
+                warn("There are no pretrained weights for that architecture yet!")
+                return learn
+            model_path = untar_data(meta[url] , c_key='model')
+            try: fnames = [list(model_path.glob(f'*.{ext}'))[0] for ext in ['pth', 'pkl']]
+            except IndexError: print(f'The model in {model_path} is incomplete, download again'); raise
+        learn = learn.load_pretrained(*fnames)
+    return learn
+```
 
 
 
@@ -1264,7 +1364,9 @@ learn = language_model_learner(
 ```python
 Perplexity
 ```
-    fastai.metrics.Perplexity
+```text
+fastai.metrics.Perplexity
+```
 
 
 
@@ -1272,12 +1374,14 @@ Perplexity
 ```python
 print_source(Perplexity)
 ```
-    class Perplexity(AvgLoss):
-        "Perplexity (exponential of cross-entropy loss) for Language Models"
-        @property
-        def value(self): return torch.exp(self.total/self.count) if self.count != 0 else None
-        @property
-        def name(self):  return "perplexity"
+```text
+class Perplexity(AvgLoss):
+    "Perplexity (exponential of cross-entropy loss) for Language Models"
+    @property
+    def value(self): return torch.exp(self.total/self.count) if self.count != 0 else None
+    @property
+    def name(self):  return "perplexity"
+```
 
 
 
@@ -1318,7 +1422,9 @@ learn.fit_one_cycle(1, 2e-2)
 ```python
 learn.save
 ```
-    <bound method Learner.save of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
+```text
+<bound method Learner.save of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
+```
 
 
 
@@ -1326,13 +1432,15 @@ learn.save
 ```python
 print_source(learn.save)
 ```
-    @patch
-    @delegates(save_model)
-    def save(self:Learner, file, **kwargs):
-        "Save model and optimizer state (if `with_opt`) to `self.path/self.model_dir/file`"
-        file = join_path_file(file, self.path/self.model_dir, ext='.pth')
-        save_model(file, self.model, getattr(self,'opt',None), **kwargs)
-        return file
+```text
+@patch
+@delegates(save_model)
+def save(self:Learner, file, **kwargs):
+    "Save model and optimizer state (if `with_opt`) to `self.path/self.model_dir/file`"
+    file = join_path_file(file, self.path/self.model_dir, ext='.pth')
+    save_model(file, self.model, getattr(self,'opt',None), **kwargs)
+    return file
+```
 
 
 
@@ -1340,7 +1448,9 @@ print_source(learn.save)
 ```python
 save_model
 ```
-    <function fastai.learner.save_model(file, model, opt, with_opt=True, pickle_protocol=2)>
+```text
+<function fastai.learner.save_model(file, model, opt, with_opt=True, pickle_protocol=2)>
+```
 
 
 
@@ -1348,13 +1458,15 @@ save_model
 ```python
 print_source(save_model)
 ```
-    def save_model(file, model, opt, with_opt=True, pickle_protocol=2):
-        "Save `model` to `file` along with `opt` (if available, and if `with_opt`)"
-        if rank_distrib(): return # don't save if child proc
-        if opt is None: with_opt=False
-        state = get_model(model).state_dict()
-        if with_opt: state = {'model': state, 'opt':opt.state_dict()}
-        torch.save(state, file, pickle_protocol=pickle_protocol)
+```text
+def save_model(file, model, opt, with_opt=True, pickle_protocol=2):
+    "Save `model` to `file` along with `opt` (if available, and if `with_opt`)"
+    if rank_distrib(): return # don't save if child proc
+    if opt is None: with_opt=False
+    state = get_model(model).state_dict()
+    if with_opt: state = {'model': state, 'opt':opt.state_dict()}
+    torch.save(state, file, pickle_protocol=pickle_protocol)
+```
 
 
 
@@ -1362,9 +1474,11 @@ print_source(save_model)
 ```python
 print_source(rank_distrib)
 ```
-    def rank_distrib():
-        "Return the distributed rank of this process (if applicable)."
-        return int(os.environ.get('RANK', 0))
+```text
+def rank_distrib():
+    "Return the distributed rank of this process (if applicable)."
+    return int(os.environ.get('RANK', 0))
+```
 
 
 
@@ -1372,9 +1486,11 @@ print_source(rank_distrib)
 ```python
 print_source(get_model)
 ```
-    def get_model(model):
-        "Return the model maybe wrapped inside `model`."
-        return model.module if isinstance(model, (DistributedDataParallel, nn.DataParallel)) else model
+```text
+def get_model(model):
+    "Return the model maybe wrapped inside `model`."
+    return model.module if isinstance(model, (DistributedDataParallel, nn.DataParallel)) else model
+```
 
 
 
@@ -1382,55 +1498,57 @@ print_source(get_model)
 ```python
 print_source(torch.save)
 ```
-    def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]],
-             pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True) -> None:
-        # Reference: https://github.com/pytorch/pytorch/issues/54354
-        # The first line of this docstring overrides the one Sphinx generates for the
-        # documentation. We need it so that Sphinx doesn't leak `pickle`s path from
-        # the build environment (e.g. `<module 'pickle' from '/leaked/path').
-    
-        """save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True)
-    
-        Saves an object to a disk file.
-    
-        See also: :ref:`saving-loading-tensors`
-    
-        Args:
-            obj: saved object
-            f: a file-like object (has to implement write and flush) or a string or
-               os.PathLike object containing a file name
-            pickle_module: module used for pickling metadata and objects
-            pickle_protocol: can be specified to override the default protocol
-    
-        .. note::
-            A common PyTorch convention is to save tensors using .pt file extension.
-    
-        .. note::
-            PyTorch preserves storage sharing across serialization. See
-            :ref:`preserve-storage-sharing` for more details.
-    
-        .. note::
-            The 1.6 release of PyTorch switched ``torch.save`` to use a new
-            zipfile-based file format. ``torch.load`` still retains the ability to
-            load files in the old format. If for any reason you want ``torch.save``
-            to use the old format, pass the kwarg ``_use_new_zipfile_serialization=False``.
-    
-        Example:
-            >>> # Save to file
-            >>> x = torch.tensor([0, 1, 2, 3, 4])
-            >>> torch.save(x, 'tensor.pt')
-            >>> # Save to io.BytesIO buffer
-            >>> buffer = io.BytesIO()
-            >>> torch.save(x, buffer)
-        """
-        _check_dill_version(pickle_module)
-    
-        with _open_file_like(f, 'wb') as opened_file:
-            if _use_new_zipfile_serialization:
-                with _open_zipfile_writer(opened_file) as opened_zipfile:
-                    _save(obj, opened_zipfile, pickle_module, pickle_protocol)
-                    return
-            _legacy_save(obj, opened_file, pickle_module, pickle_protocol)
+```text
+def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]],
+         pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True) -> None:
+    # Reference: https://github.com/pytorch/pytorch/issues/54354
+    # The first line of this docstring overrides the one Sphinx generates for the
+    # documentation. We need it so that Sphinx doesn't leak `pickle`s path from
+    # the build environment (e.g. `<module 'pickle' from '/leaked/path').
+
+    """save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True)
+
+    Saves an object to a disk file.
+
+    See also: :ref:`saving-loading-tensors`
+
+    Args:
+        obj: saved object
+        f: a file-like object (has to implement write and flush) or a string or
+           os.PathLike object containing a file name
+        pickle_module: module used for pickling metadata and objects
+        pickle_protocol: can be specified to override the default protocol
+
+    .. note::
+        A common PyTorch convention is to save tensors using .pt file extension.
+
+    .. note::
+        PyTorch preserves storage sharing across serialization. See
+        :ref:`preserve-storage-sharing` for more details.
+
+    .. note::
+        The 1.6 release of PyTorch switched ``torch.save`` to use a new
+        zipfile-based file format. ``torch.load`` still retains the ability to
+        load files in the old format. If for any reason you want ``torch.save``
+        to use the old format, pass the kwarg ``_use_new_zipfile_serialization=False``.
+
+    Example:
+        >>> # Save to file
+        >>> x = torch.tensor([0, 1, 2, 3, 4])
+        >>> torch.save(x, 'tensor.pt')
+        >>> # Save to io.BytesIO buffer
+        >>> buffer = io.BytesIO()
+        >>> torch.save(x, buffer)
+    """
+    _check_dill_version(pickle_module)
+
+    with _open_file_like(f, 'wb') as opened_file:
+        if _use_new_zipfile_serialization:
+            with _open_zipfile_writer(opened_file) as opened_zipfile:
+                _save(obj, opened_zipfile, pickle_module, pickle_protocol)
+                return
+        _legacy_save(obj, opened_file, pickle_module, pickle_protocol)
+```
 
 
 
@@ -1438,7 +1556,9 @@ print_source(torch.save)
 ```python
 learn.save('1epoch')
 ```
-    Path('/home/innom-dt/.fastai/data/imdb/models/1epoch.pth')
+```text
+Path('/home/innom-dt/.fastai/data/imdb/models/1epoch.pth')
+```
 
 
 
@@ -1446,7 +1566,9 @@ learn.save('1epoch')
 ```python
 learn.load
 ```
-    <bound method TextLearner.load of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
+```text
+<bound method TextLearner.load of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
+```
 
 
 
@@ -1454,13 +1576,15 @@ learn.load
 ```python
 print_source(learn.load)
 ```
-        @delegates(load_model_text)
-        def load(self, file, with_opt=None, device=None, **kwargs):
-            if device is None: device = self.dls.device
-            if self.opt is None: self.create_opt()
-            file = join_path_file(file, self.path/self.model_dir, ext='.pth')
-            load_model_text(file, self.model, self.opt, device=device, **kwargs)
-            return self
+```text
+    @delegates(load_model_text)
+    def load(self, file, with_opt=None, device=None, **kwargs):
+        if device is None: device = self.dls.device
+        if self.opt is None: self.create_opt()
+        file = join_path_file(file, self.path/self.model_dir, ext='.pth')
+        load_model_text(file, self.model, self.opt, device=device, **kwargs)
+        return self
+```
 
 
 
@@ -1468,7 +1592,9 @@ print_source(learn.load)
 ```python
 load_model_text
 ```
-    <function fastai.text.learner.load_model_text(file, model, opt, with_opt=None, device=None, strict=True)>
+```text
+<function fastai.text.learner.load_model_text(file, model, opt, with_opt=None, device=None, strict=True)>
+```
 
 
 
@@ -1476,20 +1602,22 @@ load_model_text
 ```python
 print_source(load_model_text)
 ```
-    def load_model_text(file, model, opt, with_opt=None, device=None, strict=True):
-        "Load `model` from `file` along with `opt` (if available, and if `with_opt`)"
-        distrib_barrier()
-        if isinstance(device, int): device = torch.device('cuda', device)
-        elif device is None: device = 'cpu'
-        state = torch.load(file, map_location=device)
-        hasopt = set(state)=={'model', 'opt'}
-        model_state = state['model'] if hasopt else state
-        get_model(model).load_state_dict(clean_raw_keys(model_state), strict=strict)
-        if hasopt and ifnone(with_opt,True):
-            try: opt.load_state_dict(state['opt'])
-            except:
-                if with_opt: warn("Could not load the optimizer state.")
-        elif with_opt: warn("Saved filed doesn't contain an optimizer state.")
+```text
+def load_model_text(file, model, opt, with_opt=None, device=None, strict=True):
+    "Load `model` from `file` along with `opt` (if available, and if `with_opt`)"
+    distrib_barrier()
+    if isinstance(device, int): device = torch.device('cuda', device)
+    elif device is None: device = 'cpu'
+    state = torch.load(file, map_location=device)
+    hasopt = set(state)=={'model', 'opt'}
+    model_state = state['model'] if hasopt else state
+    get_model(model).load_state_dict(clean_raw_keys(model_state), strict=strict)
+    if hasopt and ifnone(with_opt,True):
+        try: opt.load_state_dict(state['opt'])
+        except:
+            if with_opt: warn("Could not load the optimizer state.")
+    elif with_opt: warn("Saved filed doesn't contain an optimizer state.")
+```
 
 
 
@@ -1497,7 +1625,9 @@ print_source(load_model_text)
 ```python
 distrib_barrier
 ```
-    <function fastai.torch_core.distrib_barrier()>
+```text
+<function fastai.torch_core.distrib_barrier()>
+```
 
 
 
@@ -1505,9 +1635,11 @@ distrib_barrier
 ```python
 print_source(distrib_barrier)
 ```
-    def distrib_barrier():
-        "Place a synchronization barrier in distributed training"
-        if num_distrib() > 1 and torch.distributed.is_initialized(): torch.distributed.barrier()
+```text
+def distrib_barrier():
+    "Place a synchronization barrier in distributed training"
+    if num_distrib() > 1 and torch.distributed.is_initialized(): torch.distributed.barrier()
+```
 
 
 
@@ -1627,7 +1759,9 @@ learn.fit_one_cycle(10, 2e-3)
 ```python
 learn.save_encoder
 ```
-    <bound method TextLearner.save_encoder of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
+```text
+<bound method TextLearner.save_encoder of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
+```
 
 
 
@@ -1635,12 +1769,14 @@ learn.save_encoder
 ```python
 print_source(learn.save_encoder)
 ```
-        def save_encoder(self, file):
-            "Save the encoder to `file` in the model directory"
-            if rank_distrib(): return # don't save if child proc
-            encoder = get_model(self.model)[0]
-            if hasattr(encoder, 'module'): encoder = encoder.module
-            torch.save(encoder.state_dict(), join_path_file(file, self.path/self.model_dir, ext='.pth'))
+```text
+    def save_encoder(self, file):
+        "Save the encoder to `file` in the model directory"
+        if rank_distrib(): return # don't save if child proc
+        encoder = get_model(self.model)[0]
+        if hasattr(encoder, 'module'): encoder = encoder.module
+        torch.save(encoder.state_dict(), join_path_file(file, self.path/self.model_dir, ext='.pth'))
+```
 
 
 
@@ -1668,8 +1804,10 @@ preds = [learn.predict(TEXT, N_WORDS, temperature=0.75)
 ```python
 print("\n".join(preds))
 ```
-    i liked this movie because it was a very well done film . Lee Bowman does a wonderful job in his role . Being a big Astaire fan , i think this movie is worth seeing for the musical numbers .
-    i liked this movie because it was based on a true story . The script was excellent as it was great . i would recommend this movie to anyone interested in history and the history of the holocaust . It was great to
+```text
+i liked this movie because it was a very well done film . Lee Bowman does a wonderful job in his role . Being a big Astaire fan , i think this movie is worth seeing for the musical numbers .
+i liked this movie because it was based on a true story . The script was excellent as it was great . i would recommend this movie to anyone interested in history and the history of the holocaust . It was great to
+```
 
 
 **Note:** The model has learned a lot about English sentences, despite not having any explicitely programmed knowledge.
@@ -1685,7 +1823,9 @@ print("\n".join(preds))
 ```python
 GrandparentSplitter
 ```
-    <function fastai.data.transforms.GrandparentSplitter(train_name='train', valid_name='valid')>
+```text
+<function fastai.data.transforms.GrandparentSplitter(train_name='train', valid_name='valid')>
+```
 
 
 
@@ -1693,11 +1833,13 @@ GrandparentSplitter
 ```python
 print_source(GrandparentSplitter)
 ```
-    def GrandparentSplitter(train_name='train', valid_name='valid'):
-        "Split `items` from the grand parent folder names (`train_name` and `valid_name`)."
-        def _inner(o):
-            return _grandparent_idxs(o, train_name),_grandparent_idxs(o, valid_name)
-        return _inner
+```text
+def GrandparentSplitter(train_name='train', valid_name='valid'):
+    "Split `items` from the grand parent folder names (`train_name` and `valid_name`)."
+    def _inner(o):
+        return _grandparent_idxs(o, train_name),_grandparent_idxs(o, valid_name)
+    return _inner
+```
 
 
 
@@ -1754,7 +1896,9 @@ nums_samp = toks200[:10].map(num)
 ```python
 nums_samp.map(len)
 ```
-    (#10) [177,562,211,125,125,425,421,1330,196,278]
+```text
+(#10) [177,562,211,125,125,425,421,1330,196,278]
+```
 
 
 
