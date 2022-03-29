@@ -190,8 +190,6 @@ learn.fit_one_cycle(3, 0.03, moms=(0,0,0))
   </tbody>
 </table>
 </div>
-
-
 **Note:** Plain SGD is training slower.
 
 
