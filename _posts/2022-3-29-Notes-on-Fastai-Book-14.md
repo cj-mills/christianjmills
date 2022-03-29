@@ -1142,7 +1142,7 @@ SuggestedLRs(valley=0.002511886414140463)
 ```python
 learn.fit_one_cycle(100, 1e-3)
 ```
-<div style="overflow-x:auto; overflow-y:auto; height:1200px">
+<div style="overflow-x:auto; overflow-y:auto; height:800px">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
