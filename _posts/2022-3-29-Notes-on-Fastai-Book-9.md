@@ -26,6 +26,8 @@ search_exclude: false
 
 
 
+
+
 ```python
 import fastbook
 fastbook.setup_book()
