@@ -18,7 +18,7 @@ search_exclude: false
 * [Disinformation and Language Models](#disinformation-and-language-models)
 * [References](#references)
 
-
+<br>
 
 ```python
 import fastbook
