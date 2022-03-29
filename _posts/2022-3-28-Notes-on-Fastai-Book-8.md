@@ -39,7 +39,7 @@ search_exclude: false
 
 [Probabilistic Matrix Factorization Paper](https://proceedings.neurips.cc/paper/2007/file/d7322ed717dedf1eb4e6e52a37ea7bcd-Paper.pdf)
 
-[Probabilistic Matrix Factorization - Matrix Factorization (Part 1) | Coursera](https://www.coursera.org/lecture/matrix-factorization/probabilistic-matrix-factorization-Eoyiz)
+[Probabilistic Matrix Factorization - Matrix Factorization (Part 1) ](https://www.coursera.org/lecture/matrix-factorization/probabilistic-matrix-factorization-Eoyiz)
 
 ```python
 #hide
