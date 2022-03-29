@@ -1246,16 +1246,6 @@ draw_tree
 ```
 
 ```python
-print_source(draw_tree)
-```
-```text
-def draw_tree(t, df, size=10, ratio=0.6, precision=0, **kwargs):
-    s=export_graphviz(t, out_file=None, feature_names=df.columns, filled=True, rounded=True,
-                      special_characters=True, rotate=False, precision=precision, **kwargs)
-    return graphviz.Source(re.sub('Tree {', f'Tree {{ size={size}; ratio={ratio}', s))
-```
-
-```python
 draw_tree(m, xs, size=10, leaves_parallel=True, precision=2)
 ```
 ![svg](../images/notes-fastai-book/chapter-9/output_88_0.svg)
@@ -2466,7 +2456,6 @@ r_mse(ens_preds,valid_y)
 * can dramatically improve accuracy over using raw categorical variables
 * allows you to get much of the accuracy of a neural network without having to use a neural network at inference time
 * a set of embeddings can be trained once be used across multiple models
-
 
 
 
