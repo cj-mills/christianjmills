@@ -53,6 +53,8 @@ fastbook.setup_book()
 from fastbook import *
 ```
 
+
+
 ## A First Look at the Data
 
 ### MovieLens Dataset
