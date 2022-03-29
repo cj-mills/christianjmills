@@ -355,7 +355,7 @@ df['ProductSize'] = df['ProductSize'].astype('category')
 
 #### pandas.core.categorical.Categorical
 * [Documentation](https://pandas.pydata.org/pandas-docs/version/0.15.2/generated/pandas.core.categorical.Categorical.html)
-* Represents a categorical variable in classic [R](https://en.wikipedia.org/wiki/R_(programming_language) / [S-plus](https://en.wikipedia.org/wiki/S-PLUS) fashion
+* Represents a categorical variable in classic R/ [S-plus](https://en.wikipedia.org/wiki/S-PLUS) fashion
 * Categoricals can only take on only a limited, and usually fixed, number of possible values
 * All values of the Categorical are either in categories or [np.nan](https://numpy.org/doc/stable/reference/constants.html#numpy.NAN)
 
