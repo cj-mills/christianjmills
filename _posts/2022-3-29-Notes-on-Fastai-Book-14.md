@@ -177,7 +177,7 @@ torch.nn.modules.pooling.AdaptiveAvgPool2d
 
 
 * input: $(N, C, H_{in}, W_{in})$ or $(C, H_{in}, W_{in})$
-* output: $(N, C, S_{0}, S_{1})$ or $(C, S_{0}, S_{1})$, where $S=\text{output_size}$
+* output: $(N, C, S_{0}, S_{1})$ or $(C, S_{0}, S_{1})$, where $S=output_size$
 
 
 ```python
