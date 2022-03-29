@@ -13,8 +13,8 @@ search_exclude: false
 
 
 * [Going Deeper into fastai's Layered API](#going-deeper-into-fastai's-layered-api)
-* [TfmdLists and Datasets: Transformed Collections](#tfmdLists-and-datasets:-transformed-collections)
-* [Applying the Mid-Level Data API: SiamesePair](#applying-the-mid-level-data-api:-siamesepair)
+* [TfmdLists and Datasets: Transformed Collections](#tfmdlists-and-datasets-transformed-collections)
+* [Applying the Mid-Level Data API: SiamesePair](#applying-the-mid-level-data-api-siamesepair)
 * [References](#references)
 
 
