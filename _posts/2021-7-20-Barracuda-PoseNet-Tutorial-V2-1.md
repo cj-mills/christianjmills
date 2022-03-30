@@ -8,7 +8,6 @@ categories: [unity,barracuda,tutorial]
 hide: false
 permalink: /:title/
 search_exclude: false
-sticky_rank: 1
 ---
 
 * [Introduction](#introduction)
