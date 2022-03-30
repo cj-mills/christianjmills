@@ -11,6 +11,8 @@ search_exclude: false
 ---
 
 
+
+
 * [Key Advancements](#key-advancements)
 * [Recurrent Architectures](#recurrent-architectures)
 * [The Encoder-Decoder Framework](#the-encoder-decoder-framework)
