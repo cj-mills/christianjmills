@@ -11,7 +11,7 @@ search_exclude: false
 ---
 
 
-* [Catalyst Advancements](#catalyst-advancements)
+* [Key Advancements](#key-advancements)
 * [Recurrent Architectures](#recurrent-architectures)
 * [The Encoder-Decoder Framework](#the-encoder-decoder-framework)
 * [Attention Mechanisms](#attention-mechanisms)
@@ -24,7 +24,7 @@ search_exclude: false
 
 
 
-## Key Advancements
+## Advancements
 
 - [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
     - published in June 2017 by researchers at Google
