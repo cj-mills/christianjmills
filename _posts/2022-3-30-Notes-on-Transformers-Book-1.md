@@ -26,7 +26,7 @@ search_exclude: false
 
 
 
-## Advancements
+## Key Advancements
 
 - [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
     - published in June 2017 by researchers at Google
