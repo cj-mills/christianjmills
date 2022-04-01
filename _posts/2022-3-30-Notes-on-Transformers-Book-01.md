@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My full notes for chapter 1 of Natural Language Processing with Transformers
 categories: [ai, huggingface, nlp, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
