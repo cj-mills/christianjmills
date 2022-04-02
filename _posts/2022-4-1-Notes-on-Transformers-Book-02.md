@@ -5,7 +5,7 @@ toc: false
 comments: true
 description: My full notes for chapter 2 of Natural Language Processing with Transformers
 categories: [ai, huggingface, nlp, notes]
-hide: true
+hide: false
 permalink: /:title/
 search_exclude: false
 ---
@@ -2680,8 +2680,8 @@ df_test.sort_values("loss", ascending=False).head(10)
 </div>
 
 
-
 **Note:**
+
 * The model made some incorrect predictions.
 * Some examples seem mislabeled or do not fit into one of the six emotion classes.
 * Joy, in particular, seems to be mislabeled several times.
