@@ -39,16 +39,6 @@ transformers.__version__, datasets.__version__, accelerate.__version__
 <br>
 
 ```python
-# import pandas as pd
-
-# pd.set_option('max_colwidth',None)
-# pd.set_option('display.max_rows', None)
-# pd.set_option('display.max_columns', None)
-```
-
-<br>
-
-```python
 import ast
 # https://astor.readthedocs.io/en/latest/
 import astor
@@ -118,7 +108,10 @@ def print_source(obj, exclude_doc=True):
   * We can apply encoder-only models to summarization tasks.
       * [Text Summarization with Pretrained Encoders](https://arxiv.org/abs/1908.08345)
 
+
+
 ## The Encoder
+
 * The encoder consists of many encoder layers stacked next to each other.
 * The encoder stack updates the input embeddings to produce representations that encode some contextual information in the sequence.
 * Each encoder layer receives a sequence of embeddings and feeds them through a multi-head self-attention sublayer.
@@ -951,7 +944,10 @@ encoder_classifier(inputs.input_ids)
 
 **Note:** For each example in the batch, we get the unnormalized logits for each class in the output.
 
+
+
 ## The Decoder
+
 * The main difference between the encoder and decoder is that the decoder has two attention sublayers.
 
 ### minGPT
@@ -1018,6 +1014,8 @@ def scaled_dot_product_attention(query, key, value, mask=None):
     weights = F.softmax(scores, dim=-1)
     return weights.bmm(value)
 ```
+
+
 
 ## Meet the Transformers
 
