@@ -128,7 +128,7 @@ def print_source(obj, exclude_doc=True):
 * Self-attention involves computing weights for all hidden states in the same set. 
   * We use the whole sequence to compute a weighted average of each embedding.
 
-* Given a sequence of token embeddings $x_{1},\ldots,x_{n}$, self-attention produces a sequence of new embeddings $ x^{\prime}_{1},\ldots,x^{\prime}_{n} $ where each $x^{\prime}_{i}$ is a linear combination of all the $x_{j}$:
+* Given a sequence of token embeddings $x_{1},\ldots,x_{n}$, self-attention produces a sequence of new embeddings $$x^{\prime}_{1},\ldots,x^{\prime}_{n}$$ where each $$x^{\prime}_{i}$$ is a linear combination of all the $x_{j}$:
 ### $$x^{\prime}_{i} = \sum^{n}_{j=1}{w_{ij}x_{j}}$$
 * The coefficients $w_{ij}$ are called attention weights, and we normalize them to add up to one.
 * Averaging the token embeddings allows us to incorporate context from the entire sequence.
