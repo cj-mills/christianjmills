@@ -292,7 +292,7 @@ urls
      'https://www.dropbox.com/s/ikkqxfdbdec3fuj/test.txt?dl=1']
 ```
 
-
+------
 
 ```python
 # Download each dataset to current directory
@@ -535,6 +535,8 @@ pd.DataFrame(list(emotions_remote.cache_files.items()))
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict)
 * A dictionary (dict of str: datasets.Dataset) with dataset transforms methods (map, filter, etc.)
 
+------
+
 
 ```python
 emotions
@@ -563,6 +565,8 @@ emotions
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset)
 * The base class datasets.Dataset implements a Dataset backed by an Apache Arrow table.
 * Behaves like an ordinary Python array or list.
+
+------
 
 
 ```python
@@ -613,10 +617,15 @@ print(train_ds.features)
     {'text': Value(dtype='string', id=None), 'label': ClassLabel(num_classes=6, names=['sadness', 'joy', 'love', 'anger', 'fear', 'surprise'], names_file=None, id=None)}
 ```
 
+------
+
 #### `ClassLabel`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.ClassLabel)
 * Feature type for integer class labels.
 * This class provides methods to convert integer labels to strings and strings to integer labels. 
+
+------
 
 
 ```python
@@ -626,9 +635,13 @@ datasets.ClassLabel
     datasets.features.features.ClassLabel
 ```
 
+------
 
 #### `Value`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Value)
+
+------
 
 
 ```python
@@ -706,6 +719,8 @@ print_source(datasets.Value, False)
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict.set_format)
 * Set the format for every Dataset object in the dictionary.
 
+------
+
 
 ```python
 print_source(datasets.DatasetDict.set_format, exclude_doc=True)
@@ -724,6 +739,8 @@ print_source(datasets.DatasetDict.set_format, exclude_doc=True)
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset.set_format)
 * Set the [`__getitem__`](https://docs.python.org/3/reference/datamodel.html#object.__getitem__) return format.
     * `None` (Python object), `numpy`, `torch`, `tensorflow`, `pandas`, `arrow`
+
+------
 
 
 ```python
@@ -808,6 +825,8 @@ df.head()
 #### `ClassLabel.int2str`
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.ClassLabel.int2str)
 * Convert an integer label to the corresponding class name string.
+
+------
 
 
 ```python
@@ -894,6 +913,8 @@ df.head()
     * Understand the distribution of the training examples and look for patterns.
 * Datasets with skewed class distribution might require a different treatment regarding the training loss and evaluation metrics.
 
+------
+
 
 ```python
 import matplotlib.pyplot as plt
@@ -930,6 +951,8 @@ plt.rcParams["figure.figsize"] = plt.rcParamsDefault["figure.figsize"]
 * We need to [truncate](https://huggingface.co/docs/transformers/preprocessing#truncation) pieces of text that do not fit in a model's context size, which might remove crucial information.
 * We can approximate the number of tokens per twee for each emotion by looking at the distribution of words per tweet.
 
+------
+
 
 ```python
 # Increase the figure size
@@ -953,6 +976,8 @@ plt.rcParams["figure.figsize"] = plt.rcParamsDefault["figure.figsize"]
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict.reset_format)
 * return format to python objects for all datasets in the dictionary
 * calls `set_format` with the default arguments
+
+------
 
 
 ```python
@@ -1008,6 +1033,8 @@ emotions.reset_format()
 * The model needs to learn linguistic structures like words from the data, making training more expensive. 
 * Most projects do not use character tokenization.
 
+------
+
 
 ```python
 text = "Tokenizing text is a core task of NLP."
@@ -1021,6 +1048,8 @@ print(tokenized_text)
 ### Numericalization
 * Models can only process numbers, so we need to encode tokens as numerical data.
 * A simple encoding method is to convert each unique token to a unique integer.
+
+------
 
 
 ```python
@@ -1047,6 +1076,8 @@ print(input_ids)
 ### One-hot Encoding
 * It is common to encode categorical variables as one-hot vectors, where a single entry has the value 1, and every other entry has the value 0.
 * One-hot encoding can help prevent the model from learning undesired relationships like fictitious ordering between names.
+
+------
 
 
 ```python
@@ -1140,6 +1171,8 @@ import torch.nn.functional as F
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.functional.one_hot.html)
 * Generate one-hot encodings for a tensor with a specified number of classes
 
+------
+
 
 ```python
 len(input_ids), len(token2idx)
@@ -1192,6 +1225,8 @@ print(f"One-hot: {one_hot_encodings[0]}")
     * Words that are not part of the vocabulary are classified as unknown and mapped to a shared token.
     * This approach risks losing potentially important information related to rare words.
 
+------
+
 
 ```python
 tokenized_text = text.split()
@@ -1211,6 +1246,8 @@ print(tokenized_text)
     * GPT-2 uses [Byte Pair Encoding](https://paperswithcode.com/method/bpe).
     * Several multilingual models use [SentencePiece](https://paperswithcode.com/method/sentencepiece) or [Unigram Segmentation](https://paperswithcode.com/method/unigram-segmentation).
 
+------
+
 
 ```python
 from transformers import AutoTokenizer
@@ -1220,6 +1257,8 @@ from transformers import AutoTokenizer
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoTokenizer)
 * Quickly load the tokenizer associated with a pretrained model.
 * AutoTokenizer belongs to a set of [auto classes](https://huggingface.co/docs/transformers/model_doc/auto) that automatically retrieve the model's configuration, pretrained weights, or vocabulary from the name of a checkpoint.
+
+------
 
 
 ```python
@@ -1249,6 +1288,8 @@ type(tokenizer)
 #### `DistilBertTokenizerFast`
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/distilbert#transformers.DistilBertTokenizerFast)
 * Construct a "fast" DistilBERT tokenizer that runs end-to-end tokenization, including punctuation and WordPiece.
+
+------
 
 
 ```python
@@ -1302,6 +1343,8 @@ print(encoded_text)
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/tokenizer#transformers.PreTrainedTokenizerFast.convert_ids_to_tokens)
 * Convert a single index or a sequence of indices in a token or a sequence of tokens, using the vocabulary and added tokens.
 
+------
+
 
 ```python
 print_source(tokenizer.convert_ids_to_tokens)
@@ -1336,6 +1379,8 @@ print(tokens)
 2. All the tokens are lower case.
 3. The words "tokenizing" and "NLP" have been decomposed into subwords since they are rare.
 4. The `##` prefix indicates the preceding string was not whitespace.
+
+------
 
 
 ```python
@@ -1388,6 +1433,8 @@ tokenizer.model_input_names
 ### Tokenizing the Whole Dataset
 * We need to define a processing function to tokenize training examples.
 
+------
+
 
 ```python
 def tokenize(batch):
@@ -1410,6 +1457,8 @@ print(tokenize(emotions["train"][:2]))
 **Note:** 
 1. The zeros have a corresponding `[PAD]` token in the vocabulary.
 2. The attention mask allows the model to ignore padded parts of the input.
+
+------
 
 
 ```python
@@ -1457,6 +1506,8 @@ df.T
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict.map)
 * Apply a function to all the elements in the tables for all datasets in the dictionary.
 
+------
+
 
 ```python
 print_source(datasets.DatasetDict.map)
@@ -1487,6 +1538,8 @@ print_source(datasets.DatasetDict.map)
 #### `Dataset.map`
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset.map)
 * Apply a function to all the examples in the table and update the table.
+
+------
 
 
 ```python
@@ -1536,6 +1589,8 @@ print(emotions_encoded["train"].column_names)
 
 #### Using pretrained models
 
+------
+
 
 ```python
 from transformers import AutoModel
@@ -1544,6 +1599,8 @@ from transformers import AutoModel
 #### `AutoModel.from_pretrained`
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModel.from_pretrained)
 * Instantiate one of the base model classes of the library from a pretrained model.
+
+------
 
 
 ```python
@@ -1710,8 +1767,9 @@ model
     )
 ```
 
-
 #### Extracting the last hidden states
+
+------
 
 
 ```python
@@ -1747,6 +1805,8 @@ print(outputs)
 
 **Note:** The hidden state tensor has the shape `[batch_size, n_tokens, hidden_dim]`.
 
+------
+
 
 ```python
 outputs.last_hidden_state.size()
@@ -1769,6 +1829,8 @@ outputs.last_hidden_state[:,0].size()
 * For classification tasks, it is common to use the hidden state associated with the `[CLS]` token as the input feature.
 * Since the `[CLS]` token appears at the start of each sequence, we can extract it by accessing the associated index of the hidden state tensor.
 
+------
+
 
 ```python
 def extract_hidden_states(batch):
@@ -1784,6 +1846,8 @@ def extract_hidden_states(batch):
 ```
 
 **Note:** The `map()` method requires the processing function to return Python or NumPy objects.
+
+------
 
 
 ```python
@@ -1808,6 +1872,8 @@ emotions_hidden["train"].column_names
 
 #### Creating a feature matrix
 * We can use the hidden states as input features and the labels as targets.
+
+------
 
 
 ```python
@@ -1836,8 +1902,9 @@ X_train[0].size, y_train[0].size
     (768, 1)
 ```
 
-
 #### Visualizing the training set
+
+------
 
 
 ```python
@@ -1854,6 +1921,8 @@ from sklearn.preprocessing import MinMaxScaler
 #### Scit-Kit Learn MinMaxScaler
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
 * Transform features by scaling each to a  given range.
+
+------
 
 
 ```python
@@ -1919,6 +1988,8 @@ df_emb.head()
 * [Documentation](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.hexbin.html)
 * Make a 2D hexagonal binning plot of points x, y.
 
+------
+
 
 ```python
 fig, axes = plt.subplots(2, 3, figsize=(14,10))
@@ -1951,6 +2022,8 @@ plt.show()
 * We can use the hidden states to train a simple logistic regression model.
 * This type of model is trains quickly and does not require a GPU.
 
+------
+
 
 ```python
 from sklearn.linear_model import LogisticRegression
@@ -1959,6 +2032,8 @@ from sklearn.linear_model import LogisticRegression
 #### `sklearn.linear_model.LogisticRegression`
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
 * Logistic Regression classifier
+
+------
 
 
 ```python
@@ -1992,6 +2067,8 @@ from sklearn.dummy import DummyClassifier
 * A DummyClassifier makes predictions using a predefined strategy and ignores the input features.
 * The classifier serves as a simple baseline to compare against other more complex classifiers.
 
+------
+
 
 ```python
 # Set the DummyClassifier to always select the most frequent class
@@ -2003,8 +2080,9 @@ dummy_clf.score(X_valid, y_valid)
     0.352
 ```
 
-
 **Note:** The simple logistic regression classifier performs significantly better than a model that always selects the most frequent class.
+
+------
 
 
 ```python
@@ -2018,6 +2096,8 @@ from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 #### `sklearn.metrics.confusion_matrix`
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html)
 * Compute confusion matrix to evaluate the accuracy of a classification.
+
+------
 
 
 ```python
@@ -2046,6 +2126,8 @@ plot_confusion_matrix(y_preds, y_valid, labels)
 
 #### Loading a pretrained model
 
+------
+
 
 ```python
 from transformers import AutoModelForSequenceClassification
@@ -2054,6 +2136,8 @@ from transformers import AutoModelForSequenceClassification
 #### `AutoModelForSequenceClassification.from_pretrained`
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModelForSequenceClassification.from_pretrained)
 * Instantiate one of the model classes of the library (with a sequence classification head) from a pretrained model.
+
+------
 
 
 ```python
@@ -2065,6 +2149,8 @@ model = (AutoModelForSequenceClassification
 ```
 
 **Note:** The classifier head is randomly initialized.
+
+------
 
 
 ```python
@@ -2078,6 +2164,8 @@ transformers.models.distilbert.modeling_distilbert.DistilBertForSequenceClassifi
 #### ` DistilBertForSequenceClassification`
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/distilbert#transformers.DistilBertForSequenceClassification)
 * DistilBert Model transformer with a sequence classification head on top
+
+------
 
 
 ```python
@@ -2107,6 +2195,8 @@ list(model.named_children())[-3:]
 * We need to define a function to compute metrics for the trainer so we can monitor performance during training.
 * The function receives an EvalPrediction object containing predictions and label_ids attributes and returns a dictionary that maps each metric's name to its value.
 
+------
+
 
 ```python
 from sklearn.metrics import accuracy_score, f1_score
@@ -2120,6 +2210,8 @@ from sklearn.metrics import accuracy_score, f1_score
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html)
 * Compute the classification accuracy score.
 
+------
+
 
 ```python
 def compute_metrics(pred):
@@ -2132,6 +2224,8 @@ def compute_metrics(pred):
 
 #### Training the model
 * We can use the [Hugging Face Hub API](https://huggingface.co/docs/huggingface_hub/index) to push our fine-tuned model to our account on the Hub and share it with the community.
+
+------
 
 
 ```python
@@ -2207,8 +2301,9 @@ notebook_login()
 !git config --global credential.helper store
 ```
 
-
 **Note:** The equivalent terminal command is `huggingface-cli login`.
+
+------
 
 
 ```python
@@ -2218,6 +2313,8 @@ from transformers import TrainingArguments
 #### `TrainingArguments`
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/trainer#transformers.TrainingArguments)
 * The TrainingArguments class provides fine-grained control over the arguments related to the training loop.
+
+------
 
 
 ```python
@@ -2397,8 +2494,6 @@ pd.DataFrame(inspect.signature(TrainingArguments).parameters).T
   </tbody>
 </table>
 </div>
-
-
 ------
 
 ```python
@@ -2438,6 +2533,8 @@ from transformers import Trainer
 
 **Note:** Install [Git-LFS](https://git-lfs.github.com/) before running the following code cell.
 
+------
+
 
 ```python
 trainer = Trainer(model=model, args=training_args, 
@@ -2447,8 +2544,9 @@ trainer = Trainer(model=model, args=training_args,
                   tokenizer=tokenizer)
 ```
 
-
 **Note:** Had to add the following [workaround](https://github.com/nlp-with-transformers/notebooks/issues/31#issuecomment-1073017664)
+
+------
 
 
 ```python
@@ -2502,6 +2600,8 @@ preds_output = trainer.predict(emotions_encoded["validation"])
 
 **Note:** The predict method returns a PredictionOutput object, which contains arrays of predictions and label_ids, along with the user-defined metrics.
 
+------
+
 
 ```python
 type(preds_output)
@@ -2524,6 +2624,8 @@ preds_output.metrics
 
 
 **Note:** The fine-tuned model performs significantly better than the feature-based logistic regression classifier.
+
+------
 
 
 ```python
@@ -2549,6 +2651,8 @@ plot_confusion_matrix(y_preds, y_valid, labels)
 * Inspecting the model's weakest predictions can help identify quirks of the dataset.
     * Cleaning the data or injecting similar examples can make the model more robust.
 * We can significantly improve model performance by refining the dataset without obtaining more data or using a larger model.
+
+------
 
 
 ```python
@@ -2696,6 +2800,8 @@ df_test.sort_values("loss", ascending=False).head(10)
 * Some examples seem mislabeled or do not fit into one of the six emotion classes.
 * Joy, in particular, seems to be mislabeled several times.
 
+------
+
 
 ```python
 df_test.sort_values("loss", ascending=True).head(10)
@@ -2795,6 +2901,8 @@ df_test.sort_values("loss", ascending=True).head(10)
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/trainer#transformers.Trainer.push_to_hub)
 * Upload the trainer model and tokenizer to the Hugging Face Model Hub.
 
+------
+
 
 ```python
 trainer.push_to_hub(commit_message="Training completed!")
@@ -2806,6 +2914,8 @@ trainer.push_to_hub(commit_message="Training completed!")
 
 #### Inference
 * We can now perform inference using the fine-tuned model from our Hub repository.
+
+------
 
 
 ```python
