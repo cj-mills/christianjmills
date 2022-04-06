@@ -1277,12 +1277,15 @@ tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 
 **Note:** Hugging Face automatically caches the parameters of the pretrained tokenizer after the first download.
 
+------
 
 ```python
 type(tokenizer)
 ```
-```text transformers.models.distilbert.tokenization_distilbert_fast.DistilBertTokenizerFast
+```text
+transformers.models.distilbert.tokenization_distilbert_fast.DistilBertTokenizerFast
 ```
+
 
 
 #### `DistilBertTokenizerFast`
