@@ -147,7 +147,7 @@ def print_source(obj, exclude_doc=True):
    * For a sequence with $n$ input tokens, there is a corresponding $n x n$ matrix of attention scores.
 3. Multiply the attention scores by a scaling factor to normalize their variance and then apply the softmax function to ensure all column values sum to one.
     * The resulting $n x n$ matrix contains all the attention weights.
-4. Matrix multiply the attention weights by the value vector $v_{1},\ldots,v_{n}$ to obtain an updated representation for embedding $x^{\prime}_{i} = \sum{w_{ji}v_{j}}$.
+4. Matrix multiply the attention weights by the value vector $v_{1},\ldots,v_{n}$ to obtain an updated representation for embedding $$x^{\prime}_{i} = \sum{w_{ji}v_{j}}$$.
 
 #### BertViz
 * [GitHub Repository](https://github.com/jessevig/bertviz)
