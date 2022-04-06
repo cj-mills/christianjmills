@@ -20,7 +20,7 @@ search_exclude: false
 * [Conclusion](#conclusion)
 * [References](#references)
 
-<br>
+------
 
 ```python
 import transformers
@@ -40,7 +40,7 @@ transformers.__version__
     '4.11.3'
 ```
 
-<br>
+------
 
 ```python
 pd.set_option('max_colwidth',None)
@@ -48,7 +48,7 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 ```
 
-<br>
+------
 
 
 ```python
@@ -120,7 +120,7 @@ def print_source(obj, exclude_doc=True):
 from datasets import list_datasets
 ```
 
-<br>
+------
 
 
 ```python
@@ -136,7 +136,7 @@ print_source(list_datasets, exclude_doc=True)
         return datasets
 ```
 
-<br>
+------
 
 ```python
 # Get a list of all the datasets scripts available on the Hugging Face Hub
@@ -149,7 +149,7 @@ print(f"The first 10 are: {all_datasets[:10]}")
     The first 10 are: ['acronym_identification', 'ade_corpus_v2', 'adversarial_qa', 'aeslc', 'afrikaans_ner_corpus', 'ag_news', 'ai2_arc', 'air_dialogue', 'ajgt_twitter_ar', 'allegro_reviews']
 ```
 
-<br>
+------
 
 
 
@@ -173,7 +173,7 @@ from datasets import load_dataset
 |    Text     |     `text`     | `load_dataset("text", data_files="my_file.txt")`   |
 |    JSON     |     `json`     | `load_dataset("json", data_files="my_file.jsonl")` |
 
-<br>
+------
 
 
 ```python
@@ -241,7 +241,7 @@ print_source(load_dataset)
 # Download dataset from Hub
 emotions = load_dataset("emotion")
 ```
-<br>
+------
 
 
 ```python
@@ -364,7 +364,7 @@ for url in urls:
     2022-04-01 11:59:29 (2.95 MB/s) - ‘test.txt.8’ saved [206760/206760]
 ```
 
-<br>
+------
 
 ```python
 !head -5 train.txt
@@ -377,7 +377,7 @@ for url in urls:
     i am feeling grouchy;anger
 ```
 
-<br>
+------
 
 
 ```python
@@ -390,12 +390,12 @@ data_files
     {'train': 'train.txt', 'validation': 'val.txt', 'test': 'test.txt'}
 ```
 
-<br>
+------
 
 ```python
 emotions_local = load_dataset("csv", data_files=data_files, sep=";", names=["text", "label"])
 ```
-<br>
+------
 
 
 ```python
@@ -418,7 +418,7 @@ emotions_local
     })
 ```
 
-<br>
+------
 
 ```python
 pd.DataFrame(list(emotions_local.cache_files.items()))
@@ -467,12 +467,12 @@ data_files
      'test': 'https://www.dropbox.com/s/ikkqxfdbdec3fuj/test.txt?dl=1'}
 ```
 
-<br>
+------
 
 ```python
 emotions_remote = load_dataset("csv", data_files=data_files, sep=";", names=["text", "label"])
 ```
-<br>
+------
 
 
 ```python
@@ -495,7 +495,7 @@ emotions_remote
     })
 ```
 
-<br>
+------
 
 ```python
 pd.DataFrame(list(emotions_remote.cache_files.items()))
@@ -576,7 +576,7 @@ train_ds
     })
 ```
 
-<br>
+------
 
 ```python
 len(train_ds)
@@ -585,7 +585,7 @@ len(train_ds)
     16000
 ```
 
-<br>
+------
 
 ```python
 train_ds[0]
@@ -594,7 +594,7 @@ train_ds[0]
     {'text': 'i didnt feel humiliated', 'label': 0}
 ```
 
-<br>
+------
 
 ```python
 train_ds.column_names
@@ -603,7 +603,7 @@ train_ds.column_names
     ['text', 'label']
 ```
 
-<br>
+------
 
 ```python
 # Check the data types used for text and labels.
@@ -638,7 +638,7 @@ datasets.Value
     datasets.features.features.Value
 ```
 
-<br>
+------
 
 ```python
 print_source(datasets.Value, False)
@@ -757,7 +757,7 @@ print_source(datasets.Dataset.set_format, exclude_doc=True)
             None else str(columns), 'do' if output_all_columns else "don't")
 ```
 
-<br>
+------
 
 ```python
 emotions.set_format(type="pandas")
@@ -831,7 +831,7 @@ print_source(datasets.ClassLabel.int2str)
         return output if return_list else output[0]
 ```
 
-<br>
+------
 
 ```python
 # Get the corresponding emotion name
@@ -962,7 +962,7 @@ datasets.DatasetDict.reset_format
     <function datasets.dataset_dict.DatasetDict.reset_format(self)>
 ```
 
-<br>
+------
 
 ```python
 print_source(datasets.DatasetDict.reset_format)
@@ -974,7 +974,7 @@ print_source(datasets.DatasetDict.reset_format)
             dataset.set_format()
 ```
 
-<br>
+------
 
 ```python
 print_source(datasets.Dataset.reset_format)
@@ -984,7 +984,7 @@ print_source(datasets.Dataset.reset_format)
         self.set_format()
 ```
 
-<br>
+------
 
 ```python
 emotions.reset_format()
@@ -1032,7 +1032,7 @@ print(token2idx)
     {' ': 0, '.': 1, 'L': 2, 'N': 3, 'P': 4, 'T': 5, 'a': 6, 'c': 7, 'e': 8, 'f': 9, 'g': 10, 'i': 11, 'k': 12, 'n': 13, 'o': 14, 'r': 15, 's': 16, 't': 17, 'x': 18, 'z': 19}
 ```
 
-<br>
+------
 
 
 ```python
@@ -1148,7 +1148,7 @@ len(input_ids), len(token2idx)
     (38, 20)
 ```
 
-<br>
+------
 
 ```python
 # Convert input_ids list to a tensor
@@ -1229,7 +1229,7 @@ AutoTokenizer
     transformers.models.auto.tokenization_auto.AutoTokenizer
 ```
 
-<br>
+------
 
 ```python
 model_ckpt = "distilbert-base-uncased"
@@ -1258,7 +1258,7 @@ tokenizer
     PreTrainedTokenizerFast(name_or_path='distilbert-base-uncased', vocab_size=30522, model_max_len=512, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK]', 'sep_token': '[SEP]', 'pad_token': '[PAD]', 'cls_token': '[CLS]', 'mask_token': '[MASK]'})
 ```
 
-<br>
+------
 
 ```python
 tokenizer.init_kwargs
@@ -1277,7 +1277,7 @@ tokenizer.init_kwargs
      'name_or_path': 'distilbert-base-uncased'}
 ```
 
-<br>
+------
 
 ```python
 print(text)
@@ -1286,7 +1286,7 @@ print(text)
     Tokenizing text is a core task of NLP.
 ```
 
-<br>
+------
 
 
 ```python
@@ -1320,7 +1320,7 @@ print_source(tokenizer.convert_ids_to_tokens)
         return tokens
 ```
 
-<br>
+------
 
 ```python
 # Convert integer ids to tokens
@@ -1346,7 +1346,7 @@ print(tokenizer.convert_tokens_to_string(tokens))
     [CLS] tokenizing text is a core task of nlp. [SEP]
 ```
 
-<br>
+------
 
 
 ```python
@@ -1357,7 +1357,7 @@ print_source(tokenizer.convert_tokens_to_string)
         return self.backend_tokenizer.decoder.decode(tokens)
 ```
 
-<br>
+------
 
 ```python
 tokenizer.vocab_size
@@ -1366,7 +1366,7 @@ tokenizer.vocab_size
     30522
 ```
 
-<br>
+------
 
 ```python
 tokenizer.model_max_length
@@ -1375,7 +1375,7 @@ tokenizer.model_max_length
     512
 ```
 
-<br>
+------
 
 ```python
 tokenizer.model_input_names
@@ -1583,7 +1583,7 @@ print_source(AutoModel.from_pretrained)
             )
 ```
 
-<br>
+------
 
 ```python
 model_ckpt = "distilbert-base-uncased"
@@ -1593,7 +1593,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = AutoModel.from_pretrained(model_ckpt).to(device)
 ```
 
-<br>
+------
 
 
 ```python
@@ -1724,7 +1724,7 @@ print(f"Input tensor shape: {inputs['input_ids'].size()}")
     Input tensor shape: torch.Size([1, 6])
 ```
 
-<br>
+------
 
 
 ```python
@@ -1755,7 +1755,7 @@ outputs.last_hidden_state.size()
     torch.Size([1, 6, 768])
 ```
 
-<br>
+------
 
 ```python
 outputs.last_hidden_state[:,0].size()
@@ -1795,7 +1795,7 @@ emotions_encoded.set_format("torch", columns=["input_ids", "attention_mask", "la
 # Extract the hidden states for every token in the dataset
 emotions_hidden = emotions_encoded.map(extract_hidden_states, batched=True)
 ```
-<br>
+------
 
 
 ```python
@@ -1970,7 +1970,7 @@ lr_clf.fit(X_train, y_train)
     LogisticRegression(max_iter=3000)
 ```
 
-<br>
+------
 
 ```python
 lr_clf.score(X_valid, y_valid)
@@ -2090,7 +2090,7 @@ for child in model.named_children(): print(child[0])
     dropout
 ```
 
-<br>
+------
 
 
 ```python
@@ -2138,7 +2138,7 @@ def compute_metrics(pred):
 from huggingface_hub import notebook_login
 ```
 
-<br>
+------
 
 
 ```python
@@ -2148,7 +2148,7 @@ inspect.getdoc(notebook_login)
     'Displays a widget to login to the HF website and store the token.'
 ```
 
-<br>
+------
 
 ```python
 print_source(notebook_login)
@@ -2197,7 +2197,7 @@ print_source(notebook_login)
         switch_button.on_click(switch_event)
 ```
 
-<br>
+------
 
 ```python
 notebook_login()
@@ -2399,7 +2399,7 @@ pd.DataFrame(inspect.signature(TrainingArguments).parameters).T
 </div>
 
 
-<br>
+------
 
 ```python
 batch_size = 64
@@ -2426,7 +2426,7 @@ training_args.output_dir
     'distilbert-base-uncased-finetuned-emotion'
 ```
 
-<br>
+------
 
 ```python
 from transformers import Trainer
@@ -2456,7 +2456,7 @@ old_collator = trainer.data_collator
 trainer.data_collator = lambda data: dict(old_collator(data))
 ```
 
-<br>
+------
 
 
 ```python
@@ -2491,7 +2491,7 @@ trainer.train();
         </tbody>
     </table>
 </div>
-<br>
+------
 
 
 ```python
@@ -2508,7 +2508,7 @@ type(preds_output)
 ```
     transformers.trainer_utils.PredictionOutput
 
-<br>
+------
 
 
 ```python
@@ -2574,7 +2574,7 @@ def forward_pass_with_label(batch):
             "predicted_label": pred_label.cpu().numpy()}
 ```
 
-<br>
+------
 
 
 ```python
@@ -2584,7 +2584,7 @@ emotions_encoded.set_format("torch", columns=["input_ids", "attention_mask", "la
 emotions_encoded["validation"] = emotions_encoded["validation"].map(
     forward_pass_with_label, batched=True, batch_size=16)
 ```
-<br>
+------
 
 ```python
 # Create a DataFrame with the texts, losses, and predicted/true labels
@@ -2596,7 +2596,7 @@ df_test["predicted_label"] = (df_test["predicted_label"]
                               .apply(label_int2str))
 ```
 
-<br>
+------
 
 
 ```python
@@ -2819,7 +2819,7 @@ model_id = "cj-mills/distilbert-base-uncased-finetuned-emotion"
 classifier = pipeline("text-classification", model=model_id)
 ```
 
-<br>
+------
 
 ```python
 custom_tweet = "I saw a movie today and it was really good."
