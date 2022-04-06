@@ -19,7 +19,7 @@ search_exclude: false
 * [Meet the Transformers](#meet-the-transformers)
 * [References](#references)
 
-<br>
+------
 
 ```python
 import transformers
@@ -36,7 +36,7 @@ transformers.__version__, datasets.__version__, accelerate.__version__
     ('4.11.3', '1.16.1', '0.5.1')
 ```
 
-<br>
+------
 
 ```python
 import ast
@@ -155,7 +155,7 @@ def print_source(obj, exclude_doc=True):
 
 **Note:** Need to add the [D3.js](https://d3js.org/) and [jQuery](https://jquery.com/) libraries to use [`bertviz`](https://github.com/jessevig/bertviz) in JupyterLab.
 
-<br>
+------
 
 
 ```javascript
@@ -168,7 +168,7 @@ require.config({
 });
 ```
 
-<br>
+------
 
 ```python
 from transformers import AutoTokenizer
@@ -180,7 +180,7 @@ from bertviz.neuron_view import show
 * [Documentation](https://github.com/jessevig/bertviz#neuron-view-1)
 * Trace the computation of the weights to show how the query and key vectors combine to produce the final weight.
 
-<br>
+------
 
 ```python
 # Select a BERT model checkpoint
@@ -191,7 +191,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 model = BertModel.from_pretrained(model_ckpt)
 ```
 
-<br>
+------
 
 ```python
 text = "time flies like an arrow"
@@ -205,7 +205,7 @@ show(model, "bert", tokenizer, text, display_mode="light", layer=0, head=8)
 #### neuron_view.show
 * [Source Code](https://github.com/jessevig/bertviz/blob/24ed45268a0c616d9d7e342bf3c460e4aaac0035/bertviz/neuron_view.py#L37)
 
-<br>
+------
 
 ```python
 print_source(show, False)
@@ -265,7 +265,7 @@ print_source(show, False)
 * [Source Code](https://github.com/jessevig/bertviz/blob/24ed45268a0c616d9d7e342bf3c460e4aaac0035/bertviz/neuron_view.py#L101)
 * Compute representation of attention to pass to the d3 visualization
 
-<br>
+------
 
 ```python
 from transformers import AutoTokenizer
@@ -277,7 +277,7 @@ text = "time flies like an arrow"
 tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 ```
 
-<br>
+------
 
 ```python
 # Get encoded inputs as PyTorch tensors and exclude special tokens
@@ -288,7 +288,7 @@ inputs.input_ids
     tensor([[ 2051, 10029,  2066,  2019,  8612]])
 ```
 
-<br>
+------
 
 ```python
 from transformers import AutoConfig
@@ -346,7 +346,7 @@ from torch import nn
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html)
 * Create a simple lookup table that stores embeddings of a fixed dictionary size.
 
-<br>
+------
 
 ```python
 # Initialize dense embeddings where each entry contains a nonzero value
@@ -363,7 +363,7 @@ token_emb
     * Words that are spelled the same but have different meanings have indistinguishable representations.
 * The subsequent attention layers provide the missing context.
 
-<br>
+------
 
 
 ```python
@@ -375,7 +375,7 @@ inputs_embeds.size()
     torch.Size([1, 5, 768])
 ```
 
-<br>
+------
 
 ```python
 import torch
@@ -386,7 +386,7 @@ from math import sqrt
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.bmm.html?highlight=torch%20bmm#torch.bmm)
 * Perform a batched matrix multiplication.
 
-<br>
+------
 
 ```python
 # Step 1: Initialize the query, key, and value vectors using the input embeddings
@@ -406,7 +406,7 @@ scores.size()
 * We now have a $5x5$ matrix of attention scores per sample in the batch.
 * We ordinarily generate the query, key, and value vectors by applying independent weight matrices $W_{Q,K,V}$ to the embeddings.
 
-<br>
+------
 
 ```python
 import torch.nn.functional as F
@@ -419,7 +419,7 @@ import torch.nn.functional as F
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html#torch.nn.functional.softmax)
 * Apply the softmax function to a tensor.
 
-<br>
+------
 
 ```python
 # Step 3.2: Apply the softmax function to the scaled dot product
@@ -430,7 +430,7 @@ weights.sum(dim=-1)
     tensor([[1., 1., 1., 1., 1.]], grad_fn=<SumBackward1>)
 ```
 
-<br>
+------
 
 ```python
 weights[0][0]
@@ -440,7 +440,7 @@ weights[0][0]
            grad_fn=<SelectBackward0>)
 ```
 
-<br>
+------
 
 ```python
 # Step 4: Matrix multiply the attention weights by the value vector
@@ -451,7 +451,7 @@ attn_outputs.shape
     torch.Size([1, 5, 768])
 ```
 
-<br>
+------
 
 ```python
 def scaled_dot_product_attention(query, key, value):
@@ -479,7 +479,7 @@ def scaled_dot_product_attention(query, key, value):
 * Having several heads allows the model to focus on several aspects at once.
 * The model learns what aspects of similarity to focus on from the data, similar to the convolutional filters in computer vision models.
 
-<br>
+------
 
 
 ```python
@@ -509,7 +509,7 @@ class AttentionHead(nn.Module):
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html?highlight=modulelist#torch.nn.ModuleList)
 * Store properly registered Modules in an indexable list.
 
-<br>
+------
 
 ```python
 class MultiHeadAttention(nn.Module):
@@ -535,7 +535,7 @@ class MultiHeadAttention(nn.Module):
         return x
 ```
 
-<br>
+------
 
 ```python
 # Initialize a multi-head attention layer using the BertConfig
@@ -548,7 +548,7 @@ attn_output.size()
     torch.Size([1, 5, 768])
 ```
 
-<br>
+------
 
 ```python
 from bertviz import head_view
@@ -558,14 +558,14 @@ from transformers import AutoModel
 #### head_view
 * [Documentation](https://github.com/jessevig/bertviz#head-and-model-views)
 
-<br>
+------
 
 ```python
 # Initialize a BERT model using the pretrained model checkpoint
 model = AutoModel.from_pretrained(model_ckpt, output_attentions=True)
 ```
 
-<br>
+------
 
 ```python
 sentence_a = "time flies like an arrow"
@@ -574,7 +574,7 @@ sentence_b = "fruit flies like a banana"
 viz_inputs = tokenizer(sentence_a, sentence_b, return_tensors='pt')
 ```
 
-<br>
+------
 
 ```python
 for k,v in viz_inputs.items(): print(f"{k}: {v}")
@@ -586,7 +586,7 @@ for k,v in viz_inputs.items(): print(f"{k}: {v}")
     attention_mask: tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 ```
 
-<br>
+------
 
 ```python
 viz_inputs.input_ids.shape
@@ -595,7 +595,7 @@ viz_inputs.input_ids.shape
     torch.Size([1, 13])
 ```
 
-<br>
+------
 
 ```python
 attention = model(**viz_inputs).attentions
@@ -616,7 +616,7 @@ sentence_b_start
     tensor([7])
 ```
 
-<br>
+------
 
 ```python
 tokens = tokenizer.convert_ids_to_tokens(viz_inputs.input_ids[0])
@@ -638,7 +638,7 @@ tokens
      '[SEP]']
 ```
 
-<br>
+------
 
 ```python
 head_view(attention, tokens, sentence_b_start, heads=[8])
@@ -660,7 +660,7 @@ head_view(attention, tokens, sentence_b_start, heads=[8])
 * The predominant theory is most of the capacity and memorization happens in the feed-forward layer.
     * Most choose to scale the feed-forward layer when scaling a model.
 
-<br>
+------
 
 ```python
 config.hidden_size, config.intermediate_size
@@ -669,7 +669,7 @@ config.hidden_size, config.intermediate_size
     (768, 3072)
 ```
 
-<br>
+------
 
 ```python
 config.hidden_size*4
@@ -678,7 +678,7 @@ config.hidden_size*4
     3072
 ```
 
-<br>
+------
 
 ```python
 class FeedForward(nn.Module):
@@ -700,7 +700,7 @@ class FeedForward(nn.Module):
         return x
 ```
 
-<br>
+------
 
 ```python
 feed_forward = FeedForward(config)
@@ -725,7 +725,7 @@ ff_outputs.size()
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html?highlight=layer%20normalization)
 * Apply Layer Normalization over a mini-batch of inputs
 
-<br>
+------
 
 ```python
 inputs_embeds[0][0][0], inputs_embeds.shape
@@ -734,7 +734,7 @@ inputs_embeds[0][0][0], inputs_embeds.shape
     (tensor(0.0497, grad_fn=<SelectBackward0>), torch.Size([1, 5, 768]))
 ```
 
-<br>
+------
 
 ```python
 layer_norm = nn.LayerNorm(config.hidden_size)
@@ -746,7 +746,7 @@ layer_norm_embeds[0][0][0], layer_norm_embeds.shape
     (tensor(0.0352, grad_fn=<SelectBackward0>), torch.Size([1, 5, 768]))
 ```
 
-<br>
+------
 
 ```python
 class TransformerEncoderLayer(nn.Module):
@@ -770,7 +770,7 @@ class TransformerEncoderLayer(nn.Module):
         return x
 ```
 
-<br>
+------
 
 ```python
 encoder_layer = TransformerEncoderLayer(config)
@@ -802,7 +802,7 @@ inputs_embeds.shape, encoder_layer(inputs_embeds).size()
 * Combine the idea of absolute and relative positional representations.
 * Rotary position embeddings achieve excellent results on many tasks.
 
-<br>
+------
 
 ```python
 class Embeddings(nn.Module):
@@ -861,7 +861,7 @@ torch.arange(5, dtype=torch.long).unsqueeze(0)
     tensor([[0, 1, 2, 3, 4]])
 ```
 
-<br>
+------
 
 ```python
 embedding_layer = Embeddings(config)
@@ -871,7 +871,7 @@ embedding_layer(inputs.input_ids).size()
     torch.Size([1, 5, 768])
 ```
 
-<br>
+------
 
 ```python
 class TransformerEncoder(nn.Module):
@@ -891,7 +891,7 @@ class TransformerEncoder(nn.Module):
         return x
 ```
 
-<br>
+------
 
 ```python
 encoder = TransformerEncoder(config)
@@ -906,7 +906,7 @@ encoder(inputs.input_ids).size()
 * Transformer models typically consist of a task-independent body and a task-dependent head.
 * We can attach a dropout and linear layer to the pretrained body to make a classification prediction.
 
-<br>
+------
 
 ```python
 class TransformerForSequenceClassification(nn.Module):
@@ -926,7 +926,7 @@ class TransformerForSequenceClassification(nn.Module):
         return x
 ```
 
-<br>
+------
 
 ```python
 config.num_labels = 3
@@ -937,7 +937,7 @@ encoder_classifier(inputs.input_ids).size()
     torch.Size([1, 3])
 ```
 
-<br>
+------
 
 ```python
 encoder_classifier(inputs.input_ids)
@@ -987,7 +987,7 @@ mask[0]
             [1., 1., 1., 1., 1.]])
 ```
 
-<br>
+------
 
 ```python
 # Replace the values above the diagonal with negative infinity
@@ -1004,7 +1004,7 @@ scores.masked_fill(mask == 0, -float("inf"))
 
 **Note:** Setting the upper values to negative infinity guarantees the attention weights are all zero after applying softmax.
 
-<br>
+------
 
 ```python
 def scaled_dot_product_attention(query, key, value, mask=None):
