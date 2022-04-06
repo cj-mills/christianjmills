@@ -157,6 +157,7 @@ def print_source(obj, exclude_doc=True):
 
 <br>
 
+
 ```javascript
 %%javascript
 require.config({
@@ -270,8 +271,6 @@ print_source(show, False)
 from transformers import AutoTokenizer
 ```
 
-<br>
-
 ```python
 model_ckpt = "bert-base-uncased"
 text = "time flies like an arrow"
@@ -303,7 +302,7 @@ from transformers import AutoConfig
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/bert#transformers.BertConfig)
 * This is the configuration class to store the configuration of a BERT model.
 
-<br>
+------
 
 ```python
 config = AutoConfig.from_pretrained(model_ckpt)
@@ -337,7 +336,7 @@ config
 
 ```
 
-<br>
+------
 
 ```python
 from torch import nn
@@ -363,6 +362,8 @@ token_emb
 * The embeddings at this point are independent of their context.
     * Words that are spelled the same but have different meanings have indistinguishable representations.
 * The subsequent attention layers provide the missing context.
+
+<br>
 
 
 ```python
@@ -411,9 +412,10 @@ scores.size()
 import torch.nn.functional as F
 ```
 
-<br>
+
 
 #### functional.softmax
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html#torch.nn.functional.softmax)
 * Apply the softmax function to a tensor.
 
@@ -476,6 +478,8 @@ def scaled_dot_product_attention(query, key, value):
 * The softmax of one attention head tends to focus on one aspect of similarity.
 * Having several heads allows the model to focus on several aspects at once.
 * The model learns what aspects of similarity to focus on from the data, similar to the convolutional filters in computer vision models.
+
+<br>
 
 
 ```python
