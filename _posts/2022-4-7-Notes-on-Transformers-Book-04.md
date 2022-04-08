@@ -106,6 +106,8 @@ def print_source(obj, exclude_doc=True):
 * [Cross-lingual Name Tagging and Linking for 282 Languages](https://aclanthology.org/P17-1178/)
 * [Hugging Face Dataset Card](https://huggingface.co/datasets/wikiann)
 
+------
+
 
 ```python
 import pandas as pd
@@ -181,6 +183,8 @@ from datasets import get_dataset_config_names
 #### `get_dataset_config_names`
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/loading_methods#datasets.get_dataset_config_names)
 * Get the list of available configuration names for a particular dataset.
+
+------
 
 
 ```python
@@ -464,7 +468,9 @@ fracs = [0.629, 0.229, 0.084, 0.059]
 
 #### `Dataset.select`
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset.select)
-* Create a new dataset with rows selected following the list/array of indices.
+* Create a new dataset with rows selected following the list/array of indices.\
+
+------
 
 
 ```python
@@ -692,7 +698,7 @@ tags.names
 
 ------
 
-**Map the class IDs to the corresponding tag names.**
+**Map the class IDs to the corresponding tag names**
 
 ```python
 def create_tag_names(batch):
@@ -796,7 +802,8 @@ pd.DataFrame(panx_de["train"][0]).reindex(columns=["tokens", "ner_tags_str","ner
 from collections import Counter
 ```
 
-**Calculate the frequencies of each entity across each split.**
+**Calculate the frequencies of each entity across each split**
+
 ```python
 split2freqs = defaultdict(Counter)
 for split, dataset in panx_de.items():
@@ -878,7 +885,8 @@ bert_tokenizer = AutoTokenizer.from_pretrained(bert_model_name)
 xlmr_tokenizer = AutoTokenizer.from_pretrained(xlmr_model_name)
 ```
 
-**Compare the WordPiece and SentencePiece tokenizers.**
+**Compare the WordPiece and SentencePiece tokenizers**
+
 ```python
 text = "Jack Sparrow loves New York!"
 bert_tokens = bert_tokenizer(text).tokens()
@@ -1728,7 +1736,7 @@ pd.DataFrame([tokens, word_ids], index=["Tokens", "Word IDs"])
 
 ------
 
-**Set -100 as the label for the start and end tokens and masked subwords.**
+**Set -100 as the label for the start and end tokens and masked subwords**
 
 * The PyTorch cross-entropy loss class has an attribute called `ignore_index` whose value is -100.
 ```python
@@ -1921,7 +1929,7 @@ def tokenize_and_align_labels(examples):
 
 ------
 
-**Define a mapping function to encode the dataset.**
+**Define a mapping function to encode the dataset**
 
 ```python
 def encode_panx_dataset(corpus):
@@ -2121,7 +2129,7 @@ def compute_metrics(eval_pred):
 
 ------
 
-**Define a collator to pad each input sequence to the highest sequence length in a batch.**
+**Define a collator to pad each input sequence to the highest sequence length in a batch**
 
 ```python
 from transformers import DataCollatorForTokenClassification
@@ -2176,6 +2184,7 @@ DataCollatorForTokenClassification.label_pad_token_id
 * We need to pad the labels as they are also sequences.
 * The collator pads label sequences with the value -100, so the PyTorch loss function ignores them.
 
+------
 
 ```python
 data_collator = DataCollatorForTokenClassification(xlmr_tokenizer)
@@ -2183,7 +2192,7 @@ data_collator = DataCollatorForTokenClassification(xlmr_tokenizer)
 
 ------
 
-**Create a helper function to initialize a new model for a training session.**
+**Create a helper function to initialize a new model for a training session**
 
 ```python
 def model_init():
@@ -2364,7 +2373,7 @@ df.drop_duplicates()
 
 
 
-**Test the model on some sample text.**
+**Test the model on some sample text**
 
 ```python
 text_de = "Jeff Dean ist ein Informatiker bei Google in Kalifornien"
@@ -2448,7 +2457,7 @@ tag_text(text_de, tags, trainer.model, xlmr_tokenizer)
 
 ------
 
-**Define a function that returns the loss and predicted labels for a single batch.**
+**Define a function that returns the loss and predicted labels for a single batch**
 ```python
 from torch.nn.functional import cross_entropy
 ```
@@ -3765,7 +3774,7 @@ def concatenate_splits(corpora):
 
 ------
 
-**Combine the German and French datasets.**
+**Combine the German and French datasets**
 
 ```python
 panx_de_fr_encoded = concatenate_splits([panx_de_encoded, panx_fr_encoded])
