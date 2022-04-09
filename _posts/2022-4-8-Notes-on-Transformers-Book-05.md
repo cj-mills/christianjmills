@@ -363,7 +363,8 @@ print(tokenizer.decode(output_greedy[0]))
 
 -----
 
-**Try replicate the OpenAI Unicorn story with Greedy Search Decoding**
+**Try to replicate the OpenAI Unicorn story with Greedy Search Decoding**
+
 ```python
 max_length = 128
 input_txt = """In a shocking finding, scientist discovered \
@@ -404,9 +405,10 @@ print(tokenizer.decode(output_greedy[0]))
 * We select the most likely sequence by ranking the $b$ beams according to their log probabilities.
 ### $$\log{P\left(y_{1},\ldots,y_{t} \vert x \right)} = \sum^{N}_{t=1}{\log{P\left(y_{t} \vert y_{ \ < \ t},x \right)}}$$
 
+-----
+
 **Note:** We use the log probabilities to avoid numerical instability due to floating-point precision.
 
------
 ```python
 0.5 ** 1024
 ```
@@ -558,7 +560,7 @@ print(f"\nlog-prob: {logp:.2f}")
 
 * The simplest sampling method is to randomly sample from the probability distribution of the model's outputs over the entire vocabulary at each timestep.
 ### $$P\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\exp(z_{t,i})}{ \sum^{|V|}_{j=1} \exp(z_{t,j})}$$
-    * where $|V|$ denotes the cardinality of the vocabulary
+* where $|V|$ denotes the cardinality of the vocabulary
 * We can control the diversity of the output by adding a temperature parameter $T$ that rescales the logits before taking the softmax.
 ### $$\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\frac{\exp(z_{t,i})}{T}}{ \sum^{|V|}_{j=1} \frac{\exp(z_{t,j}}{T})}$$
 * We can tune the temperature parameter to control the shape of the probability distribution.
