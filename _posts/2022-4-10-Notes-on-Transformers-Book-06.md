@@ -549,8 +549,7 @@ for model_name in summaries:
 * By taking the minimum, we ensure that this penalty never exceeds $1$, and the exponential term becomes exponentially small when the length of the generated text is smaller than the reference text.
 * We don't use recall because it would incentivize translations that used all the words from all reference texts.
 * The equation for the BLEU score:
-### $$\text{BLEU-N} = BR \times \left( \prod^{N}_{n=1}{P_{n}} \right)
-^{\frac{1}{N}}$$
+### $$\text{BLEU-N} = BR \times \left( \prod^{N}_{n=1}{P_{n}} \right)^{\frac{1}{N}}$$
 * The last term is the geometric mean of the modified precision up to n-gram $N$.
 * The BLEU score does not account for synonyms and uses fragile heuristics.
 * [Evaluating Text Output in NLP: BLEU at your own risk](https://towardsdatascience.com/evaluating-text-output-in-nlp-bleu-at-your-own-risk-e8609665a213)
@@ -592,7 +591,7 @@ bleu_metric.codebase_urls
 ```python
 bleu_metric
 ```
-```
+```text
     Metric(name: "sacrebleu", features: {'predictions': Value(dtype='string', id='sequence'), 'references': Sequence(feature=Value(dtype='string', id='sequence'), length=-1, id='references')}, usage: """
     Produces BLEU scores along with its sufficient statistics
     from a source against one or more references.
@@ -629,8 +628,8 @@ bleu_metric
     """, stored examples: 0)
 ```
 
-
 **Note:**
+
 * The bleu_metric object is an instance of the [Metric](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Metric) class and works as an aggregator.
 * Add single instances with the `add()` method or whole batches via `add_batch()`.
 * Call the `compute()` method to calculate the metric.
@@ -771,8 +770,7 @@ pd.DataFrame.from_dict(results, orient="index", columns=["Value"])
 * There is a separate score to measure the longest common substring (LCS) called ROUGE-L.
 * We can calculate the LCS for any pair of strings.
 * We need to normalize the LCS value when comparing two samples of different lengths.
-### $$F_{LCS} = \frac{\left( 1 + \beta^{2} \right)R_{LCS}P_{LCS}}{R_{LCS} + \beta P_{LCS}} \text{, where } \beta = 
-\frac{P_{LCS}}{R_{LCS}}$$
+### $$F_{LCS} = \frac{\left( 1 + \beta^{2} \right)R_{LCS}P_{LCS}}{R_{LCS} + \beta P_{LCS}} \text{, where } \beta = \frac{P_{LCS}}{R_{LCS}}$$
 * The Hugging Face Datasets implementation calculates two variants of ROUGE.
 * ROUGE-L calculates the score per sentence and averages it for the summaries.
 * ROUGE-Lsum calculates the score per sentence directly over the whole summary.
@@ -1070,8 +1068,6 @@ rouge_dict = dict((rn, score[rn].mid.fmeasure) for rn in rouge_names)
 pd.DataFrame(rouge_dict, index=["pegasus"])
 ```
 
-    100%|███████████████████████████████████████████████████████████████████████████████| 125/125 [10:22<00:00,  4.98s/it]
-
 
 <div style="overflow-x:auto;">
 <table border="1" class="dataframe">
@@ -1242,8 +1238,6 @@ score = evaluate_summaries_pegasus(dataset_samsum["test"], rouge_metric, model,
 rouge_dict = dict((rn, score[rn].mid.fmeasure) for rn in rouge_names)
 pd.DataFrame(rouge_dict, index=["pegasus"])
 ```
-
-    100%|███████████████████████████████████████████████████████████████████████████████| 103/103 [07:26<00:00,  4.34s/it]
 
 <div style="overflow-x:auto;">
 <table border="1" class="dataframe">
@@ -1700,8 +1694,6 @@ seq2seq_score = evaluate_summaries_pegasus(
 
 seq2seq_rouge_dict = dict((rn, score[rn].mid.fmeasure) for rn in rouge_names)
 ```
-    100%|███████████████████████████████████████████████████████████████████████████████| 410/410 [05:07<00:00,  1.33it/s]
-
 ------
 
 ```python
