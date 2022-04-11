@@ -19,7 +19,7 @@ search_exclude: false
 * [Text Summarization Pipelines](#text-summarization-pipelines)
 * [Comparing Different Summaries](#comparing-different-summaries)
 * [Measuring the Quality of Generated Text](#measuring-the-quality-of-generated-text)
-* [Evaluating PEGASUS on the CNN/DailyMail Dataset](#evaluating-pegasus-on-the-cnn/dailymail-dataset)
+* [Evaluating PEGASUS on the CNN/DailyMail Dataset](#evaluating-pegasus-on-the-cnndailymail-dataset)
 * [Training a Summarization Model](#training-a-summarization-model)
 * [Conclusion](#conclusion)
 * [References](#references)
