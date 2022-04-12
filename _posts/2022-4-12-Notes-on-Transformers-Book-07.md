@@ -440,22 +440,6 @@ from transformers import AutoTokenizer
 model_ckpt = "deepset/minilm-uncased-squad2"
 tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 ```
-```text
-    Downloading:   0%|          | 0.00/477 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/232k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/112 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/107 [00:00<?, ?B/s]
-```
-
 ------
 
 **Tokenize a question-context pair**
@@ -2192,9 +2176,6 @@ product = dfs["train"].query("title == 'B00001P4ZH'")
 create_paragraphs(product)
 ```
 ```text
-
-
-
     [{'qas': [{'question': 'How is the bass?',
         'id': '2543d296da9766d8d17d040ecc781699',
         'is_impossible': True,
@@ -2302,31 +2283,6 @@ minilm_reader = FARMReader(model_name_or_path=minilm_ckpt, progress_bar=False,
     04/11/2022 22:25:29 - INFO - farm.utils -   Distributed Training: False
     04/11/2022 22:25:29 - INFO - farm.utils -   Automatic Mixed Precision: None
 
-
-
-    Downloading:   0%|          | 0.00/385 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/133M [00:00<?, ?B/s]
-
-
-    Some weights of BertForQuestionAnswering were not initialized from the model checkpoint at microsoft/MiniLM-L12-H384-uncased and are newly initialized: ['qa_outputs.bias', 'qa_outputs.weight']
-    You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
-
-
-
-    Downloading:   0%|          | 0.00/232k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/112 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/2.00 [00:00<?, ?B/s]
-
-
     04/11/2022 22:25:38 - WARNING - farm.utils -   ML Logging is turned off. No parameters, metrics or artifacts will be logged to MLFlow.
     04/11/2022 22:25:38 - INFO - farm.utils -   Using device: CUDA 
     04/11/2022 22:25:38 - INFO - farm.utils -   Number of GPUs: 1
@@ -2353,17 +2309,6 @@ minilm_reader.train(data_dir=".", use_gpu=True, n_epochs=1, batch_size=16,
     04/11/2022 22:25:38 - INFO - farm.utils -   Number of GPUs: 1
     04/11/2022 22:25:38 - INFO - farm.utils -   Distributed Training: False
     04/11/2022 22:25:38 - INFO - farm.utils -   Automatic Mixed Precision: None
-    Preprocessing Dataset electronics-train.json:   1%|▍                            | 17/1265 [00:00<00:15, 78.98 Dicts/s]04/11/2022 22:25:38 - WARNING - farm.data_handler.processor -   Answer using start/end indices is '  Operation of the menus and contro' while gold label text is 'Operation of the menus and controls'.
-    Example will not be converted for training/evaluation.
-    04/11/2022 22:25:38 - WARNING - farm.data_handler.processor -   Answer using start/end indices is '  This camera performs like the pros.  Fast accurate and easy to operat' while gold label text is 'This camera performs like the pros.  Fast accurate and easy to operated'.
-    Example will not be converted for training/evaluation.
-    Preprocessing Dataset electronics-train.json: 100%|█████████████████████████| 1265/1265 [00:00<00:00, 1860.70 Dicts/s]
-    04/11/2022 22:25:39 - ERROR - farm.data_handler.processor -   Unable to convert 2 samples to features. Their ids are : 595-0-0, 572-0-0
-    Preprocessing Dataset electronics-validation.json: 100%|███████████████████████| 252/252 [00:00<00:00, 553.94 Dicts/s]
-    04/11/2022 22:25:40 - INFO - farm.modeling.optimization -   Loading optimizer `TransformersAdamW`: '{'correct_bias': False, 'weight_decay': 0.01, 'lr': 1e-05}'
-    04/11/2022 22:25:40 - INFO - farm.modeling.optimization -   Using scheduler 'get_linear_schedule_with_warmup'
-    04/11/2022 22:25:40 - INFO - farm.modeling.optimization -   Loading schedule `get_linear_schedule_with_warmup`: '{'num_training_steps': 164, 'num_warmup_steps': 32}'
-    04/11/2022 22:26:09 - INFO - haystack.reader.farm -   Saving reader model to ../../saved_models/microsoft/MiniLM-L12-H384-uncased
 ```
 
 ------
@@ -2458,51 +2403,6 @@ from haystack.generator.transformers import RAGenerator
 generator = RAGenerator(model_name_or_path="facebook/rag-token-nq",
                         embed_title=False, num_beams=5)
 ```
-```text
-
-    Downloading:   0%|          | 0.00/4.60k [00:00<?, ?B/s]
-
-
-    /home/innom-dt/miniconda3/envs/transformer-book-chapter7/lib/python3.9/site-packages/transformers/models/bart/configuration_bart.py:177: UserWarning: Please make sure the config includes `forced_bos_token_id=0` in future versions.The config can simply be saved and uploaded again to be fixed.
-      warnings.warn(
-
-
-
-    Downloading:   0%|          | 0.00/232k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/112 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/48.0 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/899k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/456k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/772 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/26.0 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/2.06G [00:00<?, ?B/s]
-
-
-    Some weights of RagTokenForGeneration were not initialized from the model checkpoint at facebook/rag-token-nq and are newly initialized: ['rag.generator.lm_head.weight']
-    You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
-```
-
 ------
 
 
