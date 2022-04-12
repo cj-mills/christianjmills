@@ -435,6 +435,8 @@ from transformers import AutoTokenizer
 * [MiniLM Hugging Face Model Card](https://huggingface.co/deepset/minilm-uncased-squad2)
 * [MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers](https://arxiv.org/abs/2002.10957)
 
+------
+
 
 ```python
 model_ckpt = "deepset/minilm-uncased-squad2"
@@ -810,6 +812,8 @@ import matplotlib.pyplot as plt
 **Visualize the predicted logits for the start and end tokens**
 
 * [Question Answering with a Fine-Tuned BERT](https://mccormickml.com/2020/03/10/question-answering-with-a-fine-tuned-BERT/)
+
+------
 
 
 ```python
