@@ -1254,6 +1254,8 @@ es_retriever = ElasticsearchRetriever(document_store=document_store)
     * Otherwise, the retriever would source reviews about products unrelated to the user's query.
 * We can decipher ASIN values with online tools like amazon ASIN or by appending the value of item_id to the [www.amazon.com/dp/](www.amazon.com/dp/) URL.
 
+------
+
 
 ```python
 item_id = "B0074BW614"
