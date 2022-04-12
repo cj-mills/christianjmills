@@ -410,7 +410,8 @@ for question_type in ["How", "What", "Is"]:
 * These models typically have strong reading comprehension capabilities and serve as a good baseline.
 * [Hugging Face Hub models trained on SQuAD](https://huggingface.co/models?dataset=dataset:squad&sort=downloads)
 
-#### Baseline transformer models fine-tuned on SQuAD 2.0
+**Baseline transformer models fine-tuned on SQuAD 2.0**
+
 | Transformer       | Description                                                  | Numbers of parameters | $F_{1}$-score on SQUAD 2.0 |
 | ----------------- | ------------------------------------------------------------ | --------------------- | -------------------------- |
 | [MiniLM](https://huggingface.co/deepset/minilm-uncased-squad2)            | A distilled version of BERT-base that preserves 99% of the performance while being twice as fast. | 66M                   | 79.5                       |
