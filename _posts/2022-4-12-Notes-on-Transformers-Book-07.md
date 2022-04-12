@@ -14,7 +14,9 @@ search_exclude: false
 
 
 * [Introduction](#introduction)
-* [](#)
+* [Project: Build a Review-Based QA System](#project-build-a-review-based-qa-system)
+* [Improving Our QA Pipeline](#improving-our-qa-pipeline)
+* [Going Beyond Extractive QA](#going-beyond-extractive-qa)
 * [Conclusion](#conclusion)
 * [References](#references)
 
@@ -2421,6 +2423,8 @@ plot_reader_eval({"Reader": reader_eval["Fine-tune on SQuAD + SubjQA"],
 * We can circumvent this by increasing the number of possible answers the reader is allowed to predict.
 
 ------
+
+
 
 ## Going Beyond Extractive QA
 
