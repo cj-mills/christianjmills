@@ -1145,7 +1145,7 @@ perf_metrics = pb.run_benchmark()
 * We can use the [Kullback-Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) to measure the difference between the teacher's probability distribution and the student's probability distribution.
 ### $$D_{KL}(p,q) = \sum_{i}{p_{i}(x)\log{\frac{p_{i}(x)}{q_{i}(x)}}}$$
 * With the KL divergence, we can calculate how much is lost when we approximate the probability distribution of the teacher with the student.
-* **Kowledge Distillation Loss:
+* **Kowledge Distillation Loss:**
 ### $$L_{KD} = T^{2}D_{KL}$$
 * $T_{2}$ is the normalization factor to account for the magnitude of the gradients produced by the soft labels scaling as $1/T^{2}$.
 
@@ -2406,7 +2406,9 @@ clinc_enc["test"][0]["labels"]
 ```
 
 
-    61
+```text
+61
+```
 
 **Note:** The model prediction matches the ground truth.
 
@@ -2628,7 +2630,7 @@ plot_metrics(perf_metrics, optim_type)
 * How can such network pruning be done in a computationally efficient way?
 
 #### Magnitude pruning
-* Magnitude pruning calculates the scores according to the magnitude of the weights $S = \left( \left| W_{ij} \right| \right)_{1 \ \le \ j, j \ \le \ n}$ and then derives the masks $M = Top_{k}(S)$.
+* Magnitude pruning calculates the scores according to the magnitude of the weights $S = \left( \left \vert W_{ij} \right \vert \right)_{1 \ \le \ j, j \ \le \ n}$ and then derives the masks $M = Top_{k}(S)$.
 * It is common to apply magnitude iteratively by first training the model to learn which connections are important and pruning weights of least importance.
   * [Learning both Weights and Connections for Efficient Neural Networks](https://arxiv.org/abs/1506.02626)
 
