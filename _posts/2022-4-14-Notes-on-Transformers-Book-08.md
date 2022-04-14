@@ -2630,7 +2630,7 @@ plot_metrics(perf_metrics, optim_type)
 * How can such network pruning be done in a computationally efficient way?
 
 #### Magnitude pruning
-* Magnitude pruning calculates the scores according to the magnitude of the weights $S = \left( \left \vert W_{ij} \right \vert \right)_{1 \ \le \ j, j \ \le \ n}$ and then derives the masks $M = Top_{k}(S)$.
+* Magnitude pruning calculates the scores according to the magnitude of the weights $$S = \left( \left \vert W_{ij} \right \vert \right)_{1 \ \le \ j, j \ \le \ n}$$ and then derives the masks $$M = Top_{k}(S)$$.
 * It is common to apply magnitude iteratively by first training the model to learn which connections are important and pruning weights of least importance.
   * [Learning both Weights and Connections for Efficient Neural Networks](https://arxiv.org/abs/1506.02626)
 
