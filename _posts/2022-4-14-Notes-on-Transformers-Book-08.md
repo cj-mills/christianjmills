@@ -13,9 +13,14 @@ search_exclude: false
 
 
 
-* [Introduction](#introduction)
-* 
-* [Conclusion](#conclusion)
+* [Making Transformers Efficient in Production](#making-transformers-efficient-in-production)
+* [Project: Optimize an Intent Detection Model](#project-optimize-an-intent-detection-model)
+* [Creating a Performance Benchmark](#creating-a-performance-benchmark)
+* [Making Models Smaller via Knowledge Distillation](#Making Models Smaller via Knowledge Distillation)
+* [A Primer on Floating-Point and Fixed-Point Numbers](#a-primer-on-floating-point-and-fixed-point-numbers)
+* [Making Models Faster with Quantization](#making-models-faster-with-quantization)
+* [Optimizing Inference with ONNX and the ONNX Runtime](#optimizing-inference-with-onnx-and-the-onnx-runtime)
+* [Making Models Sparser with Weight Pruning](#making-models-sparser-with-weight-pruning)
 * [References](#references)
 
 
