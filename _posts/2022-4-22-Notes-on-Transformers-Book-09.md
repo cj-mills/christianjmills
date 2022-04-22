@@ -1924,6 +1924,7 @@ Noise introduced by data augmentation is less likely to change the meaning when 
 * Libraries like [NlpAug](https://github.com/makcedward/nlpaug) and [TextAttack](https://github.com/QData/TextAttack) provide various recipes for token perturbations.
 * [EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks](https://arxiv.org/abs/1901.11196)
 
+<br>
 
 | Augmentation            | Sentence                                                     |
 | ----------------------- | ------------------------------------------------------------ |
