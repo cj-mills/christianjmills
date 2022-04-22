@@ -13,9 +13,16 @@ search_exclude: false
 
 
 
-* [](#)
-
+* [Dealing with Few to No Labels](#dealing-with-few-to-no-labels)
+* [Project: Build a GitHub Issues Tagger](#project-build-a-github-issues-tagger)
+* [Implementing a Naive Bayesline](#implementing-a-naive-bayesline)
+* [Working with No Labeled Data](#working-with-no-labeled-data)
+* [Working with a Few Labels](#working-with-a-few-labels)
+* [Leveraging Unlabeled Data](#leveraging-unlabeled-data)
+* [Conclusion](#conclusion)
 * [References](#references)
+
+
 
 
 ------
@@ -1577,7 +1584,10 @@ pd.Series(ds["train"][0]['text']).to_frame().style.hide(axis='columns').hide(axi
   </thead>
   <tbody>
     <tr>
-      <td id="T_6547c_row0_col0" class="data row0 col0" >Add new CANINE model
+      <td id="T_6547c_row0_col0" class="data row0 col0" >
+      ```
+
+      Add new CANINE model
 
 # 🌟 New model addition
 
@@ -1602,7 +1612,7 @@ The first author (Jonathan Clark) said on [Twitter](https://twitter.com/JonClark
 * [ ] the model implementation is available: soon [here](https://caninemodel.page.link/code)
 * [ ] the model weights are available: soon [here](https://caninemodel.page.link/code)
 * [x] who are the authors: @jhclark-google (not sure), @dhgarrette, @jwieting (not sure)
-
+```
 </td>
     </tr>
   </tbody>
@@ -2683,7 +2693,10 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Zero Shot")
 * The zero-shot classification pipeline is sensitive to the names of labels and might perform better when using different or several names in parallel and aggregating them.
 * Using a different `hypothesis_template` might improve performance.
 
+
+
 ## Working with a Few Labels
+
 * There are often a few labeled examples available, at least, for most NLP projects.
 * The labels might come directly from a client, a cross-company team, from hand annotating a few examples.
 
@@ -3500,7 +3513,10 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (vanilla)")
     * Researchers at Hugging Face found that this approach can be more data-efficient than fine-tuning a custom head.
         * [How Many Data Points is a Prompt Worth?](https://arxiv.org/abs/2103.08493)
 
+
+
 ## Leveraging Unlabeled Data
+
 * Domain adaptation involves continuing the pretraining process of predicting masked words using unlabeled data from the target domain.
 * We can then reuse the adapted model for many use cases.
 * Domain adaptation can help boost model performance with unlabeled data and little effort.
@@ -4156,7 +4172,10 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 * UST gets within a few percentages of models trained on datasets with thousands of labeled samples and beats UDA on several datasets.
 * [Uncertainty-aware Self-training for Text Classification with Few Labels](https://arxiv.org/abs/2006.15315)
 
+
+
 ## Conclusion
+
 * Set up an evaluation pipeline to test different approaches for dealing with little to no labeled data.
 * Build a validation and test set early on.
 * There are tradeoffs between more complex approaches like UDA and UST and getting more data.
