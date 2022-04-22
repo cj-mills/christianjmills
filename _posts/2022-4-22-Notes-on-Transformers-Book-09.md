@@ -104,6 +104,8 @@ def print_source(obj, exclude_doc=True):
 * Each JSON object includes whether it is open or closed, who opened the issue, the title, the body, and the labels.
 * The GitHub REST API treats pull requests as issues.
 
+------
+
 
 ```python
 import time
@@ -114,8 +116,15 @@ import pandas as pd
 from tqdm.auto import tqdm
 ```
 
+------
+
+
+
 **Define a function to download issues for a GitHub project to a `.jsonl` file**
+
 * We need to download the issues in batches to avoid exceeding GitHub's limit on the number of requests per hour.
+
+------
 
 
 ```python
@@ -149,6 +158,8 @@ def fetch_issues(owner="huggingface", repo="transformers", num_issues=10_000,
 
 **Note:** It takes a while to fetch all the issues.
 
+------
+
 **Download the GitHub Issues** 
 
 
@@ -156,7 +167,11 @@ def fetch_issues(owner="huggingface", repo="transformers", num_issues=10_000,
 # fetch_issues()
 ```
 
+------
+
 ### Preparing the Data
+
+------
 
 
 ```python
@@ -170,6 +185,8 @@ pd.__version__
     '1.4.2'
 ```
 
+------
+
 **Import the dataset**
 
 
@@ -181,6 +198,7 @@ print(f"DataFrame shape: {df_issues.shape}")
 
     DataFrame shape: (9930, 26)
 
+------
 
 **Inspect a single GitHub issue**
 
@@ -305,9 +323,9 @@ df_issues.loc[2].to_frame()
   </tbody>
 </table>
 </div>
-
-
 **Note:** The labels column contains the tags.
+
+------
 
 **Inspect the labels column**
 
@@ -343,7 +361,7 @@ pd.DataFrame(df_issues.loc[2]['labels'])
   </tbody>
 </table>
 </div>
-
+------
 
 
 **Extract the tags names from the labels column**
@@ -389,7 +407,7 @@ df_issues[["labels"]].head()
   </tbody>
 </table>
 </div>
-
+------
 
 
 **Get the number of labels per issue**
@@ -424,10 +442,9 @@ df_issues["labels"].apply(lambda x : len(x)).value_counts().to_frame().T
   </tbody>
 </table>
 </div>
-
-
-
 **Note:** Most GitHub issues have zero or one label, and very few have more than one label.
+
+------
 
 **View the only three issues with five tags**
 
@@ -605,7 +622,7 @@ df_issues[df_issues['labels'].apply(lambda x: len(x) == 5)].T
   </tbody>
 </table>
 </div>
-
+------
 
 
 #### `pandas.DataFrame.explode`
@@ -624,8 +641,6 @@ df_counts.to_frame().head(20)
 ```text
     Number of labels: 65
 ```
-
-
 
 
 <div style="overflow-x:auto;">
@@ -720,9 +735,7 @@ df_counts.to_frame().head(20)
   </tbody>
 </table>
 </div>
-
-
-
+------
 
 ```python
 df_counts[:2].sum() / df_counts.sum()
@@ -736,6 +749,8 @@ df_counts[:2].sum() / df_counts.sum()
 * There are 65 unique tags (i.e., classes) in the dataset.
 * The dataset is highly imbalanced, with the two most common classes accounting for more than 70% of the dataset.
 * Some labels (e.g., "Good First" or "Help Wanted") are potentially too difficult to predict from the issue's description, while others (e.g., "model card") might only require simple rules to classify.
+
+------
 
 **Filter the dataset to a subset of labels**
 
@@ -757,6 +772,8 @@ def filter_labels(x):
 df_issues["labels"] = df_issues["labels"].apply(filter_labels)
 all_labels = list(label_map.values())
 ```
+
+------
 
 **Check the distribution of the filtered dataset**
 
@@ -797,9 +814,7 @@ df_counts.to_frame().T
   </tbody>
 </table>
 </div>
-
-
-
+------
 
 ```python
 df_counts[:2].sum() / df_counts.sum()
@@ -808,8 +823,9 @@ df_counts[:2].sum() / df_counts.sum()
     0.41975308641975306
 ```
 
-
 **Note:** The filtered dataset is more balanced, with the two most common classes accounting for less than 42% of the dataset.
+
+------
 
 **Create a new column to indicate whether an issue is unlabeled**
 
@@ -840,9 +856,7 @@ df_issues["split"].value_counts().to_frame()
   </tbody>
 </table>
 </div>
-
-
-
+------
 
 ```python
 df_issues["split"].value_counts()[0] / len(df_issues)
@@ -853,6 +867,8 @@ df_issues["split"].value_counts()[0] / len(df_issues)
 
 
 **Note:** Over 95% of issues are unlabeled.
+
+------
 
 **Inspect a labeled example**
 
@@ -880,12 +896,16 @@ for column in ["title", "body", "labels"]:
 * This GitHub issue is proposing a new model architecture.
 * Both the title and description contain helpful information for the label classifier.
 
+------
+
 **Concatenate the title and description for each issue into a new column**
 
 
 ```python
 df_issues["text"] = (df_issues.apply(lambda x: x["title"] + "\n\n" + x["body"], axis=1))
 ```
+
+------
 
 **Remove any duplicate rows based on the `text` column values**
 
@@ -899,11 +919,14 @@ print(f"Removed {(len_before-len(df_issues))/len_before:.2%} duplicates.")
     Removed 1.88% duplicates.
 ```
 
+------
 
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
 ```
+
+------
 
 **Plot the number of words per issue**
 
@@ -923,7 +946,10 @@ plt.show()
 * Issues with error messages and code snippets are often longer.
 * Most of the examples should fit into the typical context size of 512 tokens.
 
+------
+
 ### Creating Training Sets
+
 * There is no guaranteed balance for all labels when splitting the dataset.
 * We can use the scikit-multilearn library to approximate a balanced split.
 
@@ -931,15 +957,22 @@ plt.show()
 * [Homepage](https://scikit.ml/)
 * A multi-label classification library built on top of the scikit-learn ecosystem.
 
+------
+
 
 ```python
 from sklearn.preprocessing import MultiLabelBinarizer
 ```
 
+------
+
 #### `MultiLabelBinarizer`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MultiLabelBinarizer.html)
 * Transform between iterable of iterables and a multilabel format.
 * Takes a list of names and creates a vector with zeros for absent labels and ones for present labels.
+
+------
 
 **Create a MultiLabelBinarizer to learn the mapping from label to ID**
 
@@ -952,6 +985,7 @@ mlb.fit([all_labels])
     MultiLabelBinarizer()
 ```
 
+------
 
 **Check the label mappings**
 
@@ -964,7 +998,7 @@ mlb.transform([["tokenization", "new model"], ["pytorch"]])
            [0, 0, 0, 0, 0, 1, 0, 0, 0]])
 ```
 
-
+------
 
 ```python
 pd.DataFrame(mlb.transform([[label] for label in all_labels]).T, columns=all_labels).T
@@ -1097,9 +1131,7 @@ pd.DataFrame(mlb.transform([[label] for label in all_labels]).T, columns=all_lab
   </tbody>
 </table>
 </div>
-
-
-
+------
 
 ```python
 from skmultilearn.model_selection import iterative_train_test_split
@@ -1125,6 +1157,8 @@ def balanced_split(df, test_size=0.5):
 from sklearn.model_selection import train_test_split
 ```
 
+------
+
 **Split the data into supervised and unsupervised datasets**
 
 
@@ -1133,6 +1167,8 @@ df_clean = df_issues[["text", "labels", "split"]].reset_index(drop=True).copy()
 df_unsup = df_clean.loc[df_clean["split"] == "unlabeled", ["text", "labels"]]
 df_sup = df_clean.loc[df_clean["split"] == "labeled", ["text", "labels"]]
 ```
+
+------
 
 **Create balanced training, validation, and test sets**
 
@@ -1143,14 +1179,21 @@ df_train, df_tmp = balanced_split(df_sup, test_size=0.5)
 df_valid, df_test = balanced_split(df_tmp, test_size=0.5)
 ```
 
+------
+
 
 ```python
 from datasets import Dataset, DatasetDict
 ```
 
+------
+
 #### `Dataset.from_pandas`
+
 * [Documentation](https://huggingface.co/docs/datasets/master/en/package_reference/main_classes#datasets.Dataset.from_pandas)
 * Convert pandas.DataFrame to a pyarrow.Table to create a Dataset.
+
+------
 
 
 ```python
@@ -1177,6 +1220,7 @@ print_source(Dataset.from_pandas)
         return cls(table, info=info, split=split)
 ```
 
+------
 
 **Initialize a DatasetDict with the dataset splits**
 
@@ -1210,6 +1254,7 @@ ds
     })
 ```
 
+------
 
 ### Creating Training Slices
 
@@ -1239,6 +1284,8 @@ train_slices = [np.squeeze(train_slice) for train_slice in train_slices]
 
 **Note:** It is not always possible to find a balanced split with a given split size.
 
+------
+
 
 ```python
 print("Target split sizes:")
@@ -1252,6 +1299,8 @@ print([len(x) for x in train_slices])
     Actual split sizes:
     [10, 19, 36, 68, 134, 223]
 ```
+
+------
 
 
 
@@ -1274,7 +1323,7 @@ def prepare_labels(batch):
 ds = ds.map(prepare_labels, batched=True)
 ```
 
-
+------
 
 ```python
 ds['train'][:5]['labels'], ds['train'][:5]['label_ids']
@@ -1288,20 +1337,27 @@ ds['train'][:5]['labels'], ds['train'][:5]['label_ids']
       [0, 1, 0, 0, 0, 0, 0, 0, 0]])
 ```
 
-
+------
 
 ```python
 from collections import defaultdict
 ```
 
+------
+
 **Create dictionaries to store micro and macro $F_{1}$-scores**
+
 * The micro $F_{1}$-score tracks performance for on the frequent labels
 * The macro $F_{1}$-score tracks performance on all the labels regardless of frequency
+
+------
 
 
 ```python
 macro_scores, micro_scores = defaultdict(list), defaultdict(list)
 ```
+
+------
 
 
 ```python
@@ -1311,7 +1367,10 @@ from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.feature_extraction.text import CountVectorizer
 ```
 
+------
+
 #### `sklearn.naive_bayes.MultinomialNB`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html)
 * Create a Naive Bayes classifier for multinomial models.
 
@@ -1328,11 +1387,15 @@ from sklearn.feature_extraction.text import CountVectorizer
 * Create a vector where each entry corresponds to the frequency with which a token appeared in the text.
 * Count vectorization is a bag-of-words approach since all information on the order of the words is lost.
 
+------
+
 
 ```python
 # count_vect = CountVectorizer()
 # pd.DataFrame(count_vect.fit_transform(ds['train'].select(train_slices[0])["text"]).toarray())
 ```
+
+------
 
 **Train a baseline Naive Bayes Classifier for each of the training slices**
 
@@ -1359,6 +1422,8 @@ for train_slice in train_slices:
     macro_scores["Naive Bayes"].append(clf_report["macro avg"]["f1-score"])
     micro_scores["Naive Bayes"].append(clf_report["micro avg"]["f1-score"])
 ```
+
+------
 
 **Plot the performance of the baseline classifiers**
 
@@ -1403,7 +1468,12 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes")
 * The micro and macro F1 scores improve as the number of training samples increases.
 * The results are slightly noisy since each slice can have a different class distribution.
 
+------
+
+
+
 ## Working with No Labeled Data
+
 * Zero-shot classification is suitable when there is no labeled data at all.
 * Zero-shot classification uses a pretrained model without additional fine-tuning on a task-specific corpus.
 
@@ -1412,13 +1482,18 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes")
 * The pretrained model needs to be aware of the topic in the context to predict a missing token.
 * We can trick the model into classifying a document by providing a sentence like:
 > "This section was about the topic [MASK]."
-    * The model should give a reasonable suggestion for the document's topic.
-    * Credit: [Joe Davison](https://joeddav.github.io/)
+
+* The model should give a reasonable suggestion for the document's topic.
+* Credit: [Joe Davison](https://joeddav.github.io/)
+
+------
 
 
 ```python
 from transformers import pipeline
 ```
+
+------
 
 **Create a Masked Language Modeling pipeline**
 
@@ -1433,8 +1508,10 @@ pipe, type(pipe.model), pipe.device
      device(type='cpu'))
 ```
 
+------
 
 #### `transformers.pipelines.fill_mask.FillMaskPipeline`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/pipelines#transformers.FillMaskPipeline)
 * Create a masked language modeling prediction pipeline
 
@@ -1460,6 +1537,8 @@ for element in output:
 
 **Note:** The model successfully performs zero-shot classification and only predicts tokens related to animals.
 
+------
+
 **Check the probability that the movie description is about specific topics**
 
 
@@ -1474,6 +1553,8 @@ for element in output:
 ```
 
 **Note:** The model is confident the movie is not about cars.
+
+------
 
 **Predict the topic for a movie about cars based on its description**
 
@@ -1494,6 +1575,8 @@ for element in output:
     Token transformers:	0.059%
 ```
 
+------
+
 **Check the probability that the movie description is about specific topics**
 
 
@@ -1510,7 +1593,10 @@ for element in output:
     Token animals:	0.006%
 ```
 
+------
+
 ### Text Entailment
+
 * The model determines whether two text passages are likely to follow or contradict each other.
 * [A Broad-Coverage Challenge Corpus for Sentence Understanding through Inference](https://arxiv.org/abs/1704.05426)
 * [XNLI: Evaluating Cross-lingual Sentence Representations](https://arxiv.org/abs/1809.05053)
@@ -1531,17 +1617,20 @@ for element in output:
 * We can use a model trained on the MNLI dataset to build a classifier without needing any labels. 
 * We treat the input text as a premise and formulate a hypothesis as:
 > "This example is about {label}."
-    * We insert the class name for the label.
+* We insert the class name for the label.
+
 * The resulting entailment score indicates how likely the premise is about the topic.
 * We need to test different classes sequentially, meaning we need to execute a forward pass for each test.
 * The choice of label names can significantly impact prediction accuracy.
 * Choosing labels with a semantic meaning is generally the best approach.
 
-
+------
 
 ```python
 from transformers import pipeline
 ```
+
+------
 
 **Create a zero-shot classification pipeline**
 
@@ -1556,6 +1645,7 @@ pipe, type(pipe.model), pipe.device
      device(type='cuda', index=0))
 ```
 
+------
 
 **Get the default hypothesis template**
 
@@ -1574,52 +1664,14 @@ inspect.signature(pipe.preprocess).parameters['hypothesis_template']
 * The pipeline takes any combination of sequences and labels.
 * The pipeline poses each combination as a premise-hypothesis pair and passes them to the pretrained model.
 
+------
+
 
 ```python
 pd.Series(ds["train"][0]['text']).to_frame().style.hide(axis='columns').hide(axis='rows')
 ```
-<div style="overflow-x:auto;">
-<table id="T_6547c">
-  <thead>
-  </thead>
-  <tbody>
-    <tr>
-      <td id="T_6547c_row0_col0" class="data row0 col0" >
-      ```
 
-      Add new CANINE model
-
-# 🌟 New model addition
-
-## Model description
-
-Google recently proposed a new **C**haracter **A**rchitecture with **N**o tokenization **I**n **N**eural **E**ncoders architecture (CANINE). Not only the title is exciting:
-
-> Pipelined NLP systems have largely been superseded by end-to-end neural modeling, yet nearly all commonly-used models still require an explicit tokenization step. While recent tokenization approaches based on data-derived subword lexicons are less brittle than manually engineered tokenizers, these techniques are not equally suited to all languages, and the use of any fixed vocabulary may limit a model's ability to adapt. In this paper, we present CANINE, a neural encoder that operates directly on character sequences, without explicit tokenization or vocabulary, and a pre-training strategy that operates either directly on characters or optionally uses subwords as a soft inductive bias. To use its finer-grained input effectively and efficiently, CANINE combines downsampling, which reduces the input sequence length, with a deep transformer stack, which encodes context. CANINE outperforms a comparable mBERT model by 2.8 F1 on TyDi QA, a challenging multilingual benchmark, despite having 28% fewer model parameters.
-
-Overview of the architecture:
-
-![outputname-1](https://user-images.githubusercontent.com/20651387/113306475-6c3cac80-9304-11eb-9bad-ad6323904632.png)
-
-Paper is available [here](https://arxiv.org/abs/2103.06874).
-
-We heavily need this architecture in Transformers (RIP subword tokenization)!
-
-The first author (Jonathan Clark) said on [Twitter](https://twitter.com/JonClarkSeattle/status/1377505048029134856) that the model and code will be released in April :partying_face: 
-
-## Open source status
-
-* [ ] the model implementation is available: soon [here](https://caninemodel.page.link/code)
-* [ ] the model weights are available: soon [here](https://caninemodel.page.link/code)
-* [x] who are the authors: @jhclark-google (not sure), @dhgarrette, @jwieting (not sure)
-```
-</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
+------
 
 
 ```python
@@ -1629,294 +1681,13 @@ len(ds["train"][0]['text'].split(' ')), len(pipe.tokenizer(ds["train"][0]['text'
     (244, 562)
 ```
 
-
+------
 
 ```python
 pd.DataFrame(ds["train"][0]['text'].split(' ')).T.style.hide(axis='columns')
 ```
-<div style="overflow-x:auto;">
-<table id="T_06c3b">
-  <thead>
-  </thead>
-  <tbody>
-    <tr>
-      <th id="T_06c3b_level0_row0" class="row_heading level0 row0" >0</th>
-      <td id="T_06c3b_row0_col0" class="data row0 col0" >Add</td>
-      <td id="T_06c3b_row0_col1" class="data row0 col1" >new</td>
-      <td id="T_06c3b_row0_col2" class="data row0 col2" >CANINE</td>
-      <td id="T_06c3b_row0_col3" class="data row0 col3" >model
 
-#</td>
-      <td id="T_06c3b_row0_col4" class="data row0 col4" >🌟</td>
-      <td id="T_06c3b_row0_col5" class="data row0 col5" >New</td>
-      <td id="T_06c3b_row0_col6" class="data row0 col6" >model</td>
-      <td id="T_06c3b_row0_col7" class="data row0 col7" >addition
-
-##</td>
-      <td id="T_06c3b_row0_col8" class="data row0 col8" >Model</td>
-      <td id="T_06c3b_row0_col9" class="data row0 col9" >description
-
-Google</td>
-      <td id="T_06c3b_row0_col10" class="data row0 col10" >recently</td>
-      <td id="T_06c3b_row0_col11" class="data row0 col11" >proposed</td>
-      <td id="T_06c3b_row0_col12" class="data row0 col12" >a</td>
-      <td id="T_06c3b_row0_col13" class="data row0 col13" >new</td>
-      <td id="T_06c3b_row0_col14" class="data row0 col14" >**C**haracter</td>
-      <td id="T_06c3b_row0_col15" class="data row0 col15" >**A**rchitecture</td>
-      <td id="T_06c3b_row0_col16" class="data row0 col16" >with</td>
-      <td id="T_06c3b_row0_col17" class="data row0 col17" >**N**o</td>
-      <td id="T_06c3b_row0_col18" class="data row0 col18" >tokenization</td>
-      <td id="T_06c3b_row0_col19" class="data row0 col19" >**I**n</td>
-      <td id="T_06c3b_row0_col20" class="data row0 col20" >**N**eural</td>
-      <td id="T_06c3b_row0_col21" class="data row0 col21" >**E**ncoders</td>
-      <td id="T_06c3b_row0_col22" class="data row0 col22" >architecture</td>
-      <td id="T_06c3b_row0_col23" class="data row0 col23" >(CANINE).</td>
-      <td id="T_06c3b_row0_col24" class="data row0 col24" >Not</td>
-      <td id="T_06c3b_row0_col25" class="data row0 col25" >only</td>
-      <td id="T_06c3b_row0_col26" class="data row0 col26" >the</td>
-      <td id="T_06c3b_row0_col27" class="data row0 col27" >title</td>
-      <td id="T_06c3b_row0_col28" class="data row0 col28" >is</td>
-      <td id="T_06c3b_row0_col29" class="data row0 col29" >exciting:
-
-></td>
-      <td id="T_06c3b_row0_col30" class="data row0 col30" >Pipelined</td>
-      <td id="T_06c3b_row0_col31" class="data row0 col31" >NLP</td>
-      <td id="T_06c3b_row0_col32" class="data row0 col32" >systems</td>
-      <td id="T_06c3b_row0_col33" class="data row0 col33" >have</td>
-      <td id="T_06c3b_row0_col34" class="data row0 col34" >largely</td>
-      <td id="T_06c3b_row0_col35" class="data row0 col35" >been</td>
-      <td id="T_06c3b_row0_col36" class="data row0 col36" >superseded</td>
-      <td id="T_06c3b_row0_col37" class="data row0 col37" >by</td>
-      <td id="T_06c3b_row0_col38" class="data row0 col38" >end-to-end</td>
-      <td id="T_06c3b_row0_col39" class="data row0 col39" >neural</td>
-      <td id="T_06c3b_row0_col40" class="data row0 col40" >modeling,</td>
-      <td id="T_06c3b_row0_col41" class="data row0 col41" >yet</td>
-      <td id="T_06c3b_row0_col42" class="data row0 col42" >nearly</td>
-      <td id="T_06c3b_row0_col43" class="data row0 col43" >all</td>
-      <td id="T_06c3b_row0_col44" class="data row0 col44" >commonly-used</td>
-      <td id="T_06c3b_row0_col45" class="data row0 col45" >models</td>
-      <td id="T_06c3b_row0_col46" class="data row0 col46" >still</td>
-      <td id="T_06c3b_row0_col47" class="data row0 col47" >require</td>
-      <td id="T_06c3b_row0_col48" class="data row0 col48" >an</td>
-      <td id="T_06c3b_row0_col49" class="data row0 col49" >explicit</td>
-      <td id="T_06c3b_row0_col50" class="data row0 col50" >tokenization</td>
-      <td id="T_06c3b_row0_col51" class="data row0 col51" >step.</td>
-      <td id="T_06c3b_row0_col52" class="data row0 col52" >While</td>
-      <td id="T_06c3b_row0_col53" class="data row0 col53" >recent</td>
-      <td id="T_06c3b_row0_col54" class="data row0 col54" >tokenization</td>
-      <td id="T_06c3b_row0_col55" class="data row0 col55" >approaches</td>
-      <td id="T_06c3b_row0_col56" class="data row0 col56" >based</td>
-      <td id="T_06c3b_row0_col57" class="data row0 col57" >on</td>
-      <td id="T_06c3b_row0_col58" class="data row0 col58" >data-derived</td>
-      <td id="T_06c3b_row0_col59" class="data row0 col59" >subword</td>
-      <td id="T_06c3b_row0_col60" class="data row0 col60" >lexicons</td>
-      <td id="T_06c3b_row0_col61" class="data row0 col61" >are</td>
-      <td id="T_06c3b_row0_col62" class="data row0 col62" >less</td>
-      <td id="T_06c3b_row0_col63" class="data row0 col63" >brittle</td>
-      <td id="T_06c3b_row0_col64" class="data row0 col64" >than</td>
-      <td id="T_06c3b_row0_col65" class="data row0 col65" >manually</td>
-      <td id="T_06c3b_row0_col66" class="data row0 col66" >engineered</td>
-      <td id="T_06c3b_row0_col67" class="data row0 col67" >tokenizers,</td>
-      <td id="T_06c3b_row0_col68" class="data row0 col68" >these</td>
-      <td id="T_06c3b_row0_col69" class="data row0 col69" >techniques</td>
-      <td id="T_06c3b_row0_col70" class="data row0 col70" >are</td>
-      <td id="T_06c3b_row0_col71" class="data row0 col71" >not</td>
-      <td id="T_06c3b_row0_col72" class="data row0 col72" >equally</td>
-      <td id="T_06c3b_row0_col73" class="data row0 col73" >suited</td>
-      <td id="T_06c3b_row0_col74" class="data row0 col74" >to</td>
-      <td id="T_06c3b_row0_col75" class="data row0 col75" >all</td>
-      <td id="T_06c3b_row0_col76" class="data row0 col76" >languages,</td>
-      <td id="T_06c3b_row0_col77" class="data row0 col77" >and</td>
-      <td id="T_06c3b_row0_col78" class="data row0 col78" >the</td>
-      <td id="T_06c3b_row0_col79" class="data row0 col79" >use</td>
-      <td id="T_06c3b_row0_col80" class="data row0 col80" >of</td>
-      <td id="T_06c3b_row0_col81" class="data row0 col81" >any</td>
-      <td id="T_06c3b_row0_col82" class="data row0 col82" >fixed</td>
-      <td id="T_06c3b_row0_col83" class="data row0 col83" >vocabulary</td>
-      <td id="T_06c3b_row0_col84" class="data row0 col84" >may</td>
-      <td id="T_06c3b_row0_col85" class="data row0 col85" >limit</td>
-      <td id="T_06c3b_row0_col86" class="data row0 col86" >a</td>
-      <td id="T_06c3b_row0_col87" class="data row0 col87" >model's</td>
-      <td id="T_06c3b_row0_col88" class="data row0 col88" >ability</td>
-      <td id="T_06c3b_row0_col89" class="data row0 col89" >to</td>
-      <td id="T_06c3b_row0_col90" class="data row0 col90" >adapt.</td>
-      <td id="T_06c3b_row0_col91" class="data row0 col91" >In</td>
-      <td id="T_06c3b_row0_col92" class="data row0 col92" >this</td>
-      <td id="T_06c3b_row0_col93" class="data row0 col93" >paper,</td>
-      <td id="T_06c3b_row0_col94" class="data row0 col94" >we</td>
-      <td id="T_06c3b_row0_col95" class="data row0 col95" >present</td>
-      <td id="T_06c3b_row0_col96" class="data row0 col96" >CANINE,</td>
-      <td id="T_06c3b_row0_col97" class="data row0 col97" >a</td>
-      <td id="T_06c3b_row0_col98" class="data row0 col98" >neural</td>
-      <td id="T_06c3b_row0_col99" class="data row0 col99" >encoder</td>
-      <td id="T_06c3b_row0_col100" class="data row0 col100" >that</td>
-      <td id="T_06c3b_row0_col101" class="data row0 col101" >operates</td>
-      <td id="T_06c3b_row0_col102" class="data row0 col102" >directly</td>
-      <td id="T_06c3b_row0_col103" class="data row0 col103" >on</td>
-      <td id="T_06c3b_row0_col104" class="data row0 col104" >character</td>
-      <td id="T_06c3b_row0_col105" class="data row0 col105" >sequences,</td>
-      <td id="T_06c3b_row0_col106" class="data row0 col106" >without</td>
-      <td id="T_06c3b_row0_col107" class="data row0 col107" >explicit</td>
-      <td id="T_06c3b_row0_col108" class="data row0 col108" >tokenization</td>
-      <td id="T_06c3b_row0_col109" class="data row0 col109" >or</td>
-      <td id="T_06c3b_row0_col110" class="data row0 col110" >vocabulary,</td>
-      <td id="T_06c3b_row0_col111" class="data row0 col111" >and</td>
-      <td id="T_06c3b_row0_col112" class="data row0 col112" >a</td>
-      <td id="T_06c3b_row0_col113" class="data row0 col113" >pre-training</td>
-      <td id="T_06c3b_row0_col114" class="data row0 col114" >strategy</td>
-      <td id="T_06c3b_row0_col115" class="data row0 col115" >that</td>
-      <td id="T_06c3b_row0_col116" class="data row0 col116" >operates</td>
-      <td id="T_06c3b_row0_col117" class="data row0 col117" >either</td>
-      <td id="T_06c3b_row0_col118" class="data row0 col118" >directly</td>
-      <td id="T_06c3b_row0_col119" class="data row0 col119" >on</td>
-      <td id="T_06c3b_row0_col120" class="data row0 col120" >characters</td>
-      <td id="T_06c3b_row0_col121" class="data row0 col121" >or</td>
-      <td id="T_06c3b_row0_col122" class="data row0 col122" >optionally</td>
-      <td id="T_06c3b_row0_col123" class="data row0 col123" >uses</td>
-      <td id="T_06c3b_row0_col124" class="data row0 col124" >subwords</td>
-      <td id="T_06c3b_row0_col125" class="data row0 col125" >as</td>
-      <td id="T_06c3b_row0_col126" class="data row0 col126" >a</td>
-      <td id="T_06c3b_row0_col127" class="data row0 col127" >soft</td>
-      <td id="T_06c3b_row0_col128" class="data row0 col128" >inductive</td>
-      <td id="T_06c3b_row0_col129" class="data row0 col129" >bias.</td>
-      <td id="T_06c3b_row0_col130" class="data row0 col130" >To</td>
-      <td id="T_06c3b_row0_col131" class="data row0 col131" >use</td>
-      <td id="T_06c3b_row0_col132" class="data row0 col132" >its</td>
-      <td id="T_06c3b_row0_col133" class="data row0 col133" >finer-grained</td>
-      <td id="T_06c3b_row0_col134" class="data row0 col134" >input</td>
-      <td id="T_06c3b_row0_col135" class="data row0 col135" >effectively</td>
-      <td id="T_06c3b_row0_col136" class="data row0 col136" >and</td>
-      <td id="T_06c3b_row0_col137" class="data row0 col137" >efficiently,</td>
-      <td id="T_06c3b_row0_col138" class="data row0 col138" >CANINE</td>
-      <td id="T_06c3b_row0_col139" class="data row0 col139" >combines</td>
-      <td id="T_06c3b_row0_col140" class="data row0 col140" >downsampling,</td>
-      <td id="T_06c3b_row0_col141" class="data row0 col141" >which</td>
-      <td id="T_06c3b_row0_col142" class="data row0 col142" >reduces</td>
-      <td id="T_06c3b_row0_col143" class="data row0 col143" >the</td>
-      <td id="T_06c3b_row0_col144" class="data row0 col144" >input</td>
-      <td id="T_06c3b_row0_col145" class="data row0 col145" >sequence</td>
-      <td id="T_06c3b_row0_col146" class="data row0 col146" >length,</td>
-      <td id="T_06c3b_row0_col147" class="data row0 col147" >with</td>
-      <td id="T_06c3b_row0_col148" class="data row0 col148" >a</td>
-      <td id="T_06c3b_row0_col149" class="data row0 col149" >deep</td>
-      <td id="T_06c3b_row0_col150" class="data row0 col150" >transformer</td>
-      <td id="T_06c3b_row0_col151" class="data row0 col151" >stack,</td>
-      <td id="T_06c3b_row0_col152" class="data row0 col152" >which</td>
-      <td id="T_06c3b_row0_col153" class="data row0 col153" >encodes</td>
-      <td id="T_06c3b_row0_col154" class="data row0 col154" >context.</td>
-      <td id="T_06c3b_row0_col155" class="data row0 col155" >CANINE</td>
-      <td id="T_06c3b_row0_col156" class="data row0 col156" >outperforms</td>
-      <td id="T_06c3b_row0_col157" class="data row0 col157" >a</td>
-      <td id="T_06c3b_row0_col158" class="data row0 col158" >comparable</td>
-      <td id="T_06c3b_row0_col159" class="data row0 col159" >mBERT</td>
-      <td id="T_06c3b_row0_col160" class="data row0 col160" >model</td>
-      <td id="T_06c3b_row0_col161" class="data row0 col161" >by</td>
-      <td id="T_06c3b_row0_col162" class="data row0 col162" >2.8</td>
-      <td id="T_06c3b_row0_col163" class="data row0 col163" >F1</td>
-      <td id="T_06c3b_row0_col164" class="data row0 col164" >on</td>
-      <td id="T_06c3b_row0_col165" class="data row0 col165" >TyDi</td>
-      <td id="T_06c3b_row0_col166" class="data row0 col166" >QA,</td>
-      <td id="T_06c3b_row0_col167" class="data row0 col167" >a</td>
-      <td id="T_06c3b_row0_col168" class="data row0 col168" >challenging</td>
-      <td id="T_06c3b_row0_col169" class="data row0 col169" >multilingual</td>
-      <td id="T_06c3b_row0_col170" class="data row0 col170" >benchmark,</td>
-      <td id="T_06c3b_row0_col171" class="data row0 col171" >despite</td>
-      <td id="T_06c3b_row0_col172" class="data row0 col172" >having</td>
-      <td id="T_06c3b_row0_col173" class="data row0 col173" >28%</td>
-      <td id="T_06c3b_row0_col174" class="data row0 col174" >fewer</td>
-      <td id="T_06c3b_row0_col175" class="data row0 col175" >model</td>
-      <td id="T_06c3b_row0_col176" class="data row0 col176" >parameters.
-
-Overview</td>
-      <td id="T_06c3b_row0_col177" class="data row0 col177" >of</td>
-      <td id="T_06c3b_row0_col178" class="data row0 col178" >the</td>
-      <td id="T_06c3b_row0_col179" class="data row0 col179" >architecture:
-
-![outputname-1](https://user-images.githubusercontent.com/20651387/113306475-6c3cac80-9304-11eb-9bad-ad6323904632.png)
-
-Paper</td>
-      <td id="T_06c3b_row0_col180" class="data row0 col180" >is</td>
-      <td id="T_06c3b_row0_col181" class="data row0 col181" >available</td>
-      <td id="T_06c3b_row0_col182" class="data row0 col182" >[here](https://arxiv.org/abs/2103.06874).
-
-We</td>
-      <td id="T_06c3b_row0_col183" class="data row0 col183" >heavily</td>
-      <td id="T_06c3b_row0_col184" class="data row0 col184" >need</td>
-      <td id="T_06c3b_row0_col185" class="data row0 col185" >this</td>
-      <td id="T_06c3b_row0_col186" class="data row0 col186" >architecture</td>
-      <td id="T_06c3b_row0_col187" class="data row0 col187" >in</td>
-      <td id="T_06c3b_row0_col188" class="data row0 col188" >Transformers</td>
-      <td id="T_06c3b_row0_col189" class="data row0 col189" >(RIP</td>
-      <td id="T_06c3b_row0_col190" class="data row0 col190" >subword</td>
-      <td id="T_06c3b_row0_col191" class="data row0 col191" >tokenization)!
-
-The</td>
-      <td id="T_06c3b_row0_col192" class="data row0 col192" >first</td>
-      <td id="T_06c3b_row0_col193" class="data row0 col193" >author</td>
-      <td id="T_06c3b_row0_col194" class="data row0 col194" >(Jonathan</td>
-      <td id="T_06c3b_row0_col195" class="data row0 col195" >Clark)</td>
-      <td id="T_06c3b_row0_col196" class="data row0 col196" >said</td>
-      <td id="T_06c3b_row0_col197" class="data row0 col197" >on</td>
-      <td id="T_06c3b_row0_col198" class="data row0 col198" >[Twitter](https://twitter.com/JonClarkSeattle/status/1377505048029134856)</td>
-      <td id="T_06c3b_row0_col199" class="data row0 col199" >that</td>
-      <td id="T_06c3b_row0_col200" class="data row0 col200" >the</td>
-      <td id="T_06c3b_row0_col201" class="data row0 col201" >model</td>
-      <td id="T_06c3b_row0_col202" class="data row0 col202" >and</td>
-      <td id="T_06c3b_row0_col203" class="data row0 col203" >code</td>
-      <td id="T_06c3b_row0_col204" class="data row0 col204" >will</td>
-      <td id="T_06c3b_row0_col205" class="data row0 col205" >be</td>
-      <td id="T_06c3b_row0_col206" class="data row0 col206" >released</td>
-      <td id="T_06c3b_row0_col207" class="data row0 col207" >in</td>
-      <td id="T_06c3b_row0_col208" class="data row0 col208" >April</td>
-      <td id="T_06c3b_row0_col209" class="data row0 col209" >:partying_face:</td>
-      <td id="T_06c3b_row0_col210" class="data row0 col210" >
-
-##</td>
-      <td id="T_06c3b_row0_col211" class="data row0 col211" >Open</td>
-      <td id="T_06c3b_row0_col212" class="data row0 col212" >source</td>
-      <td id="T_06c3b_row0_col213" class="data row0 col213" >status
-
-*</td>
-      <td id="T_06c3b_row0_col214" class="data row0 col214" >[</td>
-      <td id="T_06c3b_row0_col215" class="data row0 col215" >]</td>
-      <td id="T_06c3b_row0_col216" class="data row0 col216" >the</td>
-      <td id="T_06c3b_row0_col217" class="data row0 col217" >model</td>
-      <td id="T_06c3b_row0_col218" class="data row0 col218" >implementation</td>
-      <td id="T_06c3b_row0_col219" class="data row0 col219" >is</td>
-      <td id="T_06c3b_row0_col220" class="data row0 col220" >available:</td>
-      <td id="T_06c3b_row0_col221" class="data row0 col221" >soon</td>
-      <td id="T_06c3b_row0_col222" class="data row0 col222" >[here](https://caninemodel.page.link/code)
-*</td>
-      <td id="T_06c3b_row0_col223" class="data row0 col223" >[</td>
-      <td id="T_06c3b_row0_col224" class="data row0 col224" >]</td>
-      <td id="T_06c3b_row0_col225" class="data row0 col225" >the</td>
-      <td id="T_06c3b_row0_col226" class="data row0 col226" >model</td>
-      <td id="T_06c3b_row0_col227" class="data row0 col227" >weights</td>
-      <td id="T_06c3b_row0_col228" class="data row0 col228" >are</td>
-      <td id="T_06c3b_row0_col229" class="data row0 col229" >available:</td>
-      <td id="T_06c3b_row0_col230" class="data row0 col230" >soon</td>
-      <td id="T_06c3b_row0_col231" class="data row0 col231" >[here](https://caninemodel.page.link/code)
-*</td>
-      <td id="T_06c3b_row0_col232" class="data row0 col232" >[x]</td>
-      <td id="T_06c3b_row0_col233" class="data row0 col233" >who</td>
-      <td id="T_06c3b_row0_col234" class="data row0 col234" >are</td>
-      <td id="T_06c3b_row0_col235" class="data row0 col235" >the</td>
-      <td id="T_06c3b_row0_col236" class="data row0 col236" >authors:</td>
-      <td id="T_06c3b_row0_col237" class="data row0 col237" >@jhclark-google</td>
-      <td id="T_06c3b_row0_col238" class="data row0 col238" >(not</td>
-      <td id="T_06c3b_row0_col239" class="data row0 col239" >sure),</td>
-      <td id="T_06c3b_row0_col240" class="data row0 col240" >@dhgarrette,</td>
-      <td id="T_06c3b_row0_col241" class="data row0 col241" >@jwieting</td>
-      <td id="T_06c3b_row0_col242" class="data row0 col242" >(not</td>
-      <td id="T_06c3b_row0_col243" class="data row0 col243" >sure)
-
-</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
+------
 
 
 ```python
@@ -2496,7 +2267,7 @@ pd.DataFrame(pipe.tokenizer.convert_ids_to_tokens(input_ids)).T.style.hide(axis=
   </tbody>
 </table>
 </div>
-
+------
 
 
 **Test each possible label using text entailment**
@@ -2543,6 +2314,8 @@ for label, score in zip(output["labels"], output["scores"]):
 * Tokenization might be inefficient with code since only a tiny fraction of the pretraining dataset contains code snippets.
 * Code blocks can contain important information, such as frameworks used in the code.
 
+------
+
 **Define a function to feed a single example through the zero-shot pipeline**
 
 
@@ -2554,6 +2327,8 @@ def zero_shot_pipeline(example):
     return example
 ```
 
+------
+
 **Feed the whole validation set through the pipeline**
 
 
@@ -2563,6 +2338,8 @@ ds_zero_shot = ds["valid"].map(zero_shot_pipeline)
 
 
 **Note:** We can determine which labels to assign to each example using a minimum threshold value or selecting the top-k predictions.
+
+------
 
 **Define a function to determine which set of labels to assign to each example using either a threshold value or top-k value**
 
@@ -2582,6 +2359,8 @@ def get_preds(example, threshold=None, topk=None):
     return {"pred_label_ids": list(np.squeeze(mlb.transform([preds])))}
 ```
 
+------
+
 **Define a function that returns the scikit-learn classification report**
 
 
@@ -2593,6 +2372,8 @@ def get_clf_report(ds):
         y_true, y_pred, target_names=mlb.classes_, zero_division=0, 
         output_dict=True)
 ```
+
+------
 
 **Test using top-k values to select labels**
 
@@ -2608,8 +2389,6 @@ for topk in topks:
     macros.append(clf_report['macro avg']['f1-score'])
 ```
 
-
-
 ```python
 plt.plot(topks, micros, label='Micro F1')
 plt.plot(topks, macros, label='Macro F1')
@@ -2622,6 +2401,8 @@ plt.show()
 
 
 **Note:** We obtain the best results using only the highest score per example (i.e., top-1), given most examples only have one label.
+
+------
 
 **Test using a threshold value to select labels**
 
@@ -2638,8 +2419,6 @@ for threshold in thresholds:
 ```
 
 
-
-
 ```python
 plt.plot(thresholds, micros, label="Micro F1")
 plt.plot(thresholds, macros, label="Macro F1")
@@ -2650,8 +2429,9 @@ plt.show()
 ```
 ![png](../images/notes-transformers-book/chapter-9/output_144_0.png)
 
-
 **Note:** The threshold approach performs slightly worse than the top-1 approach.
+
+------
 
 
 ```python
@@ -2667,6 +2447,8 @@ print(f'Best threshold (micro): {best_t} with F1-score {best_macro:.2f}.')
 
 **Note:** A threshold value of around 0.8 provides the best tradeoff between precision and recall.
 
+------
+
 **Compare the zero-shot classifier to the baseline Naive Bayes model**
 
 
@@ -2678,8 +2460,6 @@ for train_slice in train_slices:
     macro_scores['Zero Shot'].append(clf_report['macro avg']['f1-score'])
     micro_scores['Zero Shot'].append(clf_report['micro avg']['f1-score'])
 ```
-
-
 
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Zero Shot")
@@ -2737,6 +2517,8 @@ Noise introduced by data augmentation is less likely to change the meaning when 
     env: TOKENIZERS_PARALLELISM=false
 ```
 
+------
+
 
 ```python
 from transformers import set_seed
@@ -2746,6 +2528,8 @@ import nlpaug.augmenter.sentence as nas
 import nlpaug.flow as nafc
 import nltk
 ```
+
+------
 
 **Download a perceptron model for tagging words and the Wordnet corpora**
 
@@ -2758,7 +2542,7 @@ nltk.download('wordnet')
     True
 ```
 
-
+------
 
 ```python
 nltk.download('omw-1.4')
@@ -2767,7 +2551,7 @@ nltk.download('omw-1.4')
     True
 ```
 
-
+------
 
 ```python
 !ls ~/nltk_data/corpora/wordnet
@@ -2777,6 +2561,8 @@ nltk.download('omw-1.4')
     adv.exc       data.adj	   data.verb  index.noun   lexnames    README
     citation.bib  data.adv	   index.adj  index.sense  LICENSE     verb.exc
 ```
+
+------
 
 
 ```python
@@ -2790,12 +2576,16 @@ nltk.download('omw-1.4')
     abscissae abscissa
 ```
 
+------
+
 **Reset random seed**
 
 
 ```python
 set_seed(3)
 ```
+
+------
 
 **Define original text**
 
@@ -2804,6 +2594,8 @@ set_seed(3)
 text = "Even if you defeat me Megatron, others will rise to defeat your tyranny"
 ```
 
+------
+
 **Initialize augmentation dictionary**
 
 
@@ -2811,7 +2603,10 @@ text = "Even if you defeat me Megatron, others will rise to defeat your tyranny"
 augs = {}
 ```
 
+------
+
 #### `nlpaug.augmenter.word.synonym.SynonymAug`
+
 * [Documentation](https://nlpaug.readthedocs.io/en/latest/augmenter/word/synonym.html#nlpaug.augmenter.word.synonym.SynonymAug)
 * Create an augmenter that leverages semantic meaning to substitute words.
 
@@ -2826,8 +2621,10 @@ augs["synonym_replace"].augment(text)
     'Even if you kill me Megatron, others will prove to defeat your tyranny'
 ```
 
+------
 
 #### `nlpaug.augmenter.word.context_word_embs.ContextualWordEmbsAug`
+
 * [Documentation](https://nlpaug.readthedocs.io/en/latest/augmenter/word/context_word_embs.html#nlpaug.augmenter.word.context_word_embs.ContextualWordEmbsAug)
 * Create an augmenter that finds the top n similar words using contextual word embeddings
 
@@ -2843,8 +2640,10 @@ augs["random_insert"].augment(text)
     'even if you defeat me megatron, others humanity will rise to defeat your tyranny'
 ```
 
+------
 
 #### `nlpaug.augmenter.word.random.RandomWordAug`
+
 * [Documentation](https://nlpaug.readthedocs.io/en/latest/augmenter/word/random.html#nlpaug.augmenter.word.random.RandomWordAug)
 * Randomly apply substitute, swap, delete or crop augmentation
     * The default augmentation is to delete words.
@@ -2860,6 +2659,7 @@ augs["random_swap"].augment(text)
     'You even if defeat me Megatron, others will rise defeat to tyranny your'
 ```
 
+------
 
 **Randomly delete words**
 
@@ -2872,10 +2672,14 @@ augs["random_delete"].augment(text)
     'Even if you me Megatron, others to defeat tyranny'
 ```
 
+------
 
 #### `nlpaug.augmenter.word.back_translation.BackTranslationAug`
+
 * [Documentation](https://nlpaug.readthedocs.io/en/latest/augmenter/word/back_translation.html#nlpaug.augmenter.word.back_translation.BackTranslationAug)
 * Use two translation models to apply back translation
+
+------
 
 
 ```python
@@ -2889,7 +2693,7 @@ augs["bt_en_de"].augment(text)
     'Even if you defeat me, others will rise up to defeat your tyranny'
 ```
 
-
+------
 
 ```python
 for k,v in augs.items():
@@ -2914,6 +2718,7 @@ for k,v in augs.items():
     bt_en_de: Even if you defeat me, others will rise up to defeat your tyranny
 ```
 
+------
 
 **Reset random seed**
 
@@ -2921,6 +2726,8 @@ for k,v in augs.items():
 ```python
 set_seed(3)
 ```
+
+------
 
 **Add Random Synonym Replacement using the contextual word embeddings of DistilBERT**
 
@@ -2938,6 +2745,8 @@ print(f"Augmented text: {aug.augment(text)}")
     Augmented text: transformers'the most popular toys
 ```
 
+------
+
 **Define a function to apply synonym replacement augmentation to a batch**
 
 
@@ -2952,6 +2761,8 @@ def augment_text(batch, transformations_per_example=1):
             label_ids += [labels]
     return {"text": text_aug, "label_ids": label_ids}
 ```
+
+------
 
 **Train the baseline Naive Bayes Classifier using synonym replacement augmentation**
 
@@ -2983,7 +2794,7 @@ for train_slice in train_slices:
     micro_scores["Naive Bayes + Aug"].append(clf_report["micro avg"]["f1-score"])
 ```
 
-
+------
 
 **Compare the results**
 
@@ -2997,6 +2808,8 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes + Aug")
 **Note:**
 * A small amount of data augmentation improves the F1 score of the Naive Bayes Classifier.
 * The Naive Bayes Classifier overtakes the zero-shot pipeline for the macro F1 score at around 220 training samples.
+
+------
 
 ### Using Embeddings as a Lookup Table
 * Large language models like GPT-3 are excellent at solving tasks with limited data because they learn representations of text that encode information across many dimensions.
@@ -3016,11 +2829,15 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes + Aug")
     * Using too few neighbors might result in noisy predictions.
     * Using too many neighbors might mix neighboring groups.
 
+------
+
 
 ```python
 import torch
 from transformers import AutoTokenizer, AutoModel
 ```
+
+------
 
 **Instantiate a tokenizer and model using a GPT-2 checkpoint trained on Python code**
 
@@ -3033,8 +2850,13 @@ model = AutoModel.from_pretrained(model_ckpt)
 
 **Note:** Transformer models like GPT-2 return one embedding vector per token, and we want a single embedding for the entire output.
 
+------
+
 **Define a function to create a single-vector representation for model output using average pooling**
+
 * We don't want to include padding tokens in the average.
+
+------
 
 
 ```python
@@ -3053,6 +2875,8 @@ def mean_pooling(model_output, attention_mask):
     return sum_embeddings / sum_mask
 ```
 
+------
+
 **Define a function to embed sample text**
 
 
@@ -3066,12 +2890,16 @@ def embed_text(examples):
     return {"embedding": pooled_embeds.cpu().numpy()}
 ```
 
+------
+
 **Use the end-of-string token as the padding token since GPT-style models don't have one**
 
 
 ```python
 tokenizer.pad_token = tokenizer.eos_token
 ```
+
+------
 
 **Get the embeddings for each split**
 
@@ -3082,7 +2910,7 @@ embs_valid = ds["valid"].map(embed_text, batched=True, batch_size=16)
 embs_test = ds["test"].map(embed_text, batched=True, batch_size=16)
 ```
 
-
+------
 
 #### `Dataset.add_faiss_index`
 * [Documentation](https://huggingface.co/docs/datasets/master/en/package_reference/main_classes#datasets.Dataset.add_faiss_index)
@@ -3090,6 +2918,8 @@ embs_test = ds["test"].map(embed_text, batched=True, batch_size=16)
 * FAISS is a library for efficient similarity search of dense vectors.
     * [GitHub Repository](https://github.com/facebookresearch/faiss)
     * [Billion-scale similarity search with GPUs](https://arxiv.org/abs/1702.08734)
+
+------
 
 
 ```python
@@ -3109,8 +2939,10 @@ embs_train.add_faiss_index("embedding")
     })
 ```
 
+------
 
 #### `datasets.search.IndexableMixin.get_nearest_examples`
+
 * [Documentation](https://huggingface.co/docs/datasets/master/en/package_reference/main_classes#datasets.Dataset.get_nearest_examples)
 * Find the nearest examples in the dataset to the query.
 
@@ -3180,6 +3012,8 @@ for score, label, text in zip(scores, samples["labels"], samples["text"]):
 * The three retrieved documents all have the same labels as they should.
 * The query and the retrieved documents all relate to adding new and efficient transformer models.
 
+------
+
 **Define a function that returns the sample predictions using a label occurrence threshold**
 
 
@@ -3188,7 +3022,10 @@ def get_sample_preds(sample, m):
     return (np.sum(sample["label_ids"], axis=0) >= m).astype(int)
 ```
 
+------
+
 #### `datasets.search.IndexableMixin.get_nearest_examples_batch`
+
 * [Documentation](https://huggingface.co/docs/datasets/master/en/package_reference/main_classes#datasets.Dataset.get_nearest_examples_batch)
 
 **Define a function to test different k and threshold values for nearest-neighbor search**
@@ -3211,6 +3048,8 @@ def find_best_k_m(ds_train, valid_queries, valid_labels, max_k=17):
     return perf_micro, perf_macro
 ```
 
+------
+
 **Test different k and threshold values**
 
 
@@ -3219,6 +3058,8 @@ valid_labels = np.array(embs_valid["label_ids"])
 valid_queries = np.array(embs_valid["embedding"], dtype=np.float32)
 perf_micro, perf_macro = find_best_k_m(embs_train, valid_queries, valid_labels)
 ```
+
+------
 
 **Plot the results**
 
@@ -3244,6 +3085,8 @@ plt.show()
 * Choosing a threshold value $m$ that is too large or small for a given $k$ value yields suboptimal results.
 * A ratio of approximately $m/k = 1/3$ achieves the best results. 
 
+------
+
 **Find the best k and threshold values**
 
 
@@ -3256,6 +3099,8 @@ print(f"Best k: {k}, best m: {m}")
 ```
 
 **Note:** We get the best performance when we retrieve the 15 nearest neighbors and then assign the labels that occurred at least five times.
+
+------
 
 **Evaluate the embedding lookup performance using different training slices**
 
@@ -3285,7 +3130,7 @@ for train_slice in train_slices:
     micro_scores["Embedding"].append(clf_report["micro avg"]["f1-score"])
 ```
 
-
+------
 
 **Compare performance to previous methods**
 
@@ -3302,7 +3147,10 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Embedding")
 * The zero-shot pipeline might work much better on tasks closer to the pretraining domain.
 * The embeddings quality depends on the model and the original training data.
 
+------
+
 ### Efficient Similarity Search with FAISS
+
 * We usually speed up text search by creating an inverted index that maps terms to documents.
 * An inverted index works just like an index at the end of a book, where each word maps to the pages/documents it occurs in.
 * We can quickly find which documents the search terms appear in when performing a query.
@@ -3323,12 +3171,16 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Embedding")
 * The target corpus should not be too different from the pretraining corpus.
 * The Hugging Face hub has many models pretrained on different corpora.
 
+------
+
 
 ```python
 import torch
 from transformers import (AutoTokenizer, AutoConfig,
                           AutoModelForSequenceClassification)
 ```
+
+------
 
 **Load the pretrained tokenizer for the standard BERT checkpoint**
 
@@ -3337,6 +3189,8 @@ from transformers import (AutoTokenizer, AutoConfig,
 model_ckpt = "bert-base-uncased"
 tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 ```
+
+------
 
 **Tokenize the dataset**
 
@@ -3348,6 +3202,7 @@ ds_enc = ds.map(tokenize, batched=True)
 ds_enc = ds_enc.remove_columns(['labels', 'text'])
 ```
 
+------
 
 **Change the `label_ids` column data type to float for the multilabel loss function**
 
@@ -3359,11 +3214,13 @@ ds_enc = ds_enc.map(lambda x: {"label_ids_f": x["label_ids"].to(torch.float)},
 ds_enc = ds_enc.rename_column("label_ids_f", "label_ids")
 ```
 
-
+------
 
 ```python
 from transformers import Trainer, TrainingArguments
 ```
+
+------
 
 **Keep the best model based on the micro $F_{1}$-score**
 
@@ -3383,6 +3240,8 @@ training_args_fine_tune = TrainingArguments(
 from scipy.special import expit as sigmoid
 ```
 
+------
+
 **Define a function to compute the $F_{1}$-scores**
 
 
@@ -3398,6 +3257,8 @@ def compute_metrics(pred):
     return {"micro f1": clf_dict["micro avg"]["f1-score"],
             "macro f1": clf_dict["macro avg"]["f1-score"]}
 ```
+
+------
 
 **Intitialize a BertConfig for Multi-label classification**
 
@@ -3463,6 +3324,7 @@ config
     }
 ```
 
+------
 
 **Train a classifier from scratch for each training slice**
 
@@ -3490,7 +3352,7 @@ for train_slice in train_slices:
     micro_scores["Fine-tune (vanilla)"].append(metrics["micro f1"])
 ```
 
-
+------
 
 **Compare the results to previous methods**
 
@@ -3503,7 +3365,10 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (vanilla)")
 
 **Note:** The fine-tuned model is competitive when we have at least 64 training examples.
 
+------
+
 ### In-Context and Few-Shot Learning with Prompts
+
 * The GPT-3 paper found that large-language models can effectively learn from examples presented in a prompt.
     * [Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165)
 * The larger the model, the better it is at using in-context examples.
@@ -3536,6 +3401,8 @@ def tokenize(batch):
                      max_length=128, return_special_tokens_mask=True)
 ```
 
+------
+
 **Retokenize the text**
 
 
@@ -3565,7 +3432,7 @@ ds_mlm
     })
 ```
 
-
+------
 
 ```python
 pd.DataFrame(ds_mlm['train']['special_tokens_mask'][0]).T.style.hide(axis='columns').hide(axis='rows')
@@ -3708,9 +3575,7 @@ pd.DataFrame(ds_mlm['train']['special_tokens_mask'][0]).T.style.hide(axis='colum
   </tbody>
 </table>
 </div>
-
-
-
+------
 
 ```python
 pd.DataFrame(tokenizer.convert_ids_to_tokens(ds_mlm['train']['input_ids'][0])).T.style.hide(axis='columns').hide(axis='rows')
@@ -3853,15 +3718,16 @@ pd.DataFrame(tokenizer.convert_ids_to_tokens(ds_mlm['train']['input_ids'][0])).T
   </tbody>
 </table>
 </div>
-
-
-
+------
 
 ```python
 from transformers import DataCollatorForLanguageModeling, set_seed
 ```
 
+------
+
 #### `transformers.data.data_collator.DataCollatorForLanguageModeling`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/data_collator#transformers.DataCollatorForLanguageModeling)
 * Create a data collator for language modeling.
 
@@ -3873,12 +3739,16 @@ data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer,
                                                 mlm_probability=0.15)
 ```
 
+------
+
 **Reset random seed**
 
 
 ```python
 set_seed(3)
 ```
+
+------
 
 **Test the data collator**
 
@@ -3897,8 +3767,6 @@ pd.DataFrame({
     "Masked input_ids": outputs["input_ids"][0],
     "Labels": outputs["labels"][0]}).T
 ```
-
-
 
 
 <div style="overflow-x:auto;">
@@ -3963,8 +3831,7 @@ pd.DataFrame({
   </tbody>
 </table>
 </div>
-
-
+------
 
 **Switch the return formats of the data collator to PyTorch**
 
@@ -3978,6 +3845,8 @@ data_collator.return_tensors = "pt"
 from transformers import AutoModelForMaskedLM
 ```
 
+------
+
 **Initialize the training arguments**
 
 
@@ -3987,6 +3856,8 @@ training_args = TrainingArguments(
     logging_strategy="epoch", evaluation_strategy="epoch", save_strategy="no",
     num_train_epochs=16, push_to_hub=True, log_level="error", report_to="none", fp16=True)
 ```
+
+------
 
 **Initialize the Trainer**
 
@@ -3998,7 +3869,7 @@ trainer = Trainer(
         train_dataset=ds_mlm["unsup"], eval_dataset=ds_mlm["train"])
 ```
 
-
+------
 
 **Train the model**
 
@@ -4010,6 +3881,7 @@ trainer.train()
     TrainOutput(global_step=4656, training_loss=1.2827145487991805, metrics={'train_runtime': 561.7109, 'train_samples_per_second': 264.99, 'train_steps_per_second': 8.289, 'train_loss': 1.2827145487991805, 'epoch': 16.0})
 ```
 
+------
 
 **Push the trained model to Hugging Face Hub**
 
@@ -4021,6 +3893,7 @@ trainer.push_to_hub("Training complete!")
     'https://huggingface.co/cj-mills/bert-base-uncased-issues-128/commit/c7ba31377378cb7fb9412e9524aaf76eed6956b7'
 ```
 
+------
 
 **Inspect the training and validation losses from the training session**
 
@@ -4040,8 +3913,9 @@ plt.show()
 ```
 ![png](../images/notes-transformers-book/chapter-9/output_284_0.png)
 
-
 **Note:** Both the training and validation loss decreased significantly.
+
+------
 
 **Free unoccupied cached memory**
 
@@ -4049,6 +3923,8 @@ plt.show()
 ```python
 torch.cuda.empty_cache()
 ```
+
+------
 
 ### Fine-Tuning a Classifier
 
@@ -4115,6 +3991,7 @@ config
     }
 ```
 
+------
 
 **Fine-tune the classifier on each training slice**
 
@@ -4140,8 +4017,6 @@ for train_slice in train_slices:
 ```
 
 
-
-
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 ```
@@ -4149,6 +4024,8 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 
 
 **Note:** The fine-tuned classifier performs better than the vanilla BERT, especially in the low-data domain.
+
+------
 
 ### Advanced Methods
 
