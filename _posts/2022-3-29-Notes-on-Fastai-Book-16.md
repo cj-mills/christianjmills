@@ -17,7 +17,7 @@ search_exclude: false
 * [A Generic Optimizer](#a-generic-optimizer)
 * [References](#references)
 
-<br>
+-----
 
 ```python
 #hide
