@@ -17,7 +17,7 @@ search_exclude: false
 * [Gradient CAM](#gradient-cam)
 * [References](#references)
 
-<br>
+-----
 
 ```python
 #hide
