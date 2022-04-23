@@ -40,7 +40,7 @@ search_exclude: false
 from fastai.vision.all import *
 ```
 
-<br>
+-----
 ```python
 path = untar_data(URLs.IMAGENETTE)
 path
@@ -54,7 +54,7 @@ Path('/home/innom-dt/.fastai/data/imagenette2')
 * [https://docs.fast.ai/data.transforms.html#parent_label](https://docs.fast.ai/data.transforms.html#parent_label)
 * Label item with the parent folder name.
 
-<br>
+-----
 ```python
 parent_label
 ```
@@ -62,7 +62,7 @@ parent_label
 <function fastai.data.transforms.parent_label(o)>
 ```
 
-<br>
+-----
 ```python
 dblock = DataBlock(blocks=(
     # TransformBlock for images
@@ -80,7 +80,7 @@ dblock = DataBlock(blocks=(
 dls = dblock.dataloaders(path, bs=64, num_workers=8)
 ```
 
-<br>
+-----
 ```python
 xresnet50
 ```
@@ -93,7 +93,7 @@ xresnet50
 * [https://docs.fast.ai/losses.html#CrossEntropyLossFlat](https://docs.fast.ai/losses.html#CrossEntropyLossFlat)
 * Same as `nn.CrossEntropyLoss`, but flattens input and target.
 
-<br>
+-----
 ```python
 CrossEntropyLossFlat
 ```
@@ -101,7 +101,7 @@ CrossEntropyLossFlat
 fastai.losses.CrossEntropyLossFlat
 ```
 
-<br>
+-----
 ```python
 # Initialize the model without pretrained weights
 model = xresnet50(n_out=dls.c)
@@ -161,7 +161,7 @@ learn.fit_one_cycle(5, 3e-3)
 
 
 
-<br>
+-----
 ```python
 # Initialize the model without pretrained weights
 model = xresnet50(n_out=dls.c)
@@ -251,7 +251,7 @@ Normalize
 fastai.data.transforms.Normalize
 ```
 
-<br>
+-----
 ```python
 Normalize.from_stats
 ```
@@ -259,7 +259,7 @@ Normalize.from_stats
 <bound method Normalize.from_stats of <class 'fastai.data.transforms.Normalize'>>
 ```
 
-<br>
+-----
 ```python
 def get_dls(bs, size):
     dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
@@ -271,12 +271,12 @@ def get_dls(bs, size):
     return dblock.dataloaders(path, bs=bs)
 ```
 
-<br>
+-----
 ```python
 dls = get_dls(64, 224)
 ```
 
-<br>
+-----
 ```python
 x,y = dls.one_batch()
 x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
@@ -286,7 +286,7 @@ x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
  TensorImage([1.1835, 1.1913, 1.2377], device='cuda:0'))
 ```
 
-<br>
+-----
 ```python
 model = xresnet50(n_out=dls.c)
 learn = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy).to_fp16()
@@ -409,7 +409,7 @@ learn.fit_one_cycle(4, 3e-3)
 </div>
 
 
-<br>
+-----
 ```python
 learn.dls = get_dls(64, 224)
 learn.fine_tune(5, 1e-3)
@@ -503,7 +503,7 @@ learn.tta
 <bound method Learner.tta of <fastai.learner.Learner object at 0x7f75b4be5f40>>
 ```
 
-<br>
+-----
 ```python
 preds,targs = learn.tta()
 accuracy(preds, targs).item()
@@ -560,7 +560,7 @@ show_image((0.3*tchurch + 0.7*tgas), ax=axs[2]);
 ```
 ![png](../images/notes-fastai-book/chapter-7/output_31_0.png)
 
-<br>
+-----
 ```python
 model = xresnet50()
 learn = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy, cbs=MixUp).to_fp16()
@@ -706,7 +706,7 @@ learn.fit_one_cycle(15, 3e-3)
     3. replace all 1s with $1 - \epsilon + \frac{\epsilon}{N}$ to make sure the labels add up to 1
     4. 
 
-<br>
+-----
 ```python
 model = xresnet50()
 learn = Learner(dls, model, loss_func=LabelSmoothingCrossEntropy(), metrics=accuracy).to_fp16()
@@ -964,7 +964,7 @@ learn.fit_one_cycle(15, 3e-3)
 </table>
 </div>
 
-<br>
+-----
 
 ```python
 learn.dls = get_dls(64, 224)
