@@ -22,6 +22,8 @@ search_exclude: false
 
 
 
+
+
 ## The Practice of Deep Learning
 
 - Keep an open mind
@@ -163,7 +165,7 @@ import os
 key = os.environ.get('AZURE_SEARCH_KEY', 'f4be28837a074dfa90a1b72900a971ef')
 ```
 
-<br>
+-----
 
 ```python
 search_images_bing
@@ -172,12 +174,13 @@ search_images_bing
 <function fastbook.search_images_bing(key, term, min_sz=128, max_images=150)>
 ```
 
-<br>
+-----
 ```python
 results = search_images_bing(key, 'grizzly bear')
 ```
 
-<br>
+-----
+
 ```python
 print(type(results))
 print(f"Number of results: {len(results)}")
@@ -188,7 +191,7 @@ print(f"Number of results: {len(results)}")
 Number of results: 150
 ```
 
-<br>
+-----
 
 ```python
 pd.DataFrame(results).head()
@@ -348,7 +351,7 @@ pd.DataFrame(results).head()
 
 
 
-<br>
+-----
 
 ```python
 ims = results.attrgot('contentUrl')
@@ -360,7 +363,7 @@ len(ims)
 150
 ```
 
-<br>
+-----
 
 
 ```python
@@ -377,7 +380,7 @@ download_url(ims[0], dest)
 Path('images/grizzly.jpg')
 ```
 
-<br>
+-----
 
 
 ```python
@@ -410,7 +413,7 @@ for b in bear_types:
 /mnt/980SSD/Datasets/bears/teddy
 ```
 
-<br>
+-----
 
 ```python
 # Check if the path exists
@@ -442,7 +445,7 @@ print(fns[:5])
 [Path('/mnt/980SSD/Datasets/bears/black/00000000.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000001.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000002.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000003.png'), Path('/mnt/980SSD/Datasets/bears/black/00000004.jpg')]
 ```
 
-<br>
+-----
 
 ```python
 # Find images in `fns` that can't be opened
@@ -460,7 +463,7 @@ print(failed[:5])
 []
 ```
 
-<br>
+-----
 
 ```python
 # Remove image files that failed verification
@@ -538,7 +541,7 @@ dls.valid.show_batch(max_n=4, nrows=1)
 
 ![png](../images/notes-fastai-book/chapter-2/output_22_0.png)
 
-<br>
+-----
 
 ```python
 # Create a new `DataBlock` that resizes and squishes images to 128x128
@@ -554,7 +557,7 @@ dls.valid.show_batch(max_n=4, nrows=1)
 
 ![png](../images/notes-fastai-book/chapter-2/output_24_0.png)
 
-<br>
+-----
 
 ```python
 # Create a new `DataBlock` that pads each image to squares with black pixels and resizes to 128x128
@@ -566,7 +569,7 @@ dls.valid.show_batch(max_n=4, nrows=1)
 
 ![png](../images/notes-fastai-book/chapter-2/output_25_0.png)
 
-<br>
+-----
 
 ```python
 # Create a new `DataBlock` that picks a random scaled crop of an image and resize it to 128x128
@@ -708,7 +711,7 @@ learn.fine_tune(4)
 </table>
 </div>
 
-<br>
+-----
 
 ```python
 # Contains interpretation methods for classification models
@@ -718,7 +721,7 @@ interp.plot_confusion_matrix()
 ```
 ![png](../images/notes-fastai-book/chapter-2/output_36_2.png)
 
-<br>
+-----
 
 ```python
 interp.plot_top_losses(5, nrows=1)
@@ -726,7 +729,7 @@ interp.plot_top_losses(5, nrows=1)
 ![png](../images/notes-fastai-book/chapter-2/output_37_0.png)
 
 
-<br>
+-----
 ```python
 cleaner = ImageClassifierCleaner(learn)
 cleaner
@@ -736,7 +739,7 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 ```
 
 
-<br>
+-----
 ```python
 # for idx in cleaner.delete(): cleaner.fns[idx].unlink()
 # for idx,cat in cleaner.change(): shutil.move(str(cleaner.fns[idx]), path/cat)
