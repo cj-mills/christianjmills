@@ -17,7 +17,7 @@ search_exclude: false
 * [Improving Training Stability](#improving-training-stability)
 * [References](#references)
 
-<br>
+-----
 
 ```python
 #hide
