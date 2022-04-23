@@ -26,6 +26,8 @@ search_exclude: false
 
 
 
+
+
 ## A Brief History of Neural Networks
 
 ### The Artificial Neuron
@@ -261,7 +263,7 @@ URLs.PETS
 'https://s3.amazonaws.com/fast-ai-imageclas/oxford-iiit-pet.tgz'
 ```
 
-<br>
+------
 
 ```python
 !ls ~/.fastai/data
@@ -271,7 +273,7 @@ URLs.PETS
 annotations  coco_sample  oxford-iiit-pet
 ```
 
-<br>
+------
 
 ```python
 !ls ~/.fastai/data/oxford-iiit-pet/images| head -5
@@ -286,7 +288,7 @@ Abyssinian_102.jpg
 ls: write error: Broken pipe
 ```
 
-<br>
+------
 
 
 ```python
@@ -304,7 +306,7 @@ str.isupper
 <method 'isupper' of 'str' objects>
 ```
 
-<br>
+------
 
 ```python
 is_cat("word")
@@ -315,7 +317,7 @@ is_cat("word")
 False
 ```
 
-<br>
+------
 
 ```python
 is_cat("Word")
@@ -326,7 +328,7 @@ is_cat("Word")
 True
 ```
 
-<br>
+------
 
 ```python
 is_cat("woRd")
@@ -337,7 +339,7 @@ is_cat("woRd")
 False
 ```
 
-<br>
+------
 
 ```python
 # Cat breeds are upper case
@@ -353,7 +355,7 @@ False
 ls: write error: Broken pipe
 ```
 
-<br>
+------
 
 
 ```python
@@ -370,7 +372,7 @@ ls: write error: Broken pipe
 ls: write error: Broken pipe
 ```
 
-<br>
+------
 
 
 ```python
@@ -386,7 +388,7 @@ dls = ImageDataLoaders.from_name_func(
     label_func=is_cat, item_tfms=Resize(224), num_workers=8)
 ```
 
-<br>
+------
 
 ```python
 print(len(get_image_files(path)))
@@ -404,7 +406,7 @@ for i in range(5):
 /home/innom-dt/.fastai/data/oxford-iiit-pet/images/beagle_41.jpg
 ```
 
-<br>
+------
 
 
 ```python
@@ -416,7 +418,7 @@ dls.after_item
 Pipeline: Resize -- {'size': (224, 224), 'method': 'crop', 'pad_mode': 'reflection', 'resamples': (2, 0), 'p': 1.0} -> ToTensor
 ```
 
-<br>
+------
 
 ```python
 dls.after_batch
@@ -531,7 +533,7 @@ learn.fine_tune(1)
     </tr>
   </tbody>
 </table>
-<br>
+------
 
 
 ```python
@@ -544,7 +546,7 @@ cnn_learner
 <function fastai.vision.learner.cnn_learner(dls, arch, normalize=True, n_out=None, pretrained=True, config=None, loss_func=None, opt_func=<function Adam at 0x7f0e87aa2040>, lr=0.001, splitter=None, cbs=None, metrics=None, path=None, model_dir='models', wd=None, wd_bn_bias=False, train_bn=True, moms=(0.95, 0.85, 0.95), cut=None, n_in=3, init=<function kaiming_normal_ at 0x7f0ed3b4f820>, custom_head=None, concat_pool=True, lin_ftrs=None, ps=0.5, first_bn=True, bn_final=False, lin_first=False, y_range=None)>
 ```
 
-<br>
+------
 
 ```python
 # ResNet-34 model from [Deep Residual Learning for Image Recognition](https://arxiv.org/pdf/1512.03385.pdf)
@@ -558,7 +560,7 @@ resnet34
 <function torchvision.models.resnet.resnet34(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> torchvision.models.resnet.ResNet>
 ```
 
-<br>
+------
 
 ```python
 # based on https://github.com/sksq96/pytorch-summary/blob/master/torchsummary/torchsummary.py
@@ -644,7 +646,7 @@ ResNet152 Total params: 60,192,808
 
 
 
-<br>
+------
 
 ```python
 # 1 - accuracy
@@ -656,7 +658,7 @@ error_rate
 <function fastai.metrics.error_rate(inp, targ, axis=-1)>
 ```
 
-<br>
+------
 
 
 ```python
@@ -685,7 +687,7 @@ uploader
 FileUpload(value={}, description='Upload')
 ```
 
-<br>
+------
 
 ```python
 # Open an `Image` from path `fn`
@@ -717,7 +719,7 @@ Is this a cat?: False.
 Probability it's a cat: 0.000024
 ```
 
-<br>
+------
 
 ```python
 uploader = widgets.FileUpload()
@@ -799,7 +801,7 @@ print(path)
 /home/innom-dt/.fastai/data/camvid_tiny
 ```
 
-<br>
+------
 
 ```python
 !ls $path
@@ -808,7 +810,7 @@ print(path)
 codes.txt  images  labels
 ```
 
-<br>
+------
 
 ```python
 # Basic wrapper around several `DataLoader`s with factory methods for segmentation problems
@@ -819,7 +821,7 @@ dls = SegmentationDataLoaders.from_label_func(
 )
 ```
 
-<br>
+------
 
 
 ```python
@@ -837,7 +839,7 @@ for i in range(5):
 /home/innom-dt/.fastai/data/camvid_tiny/images/0016E5_05310.png
 ```
 
-<br>
+------
 
 ```python
 path/'labels'/f'{img_files[0].stem}_P{img_files[0].suffix}'
@@ -846,7 +848,7 @@ path/'labels'/f'{img_files[0].stem}_P{img_files[0].suffix}'
 Path('/home/innom-dt/.fastai/data/camvid_tiny/labels/0016E5_08155_P.png')
 ```
 
-<br>
+------
 
 ```python
 # Build a unet learner
@@ -932,7 +934,7 @@ learn.fine_tune(8)
     </tr>
   </tbody>
 </table>
-<br>
+------
 
 
 ```python
@@ -973,7 +975,7 @@ path
 Path('/home/innom-dt/.fastai/data/imdb')
 ```
 
-<br>
+------
 
 
 ```python
@@ -984,14 +986,14 @@ Path('/home/innom-dt/.fastai/data/imdb')
 imdb.vocab  README  test  tmp_clas  tmp_lm  train  unsup
 ```
 
-<br>
+------
 
 ```python
 # Basic wrapper around several `DataLoader`s with factory methods for NLP problems
 dls = TextDataLoaders.from_folder(path, valid='test', bs=64, seed=42, num_workers=8)
 ```
 
-<br>
+------
 
 
 ```python
@@ -1003,7 +1005,7 @@ len(dls.items)
 25000
 ```
 
-<br>
+------
 
 
 ```python
@@ -1015,7 +1017,7 @@ dls.after_iter
 <bound method after_iter of <fastai.text.data.SortedDL object at 0x7f0f493cb9d0>>
 ```
 
-<br>
+------
 
 
 ```python
@@ -1023,7 +1025,7 @@ dls.after_iter
 SortedDL
 ```
 
-<br>
+------
 
 
 ```python
@@ -1034,7 +1036,7 @@ SortedDL
 labeledBow.feat  neg  pos  unsupBow.feat
 ```
 
-<br>
+------
 
 ```python
 !ls $path/train/pos | wc -l
@@ -1044,7 +1046,7 @@ labeledBow.feat  neg  pos  unsupBow.feat
 12500
 ```
 
-<br>
+------
 
 ```python
 !ls $path/train/pos | head -5
@@ -1059,7 +1061,7 @@ labeledBow.feat  neg  pos  unsupBow.feat
 ls: write error: Broken pipe
 ```
 
-<br>
+------
 
 ```python
 !cat $path/train/pos/0_9.txt
@@ -1069,7 +1071,7 @@ ls: write error: Broken pipe
 Bromwell High is a cartoon comedy. It ran at the same time as some other programs about school life, such as "Teachers". My 35 years in the teaching profession lead me to believe that Bromwell High's satire is much closer to reality than is "Teachers". The scramble to survive financially, the insightful students who can see right through their pathetic teachers' pomp, the pettiness of the whole situation, all remind me of the schools I knew and their students. When I saw the episode in which a student repeatedly tried to burn down the school, I immediately recalled ......... at .......... High. A classic line: INSPECTOR: I'm here to sack one of your teachers. STUDENT: Welcome to Bromwell High. I expect that many adults of my age think that Bromwell High is far fetched. What a pity that it isn't!
 ```
 
-<br>
+------
 
 
 ```python
@@ -1080,7 +1082,7 @@ Bromwell High is a cartoon comedy. It ran at the same time as some other program
 12500
 ```
 
-<br>
+------
 
 ```python
 !ls $path/train/neg | head -5
@@ -1095,7 +1097,7 @@ Bromwell High is a cartoon comedy. It ran at the same time as some other program
 ls: write error: Broken pipe
 ```
 
-<br>
+------
 
 ```python
 !cat $path/train/neg/0_3.txt
@@ -1105,7 +1107,7 @@ ls: write error: Broken pipe
 Story of a man who has unnatural feelings for a pig. Starts out with a opening scene that is a terrific example of absurd comedy. A formal orchestra audience is turned into an insane, violent mob by the crazy chantings of it's singers. Unfortunately it stays absurd the WHOLE time with no general narrative eventually making it just too off putting. Even those from the era should be turned off. The cryptic dialogue would make Shakespeare seem easy to a third grader. On a technical level it's better than you might think with some good cinematography by future great Vilmos Zsigmond. Future stars Sally Kirkland and Frederic Forrest can be seen briefly.
 ```
 
-<br>
+------
 
 
 ```python
@@ -1174,7 +1176,7 @@ learn.fine_tune(4, 1e-2)
     </tr>
   </tbody>
 </table>
-<br>
+------
 
 
 ```python
@@ -1185,7 +1187,7 @@ learn.predict("I really liked that movie!")
 ('pos', TensorText(1), TensorText([5.5877e-04, 9.9944e-01]))
 ```
 
-<br>
+------
 
 
 ```python
@@ -1225,7 +1227,7 @@ print(path)
 /home/innom-dt/.fastai/data/adult_sample
 ```
 
-<br>
+------
 
 ```python
 !ls $path
@@ -1235,7 +1237,7 @@ print(path)
 adult.csv  export.pkl  models
 ```
 
-<br>
+------
 
 ```python
 import pandas as pd
@@ -1251,7 +1253,7 @@ age,workclass,fnlwgt,education,education-num,marital-status,occupation,relations
 cat: write error: Broken pipe
 ```
 
-<br>
+------
 
 ```python
 pd.read_csv(f"{path}/adult.csv").head()
@@ -1374,7 +1376,7 @@ pd.read_csv(f"{path}/adult.csv").head()
 
 
 
-<br>
+------
 
 ```python
 dls = TabularDataLoaders.from_csv(path/'adult.csv', path=path, y_names="salary",
@@ -1457,7 +1459,7 @@ print(path)
 /home/innom-dt/.fastai/data/movie_lens_sample
 ```
 
-<br>
+------
 
 ```python
 dls = CollabDataLoaders.from_csv(path/'ratings.csv', bs=64, seed=42, num_workers=8)
@@ -1558,7 +1560,7 @@ learn.fine_tune(10)
     </tr>
   </tbody>
 </table>
-<br>
+------
 
 
 ```python
