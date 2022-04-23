@@ -40,7 +40,7 @@ from fastai.vision.all import *
 * multiple classes may be present in the same image
 * classification labels are stored in a CSV file
 
-<br>
+-----
 ```python
 path = untar_data(URLs.PASCAL_2007)
 path
@@ -49,7 +49,7 @@ path
 Path('/home/innom-dt/.fastai/data/pascal_2007')
 ```
 
-<br>
+-----
 ```python
 path.ls()
 ```
@@ -57,7 +57,7 @@ path.ls()
 (#8) [Path('/home/innom-dt/.fastai/data/pascal_2007/segmentation'),Path('/home/innom-dt/.fastai/data/pascal_2007/test'),Path('/home/innom-dt/.fastai/data/pascal_2007/train.csv'),Path('/home/innom-dt/.fastai/data/pascal_2007/valid.json'),Path('/home/innom-dt/.fastai/data/pascal_2007/train'),Path('/home/innom-dt/.fastai/data/pascal_2007/train.json'),Path('/home/innom-dt/.fastai/data/pascal_2007/test.csv'),Path('/home/innom-dt/.fastai/data/pascal_2007/test.json')]
 ```
 
-<br>
+-----
 
 ```python
 df = pd.read_csv(path/'train.csv')
@@ -140,7 +140,7 @@ df.iloc[:,0]
 Name: fname, Length: 5011, dtype: object
 ```
 
-<br>
+-----
 ```python
 df.iloc[0,:]
 # Trailing :s are always optional (in numpy, pytorch, pandas, etc.),
@@ -154,7 +154,7 @@ is_valid          True
 Name: 0, dtype: object
 ```
 
-<br>
+-----
 ```python
 # Get a column by name
 df['fname']
@@ -174,7 +174,7 @@ df['fname']
 Name: fname, Length: 5011, dtype: object
 ```
 
-<br>
+-----
 
 ```python
 # Initialize a new data frame using a dictionary
@@ -206,7 +206,7 @@ tmp_df
 </div>
 
 
-<br>
+-----
 
 ```python
 # Perform calculations using columns
@@ -263,13 +263,13 @@ One-hot encoding: using a vector of 0s, with a 1 in each location that is repres
 dblock = DataBlock()
 ```
 
-<br>
+-----
 ```python
 # Add a Datasets object using the DataFrame
 dsets = dblock.datasets(df)
 ```
 
-<br>
+-----
 ```python
 len(dsets.train),len(dsets.valid)
 ```
@@ -277,7 +277,7 @@ len(dsets.train),len(dsets.valid)
 (4009, 1002)
 ```
 
-<br>
+-----
 ```python
 # Grabs the same thing twice
 # Need to specify an input and a target
@@ -295,7 +295,7 @@ x,y
  Name: 4346, dtype: object)
 ```
 
-<br>
+-----
 ```python
 x['fname']
 ```
@@ -303,7 +303,7 @@ x['fname']
 '008663.jpg'
 ```
 
-<br>
+-----
 ```python
 # Tell the DataBlock how to extract the input and target from the DataFrame
 # Using lamda functions
@@ -317,7 +317,7 @@ dsets.train[0]
 
 **Note:** Do not use lambda functions if you need to export the Learner 
 
-<br>
+-----
 ```python
 # Tell the DataBlock how to extract the input and target from the DataFrame
 # Using standard functions
@@ -333,7 +333,7 @@ dsets.train[0]
 
 **Note:** Need the full file path for the dependent variable and need to split the dependent variables on the space character
 
-<br>
+-----
 ```python
 def get_x(r): return path/'train'/r['fname']
 def get_y(r): return r['labels'].split(' ')
@@ -365,7 +365,7 @@ ImageBlock
 <function fastai.vision.data.ImageBlock(cls=<class 'fastai.vision.core.PILImage'>)>
 ```
 
-<br>
+-----
 ```python
 MultiCategoryBlock
 ```
@@ -373,7 +373,7 @@ MultiCategoryBlock
 <function fastai.data.block.MultiCategoryBlock(encoded=False, vocab=None, add_na=False)>
 ```
 
-<br>
+-----
 
 ```python
 dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
@@ -386,7 +386,7 @@ dsets.train[0]
  TensorMultiCategory([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.]))
 ```
 
-<br>
+-----
 ```python
 # Check which object class is represented by the above one-hot encoding
 idxs = torch.where(dsets.train[0][1]==1.)[0]
@@ -396,7 +396,7 @@ dsets.train.vocab[idxs]
 (#1) ['dog']
 ```
 
-<br>
+-----
 ```python
 # Define a function to split the dataset based on the is_valid column
 def splitter(df):
@@ -417,7 +417,7 @@ dsets.train[0]
  TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
 ```
 
-<br>
+-----
 ```python
 dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
                    splitter=splitter,
@@ -427,14 +427,14 @@ dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
 dls = dblock.dataloaders(df)
 ```
 
-<br>
+-----
 
 ```python
 dls.show_batch(nrows=1, ncols=3)
 ```
 ![png](../images/notes-fastai-book/chapter-6/output_35_0.png)
 
-<br>
+-----
 ```python
 dblock.summary(df)
 ```
@@ -551,7 +551,7 @@ learn = cnn_learner(dls, resnet18)
 * [https://docs.fast.ai/torch_core.html#to_cpu](https://docs.fast.ai/torch_core.html#to_cpu)
 * Recursively map lists of tensors in `b` to the cpu.
 
-<br>
+-----
 ```python
 to_cpu
 ```
@@ -559,7 +559,7 @@ to_cpu
 <function fastai.torch_core.to_cpu(b)>
 ```
 
-<br>
+-----
 ```python
 x,y = to_cpu(dls.train.one_batch())
 activs = learn.model(x)
@@ -569,7 +569,7 @@ activs.shape
 torch.Size([64, 20])
 ```
 
-<br>
+-----
 ```python
 activs[0]
 ```
@@ -580,14 +580,14 @@ TensorBase([ 0.5674, -1.2013,  4.5409, -1.5284, -0.6600,  0.0999, -2.4757, -0.87
 
 **Note:** The raw model activations are not scaled between `[0,1]`
 
-<br>
+-----
 ```python
 def binary_cross_entropy(inputs, targets):
     inputs = inputs.sigmoid()
     return -torch.where(targets==1, inputs, 1-inputs).log().mean()
 ```
 
-<br>
+-----
 ```python
 binary_cross_entropy(activs, y)
 ```
@@ -604,7 +604,7 @@ TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 * [https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss](https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss)
 * combines a sigmoid layer and the BCELoss in a single class
 
-<br>
+-----
 ```python
 nn.BCEWithLogitsLoss
 ```
@@ -612,7 +612,7 @@ nn.BCEWithLogitsLoss
 torch.nn.modules.loss.BCEWithLogitsLoss
 ```
 
-<br>
+-----
 ```python
 loss_func = nn.BCEWithLogitsLoss()
 loss = loss_func(activs, y)
@@ -628,7 +628,7 @@ TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 * return a new [partial object](https://docs.python.org/3/library/functools.html#partial-objects) that will behave like a function with the positional and keyword arguments
 * allows us to bind a function with some arguments or keyword arguments
 
-<br>
+-----
 ```python
 partial
 ```
@@ -636,7 +636,7 @@ partial
 functools.partial
 ```
 
-<br>
+-----
 
 ```python
 def say_hello(name, say_what="Hello"): return f"{say_what} {name}."
@@ -646,7 +646,7 @@ say_hello('Jeremy'),say_hello('Jeremy', 'Ahoy!')
 ('Hello Jeremy.', 'Ahoy! Jeremy.')
 ```
 
-<br>
+-----
 ```python
 f = partial(say_hello, say_what="Bonjour")
 f("Jeremy"),f("Sylvain")
@@ -659,7 +659,7 @@ f("Jeremy"),f("Sylvain")
 * [https://docs.fast.ai/metrics.html#accuracy_multi](https://docs.fast.ai/metrics.html#accuracy_multi)
 * compute accuracy using a threshold value
 
-<br>
+-----
 ```python
 accuracy_multi
 ```
@@ -667,7 +667,7 @@ accuracy_multi
 <function fastai.metrics.accuracy_multi(inp, targ, thresh=0.5, sigmoid=True)>
 ```
 
-<br>
+-----
 ```python
 learn = cnn_learner(dls, resnet50, metrics=partial(accuracy_multi, thresh=0.2))
 learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
@@ -750,7 +750,7 @@ learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
 </table>
 </div>
 
-<br>
+-----
 
 ```python
 learn.metrics = partial(accuracy_multi, thresh=0.1)
@@ -760,7 +760,7 @@ learn.validate()
 (#2) [0.10356765240430832,0.9294222593307495]
 ```
 
-<br>
+-----
 ```python
 learn.metrics = partial(accuracy_multi, thresh=0.99)
 learn.validate()
@@ -769,12 +769,12 @@ learn.validate()
 (#2) [0.10356765240430832,0.9427291750907898]
 ```
 
-<br>
+-----
 ```python
 preds,targs = learn.get_preds()
 ```
 
-<br>
+-----
 ```python
 accuracy_multi(preds, targs, thresh=0.9, sigmoid=False)
 ```
@@ -782,7 +782,7 @@ accuracy_multi(preds, targs, thresh=0.9, sigmoid=False)
 TensorBase(0.9566)
 ```
 
-<br>
+-----
 
 ```python
 # Try a few different threshold values to see which works best
@@ -818,7 +818,7 @@ plt.plot(xs,accs);
     * each directory contains .cal files containing the calibration data for the depth and color cameras
     * each image has a corresponding _pose.txt file containing the location of center of the head in 3D and the head rotation encoded as 3D rotation matrix
 
-<br>
+-----
 ```python
 path = untar_data(URLs.BIWI_HEAD_POSE)
 path
@@ -827,7 +827,7 @@ path
 Path('/home/innom-dt/.fastai/data/biwi_head_pose')
 ```
 
-<br>
+-----
 ```python
 path.ls().sorted()
 ```
@@ -835,7 +835,7 @@ path.ls().sorted()
 (#50) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05.obj')...]
 ```
 
-<br>
+-----
 ```python
 (path/'01').ls().sorted()
 ```
@@ -844,7 +844,7 @@ path.ls().sorted()
 ```
 
 
-<br>
+-----
 ```python
 # recursivley get all images in the 24 subdirectories
 img_files = get_image_files(path)
@@ -857,7 +857,7 @@ pose_file
 Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
 ```
 
-<br>
+-----
 ```python
 !cat $pose_file
 ```
@@ -869,7 +869,7 @@ Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
 62.3638 96.2159 979.839 
 ```
 
-<br>
+-----
 ```python
 im = PILImage.create(img_files[0])
 im.shape
@@ -878,7 +878,7 @@ im.shape
 (480, 640)
 ```
 
-<br>
+-----
 ```python
 im.to_thumb(160)
 ```
@@ -889,7 +889,7 @@ im.to_thumb(160)
 * [https://numpy.org/doc/stable/reference/generated/numpy.genfromtxt.html](https://numpy.org/doc/stable/reference/generated/numpy.genfromtxt.html)
 * Load data from a text file
 
-<br>
+-----
 ```python
 np.genfromtxt
 ```
@@ -897,7 +897,7 @@ np.genfromtxt
 <function numpy.genfromtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None)>
 ```
 
-<br>
+-----
 ```python
 # Contains the calibration values for this folder's rgb camera
 # Skip the last six lines in the file 
@@ -910,7 +910,7 @@ array([[517.679,   0.   , 320.   ],
        [  0.   ,   0.   ,   1.   ]])
 ```
 
-<br>
+-----
 ```python
 # Extract the 2D coordinates for the center of a head
 # Serves as the get_y function for a DataBlock
@@ -922,7 +922,7 @@ def get_ctr(f):
     return tensor([c1,c2])
 ```
 
-<br>
+-----
 ```python
 np.genfromtxt(img2pose(img_files[0]), skip_header=3)
 ```
@@ -930,7 +930,7 @@ np.genfromtxt(img2pose(img_files[0]), skip_header=3)
 array([ 62.3638,  96.2159, 979.839 ])
 ```
 
-<br>
+-----
 ```python
 get_ctr(img_files[0])
 ```
@@ -945,7 +945,7 @@ tensor([352.9487, 291.3338])
 * A TransfromBlock for points in an image
 * Lets fastai know to perform the same data augmentation steps to the key point values as to the images
 
-<br>
+-----
 ```python
 PointBlock
 ```
@@ -953,7 +953,7 @@ PointBlock
 <fastai.data.block.TransformBlock at 0x7fb65aaf5490>
 ```
 
-<br>
+-----
 
 ```python
 # Construct custom DataBlock
@@ -968,14 +968,14 @@ biwi = DataBlock(
 )
 ```
 
-<br>
+-----
 ```python
 dls = biwi.dataloaders(path)
 dls.show_batch(max_n=9, figsize=(8,6))
 ```
 ![png](../images/notes-fastai-book/chapter-6/output_80_0.png)
 
-<br>
+-----
 ```python
 xb,yb = dls.one_batch()
 xb.shape,yb.shape
@@ -984,7 +984,7 @@ xb.shape,yb.shape
 (torch.Size([64, 3, 240, 320]), torch.Size([64, 1, 2]))
 ```
 
-<br>
+-----
 
 ```python
 yb[0]
@@ -1000,18 +1000,18 @@ TensorPoint([[-0.1246,  0.0960]], device='cuda:0')
 learn = cnn_learner(dls, resnet18, y_range=(-1,1))
 ```
 
-<br>
+-----
 ```python
 def sigmoid_range(x, lo, hi): return torch.sigmoid(x) * (hi-lo) + lo
 ```
 
-<br>
+-----
 ```python
 plot_function(partial(sigmoid_range,lo=-1,hi=1), min=-4, max=4)
 ```
 ![png](../images/notes-fastai-book/chapter-6/output_86_1.png)
 
-<br>
+-----
 ```python
 dls.loss_func
 ```
@@ -1019,13 +1019,13 @@ dls.loss_func
 FlattenedLoss of MSELoss()
 ```
 
-<br>
+-----
 ```python
 min_lr, steep_lr, valley = learn.lr_find(suggest_funcs=(minimum, steep, valley))
 ```
 ![png](../images/notes-fastai-book/chapter-6/output_88_2.png)
 
-<br>
+-----
 ```python
 min_lr
 ```
@@ -1033,7 +1033,7 @@ min_lr
 0.006918309628963471
 ```
 
-<br>
+-----
 ```python
 steep_lr
 ```
@@ -1041,7 +1041,7 @@ steep_lr
 2.0892961401841603e-05
 ```
 
-<br>
+-----
 ```python
 valley
 ```
@@ -1049,7 +1049,7 @@ valley
 0.0010000000474974513
 ```
 
-<br>
+-----
 ```python
 lr = 1e-2
 learn.fine_tune(3, lr)
@@ -1106,7 +1106,7 @@ learn.fine_tune(3, lr)
 </div>
 
 
-<br>
+-----
 ```python
 # Calculate the Root Mean Squared Error
 math.sqrt(0.000042)
@@ -1115,7 +1115,7 @@ math.sqrt(0.000042)
 0.00648074069840786
 ```
 
-<br>
+-----
 
 ```python
 learn.show_results(ds_idx=1, nrows=3, figsize=(6,8))
