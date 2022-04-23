@@ -19,7 +19,7 @@ search_exclude: false
 * [Learner](#learner)
 * [References](#references)
 
-<br>
+-----
 
 ```python
 #hide
