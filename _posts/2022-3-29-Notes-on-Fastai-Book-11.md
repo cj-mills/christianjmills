@@ -19,7 +19,7 @@ search_exclude: false
 
 
 
-<br>
+-----
 
 ```python
 import fastbook
