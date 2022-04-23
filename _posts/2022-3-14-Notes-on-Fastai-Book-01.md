@@ -440,7 +440,7 @@ Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
 learn = cnn_learner(dls, resnet34, metrics=accuracy, pretrained=False)
 learn.fine_tune(1)
 ```
-
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -481,7 +481,7 @@ learn.fine_tune(1)
     </tr>
   </tbody>
 </table>
-
+</div>
 
 
 #### Pretrained Weights
@@ -493,6 +493,7 @@ learn.fine_tune(1)
 learn = cnn_learner(dls, resnet34, metrics=accuracy, pretrained=True)
 learn.fine_tune(1)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -533,6 +534,7 @@ learn.fine_tune(1)
     </tr>
   </tbody>
 </table>
+</div>
 ------
 
 
@@ -793,6 +795,8 @@ Probability it's a cat: 1.000000
 
 - training a model to recognize the content of every single pixel in an image
 
+-----
+
 ```python
 path = untar_data(URLs.CAMVID_TINY)
 print(path)
@@ -855,7 +859,7 @@ Path('/home/innom-dt/.fastai/data/camvid_tiny/labels/0016E5_08155_P.png')
 learn = unet_learner(dls, resnet34, pretrained=True)
 learn.fine_tune(8)
 ```
-
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -934,6 +938,7 @@ learn.fine_tune(8)
     </tr>
   </tbody>
 </table>
+</div>
 ------
 
 
@@ -957,12 +962,19 @@ learn.show_results(max_n=6, figsize=(18,20))
 - analyze comments
 - label words in sentences
 
+-----
+
 ```python
 from fastai.text.all import *
 ```
 
+-----
+
 IMDB Large Moview Review Dataset
+
 * from [Learning Word Vectors for Sentiment Analysis](https://ai.stanford.edu/~ang/papers/acl11-WordVectorsSentimentAnalysis.pdf)
+
+-----
 
 
 ```python
@@ -1115,6 +1127,7 @@ Story of a man who has unnatural feelings for a pig. Starts out with a opening s
 learn = text_classifier_learner(dls, AWD_LSTM, drop_mult=0.5, metrics=accuracy)
 learn.fine_tune(4, 1e-2)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1176,6 +1189,7 @@ learn.fine_tune(4, 1e-2)
     </tr>
   </tbody>
 </table>
+</div>
 ------
 
 
@@ -1209,6 +1223,8 @@ learn.predict("I really hated that movie!")
     - Comma-separated Values (CSV) files
 - model tries to predict the value of one column based on information in other columns
 
+-----
+
 ```python
 from fastai.tabular.all import *
 ```
@@ -1216,6 +1232,8 @@ from fastai.tabular.all import *
 Adult Dataset
 * from the paper [Scaling Up the Accuracy of Naive-Bayes Classifiers: a Decision-Tree Hybrid](https://www.aaai.org/Papers/KDD/1996/KDD96-033.pdf)
 * contains some demographic data about individuals
+
+-----
 
 
 ```python
@@ -1258,7 +1276,7 @@ cat: write error: Broken pipe
 ```python
 pd.read_csv(f"{path}/adult.csv").head()
 ```
-
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1373,7 +1391,7 @@ pd.read_csv(f"{path}/adult.csv").head()
     </tr>
   </tbody>
 </table>
-
+</div>
 
 
 ------
@@ -1402,6 +1420,7 @@ learn = tabular_learner(dls, metrics=accuracy)
 ```python
 learn.fit_one_cycle(3)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1436,7 +1455,7 @@ learn.fit_one_cycle(3)
     </tr>
   </tbody>
 </table>
-
+</div>
 
 
 
@@ -1444,6 +1463,8 @@ learn.fit_one_cycle(3)
 ### Recommendation Systems
 
 - model tries to predict the rating a user would give for something
+
+-----
 
 ```python
 from fastai.collab import *
@@ -1470,6 +1491,7 @@ dls = CollabDataLoaders.from_csv(path/'ratings.csv', bs=64, seed=42, num_workers
 learn = collab_learner(dls, y_range=(0.5,5.5))
 learn.fine_tune(10)
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1560,12 +1582,14 @@ learn.fine_tune(10)
     </tr>
   </tbody>
 </table>
+</div>
 ------
 
 
 ```python
 learn.show_results()
 ```
+<div style="overflow-x:auto;">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1642,7 +1666,7 @@ learn.show_results()
     </tr>
   </tbody>
 </table>
-
+</div>
 
 
 
