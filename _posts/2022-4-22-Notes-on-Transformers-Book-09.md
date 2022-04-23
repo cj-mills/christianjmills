@@ -196,7 +196,11 @@ df_issues = pd.read_json(dataset_url, lines=True)
 print(f"DataFrame shape: {df_issues.shape}")
 ```
 
-    DataFrame shape: (9930, 26)
+```text
+DataFrame shape: (9930, 26)
+```
+
+
 
 ------
 
