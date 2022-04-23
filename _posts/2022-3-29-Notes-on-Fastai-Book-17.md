@@ -18,7 +18,7 @@ search_exclude: false
 * [Conclusion](#conclusion)
 * [References](#references)
 
-<br>
+-----
 
 ```python
 import fastbook
