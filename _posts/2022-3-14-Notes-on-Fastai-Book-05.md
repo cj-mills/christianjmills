@@ -56,7 +56,7 @@ matplotlib.rc('image', cmap='Greys')
 * images have a large variations in scale, pose and lighting
 * all images have an associated ground truth annotation of breed, head ROI, and pixel level trimap segmentation
 
-<br>
+-----
 ```python
 path = untar_data(URLs.PETS)
 path
@@ -65,7 +65,7 @@ path
 Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
 ```
 
-<br>
+-----
 ```python
 #hide
 Path.BASE_PATH = path
@@ -75,7 +75,7 @@ path
 Path('.')
 ```
 
-<br>
+-----
 ```python
 path.ls()
 ```
@@ -83,7 +83,7 @@ path.ls()
 (#2) [Path('images'),Path('annotations')]
 ```
 
-<br>
+-----
 ```python
 # associated ground truth annotation of breed, head ROI, and pixel level trimap segmentation
 # Not needed for classification
@@ -93,7 +93,7 @@ path.ls()
 (#7) [Path('annotations/trimaps'),Path('annotations/xmls'),Path('annotations/._trimaps'),Path('annotations/list.txt'),Path('annotations/test.txt'),Path('annotations/README'),Path('annotations/trainval.txt')]
 ```
 
-<br>
+-----
 ```python
 (path/"images").ls()
 ```
@@ -104,7 +104,7 @@ path.ls()
 Pet breed and species is indicated in the file name for each image
 * Cat breeds have capitalized file names and dog breeds have lowercase file names
 
-<br>
+-----
 ```python
 fname = (path/"images").ls()[0]
 fname
@@ -129,7 +129,7 @@ Path('images/Birman_121.jpg')
         - also wrote [Syntactic Structures](https://en.wikipedia.org/wiki/Syntactic_Structures) ([pdf](https://tallinzen.net/media/readings/chomsky_syntactic_structures.pdf))
             - the pioneering work searching for the formal grammar underlying human language
 
-<br>
+-----
 ```python
 # Matches all instances of any group of characters before a sequence of digits right before '.jpg'
 re.findall(r'(.+)_\d+.jpg$', fname.name)
@@ -150,7 +150,7 @@ RegexLabeller
 fastai.data.transforms.RegexLabeller
 ```
 
-<br>
+-----
 ```python
 get_image_files
 ```
@@ -158,7 +158,7 @@ get_image_files
 <function fastai.data.transforms.get_image_files(path, recurse=True, folders=None)>
 ```
 
-<br>
+-----
 ```python
 pets = DataBlock(blocks = (ImageBlock, CategoryBlock),
                  get_items=get_image_files, 
@@ -169,7 +169,7 @@ pets = DataBlock(blocks = (ImageBlock, CategoryBlock),
 dls = pets.dataloaders(path/"images")
 ```
 
-<br>
+-----
 ```python
 dls.c
 ```
@@ -177,7 +177,7 @@ dls.c
 37
 ```
 
-<br>
+-----
 ```python
 import pandas as pd
 ```
@@ -193,7 +193,7 @@ import pandas as pd
 * [https://fastcore.fast.ai/transform#DisplayedTransform](https://fastcore.fast.ai/transform#DisplayedTransform)
 * A transform that shows its attributes
 
-<br>
+-----
 
 ```python
 pd.DataFrame(dls.categorize.vocab)
@@ -384,7 +384,7 @@ dblock1 = DataBlock(blocks=(ImageBlock(), CategoryBlock()),
                    item_tfms=Resize(460))
 ```
 
-<br>
+-----
 ```python
 (Path.cwd()/'images'/'grizzly.jpg')
 ```
@@ -392,7 +392,7 @@ dblock1 = DataBlock(blocks=(ImageBlock(), CategoryBlock()),
 Path('/media/innom-dt/Samsung_T3/Projects/Current_Projects/fastbook/clean/images/grizzly.jpg')
 ```
 
-<br>
+-----
 ```python
 # Create a test DataLoaders object with 100 copies of the same image
 dls1 = dblock1.dataloaders([(Path.cwd()/'images'/'grizzly.jpg')]*100, bs=8)
@@ -405,7 +405,7 @@ print(dls1.categorize.vocab)
 ```
 
 
-<br>
+-----
 ```python
 # Return elements from the iterable until it is exhausted.
 dls1.train.get_idxs = lambda: Inf.ones
@@ -416,7 +416,7 @@ dls1.train.get_idxs = lambda: Inf.ones
 * [https://docs.python.org/3/library/itertools.html#itertools.cycle](https://docs.python.org/3/library/itertools.html#itertools.cycle)
 * Make an iterator returning elements from the iterable and saving a copy of each
 
-<br>
+-----
 ```python
 type(Inf.ones)
 ```
@@ -429,7 +429,7 @@ itertools.cycle
 * [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/data/load.py#L146](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/data/load.py#L146)
 * Return one batch from `DataLoader`
 
-<br>
+-----
 
 ```python
 DataLoader.one_batch
@@ -438,7 +438,7 @@ DataLoader.one_batch
 <function fastai.data.load.DataLoader.one_batch(self)>
 ```
 
-<br>
+-----
 ```python
 x,y = dls1.one_batch()
 print(x.shape)
@@ -451,7 +451,7 @@ torch.Size([8])
 TensorCategory([0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
 ```
 
-<br>
+-----
 
 ```python
 print(TensorImage)
@@ -485,7 +485,7 @@ print(TensorImage)
 * [https://docs.fast.ai/vision.augment.html#Warp](https://docs.fast.ai/vision.augment.html#Warp)
 * [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L656](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L656)
 
-<br>
+-----
 ```python
 print(TensorImage)
 print(TensorImage.affine_coord)
@@ -507,7 +507,7 @@ print(TensorImage.warp)
 * A pipeline of composed (for encode/decode) transforms, setup with types
 * a wrapper for [compose_tfms](https://fastcore.fast.ai/transform.html#compose_tfms)
 
-<br>
+-----
 
 ```python
 Pipeline
@@ -516,7 +516,7 @@ Pipeline
 fastcore.transform.Pipeline
 ```
 
-<br>
+-----
 
 ```python
 _,axs = subplots(1, 2)
@@ -549,7 +549,7 @@ dls.show_batch(nrows=1, ncols=3)
 ```
 ![png](../images/notes-fastai-book/chapter-5/output_39_0.png)
 
-<br>
+-----
 
 ```python
 pets1 = DataBlock(blocks = (ImageBlock, CategoryBlock),
@@ -563,7 +563,7 @@ pets1 = DataBlock(blocks = (ImageBlock, CategoryBlock),
 * [https://docs.fast.ai/data.block.html#DataBlock.summary](https://docs.fast.ai/data.block.html#DataBlock.summary)
 * Steps through the transform pipeline for one batch
 
-<br>
+-----
 
 ```python
 DataBlock.summary
@@ -572,7 +572,7 @@ DataBlock.summary
 <function fastai.data.block.DataBlock.summary(self: fastai.data.block.DataBlock, source, bs=4, show_batch=False, **kwargs)>
 ```
 
-<br>
+-----
 
 ```python
 pets1.summary(path/"images")
@@ -629,7 +629,7 @@ torch.Size([3, 500, 400]),torch.Size([3, 334, 500]),torch.Size([3, 375, 500]),to
 ```
 
 
-<br>
+-----
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(2)
@@ -697,7 +697,7 @@ learn.fine_tune(2)
 x,y = dls.one_batch()
 ```
 
-<br>
+-----
 ```python
 y.shape
 ```
@@ -705,7 +705,7 @@ y.shape
 torch.Size([64])
 ```
 
-<br>
+-----
 ```python
 y
 ```
@@ -719,7 +719,7 @@ TensorCategory([31, 30,  5, 17,  6,  7,  4, 22,  4, 27,  2, 19, 12, 14, 11,  8, 
 * [https://docs.fast.ai/learner.html#Learner.get_preds](https://docs.fast.ai/learner.html#Learner.get_preds)
 * Get the predictions and targets using a dataset index or an iterator of batches
 
-<br>
+-----
 ```python
 Learner.get_preds
 ```
@@ -727,7 +727,7 @@ Learner.get_preds
 <function fastai.learner.Learner.get_preds(self, ds_idx=1, dl=None, with_input=False, with_decoded=False, with_loss=False, act=None, inner=False, reorder=True, cbs=None, save_preds=None, save_targs=None, concat_dim=0)>
 ```
 
-<br>
+-----
 ```python
 preds,_ = learn.get_preds(dl=[(x,y)])
 preds[0]
@@ -738,7 +738,7 @@ TensorBase([2.8917e-05, 1.6130e-08, 3.2022e-04, 1.7541e-05, 1.5420e-05, 3.5346e-
         3.1806e-06, 7.8490e-06, 4.9332e-07, 1.4727e-04, 3.1404e-07])
 ```
 
-<br>
+-----
 ```python
 len(preds[0]),preds[0].sum()
 ```
@@ -766,13 +766,13 @@ plot_function(torch.sigmoid, min=-4,max=4)
 ```
 ![png](../images/notes-fastai-book/chapter-5/output_55_1.png)
 
-<br>
+-----
 ```python
 # set random seed to get same results across sessions
 torch.random.manual_seed(42);
 ```
 
-<br>
+-----
 ```python
 # Create a random set of test activations for a binary classification problem
 acts = torch.randn((6,2))*2
@@ -787,7 +787,7 @@ tensor([[ 0.6734,  0.2576],
         [ 1.0698,  1.6187]])
 ```
 
-<br>
+-----
 ```python
 acts.sigmoid()
 ```
@@ -800,7 +800,7 @@ tensor([[0.6623, 0.5641],
         [0.7446, 0.8346]])
 ```
 
-<br>
+-----
 ```python
 (acts[:,0]-acts[:,1]).sigmoid()
 ```
@@ -810,7 +810,7 @@ tensor([0.6025, 0.5021, 0.1332, 0.9966, 0.5959, 0.3661])
 
 $\text{Softmax}(x_{i}) = \frac{\exp(x_i)}{\sum_j \exp(x_j)}$
 
-<br>
+-----
 ```python
 def softmax(x): return 2.718**x / (2.718**x).sum(dim=1, keepdim=True)
 softmax(acts)
@@ -824,7 +824,7 @@ tensor([[0.6025, 0.3975],
         [0.3661, 0.6339]])
 ```
 
-<br>
+-----
 ```python
 print(softmax(acts)[0])
 softmax(acts)[0].sum()
@@ -839,7 +839,7 @@ tensor(1.)
 * [https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html](https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html)
 * Applies the Softmax function to an n-dimensional input Tensor rescaling them so that the elements of the n-dimensional output Tensor lie in the range [0,1] and sum to 1.
 
-<br>
+-----
 ```python
 torch.softmax
 ```
@@ -847,7 +847,7 @@ torch.softmax
 <function _VariableFunctionsClass.softmax>
 ```
 
-<br>
+-----
 ```python
 sm_acts = torch.softmax(acts, dim=1)
 sm_acts
@@ -883,7 +883,7 @@ The gradient of `cross_entropy(a,b)` is `softmax(a)-b`
 targ = tensor([0,1,0,1,1,0])
 ```
 
-<br>
+-----
 ```python
 sm_acts
 ```
@@ -896,7 +896,7 @@ tensor([[0.6025, 0.3975],
         [0.3661, 0.6339]])
 ```
 
-<br>
+-----
 ```python
 idx = range(6)
 sm_acts[idx, targ]
@@ -905,7 +905,7 @@ sm_acts[idx, targ]
 tensor([0.6025, 0.4979, 0.1332, 0.0034, 0.4041, 0.3661])
 ```
 
-<br>
+-----
 ```python
 df = pd.DataFrame(sm_acts, columns=["3","7"])
 df['targ'] = targ
@@ -979,7 +979,7 @@ df
 </div>
 
 
-<br>
+-----
 ```python
 -sm_acts[idx, targ]
 ```
@@ -1004,7 +1004,7 @@ F.nll_loss
 <function torch.nn.functional.nll_loss(input: torch.Tensor, target: torch.Tensor, weight: Optional[torch.Tensor] = None, size_average: Optional[bool] = None, ignore_index: int = -100, reduce: Optional[bool] = None, reduction: str = 'mean') -> torch.Tensor>
 ```
 
-<br>
+-----
 ```python
 F.nll_loss(sm_acts, targ, reduction='none')
 ```
@@ -1023,7 +1023,7 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 * $y_{i} = \log_{e}{(x_{i})}$
 * $e = 2.718$
 
-<br>
+-----
 ```python
 torch.log
 ```
@@ -1031,7 +1031,7 @@ torch.log
 <function _VariableFunctionsClass.log>
 ```
 
-<br>
+-----
 ```python
 plot_function(torch.log, min=0,max=4)
 ```
@@ -1044,12 +1044,12 @@ plot_function(torch.log, min=0,max=4)
 * takes the mean of the loss of all items by default
     * can be disabled with `reduction='none'`
 
-<br>
+-----
 ```python
 loss_func = nn.CrossEntropyLoss()
 ```
 
-<br>
+-----
 ```python
 loss_func(acts, targ)
 ```
@@ -1057,7 +1057,7 @@ loss_func(acts, targ)
 tensor(1.8045)
 ```
 
-<br>
+-----
 ```python
 F.cross_entropy(acts, targ)
 ```
@@ -1065,7 +1065,7 @@ F.cross_entropy(acts, targ)
 tensor(1.8045)
 ```
 
-<br>
+-----
 ```python
 -torch.log(-F.nll_loss(sm_acts, targ, reduction='none'))
 ```
@@ -1073,7 +1073,7 @@ tensor(1.8045)
 tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 ```
 
-<br>
+-----
 ```python
 # Do not take the mean
 nn.CrossEntropyLoss(reduction='none')(acts, targ)
@@ -1095,7 +1095,7 @@ tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 * [https://docs.fast.ai/interpret.html#Interpretation.from_learner](https://docs.fast.ai/interpret.html#Interpretation.from_learner)
 * Construct interpretation object from a learner
 
-<br>
+-----
 ```python
 ClassificationInterpretation
 ```
@@ -1103,14 +1103,14 @@ ClassificationInterpretation
 fastai.interpret.ClassificationInterpretation
 ```
 
-<br>
+-----
 ```python
 interp = ClassificationInterpretation.from_learner(learn)
 interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 ```
 ![png](../images/notes-fastai-book/chapter-5/output_88_2.png)
 
-<br>
+-----
 ```python
 interp.most_confused(min_val=4)
 ```
@@ -1202,7 +1202,7 @@ lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 
 **Note:** The plot has a logarithmic scale
 
-<br>
+-----
 ```python
 print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
 ```
@@ -1210,7 +1210,7 @@ print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
 Minimum/10: 1.00e-02, steepest point: 6.31e-03
 ```
 
-<br>
+-----
 
 ```python
 lr_steep
@@ -1219,7 +1219,7 @@ lr_steep
 0.0063095735386013985
 ```
 
-<br>
+-----
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(2, base_lr=lr_steep)
@@ -1274,7 +1274,7 @@ learn.fine_tune(2, base_lr=lr_steep)
 </table>
 </div>
 
-<br>
+-----
 
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
@@ -1346,7 +1346,7 @@ learn.fine_tune(2, base_lr=3e-3)
 * [https://docs.fast.ai/callback.schedule.html#Learner.fine_tune](https://docs.fast.ai/callback.schedule.html#Learner.fine_tune)
 * Fine tune with Learner.freeze for freeze_epochs, then with Learner.unfreeze for epochs, using discriminative LR.
 
-<br>
+-----
 ```python
 Learner.fine_tune
 ```
@@ -1354,7 +1354,7 @@ Learner.fine_tune
 <function fastai.callback.schedule.Learner.fine_tune(self: fastai.learner.Learner, epochs, base_lr=0.002, freeze_epochs=1, lr_mult=100, pct_start=0.3, div=5.0, lr_max=None, div_final=100000.0, wd=None, moms=None, cbs=None, reset_opt=False)>
 ```
 
-<br>
+-----
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 # Train new layers for 3 epochs
@@ -1405,14 +1405,14 @@ learn.fit_one_cycle(3, 3e-3)
 ```python
 learn.unfreeze()
 ```
-<br>
+-----
 
 ```python
 lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 ```
 ![png](../images/notes-fastai-book/chapter-5/output_108_2.png)
 
-<br>
+-----
 ```python
 lr_min
 ```
@@ -1420,7 +1420,7 @@ lr_min
 1.3182566908653825e-05
 ```
 
-<br>
+-----
 
 ```python
 lr_steep
@@ -1429,7 +1429,7 @@ lr_steep
 6.918309736647643e-06
 ```
 
-<br>
+-----
 ```python
 learn.fit_one_cycle(6, lr_max=1e-5)
 ```
@@ -1500,7 +1500,7 @@ learn.fit_one_cycle(6, lr_max=1e-5)
     - [How transferable are features in deep neural networks?](https://arxiv.org/pdf/1411.1792.pdf)
     - showed that with transfer learning, different layers of a neural network should train at different speeds
 
-<br>
+-----
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fit_one_cycle(3, 3e-3)
@@ -1644,7 +1644,7 @@ learn.fit_one_cycle(12, lr_max=slice(1e-6,1e-4))
 </table>
 </div>
 
-<br>
+-----
 
 ```python
 learn.recorder.plot_loss()
@@ -1679,7 +1679,7 @@ learn.recorder.plot_loss()
 * [https://docs.fast.ai/callback.fp16.html#Learner.to_fp16](https://docs.fast.ai/callback.fp16.html#Learner.to_fp16)
 * [Mixed Precision Training](https://on-demand.gputechconf.com/gtc/2019/video/_/S9143/)
 
-<br>
+-----
 ```python
 from fastai.callback.fp16 import *
 learn = cnn_learner(dls, resnet50, metrics=error_rate).to_fp16()
