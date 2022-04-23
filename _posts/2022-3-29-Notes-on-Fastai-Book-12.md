@@ -20,7 +20,7 @@ search_exclude: false
 * [Regularizing an LSTM](#regularizing-an-lstm)
 * [References](#references)
 
-<br>
+-----
 
 ```python
 #hide
