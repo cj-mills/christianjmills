@@ -932,8 +932,12 @@ print(f'Size of our base vocabulary: {len(base_vocab)}')
 print(f'First element: `{base_vocab[0]}`, last element: `{base_vocab[-1]}`')
 ```
 
-    Size of our base vocabulary: 256
-    First element: `!`, last element: `Ń`
+```text
+Size of our base vocabulary: 256
+First element: `!`, last element: `Ń`
+```
+
+
 
 ------
 
@@ -2216,7 +2220,11 @@ model_small = AutoModelForCausalLM.from_config(config_small)
 print(f'GPT-2 size: {model_size(model_small)/1000**2:.1f}M parameters')
 ```
 
-    GPT-2 size: 111.0M parameters
+```text
+GPT-2 size: 111.0M parameters
+```
+
+
 
 ------
 
@@ -2278,7 +2286,9 @@ characters_per_token = total_characters / total_tokens
 print(characters_per_token)
 ```
 
-    3.621530410894045
+```text
+3.621530410894045
+```
 
 **Note:** We'll round this to $3.6$.
 
