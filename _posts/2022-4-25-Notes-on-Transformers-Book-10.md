@@ -118,8 +118,7 @@ def print_source(obj, exclude_doc=True):
 * Common words like "sex" are absent from C4.
 * There are many copyright violations in the Bookcorpus dataset used to train BERT.
 * Bookcorpus also contains genre-skew toward "romance" novels.
-* [Aligning Books and Movies: Towards Story-like Visual Explanations by Watching Movies and Reading Books
-](https://arxiv.org/abs/1506.06724)
+* [Aligning Books and Movies: Towards Story-like Visual Explanations by Watching Movies and Reading Books](https://arxiv.org/abs/1506.06724)
 * [Addressing "Documentation Debt" in Machine Learning Research: A Retrospective Datasheet for BookCorpus](https://arxiv.org/abs/2105.05241)
 
 
@@ -352,21 +351,6 @@ dataset = load_dataset("/mnt/980SSD/Datasets/codeparrot", cache_dir="/mnt/980SSD
                        download_config=download_config)
 ```
 ```text
-
-    Resolving data files:   0%|          | 0/526 [00:00<?, ?it/s]
-
-
-    Downloading and preparing dataset json/codeparrot to /mnt/980SSD/Datasets/codeparrot-cache/json/codeparrot-43fc192cc9f62326/0.0.0/ac0ca5f5289a6cf108e706efcf040422dbbfa8e658dee6a819f20d76bb84d26b...
-
-
-
-    Downloading data files:   0%|          | 0/1 [00:00<?, ?it/s]
-
-
-
-    Extracting data files:   0%|          | 0/1 [00:00<?, ?it/s]
-
-
     Dataset json downloaded and prepared to /mnt/980SSD/Datasets/codeparrot-cache/json/codeparrot-43fc192cc9f62326/0.0.0/ac0ca5f5289a6cf108e706efcf040422dbbfa8e658dee6a819f20d76bb84d26b. Subsequent calls will reuse this data.
 ```
 
@@ -427,13 +411,6 @@ print(f"RAM used: {psutil.Process(os.getpid()).memory_info().rss >> 20} MB")
 streamed_dataset = load_dataset("/mnt/980SSD/Datasets/codeparrot", split="train", streaming=True)
 ```
 ```text
-
-    Resolving data files:   0%|          | 0/712 [00:00<?, ?it/s]
-
-
-
-    ---------------------------------------------------------------------------
-    
     AttributeError: '_io.BufferedReader' object has no attribute 'loc'
 ```
 
@@ -448,21 +425,6 @@ iterator = iter(streamed_dataset)
 print(dataset[0] == next(iterator))
 print(dataset[1] == next(iterator))
 ```
-```text
-
-    ---------------------------------------------------------------------------
-    
-    NameError                                 Traceback (most recent call last)
-    
-    Input In [12], in <cell line: 1>()
-    ----> 1 iterator = iter(streamed_dataset)
-          3 print(dataset[0] == next(iterator))
-          4 print(dataset[1] == next(iterator))
-
-
-    NameError: name 'streamed_dataset' is not defined
-```
-
 ------
 
 **Stream a remote dataset**
@@ -1402,16 +1364,6 @@ new_tokenizer = tokenizer.train_new_from_iterator(batch_iterator(),
                                                   vocab_size=12500,
                                                   initial_alphabet=base_vocab)
 ```
-```text
-
-      0%|          | 0/10000 [00:00<?, ?it/s]
-
-
-​    
-​    
-​    
-```
-
 ------
 
 **Examine the first tokens added by the BPE algorithm**
@@ -1663,16 +1615,6 @@ length = 200000
 new_tokenizer_larger = tokenizer.train_new_from_iterator(batch_iterator(),
     vocab_size=32768, initial_alphabet=base_vocab)
 ```
-```text
-
-      0%|          | 0/20000 [00:00<?, ?it/s]
-
-
-​    
-​    
-​    
-```
-
 ------
 
 **Check the last tokens added**
@@ -1857,19 +1799,6 @@ model_ckpt = "codeparrot"
 new_tokenizer_larger.push_to_hub(model_ckpt)
 ```
 ```text
-    /home/innom-dt/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/utils/_deprecation.py:39: FutureWarning: Pass token='codeparrot' as keyword args. From version 0.7 passing these as positional arguments will result in an error
-      warnings.warn(
-    /home/innom-dt/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/hf_api.py:596: FutureWarning: `create_repo` now takes `token` as an optional positional argument. Be sure to adapt your code!
-      warnings.warn(
-    Cloning https://huggingface.co/cj-mills/codeparrot into local empty directory.
-    To https://huggingface.co/cj-mills/codeparrot
-       142f1b5..97c7905  main -> main
-
-
-
-
-
-
     'https://huggingface.co/cj-mills/codeparrot/commit/97c7905ef55cb4139e88f9b9d17225c372fc8f55'
 ```
 
@@ -1951,19 +1880,6 @@ pd.DataFrame(reloaded_tokenizer(python_code).tokens()).T
 new_tokenizer.push_to_hub(model_ckpt+ "-small-vocabulary")
 ```
 ```text
-    /home/innom-dt/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/utils/_deprecation.py:39: FutureWarning: Pass token='codeparrot-small-vocabulary' as keyword args. From version 0.7 passing these as positional arguments will result in an error
-      warnings.warn(
-    /home/innom-dt/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/hf_api.py:596: FutureWarning: `create_repo` now takes `token` as an optional positional argument. Be sure to adapt your code!
-      warnings.warn(
-    Cloning https://huggingface.co/cj-mills/codeparrot-small-vocabulary into local empty directory.
-    To https://huggingface.co/cj-mills/codeparrot-small-vocabulary
-       976fc42..b4efe8c  main -> main
-
-
-
-
-
-
     'https://huggingface.co/cj-mills/codeparrot-small-vocabulary/commit/b4efe8c9692ce772175b97b01cffc9f1924ae706'
 ```
 
@@ -2123,79 +2039,6 @@ print(f'GPT-2 (xl) size: {model_size(model)/1000**2:.1f}M parameters')
 model.save_pretrained("models/" + model_ckpt+"-large", push_to_hub=True)
 ```
 ```text
-    /home/innom-dt/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/utils/_deprecation.py:39: FutureWarning: Pass token='codeparrot-large' as keyword args. From version 0.7 passing these as positional arguments will result in an error
-      warnings.warn(
-    /home/innom-dt/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/hf_api.py:596: FutureWarning: `create_repo` now takes `token` as an optional positional argument. Be sure to adapt your code!
-      warnings.warn(
-    Cloning https://huggingface.co/cj-mills/codeparrot-large into local empty directory.
-    EOF
-    error: failed to push some refs to 'https://user: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@huggingface.co/cj-mills/codeparrot-large'
-
-
-
-
-    ---------------------------------------------------------------------------
-    
-    CalledProcessError                        Traceback (most recent call last)
-    
-    File ~/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/repository.py:1201, in Repository.git_push(self, upstream, blocking, auto_lfs_prune)
-       1200             if return_code:
-    -> 1201                 raise subprocess.CalledProcessError(
-       1202                     return_code, process.args, output=stdout, stderr=stderr
-       1203                 )
-       1205 except subprocess.CalledProcessError as exc:
-
-
-    CalledProcessError: Command '['git', 'push', '--set-upstream', 'origin', 'main']' returned non-zero exit status 1.
-
-
-​    
-    During handling of the above exception, another exception occurred:
-
-
-    OSError                                   Traceback (most recent call last)
-    
-    Input In [37], in <cell line: 1>()
-    ----> 1 model.save_pretrained("models/" + model_ckpt+"-large", push_to_hub=True)
-
-
-    File ~/miniconda3/envs/transformer-book/lib/python3.9/site-packages/transformers/modeling_utils.py:1392, in PreTrainedModel.save_pretrained(self, save_directory, save_config, state_dict, save_function, push_to_hub, max_shard_size, **kwargs)
-       1385     logger.info(
-       1386         f"The model is bigger than the maximum size per checkpoint ({max_shard_size}) and is going to be "
-       1387         f"split in {len(shards)} checkpoint shards. You can find where each parameters has been saved in the "
-       1388         f"index located at {save_index_file}."
-       1389     )
-       1391 if push_to_hub:
-    -> 1392     url = self._push_to_hub(repo, commit_message=commit_message)
-       1393     logger.info(f"Model pushed to the hub in this commit: {url}")
-
-
-    File ~/miniconda3/envs/transformer-book/lib/python3.9/site-packages/transformers/utils/hub.py:1020, in PushToHubMixin._push_to_hub(cls, repo, commit_message)
-       1017     else:
-       1018         commit_message = "add model"
-    -> 1020 return repo.push_to_hub(commit_message=commit_message)
-
-
-    File ~/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/repository.py:1475, in Repository.push_to_hub(self, commit_message, blocking, clean_ok, auto_lfs_prune)
-       1473 self.git_add(auto_lfs_track=True)
-       1474 self.git_commit(commit_message)
-    -> 1475 return self.git_push(
-       1476     upstream=f"origin {self.current_branch}",
-       1477     blocking=blocking,
-       1478     auto_lfs_prune=auto_lfs_prune,
-       1479 )
-
-
-    File ~/miniconda3/envs/transformer-book/lib/python3.9/site-packages/huggingface_hub/repository.py:1206, in Repository.git_push(self, upstream, blocking, auto_lfs_prune)
-       1201                 raise subprocess.CalledProcessError(
-       1202                     return_code, process.args, output=stdout, stderr=stderr
-       1203                 )
-       1205 except subprocess.CalledProcessError as exc:
-    -> 1206     raise EnvironmentError(exc.stderr)
-       1208 if not blocking:
-       1210     def status_method():
-
-
     OSError: EOF
     error: failed to push some refs to 'https://user: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@huggingface.co/cj-mills/codeparrot-large'
 ```
@@ -2234,15 +2077,6 @@ GPT-2 size: 111.0M parameters
 ```python
 model_small.save_pretrained("models/" + model_ckpt + "-small", push_to_hub=True)
 ```
-```text
-
-    Upload file pytorch_model.bin:   0%|          | 32.0k/436M [00:00<?, ?B/s]
-
-
-    To https://huggingface.co/cj-mills/codeparrot-small
-       6299f43..e5476e6  main -> main
-```
-
 ------
 
 ### Implementing the Dataloader
@@ -2274,11 +2108,6 @@ for _, example in tqdm(zip(range(examples), iter(dataset)), total=examples):
 
 characters_per_token = total_characters / total_tokens
 ```
-```text
-
-      0%|          | 0/500 [00:00<?, ?it/s]
-```
-
 ------
 
 
@@ -2744,35 +2573,6 @@ from transformers import pipeline, set_seed
 model_ckpt = 'transformersbook/codeparrot-small'
 generation = pipeline('text-generation', model=model_ckpt, device=0)
 ```
-```text
-
-    Downloading:   0%|          | 0.00/865 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/436M [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/259 [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/485k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/270k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/821k [00:00<?, ?B/s]
-
-
-
-    Downloading:   0%|          | 0.00/90.0 [00:00<?, ?B/s]
-```
-
 ------
 
 
