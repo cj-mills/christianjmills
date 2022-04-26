@@ -153,7 +153,7 @@ search_exclude: false
     - Think carefully about the types of data that you expect to see in production and make sure all these types are reflected in your model’s source data
 - [Actionable Auditing: Investigating the Impact of Publicly Naming Biased Performance Results of Commercial AI Products](https://dl.acm.org/doi/10.1145/3306618.3314244)
 
-
+-----
 
 ```python
 import pandas as pd
@@ -498,7 +498,7 @@ failed.map(Path.unlink);
 - Training data is fed to a model in batches
     - Each image in a batch needs to be the same size
 
-
+-----
 
 
 ```python
@@ -594,6 +594,8 @@ dls.train.show_batch(max_n=4, nrows=1, unique=True)
     - [brightness changes](https://docs.fast.ai/vision.augment.html#Brightness)
     - [contrast changes](https://docs.fast.ai/vision.augment.html#Contrast)
 
+-----
+
 ```python
 # Create a new `DataBlock` that crops and resizes each image to 128x128
 # and applies a list of data augmentations including flip, rotate, zoom, warp, lighting transforms
@@ -630,7 +632,7 @@ X = torch.linalg.solve(A, B) (Triggered internally at  ../aten/src/ATen/native/B
     5. Remove any poor quality images
     6. Retrain model on updated dataset
 
-
+-----
 
 
 ```python
