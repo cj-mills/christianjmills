@@ -44,6 +44,8 @@ search_exclude: false
             - binary database formats
             - network streams
 
+-----
+
 ```python
 from fastai.vision.all import *
 matplotlib.rc('image', cmap='Greys')
@@ -544,6 +546,8 @@ TensorImage(x1[0]).show(ctx=axs[1]);
 - once your data looks right, run it through a simple model
     - start getting feedback as soon as possible
 
+-----
+
 ```python
 dls.show_batch(nrows=1, ncols=3)
 ```
@@ -761,6 +765,8 @@ len(preds[0]),preds[0].sum()
     - during inference
     - might be better to use multiple binary output columns, each using a sigmoid activation
 
+-----
+
 ```python
 plot_function(torch.sigmoid, min=-4,max=4)
 ```
@@ -877,6 +883,8 @@ The gradient of `cross_entropy(a,b)` is `softmax(a)-b`
 - the gradient is proportional to the difference between the prediction and the target
     - the same as mean squared error in regression, since the gradient of `(a-b)**2 is 2*(a-b)`
     - since the gradient is linear, we will not see any sudden jumps or exponential increases in gradients
+
+-----
 
 ```python
 # Sample labels for testing
@@ -995,6 +1003,8 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 * The negative log likelihood (nll) loss.
 * does not actually take the log, because it assumes you have already taken the log
 * designed to be used after [log_softmax](https://pytorch.org/docs/stable/generated/torch.nn.functional.log_softmax.html#torch-nn-functional-log-softmax)
+
+-----
 
 
 ```python
@@ -1137,6 +1147,8 @@ interp.most_confused(min_val=4)
     6. select a learning rate that is a bit lower than the highest useful learning rate
         - Either one order of magnitude less than where the minimum loss was achieved or the last point where the loss was clearly decreasing
 
+-----
+
 ```python
 # Test using a very high learning rate
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
@@ -1192,6 +1204,10 @@ Using a very high learning rate resulted in an increasing error rate
 #### Learner.lr_find
 * [https://docs.fast.ai/callback.schedule.html#Learner.lr_find](https://docs.fast.ai/callback.schedule.html#Learner.lr_find)
 * Launch a mock training to find a good learning rate and return suggestions as a named tuple
+
+
+
+-----
 
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
