@@ -62,10 +62,9 @@ search_exclude: false
 * images are in 1-dimensional grayscale format
 * already split into training and validation sets
 
-
+-----
 
 ```python
-#hide
 from fastai.vision.all import *
 from fastbook import *
 
@@ -159,6 +158,8 @@ im3
 * provides a class with the same name which is used to represent a PIL image
 * provides a number of factory functions, including functions to load images from files, and to create new images
 
+-----
+
 
 ```python
 print(type(im3))
@@ -212,6 +213,10 @@ array([[  0,   0,   0,   0,   0,   0],
     - PyTorch can automatically calculate derivatives of operations performed with tensors
         - impossible to do deep learning without this capability
 - perform operations directly on arrays or tensors as much as possible instead of using loops
+
+
+
+-----
 
 ```python
 data = [[1,2,3],[4,5,6]]
@@ -1881,6 +1886,8 @@ Incorrect 7s: 15
         - all of the rows are stacked up end to end into a single long line
     - `W` contains the weights for each pixel
 
+-----
+
 ```python
 def pr_eight(x,w) = (x*w).sum()
 ```
@@ -1897,6 +1904,8 @@ def f(x): return x**2
 
 #### plot_function
 * [https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70](https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70)
+
+-----
 
 ```python
 plot_function(f, 'x', 'x**2')
@@ -1934,6 +1943,8 @@ plt.scatter(-1.5, f(-1.5), color='red');
 * here gradient refers to the value of a function's derivative at a particular argument value
 * The PyTorch API puts the focus onto the argument, not the function
 
+-----
+
 ```python
 xt = tensor(3.).requires_grad_()
 ```
@@ -1954,6 +1965,8 @@ tensor(9., grad_fn=<PowBackward0>)
 * [https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history](https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history)
 * references a function that has created a function
 
+-----
+
 ```python
 yt.grad_fn
 ```
@@ -1970,6 +1983,8 @@ yt.grad_fn
     * uses the chain rule
 * backward refers to backpropagation
     * the process of calculating the derivative for each layer
+
+-----
 
 ```python
 yt.backward()
@@ -2051,6 +2066,8 @@ tensor([ 6.,  8., 20.])
 
 * [https://pytorch.org/docs/stable/generated/torch.arange.html?highlight=arange#torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html?highlight=arange#torch.arange)
 * Returns a 1-D tensor of size $\left\lceil \frac{\text{end} - \text{start}}{\text{step}} \right\rceil$ with values from the interval `[start, end)` taken with common difference `step` beginning from `start`.
+
+-----
 
 ```python
 time = torch.arange(0,20).float();
@@ -2139,6 +2156,8 @@ show_preds(preds)
 
 #### Step 3: Calculate the loss
 * goal is to minimize this value
+
+-----
 
 ```python
 loss = mse(preds, speed)
@@ -2298,6 +2317,8 @@ plt.tight_layout()
 
 * [https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view](https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view)
 * Returns a new tensor with the same data as the self tensor but of a different shape.
+
+-----
 
 ```python
 # 1. Concatenate all independent variables into a single tensor
@@ -2661,6 +2682,8 @@ In-Place Operations:
 
 * [https://docs.fast.ai/data.load.html#DataLoader](https://docs.fast.ai/data.load.html#DataLoader)
 * API compatible with PyTorch DataLoader, with a lot more callbacks and flexibility
+
+-----
 
 
 ```python
