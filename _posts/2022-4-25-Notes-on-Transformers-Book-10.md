@@ -76,10 +76,6 @@ def print_source(obj, exclude_doc=True):
 
 * Efficiently training large models from scratch requires special tools for distributed training.
 
-> **Note:** In this chapter a large dataset and the script to train a large language model on a distributed infrastructure are built. As such not all the steps in this notebook are executable on platforms such as Colab or Kaggle. Either downscale the steps at critical points or use this notebook as an inspiration when building a script for distributed training.
-
-
-
 
 
 ## Project: Python Source Code Generator
