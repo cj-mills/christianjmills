@@ -1,5 +1,5 @@
 ---
-title: Notes on Unit 1 of The 🤗 Deep RL Class
+title: Notes on The 🤗 Deep RL Class Pt.1
 layout: post
 toc: false
 comments: true
