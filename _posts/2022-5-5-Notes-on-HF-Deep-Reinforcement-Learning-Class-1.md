@@ -1,9 +1,9 @@
 ---
-title: Notes on Unit 1 of The Hugging Face Deep Reinforcement Learning Class
+title: Notes on Unit 1 of The 🤗 Deep RL Class
 layout: post
 toc: false
 comments: true
-description: My notes for unit 1 of The Hugging Face Deep Reinforcement Learning Class
+description: My notes for unit 1 of The 🤗 Deep Reinforcement Learning Class
 categories: [ai, huggingface, reinforcement-learning, notes]
 hide: false
 permalink: /:title/
