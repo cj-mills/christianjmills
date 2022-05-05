@@ -66,15 +66,15 @@ search_exclude: false
 * We discount each reward by gamma to the exponent of the time step, so they are less predictable the further into the future.
 * We can write the cumulative reward at each time step $t$ as:
 
-$$R(\tau) = r_{t+1} + r_{t+2} + r_{t+3} + r_{t+4} + \ldots$$
+### $$R(\tau) = r_{t+1} + r_{t+2} + r_{t+3} + r_{t+4} + \ldots$$
 
-$$R(\tau) = \sum^{\infty}_{k=0}{r_{t} + k + 1}$$
+### $$R(\tau) = \sum^{\infty}_{k=0}{r_{t} + k + 1}$$
 
 * Discounted cumulative expected reward:
 
-$$R(\tau) = r_{t+1} + \gamma r_{t+2} + \gamma^{2}r_{t+3} + \gamma^{3}r_{t+4} + \ldots$$
+### $$R(\tau) = r_{t+1} + \gamma r_{t+2} + \gamma^{2}r_{t+3} + \gamma^{3}r_{t+4} + \ldots$$
 
-$$R(\tau) = \sum^{\infty}_{k=0}{\gamma^k{} r_{t} + k + 1}$$
+### $$R(\tau) = \sum^{\infty}_{k=0}{\gamma^k{} r_{t} + k + 1}$$
 
 ### Type of tasks
 
