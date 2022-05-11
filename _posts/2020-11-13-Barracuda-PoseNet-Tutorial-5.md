@@ -1,5 +1,5 @@
 ---
-title: Barracuda PoseNet Tutorial Pt. 5
+title: Barracuda PoseNet Tutorial Pt. 5 (Outdated)
 layout: post
 toc: false
 comments: true
