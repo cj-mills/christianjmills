@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 1
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 1 of Natural Language Processing with Transformers
+description: Chapter 1 covers essential advancements for transformers, recurrent architectures, the encoder-decoder framework, attention mechanisms, transfer learning in NLP, and the HuggingFace ecosystem.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
