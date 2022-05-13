@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 9
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 9 of Natural Language Processing with Transformers
+description: Chapter 9 covers how to deal with few to no labels by training a model that automatically tags GitHub issues for the Hugging Face Transformers library.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
