@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 3
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 3 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 3 defines data ethics, introduces essential topics in data ethics, and explains how to identify and address ethical issues.
 categories: [ai, ethics, fastai, notes]
 hide: false
 permalink: /:title/
@@ -128,7 +128,7 @@ search_exclude: false
 - Whoever ends up developing and using the system that implements your model will not be well-placed to understand the decisions you made when training the model
 - Data scientists need to be part of a tightly integrated, cross-disciplinary team
 - Researchers need to work closely with the kinds of people who will end up using their research.
-- Ideally, domain experts should learn enought to be able to train and debug some models themselves
+- Ideally, domain experts should learn enough to be able to train and debug some models themselves
 
 
 
