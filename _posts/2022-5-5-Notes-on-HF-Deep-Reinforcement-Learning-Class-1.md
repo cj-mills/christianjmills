@@ -444,6 +444,9 @@ model.learn(total_timesteps=int(2e5))
 ```python
 import inspect
 import pandas as pd
+pd.set_option('max_colwidth', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
 ```
 
 ------
@@ -452,7 +455,9 @@ import pandas as pd
 ```python
 args = inspect.getfullargspec(PPO).args
 defaults = inspect.getfullargspec(PPO).defaults
+defaults = [None]*(len(args)-len(defaults)) + list(defaults)
 annotations = inspect.getfullargspec(PPO).annotations.values()
+annotations = [None]*(len(args)-len(annotations)) + list(annotations)
 ppo_default_args = {arg:[default, annotation] for arg,default,annotation in zip(args, defaults, annotations)}
 pd.DataFrame(ppo_default_args, index=["Default Value", "Annotation"]).T
 ```
@@ -468,113 +473,128 @@ pd.DataFrame(ppo_default_args, index=["Default Value", "Annotation"]).T
   <tbody>
     <tr>
       <th>self</th>
-      <td>0.0003</td>
-      <td>typing.Union[str, typing.Type[stable_baselines...</td>
+      <td>None</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>policy</th>
-      <td>2048</td>
-      <td>typing.Union[gym.core.Env, stable_baselines3.c...</td>
+      <td>None</td>
+      <td>typing.Union[str, typing.Type[stable_baselines3.common.policies.ActorCriticPolicy]]</td>
     </tr>
     <tr>
       <th>env</th>
-      <td>64</td>
-      <td>typing.Union[float, typing.Callable[[float], f...</td>
+      <td>None</td>
+      <td>typing.Union[gym.core.Env, stable_baselines3.common.vec_env.base_vec_env.VecEnv, str]</td>
     </tr>
     <tr>
       <th>learning_rate</th>
-      <td>10</td>
-      <td>&lt;class 'int'&gt;</td>
+      <td>0.0003</td>
+      <td>typing.Union[float, typing.Callable[[float], float]]</td>
     </tr>
     <tr>
       <th>n_steps</th>
-      <td>0.99</td>
+      <td>2048</td>
       <td>&lt;class 'int'&gt;</td>
     </tr>
     <tr>
       <th>batch_size</th>
-      <td>0.95</td>
+      <td>64</td>
       <td>&lt;class 'int'&gt;</td>
     </tr>
     <tr>
       <th>n_epochs</th>
-      <td>0.2</td>
-      <td>&lt;class 'float'&gt;</td>
+      <td>10</td>
+      <td>&lt;class 'int'&gt;</td>
     </tr>
     <tr>
       <th>gamma</th>
-      <td>None</td>
+      <td>0.99</td>
       <td>&lt;class 'float'&gt;</td>
     </tr>
     <tr>
       <th>gae_lambda</th>
-      <td>True</td>
-      <td>typing.Union[float, typing.Callable[[float], f...</td>
-    </tr>
-    <tr>
-      <th>clip_range</th>
-      <td>0.0</td>
-      <td>typing.Union[NoneType, float, typing.Callable[...</td>
-    </tr>
-    <tr>
-      <th>clip_range_vf</th>
-      <td>0.5</td>
-      <td>&lt;class 'bool'&gt;</td>
-    </tr>
-    <tr>
-      <th>normalize_advantage</th>
-      <td>0.5</td>
+      <td>0.95</td>
       <td>&lt;class 'float'&gt;</td>
     </tr>
     <tr>
+      <th>clip_range</th>
+      <td>0.2</td>
+      <td>typing.Union[float, typing.Callable[[float], float]]</td>
+    </tr>
+    <tr>
+      <th>clip_range_vf</th>
+      <td>None</td>
+      <td>typing.Union[NoneType, float, typing.Callable[[float], float]]</td>
+    </tr>
+    <tr>
+      <th>normalize_advantage</th>
+      <td>True</td>
+      <td>&lt;class 'bool'&gt;</td>
+    </tr>
+    <tr>
       <th>ent_coef</th>
-      <td>False</td>
+      <td>0.0</td>
       <td>&lt;class 'float'&gt;</td>
     </tr>
     <tr>
       <th>vf_coef</th>
-      <td>-1</td>
+      <td>0.5</td>
       <td>&lt;class 'float'&gt;</td>
     </tr>
     <tr>
       <th>max_grad_norm</th>
-      <td>None</td>
-      <td>&lt;class 'bool'&gt;</td>
+      <td>0.5</td>
+      <td>&lt;class 'float'&gt;</td>
     </tr>
     <tr>
       <th>use_sde</th>
-      <td>None</td>
-      <td>&lt;class 'int'&gt;</td>
+      <td>False</td>
+      <td>&lt;class 'bool'&gt;</td>
     </tr>
     <tr>
       <th>sde_sample_freq</th>
-      <td>False</td>
-      <td>typing.Union[float, NoneType]</td>
+      <td>-1</td>
+      <td>&lt;class 'int'&gt;</td>
     </tr>
     <tr>
       <th>target_kl</th>
       <td>None</td>
-      <td>typing.Union[str, NoneType]</td>
+      <td>typing.Optional[float]</td>
     </tr>
     <tr>
       <th>tensorboard_log</th>
-      <td>0</td>
-      <td>&lt;class 'bool'&gt;</td>
+      <td>None</td>
+      <td>typing.Optional[str]</td>
     </tr>
     <tr>
       <th>create_eval_env</th>
-      <td>None</td>
-      <td>typing.Union[typing.Dict[str, typing.Any], Non...</td>
+      <td>False</td>
+      <td>&lt;class 'bool'&gt;</td>
     </tr>
     <tr>
       <th>policy_kwargs</th>
-      <td>auto</td>
-      <td>&lt;class 'int'&gt;</td>
+      <td>None</td>
+      <td>typing.Optional[typing.Dict[str, typing.Any]]</td>
     </tr>
     <tr>
       <th>verbose</th>
+      <td>0</td>
+      <td>&lt;class 'int'&gt;</td>
+    </tr>
+    <tr>
+      <th>seed</th>
+      <td>None</td>
+      <td>typing.Optional[int]</td>
+    </tr>
+    <tr>
+      <th>device</th>
+      <td>auto</td>
+      <td>typing.Union[torch.device, str]</td>
+    </tr>
+    <tr>
+      <th>_init_setup_model</th>
       <td>True</td>
-      <td>typing.Union[int, NoneType]</td>
+      <td>&lt;class 'bool'&gt;</td>
     </tr>
   </tbody>
 </table>
@@ -583,6 +603,7 @@ pd.DataFrame(ppo_default_args, index=["Default Value", "Annotation"]).T
 ------
 
 **Define a PPO MlpPolicy architecture**
+
 ```python
 model = PPO("MlpPolicy", env, verbose=1)
 ```
