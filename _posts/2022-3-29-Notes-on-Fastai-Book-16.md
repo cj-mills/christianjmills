@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 16
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 16 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 16 covers momentum, RMSProp, Adam, decoupled weight decay, and fast.ai callbacks.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
@@ -15,6 +15,11 @@ search_exclude: false
 * [The Training Process](#the-training-process)
 * [Establishing a Baseline](#establishing-a-baseline)
 * [A Generic Optimizer](#a-generic-optimizer)
+* [Momentum](#momentum)
+* [RMSProp](#rmsprop)
+* [Adam](#adam)
+* [Decoupled Weight Decay](#decoupled-weight-decay)
+* [Callbacks](#callbacks)
 * [References](#references)
 
 -----
