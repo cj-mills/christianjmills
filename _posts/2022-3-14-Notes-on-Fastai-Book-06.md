@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 6
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 6 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 6 covers multi-label classification and image regression.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
