@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 10
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 10 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 10 covers text preprocessing and training an RNN for text classification.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
