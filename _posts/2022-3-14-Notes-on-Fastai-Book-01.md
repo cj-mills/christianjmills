@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 1
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 1 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 1 covers the history of artificial neural networks, approaches for learning ML/DL, and using the fast.ai library for multiple deep learning tasks.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
