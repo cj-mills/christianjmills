@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 17
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 17 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 17 covers building a neural network from the foundations.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
