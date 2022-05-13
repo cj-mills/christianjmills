@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 18
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 18 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 18 covers interpreting convolutional neural networks using class-activation maps.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
