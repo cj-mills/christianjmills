@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 6
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 6 of Natural Language Processing with Transformers
+description: Chapter 6 covers building an encoder-decoder model to condense dialogues between several people into a crisp summary.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
