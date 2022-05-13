@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 4
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 4 of Natural Language Processing with Transformers
+description: Chapter 4 covers fine-tuning a multilingual transformer model to perform named entity recognition.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
