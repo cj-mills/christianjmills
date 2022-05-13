@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 4
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 4 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 4 covers broadcasting, stochastic gradient descent, the MNIST loss function, and the sigmoid activation functions.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
