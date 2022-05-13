@@ -3,7 +3,7 @@ title: Notes on The 🤗 Deep RL Class Pt.1
 layout: post
 toc: false
 comments: true
-description: My notes for unit 1 of The 🤗 Deep Reinforcement Learning Class
+description: Unit 1 introduces the basic concepts for reinforcement learning and covers how to train an agent for the classic lunar lander environment.
 categories: [ai, huggingface, reinforcement-learning, notes]
 hide: false
 permalink: /:title/
