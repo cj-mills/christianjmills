@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 12
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 12 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 12 covers building and training an LSTM from scratch.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
