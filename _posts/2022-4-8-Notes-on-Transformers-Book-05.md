@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 5
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 5 of Natural Language Processing with Transformers
+description: Chapter 5 covers different methods for generating text with GPT-2.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
