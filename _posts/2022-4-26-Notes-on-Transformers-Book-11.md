@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 11
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 11 of Natural Language Processing with Transformers
+description: Chapter 11 explores scaling up transformers, methods to make self-attention more efficient, and multimodel transformers.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
