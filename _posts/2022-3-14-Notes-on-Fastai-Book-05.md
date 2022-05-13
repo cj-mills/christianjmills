@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 5
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 5 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 5 covers creating a custom DataBlock for an image classifier, pre-sizing, cross-entropy loss, model interpretation, picking learning rates, transfer learning, and discriminative learning rates.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
