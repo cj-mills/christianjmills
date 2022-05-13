@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 2
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 2 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 2 covers how to train an image classification model using a custom dataset and turn it into an online application.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
