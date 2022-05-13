@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 2
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 2 of Natural Language Processing with Transformers
+description: Chapter 2 covers training a model to classify emotions expressed in Twitter messages.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
