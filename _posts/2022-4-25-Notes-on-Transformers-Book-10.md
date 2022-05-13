@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 10
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 10 of Natural Language Processing with Transformers
+description: Chapter 10 covers how to train a GPT-like model to generate Python source code from scratch.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
