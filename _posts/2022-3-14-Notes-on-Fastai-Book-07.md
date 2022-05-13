@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 7
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 7 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 7 covers data normalization, progressive resizing, test-time augmentation, mixup, and label smoothing.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
