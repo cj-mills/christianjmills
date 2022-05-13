@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 3
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 3 of Natural Language Processing with Transformers
+description: Chapter 3 covers the Transformer architecture and different types of transformer models available on the Hugging Face Hub.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
