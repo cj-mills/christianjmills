@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 9
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 9 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 9 provides a deep dive into tabular modeling.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
