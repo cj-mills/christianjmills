@@ -3,7 +3,7 @@ title: Notes on Transformers Book Ch. 7
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 7 of Natural Language Processing with Transformers
+description: Chapter 7 covers building a question-answering model that finds answers to questions in customer reviews.
 categories: [ai, huggingface, nlp, notes]
 hide: false
 permalink: /:title/
