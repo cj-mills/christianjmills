@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 8
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 8 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 8 provides a deep dive into collaborative filtering.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
