@@ -3,7 +3,7 @@ title: Notes on fastai Book Ch. 13
 layout: post
 toc: false
 comments: true
-description: My full notes for chapter 13 of Deep Learning for Coders with fastai & PyTorch
+description: Chapter 13 provides a deep dive into convolutional neural networks.
 categories: [ai, fastai, notes, pytorch]
 hide: false
 permalink: /:title/
