@@ -794,9 +794,9 @@ package_to_hub(model=model, # Our trained model
 
 ### Some additional challenges 🏆
 
-* Train more steps
-* Try different hyperparameters of `PPO`. You can see them at https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html#parameters. 
-* Check the [Stable-Baselines3 documentation](https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html) and try another models such as DQN.
+* Train for more steps.
+* Try different [hyperparameters](https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html#parameters) of `PPO`. 
+* Check the [Stable-Baselines3 documentation](https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html) and try another model such as DQN.
 * Try using the [CartPole-v1](https://www.gymlibrary.ml/environments/classic_control/cart_pole/), [MountainCar-v0](https://www.gymlibrary.ml/environments/classic_control/mountain_car/) or [CarRacing-v0](https://www.gymlibrary.ml/environments/box2d/car_racing/) environments.
 
 
