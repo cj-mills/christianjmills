@@ -130,7 +130,7 @@ search_exclude: false
 
 ## Lab
 
-* **Objective:** Train a first lander agent to land correctly, share it to the community, and experiment with different configurations.
+* **Objective:** Train a lander agent to land correctly, share it to the community, and experiment with different configurations.
 * [Syllabus](https://github.com/huggingface/deep-rl-class)
 * [Discord server](https://discord.gg/aYka4Yhff9)
 * [#study-group-unit1 discord channel](https://discord.gg/aYka4Yhff9)
