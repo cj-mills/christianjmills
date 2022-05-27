@@ -27,7 +27,7 @@ search_exclude: false
 - The value of a state is the expected discounted return from starting in that state and following the policy.
 - Value-based methods involve learning a value function that maps a state to the expected value of being in that state.
 - Finding an optimal value function leads to having an optimal policy.
-- $$\pi^{*}(s) = argmax_{a} Q^{*}(s,a)$$
+- $\pi^{*}(s) = argmax_{a} Q^{*}(s,a)$
 - Value-based methods require us to define how the agent acts (i.e., the policy) based on the predicted value map.
 - Greedy policies always take the action that leads to the biggest reward.
 - Epsilon-Greedy policies switch between exploring random actions and taking actions with the highest known reward.
@@ -36,7 +36,7 @@ search_exclude: false
 ### The State-Value function
 
 - The state-value function, for each state $S_{t}$, outputs the expected return $E_{\pi}\left[ G_{t} \right]$ if the agent starts in that state $S_{t}$ and then follows the policy $\pi$ forever.
-- $$V_{\pi}(s) = E_{\pi}\left[ G _{t} \vert S_{t} = s \right]$$
+- $V_{\pi}(s) = E_{\pi}\left[ G _{t} \vert S_{t} = s \right]$
 
 ### The Action-Value function
 
@@ -69,7 +69,7 @@ search_exclude: false
 ### Temporal Difference Learning: learning at each step
 
 - Temporal difference waits for one interaction $S_{t+1}$, forms a TD target $R_{t+1} + \gamma \cdot V(S_{t+1})$, and updates the value function $V(S_{t})$ using the immediate reward plus $R_{t+1}$ the discounted value of the following state $gamma \cdot V(S_{t+1})$ scaled by a learning rate $\alpha$.
-- $$V(S_{t}) \leftarrow V(S_{t}) + \alpha \left[R_{t+1} + \gamma \cdot V(S_{t+1}) - V(S_{t}) \right]$$
+- $V(S_{t}) \leftarrow V(S_{t}) + \alpha \left[R_{t+1} + \gamma \cdot V(S_{t+1}) - V(S_{t}) \right]$
 - TD Learning that waits for one step is TD(0) or one-step TD.
 - The agent improves by running more and more steps.
 - TD Learning uses an estimated return called TD target.
@@ -92,7 +92,7 @@ search_exclude: false
 
 - Q Learning waits for one interaction, forms a TD target $R_{t+1} + \gamma max_{a} Q(S_{t+1} , a)$, and updates the Q-value $Q(S_{t} , A_{t} )$ for the state-action pair $\left(S_{t} , A_{t} \right) $ in the Q-table using the immediate reward $R_{t+1}$ plus the discounted optimal (i.e., greedy) Q-Value of the following state $\gamma max_{a} Q(S_{t+1} , a)$ scaled by a learning rate $\alpha$.
 - The Q-Values in the Q-table become more accurate with more steps.
-- **Input:** policy $\pi$, positive integer $num\_episodes$, small positive fraction $\alpha$, $\text{GLIE}$ $\{\epsilon_{i}\}$
+- **Input:** policy $\pi$, positive integer $num\_episodes$, small positive fraction $\alpha$, $GLIE$ $\{\epsilon_{i}\}$
 - **Output:** value function $Q (\approx q_{\pi})$ if num\_episodes is large enough
 - **Steps:**
     1. Initialize $Q$ arbitrarily $($e.g. $Q(s,a) = 0$ for all $s \ \epsilon S A(s)$, and $Q(terminal-state, \cdot) = 0 )$
@@ -101,7 +101,7 @@ search_exclude: false
         2. Observe $S_{0}$
         3. $t \leftarrow 0$
         4. repeat until $S_{t}$ is terminal
-            1. Choose action $A_{t}$ using policy derived from $Q(\text{e.g., } \epsilon\text{-greedy})$
+            1. Choose action $A_{t}$ using policy derived from $Q(e.g., \epsilon$-greedy$)$
             2. Take action $A_{t}$  and observe $R_{t+1},S_{t+1}$
             3. $Q(S_{t},A_{t}) \leftarrow Q(S_{t},A_{t}) + \alpha (R_{t+1} + \gamma \cdot max_{a}Q(S_{t+1}, a) - Q(S_{t}, A_{t}))$
             4. $t \leftarrow t + 1$
