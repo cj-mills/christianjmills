@@ -36,7 +36,7 @@ search_exclude: false
 ### The State-Value function
 
 - The state-value function, for each state $S_{t}$, outputs the expected return $E_{\pi}\left[ G_{t} \right]$ if the agent starts in that state $S_{t}$ and then follows the policy $\pi$ forever.
-- $V_{\pi}(s) = E_{\pi}\left[ G _{t} \vert S_{t} = s \right]$
+- $$V_{\pi}(s) = E_{\pi}\left[ G _{t} \vert S_{t} = s \right]$$
 
 ### The Action-Value function
 
