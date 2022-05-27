@@ -41,7 +41,7 @@ search_exclude: false
 ### The Action-Value function
 
 - The action-value function outputs the expected return $E_{\pi}\left[ G_{t} \right] $ for each state-action pair $\left( S_{t}, A_{t} \right)$ if the agent takes a given action $A_{t}$ when starting in a given state $S_{t}$ and then follows the policy $\pi$ forever.
-- $Q_{\pi} (s,a) = E_{\pi} \left[ G_{t} | S_{t} = s, A_{t} = a \right]$
+- $$Q_{\pi} (s,a) = E_{\pi} \left[ G_{t} \vert S_{t} = s, A_{t} = a \right]$$
 
 
 
