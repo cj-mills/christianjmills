@@ -93,7 +93,7 @@ search_exclude: false
 - Q Learning waits for one interaction, forms a TD target $R_{t+1} + \gamma max_{a} Q(S_{t+1} , a)$, and updates the Q-value $Q(S_{t} , A_{t} )$ for the state-action pair $\left(S_{t} , A_{t} \right) $ in the Q-table using the immediate reward $R_{t+1}$ plus the discounted optimal (i.e., greedy) Q-Value of the following state $\gamma max_{a} Q(S_{t+1} , a)$ scaled by a learning rate $\alpha$.
 - The Q-Values in the Q-table become more accurate with more steps.
 - **Input:** policy $\pi$, positive integer $num\_episodes$, small positive fraction $\alpha$, $\text{GLIE}$ $\{\epsilon_{i}\}$
-- **Output:** value function $Q (\approx q_{\pi} \ \text{if num\_episodes is large enough} )$
+- **Output:** value function $Q (\approx q_{\pi})$ if num\_episodes is large enough
 - **Steps:**
     1. Initialize $Q$ arbitrarily $($e.g. $Q(s,a) = 0$ for all $s \ \epsilon S A(s)$, and $Q(terminal-state, \cdot) = 0 )$
     2. for  $i \leftarrow 1 \ to \ num\_episodes \ do$
