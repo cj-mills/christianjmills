@@ -25,6 +25,10 @@ search_exclude: false
 
 
 
+#### Update 5/27/2022: Upgrade to Unity 2022.1.0+ to resolve build errors.
+
+
+
 ## Overview
 
 Until recently, it was infeasible to use the Barracuda inference engine in WebGL builds. CPU inference was single-thread only, and we could not use the GPU at all. However, updates to the Barracuda library added a Pixel Shader worker type. This new worker type enables GPU inference even when the target platform does not support Compute Shaders. 
