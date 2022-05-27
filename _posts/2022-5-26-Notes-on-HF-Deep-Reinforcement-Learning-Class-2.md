@@ -96,14 +96,14 @@ search_exclude: false
 - **Output:** value function $Q (\approx q_{\pi} \ \text{if num\_episodes is large enough} )$
 - **Steps:**
     1. Initialize $Q$ arbitrarily $($e.g. $Q(s,a) = 0$ for all $s \ \epsilon S A(s)$, and $Q(terminal-state, \cdot) = 0 )$
-    2. $$for i \leftarrow 1 \ to \ \text{num\_episodes} \ do$$
+    2. for  $i \leftarrow 1 \ to \ num\_episodes \ do$
         1. $\epsilon \leftarrow \epsilon_{i}$
         2. Observe $S_{0}$
         3. $t \leftarrow 0$
         4. repeat until $S_{t}$ is terminal
             1. Choose action $A_{t}$ using policy derived from $Q(\text{e.g., } \epsilon\text{-greedy})$
             2. Take action $A_{t}$  and observe $R_{t+1},S_{t+1}$
-            3. $$Q(S_{t},A_{t}) \leftarrow Q(S_{t},A_{t}) + \alpha (R_{t+1} + \gamma \cdot \text{max}_{a}Q(S_{t+1}, a) - Q(S_{t}, A_{t}))$$
+            3. $Q(S_{t},A_{t}) \leftarrow Q(S_{t},A_{t}) + \alpha (R_{t+1} + \gamma \cdot max_{a}Q(S_{t+1}, a) - Q(S_{t}, A_{t}))$
             4. $t \leftarrow t + 1$
     3. return $Q$
 
