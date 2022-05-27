@@ -3,7 +3,7 @@ title: Notes on The 🤗 Deep RL Class Pt.2
 layout: post
 toc: false
 comments: true
-description: Unit 2 introduces the monte carlo, temporal difference learning, and Q-learning.
+description: Unit 2 introduces monte carlo, temporal difference learning, and Q-learning.
 categories: [ai, huggingface, reinforcement-learning, notes]
 hide: false
 permalink: /:title/
