@@ -210,10 +210,10 @@ virtual_display.start()
 ------
 
 
-### Import the packages 📦
+### Import the packages
 The Hugging Face Hub 🤗 works as a central place where anyone can share and explore models and datasets. It has versioning, metrics, visualizations and other features that will allow you to easilly collaborate with others.
 
-Hugging Face Hub Deep reinforcement Learning models: https://huggingface.co/models?pipeline_tag=reinforcement-learning&sort=downloads
+[Hugging Face Hub Deep reinforcement Learning models](https://huggingface.co/models?pipeline_tag=reinforcement-learning&sort=downloads)
 
 #### `load_from_hub`
 * Download a model from Hugging Face Hub.
