@@ -27,7 +27,7 @@ search_exclude: false
 - The value of a state is the expected discounted return from starting in that state and following the policy.
 - Value-based methods involve learning a value function that maps a state to the expected value of being in that state.
 - Finding an optimal value function leads to having an optimal policy.
-- $\pi^{*}(s) = argmax_{a} Q^{*}(s,a)$
+- $$\pi^{*}(s) = argmax_{a} Q^{*}(s,a)$$
 - Value-based methods require us to define how the agent acts (i.e., the policy) based on the predicted value map.
 - Greedy policies always take the action that leads to the biggest reward.
 - Epsilon-Greedy policies switch between exploring random actions and taking actions with the highest known reward.
@@ -36,7 +36,7 @@ search_exclude: false
 ### The State-Value function
 
 - The state-value function, for each state $S_{t}$, outputs the expected return $E_{\pi}\left[ G_{t} \right]$ if the agent starts in that state $S_{t}$ and then follows the policy $\pi$ forever.
-- $V_{\pi}(s) = E_{\pi}\left[ G _{t} \vert S_{t} = s \right]$
+- $$V_{\pi}(s) = E_{\pi}\left[ G _{t} \vert S_{t} = s \right]$$
 
 ### The Action-Value function
 
@@ -69,7 +69,7 @@ search_exclude: false
 ### Temporal Difference Learning: learning at each step
 
 - Temporal difference waits for one interaction $S_{t+1}$, forms a TD target $R_{t+1} + \gamma \cdot V(S_{t+1})$, and updates the value function $V(S_{t})$ using the immediate reward plus $R_{t+1}$ the discounted value of the following state $gamma \cdot V(S_{t+1})$ scaled by a learning rate $\alpha$.
-- $V(S_{t}) \leftarrow V(S_{t}) + \alpha \left[R_{t+1} + \gamma \cdot V(S_{t+1}) - V(S_{t}) \right]$
+- $$V(S_{t}) \leftarrow V(S_{t}) + \alpha \left[R_{t+1} + \gamma \cdot V(S_{t+1}) - V(S_{t}) \right]$$
 - TD Learning that waits for one step is TD(0) or one-step TD.
 - The agent improves by running more and more steps.
 - TD Learning uses an estimated return called TD target.
@@ -103,7 +103,7 @@ search_exclude: false
         4. repeat until $S_{t}$ is terminal
             1. Choose action $A_{t}$ using policy derived from $Q(\text{e.g., } \epsilon\text{-greedy})$
             2. Take action $A_{t}$  and observe $R_{t+1},S_{t+1}$
-            3. $Q(S_{t},A_{t}) \leftarrow Q(S_{t},A_{t}) + \alpha (R_{t+1} + \gamma \cdot \text{max}_{a}Q(S_{t+1}, a) - Q(S_{t}, A_{t}))$
+            3. $$Q(S_{t},A_{t}) \leftarrow Q(S_{t},A_{t}) + \alpha (R_{t+1} + \gamma \cdot \text{max}_{a}Q(S_{t+1}, a) - Q(S_{t}, A_{t}))$$
             4. $t \leftarrow t + 1$
     3. return $Q$
 
@@ -148,7 +148,9 @@ virtual_display.start()
 
 
 
-    <pyvirtualdisplay.display.Display at 0x7fea103d3b20>
+```text
+<pyvirtualdisplay.display.Display at 0x7fea103d3b20>
+```
 
 
 
@@ -167,8 +169,10 @@ import os
 import pickle5 as pickle
 ```
 
-    /home/innom-dt/mambaforge/envs/hf-drl-class-unit2/lib/python3.9/site-packages/gym/envs/registration.py:398: UserWarning: [33mWARN: Custom namespace `ALE` is being overridden by namespace `ALE`. If you are developing a plugin you shouldn't specify a namespace in `register` calls. The namespace is specified through the entry point package metadata.[0m
-      logger.warn(
+```text
+/home/innom-dt/mambaforge/envs/hf-drl-class-unit2/lib/python3.9/site-packages/gym/envs/registration.py:398: UserWarning: [33mWARN: Custom namespace `ALE` is being overridden by namespace `ALE`. If you are developing a plugin you shouldn't specify a namespace in `register` calls. The namespace is specified through the entry point package metadata.[0m
+  logger.warn(
+```
 
 
 ### Create and understand [FrozenLake environment â](https://www.gymlibrary.ml/environments/toy_text/frozen_lake/)
@@ -216,10 +220,12 @@ print("Observation Space", env.observation_space)
 print("Sample observation", env.observation_space.sample()) # Get a random observation
 ```
 
-    _____OBSERVATION SPACE_____ 
-    
-    Observation Space Discrete(16)
-    Sample observation 9
+```text
+_____OBSERVATION SPACE_____ 
+
+Observation Space Discrete(16)
+Sample observation 9
+```
 
 
 **Note:** The observation is a value representing the agentâs current position as $current\_row \cdot nrows + current\_col$, where both the row and col start at 0. 
@@ -232,10 +238,12 @@ print("Action Space Sample", env.action_space.sample()) # Take a random action
 ```
 
 
-     _____ACTION SPACE_____ 
-    
-    Action Space Shape 4
-    Action Space Sample 3
+```text
+ _____ACTION SPACE_____ 
+
+Action Space Shape 4
+Action Space Sample 3
+```
 
 
 **Action Space:**
@@ -258,8 +266,9 @@ action_space = env.action_space.n
 print(f"There are {state_space} possible states and {action_space} possible actions")
 ```
 
-    There are 16 possible states and 4 possible actions
-
+```text
+There are 16 possible states and 4 possible actions
+```
 
 **Define a function to initialize a Q-table**
 
@@ -690,7 +699,7 @@ def evaluate_agent(env, max_steps, n_eval_episodes, Q, seed):
     return mean_reward, std_reward
 ```
 
-### Evaluate our Q-Learning agent
+### Evaluate theQ-Learning agent
 
 
 ```python
@@ -698,7 +707,9 @@ mean_reward, std_reward = evaluate_agent(env, max_steps, n_eval_episodes, Qtable
 print(f"Mean_reward={mean_reward:.2f} +/- {std_reward:.2f}")
 ```
 
-    Mean_reward=1.00 +/- 0.00
+```text
+Mean_reward=1.00 +/- 0.00
+```
 
 
 **Note:**
@@ -736,145 +747,6 @@ def record_video(env, Qtable, out_directory, fps=1):
 ```
 
 
-```python
-def push_to_hub(repo_id, 
-                model,
-                env,
-                video_fps=1,
-                local_repo_path="hub",
-                commit_message="Push Q-Learning agent to Hub",
-                token= None
-               ):
-    _, repo_name = repo_id.split("/")
-    
-    eval_env = env
-    
-    # Step 1: Clone or create the repo
-    # Create the repo (or clone its content if it's nonempty)
-    api = HfApi()
-    
-    repo_url = api.create_repo(
-        repo_id=repo_id,
-        token=token,
-        private=False,
-        exist_ok=True,)
-    
-    # Git pull
-    repo_local_path = Path(local_repo_path) / repo_name
-    repo = Repository(repo_local_path, clone_from=repo_url, use_auth_token=True)
-    repo.git_pull()
-    
-    repo.lfs_track(["*.mp4"])
-    
-    # Step 1: Save the model
-    if env.spec.kwargs.get("map_name"):
-        model["map_name"] = env.spec.kwargs.get("map_name")
-        if env.spec.kwargs.get("is_slippery", "") == False:
-            model["slippery"] = False
-            
-    print(model)
-    
-    # Pickle the model
-    with open(Path(repo_local_path)/'q-learning.pkl', 'wb') as f:
-        pickle.dump(model, f)
-        
-    # Step 2: Evaluate the model and build JSON
-    mean_reward, std_reward = evaluate_agent(eval_env, model["max_steps"], model["n_eval_episodes"], model["qtable"], model["eval_seed"])
-    
-    # First get datetime
-    eval_datetime = datetime.datetime.now()
-    eval_form_datetime = eval_datetime.isoformat()
-    
-    evaluate_data = {
-        "env_id": model["env_id"], 
-        "mean_reward": mean_reward,
-        "n_eval_episodes": model["n_eval_episodes"],
-        "eval_datetime": eval_form_datetime,
-    }
-    
-    # Write a JSON file
-    with open(Path(repo_local_path) / "results.json", "w") as outfile:
-        json.dump(evaluate_data, outfile)
-        
-    # Step 3: Create the model card
-    # Env id
-    env_name = model["env_id"]
-    if env.spec.kwargs.get("map_name"):
-        env_name += "-" + env.spec.kwargs.get("map_name")
-        
-    if env.spec.kwargs.get("is_slippery", "") == False:
-        env_name += "-" + "no_slippery"
-        
-    metadata = {}
-    metadata["tags"] = [
-        env_name,
-        "q-learning",
-        "reinforcement-learning",
-        "custom-implementation"
-    ]
-    
-    # Add metrics
-    eval = metadata_eval_result(
-        model_pretty_name=repo_name,
-        task_pretty_name="reinforcement-learning",
-        task_id="reinforcement-learning",
-        metrics_pretty_name="mean_reward",
-        metrics_id="mean_reward",
-        metrics_value=f"{mean_reward:.2f} +/- {std_reward:.2f}",
-        dataset_pretty_name=env_name,
-        dataset_id=env_name,
-    )
-    
-    # Merges both dictionaries
-    metadata = {**metadata, **eval}
-    
-    model_card = f"""
-    # **Q-Learning** Agent playing **{env_id}**
-    This is a trained model of a **Q-Learning** agent playing **{env_id}** .
-    """
-    
-    model_card += """
-    ## Usage
-    ```python
-    """
-    
-    model_card += f"""model = load_from_hub(repo_id="{repo_id}", filename="q-learning.pkl")
-    
-    # Don't forget to check if you need to add additional attributes (is_slippery=False etc)
-    env = gym.make(model["env_id"])
-    
-    evaluate_agent(env, model["max_steps"], model["n_eval_episodes"], model["qtable"], model["eval_seed"])
-    """
-    
-    model_card +="""
-```
-    """
-    
-    readme_path = repo_local_path / "README.md"
-    readme = ""
-    if readme_path.exists():
-        with readme_path.open("r", encoding="utf8") as f:
-            readme = f.read()
-    else:
-        readme = model_card
-        
-    with readme_path.open("w", encoding="utf-8") as f:
-        f.write(readme)
-        
-    # Save our metrics to Readme metadata
-    metadata_save(readme_path, metadata)
-    
-    # Step 4: Record a video
-    video_path =  repo_local_path / "replay.mp4"
-    record_video(env, model["qtable"], video_path, video_fps)
-    
-    # Push everything to hub
-    print(f"Pushing repo {repo_name} to the Hugging Face Hub")
-    repo.push_to_hub(commit_message=commit_message)
-    
-    print(f"Your model is pushed to the hub. You can view your model here: {repo_url}")
-```
-
 **[Leaderboard](https://huggingface.co/spaces/chrisjay/Deep-Reinforcement-Learning-Leaderboard)**
 
 **Log into Hugging Face account**
@@ -885,8 +757,10 @@ from huggingface_hub import notebook_login
 notebook_login()
 ```
 
-    Login successful
-    Your token has been saved to /home/innom-dt/.huggingface/token
+```text
+Login successful
+Your token has been saved to /home/innom-dt/.huggingface/token
+```
 
 
 **Create a model dictionnary that contains the hyperparameters and the Q_table**
@@ -914,35 +788,35 @@ model
 ```
 
 
-
-
-    {'env_id': 'FrozenLake-v1',
-     'max_steps': 99,
-     'n_training_episodes': 10000,
-     'n_eval_episodes': 100,
-     'eval_seed': [],
-     'learning_rate': 0.7,
-     'gamma': 0.95,
-     'epsilon': 1.0,
-     'max_epsilon': 1.0,
-     'min_epsilon': 0.05,
-     'decay_rate': 0.005,
-     'qtable': array([[0.73509189, 0.77378094, 0.77378094, 0.73509189],
-            [0.73509189, 0.        , 0.81450625, 0.77378094],
-            [0.77378094, 0.857375  , 0.77378094, 0.81450625],
-            [0.81450625, 0.        , 0.77378094, 0.77378094],
-            [0.77378094, 0.81450625, 0.        , 0.73509189],
-            [0.        , 0.        , 0.        , 0.        ],
-            [0.        , 0.9025    , 0.        , 0.81450625],
-            [0.        , 0.        , 0.        , 0.        ],
-            [0.81450625, 0.        , 0.857375  , 0.77378094],
-            [0.81450625, 0.9025    , 0.9025    , 0.        ],
-            [0.857375  , 0.95      , 0.        , 0.857375  ],
-            [0.        , 0.        , 0.        , 0.        ],
-            [0.        , 0.        , 0.        , 0.        ],
-            [0.        , 0.9025    , 0.95      , 0.857375  ],
-            [0.9025    , 0.95      , 1.        , 0.9025    ],
-            [0.        , 0.        , 0.        , 0.        ]])}
+```text
+{'env_id': 'FrozenLake-v1',
+ 'max_steps': 99,
+ 'n_training_episodes': 10000,
+ 'n_eval_episodes': 100,
+ 'eval_seed': [],
+ 'learning_rate': 0.7,
+ 'gamma': 0.95,
+ 'epsilon': 1.0,
+ 'max_epsilon': 1.0,
+ 'min_epsilon': 0.05,
+ 'decay_rate': 0.005,
+ 'qtable': array([[0.73509189, 0.77378094, 0.77378094, 0.73509189],
+        [0.73509189, 0.        , 0.81450625, 0.77378094],
+        [0.77378094, 0.857375  , 0.77378094, 0.81450625],
+        [0.81450625, 0.        , 0.77378094, 0.77378094],
+        [0.77378094, 0.81450625, 0.        , 0.73509189],
+        [0.        , 0.        , 0.        , 0.        ],
+        [0.        , 0.9025    , 0.        , 0.81450625],
+        [0.        , 0.        , 0.        , 0.        ],
+        [0.81450625, 0.        , 0.857375  , 0.77378094],
+        [0.81450625, 0.9025    , 0.9025    , 0.        ],
+        [0.857375  , 0.95      , 0.        , 0.857375  ],
+        [0.        , 0.        , 0.        , 0.        ],
+        [0.        , 0.        , 0.        , 0.        ],
+        [0.        , 0.9025    , 0.95      , 0.857375  ],
+        [0.9025    , 0.95      , 1.        , 0.9025    ],
+        [0.        , 0.        , 0.        , 0.        ]])}
+```
 
 
 
@@ -958,27 +832,31 @@ push_to_hub(
     env=env)
 ```
 
-    {'env_id': 'FrozenLake-v1', 'max_steps': 99, 'n_training_episodes': 10000, 'n_eval_episodes': 100, 'eval_seed': [], 'learning_rate': 0.7, 'gamma': 0.95, 'epsilon': 1.0, 'max_epsilon': 1.0, 'min_epsilon': 0.05, 'decay_rate': 0.005, 'qtable': array([[0.73509189, 0.77378094, 0.77378094, 0.73509189],
-           [0.73509189, 0.        , 0.81450625, 0.77378094],
-           [0.77378094, 0.857375  , 0.77378094, 0.81450625],
-           [0.81450625, 0.        , 0.77378094, 0.77378094],
-           [0.77378094, 0.81450625, 0.        , 0.73509189],
-           [0.        , 0.        , 0.        , 0.        ],
-           [0.        , 0.9025    , 0.        , 0.81450625],
-           [0.        , 0.        , 0.        , 0.        ],
-           [0.81450625, 0.        , 0.857375  , 0.77378094],
-           [0.81450625, 0.9025    , 0.9025    , 0.        ],
-           [0.857375  , 0.95      , 0.        , 0.857375  ],
-           [0.        , 0.        , 0.        , 0.        ],
-           [0.        , 0.        , 0.        , 0.        ],
-           [0.        , 0.9025    , 0.95      , 0.857375  ],
-           [0.9025    , 0.95      , 1.        , 0.9025    ],
-           [0.        , 0.        , 0.        , 0.        ]]), 'map_name': '4x4', 'slippery': False}
-    Pushing repo q-FrozenLake-v1-4x4-noSlippery to the Hugging Face Hub
-    Your model is pushed to the hub. You can view your model here: https://huggingface.co/cj-mills/q-FrozenLake-v1-4x4-noSlippery
+```text
+{'env_id': 'FrozenLake-v1', 'max_steps': 99, 'n_training_episodes': 10000, 'n_eval_episodes': 100, 'eval_seed': [], 'learning_rate': 0.7, 'gamma': 0.95, 'epsilon': 1.0, 'max_epsilon': 1.0, 'min_epsilon': 0.05, 'decay_rate': 0.005, 'qtable': array([[0.73509189, 0.77378094, 0.77378094, 0.73509189],
+       [0.73509189, 0.        , 0.81450625, 0.77378094],
+       [0.77378094, 0.857375  , 0.77378094, 0.81450625],
+       [0.81450625, 0.        , 0.77378094, 0.77378094],
+       [0.77378094, 0.81450625, 0.        , 0.73509189],
+       [0.        , 0.        , 0.        , 0.        ],
+       [0.        , 0.9025    , 0.        , 0.81450625],
+       [0.        , 0.        , 0.        , 0.        ],
+       [0.81450625, 0.        , 0.857375  , 0.77378094],
+       [0.81450625, 0.9025    , 0.9025    , 0.        ],
+       [0.857375  , 0.95      , 0.        , 0.857375  ],
+       [0.        , 0.        , 0.        , 0.        ],
+       [0.        , 0.        , 0.        , 0.        ],
+       [0.        , 0.9025    , 0.95      , 0.857375  ],
+       [0.9025    , 0.95      , 1.        , 0.9025    ],
+       [0.        , 0.        , 0.        , 0.        ]]), 'map_name': '4x4', 'slippery': False}
+Pushing repo q-FrozenLake-v1-4x4-noSlippery to the Hugging Face Hub
+Your model is pushed to the hub. You can view your model here: https://huggingface.co/cj-mills/q-FrozenLake-v1-4x4-noSlippery
+```
 
 
-### Create and understand [Taxi-v3 đ](https://www.gymlibrary.ml/environments/toy_text/taxi/)
+
+### Create and understand [Taxi-v3](https://www.gymlibrary.ml/environments/toy_text/taxi/)
+
 * [Documentation](https://www.gymlibrary.ml/environments/toy_text/taxi/)
 * There are four designated locations in the grid world indicated by R(ed), G(reen), Y(ellow), and B(lue).
 * The taxi starts off at a random square and the passenger is at a random location. 
@@ -5577,7 +5455,7 @@ min_epsilon = 0.05           # Minimum exploration probability
 decay_rate = 0.005            # Exponential decay rate for exploration prob
 ```
 
-**â  DO NOT MODIFY EVAL_SEED**
+**DO NOT MODIFY EVAL_SEED**
 
 
 ```python
@@ -10157,33 +10035,41 @@ push_to_hub(
     env=env)
 ```
 
-    IMAGEIO FFMPEG_WRITER WARNING: input image is not divisible by macro_block_size=16, resizing from (550, 350) to (560, 352) to ensure video compatibility with most codecs and players. To prevent resizing, make your input image divisible by the macro_block_size or set the macro_block_size to 1 (risking incompatibility).
+```text
+IMAGEIO FFMPEG_WRITER WARNING: input image is not divisible by macro_block_size=16, resizing from (550, 350) to (560, 352) to ensure video compatibility with most codecs and players. To prevent resizing, make your input image divisible by the macro_block_size or set the macro_block_size to 1 (risking incompatibility).
+```
 
 
-    {'env_id': 'Taxi-v3', 'max_steps': 99, 'n_training_episodes': 25000, 'n_eval_episodes': 100, 'eval_seed': [16, 54, 165, 177, 191, 191, 120, 80, 149, 178, 48, 38, 6, 125, 174, 73, 50, 172, 100, 148, 146, 6, 25, 40, 68, 148, 49, 167, 9, 97, 164, 176, 61, 7, 54, 55, 161, 131, 184, 51, 170, 12, 120, 113, 95, 126, 51, 98, 36, 135, 54, 82, 45, 95, 89, 59, 95, 124, 9, 113, 58, 85, 51, 134, 121, 169, 105, 21, 30, 11, 50, 65, 12, 43, 82, 145, 152, 97, 106, 55, 31, 85, 38, 112, 102, 168, 123, 97, 21, 83, 158, 26, 80, 63, 5, 81, 32, 11, 28, 148], 'learning_rate': 0.7, 'gamma': 0.95, 'epsilon': 1.0, 'max_epsilon': 1.0, 'min_epsilon': 0.05, 'decay_rate': 0.005, 'qtable': array([[ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
-             0.        ],
-           [ 2.75200369,  3.94947757,  2.75200369,  3.94947757,  5.20997639,
-            -5.05052243],
-           [ 7.93349184,  9.40367562,  7.93349184,  9.40367562, 10.9512375 ,
-             0.40367562],
-           ...,
-           [10.9512375 , 12.58025   , 10.9512375 ,  9.40367562,  1.9512375 ,
-             1.9512375 ],
-           [ 5.20997639,  6.53681725,  5.20997639,  6.53681725, -3.79002361,
-            -3.79002361],
-           [16.1       , 14.295     , 16.1       , 18.        ,  7.1       ,
-             7.1       ]])}
-    Pushing repo q-Taxi-v3 to the Hugging Face Hub
+```text
+{'env_id': 'Taxi-v3', 'max_steps': 99, 'n_training_episodes': 25000, 'n_eval_episodes': 100, 'eval_seed': [16, 54, 165, 177, 191, 191, 120, 80, 149, 178, 48, 38, 6, 125, 174, 73, 50, 172, 100, 148, 146, 6, 25, 40, 68, 148, 49, 167, 9, 97, 164, 176, 61, 7, 54, 55, 161, 131, 184, 51, 170, 12, 120, 113, 95, 126, 51, 98, 36, 135, 54, 82, 45, 95, 89, 59, 95, 124, 9, 113, 58, 85, 51, 134, 121, 169, 105, 21, 30, 11, 50, 65, 12, 43, 82, 145, 152, 97, 106, 55, 31, 85, 38, 112, 102, 168, 123, 97, 21, 83, 158, 26, 80, 63, 5, 81, 32, 11, 28, 148], 'learning_rate': 0.7, 'gamma': 0.95, 'epsilon': 1.0, 'max_epsilon': 1.0, 'min_epsilon': 0.05, 'decay_rate': 0.005, 'qtable': array([[ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+         0.        ],
+       [ 2.75200369,  3.94947757,  2.75200369,  3.94947757,  5.20997639,
+        -5.05052243],
+       [ 7.93349184,  9.40367562,  7.93349184,  9.40367562, 10.9512375 ,
+         0.40367562],
+       ...,
+       [10.9512375 , 12.58025   , 10.9512375 ,  9.40367562,  1.9512375 ,
+         1.9512375 ],
+       [ 5.20997639,  6.53681725,  5.20997639,  6.53681725, -3.79002361,
+        -3.79002361],
+       [16.1       , 14.295     , 16.1       , 18.        ,  7.1       ,
+         7.1       ]])}
+Pushing repo q-Taxi-v3 to the Hugging Face Hub
+```
 
 
-    [swscaler @ 0x5936a80] Warning: data is not aligned! This can lead to a speed loss
+```text
+[swscaler @ 0x5936a80] Warning: data is not aligned! This can lead to a speed loss
+```
+
+```text
+Upload file replay.mp4:  27%|##7       | 32.0k/118k [00:00<?, ?B/s]
+```
 
 
-
-    Upload file replay.mp4:  27%|##7       | 32.0k/118k [00:00<?, ?B/s]
-
-
-    Your model is pushed to the hub. You can view your model here: https://huggingface.co/cj-mills/q-Taxi-v3
+```text
+Your model is pushed to the hub. You can view your model here: https://huggingface.co/cj-mills/q-Taxi-v3
+```
 
 
 **[Leaderboard](https://huggingface.co/spaces/chrisjay/Deep-Reinforcement-Learning-Leaderboard)**
@@ -10238,25 +10124,25 @@ env = gym.make(model["env_id"])
 evaluate_agent(env, model["max_steps"], model["n_eval_episodes"], model["qtable"], model["eval_seed"])
 ```
 
-    {'env_id': 'Taxi-v3', 'max_steps': 99, 'n_training_episodes': 25000, 'n_eval_episodes': 100, 'eval_seed': [16, 54, 165, 177, 191, 191, 120, 80, 149, 178, 48, 38, 6, 125, 174, 73, 50, 172, 100, 148, 146, 6, 25, 40, 68, 148, 49, 167, 9, 97, 164, 176, 61, 7, 54, 55, 161, 131, 184, 51, 170, 12, 120, 113, 95, 126, 51, 98, 36, 135, 54, 82, 45, 95, 89, 59, 95, 124, 9, 113, 58, 85, 51, 134, 121, 169, 105, 21, 30, 11, 50, 65, 12, 43, 82, 145, 152, 97, 106, 55, 31, 85, 38, 112, 102, 168, 123, 97, 21, 83, 158, 26, 80, 63, 5, 81, 32, 11, 28, 148], 'learning_rate': 0.7, 'gamma': 0.95, 'epsilon': 1.0, 'max_epsilon': 1.0, 'min_epsilon': 0.05, 'decay_rate': 0.005, 'qtable': array([[ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
-             0.        ],
-           [ 2.75200369,  3.94947757,  2.75200369,  3.94947757,  5.20997639,
-            -5.05052243],
-           [ 7.93349184,  9.40367562,  7.93349184,  9.40367562, 10.9512375 ,
-             0.40367562],
-           ...,
-           [10.9512375 , 12.58025   , 10.9512375 ,  9.40367562,  1.9512375 ,
-             1.9512375 ],
-           [ 5.20997639,  6.53681725,  5.20997639,  6.53681725, -3.79002361,
-            -3.79002361],
-           [16.1       , 14.295     , 16.1       , 18.        ,  7.1       ,
-             7.1       ]])}
+```text
+{'env_id': 'Taxi-v3', 'max_steps': 99, 'n_training_episodes': 25000, 'n_eval_episodes': 100, 'eval_seed': [16, 54, 165, 177, 191, 191, 120, 80, 149, 178, 48, 38, 6, 125, 174, 73, 50, 172, 100, 148, 146, 6, 25, 40, 68, 148, 49, 167, 9, 97, 164, 176, 61, 7, 54, 55, 161, 131, 184, 51, 170, 12, 120, 113, 95, 126, 51, 98, 36, 135, 54, 82, 45, 95, 89, 59, 95, 124, 9, 113, 58, 85, 51, 134, 121, 169, 105, 21, 30, 11, 50, 65, 12, 43, 82, 145, 152, 97, 106, 55, 31, 85, 38, 112, 102, 168, 123, 97, 21, 83, 158, 26, 80, 63, 5, 81, 32, 11, 28, 148], 'learning_rate': 0.7, 'gamma': 0.95, 'epsilon': 1.0, 'max_epsilon': 1.0, 'min_epsilon': 0.05, 'decay_rate': 0.005, 'qtable': array([[ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+         0.        ],
+       [ 2.75200369,  3.94947757,  2.75200369,  3.94947757,  5.20997639,
+        -5.05052243],
+       [ 7.93349184,  9.40367562,  7.93349184,  9.40367562, 10.9512375 ,
+         0.40367562],
+       ...,
+       [10.9512375 , 12.58025   , 10.9512375 ,  9.40367562,  1.9512375 ,
+         1.9512375 ],
+       [ 5.20997639,  6.53681725,  5.20997639,  6.53681725, -3.79002361,
+        -3.79002361],
+       [16.1       , 14.295     , 16.1       , 18.        ,  7.1       ,
+         7.1       ]])}
+```
 
-
-
-
-
-    (7.56, 2.706732347314747)
+```text
+(7.56, 2.706732347314747)
+```
 
 
 
