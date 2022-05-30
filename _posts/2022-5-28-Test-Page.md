@@ -12,6 +12,10 @@ search_exclude: true
 
 
 
-<video src="https://raw.githubusercontent.com/cj-mills/christianjmills/master/videos/in-game-style-transfer.mp4"></video>
+
+
+<video width="auto" height="auto" controls>
+	<source src="https://raw.githubusercontent.com/cj-mills/christianjmills/master/videos/in-game-style-transfer.mp4" type="video/mp4">
+</video>
 
 
