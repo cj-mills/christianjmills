@@ -101,14 +101,14 @@ Barracuda maps [ONNX operators](https://github.com/onnx/onnx/blob/main/docs/Oper
 
 Unity imports ONNX models as an [NNModel](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.NNModel.html) asset.
 
-```C#
-// The Barracuda/ONNX asset file
+```c#
+[Tooltip("The Barracuda/ONNX asset file")]
 public NNModel modelAsset;
 ```
 
 These then compile into a [Model](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.Model.html#methods) object at runtime.
 
-```C#
+```c#
 // Get an object oriented representation of the model
 m_RunTimeModel = ModelLoader.Load(modelAsset);
 ```
@@ -126,7 +126,7 @@ IWorker engine = WorkerFactory.CreateWorker(workerType, m_RunTimeModel);
 
 Barracuda can run models in a single frame or across multiple using [Coroutines](https://docs.unity3d.com/Manual/Coroutines.html). The latter option can help maintain smooth frame rates when using more demanding models.
 
-```
+```c#
 // Execute the model with the input Tensor
 engine.Execute(input);
 ```
