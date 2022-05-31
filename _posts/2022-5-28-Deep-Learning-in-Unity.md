@@ -102,7 +102,7 @@ Barracuda maps [ONNX operators](https://github.com/onnx/onnx/blob/main/docs/Oper
 Unity imports ONNX models as an [NNModel](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.NNModel.html) asset.
 
 ```C#
-[Tooltip("The Barracuda/ONNX asset file")]
+// The Barracuda/ONNX asset file
 public NNModel modelAsset;
 ```
 
