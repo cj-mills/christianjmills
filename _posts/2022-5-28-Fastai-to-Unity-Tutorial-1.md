@@ -79,9 +79,7 @@ from fastai.vision.all import *
 
 ## Configure Kaggle API
 
-The Kaggle API tool requires an API Key for a Kaggle account, meaning we, consequently, need a Kaggle account.
-
-Sign in or create a Kaggle account using the link below, then click the Create New API Token button. 
+The Kaggle API tool requires an API Key for a Kaggle account. Sign in or create a Kaggle account using the link below, then click the Create New API Token button.
 
 * **Kaggle Account Settings:** [https://www.kaggle.com/me/account](https://www.kaggle.com/me/account)
 
