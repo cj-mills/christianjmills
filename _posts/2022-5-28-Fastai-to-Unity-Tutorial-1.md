@@ -253,7 +253,7 @@ pd.DataFrame(folder_names)
 ```text
     Num classes: 51
 ```
-<div style="overflow-x:auto; overflow-y: auto; max-height=500px">
+<div style="overflow-x:auto; overflow-y: auto; max-height:500px">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -469,6 +469,7 @@ pd.DataFrame(folder_names)
   </tbody>
 </table>
 </div>
+
 
 
 
