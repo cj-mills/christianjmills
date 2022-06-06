@@ -1253,7 +1253,7 @@ learn.dls.after_item
 
 **Inspect the `after_batch` pipeline**
 
-The after_batch pipeline first scales the image color channel values from $[0,255]$ to $[0,1]$. Unity already uses the range $[0,1]$, so we don't need to implement this step. We also don't need to implement any of the image augmentation steps. However, we do need to normalize the image using the ImageNet stats.
+The `after_batch` pipeline first scales the image color channel values from $[0,255]$ to $[0,1]$. Unity already uses the range $[0,1]$, so we don't need to implement this step. We also don't need to implement any of the image augmentation steps. However, we do need to normalize the image using the ImageNet stats.
 
 
 ```python
