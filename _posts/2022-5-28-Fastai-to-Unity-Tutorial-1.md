@@ -45,7 +45,7 @@ Part 1 covers how to finetune a ResNet model for image classification using the 
 
 | Jupyter Notebook             | Colab                                                        | Kaggle                                                       |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [GitHub Repository](https://github.com/cj-mills/fastai-to-unity-tutorial/blob/main/notebooks/Fastai-to-Unity-Tutorial.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cj-mills/fastai-to-unity-tutorial/blob/main/notebooks/Fastai-to-Unity-Tutorial.ipynb) | [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-unity-tutorial/blob/main/notebooks/Fastai-to-Unity-Tutorial.ipynb) |
+| [GitHub Repository](https://github.com/cj-mills/fastai-to-unity-tutorial/blob/main/notebooks/Fastai-to-Unity-Tutorial.ipynb) | [Open In Colab](https://colab.research.google.com/github/cj-mills/fastai-to-unity-tutorial/blob/main/notebooks/Fastai-to-Unity-Tutorial.ipynb) | [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-unity-tutorial/blob/main/notebooks/Fastai-to-Unity-Tutorial.ipynb) |
 
 
 
@@ -96,6 +96,8 @@ creds = '{"username":"","key":""}'
 
 **Save Kaggle credentials if none are present**
 * **Source:** [https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb](https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb)
+
+------
 
 
 ```python
@@ -198,7 +200,7 @@ if not archive_path.exists():
 
 ## Inspect Dataset
 
-We can start inspecting the dataset once it finishes downloading and decompressing.
+We can start inspecting the dataset once it finishes downloading.
 
 **Inspect the dataset path**
 
@@ -500,7 +502,7 @@ Next, we need to define the [Transforms](https://docs.fast.ai/vision.augment.htm
 
 The Unity project will take input from a webcam, and most webcams don't have a square aspect ratio like the training samples. We will need to account for this to get more accurate predictions.
 
-We can train with a square aspect ratio and crop the webcam input in Unity, but that might make the user feel cramped when using the application.
+We can train with a square aspect ratio and crop the webcam input in Unity, but that might make users feel cramped when using the application.
 
 Alternatively, we can expand the training images to a more typical aspect ratio like 4:3 or 16:9. This approach will allow us to use the entire webcam input, so we'll go with this one.
 
