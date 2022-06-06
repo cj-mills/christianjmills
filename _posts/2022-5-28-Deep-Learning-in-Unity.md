@@ -309,7 +309,7 @@ for (int i = 0; i < output.length; i++)
 
 ## Summary
 
-This post introduced the Barracuda inference library for the Unity game engine. Barracuda is not the only option to perform inference in Unity, but it provides a good starting point. A follow-up post will walk through training a model using the [fastai library](https://docs.fast.ai/), exporting it to ONNX format, and performing inference with it in a Unity project using the Barracuda library.
+This post introduced the Barracuda inference library for the Unity game engine. Barracuda is not the only option to perform inference in Unity, but it provides a good starting point. A follow-up tutorial series will walk through training a model using the [fastai library](https://docs.fast.ai/), exporting it to ONNX format, and performing inference with it in a Unity project using the Barracuda library.
 
 
 
