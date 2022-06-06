@@ -736,7 +736,7 @@ dls = ImageDataLoaders.from_folder(
 
 **Verify DataLoaders object**
 
-Let's verify the DataLoaders object works as expected before training a model. We can see that the DataLoaders object applies the transforms to the training split, including mirroring the image.
+Let's verify the DataLoaders object works as expected before training a model.
 
 
 ```python
@@ -744,9 +744,7 @@ dls.train.show_batch()
 ```
 ![png](../images/fastai-to-unity-tutorial/output_40_0.png)
 
-
-
-However, it does not appear to mirror images from the validation split. 
+We can see that the DataLoaders object applies the transforms to the training split, including mirroring the image. However, it does not appear to mirror images from the validation split.
 
 ```python
 dls.valid.show_batch()
