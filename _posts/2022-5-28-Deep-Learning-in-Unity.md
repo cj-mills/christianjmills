@@ -18,7 +18,7 @@ search_exclude: false
 * [Loading Models](#loading-models)
 * [Executing Models](#executing-models)
 * [Working with Data](#working-with-data)
-* [Conclusion](#conclusion)
+* [Summary](#summary)
 
 
 
@@ -307,13 +307,13 @@ for (int i = 0; i < output.length; i++)
 
 
 
-## Conclusion
+## Summary
 
 This post introduced the Barracuda inference library for the Unity game engine. Barracuda is not the only option to perform inference in Unity, but it provides a good starting point. A follow-up post will walk through training a model using the [fastai library](https://docs.fast.ai/), exporting it to ONNX format, and performing inference with it in a Unity project using the Barracuda library.
 
 
 
-
+**Next:** [Fastai to Unity Tutorial Pt. 1](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/)
 
 
 
