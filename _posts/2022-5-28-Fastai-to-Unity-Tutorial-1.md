@@ -1237,9 +1237,7 @@ with dls.valid.dataset.set_split_idx(0): interp.plot_top_losses(k=9, figsize=(15
 
 ## Implement Processing Steps
 
-When we are satisfied with the model, we can start preparing for implementing it in Unity. We will need to apply the same preprocessing and post-processing in Unity that fastai applies automatically.
-
-We will verify we understand the processing steps by implementing them in Python first.
+When we are satisfied with the model, we can start preparing for implementing it in Unity. We will need to apply the same preprocessing and post-processing in Unity that fastai applies automatically. We will verify we understand the processing steps by implementing them in Python first.
 
 **Inspect the `after_item` pipeline**
 
