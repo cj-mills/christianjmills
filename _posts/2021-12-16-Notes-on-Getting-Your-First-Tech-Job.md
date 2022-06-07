@@ -65,6 +65,7 @@ Here are some notes I took while watching Mayuko's [video](https://www.youtube.c
     - Companies pay to source for candidates
 - [HackerRank](https://www.hackerrank.com/)
 - [Hired - Job Search Marketplace. Tech Job Hunting Simplified!](https://hired.com/)
+- [Remote Tech Jobs](https://www.remotetechjobs.com/)
 
 
 
