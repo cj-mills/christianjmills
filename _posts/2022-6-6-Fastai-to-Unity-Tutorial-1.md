@@ -1606,7 +1606,7 @@ In this post, we walked through how to finetune a ResNet model for image classif
 
 
 
-
+**Project Resources:** [GitHub Repository](https://github.com/cj-mills/fastai-to-unity-tutorial)
 
 
 
