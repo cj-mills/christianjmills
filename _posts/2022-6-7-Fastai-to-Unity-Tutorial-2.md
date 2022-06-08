@@ -1546,7 +1546,7 @@ This post covered implementing an image classification model in a Unity project 
 
 **Previous:** [Fastai to Unity Tutorial Pt. 1](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/)
 
-
+**Next:** [Fastai to Unity Tutorial Pt. 3](https://christianjmills.com/Fastai-to-Unity-Tutorial-3/)
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/fastai-to-unity-tutorial)
 
