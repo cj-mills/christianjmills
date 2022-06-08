@@ -298,6 +298,8 @@ public class ImageClassifier : MonoBehaviour
 * [UnityEngine.UI](https://docs.unity3d.com/Packages/com.unity.ugui@1.0/api/UnityEngine.UI.html): Provides access to UI elements.
 * [UnityEngine.Rendering](https://docs.unity3d.com/Packages/com.unity.render-pipelines.core@5.9/api/UnityEngine.Rendering.html): Provides access to the elements of the rendering pipeline.
 
+------
+
 ```c#
 using System.Collections;
 using System.Collections.Generic;
