@@ -31,7 +31,7 @@ search_exclude: false
 
 ## Overview
 
-[Part 1](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/) covered training an image classification model using the fastai library and exporting it to ONNX. In this post, we'll cover implementing the trained model in a Unity project using the Barracuda library.
+[Part 1](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/) covered training an image classification model using the fastai library and exporting it to ONNX. In this post, we'll cover implementing a trained image classification model in a Unity project using the Barracuda library.
 
 
 
