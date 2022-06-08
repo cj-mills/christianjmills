@@ -19,7 +19,7 @@ search_exclude: false
 * [Create New Project](#create-new-project)
 * [Install Barracuda Package](#install-barracuda-package)
 * [Import Assets](#import-assets)
-* [Create Image Classifier Script](#Create Image Classifier Script)
+* [Create Image Classifier Script](#create-image-classifier-script)
 * [Create Processing Shaders](#create-processing-shaders)
 * [Set up Unity Scene](#set-up-unity-scene)
 * [Test in Editor](#test-in-editor)
@@ -1063,7 +1063,7 @@ public void UpdateWebcamDevice()
 
 **Define OnGUI method**
 
-
+We'll display the predicted class and current frame rate in the [OnGUI](https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnGUI.html) method.
 
 ```c#
 // OnGUI is called for rendering and handling GUI events.
