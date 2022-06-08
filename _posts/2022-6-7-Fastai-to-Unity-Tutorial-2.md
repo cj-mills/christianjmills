@@ -4,7 +4,7 @@ title: Fastai to Unity Tutorial Pt. 2
 layout: post
 toc: false
 comments: true
-description: Part 2 covers implementing the trained model in a Unity project and hosting the project using GitHub Pages.
+description: Part 2 covers implementing a trained model in a Unity project.
 categories: [fastai, unity, barracuda]
 hide: false
 permalink: /:title/
@@ -31,7 +31,7 @@ search_exclude: false
 
 ## Overview
 
-In part 1, we trained an image classification model using the fastai library and exported it to ONNX. Part 2 covers implementing the trained model in a Unity project using the Barracuda library and hosting the Unity project using GitHub Pages.
+In [part 1](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/), we trained an image classification model using the fastai library and exported it to ONNX. Part 2 covers implementing the trained model in a Unity project using the Barracuda library and hosting the Unity project using GitHub Pages.
 
 
 
