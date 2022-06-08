@@ -150,7 +150,7 @@ Unity enables compression by default for WebGL builds, which GitHub Pages does n
 
 
 
-Select `Disabled` from the Compression Format dropdown menu and close the Player Settings window.
+Select `Disabled` from the Compression Format dropdown menu and close the Project Settings window.
 
 
 
