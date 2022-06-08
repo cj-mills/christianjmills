@@ -1596,13 +1596,15 @@ with open(class_labels_file_name, "w") as write_file:
 
 ## Summary
 
-In this post, we walked through how to finetune a ResNet model for image classification using the fastai library and export it to ONNX format. Part 2 will cover implementing the trained model in a Unity project using the Barracuda library and hosting the project using GitHub Pages.
+In this post, we walked through how to finetune a ResNet model for image classification using the fastai library and export it to ONNX format. Part 2 will cover implementing the trained model in a Unity project using the Barracuda library.
 
 
 
 
 
 **Previous:** [Getting Started With Deep Learning in Unity](https://christianjmills.com/Deep-Learning-in-Unity/)
+
+**Next:** [Fastai to Unity Tutorial Pt. 2](https://christianjmills.com/Fastai-to-Unity-Tutorial-2/)
 
 
 
