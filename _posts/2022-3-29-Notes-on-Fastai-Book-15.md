@@ -755,3 +755,9 @@ def forward(self, x_cat, x_cont=None):
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
 * [The fastai book GitHub Repository](https://github.com/fastai/fastbook)
+
+
+
+**Previous:** [Notes on fastai Book Ch. 14](https://christianjmills.com/Notes-on-Fastai-Book-14/)
+
+**Next:** [Notes on fastai Book Ch. 16](https://christianjmills.com/Notes-on-Fastai-Book-16/)
