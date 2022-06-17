@@ -1799,3 +1799,12 @@ learn.fine_tune(6, freeze_epochs=3)
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
 * [The fastai book GitHub Repository](https://github.com/fastai/fastbook)
+
+
+
+**Previous:** [Notes on fastai Book Ch. 4](https://christianjmills.com/Notes-on-Fastai-Book-04/)
+
+**Next:** [Notes on fastai Book Ch. 6](https://christianjmills.com/Notes-on-Fastai-Book-06/)
+
+
+
