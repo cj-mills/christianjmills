@@ -67,6 +67,8 @@ def print_source(obj):
 * everything other than the head
 * includes the stem
 
+-----
+
 
 ```python
 pd.DataFrame(model_meta)
@@ -177,7 +179,7 @@ pd.DataFrame(model_meta)
 </div>
 
 
-
+-----
 
 ```python
 model_meta[resnet50]
@@ -188,7 +190,7 @@ model_meta[resnet50]
  'stats': ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])}
 ```
 
-
+-----
 
 
 ```python
@@ -198,7 +200,7 @@ print_source(model_meta[resnet50]['split'])
 def  _resnet_split(m): return L(m[0][:6], m[0][6:], m[1:]).map(params)
 ```
 
-
+-----
 
 
 ```python
@@ -226,6 +228,8 @@ Sequential(
 **Note:** fastai add two linear layers by default for transfer learning
 * using just one linear layer is unlikely to be enough when transferring a pretrained model to very different domains
 
+-----
+
 
 ```python
 create_head
@@ -234,7 +238,7 @@ create_head
 <function fastai.vision.learner.create_head(nf, n_out, lin_ftrs=None, ps=0.5, concat_pool=True, first_bn=True, bn_final=False, lin_first=False, y_range=None)>
 ```
 
-
+-----
 
 
 ```python
@@ -267,6 +271,8 @@ def create_head(nf, n_out, lin_ftrs=None, ps=0.5, concat_pool=True, first_bn=Tru
 * bn_final: setting this to True will cause a batchnorm layher to be added as the final layer
 * can be useful in helping your model scale appropriately for your output activations
 
+-----
+
 
 ```python
 AdaptiveConcatPool2d
@@ -275,7 +281,7 @@ AdaptiveConcatPool2d
 fastai.layers.AdaptiveConcatPool2d
 ```
 
-
+-----
 
 
 ```python
@@ -318,6 +324,8 @@ class AdaptiveConcatPool2d(Module):
 from fastai.vision.all import *
 ```
 
+-----
+
 
 ```python
 path = untar_data(URLs.PETS)
@@ -327,7 +335,7 @@ path
 Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
 ```
 
-
+-----
 
 
 ```python
@@ -338,7 +346,7 @@ files
 (#7390) [Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Birman_121.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/shiba_inu_131.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bombay_176.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bengal_199.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/beagle_41.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/beagle_27.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/great_pyrenees_181.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bengal_100.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/keeshond_124.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/havanese_115.jpg')...]
 ```
 
-
+-----
 
 
 ```python
@@ -357,11 +365,15 @@ class SiameseImage(fastuple):
                           title=same_breed, ctx=ctx)
 ```
 
+-----
+
 
 ```python
 def label_func(fname):
     return re.match(r'^(.*)_\d+.jpg$', fname.name).groups()[0]
 ```
+
+-----
 
 
 ```python
@@ -390,6 +402,8 @@ class SiameseTransform(Transform):
         return random.choice(self.lbl2files[cls]),same
 ```
 
+-----
+
 
 ```python
 splits = RandomSplitter()(files)
@@ -398,6 +412,8 @@ tls = TfmdLists(files, tfm, splits=splits)
 dls = tls.dataloaders(after_item=[Resize(224), ToTensor], 
     after_batch=[IntToFloatTensor, Normalize.from_stats(*imagenet_stats)])
 ```
+
+-----
 
 
 ```python
@@ -410,10 +426,14 @@ class SiameseModel(Module):
         return self.head(ftrs)
 ```
 
+-----
+
 
 ```python
 encoder = create_body(resnet34, cut=-2)
 ```
+
+-----
 
 
 ```python
@@ -423,7 +443,7 @@ create_body
 <function fastai.vision.learner.create_body(arch, n_in=3, pretrained=True, cut=None)>
 ```
 
-
+-----
 
 
 ```python
@@ -443,7 +463,7 @@ def create_body(arch, n_in=3, pretrained=True, cut=None):
     else: raise NameError("cut must be either integer or a function")
 ```
 
-
+-----
 
 
 ```python
@@ -467,18 +487,22 @@ Sequential(
 )
 ```
 
-
+-----
 
 
 ```python
 model = SiameseModel(encoder, head)
 ```
 
+-----
+
 
 ```python
 def loss_func(out, targ):
     return nn.CrossEntropyLoss()(out, targ.long())
 ```
+
+-----
 
 
 ```python
@@ -487,12 +511,16 @@ def siamese_splitter(model):
     return [params(model.encoder), params(model.head)]
 ```
 
+-----
+
 
 ```python
 learn = Learner(dls, model, loss_func=loss_func, 
                 splitter=siamese_splitter, metrics=accuracy)
 learn.freeze()
 ```
+
+-----
 
 
 ```python
@@ -502,7 +530,7 @@ Learner.freeze
 <function fastai.learner.Learner.freeze(self: fastai.learner.Learner)>
 ```
 
-
+-----
 
 
 ```python
@@ -513,7 +541,7 @@ print_source(Learner.freeze)
 def freeze(self:Learner): self.freeze_to(-1)
 ```
 
-
+-----
 
 
 ```python
@@ -527,7 +555,7 @@ def freeze_to(self:Learner, n):
     self.opt.clear_state()
 ```
 
-
+-----
 
 
 ```python
@@ -576,7 +604,7 @@ learn.fit_one_cycle(4, 3e-3)
   </tbody>
 </table>
 </div>
-
+-----
 
 
 ```python
@@ -658,6 +686,8 @@ learn.fit_one_cycle(4, slice(1e-6,1e-4))
 from fastai.tabular.all import *
 ```
 
+-----
+
 
 ```python
 TabularModel
@@ -666,7 +696,7 @@ TabularModel
 fastai.tabular.model.TabularModel
 ```
 
-
+-----
 
 
 ```python
@@ -703,7 +733,7 @@ class TabularModel(Module):
         return self.layers(x)
 ```
 
-
+-----
 
 ```python
 def forward(self, x_cat, x_cont=None):
