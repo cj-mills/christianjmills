@@ -75,14 +75,14 @@ URLs.IMAGENETTE_160
 'https://s3.amazonaws.com/fast-ai-imageclas/imagenette2-160.tgz'
 ```
 
-
+-----
 
 
 ```python
 dls = get_data(URLs.IMAGENETTE_160, 160, 128)
 ```
 
-
+-----
 
 ```python
 dls.show_batch(max_n=4)
@@ -97,6 +97,8 @@ dls.show_batch(max_n=4)
 
 **Note:** A fully convolutional network is a good choice when the objects you want to classify don't have a single correct orientation or size (e.g. most natural photos)
 * It would not be a good choice for applications like MNIST where their is a fixed correct orientation for each character
+
+-----
 
 
 ```python
@@ -120,6 +122,8 @@ def get_model():
         nn.Linear(256, dls.c))
 ```
 
+-----
+
 
 ```python
 ConvLayer
@@ -128,7 +132,7 @@ ConvLayer
 fastai.layers.ConvLayer
 ```
 
-
+-----
 
 
 ```python
@@ -166,6 +170,8 @@ class ConvLayer(nn.Sequential):
 #### Adaptive Average Pooling
 * averages a grid of activations into whatever sized destination you require
 
+-----
+
 
 ```python
 nn.AdaptiveAvgPool2d
@@ -178,6 +184,8 @@ torch.nn.modules.pooling.AdaptiveAvgPool2d
 
 * input: $(N, C, H_{in}, W_{in})$ or $(C, H_{in}, W_{in})$
 * output: $(N, C, S_{0}, S_{1})$ or $(C, S_{0}, S_{1})$, where $S=output_size$
+
+-----
 
 
 ```python
@@ -223,7 +231,7 @@ class AdaptiveAvgPool2d(_AdaptiveAvgPoolNd):
         return F.adaptive_avg_pool2d(input, self.output_size)
 ```
 
-
+-----
 
 
 ```python
@@ -233,6 +241,8 @@ def get_learner(m):
 
 learn = get_learner(get_model())
 ```
+
+-----
 
 
 ```python
@@ -271,7 +281,7 @@ Sequential(
 )
 ```
 
-
+-----
 
 
 ```python
@@ -283,7 +293,7 @@ SuggestedLRs(valley=0.0008317637839354575)
 
 ![png](../images/notes-fastai-book/chapter-14/output_21_3.png)
 
-
+-----
 
 ```python
 learn.fit_one_cycle(5, 3e-3)
@@ -363,7 +373,7 @@ SuggestedLRs(valley=0.0002754228771664202)
 
 ![png](../images/notes-fastai-book/chapter-14/output_24_3.png)
 
-
+-----
 
 ```python
 learn.fit_one_cycle(10, 0.03)
@@ -479,6 +489,8 @@ learn.fit_one_cycle(10, 0.03)
 * allows training at higher learning rates
 * recall: $y*gamma + beta$
 
+-----
+
 
 ```python
 class ResBlock(Module):
@@ -495,6 +507,8 @@ class ResBlock(Module):
     * Can use an average pooling layer with a stride of 2 to change the shape
     * Can use a 1x1 convolution to change the number of channels
 
+-----
+
 
 ```python
 def _conv_block(ni,nf,stride):
@@ -502,6 +516,8 @@ def _conv_block(ni,nf,stride):
         ConvLayer(ni, nf, stride=stride),
         ConvLayer(nf, nf, act_cls=None, norm_type=NormType.BatchZero))
 ```
+
+-----
 
 
 ```python
@@ -515,6 +531,8 @@ class ResBlock(Module):
         return F.relu(self.convs(x) + self.idconv(self.pool(x)))
 ```
 
+-----
+
 
 ```python
 noop
@@ -523,7 +541,7 @@ noop
 <function fastai.imports.noop(x=None, *args, **kwargs)>
 ```
 
-
+-----
 
 
 ```python
@@ -535,13 +553,15 @@ def noop (x=None, *args, **kwargs):
     return x
 ```
 
-
+-----
 
 
 ```python
 def block(ni,nf): return ResBlock(ni, nf, stride=2)
 learn = get_learner(get_model())
 ```
+
+-----
 
 
 ```python
@@ -645,7 +665,7 @@ Sequential(
 )
 ```
 
-
+-----
 
 
 ```python
@@ -701,13 +721,15 @@ learn.fit_one_cycle(5, 3e-3)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 # Try training with a model that is twice as deep
 def block(ni, nf):
     return nn.Sequential(ResBlock(ni, nf, stride=2), ResBlock(nf, nf))
 ```
+
+-----
 
 
 ```python
@@ -783,6 +805,8 @@ learn.fit_one_cycle(5, 3e-3)
 * the vast majority of parameters are in the last layers
 * a ResNet block takes more computation than a plain convolutional block
 
+-----
+
 
 ```python
 def _resnet_stem(*sizes):
@@ -791,6 +815,8 @@ def _resnet_stem(*sizes):
             for i in range(len(sizes)-1)
     ] + [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)]
 ```
+
+-----
 
 
 ```python
@@ -815,7 +841,7 @@ _resnet_stem(3,32,32,64)
  MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)]
 ```
 
-
+-----
 
 
 ```python
@@ -838,10 +864,14 @@ class ResNet(nn.Sequential):
         ])
 ```
 
+-----
+
 
 ```python
 rn = ResNet(dls.c, [2,2,2,2])
 ```
+
+-----
 
 
 ```python
@@ -908,6 +938,8 @@ learn.fit_one_cycle(5, 3e-3)
 * $1x1$ convolutions are much faster so the block executes faster than the earlier type of ResNet block above
     * allows us to use more convolutional filters
 
+-----
+
 
 ```python
 def _conv_block(ni,nf,stride):
@@ -916,6 +948,8 @@ def _conv_block(ni,nf,stride):
         ConvLayer(nf//4, nf//4, stride=stride), 
         ConvLayer(nf//4, nf, 1, act_cls=None, norm_type=NormType.BatchZero))
 ```
+
+-----
 
 
 ```python
@@ -926,7 +960,7 @@ dls = get_data(URLs.IMAGENETTE_320, presize=320, resize=224)
 /home/innom-dt/.fastai/data/imagenette2-320
 ```
 
-
+-----
 
 ```python
 rn = ResNet(dls.c, [3,4,6,3], 4)
@@ -939,6 +973,8 @@ rn = ResNet(dls.c, [3,4,6,3], 4)
 learn = get_learner(rn)
 ```
 
+-----
+
 
 ```python
 learn.lr_find()
@@ -949,7 +985,7 @@ SuggestedLRs(valley=2.2908675418875646e-06)
 
 ![png](../images/notes-fastai-book/chapter-14/output_56_3.png)
 
-
+-----
 
 ```python
 learn.fit_one_cycle(20, 3e-3)
@@ -1109,13 +1145,15 @@ learn.fit_one_cycle(20, 3e-3)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 # Try training for much longer with MixUp
 rn = ResNet(dls.c, [3,4,6,3], 4)
 learn = Learner(dls, rn, loss_func=CrossEntropyLossFlat(), metrics=accuracy, cbs=MixUp).to_fp16()
 ```
+
+-----
 
 
 ```python
@@ -1125,7 +1163,7 @@ learn.cbs
 (#5) [TrainEvalCallback,Recorder,ProgressCallback,MixUp,MixedPrecision]
 ```
 
-
+-----
 
 
 ```python
@@ -1137,7 +1175,7 @@ SuggestedLRs(valley=0.002511886414140463)
 
 ![png](../images/notes-fastai-book/chapter-14/output_60_3.png)
 
-
+-----
 
 ```python
 learn.fit_one_cycle(100, 1e-3)
