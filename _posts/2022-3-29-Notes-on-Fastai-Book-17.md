@@ -80,11 +80,15 @@ def print_source(obj):
     2. for the column indices
     3. for the inner sum
 
+-----
+
 
 ```python
 import torch
 from torch import tensor
 ```
+
+-----
 
 
 ```python
@@ -108,6 +112,8 @@ def matmul(a,b):
     return c
 ```
 
+-----
+
 
 ```python
 m1 = torch.randn(5,28*28)
@@ -125,6 +131,8 @@ m2 = torch.randn(784,10)
     Wall time: 328 ms
 ```
 
+-----
+
 
 ```python
 %timeit -n 20 t1=matmul(m1, m2)
@@ -140,6 +148,8 @@ m2 = torch.randn(784,10)
 * need to vectorize operations on tensors to take advantage of speed of PyTorch
     * use element-wise arithmetic and broadcasting
 
+-----
+
 
 ```python
 %time t2=m1@m2
@@ -148,6 +158,8 @@ m2 = torch.randn(784,10)
     CPU times: user 190 µs, sys: 0 ns, total: 190 µs
     Wall time: 132 µs
 ```
+
+-----
 
 
 ```python
@@ -179,7 +191,7 @@ a + b
     tensor([12., 14.,  3.])
 ```
 
-
+-----
 
 ```python
 a < b
@@ -195,6 +207,8 @@ a < b
 * `sum`: Returns the sum of all elements in the tensor.
 * `mean`: Returns the mean value of all elements in the tensor.
 
+-----
+
 
 ```python
 # Check if every element in matrix a is less than the corresponding element in matrix b
@@ -206,7 +220,7 @@ a < b
     (tensor(False), tensor(False))
 ```
 
-
+-----
 
 ```python
 # Convert tensor to a plain python number or boolean
@@ -216,7 +230,7 @@ a < b
     9.666666984558105
 ```
 
-
+-----
 
 ```python
 m = tensor([[1., 2, 3], [4,5,6], [7,8,9]])
@@ -228,7 +242,7 @@ m*m
             [49., 64., 81.]])
 ```
 
-
+-----
 
 ```python
 # Attempt to perform element-wise arithmetic on tensors with different shapes
@@ -248,6 +262,8 @@ m*n
     RuntimeError: The size of tensor a (3) must match the size of tensor b (2) at non-singleton dimension 0
 ```
 
+-----
+
 
 ```python
 # Replace the inner-most for-loop with element-wise arithmetic
@@ -260,6 +276,8 @@ def matmul(a,b):
         for j in range(bc): c[i,j] = (a[i] * b[:,j]).sum()
     return c
 ```
+
+-----
 
 
 ```python
@@ -278,6 +296,8 @@ def matmul(a,b):
 #### Broadcasting with a scalar
 * the scalar is "virtually" expanded to the same shape as the tensor where every element contains the original scalar value
 
+-----
+
 
 ```python
 a = tensor([10., 6, -4])
@@ -286,7 +306,6 @@ a > 0
 ```text
     tensor([ True,  True, False])
 ```
-
 
 **Note:** Broadcasting with a scalar is useful when normalizing a dataset by subtracting the mean and dividing by the standard deviation.
 
@@ -308,6 +327,8 @@ m = tensor([[1., 2, 3], [4,5,6], [7,8,9]])
     * creates a new view on the existing vector tensor without allocating new memory
 * It is only possible to broadcast a vector of size `n` by a matrix of size `m` by `n`.
 
+-----
+
 
 ```python
 c = tensor([10.,20,30])
@@ -318,7 +339,7 @@ m.shape,c.shape
     (torch.Size([3, 3]), torch.Size([3]))
 ```
 
-
+-----
 
 ```python
 m + c
@@ -329,7 +350,7 @@ m + c
             [17., 28., 39.]])
 ```
 
-
+-----
 
 ```python
 c.expand_as(m)
@@ -340,6 +361,8 @@ c.expand_as(m)
             [10., 20., 30.]])
 
 ```
+
+-----
 
 
 ```python
@@ -361,7 +384,7 @@ help(torch.Tensor.expand_as)
                 as :attr:`other`.
 ```
 
-
+-----
 
 ```python
 help(torch.Tensor.expand)
@@ -428,7 +451,7 @@ t.storage()
     [torch.FloatStorage of size 3]
 ```
 
-
+-----
 
 ```python
 help(torch.Tensor.storage)
@@ -446,6 +469,8 @@ help(torch.Tensor.storage)
 **Note:** PyTorch accomplishes this by giving the new dimension a stride of `0`
 * When PyTorch looks for the next row by adding the stride, it will stay at the same row
 
+-----
+
 
 ```python
 t.stride(), t.shape
@@ -454,7 +479,7 @@ t.stride(), t.shape
     ((0, 1), torch.Size([3, 3]))
 ```
 
-
+-----
 
 ```python
 c + m
@@ -464,6 +489,8 @@ c + m
             [14., 25., 36.],
             [17., 28., 39.]])
 ```
+
+-----
 
 
 ```python
@@ -476,7 +503,7 @@ c+m
             [14., 25., 36.]])
 ```
 
-
+-----
 
 ```python
 # Attempt to broadcast a vector with an incompatible matrix
@@ -499,6 +526,8 @@ c+m
     RuntimeError: The size of tensor a (2) must match the size of tensor b (3) at non-singleton dimension 1
 ```
 
+-----
+
 
 ```python
 c = tensor([10.,20,30])
@@ -515,7 +544,7 @@ m.shape,c.shape, c
              [30.]]))
 ```
 
-
+-----
 
 ```python
 c.expand_as(m)
@@ -526,7 +555,7 @@ c.expand_as(m)
             [30., 30., 30.]])
 ```
 
-
+-----
 
 ```python
 c+m
@@ -537,7 +566,7 @@ c+m
             [37., 38., 39.]])
 ```
 
-
+-----
 
 ```python
 t = c.expand_as(m)
@@ -550,7 +579,7 @@ t.storage()
     [torch.FloatStorage of size 3]
 ```
 
-
+-----
 
 ```python
 t.stride(), t.shape
@@ -587,6 +616,8 @@ c.shape, c[None,:].shape,c[:,None].shape
 * You can omit training columns when indexing
 * `...` means all preceding dimensions
 
+-----
+
 
 ```python
 c[None].shape,c[...,None].shape
@@ -595,7 +626,7 @@ c[None].shape,c[...,None].shape
     (torch.Size([1, 3]), torch.Size([3, 1]))
 ```
 
-
+-----
 
 ```python
 c,c.unsqueeze(-1)
@@ -607,7 +638,7 @@ c,c.unsqueeze(-1)
              [30.]]))
 ```
 
-
+-----
 
 ```python
 # Replace the second for loop with broadcasting
@@ -622,6 +653,8 @@ def matmul(a,b):
     return c
 ```
 
+-----
+
 
 ```python
 m1.shape, m1.unsqueeze(-1).shape
@@ -630,7 +663,7 @@ m1.shape, m1.unsqueeze(-1).shape
     (torch.Size([5, 784]), torch.Size([5, 784, 1]))
 ```
 
-
+-----
 
 ```python
 m1[0].unsqueeze(-1).expand_as(m2).shape
@@ -639,7 +672,7 @@ m1[0].unsqueeze(-1).expand_as(m2).shape
     torch.Size([784, 10])
 ```
 
-
+-----
 
 ```python
 %timeit -n 20 t4 = matmul(m1,m2)
@@ -671,10 +704,14 @@ m1[0].unsqueeze(-1).expand_as(m2).shape
 2. Each index can appear at most twice in any term.
 3. Each term must contain identical nonrepeated indices.
 
+-----
+
 
 ```python
 def matmul(a,b): return torch.einsum('ik,kj->ij', a, b)
 ```
+
+-----
 
 
 ```python
@@ -710,7 +747,7 @@ torch.einsum('ij->ji', x)
             [-0.8633,  0.0933]])
 ```
 
-
+-----
 
 ```python
 x = torch.randn(2, 2)
@@ -737,7 +774,7 @@ torch.einsum('bi,ij,bj->b', x, y, z)
     tensor([-0.0711, -0.2349])
 ```
 
-
+-----
 
 ```python
 # trace
@@ -750,7 +787,7 @@ x, torch.einsum('ii', x)
      tensor(2.8619))
 ```
 
-
+-----
 
 ```python
 # diagonal
@@ -763,7 +800,7 @@ x, torch.einsum('ii->i', x)
      tensor([-1.0796,  0.6225]))
 ```
 
-
+-----
 
 ```python
 # outer product
@@ -779,7 +816,7 @@ f"x: {x}", f"y: {y}", torch.einsum('i,j->ij', x, y)
              [ 1.1172,  0.8547]]))
 ```
 
-
+-----
 
 ```python
 # batch matrix multiplication
@@ -798,7 +835,7 @@ torch.einsum('bij,bjk->bik', As, Bs)
              [-3.4942, -1.9947,  0.7098,  0.5964]]])
 ```
 
-
+-----
 
 ```python
 # with sublist format and ellipsis
@@ -815,7 +852,7 @@ torch.einsum(As, [..., 0, 1], Bs, [..., 1, 2], [..., 0, 2])
              [-3.4942, -1.9947,  0.7098,  0.5964]]])
 ```
 
-
+-----
 
 ```python
 # batch permute
@@ -826,7 +863,7 @@ torch.einsum('...ij->...ji', A).shape
     torch.Size([2, 3, 5, 4])
 ```
 
-
+-----
 
 ```python
 # equivalent to torch.nn.functional.bilinear
@@ -852,6 +889,8 @@ torch.einsum('bn,anm,bm->ba', l, A, r)
 def lin(x, w, b): return x @ w + b
 ```
 
+-----
+
 
 ```python
 # Initialize random input values
@@ -859,6 +898,8 @@ x = torch.randn(200, 100)
 # Initialize random target values
 y = torch.randn(200)
 ```
+
+-----
 
 
 ```python
@@ -872,6 +913,8 @@ w2 = torch.randn(50,1)
 b2 = torch.zeros(1)
 ```
 
+-----
+
 
 ```python
 # Get a batch of hidden state
@@ -882,7 +925,7 @@ l1.shape
     torch.Size([200, 50])
 ```
 
-
+-----
 
 ```python
 l1.mean(), l1.std()
@@ -946,7 +989,7 @@ x[0:5,0:5]
             [-0.2335,  0.0042, -0.1503, -0.2087, -0.0405]])
 ```
 
-
+-----
 
 ```python
 x.std()
@@ -965,6 +1008,8 @@ x = torch.randn(200, 100)
 y = torch.randn(200)
 ```
 
+-----
+
 
 ```python
 from math import sqrt
@@ -975,6 +1020,8 @@ w2 = torch.randn(50,1) / sqrt(50)
 b2 = torch.zeros(1)
 ```
 
+-----
+
 
 ```python
 l1 = lin(x, w1, b1)
@@ -984,12 +1031,14 @@ l1.mean(),l1.std()
     (tensor(-0.0062), tensor(1.0231))
 ```
 
-
+-----
 
 ```python
 # Define non-linear activation function
 def relu(x): return x.clamp_min(0.)
 ```
+
+-----
 
 
 ```python
@@ -1003,6 +1052,8 @@ l2.mean(),l2.std()
 
 **Note:** The activation function ruined the mean and standard deviation.
 * The $\frac{1}{\sqrt{n_{in}}}$ weight initialization method used not account for the ReLU function.
+
+-----
 
 
 ```python
@@ -1024,6 +1075,8 @@ x[0:5,0:5]
 * Introduced Kaiming initialization:
     * $\sqrt{\frac{2}{n_{in}}}$, where $n_{in}$ is the number of inputs of our model
 
+-----
+
 
 ```python
 x = torch.randn(200, 100)
@@ -1038,13 +1091,15 @@ tensor([[0.0000, 0.0000, 0.1001, 0.0358, 0.0000],
         [0.0000, 0.0000, 0.1331, 0.0000, 0.0000]])
 ```
 
-
+-----
 
 
 ```python
 x = torch.randn(200, 100)
 y = torch.randn(200)
 ```
+
+-----
 
 
 ```python
@@ -1053,6 +1108,8 @@ b1 = torch.zeros(50)
 w2 = torch.randn(50,1) * sqrt(2 / 50)
 b2 = torch.zeros(1)
 ```
+
+-----
 
 
 ```python
@@ -1064,7 +1121,7 @@ l2.mean(), l2.std()
 (tensor(0.5720), tensor(0.8259))
 ```
 
-
+-----
 
 
 ```python
@@ -1075,6 +1132,8 @@ def model(x):
     return l3
 ```
 
+-----
+
 
 ```python
 out = model(x)
@@ -1084,7 +1143,7 @@ out.shape
 torch.Size([200, 1])
 ```
 
-
+-----
 
 
 ```python
@@ -1113,6 +1172,8 @@ $$\frac{\text{d} loss}{\text{d} b_{2}} = \frac{\text{d} loss}{\text{d} out} \tim
 1. undo the squeeze in the mse function
 2. calculate the derivative of $x^{2}$: $2x$
 3. calculate the derivative of the mean: $\frac{1}{n}$ where $n$ is the number of elements in the input
+
+-----
 
 
 ```python
@@ -1146,6 +1207,9 @@ def lin_grad(inp, out, w, b):
 * Symbolic computation deals with the computation of mathematical objects symbolically
     * the mathematical objects are represented exactly, not approximately, and mathematical expressions with unevaluated variables are left in symbolic form
     
+
+-----
+
 ```python
 from sympy import symbols,diff
 sx,sy = symbols('sx sy')
@@ -1188,6 +1252,8 @@ class Relu():
     def backward(self): self.inp.g = (self.inp>0).float() * self.out.g
 ```
 
+-----
+
 
 ```python
 class Lin():
@@ -1204,6 +1270,8 @@ class Lin():
         self.b.g = self.out.g.sum(0)
 ```
 
+-----
+
 
 ```python
 class Mse():
@@ -1217,6 +1285,8 @@ class Mse():
         x = (self.inp.squeeze()-self.targ).unsqueeze(-1)
         self.inp.g = 2.*x/self.targ.shape[0]
 ```
+
+-----
 
 
 ```python
@@ -1234,15 +1304,21 @@ class Model():
         for l in reversed(self.layers): l.backward()
 ```
 
+-----
+
 
 ```python
 model = Model(w1, b1, w2, b2)
 ```
 
+-----
+
 
 ```python
 loss = model(x, y)
 ```
+
+-----
 
 
 ```python
@@ -1265,12 +1341,16 @@ class LayerFunction():
     def backward(self): self.bwd(self.out, *self.args)
 ```
 
+-----
+
 
 ```python
 class Relu(LayerFunction):
     def forward(self, inp): return inp.clamp_min(0.)
     def bwd(self, out, inp): inp.g = (inp>0).float() * out.g
 ```
+
+-----
 
 
 ```python
@@ -1285,6 +1365,8 @@ class Lin(LayerFunction):
         self.b.g = out.g.sum(0)
 ```
 
+-----
+
 
 ```python
 class Mse(LayerFunction):
@@ -1295,6 +1377,8 @@ class Mse(LayerFunction):
 
 #### [torch.autograd.Function](https://pytorch.org/docs/stable/autograd.html#function)
 * In PyTorch, each basic function we need to differentiate is written as a [torch.autograd.Function](https://pytorch.org/docs/stable/autograd.html#function) that has a forward and backward method
+
+-----
 
 
 ```python
@@ -1318,6 +1402,8 @@ class MyRelu(Function):
         i, = ctx.saved_tensors
         return grad_output * (i>0).float()
 ```
+
+-----
 
 
 ```python
@@ -1379,6 +1465,8 @@ help(staticmethod)
 2. Define any parameters of the model as attributes with `nn.Parameter`.
 3. Define a forward function that returns the output of your model.
 
+-----
+
 
 ```python
 import torch.nn as nn
@@ -1392,6 +1480,8 @@ class LinearLayer(nn.Module):
     def forward(self, x): return x @ self.weight.t() + self.bias
 ```
 
+-----
+
 
 ```python
 lin = LinearLayer(10,2)
@@ -1402,7 +1492,7 @@ p1.shape,p2.shape
 (torch.Size([2, 10]), torch.Size([2]))
 ```
 
-
+-----
 
 
 ```python
