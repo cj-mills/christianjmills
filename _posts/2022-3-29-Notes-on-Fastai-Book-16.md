@@ -12,7 +12,6 @@ search_exclude: false
 
 
 
-* [The Training Process](#the-training-process)
 * [Establishing a Baseline](#establishing-a-baseline)
 * [A Generic Optimizer](#a-generic-optimizer)
 * [Momentum](#momentum)
@@ -45,7 +44,7 @@ def print_source(obj):
         print(line)
 ```
 
-## The Training Process
+
 
 ## Establishing a Baseline
 
@@ -62,6 +61,8 @@ def get_data(url, presize, resize):
     ).dataloaders(path, bs=128)
 ```
 
+-----
+
 
 ```python
 URLs.IMAGENETTE_160
@@ -70,12 +71,14 @@ URLs.IMAGENETTE_160
 'https://s3.amazonaws.com/fast-ai-imageclas/imagenette2-160.tgz'
 ```
 
-
+-----
 
 
 ```python
 dls = get_data(URLs.IMAGENETTE_160, 160, 128)
 ```
+
+-----
 
 
 ```python
@@ -83,6 +86,8 @@ def get_learner(**kwargs):
     return cnn_learner(dls, resnet34, pretrained=False,
                     metrics=accuracy, **kwargs).to_fp16()
 ```
+
+-----
 
 
 ```python
@@ -126,7 +131,7 @@ learn.fit_one_cycle(3, 0.003)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 learn.opt_func
@@ -135,13 +140,15 @@ learn.opt_func
 <function fastai.optimizer.Adam(params, lr, mom=0.9, sqr_mom=0.99, eps=1e-05, wd=0.01, decouple_wd=True)>
 ```
 
-
+-----
 
 
 ```python
 # Use plain SGD for baseline
 learn = get_learner(opt_func=SGD)
 ```
+
+-----
 
 
 ```python
@@ -153,7 +160,7 @@ SuggestedLRs(valley=0.004365158267319202)
 
 ![png](../images/notes-fastai-book/chapter-16/output_12_3.png)
 
-
+-----
 
 ```python
 # Disable momentum for baseline
@@ -204,6 +211,8 @@ learn.fit_one_cycle(3, 0.03, moms=(0,0,0))
 * need a flexible optimizer foundation to easily implement new improvements
 * optimizer callbacks: small pieces of code that we can compose, mix, and match in an optimizer to build the optimizer step
 
+-----
+
 
 ```python
 Optimizer
@@ -212,7 +221,7 @@ Optimizer
 fastai.optimizer.Optimizer
 ```
 
-
+-----
 
 
 ```python
@@ -256,7 +265,7 @@ print_source(Optimizer)
             self.state = {p: s for p,s in zip(self.all_params().itemgot(0), sd['state'])}
 ```
 
-
+-----
 
 ```python
 # Custom optimizer callback that performs a single SGD step
@@ -318,11 +327,13 @@ help(torch.add)
                     [ -8.9902,  -8.3667,  -7.3925,  -7.6147]])
 ```
 
-
+-----
 
 ```python
 opt_func = partial(Optimizer, cbs=[sgd_cb])
 ```
+
+-----
 
 
 ```python
@@ -373,6 +384,8 @@ learn.fit(3, 0.03)
 * higher momentum will skip over bigger bumps
 * works particularly well if the loss function has narrow canyons that would cause vanilla SGD to bounce around
 
+-----
+
 ```python
 weight.avg = beta * weight.avg + (1-beta) * weight.grad
 new_weight = weight - lr * weight.avg
@@ -411,6 +424,8 @@ for beta,ax in zip(betas, axs.flatten()):
 **Note:** A beta value that is too high causes the overall changes in the gradient to be ignored.
 * A beta value of 0.9 is often used for SGD with Momentum
 * `fit_one_cycle` starts with a beta value of 0.95, gradually adjusts to 0.85, then gradually moves back to 0.95
+
+-----
 
 
 ```python
@@ -514,7 +529,7 @@ help(np.linspace)
         >>> plt.show()
 ```
 
-
+-----
 
 ```python
 # Custom callback to calculate the average gradient
@@ -524,17 +539,23 @@ def average_grad(p, mom, grad_avg=None, **kwargs):
     return {'grad_avg': grad_avg*mom + p.grad.data}
 ```
 
+-----
+
 
 ```python
 # Custom callback that performs a single SGD with momentum step
 def momentum_step(p, lr, grad_avg, **kwargs): p.data.add_(-lr, grad_avg)
 ```
 
+-----
+
 
 ```python
 # Start training with a beta value of 0.9
 opt_func = partial(Optimizer, cbs=[average_grad,momentum_step], mom=0.9)
 ```
+
+-----
 
 
 ```python
@@ -598,6 +619,8 @@ learn.recorder.plot_sched()
 * Parameters whose gradients have been erratic will need a lower learning rate to avoid divergence
 * Use a moving average of the gradients squared
 
+-----
+
 ```python
 # If the moving average is low, the effective learning rate will be higher
 w.square_avg = alpha * w.square_avg + (1-alpha) * (w.grad ** 2)
@@ -607,7 +630,7 @@ new_w = w - lr * w.grad / math.sqrt(w.square_avg + eps)
     * default value is 1e-8
 * `alpha`: default value is usually 0.99
 
-
+-----
 
 ```python
 # Custom callback that calculated the moving average of the gradients squared
@@ -616,6 +639,8 @@ def average_sqr_grad(p, sqr_mom, sqr_avg=None, **kwargs):
     if sqr_avg is None: sqr_avg = torch.zeros_like(p.grad.data)
     return {'sqr_avg': sqr_mom*sqr_avg + (1-sqr_mom)*p.grad.data**2}
 ```
+
+-----
 
 
 ```python
@@ -680,11 +705,13 @@ help(torch.addcdiv)
                     [-0.5369, -0.9829,  0.0430]])
 ```
 
-
+-----
 
 ```python
 opt_func = partial(Optimizer, cbs=[average_sqr_grad,rms_prop_step], sqr_mom=0.99, eps=1e-7)
 ```
+
+-----
 
 
 ```python
@@ -735,6 +762,9 @@ learn.fit_one_cycle(3, 0.003)
 * Mixes the ideas of SGD with momentum and RMSProp together
 * Uses the moving average of the gradients as a direction and divides by the square root of the moving average of the gradients squared to give an adaptive learnig rate to each parameter\
 * takes the unbiased moving average
+
+-----
+
 ```python
 w.avg = beta * w.avg + (1-beta) * w.grad
 unbias_avg = w.avg / (1 - beta**(i+1))
@@ -743,6 +773,9 @@ unbias_avg = w.avg / (1 - beta**(i+1))
 `(1 - beta**(i+1)`: makes sure the unbiased average look more like the gradients at the beginning
 
 * full update step
+
+-----
+
 ```python
 w.avg = beta * w.avg + (1-beta) * w.grad
 unbias_avg = w.avg / (1 - beta**(i+1))
@@ -756,6 +789,8 @@ new_w = w - lr * unbias_avg / sqrt(w.sqr_avg + eps)
     * beta2: 0.99
         * set with `moms` in `fit_one_cycle`
 
+-----
+
 
 ```python
 Adam
@@ -764,7 +799,7 @@ Adam
 <function fastai.optimizer.Adam(params, lr, mom=0.9, sqr_mom=0.99, eps=1e-05, wd=0.01, decouple_wd=True)>
 ```
 
-
+-----
 
 
 ```python
@@ -778,7 +813,7 @@ def Adam(params, lr, mom=0.9, sqr_mom=0.99, eps=1e-5, wd=0.01, decouple_wd=True)
     return Optimizer(params, cbs, lr=lr, mom=mom, sqr_mom=sqr_mom, eps=eps, wd=wd)
 ```
 
-
+-----
 
 
 ```python
@@ -791,7 +826,7 @@ def step_stat(p, step=0, **kwargs):
     return {'step' : step}
 ```
 
-
+-----
 
 
 ```python
@@ -806,7 +841,7 @@ def adam_step(p, lr, mom, step, sqr_mom, grad_avg, sqr_avg, eps, **kwargs):
     return p
 ```
 
-
+-----
 
 
 ```python
@@ -821,10 +856,15 @@ def debias(mom, damp, step): return damp * (1 - mom**step) / (1-mom)
 ## Decoupled Weight Decay
 * [Decoupled Weight Decay Regularization](https://arxiv.org/abs/1711.05101)
 * each weight is decayed by a factor of `lr * wd`
+
+-----
+
 ```python
 new_weight = weight - lr*weight.grad - lr*wd*weight
 ```
 * also called L2 regularization
+
+-----
 
 
 ```python
@@ -836,7 +876,7 @@ def weight_decay(p, lr, wd, do_wd=True, **kwargs):
     if do_wd and wd!=0: p.data.mul_(1 - lr*wd)
 ```
 
-
+-----
 
 
 ```python
@@ -865,6 +905,8 @@ for xb,yb in dl:
     opt.zero_grad()
 ```
 
+-----
+
 
 ```python
 Learner._do_one_batch
@@ -873,7 +915,7 @@ Learner._do_one_batch
 <function fastai.learner.Learner._do_one_batch(self)>
 ```
 
-
+-----
 
 
 ```python
@@ -917,7 +959,7 @@ print_source(Learner._do_one_batch)
 * `after_epoch`: called at the end of an epoch, for any clean-up before the next one.
 * `after_fit`: called at the end of training, for final clean-up.
 
-
+-----
 
 ```python
 # List of available events
@@ -998,7 +1040,7 @@ help(event)
      |  before_validate = 'before_validate'
 ```
 
-
+-----
 
 ```python
 ModelResetter, print_source(ModelResetter)
@@ -1020,7 +1062,7 @@ class ModelResetter(Callback):
 (fastai.callback.rnn.ModelResetter, None)
 ```
 
-
+-----
 
 
 ```python
@@ -1028,6 +1070,8 @@ class ModelResetter(Callback):
     def begin_train(self):    self.model.reset()
     def begin_validate(self): self.model.reset()
 ```
+
+-----
 
 
 ```python
@@ -1051,7 +1095,7 @@ class RNNRegularizer(Callback):
 (fastai.callback.rnn.RNNRegularizer, None)
 ```
 
-
+-----
 
 
 ```python
@@ -1096,6 +1140,8 @@ class RNNRegularizer(Callback):
 ### Callback Ordering and Exceptions
 * A callback sometimes need to tell fastai to skip over a batch or an epoch, or stop training all together
 
+-----
+
 
 ```python
 TerminateOnNaNCallback, print_source(TerminateOnNaNCallback)
@@ -1115,7 +1161,7 @@ class TerminateOnNaNCallback(Callback):
 (fastai.callback.tracker.TerminateOnNaNCallback, None)
 ```
 
-
+-----
 
 
 ```python
@@ -1126,10 +1172,14 @@ class TerminateOnNaNCallback(Callback):
             raise CancelFitException
 ```
 
+-----
+
 
 ```python
 from fastai.callback.core import _ex_docscs
 ```
+
+-----
 
 
 ```python
