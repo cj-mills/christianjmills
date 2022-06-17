@@ -64,6 +64,8 @@ def print_source(obj):
     * a function that takes a module, its input, and its output
     * can perform any behavior you want
 
+-----
+
 
 ```python
 HookCallback
@@ -72,7 +74,7 @@ HookCallback
     fastai.callback.hook.HookCallback
 ```
 
-
+-----
 
 ```python
 print_source(HookCallback)
@@ -112,6 +114,8 @@ print_source(HookCallback)
 
 ```
 
+-----
+
 
 ```python
 path = untar_data(URLs.PETS)/'images'
@@ -121,7 +125,7 @@ path
     Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images')
 ```
 
-
+-----
 
 ```python
 def is_cat(x): return x[0].isupper()
@@ -177,7 +181,7 @@ learn.fine_tune(1)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 print_source(image_cat)
@@ -186,7 +190,7 @@ print_source(image_cat)
     def image_cat (): return BytesIO(pkgutil.get_data('fastbook', 'images/cat.jpg'))
 ```
 
-
+-----
 
 ```python
 # Load an image of a cat
@@ -195,12 +199,16 @@ img = PILImage.create(image_cat())
 x, = first(dls.test_dl([img]))
 ```
 
+-----
+
 
 ```python
 # Define a hook that stores a copy of the output
 class Hook():
     def hook_func(self, m, i, o): self.stored = o.detach().clone()
 ```
+
+-----
 
 
 ```python
@@ -210,11 +218,15 @@ hook_output = Hook()
 hook = learn.model[0].register_forward_hook(hook_output.hook_func)
 ```
 
+-----
+
 
 ```python
 # Perform inference on the test batch
 with torch.no_grad(): output = learn.model.eval()(x)
 ```
+
+-----
 
 
 ```python
@@ -226,7 +238,7 @@ act.shape
     torch.Size([512, 7, 7])
 ```
 
-
+-----
 
 ```python
 # Check the model predictions
@@ -247,7 +259,7 @@ dls.vocab
     [False, True]
 ```
 
-
+-----
 
 ```python
 x.shape
@@ -256,7 +268,7 @@ x.shape
     torch.Size([1, 3, 224, 224])
 ```
 
-
+-----
 
 ```python
 learn.model[1]
@@ -278,7 +290,7 @@ learn.model[1]
     )
 ```
 
-
+-----
 
 ```python
 learn.model[1][-1]
@@ -287,7 +299,7 @@ learn.model[1][-1]
     Linear(in_features=512, out_features=2, bias=False)
 ```
 
-
+-----
 
 ```python
 # Calculate the dot product the weight matrix for the last layer with the activations
@@ -318,11 +330,15 @@ ax.imshow(cam_map[1].detach().cpu(), alpha=0.6, extent=(0,224,224,0),
 **Note:** The bright yellow spots correspond to high activations.
 * The head and front paw seem to have had the most influence on the model's prediction.
 
+-----
+
 
 ```python
 # Remove the hook to avoid memory leaks
 hook.remove()
 ```
+
+-----
 
 
 ```python
@@ -335,7 +351,7 @@ print_source(hook.remove)
                 del hooks_dict[self.id]
 ```
 
-
+-----
 
 ```python
 # Update the custom hook to be a context manager
@@ -348,6 +364,8 @@ class Hook():
     # Automatically remove the hook when exiting it
     def __exit__(self, *args): self.hook.remove()
 ```
+
+-----
 
 
 ```python
@@ -368,6 +386,8 @@ with Hook(learn.model[0]) as hook:
     * can use Grad-CAM on any layer
     * recall the gradients of the output of the last layers with respect to the input of that layer are equal to the layer weights
 
+-----
+
 
 ```python
 # Define a hook that stores a copy of the gradients calculated by PyTorch during the backward pass
@@ -378,6 +398,8 @@ class HookBwd():
     def __enter__(self, *args): return self
     def __exit__(self, *args): self.hook.remove()
 ```
+
+-----
 
 
 ```python
@@ -392,12 +414,16 @@ with HookBwd(learn.model[0]) as hookg:
     grad = hookg.stored
 ```
 
+-----
+
 
 ```python
 # Calculate the average of the gradients across the feature map
 w = grad[0].mean(dim=[1,2], keepdim=True)
 cam_map = (w * act[0]).sum(0)
 ```
+
+-----
 
 
 ```python
@@ -408,7 +434,7 @@ ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0,224,224,0),
 ```
 ![png](../images/notes-fastai-book/chapter-18/output_34_0.png)
 
-
+-----
 
 ```python
 # Get the gradients for the output of the second to last ResNet group
@@ -420,11 +446,15 @@ with HookBwd(learn.model[0][-2]) as hookg:
     grad = hookg.stored
 ```
 
+-----
+
 
 ```python
 w = grad[0].mean(dim=[1,2], keepdim=True)
 cam_map = (w * act[0]).sum(0)
 ```
+
+-----
 
 
 ```python
@@ -435,7 +465,7 @@ ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0,224,224,0),
 ```
 ![png](../images/notes-fastai-book/chapter-18/output_37_0.png)
 
-
+-----
 
 ```python
 print_source(ActivationStats)
