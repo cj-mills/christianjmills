@@ -120,6 +120,8 @@ Class lables are stored in a space-delimited string
 * [https://pandas.pydata.org/docs/index.html](https://pandas.pydata.org/docs/index.html)
 * [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html)
 
+-----
+
 
 ```python
 # Access rows and columns using the `iloc` property 
@@ -258,6 +260,8 @@ tmp_df
 
 One-hot encoding: using a vector of 0s, with a 1 in each location that is represented in the data
 
+-----
+
 ```python
 # Start with a data block created with no parameters
 dblock = DataBlock()
@@ -356,6 +360,8 @@ dsets.train[0]
 * A TransformBlock for multi-label categorical targets
 * Uses One-hot encoding
 * Expects to receive a list of strings
+
+-----
 
 
 ```python
@@ -542,6 +548,8 @@ Applying batch_tfms to the batch built
         - not desirable when there may be multiple objects or none at all in a single image
     - nll_loss returns the value of just one activation
 - binary cross-entropy combines mnist_loss with log
+
+-----
 
 ```python
 learn = cnn_learner(dls, resnet18)
