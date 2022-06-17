@@ -63,7 +63,7 @@ print_source(untar_data)
         return d.get(url, force=force_download, extract_key=c_key)
 ```
 
-
+-----
 
 ```python
 print_source(fastai_cfg)
@@ -81,10 +81,14 @@ print_source(fastai_cfg)
 * [Documentation](https://fastdownload.fast.ai/)
 * easily download, verify, and extract archives
 
+-----
+
 
 ```python
 from fastdownload import FastDownload
 ```
+
+-----
 
 
 ```python
@@ -146,11 +150,13 @@ print_source(FastDownload)
             return self.extract(url, extract_key=extract_key, force=force)
 ```
 
-
+-----
 
 ```python
 import fastdownload
 ```
+
+-----
 
 
 ```python
@@ -168,6 +174,8 @@ print_source(fastdownload.download_and_check)
 
 ```
 
+-----
+
 
 ```python
 print_source(fastdownload.download_url)
@@ -182,7 +190,7 @@ print_source(fastdownload.download_url)
         return urlsave(url, dest, reporthook=progress if show_progress else None, timeout=timeout)
 ```
 
-
+-----
 
 ```python
 urlsave
@@ -191,7 +199,7 @@ urlsave
     <function fastcore.net.urlsave(url, dest=None, reporthook=None, timeout=None)>
 ```
 
-
+-----
 
 ```python
 print_source(urlsave)
@@ -205,7 +213,7 @@ print_source(urlsave)
         return nm
 ```
 
-
+-----
 
 ```python
 urlretrieve
@@ -214,7 +222,7 @@ urlretrieve
     <function fastcore.net.urlretrieve(url, filename=None, reporthook=None, data=None, timeout=None)>
 ```
 
-
+-----
 
 ```python
 print_source(urlretrieve)
@@ -246,11 +254,13 @@ print_source(urlretrieve)
         return filename,headers
 ```
 
-
+-----
 
 ```python
 import contextlib
 ```
+
+-----
 
 
 ```python
@@ -282,7 +292,7 @@ print_source(contextlib.closing)
             self.thing.close()
 ```
 
-
+-----
 
 ```python
 path = untar_data(URLs.IMAGENETTE_160)
@@ -292,7 +302,7 @@ path
     Path('/home/innom-dt/.fastai/data/imagenette2-160')
 ```
 
-
+-----
 
 ```python
 t = get_image_files(path)
@@ -302,7 +312,7 @@ t[0]
     Path('/home/innom-dt/.fastai/data/imagenette2-160/val/n03028079/n03028079_2470.JPEG')
 ```
 
-
+-----
 
 ```python
 print_source(get_image_files)
@@ -313,7 +323,7 @@ print_source(get_image_files)
         return get_files(path, extensions=image_extensions, recurse=recurse, folders=folders)
 ```
 
-
+-----
 
 ```python
 image_extensions
@@ -363,7 +373,7 @@ image_extensions
      '.xwd'}
 ```
 
-
+-----
 
 ```python
 print_source(get_files)
@@ -388,7 +398,7 @@ print_source(get_files)
         return L(res)
 ```
 
-
+-----
 
 ```python
 help(os.walk)
@@ -466,7 +476,7 @@ setify
     <function fastcore.basics.setify(o)>
 ```
 
-
+-----
 
 ```python
 print_source(setify)
@@ -477,11 +487,13 @@ print_source(setify)
         return o if isinstance(o,set) else set(listify(o))
 ```
 
-
+-----
 
 ```python
 from glob import glob
 ```
+
+-----
 
 
 ```python
@@ -502,7 +514,7 @@ help(glob)
         zero or more directories and subdirectories.
 ```
 
-
+-----
 
 ```python
 files = L(glob(f'{path}/**/*.JPEG', recursive=True)).map(Path)
@@ -512,7 +524,7 @@ files[0]
     Path('/home/innom-dt/.fastai/data/imagenette2-160/val/n03028079/n03028079_2470.JPEG')
 ```
 
-
+-----
 
 ```python
 im = Image.open(files[0])
@@ -520,7 +532,7 @@ im
 ```
 ![png](../images/notes-fastai-book/chapter-19/output_31_0.png)
 
-
+-----
 
 
 ```python
@@ -557,7 +569,7 @@ help(Image.open)
         :exception TypeError: If ``formats`` is not ``None``, a list or a tuple.
 ```
 
-
+-----
 
 ```python
 im_t = tensor(im)
@@ -567,7 +579,7 @@ im_t.shape
     torch.Size([213, 160, 3])
 ```
 
-
+-----
 
 ```python
 help(Path.parent)
@@ -578,7 +590,7 @@ help(Path.parent)
         The logical parent of the path.
 ```
 
-
+-----
 
 ```python
 lbls = files.map(Self.parent.name()).unique(); lbls
@@ -587,7 +599,7 @@ lbls = files.map(Self.parent.name()).unique(); lbls
     (#10) ['n03028079','n03445777','n03417042','n02102040','n03425413','n03000684','n01440764','n03394916','n03888257','n02979186']
 ```
 
-
+-----
 
 ```python
 !ls $path/'train'
@@ -597,6 +609,8 @@ lbls = files.map(Self.parent.name()).unique(); lbls
     n02102040  n03000684  n03394916  n03425413  n03888257
 ```
 
+-----
+
 
 ```python
 val2idx
@@ -605,7 +619,7 @@ val2idx
     <function fastcore.basics.val2idx(x)>
 ```
 
-
+-----
 
 ```python
 print_source(val2idx)
@@ -616,7 +630,7 @@ print_source(val2idx)
         return {v:k for k,v in enumerate(x)}
 ```
 
-
+-----
 
 ```python
 v2i = lbls.val2idx(); v2i
@@ -658,6 +672,8 @@ class Dataset:
 train_filt = L(o.parent.parent.name=='train' for o in files)
 ```
 
+-----
+
 
 ```python
 train_filt
@@ -666,7 +682,7 @@ train_filt
     (#13394) [False,False,False,False,False,False,False,False,False,False...]
 ```
 
-
+-----
 
 ```python
 ~train_filt
@@ -686,7 +702,7 @@ print_source(L.__invert__)
         def __invert__(self): return self._new(not i for i in self)
 ```
 
-
+-----
 
 ```python
 print_source(L._new)
@@ -695,7 +711,7 @@ print_source(L._new)
         def _new(self, items, *args, **kwargs): return type(self)(items, *args, use_list=None, **kwargs)
 ```
 
-
+-----
 
 ```python
 train,valid = files[train_filt],files[~train_filt]
@@ -705,7 +721,7 @@ len(train),len(valid)
     (9469, 3925)
 ```
 
-
+-----
 
 ```python
 train_ds,valid_ds = Dataset(train),Dataset(valid)
@@ -716,14 +732,14 @@ x.shape,y
     (torch.Size([64, 64, 3]), tensor(0))
 ```
 
-
+-----
 
 ```python
 show_image(x, title=lbls[y]);
 ```
 ![png](../images/notes-fastai-book/chapter-19/output_51_0.png)
 
-
+-----
 
 ```python
 show_image
@@ -732,7 +748,7 @@ show_image
     <function fastai.torch_core.show_image(im, ax=None, figsize=None, title=None, ctx=None, cmap=None, norm=None, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, *, filternorm=True, filterrad=4.0, resample=None, url=None, data=None, **kwargs)>
 ```
 
-
+-----
 
 ```python
 print_source(show_image)
@@ -758,7 +774,7 @@ print_source(show_image)
         return ax
 ```
 
-
+-----
 
 ```python
 # Define a function to stack individual tuples of independent and dependent variables
@@ -767,6 +783,8 @@ def collate(idxs, ds):
     xb,yb = zip(*[ds[i] for i in idxs])
     return torch.stack(xb),torch.stack(yb)
 ```
+
+-----
 
 
 ```python
@@ -791,7 +809,7 @@ help(torch.stack)
             out (Tensor, optional): the output tensor.
 ```
 
-
+-----
 
 ```python
 # Create a mini-batch with a batch size of 2
@@ -802,7 +820,7 @@ x.shape,y
     (torch.Size([2, 64, 64, 3]), tensor([0, 0]))
 ```
 
-
+-----
 
 ```python
 class DataLoader:
@@ -819,6 +837,8 @@ class DataLoader:
             yield from ex.map(collate, chunks, ds=self.ds)
 ```
 
+-----
+
 
 ```python
 ProcessPoolExecutor
@@ -827,7 +847,7 @@ ProcessPoolExecutor
     fastcore.parallel.ProcessPoolExecutor
 ```
 
-
+-----
 
 ```python
 print_source(ProcessPoolExecutor)
@@ -855,7 +875,7 @@ print_source(ProcessPoolExecutor)
             except Exception as e: self.on_exc(e)
 ```
 
-
+-----
 
 ```python
 print_source(parallelable)
@@ -891,7 +911,7 @@ defaults
               lr=0.001)
 ```
 
-
+-----
 
 ```python
 # Only use 16 workers at most
@@ -918,7 +938,7 @@ stats
     [tensor([0.4697, 0.4648, 0.4382]), tensor([0.2758, 0.2752, 0.2963])]
 ```
 
-
+-----
 
 ```python
 # Define a class to store and apply the mean and standard deviation for the data
@@ -963,6 +983,8 @@ class Parameter(Tensor):
 **Note:** [`__new__`](https://docs.python.org/3/reference/datamodel.html#object.__new__): Called to create a new instance of class cls.
 * Called before `__init__`
 
+-----
+
 
 ```python
 Parameter(tensor(3.))
@@ -971,7 +993,7 @@ Parameter(tensor(3.))
     tensor(3., requires_grad=True)
 ```
 
-
+-----
 
 ```python
 class Module:
@@ -1020,7 +1042,7 @@ sum([[4],[5],[6]],[1,2,3])
     [1, 2, 3, 4, 5, 6]
 ```
 
-
+-----
 
 ```python
 # Inherit from the custom Module class
@@ -1039,6 +1061,8 @@ class ConvLayer(Module):
         return x
 ```
 
+-----
+
 
 ```python
 # A single 3-channel 28x28 image
@@ -1046,6 +1070,8 @@ inp = torch.randn(1, 3, 28, 28)
 # A single 3x3 convolutional kernel for a 3-channel image
 w = torch.randn(1, 3, 3, 3)
 ```
+
+-----
 
 
 ```python
@@ -1068,7 +1094,7 @@ inp[0][0][0][:9]
     tensor([ 1.9269,  1.4873,  0.9007, -2.1055,  0.6784, -1.2345, -0.0431, -1.6047, -0.7521])
 ```
 
-
+-----
 
 ```python
 inp_unf[0][0][:9]
@@ -1077,7 +1103,7 @@ inp_unf[0][0][:9]
     tensor([ 1.9269,  1.4873,  0.9007, -2.1055,  0.6784, -1.2345, -0.0431, -1.6047, -0.7521])
 ```
 
-
+-----
 
 ```python
 inp[0][0][1][:9]
@@ -1086,7 +1112,7 @@ inp[0][0][1][:9]
     tensor([-0.2316,  0.0418, -0.2516,  0.8599, -1.3847, -0.8712, -0.2234,  1.7174,  0.3189])
 ```
 
-
+-----
 
 ```python
 inp_unf[0][3][:9]
@@ -1095,7 +1121,7 @@ inp_unf[0][3][:9]
     tensor([-0.2316,  0.0418, -0.2516,  0.8599, -1.3847, -0.8712, -0.2234,  1.7174,  0.3189])
 ```
 
-
+-----
 
 ```python
 inp_unf.transpose(1, 2).shape
@@ -1104,7 +1130,7 @@ inp_unf.transpose(1, 2).shape
     torch.Size([1, 676, 27])
 ```
 
-
+-----
 
 ```python
 w.view(w.size(0), -1).t().shape
@@ -1113,7 +1139,7 @@ w.view(w.size(0), -1).t().shape
     torch.Size([27, 1])
 ```
 
-
+-----
 
 ```python
 out_unf = inp_unf.transpose(1, 2).matmul(w.view(w.size(0), -1).t()).transpose(1, 2)
@@ -1123,7 +1149,7 @@ out_unf.shape
     torch.Size([1, 1, 676])
 ```
 
-
+-----
 
 ```python
 out_unf.view(1,1,inp.shape[2]-2,inp.shape[3]-2)[0][0][0]
@@ -1133,7 +1159,7 @@ out_unf.view(1,1,inp.shape[2]-2,inp.shape[3]-2)[0][0][0]
              -1.8379,   0.1750,  -1.6839,   4.5438,  -1.2521,  -1.9825,  -4.2498])
 ```
 
-
+-----
 
 ```python
 torch.nn.functional.conv2d(inp, w).shape, torch.nn.functional.conv2d(inp, w)[0][0][0]
@@ -1144,7 +1170,7 @@ torch.nn.functional.conv2d(inp, w).shape, torch.nn.functional.conv2d(inp, w)[0][
               -1.8379,   0.1750,  -1.6839,   4.5438,  -1.2521,  -1.9825,  -4.2498]))
 ```
 
-
+-----
 
 ```python
 l = ConvLayer(3, 4)
@@ -1154,7 +1180,7 @@ len(l.parameters())
     2
 ```
 
-
+-----
 
 ```python
 xbt = tfm_x(xb)
@@ -1165,7 +1191,7 @@ r.shape
     torch.Size([128, 4, 64, 64])
 ```
 
-
+-----
 
 ```python
 class Linear(Module):
@@ -1188,7 +1214,7 @@ r.shape
     torch.Size([3, 2])
 ```
 
-
+-----
 
 ```python
 # A test class to confirm that mu;tiple parameters are properly registered
@@ -1197,6 +1223,8 @@ class T(Module):
         super().__init__()
         self.c,self.l = ConvLayer(3,4),Linear(4,2)
 ```
+
+-----
 
 
 ```python
@@ -1239,12 +1267,16 @@ class Sequential(Module):
         return x
 ```
 
+-----
+
 
 ```python
 class AdaptivePool(Module):
     # Pool input values to a 1x1 output
     def forward(self, x): return x.mean((2,3))
 ```
+
+-----
 
 
 ```python
@@ -1258,6 +1290,8 @@ def simple_cnn():
         Linear(128, 10)
     )
 ```
+
+-----
 
 
 ```python
@@ -1298,6 +1332,8 @@ r.shape
 def nll(input, target): return -input[range(target.shape[0]), target].mean()
 ```
 
+-----
+
 
 ```python
 def log_softmax(x): return x - x.exp().sum(-1,keepdim=True).log()
@@ -1307,7 +1343,7 @@ sm = log_softmax(r); sm[0][0]
     tensor(-2.5062, grad_fn=<AliasBackward0>)
 ```
 
-
+-----
 
 ```python
 loss = nll(sm, yb)
@@ -1317,7 +1353,7 @@ loss
     tensor(2.6062, grad_fn=<AliasBackward0>)
 ```
 
-
+-----
 
 ```python
 x = torch.rand(5)
@@ -1335,6 +1371,8 @@ x.exp().sum().log() == a + (x-a).exp().sum().log()
 $$\log{\left( \sum^{n}_{j=1}{e^{x_{j}}} \right)} = \log{\left(e^{a} \sum^{n}_{j=1}{e^{x_{j}-a}} \right)} = a + \log{\left(\sum^{n}_{j=1}{e^{x_{j}-a}} \right)}$$
 * where $a$ is the maximum of $x_{j}$
 
+-----
+
 
 ```python
 x = torch.rand(5)
@@ -1345,7 +1383,7 @@ x.exp().sum().log() == a + (x-a).exp().sum().log()
     tensor(True)
 ```
 
-
+-----
 
 ```python
 def logsumexp(x):
@@ -1358,11 +1396,13 @@ logsumexp(r)[0]
     tensor(2.6922, grad_fn=<AliasBackward0>)
 ```
 
-
+-----
 
 ```python
 def log_softmax(x): return x - x.logsumexp(-1,keepdim=True)
 ```
+
+-----
 
 
 ```python
@@ -1372,7 +1412,7 @@ sm = log_softmax(r); sm[0][0]
     tensor(-2.5062, grad_fn=<AliasBackward0>)
 ```
 
-
+-----
 
 ```python
 def cross_entropy(preds, yb): return nll(log_softmax(preds), yb).mean()
@@ -1392,6 +1432,8 @@ class SGD:
             p.data -= (p.grad.data + p.data*self.wd) * self.lr
             p.grad.data.zero_()
 ```
+
+-----
 
 
 ```python
@@ -1416,7 +1458,7 @@ print_source(store_attr)
         return _store_attr(self, anno, **attrs)
 ```
 
-
+-----
 
 ```python
 help(sys._getframe)
@@ -1436,7 +1478,7 @@ help(sys._getframe)
         only.
 ```
 
-
+-----
 
 ```python
 print_source(argnames)
@@ -1448,7 +1490,7 @@ print_source(argnames)
         return code.co_varnames[:code.co_argcount+code.co_kwonlyargcount]
 ```
 
-
+-----
 
 ```python
 print_source(annotations)
@@ -1464,7 +1506,7 @@ print_source(annotations)
         return res
 ```
 
-
+-----
 
 ```python
 # A class that just stores the training and validation datasets
@@ -1473,6 +1515,8 @@ class DataLoaders:
 
 dls = DataLoaders(train_dl,valid_dl)
 ```
+
+-----
 
 
 ```python
@@ -1535,6 +1579,8 @@ class Learner:
 class Callback(GetAttr): _default='learner'
 ```
 
+-----
+
 
 ```python
 GetAttr
@@ -1543,7 +1589,7 @@ GetAttr
     fastcore.basics.GetAttr
 ```
 
-
+-----
 
 ```python
 print_source(GetAttr)
@@ -1567,7 +1613,7 @@ print_source(GetAttr)
         def __setstate__(self,data): self.__dict__.update(data)
 ```
 
-
+-----
 
 ```python
 help(getattr)
@@ -1624,7 +1670,7 @@ dir(Callback)
      '_dir']
 ```
 
-
+-----
 
 ```python
 # A callback that moves all model parameters to the GPU at the start of the Learner.fit() method
@@ -1635,6 +1681,8 @@ class SetupLearnerCB(Callback):
 
     def before_fit(self): self.model.cuda()
 ```
+
+-----
 
 
 ```python
@@ -1656,6 +1704,8 @@ class TrackResults(Callback):
         self.ns.append(n)
 ```
 
+-----
+
 
 ```python
 # Test the learner
@@ -1667,7 +1717,7 @@ learn.model
     <__main__.Sequential at 0x7f15bd1d2bb0>
 ```
 
-
+-----
 
 ```python
 learn.cbs
@@ -1677,7 +1727,7 @@ learn.cbs
      <__main__.TrackResults at 0x7f15bfee9430>]
 ```
 
-
+-----
 
 ```python
 learn.cbs[0].model
@@ -1686,7 +1736,7 @@ learn.cbs[0].model
     <__main__.Sequential at 0x7f15bd1d2bb0>
 ```
 
-
+-----
 
 ```python
 learn.fit(1)
@@ -1718,6 +1768,8 @@ class LRFinder(Callback):
         self.lrs.append(self.opt.lr)
 ```
 
+-----
+
 
 ```python
 lrfind = LRFinder()
@@ -1730,7 +1782,7 @@ learn.fit(2)
     0 False 3.06156648089172 0.0889171974522293
 ```
 
-
+-----
 
 ```python
 plt.plot(lrfind.lrs[:-2],lrfind.losses[:-2])
@@ -1738,7 +1790,7 @@ plt.xscale('log')
 ```
 ![png](../images/notes-fastai-book/chapter-19/output_140_0.png)
 
-
+-----
 
 ```python
 class OneCycle(Callback):
@@ -1762,11 +1814,15 @@ class OneCycle(Callback):
         self.lrs.append(lr)
 ```
 
+-----
+
 
 ```python
 onecyc = OneCycle(0.1)
 learn = Learner(simple_cnn(), dls, cross_entropy, lr=0.1, cbs=cbs+[onecyc])
 ```
+
+-----
 
 
 ```python
