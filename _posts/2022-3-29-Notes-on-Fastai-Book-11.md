@@ -48,10 +48,14 @@ def print_source(obj):
 ## Going Deeper into fastai's Layered API
 * fastai is built on a layered API
 
+-----
+
 
 ```python
 from fastai.text.all import *
 ```
+
+-----
 
 
 ```python
@@ -74,7 +78,7 @@ print_source(TextDataLoaders.from_folder)
         return cls.from_dblock(dblock, path, path=path, seq_len=seq_len, **kwargs)
 ```
 
-
+-----
 
 
 ```python
@@ -100,6 +104,8 @@ Path('/home/innom-dt/.fastai/data/imdb')
 
 #### Data Block API
 * Allows us to define custom approaches for loading data from datasets
+
+-----
 
 
 ```python
@@ -172,7 +178,7 @@ class DataBlock():
                  dataloaders="Create a `DataLoaders` object from `source`")
 ```
 
-
+-----
 
 
 ```python
@@ -187,7 +193,7 @@ print_source(TextBlock.from_folder)
                    backwards=backwards, min_freq=min_freq, max_vocab=max_vocab)
 ```
 
-
+-----
 
 
 ```python
@@ -199,7 +205,7 @@ def CategoryBlock(vocab=None, sort=True, add_na=False):
     return TransformBlock(type_tfms=Categorize(vocab=vocab, sort=sort, add_na=add_na))
 ```
 
-
+-----
 
 
 ```python
@@ -218,6 +224,8 @@ dls = DataBlock(
 * Transforms always get applied over tuples
     * data is almost always in a tuple of (input, target)
 
+-----
+
 
 ```python
 Transform
@@ -226,7 +234,7 @@ Transform
 fastcore.transform.Transform
 ```
 
-
+-----
 
 
 ```python
@@ -273,7 +281,7 @@ class Transform(metaclass=_TfmMeta):
         return retain_type(res, x)
 ```
 
-
+-----
 
 
 ```python
@@ -283,7 +291,7 @@ TypeDispatch
 fastcore.dispatch.TypeDispatch
 ```
 
-
+-----
 
 
 ```python
@@ -351,7 +359,7 @@ class TypeDispatch:
         return None
 ```
 
-
+-----
 
 
 ```python
@@ -378,7 +386,7 @@ print_source(Tokenizer.from_folder)
         return res
 ```
 
-
+-----
 
 
 ```python
@@ -394,7 +402,7 @@ def tokenize_folder(path, extensions=None, folders=None, output_dir=None, skip_i
     return _tokenize_files(_f, files, path, skip_if_exists=skip_if_exists, **kwargs)
 ```
 
-
+-----
 
 
 ```python
@@ -407,7 +415,7 @@ toks[0]
 (#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level'...]
 ```
 
-
+-----
 
 
 ```python
@@ -423,7 +431,7 @@ nums[0][:10]
 TensorText([   2,    8,   20,    0,  615,   49, 1689,   35,  195,  599])
 ```
 
-
+-----
 
 
 ```python
@@ -434,7 +442,7 @@ nums_dec = num.decode(nums[0][:10]); nums_dec
 (#10) ['xxbos','xxmaj','this','xxunk','fails','so','miserably','on','every','level']
 ```
 
-
+-----
 
 
 ```python
@@ -466,7 +474,7 @@ tok((txts[0], txts[1]))
     * specify a type in the function signature so the transform is only applied to the target data types
 * Transforms that require either setup or decode, need to be implemented as a subclass of Transform
 
-
+-----
 
 ```python
 # Simple transform function that adds 1 to an int
@@ -492,7 +500,8 @@ tfm(2),tfm(2.0)
 * [Documentation](https://docs.python.org/3/library/typing.html#typing.Callable)
 * Something that can be called
 * a function or something like a function
-* Need to use a 
+
+-----
 
 
 ```python
@@ -504,7 +513,7 @@ f(2),f(2.0)
 (3, 2.0)
 ```
 
-
+-----
 
 
 ```python
@@ -516,6 +525,8 @@ class NormalizeMean(Transform):
     # Decode items by adding the mean
     def decodes(self, x): return x+self.mean
 ```
+
+-----
 
 
 ```python
@@ -542,6 +553,8 @@ tfm.mean,y,z
 * calls the Transforms in sequential order
 * Need to use a [TfmdLists](https://docs.fast.ai/data.core.html#TfmdLists) to properly setup a pipeline of transforms on some data.
 
+-----
+
 
 ```python
 Pipeline
@@ -550,7 +563,7 @@ Pipeline
 fastcore.transform.Pipeline
 ```
 
-
+-----
 
 
 ```python
@@ -613,7 +626,7 @@ class Pipeline:
         return False
 ```
 
-
+-----
 
 
 ```python
@@ -623,7 +636,7 @@ camel2snake
 <function fastcore.basics.camel2snake(name)>
 ```
 
-
+-----
 
 
 ```python
@@ -636,7 +649,7 @@ def camel2snake(name):
     return re.sub(_camel_re2, r'\1_\2', s1).lower()
 ```
 
-
+-----
 
 
 ```python
@@ -648,7 +661,7 @@ t = tfms(txts[0]); t[:20]
 TensorText([   2,    8,   20,    0,  615,   49, 1689,   35,  195,  599,   21,   17,   16, 1088,   15, 1177,   65,   15,  145,   10])
 ```
 
-
+-----
 
 
 ```python
@@ -679,6 +692,8 @@ tfms.decode(t)[:100]
 * one for processing your raw items into inputs
 * one to process your raw items into targets
 
+-----
+
 
 ```python
 TfmdLists
@@ -687,7 +702,7 @@ TfmdLists
 fastai.data.core.TfmdLists
 ```
 
-
+-----
 
 
 ```python
@@ -755,7 +770,7 @@ class TfmdLists(FilteredBase, L, GetAttr):
         return self._after_item(res) if is_indexer(idx) else res.map(self._after_item)
 ```
 
-
+-----
 
 
 ```python
@@ -793,7 +808,7 @@ class FilteredBase:
         return self._dbunch_type(*dls, path=path, device=device)
 ```
 
-
+-----
 
 
 ```python
@@ -808,7 +823,7 @@ t = tls[0]; t[:20]
 TensorText([    2,     8,    20, 33649,  1033,    52,  3265,    35,   193,   649,    21,    17,    16,   890,    15,  1156,    65,    15,   159,    10])
 ```
 
-
+-----
 
 
 ```python
@@ -834,7 +849,7 @@ xxbos xxmaj this conglomeration fails so miserably on every level that it is dif
  xxmaj one person on here wrote that he had met the creator of this mess , as if that were a red letter day in his life . xxmaj one can only pray that something far more exciting occurs in that posters xxunk a grip , amigo .
 ```
 
-
+-----
 
 ```python
 # Define how many files to keep in the training set
@@ -845,7 +860,7 @@ cut
 40000
 ```
 
-
+-----
 
 
 ```python
@@ -857,7 +872,7 @@ len(splits[0]), len(splits[1])
 (40000, 10000)
 ```
 
-
+-----
 
 
 ```python
@@ -865,6 +880,8 @@ len(splits[0]), len(splits[1])
 tls = TfmdLists(files, [Tokenizer.from_folder(path), Numericalize], 
                 splits=splits)
 ```
+
+-----
 
 
 ```python
@@ -874,7 +891,7 @@ tls.valid[0][:20]
 TensorText([   2,    8,    9,  107,   77,   19,   87,    9, 1836,   14, 1438,   15,   86,   20,   45,   31, 1524,  393,   25,  164])
 ```
 
-
+-----
 
 
 ```python
@@ -884,7 +901,7 @@ parent_label
 <function fastai.data.transforms.parent_label(o)>
 ```
 
-
+-----
 
 
 ```python
@@ -896,7 +913,7 @@ def parent_label(o):
     return Path(o).parent.name
 ```
 
-
+-----
 
 
 ```python
@@ -908,7 +925,7 @@ lbls
 (#50000) ['neg','neg','neg','neg','neg','neg','neg','neg','neg','neg'...]
 ```
 
-
+-----
 
 
 ```python
@@ -918,7 +935,7 @@ Categorize
 fastai.data.transforms.Categorize
 ```
 
-
+-----
 
 
 ```python
@@ -944,7 +961,7 @@ class Categorize(DisplayedTransform):
     def decodes(self, o): return Category      (self.vocab    [o])
 ```
 
-
+-----
 
 
 ```python
@@ -953,6 +970,8 @@ cat = Categorize()
 cat.setup(lbls)
 cat.vocab, cat(lbls[0])
 ```
+
+-----
 
 
 ```python
@@ -974,6 +993,8 @@ TensorCategory(0)
 * can decode any processed tuple
 * can directly convert a Datasets to a DataLoaders object with the dataloaders method (inherited from [FilteredBase](https://docs.fast.ai/data.core.html#FilteredBase))
 
+-----
+
 
 ```python
 Datasets
@@ -982,7 +1003,7 @@ Datasets
 fastai.data.core.Datasets
 ```
 
-
+-----
 
 
 ```python
@@ -1045,7 +1066,7 @@ class Datasets(FilteredBase):
     )
 ```
 
-
+-----
 
 
 ```python
@@ -1063,7 +1084,7 @@ x[:20],y
  TensorCategory(0))
 ```
 
-
+-----
 
 
 ```python
@@ -1081,7 +1102,7 @@ x[:20],y
  TensorCategory(1))
 ```
 
-
+-----
 
 
 ```python
@@ -1093,7 +1114,7 @@ dsets.decode(t)
  'pos')
 ```
 
-
+-----
 
 
 ```python
@@ -1111,7 +1132,7 @@ encodes: (object,object) -> encodes
 decodes: (TensorText,object) -> decodes
 ```
 
-
+-----
 
 
 ```python
@@ -1157,6 +1178,8 @@ class Pad_Input(ItemTransform):
 * applied on the batch as a whole after its construction
 * equivalent of `batch_tfms` in DataBlock
 
+-----
+
 
 ```python
 DataLoader
@@ -1165,7 +1188,7 @@ DataLoader
 fastai.data.load.DataLoader
 ```
 
-
+-----
 
 
 ```python
@@ -1259,7 +1282,7 @@ class DataLoader(GetAttr):
         return res
 ```
 
-
+-----
 
 
 ```python
@@ -1269,7 +1292,7 @@ GetAttr
 fastcore.basics.GetAttr
 ```
 
-
+-----
 
 
 ```python
@@ -1294,7 +1317,7 @@ class GetAttr:
     def __setstate__(self,data): self.__dict__.update(data)
 ```
 
-
+-----
 
 
 ```python
@@ -1305,6 +1328,8 @@ dls = dsets.dataloaders(bs=64, before_batch=pad_input)
 
 #### SortedDL
 * constructs batches by putting samples of roughly the same lengths into batches
+
+-----
 
 
 ```python
@@ -1348,7 +1373,7 @@ class SortedDL(TfmdDL):
         return super().new(dataset=dataset, res=res, **kwargs)
 ```
 
-
+-----
 
 
 ```python
@@ -1367,10 +1392,14 @@ dls = dsets.dataloaders(dl_type=SortedDL, before_batch=pad_input)
 ### Siamese Model
 * takes two images and has to determine whether they are of the same class
 
+-----
+
 
 ```python
 from fastai.vision.all import *
 ```
+
+-----
 
 
 ```python
@@ -1381,7 +1410,7 @@ path
 Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
 ```
 
-
+-----
 
 
 ```python
@@ -1392,7 +1421,7 @@ files
 (#7390) [Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Birman_121.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/shiba_inu_131.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bombay_176.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bengal_199.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/beagle_41.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/beagle_27.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/great_pyrenees_181.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bengal_100.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/keeshond_124.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/havanese_115.jpg')...]
 ```
 
-
+-----
 
 
 ```python
@@ -1402,7 +1431,7 @@ fastuple
 fastcore.basics.fastuple
 ```
 
-
+-----
 
 
 ```python
@@ -1433,7 +1462,7 @@ class fastuple(tuple):
         return fastuple._op(self, operator.add,*args)
 ```
 
-
+-----
 
 
 ```python
@@ -1457,6 +1486,8 @@ class SiameseImage(fastuple):
                           title=same_breed, ctx=ctx)
 ```
 
+-----
+
 
 ```python
 img = PILImage.create(files[0])
@@ -1466,7 +1497,7 @@ s.show();
 ```
 ![png](../images/notes-fastai-book/chapter-11/output_90_0.png)
 
-
+-----
 
 ```python
 img1 = PILImage.create(files[1])
@@ -1475,7 +1506,7 @@ s1.show();
 ```
 ![png](../images/notes-fastai-book/chapter-11/output_91_0.png)
 
-
+-----
 
 ```python
 Resize
@@ -1484,7 +1515,7 @@ Resize
 fastai.vision.augment.Resize
 ```
 
-
+-----
 
 
 ```python
@@ -1521,7 +1552,7 @@ class Resize(RandTransform):
                    resize_mode=self.mode_mask if isinstance(x,PILMask) else self.mode, resize_to=self.size)
 ```
 
-
+-----
 
 
 ```python
@@ -1530,7 +1561,7 @@ s2.show();
 ```
 ![png](../images/notes-fastai-book/chapter-11/output_94_0.png)
 
-
+-----
 
 ```python
 # Label images by filename
@@ -1565,6 +1596,8 @@ class SiameseTransform(Transform):
         return random.choice(self.lbl2files[cls]),same
 ```
 
+-----
+
 
 ```python
 print_source(RandomSplitter)
@@ -1580,7 +1613,7 @@ def RandomSplitter(valid_pct=0.2, seed=None):
     return _inner
 ```
 
-
+-----
 
 
 ```python
@@ -1619,7 +1652,7 @@ randperm(...)
         tensor([2, 1, 0, 3])
 ```
 
-
+-----
 
 
 ```python
@@ -1629,7 +1662,7 @@ tfm(files[0]).show();
 ```
 ![png](../images/notes-fastai-book/chapter-11/output_99_0.png)
 
-
+-----
 
 ```python
 tls = TfmdLists(files, tfm, splits=splits)
@@ -1637,7 +1670,7 @@ show_at(tls.valid, 0);
 ```
 ![png](../images/notes-fastai-book/chapter-11/output_100_0.png)
 
-
+-----
 
 ```python
 ToTensor
@@ -1646,7 +1679,7 @@ ToTensor
 fastai.data.transforms.ToTensor
 ```
 
-
+-----
 
 
 ```python
@@ -1658,7 +1691,7 @@ class ToTensor(Transform):
     order = 5
 ```
 
-
+-----
 
 
 ```python
@@ -1668,7 +1701,7 @@ IntToFloatTensor
 fastai.data.transforms.IntToFloatTensor
 ```
 
-
+-----
 
 
 ```python
@@ -1684,7 +1717,7 @@ class IntToFloatTensor(DisplayedTransform):
     def decodes(self, o:TensorImage): return ((o.clamp(0., 1.) * self.div).long()) if self.div else o
 ```
 
-
+-----
 
 
 ```python
@@ -1694,7 +1727,7 @@ Normalize.from_stats
 <bound method Normalize.from_stats of <class 'fastai.data.transforms.Normalize'>>
 ```
 
-
+-----
 
 
 ```python
@@ -1705,7 +1738,7 @@ print_source(Normalize.from_stats)
     def from_stats(cls, mean, std, dim=1, ndim=4, cuda=True): return cls(*broadcast_vec(dim, ndim, mean, std, cuda=cuda))
 ```
 
-
+-----
 
 
 ```python
@@ -1715,7 +1748,7 @@ broadcast_vec
 <function fastai.data.transforms.broadcast_vec(dim, ndim, *t, cuda=True)>
 ```
 
-
+-----
 
 
 ```python
@@ -1730,7 +1763,7 @@ def broadcast_vec(dim, ndim, *t, cuda=True):
     return [f(tensor(o).view(*v)) for o in t]
 ```
 
-
+-----
 
 
 ```python
