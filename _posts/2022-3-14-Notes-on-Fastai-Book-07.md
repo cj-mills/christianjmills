@@ -35,6 +35,8 @@ search_exclude: false
 * A smaller version of the [imagenet dataset](https://image-net.org/)
 * Useful for quick experimentation and iteration
 
+-----
+
 
 ```python
 from fastai.vision.all import *
@@ -229,6 +231,8 @@ learn.fit_one_cycle(5, 3e-3)
 - normalization is especially important when using pretrained models
     - make sure to use the same normalization stats the pretrained model was trained on
 
+-----
+
 ```python
 x,y = dls.one_batch()
 x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
@@ -242,6 +246,8 @@ x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
 
 * [https://docs.fast.ai/data.transforms.html#Normalize](https://docs.fast.ai/data.transforms.html#Normalize)
 * Normalize/denormalize a bath of [TensorImage](https://docs.fast.ai/torch_core.html#TensorImage)
+
+-----
 
 
 ```python
@@ -356,6 +362,8 @@ learn.fit_one_cycle(5, 3e-3)
     - should result in better generalization
 - progressive resizing might hurt performance when using transfer learning
     - most likely to happen if your pretrained model was very similar to your target task and the dataset it was trained on had similar-sized images
+
+-----
 
 
 ```python
@@ -495,6 +503,8 @@ learn.fine_tune(5, 1e-3)
 * [https://docs.fast.ai/learner.html#Learner.tta](https://docs.fast.ai/learner.html#Learner.tta)
 * returns predictions using Test Time Augmentation
 
+-----
+
 
 ```python
 learn.tta
@@ -536,6 +546,8 @@ accuracy(preds, targs).item()
     - with Mixup our labels will only be exactly 1 or 0 if two images from the same class are mixed
 - Mixup is “accidentally” making the labels bigger than 0 or smaller than 1
     - can be resolved with Label Smoothing
+
+-----
 
 
 ```python
@@ -704,7 +716,6 @@ learn.fit_one_cycle(15, 3e-3)
     1. start with one-hot encoded labels
     2. replace all 0s with $\frac{\epsilon}{N}$ where $N$ is the number of classes and $\epsilon$ is a parameter (usually 0.1)
     3. replace all 1s with $1 - \epsilon + \frac{\epsilon}{N}$ to make sure the labels add up to 1
-    4. 
 
 -----
 ```python
