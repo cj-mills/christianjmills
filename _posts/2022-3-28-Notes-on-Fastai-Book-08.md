@@ -41,6 +41,8 @@ search_exclude: false
 
 [Probabilistic Matrix Factorization - Matrix Factorization (Part 1) ](https://www.coursera.org/lecture/matrix-factorization/probabilistic-matrix-factorization-Eoyiz)
 
+-----
+
 ```python
 #hide
 # !pip install -Uqq fastbook
@@ -68,6 +70,8 @@ from fastbook import *
     * 100 thousand movie ratings from 1000 users on 1700 movies
     * released 4/1998
 
+-----
+
 ```python
 URLs.ML_100k
 ```
@@ -75,11 +79,15 @@ URLs.ML_100k
 'https://files.grouplens.org/datasets/movielens/ml-100k.zip'
 ```
 
+-----
+
 
 ```python
 from fastai.collab import *
 from fastai.tabular.all import *
 ```
+
+-----
 
 ```python
 path = untar_data(URLs.ML_100k)
@@ -88,6 +96,8 @@ path
 ```text
 Path('/home/innom-dt/.fastai/data/ml-100k')
 ```
+
+-----
 
 
 ```python
@@ -197,7 +207,7 @@ pd.DataFrame(list(path.ls()))
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 !cat $path/'u.data' | head -5
@@ -210,6 +220,8 @@ pd.DataFrame(list(path.ls()))
 166	346	1	886397596
 cat: write error: Broken pipe
 ```
+
+-----
 
 
 ```python
@@ -267,7 +279,7 @@ ratings.head()
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 ratings[ratings['movie'] == 242][ratings['user'] == 305]
@@ -298,6 +310,8 @@ ratings[ratings['movie'] == 242][ratings['user'] == 305]
 
 #### pandas pivot table
 * [https://pandas.pydata.org/docs/reference/api/pandas.pivot_table.html](https://pandas.pydata.org/docs/reference/api/pandas.pivot_table.html)
+
+-----
 
 ```python
 pd.pivot_table(ratings.head(10), values='rating', index=['user'], columns=['movie'], fill_value=None, sort=False)
@@ -472,6 +486,8 @@ pd.pivot_table(ratings.head(10), values='rating', index=['user'], columns=['movi
 #### pandas DataFrame.pivot
 * [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html)
 
+-----
+
 ```python
 ratings.head(10).pivot(values='rating', index=['user'], columns=['movie'])
 ```
@@ -639,6 +655,8 @@ ratings.head(10).pivot(values='rating', index=['user'], columns=['movie'])
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 # Create a sample movie entry
@@ -660,6 +678,8 @@ user1 = np.array([0.9,0.8,-0.6])
 #### Dot Product
 * the mathematical operation of multiplying the elements of two vectors together, and then summing up the results
 
+-----
+
 ```python
 # Multiply the movie and user properties to
 # determine how likely the user is to like the movie
@@ -676,6 +696,8 @@ user1 = np.array([0.9,0.8,-0.6])
 # The user probably will not like this movie
 casablanca = np.array([-0.99,-0.3,0.8])
 ```
+
+-----
 
 ```python
 (user1*casablanca).sum()
@@ -724,6 +746,8 @@ cat: write error: Broken pipe
 * [https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html)
 * read a csv file
 * supports custom delimiters
+
+-----
 
 ```python
 movies = pd.read_csv(path/'u.item',
@@ -779,6 +803,8 @@ movies.head()
 #### DataFrame.merge
 * [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html)
 * perform a database-style join
+
+-----
 
 ```python
 # Add the movie titles to the ratings DataFrame
@@ -851,6 +877,8 @@ ratings.head()
 #### CollabDataLoaders.from_df
 * [https://docs.fast.ai/collab.html#CollabDataLoaders.from_df](https://docs.fast.ai/collab.html#CollabDataLoaders.from_df)
 * Create a DataLoaders suitable for collaborative filtering from a pandas DataFrame.
+
+-----
 
 ```python
 dls = CollabDataLoaders.from_df(ratings, 
@@ -937,6 +965,8 @@ dls.show_batch()
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 dls.after_iter
@@ -945,6 +975,8 @@ dls.after_iter
 <bound method after_iter of <fastai.tabular.core.TabDataLoader object at 0x7f8a75c0ffd0>>
 ```
 
+-----
+
 ```python
 TabDataLoader
 ```
@@ -952,12 +984,16 @@ TabDataLoader
 fastai.tabular.core.TabDataLoader
 ```
 
+-----
+
 ```python
 dls.after_batch
 ```
 ```text
 Pipeline: ReadTabBatch
 ```
+
+-----
 
 ```python
 ReadTabBatch
@@ -974,6 +1010,8 @@ fastai.tabular.core.ReadTabBatch
 #### fastai ReadTabBatch
 * [https://docs.fast.ai/tabular.core.html#ReadTabBatch](https://docs.fast.ai/tabular.core.html#ReadTabBatch)
 * Transform [TabularPandas](https://docs.fast.ai/tabular.core.html#TabularPandas) values into a Tensor with the ability to decode
+
+-----
 
 
 ```python
@@ -992,6 +1030,8 @@ Number of users: 944
 Numer of movies: 1665
 ```
 
+-----
+
 ```python
 one_hot
 ```
@@ -1002,6 +1042,8 @@ one_hot
 #### fastai one_hot
 * [https://docs.fast.ai/torch_core.html#one_hot](https://docs.fast.ai/torch_core.html#one_hot)
 * One-hot encode a value with a specified number of classes.
+
+-----
 
 ```python
 # Create a one-hot encoding for the user at index 3
@@ -1014,6 +1056,8 @@ torch.Size([944])
 tensor([0., 0., 0., 1., 0., 0., 0., 0., 0., 0.])
 ```
 
+-----
+
 ```python
 # Look up the randomly initialized parameters for the user at index 3
 user_factors.t() @ one_hot_3
@@ -1021,6 +1065,8 @@ user_factors.t() @ one_hot_3
 ```text
 tensor([-1.2274,  0.0769, -0.1502, -0.7066,  0.3554])
 ```
+
+-----
 
 ```python
 user_factors[3]
@@ -1048,6 +1094,8 @@ fastai.layers.Embedding
 * [https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html](https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html)
 * A simple lookup table that stores embeddings of a fixed dictionary and size.
 
+-----
+
 
 ```python
 class DotProduct(Module):
@@ -1062,6 +1110,8 @@ class DotProduct(Module):
         return (users * movies).sum(dim=1)
 ```
 
+-----
+
 ```python
 x,y = dls.one_batch()
 x.shape
@@ -1069,6 +1119,8 @@ x.shape
 ```text
 torch.Size([64, 2])
 ```
+
+-----
 
 ```python
 model = DotProduct(n_users, n_movies, 50)
@@ -1079,6 +1131,8 @@ print(model.movie_factors)
 Embedding(944, 50)
 Embedding(1665, 50)
 ```
+
+-----
 
 
 ```python
@@ -1098,6 +1152,8 @@ torch.Size([944, 50])
          [-0.0099,  0.0070, -0.0147,  ...,  0.0002,  0.0051,  0.0035]], requires_grad=True)]
 ```
 
+-----
+
 
 ```python
 print(list(model.user_factors.parameters())[0][0].shape)
@@ -1111,7 +1167,7 @@ tensor([ 0.0077,  0.0033, -0.0076, -0.0052,  0.0114,  0.0011, -0.0099,  0.0103, 
          0.0043, -0.0046,  0.0059,  0.0027, -0.0030, -0.0113,  0.0040,  0.0027], grad_fn=<SelectBackward0>)
 ```
 
-
+-----
 
 ```python
 print(model.user_factors(x[:,0]).shape)
@@ -1122,10 +1178,14 @@ torch.Size([64, 50])
 torch.Size([64, 50])
 ```
 
+-----
+
 
 ```python
 learn = Learner(dls, model, loss_func=MSELossFlat())
 ```
+
+-----
 
 ```python
 learn.fit_one_cycle(5, 5e-3)
@@ -1174,7 +1234,7 @@ learn.fit_one_cycle(5, 5e-3)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 print(list(model.user_factors.parameters())[0][0].shape)
@@ -1187,6 +1247,8 @@ tensor([ 0.0066,  0.0028, -0.0065, -0.0044,  0.0098,  0.0010, -0.0084,  0.0088, 
         -0.0131,  0.0145,  0.0057, -0.0047, -0.0028, -0.0043, -0.0027, -0.0050, -0.0055,  0.0080,  0.0121,  0.0052,  0.0095, -0.0007, -0.0049,  0.0115,  0.0080,  0.0042,  0.0111, -0.0060,  0.0052,
          0.0036, -0.0039,  0.0050,  0.0023, -0.0026, -0.0097,  0.0034,  0.0023], device='cuda:0', grad_fn=<SelectBackward0>)
 ```
+
+-----
 
 ```python
 class DotProduct(Module):
@@ -1201,6 +1263,8 @@ class DotProduct(Module):
         # Force predictions to be in the valid range of values
         return sigmoid_range((users * movies).sum(dim=1), *self.y_range)
 ```
+
+-----
 
 ```python
 model = DotProduct(n_users, n_movies, 50)
@@ -1251,7 +1315,7 @@ learn.fit_one_cycle(5, 5e-3)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 class DotProductBias(Module):
@@ -1270,6 +1334,8 @@ class DotProductBias(Module):
         res += self.user_bias(x[:,0]) + self.movie_bias(x[:,1])
         return sigmoid_range(res, *self.y_range)
 ```
+
+-----
 
 
 ```python
@@ -1334,6 +1400,8 @@ learn.fit_one_cycle(5, 5e-3)
 * can reduce overfitting by forcing the model to approximate a less complex function
 * hinders training, but improves generalization
 * [fastai weight_decay function](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/optimizer.py#L104)
+
+-----
 
 ```python
 x = np.linspace(-2,2,100)
@@ -1411,6 +1479,8 @@ L(T().parameters())
 (#0) []
 ```
 
+-----
+
 
 ```python
 class T(Module):
@@ -1424,6 +1494,8 @@ L(T().parameters())
 (#1) [Parameter containing:
 tensor([1., 1., 1.], requires_grad=True)]
 ```
+
+-----
 
 ```python
 class T(Module):
@@ -1439,6 +1511,8 @@ tensor([[0.7957],
         [0.9707]], requires_grad=True)]
 ```
 
+-----
+
 
 ```python
 type(t.a.weight)
@@ -1452,6 +1526,8 @@ torch.nn.parameter.Parameter
 * [https://pytorch.org/docs/stable/generated/torch.Tensor.normal_.html#torch.Tensor.normal_](https://pytorch.org/docs/stable/generated/torch.Tensor.normal_.html#torch.Tensor.normal_)
 * Fills tensor with elements sampled from the normal distribution parameterized by the specified mean and std.
 
+-----
+
 
 ```python
 # Create an Embedding of the specified size
@@ -1459,6 +1535,8 @@ def create_params(size):
     # Initialize values to have a mean of 0 and a standard deviation of 0.01
     return nn.Parameter(torch.zeros(*size).normal_(0, 0.01))
 ```
+
+-----
 
 ```python
 class DotProductBias(Module):
@@ -1476,6 +1554,8 @@ class DotProductBias(Module):
         res += self.user_bias[x[:,0]] + self.movie_bias[x[:,1]]
         return sigmoid_range(res, *self.y_range)
 ```
+
+-----
 
 ```python
 model = DotProductBias(n_users, n_movies, 50)
@@ -1576,6 +1656,8 @@ idxs = movie_bias.argsort(descending=True)[:5]
 * [https://docs.fast.ai/torch_core.html#Tensor.pca](https://docs.fast.ai/torch_core.html#Tensor.pca)
 * Compute PCA of x with k dimensions.
 
+-----
+
 ```python
 ratings.groupby('title')['rating'].count().head()
 ```
@@ -1588,6 +1670,8 @@ title
 187 (1997)                    41
 Name: rating, dtype: int64
 ```
+
+-----
 
 ```python
 # Get the number of ratings for each movie
@@ -1619,9 +1703,13 @@ plt.show()
 * [https://docs.fast.ai/collab.html#collab_learner](https://docs.fast.ai/collab.html#collab_learner)
 * Create a learner for collaborative filtering
 
+-----
+
 ```python
 learn = collab_learner(dls, n_factors=50, y_range=(0, 5.5))
 ```
+
+-----
 
 ```python
 learn.fit_one_cycle(5, 5e-3, wd=0.1)
@@ -1670,6 +1758,8 @@ learn.fit_one_cycle(5, 5e-3, wd=0.1)
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 learn.model
@@ -1682,6 +1772,8 @@ EmbeddingDotBias(
   (i_bias): Embedding(1665, 1)
 )
 ```
+
+-----
 
 ```python
 movie_bias = learn.model.i_bias.weight.squeeze()
@@ -1699,6 +1791,8 @@ idxs = movie_bias.argsort(descending=True)[:5]
 ### Embedding Distance
 * items with similar embedding values should have similar qualities
 * We can calculate the distance between two 2D coordinates using $\sqrt{x^{2} + y^{2}}$
+
+-----
 
 ```python
 movie_factors = learn.model.i_weight.weight
@@ -1740,6 +1834,8 @@ dls.classes['title'][idx]
     * gives us a matrix we can pass through through linear layers and non-linearities
 * allows us to directly incorporate other data that may be relevant to the recommendation
 
+-----
+
 ```python
 get_emb_sz
 ```
@@ -1751,6 +1847,8 @@ get_emb_sz
 * [https://docs.fast.ai/tabular.model.html#get_emb_sz](https://docs.fast.ai/tabular.model.html#get_emb_sz)
 * Get default embedding size from TabularPreprocessor proc or the ones in sz_dict
 
+-----
+
 ```python
 embs = get_emb_sz(dls)
 embs
@@ -1758,6 +1856,8 @@ embs
 ```text
 [(944, 74), (1665, 102)]
 ```
+
+-----
 
 ```python
 class CollabNN(Module):
@@ -1776,6 +1876,8 @@ class CollabNN(Module):
         return sigmoid_range(x, *self.y_range)
 ```
 
+-----
+
 ```python
 model = CollabNN(*embs)
 model
@@ -1791,6 +1893,8 @@ CollabNN(
   )
 )
 ```
+
+-----
 
 
 ```python
@@ -1841,6 +1945,8 @@ learn.fit_one_cycle(5, 5e-3, wd=0.01)
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 # Use a fastai provided model with the specified number of layers of the specified sizes
@@ -1892,6 +1998,8 @@ learn.fit_one_cycle(5, 5e-3, wd=0.1)
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 learn.model
@@ -1922,6 +2030,8 @@ EmbeddingNN(
   )
 )
 ```
+
+-----
 
 ```python
 EmbeddingNN
