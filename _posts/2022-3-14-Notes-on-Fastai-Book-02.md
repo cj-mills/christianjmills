@@ -836,3 +836,9 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
 * [The fastai book GitHub Repository](https://github.com/fastai/fastbook)
+
+
+
+**Previous:** [Notes on fastai Book Ch. 1](https://christianjmills.com/Notes-on-Fastai-Book-01/)
+
+**Next:** [Notes on fastai Book Ch. 3](https://christianjmills.com/Notes-on-Fastai-Book-03/)
