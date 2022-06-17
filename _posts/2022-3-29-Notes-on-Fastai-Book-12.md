@@ -50,6 +50,8 @@ def print_source(obj):
 * one of the most common practical mistakes is failing to use appropriate datasets at appropriate times during the analysis process
     * most people tend to start with datasets that are too big and too complicated
 
+-----
+
 
 ```python
 from fastai.text.all import *
@@ -59,6 +61,8 @@ from fastai.text.all import *
 * A synthetic dataset consisting of human number counts in text such as one, two, three, four.. 
 * Useful for experimenting with Language Models
 
+-----
+
 
 ```python
 URLs.HUMAN_NUMBERS
@@ -67,7 +71,7 @@ URLs.HUMAN_NUMBERS
 'https://s3.amazonaws.com/fast-ai-sample/human_numbers.tgz'
 ```
 
-
+-----
 
 
 ```python
@@ -78,7 +82,7 @@ path
 Path('/home/innom-dt/.fastai/data/human_numbers')
 ```
 
-
+-----
 
 
 ```python
@@ -88,7 +92,7 @@ path.ls()
 (#2) [Path('/home/innom-dt/.fastai/data/human_numbers/train.txt'),Path('/home/innom-dt/.fastai/data/human_numbers/valid.txt')]
 ```
 
-
+-----
 
 
 ```python
@@ -108,7 +112,7 @@ five
 cat: write error: Broken pipe
 ```
 
-
+-----
 
 ```python
 valid_file = path.ls()[1]
@@ -127,7 +131,7 @@ eight thousand five
 cat: write error: Broken pipe
 ```
 
-
+-----
 
 ```python
 lines = L()
@@ -140,7 +144,7 @@ lines
 (#9998) ['one \n','two \n','three \n','four \n','five \n','six \n','seven \n','eight \n','nine \n','ten \n'...]
 ```
 
-
+-----
 
 
 ```python
@@ -152,7 +156,7 @@ text[:100]
 'one . two . three . four . five . six . seven . eight . nine . ten . eleven . twelve . thirteen . fo'
 ```
 
-
+-----
 
 
 ```python
@@ -164,7 +168,7 @@ tokens[:10]
 ['one', '.', 'two', '.', 'three', '.', 'four', '.', 'five', '.']
 ```
 
-
+-----
 
 
 ```python
@@ -176,7 +180,7 @@ vocab
 (#30) ['one','.','two','three','four','five','six','seven','eight','nine'...]
 ```
 
-
+-----
 
 
 ```python
@@ -316,7 +320,7 @@ pd.DataFrame(list(vocab))
 </div>
 
 
-
+-----
 
 ```python
 # Map words to their vocab indices
@@ -344,7 +348,7 @@ L((tokens[i:i+3], tokens[i+3]) for i in range(0,len(tokens)-4,3))
 (#21031) [(['one', '.', 'two'], '.'),(['.', 'three', '.'], 'four'),(['four', '.', 'five'], '.'),(['.', 'six', '.'], 'seven'),(['seven', '.', 'eight'], '.'),(['.', 'nine', '.'], 'ten'),(['ten', '.', 'eleven'], '.'),(['.', 'twelve', '.'], 'thirteen'),(['thirteen', '.', 'fourteen'], '.'),(['.', 'fifteen', '.'], 'sixteen')...]
 ```
 
-
+-----
 
 
 ```python
@@ -358,7 +362,7 @@ seqs
 (#21031) [(tensor([0, 1, 2]), 1),(tensor([1, 3, 1]), 4),(tensor([4, 1, 5]), 1),(tensor([1, 6, 1]), 7),(tensor([7, 1, 8]), 1),(tensor([1, 9, 1]), 10),(tensor([10,  1, 11]), 1),(tensor([ 1, 12,  1]), 13),(tensor([13,  1, 14]), 1),(tensor([ 1, 15,  1]), 16)...]
 ```
 
-
+-----
 
 
 ```python
@@ -368,7 +372,7 @@ DataLoaders.from_dsets
 <bound method DataLoaders.from_dsets of <class 'fastai.data.core.DataLoaders'>>
 ```
 
-
+-----
 
 
 ```python
@@ -385,7 +389,7 @@ print_source(DataLoaders.from_dsets)
         return cls(*[dl_type(d, bs=bs, **k) for d,k in zip(ds, kwargs)], path=path, device=device)
 ```
 
-
+-----
 
 
 ```python
@@ -403,7 +407,7 @@ dls.one_batch()[0].shape, dls.one_batch()[1].shape
 (torch.Size([64, 3]), torch.Size([64]))
 ```
 
-
+-----
 
 
 ```python
@@ -417,6 +421,8 @@ dls.one_batch()[0][0], dls.one_batch()[1][0]
 
 ### Our Language Model in PyTorch
 * Every word is interpreted in the information context of any words preceding it
+
+-----
 
 
 ```python
@@ -446,6 +452,8 @@ class LMModel1(Module):
         # Pass output to second linear layer
         return self.h_o(h)
 ```
+
+-----
 
 
 ```python
@@ -496,7 +504,7 @@ learn.fit_one_cycle(4, 1e-3)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 range_of
@@ -505,7 +513,7 @@ range_of
 <function fastcore.basics.range_of(a, b=None, step=None)>
 ```
 
-
+-----
 
 
 ```python
@@ -518,7 +526,7 @@ def range_of(a, b=None, step=None):
     return list(range(a,b,step) if step is not None else range(a,b) if b is not None else range(a))
 ```
 
-
+-----
 
 
 ```python
@@ -556,6 +564,8 @@ counts[idx].item()/n)
 #### Hidden State:
 * the activations that are updated at each step of a recurrent neural network
 
+-----
+
 
 ```python
 class LMModel2(Module):
@@ -573,6 +583,8 @@ class LMModel2(Module):
             h = F.relu(self.h_h(h))
         return self.h_o(h)
 ```
+
+-----
 
 
 ```python
@@ -659,6 +671,8 @@ class LMModel3(Module):
 * Treating a neural net with effectively one layer per time step (usually refactored using a loop) as one big model, and calculating gradients on it in the usual way
 * usually use Truncated BPTT which detaches the history of computation steps in the hidden state every few time steps.
 
+-----
+
 
 ```python
 m = len(seqs)//bs
@@ -668,7 +682,7 @@ m,bs,len(seqs)
 (328, 64, 21031)
 ```
 
-
+-----
 
 
 ```python
@@ -695,6 +709,8 @@ dls = DataLoaders.from_dsets(
     shuffle=False)
 ```
 
+-----
+
 
 ```python
 ModelResetter
@@ -703,7 +719,7 @@ ModelResetter
 fastai.callback.rnn.ModelResetter
 ```
 
-
+-----
 
 
 ```python
@@ -742,7 +758,7 @@ class ModelResetter(Callback):
 * `after_epoch:` called at the end of an epoch, for any clean-up before the next one.
 * `after_fit:` called at the end of training, for final clean-up.
 
-
+-----
 
 ```python
 Callback
@@ -751,7 +767,7 @@ Callback
 fastai.callback.core.Callback
 ```
 
-
+-----
 
 
 ```python
@@ -787,7 +803,7 @@ class Callback(Stateful,GetAttr):
         return class2attr(self, 'Callback')
 ```
 
-
+-----
 
 
 ```python
@@ -888,6 +904,8 @@ learn.fit_one_cycle(10, 3e-3)
 ### Creating More Signal
 * we can increase the amount of signal for updating the model weights by predicting the next word after every single word, rather than every three words
 
+-----
+
 
 ```python
 # Define the sequence length
@@ -903,6 +921,8 @@ dls = DataLoaders.from_dsets(group_chunks(seqs[:cut], bs),
                              bs=bs, drop_last=True, shuffle=False)
 ```
 
+-----
+
 
 ```python
 [L(vocab[o] for o in s) for s in seqs[0]]
@@ -912,7 +932,7 @@ dls = DataLoaders.from_dsets(group_chunks(seqs[:cut], bs),
  (#16) ['.','two','.','three','.','four','.','five','.','six'...]]
 ```
 
-
+-----
 
 
 ```python
@@ -937,12 +957,16 @@ class LMModel4(Module):
     def reset(self): self.h = 0
 ```
 
+-----
+
 
 ```python
 # Define custom loss function that flattens the output before calculating cross entropy
 def loss_func(inp, targ):
     return F.cross_entropy(inp.view(-1, len(vocab)), targ.view(-1))
 ```
+
+-----
 
 
 ```python
@@ -1095,6 +1119,8 @@ class LMModel5(Module):
     def reset(self): self.h.zero_()
 ```
 
+-----
+
 
 ```python
 LMModel5(len(vocab), 64, 2)
@@ -1107,7 +1133,7 @@ LMModel5(
 )
 ```
 
-
+-----
 
 
 ```python
@@ -1276,6 +1302,8 @@ learn.fit_one_cycle(15, 3e-3)
     3. **cell gate:** determines what the updated values are for the cell state
     4. **output gate:** determines which information from the cell state to use to generate the new hidden state
 
+-----
+
 
 ```python
 2*torch.sigmoid(2*tensor(0.5)) - 1
@@ -1284,7 +1312,7 @@ learn.fit_one_cycle(15, 3e-3)
 tensor(0.4621)
 ```
 
-
+-----
 
 
 ```python
@@ -1321,8 +1349,11 @@ class LSTMCell(Module):
 ```
 
 **Note:** It is better for performance reasons to do one big matrix multiplication than four smaller ones
-    * launch the special fast kernel on the GPU only once
-    * give the GPU more work to do in parallel
+
+* launch the special fast kernel on the GPU only once
+* give the GPU more work to do in parallel
+
+-----
 
 
 ```python
@@ -1345,6 +1376,8 @@ class LSTMCell(Module):
 
 #### torch chunk
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.chunk.html)
+
+-----
 
 
 ```python
@@ -1401,7 +1434,7 @@ chunk(...)
          tensor([12]))
 ```
 
-
+-----
 
 
 ```python
@@ -1411,7 +1444,7 @@ t = torch.arange(0,10); t
 tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 ```
 
-
+-----
 
 
 ```python
@@ -1443,6 +1476,8 @@ class LMModel6(Module):
         for h in self.h: h.zero_()
 ```
 
+-----
+
 
 ```python
 # Using a two-layer LSTM
@@ -1459,7 +1494,7 @@ LMModel6(
 )
 ```
 
-
+-----
 
 
 ```python
@@ -1609,6 +1644,8 @@ learn.fit_one_cycle(15, 1e-2)
 * using dropout before passing the output of our LSTM to the final layer will help reduce overfitting
 * make sure to turn off dropout during inference
 
+-----
+
 
 ```python
 class Dropout(Module):
@@ -1618,6 +1655,8 @@ class Dropout(Module):
         mask = x.new(*x.shape).bernoulli_(1-p)
         return x * mask.div_(1-p)
 ```
+
+-----
 
 
 ```python
@@ -1704,6 +1743,8 @@ bernoulli(...)
 * introduced in AWD-LSTM paper
 * `self.h_o.weight = self.i_h.weight`
 
+-----
+
 
 ```python
 class LMModel7(Module):
@@ -1725,12 +1766,16 @@ class LMModel7(Module):
         for h in self.h: h.zero_()
 ```
 
+-----
+
 
 ```python
 learn = Learner(dls, LMModel7(len(vocab), 64, 2, 0.5),
                 loss_func=CrossEntropyLossFlat(), metrics=accuracy,
                 cbs=[ModelResetter, RNNRegularizer(alpha=2, beta=1)])
 ```
+
+-----
 
 
 ```python
@@ -1740,7 +1785,7 @@ RNNRegularizer
 fastai.callback.rnn.RNNRegularizer
 ```
 
-
+-----
 
 
 ```python
@@ -1759,13 +1804,15 @@ class RNNRegularizer(Callback):
             if len(h)>1: self.learn.loss_grad += self.beta * (h[:,1:] - h[:,:-1]).float().pow(2).mean()
 ```
 
-
+-----
 
 
 ```python
 learn = TextLearner(dls, LMModel7(len(vocab), 64, 2, 0.4),
                     loss_func=CrossEntropyLossFlat(), metrics=accuracy)
 ```
+
+-----
 
 
 ```python
@@ -1780,7 +1827,7 @@ LMModel7(
 )
 ```
 
-
+-----
 
 
 ```python
