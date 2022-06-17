@@ -57,6 +57,8 @@ def print_source(obj):
         print(line)
 ```
 
+-----
+
 ```python
 print_source(untar_data)
 ```
@@ -67,6 +69,8 @@ def untar_data(url, archive=None, data=None, c_key='data', force_download=False)
     d = FastDownload(fastai_cfg(), module=fastai.data, archive=archive, data=data, base='~/.fastai')
     return d.get(url, force=force_download, extract_key=c_key)
 ```
+
+-----
 
 ```python
 for line in inspect.getsourcelines(untar_data)[0]:
@@ -171,9 +175,13 @@ def untar_data(url, archive=None, data=None, c_key='data', force_download=False)
 * Need to get an API Key for your Kaggle account
     * [https://www.kaggle.com/me/account](https://www.kaggle.com/me/account)
 
+-----
+
 ```python
 creds = '{"username":"","key":""}'
 ```
+
+-----
 
 ```python
 print("Path.write_text")
@@ -202,6 +210,8 @@ Path.chmod
         self._accessor.chmod(self, mode)
 ```
 
+-----
+
 ```python
 cred_path = Path('~/.kaggle/kaggle.json').expanduser()
 # Save API key to a json file if it does not already exist
@@ -211,6 +221,8 @@ if not cred_path.exists():
     cred_path.chmod(0o600)
 ```
 
+-----
+
 ```python
 path = URLs.path('bluebook')
 path
@@ -218,6 +230,8 @@ path
 ```text
 Path('/home/innom-dt/.fastai/archive/bluebook')
 ```
+
+-----
 
 
 ```python
@@ -263,6 +277,8 @@ api.competition_download_cli
                                                force, quiet)
 ```
 
+-----
+
 
 ```python
 def file_extract(fname, dest=None):
@@ -273,6 +289,8 @@ def file_extract(fname, dest=None):
     elif fname.endswith('zip'): zipfile.ZipFile(fname     ).extractall(dest)
     else: raise Exception(f'Unrecognized archive: {fname}')
 ```
+
+-----
 
 ```python
 if not path.exists():
@@ -299,10 +317,14 @@ path.ls(file_type='text')
 * **saleprice:** What the machine sold for  at auction (provided only in train.csv)
 * **saledate:** The data of the sale
 
+-----
+
 
 ```python
 !cat $path/'TrainAndValid.csv' | head -5
 ```
+
+-----
 
 
 ```python
@@ -310,6 +332,8 @@ df = pd.read_csv(path/'TrainAndValid.csv',
                  # Tell pandas to look at more rows to figure out the data type for each column
                  low_memory=False)
 ```
+
+-----
 
 ```python
 df.columns
@@ -336,12 +360,16 @@ Index(['SalesID', 'SalePrice', 'MachineID', 'ModelID', 'datasource',
 * columns containing strings or similar, where those strings have a natural ordering
 * need to tell Pandas the correct ordering for ordinal columns
 
+-----
+
 ```python
 df['ProductSize'].unique()
 ```
 ```text
 array([nan, 'Medium', 'Small', 'Large / Medium', 'Mini', 'Large', 'Compact'], dtype=object)
 ```
+
+-----
 
 ```python
 sizes = 'Large','Large / Medium','Medium','Small','Mini','Compact'
@@ -350,6 +378,8 @@ sizes
 ```text
 ('Large', 'Large / Medium', 'Medium', 'Small', 'Mini', 'Compact')
 ```
+
+-----
 
 ```python
 df['ProductSize'] = df['ProductSize'].astype('category')
@@ -365,6 +395,8 @@ df['ProductSize'] = df['ProductSize'].astype('category')
 * [Documentation](https://pandas.pydata.org/pandas-docs/version/0.15.2/generated/pandas.core.categorical.Categorical.set_categories.html#pandas.core.categorical.Categorical.set_categories)
 * Sets the categories to the specified new_categories
 
+-----
+
 ```python
 df['ProductSize'].cat.set_categories(sizes, ordered=True, inplace=True)
 ```
@@ -372,6 +404,8 @@ df['ProductSize'].cat.set_categories(sizes, ordered=True, inplace=True)
 /home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/pandas/core/arrays/categorical.py:2747: FutureWarning: The `inplace` parameter in pandas.Categorical.set_categories is deprecated and will be removed in a future version. Removing unused categories will always return a new Categorical object.
   res = method(*args, **kwargs)
 ```
+
+-----
 
 ```python
 dep_var = 'SalePrice'
@@ -390,6 +424,8 @@ dep_var = 'SalePrice'
 #### numpy.log
 * [Documentation](https://numpy.org/doc/stable/reference/generated/numpy.log.html#numpy-log)
 * Natural logarithm, element-wise
+
+-----
 
 ```python
 df[dep_var] = np.log(df[dep_var])
@@ -427,6 +463,8 @@ df[dep_var] = np.log(df[dep_var])
 * [Documentation](https://docs.fast.ai/tabular.core.html#add_datepart)
 * Helper function that adds columns relevant to a date
 
+-----
+
 ```python
 add_datepart
 ```
@@ -434,7 +472,7 @@ add_datepart
 <function fastai.tabular.core.add_datepart(df, field_name, prefix=None, drop=True, time=False)>
 ```
 
-
+-----
 
 ```python
 print("add_datepart")
@@ -459,16 +497,20 @@ def add_datepart(df, field_name, prefix=None, drop=True, time=False):
     return df
 ```
 
-
+-----
 
 ```python
 df = add_datepart(df, 'saledate')
 ```
 
+-----
+
 ```python
 df_test = pd.read_csv(path/'Test.csv', low_memory=False)
 df_test = add_datepart(df_test, 'saledate')
 ```
+
+-----
 
 ```python
 ' '.join(o for o in df.columns if o.startswith('sale'))
@@ -487,6 +529,8 @@ df_test = add_datepart(df_test, 'saledate')
 * Handles splitting the dataset into training and validation sets
 * Needs to be told which columns are continuous and which columns are categorical
 
+-----
+
 ```python
 TabularPandas
 ```
@@ -494,7 +538,7 @@ TabularPandas
 fastai.tabular.core.TabularPandas
 ```
 
-
+-----
 
 ```python
 print_source(TabularPandas)
@@ -514,6 +558,8 @@ class TabularPandas(Tabular):
 * returns the exact same object that is passed to it, after modifying it in place
 * runs the transform once, when data is first passed in, rather than lazily as the data is accessed
 
+-----
+
 ```python
 TabularProc
 ```
@@ -521,7 +567,7 @@ TabularProc
 fastai.tabular.core.TabularProc
 ```
 
-
+-----
 
 ```python
 print_source(TabularProc)
@@ -550,7 +596,7 @@ Categorify
 fastai.tabular.core.Categorify
 ```
 
-
+-----
 
 ```python
 print_source(Categorify)
@@ -571,6 +617,8 @@ class Categorify(TabularProc):
 * [Documentation](https://docs.fast.ai/tabular.core.html#FillMissing)
 * replaces values with the median of the column, and creates a new Boolean column that is set to True for any row where the value was missing
 
+-----
+
 ```python
 FillMissing
 ```
@@ -578,7 +626,7 @@ FillMissing
 fastai.tabular.core.FillMissing
 ```
 
-
+-----
 
 ```python
 print_source(FillMissing)
@@ -607,7 +655,7 @@ class FillMissing(TabularProc):
                 if n+'_na' not in to.cat_names: to.cat_names.append(n+'_na')
 ```
 
-
+-----
 
 ```python
 procs = [Categorify, FillMissing]
@@ -624,6 +672,8 @@ cond = (df.saleYear<2011) | (df.saleMonth<10)
 * [Documentation](https://numpy.org/doc/stable/reference/generated/numpy.where.html)
 * Return elements chosen from x or y depending on condition.
 
+-----
+
 ```python
 np.where
 ```
@@ -631,7 +681,7 @@ np.where
 <function numpy.where>
 ```
 
-
+-----
 
 ```python
 train_idx = np.where( cond)[0]
@@ -644,6 +694,8 @@ splits = (list(train_idx),list(valid_idx))
 * [Documentation](https://docs.fast.ai/tabular.core.html#cont_cat_split)
 * returns column names of cont and cat variables from given DataFrame
 
+-----
+
 ```python
 cont_cat_split
 ```
@@ -651,7 +703,7 @@ cont_cat_split
 <function fastai.tabular.core.cont_cat_split(df, max_card=20, dep_var=None)>
 ```
 
-
+-----
 
 ```python
 print_source(cont_cat_split)
@@ -670,13 +722,19 @@ def cont_cat_split(df, max_card=20, dep_var=None):
     return cont_names, cat_names
 ```
 
+-----
+
 ```python
 cont,cat = cont_cat_split(df, 1, dep_var=dep_var)
 ```
 
+-----
+
 ```python
 to = TabularPandas(df, procs, cat, cont, y_names=dep_var, splits=splits)
 ```
+
+-----
 
 ```python
 len(to.train),len(to.valid)
@@ -684,6 +742,8 @@ len(to.train),len(to.valid)
 ```text
 (404710, 7988)
 ```
+
+-----
 
 ```python
 to.show(3)
@@ -976,6 +1036,8 @@ to.show(3)
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 to.items.head(3)[['state', 'ProductGroup', 'Drive_System', 'Enclosure']]
@@ -1016,6 +1078,8 @@ to.items.head(3)[['state', 'ProductGroup', 'Drive_System', 'Enclosure']]
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 to1 = TabularPandas(df, procs, ['state', 'ProductGroup', 'Drive_System', 'Enclosure'], [], y_names=dep_var, splits=splits)
@@ -1061,6 +1125,8 @@ to1.show(3)
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 to.items.head(3)
@@ -1122,6 +1188,8 @@ to.items.head(3)
 </table>
 <p>3 rows × 67 columns</p>
 </div>
+-----
+
 
 ```python
 to1.items[['state', 'ProductGroup', 'Drive_System', 'Enclosure']].head(3)
@@ -1162,6 +1230,8 @@ to1.items[['state', 'ProductGroup', 'Drive_System', 'Enclosure']].head(3)
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 to.classes['ProductSize']
@@ -1175,6 +1245,8 @@ to.classes['ProductSize']
 * [Documentation](https://fastcore.fast.ai/xtras.html#save_pickle)
 * Save a pickle file, to a file name or opened file
 
+-----
+
 ```python
 save_pickle
 ```
@@ -1182,9 +1254,13 @@ save_pickle
 <function fastcore.xtras.save_pickle(fn, o)>
 ```
 
+-----
+
 ```python
 print_source(save_pickle)
 ```
+-----
+
 ```text
 def save_pickle(fn, o):
     "Save a pickle file, to a file name or opened file"
@@ -1201,12 +1277,16 @@ save_pickle(path/'to.pkl',to)
 * [Documentation](https://fastcore.fast.ai/xtras.html#load_pickle)
 * Loack a pickle file from a file name or opened file
 
+-----
+
 ```python
 load_pickle
 ```
 ```text
 <function fastcore.xtras.load_pickle(fn)>
 ```
+
+-----
 
 ```python
 print_source(load_pickle)
@@ -1217,6 +1297,8 @@ def load_pickle(fn):
     with open_file(fn, 'rb') as f: return pickle.load(f)
 ```
 
+-----
+
 ```python
 to = load_pickle(path/'to.pkl')
 ```
@@ -1226,6 +1308,8 @@ to = load_pickle(path/'to.pkl')
 xs,y = to.train.xs,to.train.y
 valid_xs,valid_y = to.valid.xs,to.valid.y
 ```
+
+-----
 
 ```python
 DecisionTreeRegressor
@@ -1238,11 +1322,15 @@ sklearn.tree._classes.DecisionTreeRegressor
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html)
 * A decision tree regressor
 
+-----
+
 ```python
 # Limit the number of leaf nodes to 4
 m = DecisionTreeRegressor(max_leaf_nodes=4)
 m.fit(xs, y);
 ```
+
+-----
 
 ```python
 draw_tree
@@ -1251,10 +1339,14 @@ draw_tree
 <function fastbook.draw_tree(t, df, size=10, ratio=0.6, precision=0, **kwargs)>
 ```
 
+-----
+
 ```python
 draw_tree(m, xs, size=10, leaves_parallel=True, precision=2)
 ```
 ![svg](../images/notes-fastai-book/chapter-9/output_88_0.svg)
+
+-----
 
 ```python
 dtreeviz
@@ -1268,6 +1360,8 @@ dtreeviz
 * [GitHub Repository](https://github.com/parrt/dtreeviz)
 * [Blog Post](https://explained.ai/decision-tree-viz/)
 
+-----
+
 ```python
 samp_idx = np.random.permutation(len(y))[:500]
 dtreeviz(m, xs.iloc[samp_idx], y.iloc[samp_idx], xs.columns, dep_var,
@@ -1280,11 +1374,15 @@ dtreeviz(m, xs.iloc[samp_idx], y.iloc[samp_idx], xs.columns, dep_var,
 * The value `1000` is likely a placeholder value for missing data.
 * Makes visualizing the values we are interested more difficult
 
+-----
+
 ```python
 # Replace YearMade placeholder value with 1950
 xs.loc[xs['YearMade']<1900, 'YearMade'] = 1950
 valid_xs.loc[valid_xs['YearMade']<1900, 'YearMade'] = 1950
 ```
+
+-----
 
 ```python
 m = DecisionTreeRegressor(max_leaf_nodes=4).fit(xs, y)
@@ -1295,16 +1393,21 @@ dtreeviz(m, xs.iloc[samp_idx], y.iloc[samp_idx], xs.columns, dep_var,
 ```
 ![svg](../images/notes-fastai-book/chapter-9/output_94_1.svg)
 
+-----
 ```python
 # Don't limit the number of leaf nodes
 m = DecisionTreeRegressor()
 m.fit(xs, y);
 ```
 
+-----
+
 ```python
 def r_mse(pred,y): return round(math.sqrt(((pred-y)**2).mean()), 6)
 def m_rmse(m, xs, y): return r_mse(m.predict(xs), y)
 ```
+
+-----
 
 ```python
 m_rmse(m, xs, y)
@@ -1312,6 +1415,8 @@ m_rmse(m, xs, y)
 ```text
 0.0
 ```
+
+-----
 
 ```python
 m_rmse(m, valid_xs, valid_y)
@@ -1340,6 +1445,8 @@ m_rmse(m, xs, y), m_rmse(m, valid_xs, valid_y)
 ```text
 (0.248593, 0.323339)
 ```
+
+-----
 
 ```python
 m.get_n_leaves()
@@ -1375,6 +1482,8 @@ m.get_n_leaves()
     * different models will make different errors
 * we can improve the accuracy of nearly any kind of machine learning algorithm by training it multiple times, each time on a different random subset of the data, and averaging its predictions.
 
+-----
+
 ```python
 
 # pip install —pre -f https://sklearn-nightly.scdn8.secure.raxcdn.com scikit-learn —U
@@ -1386,6 +1495,8 @@ m.get_n_leaves()
 * max_sample: how many rows to sample for training each tree
 * max_features: how many colums to sample at each split point
     * random forests are not very sensitive to this
+
+-----
 
 ```python
 RandomForestRegressor
@@ -1399,6 +1510,8 @@ sklearn.ensemble._forest.RandomForestRegressor
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)
 * A random forest regressor
 
+-----
+
 ```python
 def rf(xs, y, n_estimators=40, max_samples=200_000,
        max_features=0.5, min_samples_leaf=5, **kwargs):
@@ -1407,9 +1520,13 @@ def rf(xs, y, n_estimators=40, max_samples=200_000,
         min_samples_leaf=min_samples_leaf, oob_score=True).fit(xs, y)
 ```
 
+-----
+
 ```python
 m = rf(xs, y);
 ```
+
+-----
 
 ```python
 m_rmse(m, xs, y), m_rmse(m, valid_xs, valid_y)
@@ -1418,10 +1535,14 @@ m_rmse(m, xs, y), m_rmse(m, valid_xs, valid_y)
 (0.170966, 0.232699)
 ```
 
+-----
+
 ```python
 # Get the predictions from each decision tree in the forest
 preds = np.stack([t.predict(valid_xs.values) for t in m.estimators_])
 ```
+
+-----
 
 ```python
 r_mse(preds.mean(0), valid_y)
@@ -1429,6 +1550,8 @@ r_mse(preds.mean(0), valid_y)
 ```text
 0.232699
 ```
+
+-----
 
 ```python
 # See the impact of adding more trees on accuracy
@@ -1440,6 +1563,8 @@ plt.plot([r_mse(preds[:i+1].mean(0), valid_y) for i in range(40)]);
 
 ### Out-of-Bag Error
 * measure the prediction error of trees on data not included in their data subset
+
+-----
 
 ```python
 r_mse(m.oob_prediction_, y)
@@ -1462,10 +1587,14 @@ r_mse(m.oob_prediction_, y)
 * tells us the relative confidence of predictions
 * we would want to be more cautious of using results for rows where trees give very different results, compared to cases where they are more consistent
 
+-----
+
 ```python
 # Get the predictions for every tree in the forest
 preds = np.stack([t.predict(valid_xs.values) for t in m.estimators_])
 ```
+
+-----
 
 ```python
 preds.shape
@@ -1474,10 +1603,14 @@ preds.shape
 (40, 7988)
 ```
 
+-----
+
 ```python
 # Calculate the standard deviation
 preds_std = preds.std(0)
 ```
+
+-----
 
 ```python
 preds_std[:5]
@@ -1495,12 +1628,16 @@ array([0.26069358, 0.10409366, 0.09904178, 0.27184634, 0.13110276])
 4. the improvement is added to the importance score for that feature
 * sum importance scores across all branches of all trees and normalize them such that they add to 1
 
+-----
+
 ```python
 def rf_feat_importance(m, df):
     # Get the feature importance values of each column and place them into a dataframe
     return pd.DataFrame({'cols':df.columns, 'imp':m.feature_importances_}
                        ).sort_values('imp', ascending=False)
 ```
+
+-----
 
 ```python
 fi = rf_feat_importance(m, xs)
@@ -1584,6 +1721,8 @@ plot_fi(fi[:30]);
 * generally, the first step to improving a model is simplifying it
 * a simpler, more interpretable model is often easier to deploy and maintain
 
+-----
+
 ```python
 # Only keep columns with a feature importance greater than 0.005
 to_keep = fi[fi.imp>0.005].cols
@@ -1593,14 +1732,20 @@ len(to_keep)
 21
 ```
 
+-----
+
 ```python
 xs_imp = xs[to_keep]
 valid_xs_imp = valid_xs[to_keep]
 ```
 
+-----
+
 ```python
 m = rf(xs_imp, y)
 ```
+
+-----
 
 ```python
 m_rmse(m, xs_imp, y), m_rmse(m, valid_xs_imp, valid_y)
@@ -1611,12 +1756,16 @@ m_rmse(m, xs_imp, y), m_rmse(m, valid_xs_imp, valid_y)
 
 **Note:** Accuracy is about the same, but there are far fewer columns to study
 
+-----
+
 ```python
 len(xs.columns), len(xs_imp.columns)
 ```
 ```text
 (66, 21)
 ```
+
+-----
 
 ```python
 plot_fi(rf_feat_importance(m, xs_imp));
@@ -1628,6 +1777,8 @@ plot_fi(rf_feat_importance(m, xs_imp));
 #### Determining Similarity
 * the most similar pairs are found by calculating the rank correlation
 * rank correlation: all the values are replaced with their rank within the column, and then the correlation is calculated
+
+-----
 
 ```python
 cluster_columns(xs_imp)
@@ -1644,6 +1795,8 @@ def get_oob(df):
     m.fit(df, y)
     return m.oob_score_
 ```
+
+-----
 
 ```python
 get_oob(xs_imp)
@@ -1674,6 +1827,8 @@ Try removing potentially redundant variables one at a time.
  'Coupler_System': 0.8770165273393064}
 ```
 
+-----
+
 ```python
 to_drop = ['saleYear', 'ProductGroupDesc', 'fiBaseModel', 'Grouser_Tracks']
 get_oob(xs_imp.drop(to_drop, axis=1))
@@ -1690,21 +1845,29 @@ xs_final = xs_imp.drop(to_drop, axis=1)
 valid_xs_final = valid_xs_imp.drop(to_drop, axis=1)
 ```
 
+-----
+
 ```python
 # Save the updated DataFrames
 save_pickle(path/'xs_final.pkl', xs_final)
 save_pickle(path/'valid_xs_final.pkl', valid_xs_final)
 ```
 
+-----
+
 ```python
 xs_final = load_pickle(path/'xs_final.pkl')
 valid_xs_final = load_pickle(path/'valid_xs_final.pkl')
 ```
 
+-----
+
 ```python
 m = rf(xs_final, y)
 m_rmse(m, xs_final, y), m_rmse(m, valid_xs_final, valid_y)
 ```
+
+
 ```text
 (0.183251, 0.232259)
 ```
@@ -1717,6 +1880,8 @@ m_rmse(m, xs_final, y), m_rmse(m, valid_xs_final, valid_y)
 
 #### [THE BOOK OF WHY: THE NEW SCIENCE OF CAUSE AND EFFECT](https://www.amazon.com/Book-Why-Science-Cause-Effect/dp/046509760X)
 * Written by JUDEA PEARL AND DANA MACKENZIE
+
+-----
 
 ```python
 p = valid_xs_final['ProductSize'].value_counts(sort=False).plot.barh()
@@ -1738,6 +1903,8 @@ ax = valid_xs_final['YearMade'].hist()
 from sklearn.inspection import PartialDependenceDisplay
 ```
 
+-----
+
 ```python
 PartialDependenceDisplay.from_estimator
 ```
@@ -1750,6 +1917,8 @@ PartialDependenceDisplay.from_estimator
 #### sklearn PartialDependenceDisplay.from_estimator
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.inspection.PartialDependenceDisplay.html)
 * Partial Dependence Plot (PDP)
+
+-----
 
 ```python
 fig,ax = plt.subplots(figsize=(12, 4))
@@ -1790,6 +1959,8 @@ PartialDependenceDisplay.from_estimator(m, valid_xs_final, ['YearMade','ProductS
 ### Tree Interpreter
 * Helps answer the question "For predicting widht a particular row of data, what were the most important factors, and how did they influence that prediction"
 
+-----
+
 ```python
 
 import warnings
@@ -1807,12 +1978,16 @@ row = valid_xs_final.iloc[:5]
 * [GitHub Repository](https://github.com/andosa/treeinterpreter)
 * Package for interpreting scikit-learn's decision tree and random forest predictions.
 
+-----
+
 ```python
 treeinterpreter.predict
 ```
 ```text
 <function treeinterpreter.treeinterpreter.predict(model, X, joint_contribution=False)>
 ```
+
+-----
 
 ```python
 print_source(treeinterpreter.predict)
@@ -1873,10 +2048,14 @@ def predict(model, X, joint_contribution=False):
 * **contributions:** the total change in prediction due to each of the independent variables
 * the sum of contributions plus bias must equal the prediction for each row
 
+-----
+
 
 ```python
 prediction,bias,contributions = treeinterpreter.predict(m, row.values)
 ```
+
+-----
 
 ```python
 prediction[0], bias[0], contributions[0].sum()
@@ -1884,6 +2063,8 @@ prediction[0], bias[0], contributions[0].sum()
 ```text
 (array([9.94708073]), 10.104746057831763, -0.15766532528651994)
 ```
+
+-----
 
 ```python
 waterfall
@@ -1896,6 +2077,8 @@ waterfall
 * [GitHub Repository](https://github.com/chrispaulca/waterfall)
 * Quickly generates standard waterfall charts, takes two ordered lists as inputs.
 * Waterfall charts are useful for visualizing marginal value contributions to some system
+
+-----
 
 ```python
 waterfall(valid_xs_final.columns, contributions[0], threshold=0.08, 
@@ -1926,6 +2109,8 @@ plt.scatter(x_lin, y_lin);
 ```
 ![png](../images/notes-fastai-book/chapter-9/output_182_0.png)
 
+-----
+
 ```python
 # Expand single independent variable into a matrix to accommodate sklearn
 xs_lin = x_lin.unsqueeze(1)
@@ -1935,6 +2120,8 @@ x_lin.shape,xs_lin.shape
 (torch.Size([40]), torch.Size([40, 1]))
 ```
 
+-----
+
 ```python
 # Alternative: Slice the tensor with the special value None
 # introduces an additional unit axis at that location
@@ -1943,6 +2130,8 @@ x_lin[:,None].shape
 ```text
 torch.Size([40, 1])
 ```
+
+-----
 
 ```python
 m_lin = RandomForestRegressor().fit(xs_lin[:30],y_lin[:30])
@@ -1963,6 +2152,8 @@ plt.scatter(x_lin, m_lin.predict(xs_lin), color='red', alpha=0.5);
 ### Finding Out-of-Domain Data
 * we can use a random forest to find out-of-domain data
     * try to predict whether a row is in the validation set or the training set
+
+-----
 
 ```python
 # Combine validation and training sets
@@ -2023,6 +2214,8 @@ rf_feat_importance(m, df_dom)[:6]
 * SalesID: suggests the identifiers for auction sales might increment over time
 * MachineID: suggests the identifier might increment over time
 
+-----
+
 ```python
 # Get a baseline of the original random forest model's RMSE
 m = rf(xs_final, y)
@@ -2064,12 +2257,16 @@ xs['saleYear'].hist();
 ```
 ![png](../images/notes-fastai-book/chapter-9/output_196_0.png)
 
+-----
+
 ```python
 # Only use data more recent than 2004
 filt = xs['saleYear']>2004
 xs_filt = xs_final_time[filt]
 y_filt = y[filt]
 ```
+
+-----
 
 ```python
 m = rf(xs_filt, y_filt)
@@ -2086,6 +2283,8 @@ m_rmse(m, xs_filt, y_filt), m_rmse(m, valid_xs_time, valid_y)
 * a fastai tabular model is a model that takes columns of continuous or categorical data, and predicts a catefory or a continuous value
 * categorical independent variables are passed through an embedding and concatenated, and then any continuous variables are concatenated as well
 * the model created in [tabular_learner](https://docs.fast.ai/tabular.learner.html#tabular_learner) is an object of class [TabularModel](https://docs.fast.ai/tabular.model.html#TabularModel)
+
+-----
 
 ```python
 print_source(tabular_learner)
@@ -2104,6 +2303,8 @@ def tabular_learner(dls, layers=None, emb_szs=None, config=None, n_out=None, y_r
     model = TabularModel(emb_szs, len(dls.cont_names), n_out, layers, y_range=y_range, **config)
     return TabularLearner(dls, model, **kwargs)
 ```
+
+-----
 
 
 ```python
@@ -2140,6 +2341,8 @@ class TabularModel(Module):
         return self.layers(x)
 ```
 
+-----
+
 ```python
 # Repeat steps to set up a TabularPandas object
 df_nn = pd.read_csv(path/'TrainAndValid.csv', low_memory=False)
@@ -2149,10 +2352,14 @@ df_nn[dep_var] = np.log(df_nn[dep_var])
 df_nn = add_datepart(df_nn, 'saledate')
 ```
 
+-----
+
 ```python
 # Remove unwanted columns as was done for the random forest
 df_nn_final = df_nn[list(xs_final_time.columns) + [dep_var]]
 ```
+
+-----
 
 ```python
 # Split continuous and categorical columns, so the categorical columns can be used for embeddings
@@ -2168,6 +2375,8 @@ cont_nn
 ```text
 ['saleElapsed']
 ```
+
+-----
 
 ```python
 df_nn_final[cat_nn].nunique()
@@ -2194,6 +2403,8 @@ dtype: int64
 **Note:** The fact there are two variables pertaining to the "model" of the equipment, both with similar very high cardinalities, suggests that they may contain similar, redundant information.
 * This would not necessarily show up when analyzing redundant features, since that relies on the number of variables being sorted in the same order
 
+-----
+
 ```python
 # Test the impact of removing the 'fiModelDescriptor' column
 xs_filt2 = xs_filt.drop('fiModelDescriptor', axis=1)
@@ -2205,9 +2416,13 @@ m_rmse(m2, xs_filt2, y_filt), m_rmse(m2, valid_xs_time2, valid_y)
 (0.176845, 0.229738)
 ```
 
+-----
+
 ```python
 cat_nn.remove('fiModelDescriptor')
 ```
+
+-----
 
 ```python
 Normalize
@@ -2215,6 +2430,8 @@ Normalize
 ```text
 fastai.data.transforms.Normalize
 ```
+
+-----
 
 ```python
 print_source(Normalize)
@@ -2242,6 +2459,8 @@ class Normalize(DisplayedTransform):
     _docs=dict(encodes="Normalize batch", decodes="Denormalize batch")
 ```
 
+-----
+
 
 ```python
 # Initialize TabularPandas object with the filtered data
@@ -2251,10 +2470,14 @@ to_nn = TabularPandas(df_nn_final, procs_nn, cat_nn, cont_nn,
                       splits=splits, y_names=dep_var)
 ```
 
+-----
+
 ```python
 # Can use a large batch size for tabular data
 dls = to_nn.dataloaders(1024)
 ```
+
+-----
 
 ```python
 # Check the min and max values of the dependent variable
@@ -2265,12 +2488,16 @@ y.min(),y.max()
 (8.465899, 11.863583)
 ```
 
+-----
+
 ```python
 # Limit output values to the range [8,12]
 # Create a neural network with layer size 500 and 250 for the two hidden layers
 learn = tabular_learner(dls, y_range=(8,12), layers=[500,250],
                         n_out=1, loss_func=F.mse_loss)
 ```
+
+-----
 
 ```python
 learn.model
@@ -2314,6 +2541,8 @@ TabularModel(
 )
 ```
 
+-----
+
 ```python
 learn.lr_find()
 ```
@@ -2322,6 +2551,8 @@ SuggestedLRs(valley=0.00015848931798245758)
 ```
 
 ![png](../images/notes-fastai-book/chapter-9/output_219_3.png)
+
+-----
 
 ```python
 learn.fit_one_cycle(5, 1e-2)
@@ -2370,6 +2601,8 @@ learn.fit_one_cycle(5, 1e-2)
   </tbody>
 </table>
 </div>
+-----
+
 
 ```python
 preds,targs = learn.get_preds()
@@ -2398,6 +2631,8 @@ Path('models/nn.pth')
 **Note:** The sklearn and PyTorch models create data of different types.
 * Need to convert the PyTorch data to NumPy format
 
+-----
+
 
 ```python
 print_source(to_np)
@@ -2407,6 +2642,8 @@ def to_np(x):
     "Convert a tensor to a numpy array."
     return apply(lambda o: o.data.cpu().numpy(), x)
 ```
+
+-----
 
 ```python
 print_source(apply)
@@ -2420,11 +2657,15 @@ def apply(func, x, *args, **kwargs):
     return res if x is None else retain_type(res, x)
 ```
 
+-----
+
 ```python
 rf_preds = m.predict(valid_xs_time)
 # Average neural network and random forest predictions
 ens_preds = (to_np(preds.squeeze()) + rf_preds) /2
 ```
+
+-----
 
 ```python
 r_mse(ens_preds,valid_y)
