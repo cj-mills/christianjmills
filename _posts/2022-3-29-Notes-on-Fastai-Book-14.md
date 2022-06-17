@@ -1715,3 +1715,12 @@ learn.fit_one_cycle(100, 1e-3)
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
 * [The fastai book GitHub Repository](https://github.com/fastai/fastbook)
+
+
+
+**Previous:** [Notes on fastai Book Ch. 13](https://christianjmills.com/Notes-on-Fastai-Book-13/)
+
+**Next:** [Notes on fastai Book Ch. 15](https://christianjmills.com/Notes-on-Fastai-Book-15/)
+
+
+
