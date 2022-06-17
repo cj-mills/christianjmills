@@ -62,6 +62,8 @@ def print_source(obj):
 #### [A guide to convolution arithmetic for deep learning](https://arxiv.org/abs/1603.07285)
 * provides many great diagrams showing how image kernels can be applied
 
+-----
+
 
 ```python
 # A convolutional kernel that finds top edges (i.e. dark on bottom, light on top)
@@ -69,6 +71,8 @@ top_edge = tensor([[-1,-1,-1],
                    [ 0, 0, 0],
                    [ 1, 1, 1]]).float()
 ```
+
+-----
 
 
 ```python
@@ -79,7 +83,7 @@ path
 Path('/home/innom-dt/.fastai/data/mnist_sample')
 ```
 
-
+-----
 
 
 ```python
@@ -88,7 +92,7 @@ show_image(im3);
 ```
 ![png](../images/notes-fastai-book/chapter-13/output_7_0.png)
 
-
+-----
 
 ```python
 show_image
@@ -97,7 +101,7 @@ show_image
 <function fastai.torch_core.show_image(im, ax=None, figsize=None, title=None, ctx=None, cmap=None, norm=None, *, aspect=None, interpolation=None, alpha=None, vmin=None, vmax=None, origin=None, extent=None, interpolation_stage=None, filternorm=True, filterrad=4.0, resample=None, url=None, data=None, **kwargs)>
 ```
 
-
+-----
 
 
 ```python
@@ -124,7 +128,7 @@ def show_image(im, ax=None, figsize=None, title=None, ctx=None, **kwargs):
     return ax
 ```
 
-
+-----
 
 
 ```python
@@ -137,7 +141,7 @@ tensor([[-0., -0., -0.],
         [0., 0., 0.]])
 ```
 
-
+-----
 
 
 ```python
@@ -147,7 +151,7 @@ tensor([[-0., -0., -0.],
 tensor(0.)
 ```
 
-
+-----
 
 
 ```python
@@ -417,7 +421,7 @@ df.style.set_properties(**{'font-size':'6pt'}).background_gradient('Greys')
 </div>
 
 
-
+-----
 
 ```python
 df = pd.DataFrame(im3_t[4:7,6:9])
@@ -457,7 +461,7 @@ df.style.set_properties(**{'font-size':'6pt'}).background_gradient('Greys')
 </div>
 
 
-
+-----
 
 ```python
 (im3_t[4:7,6:9] * top_edge).sum()
@@ -507,9 +511,7 @@ df.style.set_properties(**{'font-size':'6pt'}).background_gradient('Greys')
   </tbody>
 </table>
 </div>
-
-
-
+-----
 
 ```python
 (im3_t[7:10,17:20] * top_edge).sum()
@@ -528,6 +530,8 @@ tensor(-29.)
 def apply_kernel(row, col, kernel):
     return (im3_t[row-1:row+2,col-1:col+2] * kernel).sum()
 ```
+
+-----
 
 
 ```python
@@ -553,7 +557,7 @@ tensor(762.)
  [(4, 1), (4, 2), (4, 3), (4, 4)]]
 ```
 
-
+-----
 
 
 ```python
@@ -625,7 +629,7 @@ edge_kernels.shape
 torch.Size([6, 3, 3])
 ```
 
-
+-----
 
 
 ```python
@@ -639,7 +643,7 @@ def first(x, f=None, negate=False, **kwargs):
     return next(x, None)
 ```
 
-
+-----
 
 
 ```python
@@ -656,13 +660,15 @@ xb.shape
 torch.Size([64, 1, 28, 28])
 ```
 
-
+-----
 
 
 ```python
 # Move to CPU
 xb,yb = to_cpu(xb),to_cpu(yb)
 ```
+
+-----
 
 
 ```python
@@ -672,7 +678,7 @@ edge_kernels.shape,edge_kernels.unsqueeze(1).shape
 (torch.Size([6, 3, 3]), torch.Size([6, 1, 3, 3]))
 ```
 
-
+-----
 
 
 ```python
@@ -719,7 +725,7 @@ tensor([[[[[-1.,  1.,  0.],
                [ 0.,  0.,  1.]]]]])
 ```
 
-
+-----
 
 ```python
 batch_features = F.conv2d(xb, edge_kernels)
@@ -729,7 +735,7 @@ batch_features.shape
 torch.Size([64, 6, 26, 26])
 ```
 
-
+-----
 
 
 ```python
@@ -785,7 +791,7 @@ conv2d(...)
         >>> F.conv2d(inputs, filters, padding=1)
 ```
 
-
+-----
 
 
 ```python
@@ -854,6 +860,8 @@ simple_net = nn.Sequential(
 )
 ```
 
+-----
+
 
 ```python
 simple_net
@@ -866,7 +874,7 @@ Sequential(
 )
 ```
 
-
+-----
 
 
 ```python
@@ -876,6 +884,8 @@ broken_cnn = sequential(
     nn.Conv2d(30,1, kernel_size=3, padding=1)
 )
 ```
+
+-----
 
 
 ```python
@@ -889,7 +899,7 @@ Sequential(
 )
 ```
 
-
+-----
 
 
 ```python
@@ -905,6 +915,8 @@ torch.Size([64, 1, 28, 28])
 
 **Note:** We can use stride-2 convolutions to progressively decrease the size down to a single output for classification.
 * It is common to increase the number of features at the same time, to maintain the same amount of computation
+
+-----
 
 
 ```python
@@ -926,6 +938,8 @@ simple_cnn = sequential(
     Flatten(),
 )
 ```
+
+-----
 
 
 ```python
@@ -954,7 +968,7 @@ Sequential(
 )
 ```
 
-
+-----
 
 
 ```python
@@ -964,7 +978,7 @@ simple_cnn(xb).shape
 torch.Size([64, 2])
 ```
 
-
+-----
 
 
 ```python
@@ -1016,7 +1030,7 @@ Callbacks:
   - ProgressCallback
 ```
 
-
+-----
 
 
 ```python
@@ -1078,7 +1092,7 @@ m[0].weight.shape
 torch.Size([4, 1, 3, 3])
 ```
 
-
+-----
 
 
 ```python
@@ -1088,7 +1102,7 @@ torch.Size([4, 1, 3, 3])
 36
 ```
 
-
+-----
 
 
 ```python
@@ -1113,6 +1127,8 @@ torch.Size([4])
 * we don't use the same convolutional kernel for all three color channels
 * kernel has a size of `ch_in x 3 x 3` where `ch_in` is the number of input channels (e.g. 3 for RGB)
 
+-----
+
 
 ```python
 image2tensor
@@ -1121,7 +1137,7 @@ image2tensor
 <function fastai.vision.core.image2tensor(img)>
 ```
 
-
+-----
 
 
 ```python
@@ -1137,7 +1153,7 @@ def image2tensor(img):
 (<function fastai.vision.core.image2tensor(img)>, None)
 ```
 
-
+-----
 
 
 ```python
@@ -1148,7 +1164,7 @@ im.shape
 torch.Size([3, 1000, 846])
 ```
 
-
+-----
 
 
 ```python
@@ -1156,7 +1172,7 @@ show_image(im);
 ```
 ![png](../images/notes-fastai-book/chapter-13/output_68_0.png)
 
-
+-----
 
 ```python
 _,axs = subplots(1,3)
@@ -1169,8 +1185,6 @@ for bear,ax,color in zip(im,axs,('Reds','Greens','Blues')):
 
 ## Improving Training Stability
 
-
-
 ```python
 path = untar_data(URLs.MNIST)
 path
@@ -1179,7 +1193,7 @@ path
 Path('/home/innom-dt/.fastai/data/mnist_png')
 ```
 
-
+-----
 
 
 ```python
@@ -1189,7 +1203,7 @@ path.ls()
 (#2) [Path('/home/innom-dt/.fastai/data/mnist_png/testing'),Path('/home/innom-dt/.fastai/data/mnist_png/training')]
 ```
 
-
+-----
 
 
 ```python
@@ -1199,7 +1213,7 @@ Path(path/'training').ls()
 (#10) [Path('/home/innom-dt/.fastai/data/mnist_png/training/2'),Path('/home/innom-dt/.fastai/data/mnist_png/training/4'),Path('/home/innom-dt/.fastai/data/mnist_png/training/1'),Path('/home/innom-dt/.fastai/data/mnist_png/training/6'),Path('/home/innom-dt/.fastai/data/mnist_png/training/5'),Path('/home/innom-dt/.fastai/data/mnist_png/training/9'),Path('/home/innom-dt/.fastai/data/mnist_png/training/3'),Path('/home/innom-dt/.fastai/data/mnist_png/training/0'),Path('/home/innom-dt/.fastai/data/mnist_png/training/8'),Path('/home/innom-dt/.fastai/data/mnist_png/training/7')]
 ```
 
-
+-----
 
 
 ```python
@@ -1227,6 +1241,8 @@ dls.show_batch(max_n=9, figsize=(4,4))
 * it is important to keep the number of filters smaller than the number of pixels in the kernel size
     * this forces the neural network to extract useful features
 
+-----
+
 
 ```python
 def conv(ni, nf, ks=3, act=True):
@@ -1234,6 +1250,8 @@ def conv(ni, nf, ks=3, act=True):
     if act: res = nn.Sequential(res, nn.ReLU())
     return res
 ```
+
+-----
 
 
 ```python
@@ -1249,10 +1267,14 @@ def simple_cnn():
     )
 ```
 
+-----
+
 
 ```python
 from fastai.callback.hook import *
 ```
+
+-----
 
 
 ```python
@@ -1266,6 +1288,8 @@ def fit(epochs=1):
 #### fastai ActivationStats
 * provides som handy utilities for plotting the activations during training
 
+-----
+
 
 ```python
 ActivationStats
@@ -1274,7 +1298,7 @@ ActivationStats
 fastai.callback.hook.ActivationStats
 ```
 
-
+-----
 
 
 ```python
@@ -1346,7 +1370,7 @@ class ActivationStats(HookCallback):
             ax.set_title(title)
 ```
 
-
+-----
 
 
 ```python
@@ -1374,7 +1398,7 @@ learn = fit()
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 learn.activation_stats.plot_layer_stats(0)
@@ -1385,6 +1409,8 @@ learn.activation_stats.plot_layer_stats(0)
 **Note:** Generally, the model should have a consisten (or at least smooth) mean and standard deviation of layer activations during training.
 * Activations near zero indicate we have computation in the model that is doing nothing at all
     * zeros in one layer generally carry over to the next layer, which will then create more zeros
+
+-----
 
 
 ```python
@@ -1400,6 +1426,8 @@ learn.activation_stats.plot_layer_stats(-2)
 * a larger batch size can make training more stable
 * larger batches have more accurate gradients, since they are calculated from more data
 * larger batch sizes mean fewer batches per epoch, meaning fewer opportunities for your model to update weights
+
+-----
 
 
 ```python
@@ -1432,7 +1460,7 @@ learn = fit()
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 learn.activation_stats.plot_layer_stats(-2)
@@ -1465,6 +1493,8 @@ learn.activation_stats.plot_layer_stats(-2)
         * high learning rate, low momentum
         * low learning rate, high momentum
 
+-----
+
 
 ```python
 def fit(epochs=1, lr=0.06):
@@ -1488,6 +1518,8 @@ def fit(epochs=1, lr=0.06):
     * mom2: the minimum momentum
     * mom3: the final momentum
 
+-----
+
 
 ```python
 Learner.fit_one_cycle
@@ -1496,7 +1528,7 @@ Learner.fit_one_cycle
 <function fastai.callback.schedule.Learner.fit_one_cycle(self: fastai.learner.Learner, n_epoch, lr_max=None, div=25.0, div_final=100000.0, pct_start=0.25, wd=None, moms=None, cbs=None, reset_opt=False)>
 ```
 
-
+-----
 
 
 ```python
@@ -1515,7 +1547,7 @@ def fit_one_cycle(self:Learner, n_epoch, lr_max=None, div=25., div_final=1e5, pc
     self.fit(n_epoch, cbs=ParamScheduler(scheds)+L(cbs), reset_opt=reset_opt, wd=wd)
 ```
 
-
+-----
 
 
 ```python
@@ -1546,7 +1578,7 @@ class ParamScheduler(Callback):
              "after_fit": "Save the hyper-parameters in the recorder if there is one"}
 ```
 
-
+-----
 
 
 ```python
@@ -1574,14 +1606,14 @@ learn = fit()
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 learn.recorder.plot_sched()
 ```
 ![png](../images/notes-fastai-book/chapter-13/output_102_0.png)
 
-
+-----
 
 ```python
 learn.recorder
@@ -1590,7 +1622,7 @@ learn.recorder
 Recorder
 ```
 
-
+-----
 
 
 ```python
@@ -1610,6 +1642,8 @@ fastai.learner.Recorder
     * hyperparameters
         * learning rate
         * momentum
+
+-----
 
 
 ```python
@@ -1688,7 +1722,7 @@ class Recorder(Callback):
             plt.legend()
 ```
 
-
+-----
 
 
 ```python
@@ -1698,7 +1732,7 @@ Recorder.plot_sched
 <function fastai.callback.schedule.Recorder.plot_sched(self: fastai.learner.Recorder, keys=None, figsize=None)>
 ```
 
-
+-----
 
 
 ```python
@@ -1717,7 +1751,7 @@ def plot_sched(self:Recorder, keys=None, figsize=None):
         ax.set_ylabel(p)
 ```
 
-
+-----
 
 
 ```python
@@ -1736,7 +1770,7 @@ learn.activation_stats
 ActivationStats
 ```
 
-
+-----
 
 
 ```python
@@ -1818,6 +1852,8 @@ class ActivationStats(HookCallback):
 * each column in the horizontal axis is a batch
 * the colors represent how many activations for that batch have a value in that bin
 
+-----
+
 
 ```python
 # Set matplotlib color map
@@ -1858,6 +1894,8 @@ learn.activation_stats.color_dim(-2)
 
 $y = \frac{x - \mathrm{E}[x]}{ \sqrt{\mathrm{Var}[x] + \epsilon}} * \gamma + \beta$
 
+-----
+
 
 ```python
 nn.BatchNorm2d
@@ -1866,7 +1904,7 @@ nn.BatchNorm2d
 torch.nn.modules.batchnorm.BatchNorm2d
 ```
 
-
+-----
 
 
 ```python
@@ -1945,7 +1983,7 @@ class BatchNorm2d(_BatchNorm):
             raise ValueError("expected 4D input (got {}D input)".format(input.dim()))
 ```
 
-
+-----
 
 
 ```python
@@ -1955,6 +1993,8 @@ def conv(ni, nf, ks=3, act=True):
     if act: layers.append(nn.ReLU())
     return nn.Sequential(*layers)
 ```
+
+-----
 
 
 ```python
@@ -1982,7 +2022,7 @@ learn = fit()
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 learn.activation_stats.color_dim(-4)
@@ -2047,7 +2087,7 @@ learn = fit(5, lr=0.1)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 learn = fit(5, lr=0.1)
