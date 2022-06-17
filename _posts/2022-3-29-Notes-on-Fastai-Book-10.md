@@ -104,10 +104,14 @@ def print_source(obj):
 * fastai provides a consistent interface to a range of tokenizers in external libraries
 * The default English word tokenizer for fastai uses [spaCy](https://spacy.io/)
 
+-----
+
 
 ```python
 from fastai.text.all import *
 ```
+
+-----
 
 
 ```python
@@ -117,7 +121,7 @@ URLs.IMDB
 'https://s3.amazonaws.com/fast-ai-nlp/imdb.tgz'
 ```
 
-
+-----
 
 
 ```python
@@ -134,6 +138,8 @@ Path('/home/innom-dt/.fastai/data/imdb')
 * [Documentation](https://docs.fast.ai/data.transforms.html#get_text_files)
 * Get text files in path recursively, only in folders, if specified.
 
+-----
+
 
 ```python
 get_text_files
@@ -142,7 +148,7 @@ get_text_files
 <function fastai.data.transforms.get_text_files(path, recurse=True, folders=None)>
 ```
 
-
+-----
 
 
 ```python
@@ -154,7 +160,7 @@ def get_text_files(path, recurse=True, folders=None):
     return get_files(path, extensions=['.txt'], recurse=recurse, folders=folders)
 ```
 
-
+-----
 
 
 ```python
@@ -180,12 +186,14 @@ def get_files(path, extensions=None, recurse=True, folders=None, followlinks=Tru
     return L(res)
 ```
 
-
+-----
 
 
 ```python
 files = get_text_files(path, folders = ['train', 'test', 'unsup'])
 ```
+
+-----
 
 
 ```python
@@ -195,7 +203,7 @@ len(files)
 100000
 ```
 
-
+-----
 
 
 ```python
@@ -210,6 +218,8 @@ txt = files[0].open().read(); txt[:75]
 #### fastai SpacyTokenizer
 * [Documentation](https://docs.fast.ai/text.core.html#SpacyTokenizer)
 
+-----
+
 
 ```python
 WordTokenizer
@@ -218,7 +228,7 @@ WordTokenizer
 fastai.text.core.SpacyTokenizer
 ```
 
-
+-----
 
 
 ```python
@@ -237,7 +247,7 @@ class SpacyTokenizer():
         return (L(doc).attrgot('text') for doc in self.pipe(map(str,items), batch_size=self.buf_sz))
 ```
 
-
+-----
 
 
 ```python
@@ -247,7 +257,7 @@ first
 <function fastcore.basics.first(x, f=None, negate=False, **kwargs)>
 ```
 
-
+-----
 
 
 ```python
@@ -262,7 +272,7 @@ def first(x, f=None, negate=False, **kwargs):
     return next(x, None)
 ```
 
-
+-----
 
 
 ```python
@@ -272,7 +282,7 @@ coll_repr
 <function fastcore.foundation.coll_repr(c, max_n=10)>
 ```
 
-
+-----
 
 
 ```python
@@ -285,12 +295,14 @@ def coll_repr(c, max_n=10):
         '...' if len(c)>max_n else '') + ']'
 ```
 
-
+-----
 
 
 ```python
 spacy = WordTokenizer()
 ```
+
+-----
 
 
 ```python
@@ -300,7 +312,7 @@ spacy.buf_sz
 5000
 ```
 
-
+-----
 
 
 ```python
@@ -310,7 +322,7 @@ spacy.pipe
 <bound method Language.pipe of <spacy.lang.en.English object at 0x7fdb6545f1c0>>
 ```
 
-
+-----
 
 
 ```python
@@ -328,7 +340,7 @@ spacy.special_toks
  'xxmaj']
 ```
 
-
+-----
 
 
 ```python
@@ -340,7 +352,7 @@ print(coll_repr(toks, 30))
 (#174) ['This','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','It','does',"n't",'merit','one','line',',','much','less','ten',',','but'...]
 ```
 
-
+-----
 
 ```python
 first(spacy(['The U.S. dollar $1 is $1.00.']))
@@ -349,7 +361,7 @@ first(spacy(['The U.S. dollar $1 is $1.00.']))
 (#9) ['The','U.S.','dollar','$','1','is','$','1.00','.']
 ```
 
-
+-----
 
 
 ```python
@@ -359,7 +371,7 @@ Tokenizer
 fastai.text.core.Tokenizer
 ```
 
-
+-----
 
 
 ```python
@@ -422,7 +434,7 @@ class Tokenizer(Transform):
     def decodes(self, o): return TitledStr(self.sep.join(o))
 ```
 
-
+-----
 
 
 ```python
@@ -458,7 +470,7 @@ defaults.text_proc_rules
  <function fastai.text.core.lowercase(t, add_bos=True, add_eos=False)>]
 ```
 
-
+-----
 
 
 ```python
@@ -529,7 +541,7 @@ def replace_space(t):
     return t.replace(' ', '▁')
 ```
 
-
+-----
 
 
 ```python
@@ -547,10 +559,14 @@ coll_repr(tkn('&copy;   Fast.ai www.fast.ai/INDEX'), 31)
 1. Analyze a corpus of documents to find the most commonly occurring groups of letters. These become the vocab
 2. Tokenize the corpus using this vocab of subword units.
 
+-----
+
 
 ```python
 txts = L(o.open().read() for o in files[:2000])
 ```
+
+-----
 
 
 ```python
@@ -560,7 +576,7 @@ SubwordTokenizer
 fastai.text.core.SentencePieceTokenizer
 ```
 
-
+-----
 
 
 ```python
@@ -631,6 +647,8 @@ class SentencePieceTokenizer():#TODO: pass the special tokens symbol to sp
 * [GitHub Repository](https://github.com/google/sentencepiece)
 * Unsupervised text tokenizer for Neural Network-based text generation. 
 
+-----
+
 
 ```python
 def subword(sz):
@@ -650,6 +668,8 @@ def subword(sz):
     * less memory
     * less state for the model to remember
     * larger embedding matrices which require more data to learn
+
+-----
 
 
 ```python
@@ -679,7 +699,7 @@ subword(200)
 '▁ T h i s ▁c on g l o m er at ion ▁f a i l s ▁ s o ▁ m i s er a b ly ▁on ▁ e v er y ▁ le ve l'
 ```
 
-
+-----
 
 
 ```python
@@ -703,7 +723,7 @@ print(coll_repr(tkn(txt), 31))
 (#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','xxmaj','it','does',"n't",'merit','one','line',',','much','less','ten'...]
 ```
 
-
+-----
 
 ```python
 toks200 = txts[:200].map(tkn)
@@ -718,6 +738,8 @@ toks200[0]
 #### fastai Numericalize
 * [Documentation](https://docs.fast.ai/text.data.html#Numericalize)
 
+-----
+
 
 ```python
 Numericalize
@@ -726,7 +748,7 @@ Numericalize
 fastai.text.data.Numericalize
 ```
 
-
+-----
 
 
 ```python
@@ -752,7 +774,7 @@ class Numericalize(Transform):
     def decodes(self, o): return L(self.vocab[o_] for o_ in o)
 ```
 
-
+-----
 
 
 ```python
@@ -765,7 +787,7 @@ coll_repr(num.vocab,20)
 "(#1992) ['xxunk','xxpad','xxbos','xxeos','xxfld','xxrep','xxwrep','xxup','xxmaj','the','.',',','a','and','of','to','is','i','it','this'...]"
 ```
 
-
+-----
 
 
 ```python
@@ -775,7 +797,7 @@ TensorText
 fastai.text.data.TensorText
 ```
 
-
+-----
 
 
 ```python
@@ -785,7 +807,7 @@ print_source(TensorText)
 class TensorText(TensorBase):   pass
 ```
 
-
+-----
 
 
 ```python
@@ -795,7 +817,7 @@ nums = num(toks)[:20]; nums
 TensorText([   2,    8,   19,    0,  585,   51, 1190,   36,  166,  586,   21,   18,   16,    0,   15,  663,   67,   15,  140,   10])
 ```
 
-
+-----
 
 
 ```python
@@ -823,7 +845,7 @@ tokens
 (#90) ['xxbos','xxmaj','in','this','chapter',',','we','will','go','back'...]
 ```
 
-
+-----
 
 
 ```python
@@ -941,7 +963,7 @@ display(HTML(df.to_html(index=False,header=None)))
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 # 6 batches of 5 tokens
@@ -998,7 +1020,7 @@ display(HTML(df.to_html(index=False,header=None)))
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 bs,seq_len = 6,5
@@ -1054,7 +1076,7 @@ display(HTML(df.to_html(index=False,header=None)))
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 bs,seq_len = 6,5
@@ -1110,11 +1132,13 @@ display(HTML(df.to_html(index=False,header=None)))
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 nums200 = toks200.map(num)
 ```
+
+-----
 
 
 ```python
@@ -1124,7 +1148,7 @@ LMDataLoader
 fastai.text.data.LMDataLoader
 ```
 
-
+-----
 
 
 ```python
@@ -1179,6 +1203,8 @@ class LMDataLoader(TfmdDL):
 dl = LMDataLoader(nums200)
 ```
 
+-----
+
 
 ```python
 x,y = first(dl)
@@ -1188,7 +1214,7 @@ x.shape,y.shape
 (torch.Size([64, 72]), torch.Size([64, 72]))
 ```
 
-
+-----
 
 
 ```python
@@ -1198,7 +1224,7 @@ x.shape,y.shape
 'xxbos xxmaj this xxunk fails so miserably on every level that it is xxunk to decide what to say .'
 ```
 
-
+-----
 
 
 ```python
@@ -1223,6 +1249,8 @@ x.shape,y.shape
 * fastai saves the tokenized documents in a temporary fodler, so it does not have to tokenize them more than once
 * fastai runs multiple tokenization processes in parallel
 
+-----
+
 
 ```python
 TextBlock
@@ -1231,7 +1259,7 @@ TextBlock
 fastai.text.data.TextBlock
 ```
 
-
+-----
 
 
 ```python
@@ -1263,7 +1291,7 @@ class TextBlock(TransformBlock):
                    backwards=backwards, min_freq=min_freq, max_vocab=max_vocab)
 ```
 
-
+-----
 
 
 ```python
@@ -1275,6 +1303,8 @@ dls_lm = DataBlock(
     get_items=get_imdb, splitter=RandomSplitter(0.1)
 ).dataloaders(path, path=path, bs=128, seq_len=80)
 ```
+
+-----
 
 
 ```python
@@ -1310,6 +1340,8 @@ dls_lm.show_batch(max_n=2)
 2. Feed those embeddings to a Recurrent Neural Nerwork (RNN), using an architecture called AWD-LSTM
 * This process is handled automatically inside [language_model_learner](https://docs.fast.ai/text.learner.html#language_model_learner)
 
+-----
+
 
 ```python
 language_model_learner
@@ -1318,7 +1350,7 @@ language_model_learner
 <function fastai.text.learner.language_model_learner(dls, arch, config=None, drop_mult=1.0, backwards=False, pretrained=True, pretrained_fnames=None, loss_func=None, opt_func=<function Adam at 0x7fdb8123e430>, lr=0.001, splitter=<function trainable_params at 0x7fdb8d9171f0>, cbs=None, metrics=None, path=None, model_dir='models', wd=None, wd_bn_bias=False, train_bn=True, moms=(0.95, 0.85, 0.95))>
 ```
 
-
+-----
 
 
 ```python
@@ -1347,7 +1379,7 @@ def language_model_learner(dls, arch, config=None, drop_mult=1., backwards=False
     return learn
 ```
 
-
+-----
 
 
 ```python
@@ -1360,6 +1392,8 @@ learn = language_model_learner(
 * the exponential of the loss (i.e. `torch.exp(cross_entropy)`)
 * often used in NLP for language models
 
+-----
+
 
 ```python
 Perplexity
@@ -1368,7 +1402,7 @@ Perplexity
 fastai.metrics.Perplexity
 ```
 
-
+-----
 
 
 ```python
@@ -1383,7 +1417,7 @@ class Perplexity(AvgLoss):
     def name(self):  return "perplexity"
 ```
 
-
+-----
 
 
 ```python
@@ -1426,7 +1460,7 @@ learn.save
 <bound method Learner.save of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
 ```
 
-
+-----
 
 
 ```python
@@ -1442,7 +1476,7 @@ def save(self:Learner, file, **kwargs):
     return file
 ```
 
-
+-----
 
 
 ```python
@@ -1452,7 +1486,7 @@ save_model
 <function fastai.learner.save_model(file, model, opt, with_opt=True, pickle_protocol=2)>
 ```
 
-
+-----
 
 
 ```python
@@ -1468,7 +1502,7 @@ def save_model(file, model, opt, with_opt=True, pickle_protocol=2):
     torch.save(state, file, pickle_protocol=pickle_protocol)
 ```
 
-
+-----
 
 
 ```python
@@ -1480,7 +1514,7 @@ def rank_distrib():
     return int(os.environ.get('RANK', 0))
 ```
 
-
+-----
 
 
 ```python
@@ -1492,7 +1526,7 @@ def get_model(model):
     return model.module if isinstance(model, (DistributedDataParallel, nn.DataParallel)) else model
 ```
 
-
+-----
 
 
 ```python
@@ -1550,7 +1584,7 @@ def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]],
         _legacy_save(obj, opened_file, pickle_module, pickle_protocol)
 ```
 
-
+-----
 
 
 ```python
@@ -1560,7 +1594,7 @@ learn.save('1epoch')
 Path('/home/innom-dt/.fastai/data/imdb/models/1epoch.pth')
 ```
 
-
+-----
 
 
 ```python
@@ -1570,7 +1604,7 @@ learn.load
 <bound method TextLearner.load of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
 ```
 
-
+-----
 
 
 ```python
@@ -1586,7 +1620,7 @@ print_source(learn.load)
         return self
 ```
 
-
+-----
 
 
 ```python
@@ -1596,7 +1630,7 @@ load_model_text
 <function fastai.text.learner.load_model_text(file, model, opt, with_opt=None, device=None, strict=True)>
 ```
 
-
+-----
 
 
 ```python
@@ -1619,7 +1653,7 @@ def load_model_text(file, model, opt, with_opt=None, device=None, strict=True):
     elif with_opt: warn("Saved filed doesn't contain an optimizer state.")
 ```
 
-
+-----
 
 
 ```python
@@ -1629,7 +1663,7 @@ distrib_barrier
 <function fastai.torch_core.distrib_barrier()>
 ```
 
-
+-----
 
 
 ```python
@@ -1641,12 +1675,14 @@ def distrib_barrier():
     if num_distrib() > 1 and torch.distributed.is_initialized(): torch.distributed.barrier()
 ```
 
-
+-----
 
 
 ```python
 learn = learn.load('1epoch')
 ```
+
+-----
 
 
 ```python
@@ -1755,6 +1791,8 @@ learn.fit_one_cycle(10, 2e-3)
 * the model not including the task-specific final layer(s)
 * typically used to refer to the body of NLP and generative models
 
+-----
+
 
 ```python
 learn.save_encoder
@@ -1763,7 +1801,7 @@ learn.save_encoder
 <bound method TextLearner.save_encoder of <fastai.text.learner.LMLearner object at 0x7fdb64fd4190>>
 ```
 
-
+-----
 
 
 ```python
@@ -1778,7 +1816,7 @@ print_source(learn.save_encoder)
         torch.save(encoder.state_dict(), join_path_file(file, self.path/self.model_dir, ext='.pth'))
 ```
 
-
+-----
 
 
 ```python
@@ -1786,6 +1824,8 @@ learn.save_encoder('finetuned')
 ```
 ### Text Generation
 * Training the model to predict the next word of a sentence enables it to generate new reviews
+
+-----
 
 
 ```python
@@ -1799,7 +1839,7 @@ preds = [learn.predict(TEXT, N_WORDS, temperature=0.75)
          for _ in range(N_SENTENCES)]
 ```
 
-
+-----
 
 ```python
 print("\n".join(preds))
@@ -1819,6 +1859,8 @@ i liked this movie because it was based on a true story . The script was excelle
     * batches are padded based on the largest document in a given batch
 * the data block API automatically handles sorting and padding when using TextBlock with `is_lm=False`
 
+-----
+
 
 ```python
 GrandparentSplitter
@@ -1827,7 +1869,7 @@ GrandparentSplitter
 <function fastai.data.transforms.GrandparentSplitter(train_name='train', valid_name='valid')>
 ```
 
-
+-----
 
 
 ```python
@@ -1841,7 +1883,7 @@ def GrandparentSplitter(train_name='train', valid_name='valid'):
     return _inner
 ```
 
-
+-----
 
 
 ```python
@@ -1853,6 +1895,8 @@ dls_clas = DataBlock(
     splitter=GrandparentSplitter(valid_name='test')
 ).dataloaders(path, path=path, bs=128, seq_len=72)
 ```
+
+-----
 
 
 ```python
@@ -1886,11 +1930,13 @@ dls_clas.show_batch(max_n=3)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 nums_samp = toks200[:10].map(num)
 ```
+
+-----
 
 
 ```python
@@ -1900,7 +1946,7 @@ nums_samp.map(len)
 (#10) [177,562,211,125,125,425,421,1330,196,278]
 ```
 
-
+-----
 
 
 ```python
@@ -1915,6 +1961,8 @@ learn = learn.load_encoder('finetuned')
 
 ### Fine-Tuning the Classifier
 * NLP classifiers benefit from gradually unfreezing a few layers at a time
+
+-----
 
 
 ```python
@@ -1942,7 +1990,7 @@ learn.fit_one_cycle(1, 2e-2)
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 # Freeze all except the last two parameter groups
@@ -1971,7 +2019,7 @@ learn.fit_one_cycle(1, slice(1e-2/(2.6**4),1e-2))
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 # Freeze all except the last two parameter groups
@@ -2000,7 +2048,7 @@ learn.fit_one_cycle(1, slice(5e-3/(2.6**4),5e-3))
   </tbody>
 </table>
 </div>
-
+-----
 
 ```python
 # Unfreeze all layers
