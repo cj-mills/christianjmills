@@ -1,6 +1,6 @@
 ---
 
-title: Fastai to Unity Tutorial Pt. 2
+title: Fastai to Unity Beginner Tutorial Pt. 2
 layout: post
 toc: false
 comments: true
