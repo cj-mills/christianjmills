@@ -233,6 +233,8 @@ This post covered how to build a Unity project as a shareable web demo and host 
 
 **Previous:** [Fastai to Unity Tutorial Pt. 2](https://christianjmills.com/Fastai-to-Unity-Tutorial-2/)
 
+**Next:** [How to Create a LibTorch Plugin for Unity on Windows Pt.1](https://christianjmills.com/Fastai-to-LibTorch-to-Unity-Tutorial-Windows-1/)
+
 
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/fastai-to-unity-tutorial)
