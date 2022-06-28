@@ -141,13 +141,13 @@ Choose a name and location for the project and click the `Create` button. By def
 
 ## Configure the Project
 
-At the top of the window, open the Solution Configurations dropdown menu, and select Release.
+At the top of the window, open the Solution Configurations dropdown menu, and select `Release`.
 
 ![visual-studio-switch-to-release](../images/fastai-libtorch-unity-tutorial/part-2/visual-studio-switch-to-release.png)
 
 
 
-Then, open the Solution Platform dropdown menu and select x64.
+Then, open the Solution Platform dropdown menu and select `x64`.
 
 
 
