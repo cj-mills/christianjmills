@@ -1,5 +1,5 @@
 ---
-title: How to Create a LibTorch Plugin for Unity on Windows Pt.1
+title: How to Create a LibTorch Plugin for Unity on Windows Pt. 1
 layout: post
 toc: false
 comments: true
