@@ -250,10 +250,10 @@ We can add a post-build event in Visual Studio to automatically copy these DLL f
 
 
 
-Add the following commands, replacing `<path-parent-folder>` with the path to the parent folder on your system and click `OK`.
+Add the following commands, replacing `<parent-folder-path>` with the path to the parent folder on your system and click `OK`.
 
-* `xcopy <path-parent-folder>\opencv\build\x64\vc15\bin\opencv_world452.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y`
-* `xcopy <path-parent-folder>\libtorch\lib\*.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y`
+* `xcopy <parent-folder-path>\opencv\build\x64\vc15\bin\opencv_world452.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y`
+* `xcopy <parent-folder-path>\libtorch\lib\*.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y`
 
 * **Example:** `xcopy G:\Projects\C++_Projects\Dependencies\opencv\build\x64\vc15\bin\opencv_world452.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y`
 
