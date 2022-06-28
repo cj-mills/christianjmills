@@ -37,7 +37,7 @@ This post covers the required modifications to the [original training code](http
 
 | GitHub Repository                                            | Colab                                                        | Kaggle                                                       |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [Jupyter Notebook](https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) |
+| [Jupyter Notebook](https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [Open in Colab](https://colab.research.google.com/github/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) |
 
 
 
