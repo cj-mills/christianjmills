@@ -1527,8 +1527,6 @@ with open(normalization_stats_file_name, "w") as write_file:
     json.dump(normalization_stats, write_file)
 ```
 
-Those are all the changes we need to make to the training code. Next, we'll create a DLL project in Visual Studio to perform inference with the TorchScript module.
-
 
 
 
