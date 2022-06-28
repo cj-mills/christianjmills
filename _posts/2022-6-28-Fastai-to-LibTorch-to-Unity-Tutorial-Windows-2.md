@@ -539,7 +539,7 @@ We'll need to copy all the DLL files in this folder to the Unity project.
 
 ## Summary
 
-This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference with these TorchScript modules using [LibTorch](https://pytorch.org/cppdocs/installing.html). Part 3 will cover the required modifications for the original Unity project to use this DLL.
+This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference with TorchScript modules using [LibTorch](https://pytorch.org/cppdocs/installing.html). Part 3 will cover the required modifications for the original Unity project to use this DLL.
 
 
 
