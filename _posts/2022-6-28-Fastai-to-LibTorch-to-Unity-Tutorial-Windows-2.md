@@ -314,7 +314,7 @@ We need to make a small change to the `pch.h` [Precompiled Header file](https://
 
 
 
-Comment or remove the "#include" line for the `framework.h` framework header file.
+Comment or remove the "#include" line for the `framework.h` header file.
 
 ```c++
 // pch.h: This is a precompiled header file.
