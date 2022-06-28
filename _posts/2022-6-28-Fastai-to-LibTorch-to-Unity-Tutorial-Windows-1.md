@@ -117,7 +117,10 @@ model_types.sort()
 pd.DataFrame(model_types)
 ```
 
-<div style="overflow-x:auto; max-height:500px"">
+
+
+
+<div style="overflow-x:auto; max-height:500px">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
