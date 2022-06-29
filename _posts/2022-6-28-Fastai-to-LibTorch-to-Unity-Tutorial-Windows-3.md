@@ -65,7 +65,7 @@ Next, we'll create a folder to store the TorchScript modules. TorchScript module
 
 
 
-![unity-create-streaming-assets-folder](G:\Projects\GitHub\christianjmills\images\fastai-libtorch-unity-tutorial\part-3\unity-create-streaming-assets-folder.png)
+![unity-create-streaming-assets-folder](../images/fastai-libtorch-unity-tutorial/part-3/unity-create-streaming-assets-folder.png)
 
 
 
@@ -73,7 +73,7 @@ Add any TorchScript files into the `Assets/StreamingAssets/TorchScriptModules` f
 
 
 
-![unity-add-torchscript-modules](G:\Projects\GitHub\christianjmills\images\fastai-libtorch-unity-tutorial\part-3\unity-add-torchscript-modules.png)
+![unity-add-torchscript-modules](../images/fastai-libtorch-unity-tutorial/part-3/unity-add-torchscript-modules.png)
 
 
 
