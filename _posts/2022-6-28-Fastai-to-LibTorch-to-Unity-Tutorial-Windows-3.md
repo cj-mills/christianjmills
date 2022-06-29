@@ -55,6 +55,10 @@ Copy all the DLL files into the `Assets/Plugins/x86_64` folder. We then need to 
 
 
 
+* [Plugins Folder Google Drive](https://drive.google.com/drive/folders/1eH1JdyFkQQRAK8EA0gsTxXtOylWxZ9Nd?usp=sharing)
+
+
+
 ![unity-add-dll-files](../images/fastai-libtorch-unity-tutorial/part-3/unity-add-dll-files.png)
 
 
@@ -70,6 +74,10 @@ Next, we'll create a folder to store the TorchScript modules. TorchScript module
 
 
 Add any TorchScript files into the `Assets/StreamingAssets/TorchScriptModules` folder.
+
+
+
+* [TorchScriptModules Folder Google Drive](https://drive.google.com/drive/folders/1J6keeA3w22Lk0s-mSHfPcFbSosalCSyL?usp=sharing)
 
 
 
