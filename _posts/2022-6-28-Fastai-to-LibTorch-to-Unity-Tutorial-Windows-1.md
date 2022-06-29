@@ -23,6 +23,16 @@ search_exclude: false
 
 
 
+
+
+<center>
+	<video style="width:12800px;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/fastai-libtorch-unity-tutorial/libtorch-plugin-demo.mp4" type="video/mp4">
+	</video>
+</center>
+
+
+
 ## Introduction
 
 The previous [fastai-to-unity](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/) tutorial series implemented a [ResNet](https://arxiv.org/abs/1512.03385)-based image classifier in [Unity](https://unity.com/) with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html) inference library. The Barracuda library works well with the older ResNet architecture but does not support more recent ones like [ConvNeXt](https://arxiv.org/abs/2201.03545) and [MobileViT](https://arxiv.org/abs/2110.02178) at the time of writing. 
