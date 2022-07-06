@@ -18,6 +18,10 @@ search_exclude: false
 
 
 
+**Update 7/6/2022:** Fixed a [code discrepancy](https://github.com/cj-mills/christianjmills/issues/29) between the blog post and the GitHub repository.
+
+
+
 ## Overview
 
 This post demonstrates how to play and view videos inside Unity from both video files and a webcam. We'll later perform pose estimation on individual frames while the video is playing. We can gauge the model's accuracy by comparing the estimated key point locations to the source video.
@@ -244,7 +248,7 @@ private void InitializeCamera()
     // Get a reference to the Main Camera GameObject
     GameObject mainCamera = GameObject.Find("Main Camera");
     // Adjust the camera position to account for updates to the VideoScreen
-    mainCamera.transform.position = new Vector3(videoDims.x / 2, videoDims.y / 2, 0f);
+    mainCamera.transform.position = new Vector3(videoDims.x / 2, videoDims.y / 2, -10f);
     // Render objects with no perspective (i.e. 2D)
     mainCamera.GetComponent<Camera>().orthographic = true;
     // Adjust the camera size to account for updates to the VideoScreen
