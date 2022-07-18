@@ -1588,8 +1588,9 @@ output_dir
 Path('.')
 ```
 
-
 **Define path for OpenVINO IR xml model file**
+
+The conversion script generates an XML file and a BIN file for the model. The XML file contains information about the model architecture and the BIN file stores the model weights. We need both files for each converted model. The BIN file uses the same name as the XML file.
 
 
 ```python
@@ -1681,6 +1682,8 @@ else:
     [ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
     Find more information about API v2.0 and IR v11 at https://docs.openvino.ai
 ```
+
+
 
 
 
