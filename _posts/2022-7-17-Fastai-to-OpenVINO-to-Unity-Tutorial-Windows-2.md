@@ -402,6 +402,8 @@ Inside the wrapper, we will declare the persistent variables needed for the DLL.
 * [ov::InferRequest](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request)
 * [ov::Tensor](https://docs.openvino.ai/latest/classov_1_1Tensor.html)
 
+----
+
 ```c++
 // Inference engine instance
 ov::Core core;
@@ -440,6 +442,10 @@ int num_channels = 3;
 The first function we'll define will create a list of available device names and return the number of devices accessible by OpenVINO. We'll use this information to select which device to use to perform inference from the Unity application. There might be an option named GNA (Gaussian & Neural Accelerator). GNA is a highly specialized neural coprocessor for tasks like noise cancellation. We'll exclude it from the list of devices presented to the end user.
 
 * [ov::Core::get_available_devices()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1aabd82bca4826ee53893f7b5fc9bce813)
+
+------
+
+
 
 ```c++
 /// <summary>
@@ -500,6 +506,10 @@ We can get pointers to the model input tensor and create an inference request us
 * [ov::Core::compile_model()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1a46555f0803e8c29524626be08e7f5c5a)
 * [ov::CompiledModel::create_infer_request()](https://docs.openvino.ai/latest/classov_1_1CompiledModel.html#doxid-classov-1-1-compiled-model-1ae3633c0eb5173ed776446fba32b95953)
 * [ov::InferRequest::get_input_tensor()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a5f0bc1ab40de6a7a12136b4a4e6a8b54)
+
+------
+
+
 
 ```c++
 /// <summary>
@@ -570,6 +580,10 @@ Once again, we'll use a try-catch block to avoid crashing the application if an 
 * [ov::InferRequest::get_output_tensor()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a9bf7bf67c58858bda86ae01e83cd14c1)
 * [std::distance()](https://cplusplus.com/reference/iterator/distance/)
 * [std::max_element()](https://cplusplus.com/reference/algorithm/max_element/)
+
+------
+
+
 
 ```c++
 /// <summary>
