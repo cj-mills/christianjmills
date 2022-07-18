@@ -1590,7 +1590,7 @@ Path('.')
 
 **Define path for OpenVINO IR xml model file**
 
-The conversion script generates an XML file and a BIN file for the model. The XML file contains information about the model architecture and the BIN file stores the model weights. We need both files for each converted model. The BIN file uses the same name as the XML file.
+The conversion script generates an XML containing information about the model architecture and a BIN file that stores the trained weights. We need both files to perform inference. OpenVINO uses the same name for the BIN file as provided for the XML file.
 
 
 ```python
