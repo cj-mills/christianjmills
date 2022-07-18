@@ -29,7 +29,7 @@ search_exclude: false
 
 ## Overview
 
-[Part 1](https://christianjmills.com/Fastai-to-LibTorch-to-Unity-Tutorial-Windows-1/) covered modifying the training code from the [fastai-to-unity tutorial ](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/)to finetune models from the Timm library and exporting them as OpenVINO IR models. This post covers creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform inference with these IR models using [OpenVINO](https://docs.openvino.ai/latest/index.html).
+[Part 1](https://christianjmills.com/Fastai-to-OpenVINO-to-Unity-Tutorial-Windows-1/) covered modifying the training code from the [fastai-to-unity tutorial ](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/)to finetune models from the Timm library and exporting them as OpenVINO IR models. This post covers creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform inference with these IR models using [OpenVINO](https://docs.openvino.ai/latest/index.html).
 
 
 
