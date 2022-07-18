@@ -187,7 +187,7 @@ In the Properties Window, open on the `C/C++` dropdown. Select the `Additional I
 
 
 
-Add the paths for the following folders and click `OK`.
+Add the paths for the following folders, replacing `<parent-folder-path>` with the full path to the parent folder for the OpenVINO Toolkit, and click `OK`.
 
 * `<parent-folder-path>\openvino_2022.1.0.643\runtime\include\ie`
 * `<parent-folder-path>\openvino_2022.1.0.643\runtime\include`
@@ -212,7 +212,7 @@ Next, open the `Linker` dropdown in the Properties window and select `Input`. Se
 
 
 
-Add the paths to the following files and click `OK`.
+Add the paths to the following files, replacing `<parent-folder-path>` with the full path to the parent folder for the OpenVINO Toolkit, and click `OK`.
 
 * `<parent-folder-path>\openvino_2022.1.0.643\opencv\lib\*`
 * `<parent-folder-path>\openvino_2022.1.0.643\runtime\lib\intel64\Release\*`
@@ -254,7 +254,7 @@ We can add a post-build event in Visual Studio to automatically copy these DLL f
 
 
 
-Add the following commands, replacing `<parent-folder-path>` with the path to the parent folder on your system and click `OK`.
+Add the following commands, replacing `<parent-folder-path>` with the full path to the parent folder for the OpenVINO Toolkit, and click `OK`.
 
 * `xcopy <parent-folder-path>\openvino_2022.1.0.643\opencv\bin\opencv_core453.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y_`
 * `_xcopy <parent-folder-path>\openvino_2022.1.0.643\opencv\bin\opencv_imgproc453.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y`
