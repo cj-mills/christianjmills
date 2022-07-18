@@ -117,8 +117,6 @@ It needs to be in the same folder as the DLL files for the plugin to work. Howev
 
 
 
-
-
 ## Allow Unsafe Code
 
 Rather than copying the input image from Unity to the OpenVINO plugin, we'll pass a pointer to the pixel data. First, we need to allow unsafe code for the Unity project. Select `Edit → Project Settings...` from the top menu.
@@ -270,17 +268,17 @@ public class Startup
 #endif
 ```
 
-We use the `UNITY_EDITOR` [scripting symbol](https://docs.unity3d.com/Manual/PlatformDependentCompilation.html) to check whether we are in the Unity Editor. We are in the Editor, so it returns true and the code executes.
+We use the `UNITY_EDITOR` [scripting symbol](https://docs.unity3d.com/Manual/PlatformDependentCompilation.html) to check whether we are in the Unity Editor. We are in the Editor, so it returns true, and the code executes.
 
 ![unity_scripting_symbol_in_editor](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity_scripting_symbol_in_editor.png)
 
-If we instead check if we are not in the Unity Editor, it returns false and the code block does not execute.
+If we check if we are not in the Unity Editor, it returns false, and the code block does not execute.
 
 ![unity_scripting_symbol_not_in_editor](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity_scripting_symbol_not_in_editor.png)
 
 
 
-We can verify the code works by saving the script and going back to the `StreamingAssets` folder in the Editor. The plugins.xml file should be present.
+We can verify the code works by saving the script and going to the `StreamingAssets` folder in the Editor. The plugins.xml file should be present.
 
 
 
@@ -294,7 +292,7 @@ We can verify the code works by saving the script and going back to the `Streami
 
 **Update data processing variables**
 
-Next, we can remove the `processingMaterial` variable from the Data Processing section. We also no longer need to download model output from the GPU to the CPU. However, we now need to download the input image to the CPU before sending it to the plugin. We can do this asynchronously to help reduce the GPU-to-CPU performance bottleneck.
+Next, we can remove the `processingMaterial` variable from the Data Processing section. We no longer need to download model output from the GPU to the CPU. However, we now need to download the input image to the CPU before sending it to the plugin. We can do this asynchronously to help reduce the GPU-to-CPU performance bottleneck.
 
 ```c#
 [Header("Data Processing")]
@@ -799,7 +797,9 @@ As mentioned earlier, we'll add new dropdown menus to the GUI so we can switch b
 
 **Create new GUI objects**
 
-Select the `WebcamDeviceText` and `WebcamDropdown` objects and press `Ctrl-d` to duplicate them. Rename the duplicates to `OpenVINOModelText` and `OpenVINOModelDropdown` respectively. Then select the  `OpenVINOModelText` and `OpenVINOModelDropdown` objects and press `Ctrl-d` to duplicate them. Rename the duplicates to `OpenVINODevicelText` and `OpenVINODevicelDropdown` respectively.
+Select the `WebcamDeviceText` and `WebcamDropdown` objects and press Ctrl-d to duplicate them. Rename the duplicates to `OpenVINOModelText` and `OpenVINOModelDropdown`, respectively. Then select `OpenVINOModelText` and `OpenVINOModelDropdown` and press Ctrl-d. Rename the copies to `OpenVINODevicelText` and `OpenVINODevicelDropdown`, respectively.
+
+
 
 ![unity-add-openvino-gui-objects](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-add-openvino-gui-objects.png)
 
@@ -825,7 +825,7 @@ Next, select the `OpenVINODevicelText` object and update the `Pos Y` value to `-
 
 
 
-Lastly, select the `OpenVINODevicelDropdown` object and update the `Pos Y` value to `-220` in the Inspector tab.
+Last but not least, select the `OpenVINODevicelDropdown` object and update the `Pos Y` value to `-220` in the Inspector tab.
 
 ![unity-update-openvinodevicedropdown-position](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-openvinodevicedropdown-position.png)
 
@@ -857,7 +857,7 @@ Now we can add the new `ImageClassifierOpenVINO` script to the `InferenceManager
 
 ## Update On Value Changed Events
 
-With the `ImageClassifierOpenVINO` component added, we can update the On Value Changed events for the `WebcamToggle`, `WebcamDropdown`, `OpenVINOModelDropdown`, `OpenVINODevicelDropdown` objects.
+With the `ImageClassifierOpenVINO` component added, we can update the On Value Changed events for the `WebcamToggle`, `WebcamDropdown`, `OpenVINOModelDropdown`, and `OpenVINODevicelDropdown` objects.
 
 **Update the `WebcamToggle` On Value Changed Event**
 
@@ -889,7 +889,7 @@ With the `ImageClassifierOpenVINO` component added, we can update the On Value C
 
 ## Summary
 
-This tutorial series covered creating an OpenVINO plugin to improve inference inference speed in the Unity game engine.
+This tutorial series covered creating an OpenVINO plugin to improve inference speed in the Unity game engine.
 
 
 
