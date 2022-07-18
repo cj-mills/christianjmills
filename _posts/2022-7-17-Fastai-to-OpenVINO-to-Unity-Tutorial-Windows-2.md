@@ -396,11 +396,11 @@ extern "C" {
 
 Inside the wrapper, we will declare the persistent variables needed for the DLL.
 
-* [ov::Core](https://docs.openvino.ai/nightly/classov_1_1Core.html)
-* [ov::Model](https://docs.openvino.ai/latest/classov_1_1Model.html#doxid-classov-1-1-model)
-* [ov::CompiledModel](https://docs.openvino.ai/latest/classov_1_1CompiledModel.html)
-* [ov::InferRequest](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request)
-* [ov::Tensor](https://docs.openvino.ai/latest/classov_1_1Tensor.html)
+* [ov::Core](https://docs.openvino.ai/nightly/classov_1_1Core.html): represents an OpenVINO runtime Core entity
+* [ov::Model](https://docs.openvino.ai/latest/classov_1_1Model.html#doxid-classov-1-1-model): A user-defined model
+* [ov::CompiledModel](https://docs.openvino.ai/latest/classov_1_1CompiledModel.html): represents a compiled model
+* [ov::InferRequest](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request): an infer request that can be run in asynchronous or synchronous manners
+* [ov::Tensor](https://docs.openvino.ai/latest/classov_1_1Tensor.html): API holding host memory
 
 ----
 
@@ -441,7 +441,7 @@ int num_channels = 3;
 
 The first function we'll define will create a list of available device names and return the number of devices accessible by OpenVINO. We'll use this information to select which device to use to perform inference from the Unity application. There might be an option named GNA (Gaussian & Neural Accelerator). GNA is a highly specialized neural coprocessor for tasks like noise cancellation. We'll exclude it from the list of devices presented to the end user.
 
-* [ov::Core::get_available_devices()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1aabd82bca4826ee53893f7b5fc9bce813)
+* [ov::Core::get_available_devices()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1aabd82bca4826ee53893f7b5fc9bce813): Returns devices available for inference
 
 ------
 
@@ -500,12 +500,12 @@ After reshaping the model input, we can compile the model for the target device.
 
 We can get pointers to the model input tensor and create an inference request using the compiled model.
 
-* [ov::Core::set_property()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1a14cba2136b972ee34478dd11633293a2)
-* [ov::Core::read_model()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1ae0576a95f841c3a6f5e46e4802716981)
-* [ov::Model::reshape()](https://docs.openvino.ai/latest/openvino_docs_OV_UG_ShapeInference.html)
-* [ov::Core::compile_model()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1a46555f0803e8c29524626be08e7f5c5a)
-* [ov::CompiledModel::create_infer_request()](https://docs.openvino.ai/latest/classov_1_1CompiledModel.html#doxid-classov-1-1-compiled-model-1ae3633c0eb5173ed776446fba32b95953)
-* [ov::InferRequest::get_input_tensor()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a5f0bc1ab40de6a7a12136b4a4e6a8b54)
+* [ov::Core::set_property()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1a14cba2136b972ee34478dd11633293a2): Sets properties for a device
+* [ov::Core::read_model()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1ae0576a95f841c3a6f5e46e4802716981): Reads models from IR/ONNX/PDPD formats
+* [ov::Model::reshape()](https://docs.openvino.ai/latest/openvino_docs_OV_UG_ShapeInference.html): Updates input shapes and propagates them down to the outputs of the model through all intermediate layers
+* [ov::Core::compile_model()](https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1a46555f0803e8c29524626be08e7f5c5a): Creates a compiled model from a source model object
+* [ov::CompiledModel::create_infer_request()](https://docs.openvino.ai/latest/classov_1_1CompiledModel.html#doxid-classov-1-1-compiled-model-1ae3633c0eb5173ed776446fba32b95953): Creates an inference request object used to infer the compiled model
+* [ov::InferRequest::get_input_tensor()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a5f0bc1ab40de6a7a12136b4a4e6a8b54): Gets an input tensor for inference
 
 ------
 
@@ -574,12 +574,12 @@ We don't need to normalize the input image since the IR model does it internally
 
 Once again, we'll use a try-catch block to avoid crashing the application if an error occurs during the forward pass. We can use the `std::max_element()` and `std::distance()` functions to find the class index with the highest confidence score.
 
-* [cv::Mat](https://docs.opencv.org/3.4/d3/d63/classcv_1_1Mat.html)
-* [cv::cvtColor()](https://docs.opencv.org/3.4/d8/d01/group__imgproc__color__conversions.html#ga397ae87e1288a81d2363b61574eb8cab)
-* [ov::InferRequest::infer()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1abcb7facc9f7c4b9226a1fd343e56958d)
-* [ov::InferRequest::get_output_tensor()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a9bf7bf67c58858bda86ae01e83cd14c1)
-* [std::distance()](https://cplusplus.com/reference/iterator/distance/)
-* [std::max_element()](https://cplusplus.com/reference/algorithm/max_element/)
+* [cv::Mat](https://docs.opencv.org/3.4/d3/d63/classcv_1_1Mat.html): n-dimensional dense array class  
+* [cv::cvtColor()](https://docs.opencv.org/3.4/d8/d01/group__imgproc__color__conversions.html#ga397ae87e1288a81d2363b61574eb8cab): Converts an image from one color space to another
+* [ov::InferRequest::infer()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1abcb7facc9f7c4b9226a1fd343e56958d): Infers specified input in synchronous mode
+* [ov::InferRequest::get_output_tensor()](https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a9bf7bf67c58858bda86ae01e83cd14c1): Gets an output tensor for inference
+* [std::distance()](https://cplusplus.com/reference/iterator/distance/): Calculates the number of elements between first and last
+* [std::max_element()](https://cplusplus.com/reference/algorithm/max_element/): Returns an iterator pointing to the element with the largest value in the range `[first,last)`
 
 ------
 
