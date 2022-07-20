@@ -805,6 +805,14 @@ Select the `WebcamDeviceText` and `WebcamDropdown` objects and press Ctrl-d to d
 
 
 
+**Update GUI Settings Panel Height**
+
+Select the `SettingsPanel` object and update the `Height` value to `255`.
+
+![unity-update-settings-panel-height](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-settings-panel-height.png)
+
+
+
 **Update GUI object positions**
 
 Select the `OpenVINOModelText` object and update the `Pos Y` value to `-145` and the Text value to `OpenVINO Model:` in the Inspector tab.
