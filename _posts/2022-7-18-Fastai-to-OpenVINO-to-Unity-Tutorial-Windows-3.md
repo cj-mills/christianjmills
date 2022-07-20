@@ -55,7 +55,7 @@ We'll store the [DLL files](https://christianjmills.com/Fastai-to-OpenVINO-to-Un
 
 Copy all the DLL files and the `plugins.xml` file into the `Assets/Plugins/x86_64` folder. 
 
-![unity-openvino-plugins-folder](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-openvino-plugins-folder.png)
+![unity-openvino-plugins-folder](../images/fastai-openvino-unity-tutorial/part-3/unity-openvino-plugins-folder.png)
 
 
 
@@ -67,7 +67,7 @@ Next, we'll create a folder to store the OpenVINO IR models. We need to place th
 
 * [OpenVINOModels Folder Google Drive](https://drive.google.com/drive/folders/1QE9d7pADn4THB91_WwwQgD7NsjbBUnE6?usp=sharing)
 
-![unity-openvino-models-folder](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-openvino-models-folder.png)
+![unity-openvino-models-folder](../images/fastai-openvino-unity-tutorial/part-3/unity-openvino-models-folder.png)
 
 
 
@@ -196,7 +196,7 @@ Duplicate the `ImageClassifier` script and name the copy `ImageClassifierOpenVIN
 
 
 
-![unity-create-image-classifier-openvino-script](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-create-image-classifier-openvino-script.png)
+![unity-create-image-classifier-openvino-script](../images/fastai-openvino-unity-tutorial/part-3/unity-create-image-classifier-openvino-script.png)
 
 
 
@@ -270,11 +270,11 @@ public class Startup
 
 We use the `UNITY_EDITOR` [scripting symbol](https://docs.unity3d.com/Manual/PlatformDependentCompilation.html) to check whether we are in the Unity Editor. We are in the Editor, so it returns true, and the code executes.
 
-![unity_scripting_symbol_in_editor](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity_scripting_symbol_in_editor.png)
+![unity_scripting_symbol_in_editor](../images/fastai-openvino-unity-tutorial/part-3/unity_scripting_symbol_in_editor.png)
 
 If we check if we are not in the Unity Editor, it returns false, and the code block does not execute.
 
-![unity_scripting_symbol_not_in_editor](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity_scripting_symbol_not_in_editor.png)
+![unity_scripting_symbol_not_in_editor](../images/fastai-openvino-unity-tutorial/part-3/unity_scripting_symbol_not_in_editor.png)
 
 
 
@@ -282,7 +282,7 @@ We can verify the code works by saving the script and going to the `StreamingAss
 
 
 
-![unity-verify-initializeonload](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-verify-initializeonload.png)
+![unity-verify-initializeonload](../images/fastai-openvino-unity-tutorial/part-3/unity-verify-initializeonload.png)
 
 
 
@@ -801,7 +801,7 @@ Select the `WebcamDeviceText` and `WebcamDropdown` objects and press Ctrl-d to d
 
 
 
-![unity-add-openvino-gui-objects](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-add-openvino-gui-objects.png)
+![unity-add-openvino-gui-objects](../images/fastai-openvino-unity-tutorial/part-3/unity-add-openvino-gui-objects.png)
 
 
 
@@ -809,7 +809,7 @@ Select the `WebcamDeviceText` and `WebcamDropdown` objects and press Ctrl-d to d
 
 Select the `SettingsPanel` object and update the `Height` value to `255`.
 
-![unity-update-settings-panel-height](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-settings-panel-height.png)
+![unity-update-settings-panel-height](../images/fastai-openvino-unity-tutorial/part-3/unity-update-settings-panel-height.png)
 
 
 
@@ -817,25 +817,25 @@ Select the `SettingsPanel` object and update the `Height` value to `255`.
 
 Select the `OpenVINOModelText` object and update the `Pos Y` value to `-145` and the Text value to `OpenVINO Model:` in the Inspector tab.
 
-![unity-update-openvinomodeltext-position](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-openvinomodeltext-position-and-text.png)
+![unity-update-openvinomodeltext-position](../images/fastai-openvino-unity-tutorial/part-3/unity-update-openvinomodeltext-position-and-text.png)
 
 
 
 Then, select the `OpenVINOModelDropdown` object and update the `Pos Y` value to `-165` in the Inspector tab.
 
-![unity-update-openvinomodeldropdown-position](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-openvinomodeldropdown-position.png)
+![unity-update-openvinomodeldropdown-position](../images/fastai-openvino-unity-tutorial/part-3/unity-update-openvinomodeldropdown-position.png)
 
 
 
 Next, select the `OpenVINODevicelText` object and update the `Pos Y` value to `-200` and the Text value to `OpenVINO Device:` in the Inspector tab.
 
-![unity-update-openvinodevicetext-position](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-openvinodevicetext-position-and-text.png)
+![unity-update-openvinodevicetext-position](../images/fastai-openvino-unity-tutorial/part-3/unity-update-openvinodevicetext-position-and-text.png)
 
 
 
 Last but not least, select the `OpenVINODevicelDropdown` object and update the `Pos Y` value to `-220` in the Inspector tab.
 
-![unity-update-openvinodevicedropdown-position](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-openvinodevicedropdown-position.png)
+![unity-update-openvinodevicedropdown-position](../images/fastai-openvino-unity-tutorial/part-3/unity-update-openvinodevicedropdown-position.png)
 
 
 
@@ -845,7 +845,7 @@ The updated GUI should look like the image below.
 
 
 
-![unity-view-updated-gui](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-view-updated-gui.png)
+![unity-view-updated-gui](../images/fastai-openvino-unity-tutorial/part-3/unity-view-updated-gui.png)
 
 
 
@@ -859,7 +859,7 @@ Now we can add the new `ImageClassifierOpenVINO` script to the `InferenceManager
 
 
 
-![unity-add-image-classifier-openvino-component](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-add-image-classifier-openvino-component.png)
+![unity-add-image-classifier-openvino-component](../images/fastai-openvino-unity-tutorial/part-3/unity-add-image-classifier-openvino-component.png)
 
 
 
@@ -869,25 +869,25 @@ With the `ImageClassifierOpenVINO` component added, we can update the On Value C
 
 **Update the `WebcamToggle` On Value Changed Event**
 
-![unity-webcam-toggle-update-on-value-changed](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-webcam-toggle-update-on-value-changed.png)
+![unity-webcam-toggle-update-on-value-changed](../images/fastai-openvino-unity-tutorial/part-3/unity-webcam-toggle-update-on-value-changed.png)
 
 
 
 **Update the `WebcamDropdown` On Value Changed Event**
 
-![unity-webcam-dropdown-update-on-value-changed](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-webcam-dropdown-update-on-value-changed.png)
+![unity-webcam-dropdown-update-on-value-changed](../images/fastai-openvino-unity-tutorial/part-3/unity-webcam-dropdown-update-on-value-changed.png)
 
 
 
 **Update the `OpenVINOModelDropdown` On Value Changed Event**
 
-![unity-update-openvino-model-dropdown-on-value-changed](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-openvino-model-dropdown-on-value-changed.png)
+![unity-update-openvino-model-dropdown-on-value-changed](../images/fastai-openvino-unity-tutorial/part-3/unity-update-openvino-model-dropdown-on-value-changed.png)
 
 
 
 **Update the `OpenVINODeviceDropdown` On Value Changed Event**
 
-![unity-update-openvino-device-dropdown-on-value-changed](G:\Projects\GitHub\christianjmills\images\fastai-openvino-unity-tutorial\part-3\unity-update-openvino-device-dropdown-on-value-changed.png)
+![unity-update-openvino-device-dropdown-on-value-changed](../images/fastai-openvino-unity-tutorial/part-3/unity-update-openvino-device-dropdown-on-value-changed.png)
 
 
 
