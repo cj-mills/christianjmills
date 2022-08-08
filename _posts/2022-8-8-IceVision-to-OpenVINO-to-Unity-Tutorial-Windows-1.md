@@ -1884,11 +1884,11 @@ torch.onnx.export(model,
                  )
 ```
 
-Now we can define the argument for OpenVINO's model conversion script.
-
 
 
 **Simplify ONNX model**
+
+As mentioned earlier, this step is entirely optional.
 
 
 ```python
@@ -1907,6 +1907,12 @@ model_simp, check = simplify(onnx_model)
 # save model
 onnx.save(model_simp, onnx_file_name)
 ```
+
+
+
+Now we can export the ONNX model to OpenVINO's IR format.
+
+
 
 **Import OpenVINO Dependencies**
 
