@@ -165,10 +165,6 @@ IceVision will download some additional resources the first time we import the l
 from icevision.all import *
 ```
 
-```text
-[1m[1mINFO    [0m[1m[0m - [1mThe mmdet config folder already exists. No need to downloaded it. Path : /home/innom-dt/.icevision/mmdetection_configs/mmdetection_configs-2.16.0/configs[0m | [36micevision.models.mmdet.download_configs[0m:[36mdownload_mmdet_configs[0m:[36m17[0m
-```
-
 **Import and configure Pandas**
 
 ```python
