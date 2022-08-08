@@ -196,6 +196,8 @@ creds = '{"username":"","key":""}'
 **Save Kaggle credentials if none are present**
 * **Source:** [https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb](https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb)
 
+------
+
 
 ```python
 cred_path = Path('~/.kaggle/kaggle.json').expanduser()
