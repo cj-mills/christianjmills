@@ -41,7 +41,7 @@ The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs
 
 
 <div>
-<details><summary><strong style="font-size: 1.25rem;">Reference Images</strong></summary><br/>
+<details><summary style="font-size: 1.25rem;">Reference Images</summary><br/>
 <table>
 <thead>
 <tr>
