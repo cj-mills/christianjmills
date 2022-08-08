@@ -35,11 +35,13 @@ search_exclude: false
 
 In this tutorial series, we will walk through training an object detector using the [IceVision](https://airctic.com/0.12.0/) library. We will then implement the trained model in a [Unity](https://unity.com/) game engine project using [OpenVINO](https://docs.openvino.ai/latest/index.html), an open-source toolkit for optimizing model inference.
 
-The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset). The dataset contains annotated sample images for 18 distinct hand gestures and an additional `no_gesture` class to account for idle hands. 
+The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset). The dataset contains annotated sample images for 18 distinct hand gestures and an additional `no_gesture` class to account for idle hands.
+
+
 
 
 <div>
-<details><summary><h4>Reference Images</h4></summary><br/>
+<details><summary><strong>Reference Images</strong></summary><br/>
 <table>
 <thead>
 <tr>
@@ -124,8 +126,6 @@ The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs
 </table>
 </details>
 </div>
-
-
 
 
 One could use a model trained on this dataset to map hand gestures and locations to user input in Unity.
