@@ -38,30 +38,93 @@ In this tutorial series, we will walk through training an object detector using 
 The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset). The dataset contains annotated sample images for 18 distinct hand gestures and an additional `no_gesture` class to account for idle hands. 
 
 
-
+<div>
 <details><summary><h4>Reference Images</h4></summary><br/>
-
-| Class           | Image                                                        |
-| --------------- | ------------------------------------------------------------ |
-| call            | ![call](../images/icevision-openvino-unity-tutorial/part-1/call.jpg) |
-| dislike         | ![dislike](../images/icevision-openvino-unity-tutorial/part-1/dislike.jpg) |
-| fist            | ![ fist](../images/icevision-openvino-unity-tutorial/part-1/fist.jpg) |
-| four            | ![four](../images/icevision-openvino-unity-tutorial/part-1/four.jpg) |
-| like            | ![ like](../images/icevision-openvino-unity-tutorial/part-1/like.jpg) |
-| mute            | ![ mute](../images/icevision-openvino-unity-tutorial/part-1/mute.jpg) |
-| ok              | ![ ok](../images/icevision-openvino-unity-tutorial/part-1/ok.jpg) |
-| one             | ![ one](../images/icevision-openvino-unity-tutorial/part-1/one.jpg) |
-| palm            | ![ palm](../images/icevision-openvino-unity-tutorial/part-1/palm.jpg) |
-| peace           | ![peace](../images/icevision-openvino-unity-tutorial/part-1/peace.jpg) |
-| peace_inverted  | ![peace_inverted](../images/icevision-openvino-unity-tutorial/part-1/peace_inverted.jpg) |
-| rock            | ![rock](../images/icevision-openvino-unity-tutorial/part-1/rock.jpg) |
-| stop            | ![stop](../images/icevision-openvino-unity-tutorial/part-1/stop.jpg) |
-| stop_inverted   | ![stop_inverted](../images/icevision-openvino-unity-tutorial/part-1/stop_inverted.jpg) |
-| three           | ![three](../images/icevision-openvino-unity-tutorial/part-1/three.jpg) |
-| three2          | ![three2](../images/icevision-openvino-unity-tutorial/part-1/three2.jpg) |
-| two_up          | ![ two_up](../images/icevision-openvino-unity-tutorial/part-1/two_up.jpg) |
-| two_up_inverted | ![two_up_inverted](../images/icevision-openvino-unity-tutorial/part-1/two_up_inverted.jpg) |
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Image</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>call</td>
+<td><img alt="call" src="../images/icevision-openvino-unity-tutorial/part-1/call.jpg" /></td>
+</tr>
+<tr>
+<td>dislike</td>
+<td><img alt="dislike" src="../images/icevision-openvino-unity-tutorial/part-1/dislike.jpg" /></td>
+</tr>
+<tr>
+<td>fist</td>
+<td><img alt=" fist" src="../images/icevision-openvino-unity-tutorial/part-1/fist.jpg" /></td>
+</tr>
+<tr>
+<td>four</td>
+<td><img alt="four" src="../images/icevision-openvino-unity-tutorial/part-1/four.jpg" /></td>
+</tr>
+<tr>
+<td>like</td>
+<td><img alt=" like" src="../images/icevision-openvino-unity-tutorial/part-1/like.jpg" /></td>
+</tr>
+<tr>
+<td>mute</td>
+<td><img alt=" mute" src="../images/icevision-openvino-unity-tutorial/part-1/mute.jpg" /></td>
+</tr>
+<tr>
+<td>ok</td>
+<td><img alt=" ok" src="../images/icevision-openvino-unity-tutorial/part-1/ok.jpg" /></td>
+</tr>
+<tr>
+<td>one</td>
+<td><img alt=" one" src="../images/icevision-openvino-unity-tutorial/part-1/one.jpg" /></td>
+</tr>
+<tr>
+<td>palm</td>
+<td><img alt=" palm" src="../images/icevision-openvino-unity-tutorial/part-1/palm.jpg" /></td>
+</tr>
+<tr>
+<td>peace</td>
+<td><img alt="peace" src="../images/icevision-openvino-unity-tutorial/part-1/peace.jpg" /></td>
+</tr>
+<tr>
+<td>peace_inverted</td>
+<td><img alt="peace_inverted" src="../images/icevision-openvino-unity-tutorial/part-1/peace_inverted.jpg" /></td>
+</tr>
+<tr>
+<td>rock</td>
+<td><img alt="rock" src="../images/icevision-openvino-unity-tutorial/part-1/rock.jpg" /></td>
+</tr>
+<tr>
+<td>stop</td>
+<td><img alt="stop" src="../images/icevision-openvino-unity-tutorial/part-1/stop.jpg" /></td>
+</tr>
+<tr>
+<td>stop_inverted</td>
+<td><img alt="stop_inverted" src="../images/icevision-openvino-unity-tutorial/part-1/stop_inverted.jpg" /></td>
+</tr>
+<tr>
+<td>three</td>
+<td><img alt="three" src="../images/icevision-openvino-unity-tutorial/part-1/three.jpg" /></td>
+</tr>
+<tr>
+<td>three2</td>
+<td><img alt="three2" src="../images/icevision-openvino-unity-tutorial/part-1/three2.jpg" /></td>
+</tr>
+<tr>
+<td>two_up</td>
+<td><img alt=" two_up" src="../images/icevision-openvino-unity-tutorial/part-1/two_up.jpg" /></td>
+</tr>
+<tr>
+<td>two_up_inverted</td>
+<td><img alt="two_up_inverted" src="../images/icevision-openvino-unity-tutorial/part-1/two_up_inverted.jpg" /></td>
+</tr>
+</tbody>
+</table>
 </details>
+</div>
+
 
 
 
