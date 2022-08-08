@@ -1027,9 +1027,7 @@ data_splitter = RandomSplitter([0.8, 0.2])
 train_records, valid_records = parser.parse(data_splitter, cache_filepath=f'{dataset_name}-cache.pkl')
 ```
 
-```text
-[1m[1mINFO    [0m[1m[0m - [1mLoading cached records from hagrid-sample-30k-384p-cache.pkl[0m | [36micevision.parsers.parser[0m:[36mparse[0m:[36m113[0m
-```
+
 
 **Inspect training records**
 
