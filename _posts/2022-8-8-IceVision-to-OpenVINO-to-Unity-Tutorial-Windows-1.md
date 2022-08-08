@@ -1,5 +1,5 @@
 ---
-title: End-to-End Object Detection in Unity With IceVision and OpenVINO Pt. 1
+title: End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1
 layout: post
 toc: false
 comments: true
