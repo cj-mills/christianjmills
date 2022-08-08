@@ -1357,7 +1357,7 @@ learn.fine_tune(epochs, lr, freeze_epochs=1)
     </tr>
   </tbody>
 </table>
-
+<div style="overflow-x:auto; max-height:500px">
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: left;">
@@ -1511,6 +1511,8 @@ learn.fine_tune(epochs, lr, freeze_epochs=1)
     </tr>
   </tbody>
 </table>
+</div>
+
 
 
 ## Prepare Model for Export
