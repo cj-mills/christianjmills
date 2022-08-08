@@ -19,7 +19,7 @@ search_exclude: false
 * [Configure Kaggle API](#configure-kaggle-api)
 * [Download the Dataset](#download-the-dataset)
 * [Inspect the Dataset](#inspect-the-dataset)
-* [Create Object Detection Parser](#create-object-detection-parser)
+* [Create Dataset Parser](#create-dataset-parser)
 * [Define DataLoader Objects](#define-dataloader-objects)
 * [Finetune the Model](#finetune-the-model)
 * [Prepare Model for Export](#prepare-model-for-export)
@@ -901,7 +901,7 @@ class_map
 
 
 
-## Create Object Detection Parser
+## Create Dataset Parser
 
 Now we can create a custom `Parser` class that tells IceVision how to read the dataset.
 
