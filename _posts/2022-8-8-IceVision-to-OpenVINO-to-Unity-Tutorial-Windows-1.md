@@ -1945,7 +1945,7 @@ Path('.')
 
 **Define path for OpenVINO IR xml model file**
 
-The conversion script generates an XML containing information about the model architecture and a BIN file that stores the trained weights. We need both files to perform inference. OpenVINO uses the same name for the BIN file as provided for the XML file.
+The conversion script generates an XML file containing information about the model architecture and a BIN file that stores the trained weights. We need both files to perform inference. OpenVINO uses the same name for the BIN file as provided for the XML file.
 
 
 ```python
@@ -2134,7 +2134,7 @@ To process the model output, we need to iterate through each of the 4032 object 
 
 
 
-**Define method to generate stride values to navigate the raw model output**
+**Define method to generate offset values to navigate the raw model output**
 
 We'll first define a method that generates offset values based on the input dimensions and stride values, which we can use to traverse the output array.
 
@@ -2159,7 +2159,7 @@ def generate_grid_strides(height, width, strides=[8, 16, 32]):
     return grid_strides
 ```
 
-**Generate stride values to navigate model output**
+**Generate offset values to navigate model output**
 
 
 ```python
