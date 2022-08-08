@@ -1713,10 +1713,6 @@ model_output = model.cpu().forward_dummy(test_tensor.cpu())
 
 The model currently organizes the output into three tuples. The first tuple contains three tensors storing the object class predictions using the three stride values. Recall that there are 19 object classes, excluding the background class added by IceVision.
 
-* `512/8 = 64`, `512/16 = 32`, `512/32 = 16`
-
-* `384/8 = 48`, `384/16 = 24`, `384/32 = 12`
-
 The second tuple contains three tensors with the predicted bounding box coordinates and dimensions using the three stride values. 
 
 The third tuple contains three tensors with the confidence score for whether an object is present in a given section of the input image using the three stride values.
@@ -1740,6 +1736,9 @@ torch.Size([1, 1, 32, 24])
 torch.Size([1, 1, 16, 12])
 ```
 
+* `512/8 = 64`, `512/16 = 32`, `512/32 = 16`
+
+* `384/8 = 48`, `384/16 = 24`, `384/32 = 12`
 
 
 If we examine the end of a model from the official [YOLOX repo](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/ONNXRuntime), we can see the output looks a bit different.
