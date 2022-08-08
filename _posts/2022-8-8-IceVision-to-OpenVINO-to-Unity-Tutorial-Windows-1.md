@@ -61,7 +61,7 @@ The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs
 | three2          | ![three2](../images/icevision-openvino-unity-tutorial/part-1/three2.jpg) |
 | two_up          | ![ two_up](../images/icevision-openvino-unity-tutorial/part-1/two_up.jpg) |
 | two_up_inverted | ![two_up_inverted](../images/icevision-openvino-unity-tutorial/part-1/two_up_inverted.jpg) |
-| </details>      |                                                              |
+</details>
 
 
 
