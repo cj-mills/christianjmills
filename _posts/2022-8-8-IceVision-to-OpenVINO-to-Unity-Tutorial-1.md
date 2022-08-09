@@ -2232,7 +2232,7 @@ Next, we'll define a method to iterate through the output array and decode the b
 
 
 ```python
-def generate_yolox_proposals(feat_ptr, proposal_length, grid_strides, bbox_conf_thresh=0.3):
+def generate_yolox_proposals(model_output, proposal_length, grid_strides, bbox_conf_thresh=0.3):
     
     proposals = []
     
@@ -2250,19 +2250,19 @@ def generate_yolox_proposals(feat_ptr, proposal_length, grid_strides, bbox_conf_
         start_idx = anchor_idx * proposal_length
 
         # Get the coordinates for the center of the predicted bounding box
-        x_center = (feat_ptr[start_idx + 0] + grid0) * stride
-        y_center = (feat_ptr[start_idx + 1] + grid1) * stride
+        x_center = (model_output[start_idx + 0] + grid0) * stride
+        y_center = (model_output[start_idx + 1] + grid1) * stride
 
         # Get the dimensions for the predicted bounding box
-        w = np.exp(feat_ptr[start_idx + 2]) * stride
-        h = np.exp(feat_ptr[start_idx + 3]) * stride
+        w = np.exp(model_output[start_idx + 2]) * stride
+        h = np.exp(model_output[start_idx + 3]) * stride
 
         # Calculate the coordinates for the upper left corner of the bounding box
         x0 = x_center - w * 0.5
         y0 = y_center - h * 0.5
 
         # Get the confidence score that an object is present
-        box_objectness = feat_ptr[start_idx + 4]
+        box_objectness = model_output[start_idx + 4]
 
         # Initialize object struct with bounding box information
         obj = { 'x0':x0, 'y0':y0, 'width':w, 'height':h, 'label':0, 'prob':0 }
@@ -2271,7 +2271,7 @@ def generate_yolox_proposals(feat_ptr, proposal_length, grid_strides, bbox_conf_
         for class_idx in range(num_classes):
             
             # Get the confidence score for the current object class
-            box_cls_score = feat_ptr[start_idx + 5 + class_idx]
+            box_cls_score = model_output[start_idx + 5 + class_idx]
             # Calculate the final confidence score for the object proposal
             box_prob = box_objectness * box_cls_score
             
