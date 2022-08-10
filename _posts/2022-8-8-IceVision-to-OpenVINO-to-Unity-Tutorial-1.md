@@ -2785,6 +2785,10 @@ In this post, we finetuned an object detection model using the IceVision library
 
 
 
+**Next:** [End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-2/)
+
+
+
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/icevision-openvino-unity-tutorial)
 
 
