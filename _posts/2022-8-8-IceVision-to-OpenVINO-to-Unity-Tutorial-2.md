@@ -962,7 +962,7 @@ We'll need to copy all the DLL files in this folder and the plugins.xml file to 
 
 ## Summary
 
-This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference using [OpenVINO](https://docs.openvino.ai/latest/index.html). In part 3, we build a project in [https://unity.com/](https://unity.com/) that uses this DLL.
+This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference with a YOLOX model using [OpenVINO](https://docs.openvino.ai/latest/index.html). In part 3, we build a project in [https://unity.com/](https://unity.com/) that uses this DLL.
 
 
 
