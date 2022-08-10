@@ -679,7 +679,7 @@ We'll need to copy all the DLL files in this folder and the plugins.xml file to 
 
 ## Summary
 
-This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference with using [OpenVINO](https://docs.openvino.ai/latest/index.html). Part 3 will cover the required modifications for the original Unity project to use this DLL.
+This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference using [OpenVINO](https://docs.openvino.ai/latest/index.html). Part 3 will cover the required modifications for the original Unity project to use this DLL.
 
 
 
