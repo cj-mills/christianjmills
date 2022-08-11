@@ -968,7 +968,7 @@ This post covered creating a dynamic link library ([DLL](https://docs.microsoft.
 
 **Previous:** [End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-1/)
 
-
+**Next:** [End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 3](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-3/)
 
 
 
