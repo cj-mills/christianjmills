@@ -921,7 +921,7 @@ That is all the code needed for the plugin. We can now build the solution to gen
 
 ## Build Solution
 
-Open the Build menu at the top of the Visual Studio window and click Build Solution. Visual Studio will generate a new x64 folder in the project directory containing the DLL file and its dependencies.
+Open the Build menu at the top of the Visual Studio window and click `Build Solution`. Visual Studio will generate a new x64 folder in the project directory containing the DLL file and its dependencies.
 
 
 
