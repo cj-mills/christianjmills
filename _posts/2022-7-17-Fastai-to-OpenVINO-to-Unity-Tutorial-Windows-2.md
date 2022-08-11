@@ -103,7 +103,7 @@ Click Finish once the installation process completes.
 
 **Inspect OpenVINO Folder**
 
-If we look at the installation folder for the toolkit, we can see it also includes and version of OpenCV. We'll use OpenCV to prepare image data from Unity before feeding it to the model.
+If we look at the installation folder for the toolkit, we can see it also includes a version of OpenCV. We'll use OpenCV to prepare image data from Unity before feeding it to the model.
 
 ![openvino_install_folder](../images/fastai-openvino-unity-tutorial/part-2/openvino_install_folder.png)
 
