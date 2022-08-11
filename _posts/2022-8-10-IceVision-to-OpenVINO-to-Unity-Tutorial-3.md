@@ -42,7 +42,7 @@ Open the Unity Hub and click New Project.
 
 
 
-Select the target editor version from the Editor Version dropdown menu.
+Select the target editor version from the Editor Version dropdown menu. We'll use Unity 2022 for this post, but the current LTS release should also work fine.
 
 
 
