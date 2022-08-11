@@ -50,7 +50,7 @@ Select the target editor version from the Editor Version dropdown menu. We'll us
 
 
 
-Select the 2D Core template.
+Select the `2D Core` template.
 
 
 
@@ -66,7 +66,7 @@ Pick a name for the project and a location for the project folder.
 
 
 
-Finally, click Create Project in the lower right-hand corner.
+Finally, click `Create Project` in the lower right-hand corner.
 
 
 
@@ -198,7 +198,7 @@ Now we can start coding.
 
 ## Create Processing Shader
 
-The input image gets flipped upside down when we send it to the plugin. We can pre-flip the image in a Compute Shader. We'll add the Compute Shader in a new folder called `Shaders`. Right-click a space in the `Shaders` folder and select `Create → Shader → Compute Shader`.
+The input image gets flipped upside down when we send it to the plugin. We can pre-flip the image in a [Compute Shader](https://docs.unity3d.com/Manual/class-ComputeShader.html). We'll add the Compute Shader in a new folder called `Shaders`. Right-click a space in the `Shaders` folder and select `Create → Shader → Compute Shader`.
 
 ![unity-create-compute-shader](../images/icevision-openvino-unity-tutorial/part-3/unity-create-compute-shader.png)
 
@@ -229,7 +229,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 
 
-We need to add a new `Texture2D` variable to store the pixel data for the input image. We'll remove the default method and create a new one called `FlipXAxis`. We need to replace the default method name in the `#pragma kernel` line at the top.
+We need to add a new `Texture2D` variable to store the pixel data for the input image. We'll remove the default method and create a new one called `FlipXAxis`. Replace the default method name in the `#pragma kernel` line at the top.
 
 We need the input image height for the flip operation, which we can access with the [Texture2D::GetDimensions](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d-getdimensions) function.
 
@@ -267,7 +267,7 @@ void FlipXAxis(uint3 id : SV_DispatchThreadID)
 
 ## Create Object Detector Script
 
-We'll store the C# script that interacts with the OpenVINO plugin in a new Scripts folder. Right-click a space inside it and select `Create → C# Script`. 
+We'll store the C# script that interacts with the OpenVINO plugin in a new `Scripts` folder. Right-click a space inside it and select `Create → C# Script`. 
 
 ![unity-create-c-sharp-script](../images/icevision-openvino-unity-tutorial/part-3/unity-create-c-sharp-script.png)
 
@@ -571,7 +571,7 @@ private int numObjects;
 
 
 
-**Define variables for tracking colormaps**
+**Define variables for storing colormaps**
 
 We need to create a couple of classes to parse the JSON content.
 
@@ -598,7 +598,7 @@ private Texture2D[] colorTextures;
 
 We'll define some variables to track the frame rate.
 
-```
+```c#
 // The current frame rate value
 private int fps = 0;
 // Controls when the frame rate value updates
@@ -778,13 +778,14 @@ private void InitializeScreen()
 /// </summary>
 private void GetOpenVINOModels()
 {
-    // Get the paths for the .pt file for each model
+    // Get the paths for each model folder
     foreach (string dir in System.IO.Directory.GetDirectories($"{Application.streamingAssetsPath}/{openvinoModelsDir}"))
     {
         string modelName = dir.Split('\\')[1];
 
         modelNames.Add(modelName.Substring(0, modelName.Length));
 
+        // Get the paths for the XML file for each model
         foreach (string file in System.IO.Directory.GetFiles(dir))
         {
             if (file.EndsWith(".xml"))
@@ -1004,7 +1005,7 @@ void Start()
 
 ### Define Processing Methods
 
-Next, we need to define methods to process images using the Compute Shader, calculate the input resolution, handle asynchronous GPU readback, and process raw model output.
+Next, we need to define methods to process images using the Compute Shader, calculate the input resolution, handle asynchronous GPU readback, and scale the bounding box information.
 
 
 
@@ -1289,7 +1290,7 @@ void Update()
 
 ### Define GUI Methods
 
-We need some methods to handle user interactions with the GUI and display the predicted class and current framerate.
+We need some methods to handle user interactions with the GUI and display the bounding boxes and current framerate.
 
 
 
@@ -1491,7 +1492,7 @@ private void OnDisable()
 
 ## Set up Unity Scene
 
-Now we can start setting up our Unity scene. We need a screen to display the webcam feed, an empty object to attach the object detector script, dropdown menus for selecting webcams, model, and compute devices, a toggle to activate a webcam feed, and a slider to update the confidence threshold.
+Now we can start setting up our Unity scene. We need a screen to display the webcam feed, an empty object to attach the object detector script, dropdown menus for selecting webcams, models, and compute devices, a toggle to activate a webcam feed, and a slider to update the confidence threshold.
 
 
 
@@ -1525,7 +1526,7 @@ Select the Screen in the Hierarchy tab and open the `Shader` dropdown menu in th
 
 **Create Inference Manager object**
 
-Right-click a space in the Hierarchy tab and select Create Empty. Name the empty object `InferenceManager`.
+Right-click a space in the Hierarchy tab and select `Create Empty`. Name the empty object `InferenceManager`.
 
 ![unity-create-empty-gameobject](../images/icevision-openvino-unity-tutorial/part-3/unity-create-empty-gameobject.png)
 
