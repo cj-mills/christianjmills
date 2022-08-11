@@ -2785,6 +2785,8 @@ In this post, we finetuned an object detection model using the IceVision library
 
 
 
+**Beginner Tutorial:** [Fastai to Unity Beginner Tutorial Pt. 1](https://christianjmills.com/Fastai-to-Unity-Tutorial-1/)
+
 **Next:** [End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-2/)
 
 
