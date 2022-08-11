@@ -76,7 +76,7 @@ Finally, click Create Project in the lower right-hand corner.
 
 We'll store the [DLL files](https://christianjmills.com/Fastai-to-OpenVINO-to-Unity-Tutorial-Windows-2/#gather-dependencies) from part 2 in a new folder called `Plugins`. Right-click a space in the Assets section and select `Create → Folder` from the popup menu.
 
-![unity-create-folder](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-create-folder.png)
+![unity-create-folder](../images/icevision-openvino-unity-tutorial/part-3/unity-create-folder.png)
 
 
 
@@ -106,7 +106,7 @@ Back in the Unity Editor, create a new folder called `Colormaps` to store the JS
 
 * [Colormaps Folder Google Drive](https://drive.google.com/drive/folders/1rs2eD9_3Tyg4ADLbF6CNqwRdnhpsiHgk?usp=sharing)
 
-![unity-colormaps-folder](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-colormaps-folder.png)
+![unity-colormaps-folder](../images/icevision-openvino-unity-tutorial/part-3/unity-colormaps-folder.png)
 
 
 
@@ -116,7 +116,7 @@ We place any test images into a new folder called `Images`.
 
 
 
-![unity-import-image-assets](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-import-image-assets.png)
+![unity-import-image-assets](../images/icevision-openvino-unity-tutorial/part-3/unity-import-image-assets.png)
 
 
 
@@ -196,7 +196,7 @@ Now we can start coding.
 
 The input image gets flipped upside down when we send it to the plugin. We can pre-flip the image in a Compute Shader. We'll add the Compute Shader in a new folder called `Shaders`. Right-click a space in the `Shaders` folder and select `Create → Shader → Compute Shader`.
 
-![unity-create-compute-shader](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-create-compute-shader.png)
+![unity-create-compute-shader](../images/icevision-openvino-unity-tutorial/part-3/unity-create-compute-shader.png)
 
 
 
@@ -273,7 +273,7 @@ Name the script `ObjectDetector` and open it in the code editor.
 
 
 
-![unity-create-object-detector-script](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-create-object-detector-script.png)
+![unity-create-object-detector-script](../images/icevision-openvino-unity-tutorial/part-3/unity-create-object-detector-script.png)
 
 
 
@@ -1497,7 +1497,7 @@ Now we can start setting up our Unity scene. We need a screen to display the web
 
 Right-click a space in the Hierarchy tab and select `3D Object → Quad`. We can name the new object Screen.
 
-![unity-create-quad](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-create-quad.png)
+![unity-create-quad](../images/icevision-openvino-unity-tutorial/part-3/unity-create-quad.png)
 
 
 
@@ -1505,7 +1505,7 @@ Right-click a space in the Hierarchy tab and select `3D Object → Quad`. We can
 
 Next, drag and drop a test image from the `Assets → Images` folder onto the Screen object in the Scene view. Note that the Screen looks a bit dim. We need to change the shader for the Screen's Material so that it does not require an external light source.
 
-![unity-attach-image-to-screen](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-attach-image-to-screen.png)
+![unity-attach-image-to-screen](../images/icevision-openvino-unity-tutorial/part-3/unity-attach-image-to-screen.png)
 
 
 
@@ -1513,7 +1513,7 @@ Select the Screen in the Hierarchy tab and open the `Shader` dropdown menu in th
 
 
 
-![unity-update-screen-material-shader](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-update-screen-material-shader.png)
+![unity-update-screen-material-shader](../images/icevision-openvino-unity-tutorial/part-3/unity-update-screen-material-shader.png)
 
 
 
@@ -1523,13 +1523,13 @@ Select the Screen in the Hierarchy tab and open the `Shader` dropdown menu in th
 
 Right-click a space in the Hierarchy tab and select Create Empty. Name the empty object `InferenceManager`.
 
-![unity-create-empty-gameobject](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-create-empty-gameobject.png)
+![unity-create-empty-gameobject](../images/icevision-openvino-unity-tutorial/part-3/unity-create-empty-gameobject.png)
 
 
 
 With the `InferenceManager` object selected, drag the `ObjectDetector` script into the Inspector tab.
 
-![unity-attach-object-detector-script](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-attach-object-detector-script.png)
+![unity-attach-object-detector-script](../images/icevision-openvino-unity-tutorial/part-3/unity-attach-object-detector-script.png)
 
 
 
@@ -1545,13 +1545,13 @@ We still need to create the GUI controls. To save time, I made a [Prefab](https:
 
 Drag and drop the Canvas prefab into a new folder called Prefabs. 
 
-![unity-import-canvas-prefab](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-import-canvas-prefab.png)
+![unity-import-canvas-prefab](../images/icevision-openvino-unity-tutorial/part-3/unity-import-canvas-prefab.png)
 
 
 
 From there, drag the prefab into the Hierarchy tab. We can see the GUI by switching to the Game view.
 
-![unity-add-canvas-to-hierarchy-tab](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-add-canvas-to-hierarchy-tab.png)
+![unity-add-canvas-to-hierarchy-tab](../images/icevision-openvino-unity-tutorial/part-3/unity-add-canvas-to-hierarchy-tab.png)
 
 
 
@@ -1559,19 +1559,19 @@ From there, drag the prefab into the Hierarchy tab. We can see the GUI by switch
 
 Next, we need to pair the `WebcamToggle` with the `UpdateWebcamToggle` function in the `ObjectDetector` script. Expand the Canvas object and select the `WebcamToggle`.
 
-![unity-select-webcamtoggle](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-select-webcamtoggle.png)
+![unity-select-webcamtoggle](../images/icevision-openvino-unity-tutorial/part-3/unity-select-webcamtoggle.png)
 
 
 
 Click and drag the `InferenceManager` into the `On Value Changed` field.
 
-![unity-webcamtoggle-assign-inference-manager](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-webcamtoggle-assign-inference-manager.png)
+![unity-webcamtoggle-assign-inference-manager](../images/icevision-openvino-unity-tutorial/part-3/unity-webcamtoggle-assign-inference-manager.png)
 
 
 
 Open the `No Function` dropdown menu and select `ObjectDetector → UpdateWebcamToggle`.
 
-![unity-webcamtoggle-assign-inference-manager-function](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-webcamtoggle-assign-inference-manager-function.png)
+![unity-webcamtoggle-assign-inference-manager-function](../images/icevision-openvino-unity-tutorial/part-3/unity-webcamtoggle-assign-inference-manager-function.png)
 
 
 
@@ -1579,29 +1579,29 @@ Open the `No Function` dropdown menu and select `ObjectDetector → UpdateWebcam
 
 We can follow the same steps to pair the `WebcamDropdown` with the `UpdateWebcamDevice` function in the `ObjectDetector` script.
 
-![unity-webcamdropdown-assign-inference-manager](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-webcamdropdown-assign-inference-manager.png)
+![unity-webcamdropdown-assign-inference-manager](../images/icevision-openvino-unity-tutorial/part-3/unity-webcamdropdown-assign-inference-manager.png)
 
 This time select `ObjectDetector → UpdateWebcamDevice`.
 
-![unity-webcamdropdown-assign-inference-manager-function](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-webcamdropdown-assign-inference-manager-function.png)
+![unity-webcamdropdown-assign-inference-manager-function](../images/icevision-openvino-unity-tutorial/part-3/unity-webcamdropdown-assign-inference-manager-function.png)
 
 
 
 **Configure `OpenVINOModelDropdown` On Value Changed Event**
 
-![unity-update-openvino-model-dropdown-on-value-changed](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-update-openvino-model-dropdown-on-value-changed.png)
+![unity-update-openvino-model-dropdown-on-value-changed](../images/icevision-openvino-unity-tutorial/part-3/unity-update-openvino-model-dropdown-on-value-changed.png)
 
 
 
 **Configure `OpenVINODeviceDropdown` On Value Changed Event**
 
-![unity-update-openvino-device-dropdown-on-value-changed](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-update-openvino-device-dropdown-on-value-changed.png)
+![unity-update-openvino-device-dropdown-on-value-changed](../images/icevision-openvino-unity-tutorial/part-3/unity-update-openvino-device-dropdown-on-value-changed.png)
 
 
 
 **Configure `ConfidenceThresholdSlider` On Value Changed Event**
 
-![unity-update-confidence-threshold-slider-on-value-changed](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-update-confidence-threshold-slider-on-value-changed.png)
+![unity-update-confidence-threshold-slider-on-value-changed](../images/icevision-openvino-unity-tutorial/part-3/unity-update-confidence-threshold-slider-on-value-changed.png)
 
 
 
@@ -1611,7 +1611,7 @@ This time select `ObjectDetector → UpdateWebcamDevice`.
 
 We can now assign the GUI objects to their respective fields for the `ObjectDetector` script.
 
-![unity-inference-manager-assign-gui-objects](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-inference-manager-assign-gui-objects.png)
+![unity-inference-manager-assign-gui-objects](../images/icevision-openvino-unity-tutorial/part-3/unity-inference-manager-assign-gui-objects.png)
 
 
 
@@ -1619,7 +1619,7 @@ We can now assign the GUI objects to their respective fields for the `ObjectDete
 
 Before we can use the GUI, we need to add an Event System. Right-click a space in the Hierarchy tab and select `UI → Event System`.
 
-![unity-add-eventsystem](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-add-eventsystem.png)
+![unity-add-eventsystem](../images/icevision-openvino-unity-tutorial/part-3/unity-add-eventsystem.png)
 
 
 
@@ -1627,13 +1627,13 @@ Before we can use the GUI, we need to add an Event System. Right-click a space i
 
 Click the play button in the top-middle of the Editor window to test the project.
 
-![unity-click-play-button](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-click-play-button.png)
+![unity-click-play-button](../images/icevision-openvino-unity-tutorial/part-3/unity-click-play-button.png)
 
 
 
 There should be a bounding box for a call symbol and one for the idle hand.
 
-![unity-test-in-editor](G:\Projects\GitHub\christianjmills\images\icevision-openvino-unity-tutorial\part-3\unity-test-in-editor.png)
+![unity-test-in-editor](../images/icevision-openvino-unity-tutorial/part-3/unity-test-in-editor.png)
 
 
 
