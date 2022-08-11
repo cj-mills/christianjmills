@@ -1631,7 +1631,7 @@ Click the play button in the top-middle of the Editor window to test the project
 
 
 
-There should be a bounding box for a call symbol and one for the idle hand.
+There should be a bounding box for the call sign and one for the idle hand.
 
 ![unity-test-in-editor](../images/icevision-openvino-unity-tutorial/part-3/unity-test-in-editor.png)
 
