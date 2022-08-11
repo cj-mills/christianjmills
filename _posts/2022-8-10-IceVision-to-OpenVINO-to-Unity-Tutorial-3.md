@@ -30,9 +30,13 @@ search_exclude: false
 
 
 
+> **Important:** This post assumes you already [Unity Hub](https://unity3d.com/get-unity/download) on your system. Check out [this section](https://christianjmills.com/Fastai-to-Unity-Tutorial-2/#set-up-unity-hub) from a previous tutorial if this is not the case ([link](https://christianjmills.com/Fastai-to-Unity-Tutorial-2/#set-up-unity-hub)).
+
+
+
 ## Create New Project
 
-Go back to the Projects section after the editor finishes installing and click New Project.
+Open the Unity Hub and click New Project.
 
 ![unity-hub-new-project](../images/icevision-openvino-unity-tutorial/part-3/unity-hub-new-project.png)
 
