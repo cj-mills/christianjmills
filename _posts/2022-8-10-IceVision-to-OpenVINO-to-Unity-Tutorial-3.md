@@ -78,7 +78,7 @@ Finally, click Create Project in the lower right-hand corner.
 
 ## Import Assets
 
-Once the project loads, we'll store the [DLL files](https://christianjmills.com/Fastai-to-OpenVINO-to-Unity-Tutorial-Windows-2/#gather-dependencies) from part 2 in a new folder called `Plugins`. Right-click a space in the Assets section and select `Create → Folder` from the popup menu.
+Once the project loads, we'll store the [DLL files](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-2/#gather-dependencies) from part 2 in a new folder called `Plugins`. Right-click a space in the Assets section and select `Create → Folder` from the popup menu.
 
 ![unity-create-folder](../images/icevision-openvino-unity-tutorial/part-3/unity-create-folder.png)
 
