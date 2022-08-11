@@ -31,6 +31,8 @@ search_exclude: false
 
 [Part 1](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-1/) covered finetuning an object detection model using the IceVision library and exporting it as an OpenVINO IR model. This post covers creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform inference with this model using [OpenVINO](https://docs.openvino.ai/latest/index.html).
 
+> **Important:** This post assumes [Visual Studio](https://visualstudio.microsoft.com/downloads/) is present on your system.
+
 
 
 ## Install OpenVINO
