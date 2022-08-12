@@ -1,5 +1,5 @@
 ---
-title: OpenVINO Object Detection for Unity Tutorial Pt.1
+title: OpenVINO Object Detection for Unity Tutorial Pt.1 (Outdated)
 layout: post
 toc: false
 comments: true
@@ -9,6 +9,15 @@ hide: false
 permalink: /:title/
 search_exclude: false
 ---
+
+
+
+### 8/11/2022:
+
+* This tutorial is outdated. Use the new version at the link below.
+* [End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-1/)
+
+
 
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
