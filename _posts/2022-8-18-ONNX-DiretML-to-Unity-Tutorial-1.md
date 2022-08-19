@@ -549,7 +549,7 @@ DLLExport int GetProviderCount()
 
 **Define a function to get the name of an execution provider**
 
-Next, we'll define a function to return the name of a device at a specified index for the list of available devices.
+Next, we'll define a function to return the name at a specified index in the list of available execution providers.
 
 ```c++
 /// <summary>
