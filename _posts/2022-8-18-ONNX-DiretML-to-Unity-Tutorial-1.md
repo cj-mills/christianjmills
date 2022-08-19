@@ -863,8 +863,6 @@ void NmsSortedBboxes()
 
 We will access the pixel data for the input image from Unity with a pointer to a [uchar](https://docs.opencv.org/4.5.1/d1/d1b/group__core__hal__interface.html#ga65f85814a8290f9797005d3b28e7e5fc) (unsigned 1-byte integer) array and wrap the data in a [cv::Mat](https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html) variable for processing. 
 
-We don't need to normalize the input image since the IR model does it internally.
-
 After processing the model output, we'll return the final number of detected objects to Unity so we can initialize an array of objects.
 
 * [cv::Mat](https://docs.opencv.org/3.4/d3/d63/classcv_1_1Mat.html): n-dimensional dense array class  
