@@ -57,7 +57,7 @@ We'll use the [OpenCV](https://github.com/opencv/opencv) library to process imag
 
 Select the `opencv-4.6.0-vc14_vc15.exe` option from the Assets list.
 
-![opencv_github_download_executable](G:\Projects\GitHub\christianjmills\images\onnx-directml-unity-tutorial\part-1\opencv_github_download_executable.png)
+![opencv_github_download_executable](../images/onnx-directml-unity-tutorial/part-1/opencv_github_download_executable.png)
 
 
 
@@ -241,25 +241,25 @@ We can install ONNX Runtime with DirectML directly into our project via the [NuG
 
 
 
-![visual-studio-open-nuget-package-manager](G:\Projects\GitHub\christianjmills\images\onnx-directml-unity-tutorial\part-1\visual-studio-open-nuget-package-manager.png)
+![visual-studio-open-nuget-package-manager](../images/onnx-directml-unity-tutorial/part-1/visual-studio-open-nuget-package-manager.png)
 
 
 
 Select the `Browse` option and enter `Microsoft.ML.OnnxRuntime.DirectML` into the search box.
 
-![visual-studio-nuget-package-manager-search-for-package](G:\Projects\GitHub\christianjmills\images\onnx-directml-unity-tutorial\part-1\visual-studio-nuget-package-manager-search-for-package.png)
+![visual-studio-nuget-package-manager-search-for-package](../images/onnx-directml-unity-tutorial/part-1/visual-studio-nuget-package-manager-search-for-package.png)
 
 
 
 With the package selected, click the `Install` button. The project uses version `1.12.1`.
 
-![visual-studio-nuget-package-manager-install-package](G:\Projects\GitHub\christianjmills\images\onnx-directml-unity-tutorial\part-1\visual-studio-nuget-package-manager-install-package.png)
+![visual-studio-nuget-package-manager-install-package](../images/onnx-directml-unity-tutorial/part-1/visual-studio-nuget-package-manager-install-package.png)
 
 
 
 Click `OK` in the popup window.
 
-![visual-studio-approve-nuget-package-install](G:\Projects\GitHub\christianjmills\images\onnx-directml-unity-tutorial\part-1\visual-studio-approve-nuget-package-install.png)
+![visual-studio-approve-nuget-package-install](../images/onnx-directml-unity-tutorial/part-1/visual-studio-approve-nuget-package-install.png)
 
 
 
