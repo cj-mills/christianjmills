@@ -1078,7 +1078,7 @@ This post covered creating a dynamic link library ([DLL](https://docs.microsoft.
 
 **Training Tutorial:** [End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1](https://christianjmills.com/IceVision-to-OpenVINO-to-Unity-Tutorial-1/)
 
-**Next:** 
+**Next:** [Object Detection for Unity With ONNX Runtime and DirectML Pt. 2](https://christianjmills.com/ONNX-DiretML-to-Unity-Tutorial-2/)
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/onnx-directml-unity-tutorial)
 
