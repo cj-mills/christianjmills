@@ -18,7 +18,7 @@ In further proof that you should never skip days when trying to form a new habit
 
 Having fixed the swapped offsets, I've started working on mapping the estimated key point locations to a 2D sprite. Before I could do that though, I had to learn about 2D character rigging. Fortunately, [Brackeys](https://www.youtube.com/channel/UCYbK_tjZ2OrIZFBvU6CCMiA) has a great [video](https://www.youtube.com/watch?v=eXIuizGzY2A) explaining how to do it. The sprite used in the video doesn't seem to be available anymore so I also had learn how to setup my own. I decided to go with this one from the [Mighty Heroes (Rogue) 2D Fantasy Characters Pack](https://assetstore.unity.com/packages/2d/characters/mighty-heroes-rogue-2d-fantasy-characters-pack-85770) for no particular reason.
 
-<img src="\images\barracuda-pose-estimation-project-log\part-5\2D_character_sprite.PNG" alt="2D_character_sprite" style="zoom:50%;" />
+<img src="../images/barracuda-pose-estimation-project-log/part-5/2D_character_sprite.PNG" alt="2D_character_sprite" style="zoom:50%;" />
 
 It turns out that 2D sprites are super tiny compared to the range of input resolutions I use for the pose estimation model. My current solution for resolving the size difference involves scaling key point locations based on the relative distances between joints. For example, I get the scale for the left wrist location by dividing the distance between the shoulder and the elbow for the sprite by the distance between the estimated location for the user's shoulder and elbow.
 
@@ -28,7 +28,7 @@ This actually worked pretty well when combined with Unity's 2D character rigging
 
 ### My Results:
 
-<img src="\images\barracuda-pose-estimation-project-log\part-5\2D_sprite_animation.gif" alt="2D_sprite_animation" style="zoom:50%;" />
+<img src="../images/barracuda-pose-estimation-project-log/part-5/2D_sprite_animation.gif" alt="2D_sprite_animation" style="zoom:50%;" />
 
 This 2D sprite turned out not to be ideal for testing out a full range of poses. It's drawn facing towards one side of the screen which makes it a bit awkward when testing out the joint mappings. Ideally, the sprite would be facing directly towards the user.
 
