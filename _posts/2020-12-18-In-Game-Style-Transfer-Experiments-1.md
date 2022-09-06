@@ -54,7 +54,13 @@ You can technically just make masks and noise for the whole image rather than fo
 
 As you can see below, this model produces much less flickering than the `fast_neural_style` model. The next step was to see how well this transferred to Unity.
 
-![lynx_380p_cropped](..\images\in-game-style-transfer-experiments\part-1\lynx_380p_cropped.gif)
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/in-game-style-transfer-experiments\part-1\lynx_380p_cropped.mp4" type="video/mp4">
+	</video>
+</center>
+
+
 
 ### Unity Performance
 
