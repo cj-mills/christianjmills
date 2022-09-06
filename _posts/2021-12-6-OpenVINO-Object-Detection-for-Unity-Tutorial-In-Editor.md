@@ -505,7 +505,11 @@ We will call the `FreeResources()` method we created earlier in the `OnDisable()
 
 Those are all the changes we need to make. Now we can try out the project in the editor.
 
-![yolox_in-editor](..\images\openvino-yolox-unity-in-editor\yolox_in-editor.gif)
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/openvino-yolox-unity-in-editor\yolox_in-editor.mp4" type="video/mp4">
+	</video>
+</center>
 
 
 
