@@ -12,7 +12,7 @@ permalink: /:title/
 
 I've been fascinated with style transfer models ever since I first learned about them a few years ago. Most available style transfer applications are meant for single images. Interestingly, Unity seems to have another use case in mind. The home page for the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html) library has an image of what appears to be in-game style transfer.
 
-<img src="\images\in-game-style-transfer\barracuda_landing_half.jpg" alt="barracuda_landing" style="zoom:80%;" />
+<img src="../images/in-game-style-transfer/barracuda_landing_half.jpg" alt="barracuda_landing" style="zoom:80%;" />
 
 This was such an intriguing idea that I decided to give it a shot before getting started on my pose estimation project. One concern I had going in was performance. The style transfer models I'd used previously weren't exactly designed for real-time inference. This concern turned out to be well founded. The frame rates for my first attempt were so low it looked like a stop motion film.
 
@@ -20,11 +20,11 @@ At the time, I'd assumed the low frame rates were purely due to the performance 
 
 Working on my pose estimation project taught me a lot about how to speed up the processing steps in Unity. Most importantly, I learned how to use [compute shaders](https://docs.unity3d.com/Manual/class-ComputeShader.html) to perform preprocessing steps on the GPU. I decided to see if this was enough to get a style transfer model to run at playable frame rates. I decided to use the demo [project](https://github.com/Unity-Technologies/Kinematica_Demo) for Unity's [Kinematica](https://docs.unity3d.com/Manual/com.unity.kinematica.html) package to make things more interesting to look at.
 
-<img src="\images\in-game-style-transfer\kinematica_demo_reference.PNG" alt="kinematica_demo_reference" style="zoom:80%;" />
+<img src="../images/in-game-style-transfer/kinematica_demo_reference.PNG" alt="kinematica_demo_reference" style="zoom:80%;" />
 
 For testing purposes, I started with one of the pretrained fast style transfer [models](https://github.com/pytorch/examples/tree/master/fast_neural_style#models) provided in the [ONNX model zoo](https://github.com/onnx/models). This particular model was trained to apply the style of the mosaic image below. I plan to use my own style transfer models in the future.
 
-![mosaic](\images\in-game-style-transfer\mosaic.jpg)
+![mosaic](../images/in-game-style-transfer/mosaic.jpg)
 
 Moving the processing steps from the CPU to the GPU allowed me to get "cinematic" frame rates. However, I needed to keep the resolution at or below 720p. Even at those resolutions, my GPU was pinned at 99-100% utilization the whole time. This might make a decent benchmark for the new RTX 3000 cards.
 
@@ -38,14 +38,14 @@ My current results might need a seizure warning, but they are still way better t
 
 ### My Results:
 
-<img src="\images\in-game-style-transfer\style_transfer_mosaic_360_480p.gif" alt="style_transfer_mosaic_360" style="zoom:100%;" />
+<img src="../images/in-game-style-transfer/style_transfer_mosaic_360_480p.gif" alt="style_transfer_mosaic_360" style="zoom:100%;" />
 
 ### Future Work:
 
 This recently released [project](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) on GitHub is very promising. Not only does it perform way better with videos, but it's also possible to modify the style while your using it. I haven't tried exporting the model to ONNX yet but I plan to fairly soon. Even if it's fully supported by ONNX, I'll still need to see if the Barracuda library supports it. But, it should be worth the effort to get it working. You can see just how much smoother video from this new model is in this short sample I made with it.
 
-![lynx_mosaic](\images\in-game-style-transfer\lynx_mosaic_small5.gif)
+![lynx_mosaic](../images/in-game-style-transfer/lynx_mosaic_small5.gif)
 
 It's not 100% perfect. There's still a tiny bit of flickering in the background. However, this was made with just two sample frames. Also that mosaic image makes it more likely for such flickering to appear. If we use a different style image, the flickering is basically nonexistent. The noise is present because the Gif below was made from an mp4 rather than PNGs.
 
-![lynx_facets2](\images\in-game-style-transfer\lynx_facets3.gif)
+![lynx_facets2](../images/in-game-style-transfer/lynx_facets3.gif)
