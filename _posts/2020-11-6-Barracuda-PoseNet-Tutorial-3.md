@@ -32,19 +32,19 @@ We can now start using the Barracuda library. We'll first install the Barracuda 
 
 Select the `Package Manager` tab in the Unity editor.
 
-![select_package_manager_tab](\images\barracuda-posenet-tutorial\part-3\select_package_manager_tab.png)
+![select_package_manager_tab](../images/barracuda-posenet-tutorial/part-3/select_package_manager_tab.png)
 
 Type `Barracuda` into the search box. The version of the package used in the tutorial is `1.0.4`.
 
-![barracuda_search](\images\barracuda-posenet-tutorial\part-3\barracuda_search.PNG)
+![barracuda_search](../images/barracuda-posenet-tutorial/part-3/barracuda_search.PNG)
 
 Click the `Install` button to install the package.
 
-![barracuda_install](\images\barracuda-posenet-tutorial\part-3\barracuda_install.PNG)
+![barracuda_install](../images/barracuda-posenet-tutorial/part-3/barracuda_install.PNG)
 
 Wait for Unity to install the dependencies.
 
-![barracuda_installation_progress](\images\barracuda-posenet-tutorial\part-3\barracuda_installation_progress.PNG)
+![barracuda_installation_progress](../images/barracuda-posenet-tutorial/part-3/barracuda_installation_progress.PNG)
 
 ## Import PoseNet Model
 
@@ -62,7 +62,7 @@ Create a new folder in the `Assets` window and name it `Models`. Drag and drop t
 
 If you select the `resnet50` asset, you should see the following in the `Inspector` tab.
 
-![resnet50_inspector_tab](\images\barracuda-posenet-tutorial\part-3\resnet50_inspector_tab.PNG)
+![resnet50_inspector_tab](../images/barracuda-posenet-tutorial/part-3/resnet50_inspector_tab.PNG)
 
 ## Load the Model
 
@@ -72,13 +72,13 @@ Next, we need to implement the code for loading the model in the `PoseNet` [scri
 
 Open the `PoseNet` script and add the `Unity.Barracuda` namespace at the top of the script.
 
-![add_barracuda_namespace](\images\barracuda-posenet-tutorial\part-3\add_barracuda_namespace.png)
+![add_barracuda_namespace](../images/barracuda-posenet-tutorial/part-3/add_barracuda_namespace.png)
 
 ### Create `modelAsset` Variable
 
 Make a new public `NNModel` variable called `modelAsset`. We'll assign the `resnet50` asset to this variable in the Unity Editor.
 
-![create_modelAsset_variable](\images\barracuda-posenet-tutorial\part-3\create_modelAsset_variable.png)
+![create_modelAsset_variable](../images/barracuda-posenet-tutorial/part-3/create_modelAsset_variable.png)
 
 ### Create `workerType` Variable
 
@@ -86,7 +86,7 @@ We'll also add a variable that let's us choose which [backend](https://docs.unit
 
 Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
-![load_model_variables_1](\images\barracuda-posenet-tutorial\part-3\create_workerType_variable.png)
+![load_model_variables_1](../images/barracuda-posenet-tutorial/part-3/create_workerType_variable.png)
 
 ### Create `m_RuntimeModel` Variable
 
@@ -96,13 +96,13 @@ We need to compile the `modelAsset` into a run-time model to perform inference. 
 
 Next, we'll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
-![load_model_variables_2](\images\barracuda-posenet-tutorial\part-3\load_model_variables_2.png)
+![load_model_variables_2](../images/barracuda-posenet-tutorial/part-3/load_model_variables_2.png)
 
 ### Create `heatmapLayer` Variable
 
 Add a new private `string` variable to store the  name of the heatmap layer in the `resnet50` model. We'll need the output of this layer to determine the location of key points (e.g. nose, elbows, knees, etc.) in the input image. We can find the name for the model's output layers in the `Inspector` tab. For our model, the heatmap layer is named `float_heamap`.
 
-![resnet50_output_layers](\images\barracuda-posenet-tutorial\part-3\resnet50_output_layers.PNG)
+![resnet50_output_layers](../images/barracuda-posenet-tutorial/part-3/resnet50_output_layers.PNG)
 
 **Note:** The last two output layers, `resnet_v1_50/displacement_bwd_2/BiasAd` and `resnet_v1_50/displacement_fwd_2/BiasAd`, are used when estimating the pose of multiple people. We'll be sticking to single pose estimation for this series. 
 
@@ -110,13 +110,13 @@ Add a new private `string` variable to store the  name of the heatmap layer in t
 
 We'll go ahead and create a variable for the `float_short_offsets` layer as well since we'll need it later. The output from this layer is used to refine the estimated key point locations determined with the heatmap layer. 
 
-![layer_name_variables](\images\barracuda-posenet-tutorial\part-3\layer_name_variables.png)
+![layer_name_variables](../images/barracuda-posenet-tutorial/part-3/layer_name_variables.png)
 
 ### Compile the Model
 
 We need to get an object oriented representation of the model before we can work with it. We'll do this in the `Start()` method and store it in the `m_RuntimeModel`.
 
-![compile_model](\images\barracuda-posenet-tutorial\part-3\compile_model.png)
+![compile_model](../images/barracuda-posenet-tutorial/part-3/compile_model.png)
 
 ### Modify the Model
 
@@ -124,23 +124,23 @@ We need to add a [`Sigmoid`](https://docs.unity3d.com/Packages/com.unity.barracu
 
 First, we need to make a new private `string` variable to store the name of this new layer. We'll name the variable `predictionLayer` and name the layer `heatmap_predictions`.
 
-![predictionLayer_name](\images\barracuda-posenet-tutorial\part-3\predictionLayer_name.png)
+![predictionLayer_name](../images/barracuda-posenet-tutorial/part-3/predictionLayer_name.png)
 
 We'll add the new layer using a [`ModelBuilder`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.ModelBuilder.html).
 
-![add_sigmoid_layer](\images\barracuda-posenet-tutorial\part-3\add_sigmoid_layer.png)
+![add_sigmoid_layer](../images/barracuda-posenet-tutorial/part-3/add_sigmoid_layer.png)
 
 ### Initialize the Inference Engine
 
 Now we can create a worker to execute the modified model using the selected backend. We'll do this using the [`WorkerFactory.CreateWorker()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_) method.
 
-![create_worker](\images\barracuda-posenet-tutorial\part-3\create_worker.png)
+![create_worker](../images/barracuda-posenet-tutorial/part-3/create_worker.png)
 
 ### Release Inference Engine Resources
 
 We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we'll do it in the `OnDisable()` method. This method gets called when the Unity project exits. We need to implement this method in the `PoseNet` script.
 
-![onDisable_method](\images\barracuda-posenet-tutorial\part-3\onDisable_method.png)
+![onDisable_method](../images/barracuda-posenet-tutorial/part-3/onDisable_method.png)
 
 ## Set Inspector Variables
 
@@ -154,7 +154,7 @@ With the `PoseEstimator` object selected, drag and drop the `resnet50` asset int
 
 Set the backend to the `Compute Precompiled` option in the `Worker Type` drop-down. This is the most efficient GPU backend.
 
-![assign_model_asset_and_backend](\images\barracuda-posenet-tutorial\part-3\assign_model_asset_and_backend.PNG)
+![assign_model_asset_and_backend](../images/barracuda-posenet-tutorial/part-3/assign_model_asset_and_backend.PNG)
 
 ## Perform Inference
 
@@ -164,23 +164,23 @@ Finally, we'll add the code to perform inference in the `Update()` method.
 
 We need to convert the `processedImage` to a `Tensor` before we can feed it to the model. The `Tensor` constructor requires us to specify the number of channels in the image. We don't need the alpha (transparency) channel so we'll specify `3` for the RGB color channels.
 
-![create_input_tensor](\images\barracuda-posenet-tutorial\part-3\create_input_tensor.png)
+![create_input_tensor](../images/barracuda-posenet-tutorial/part-3/create_input_tensor.png)
 
 ### Execute the Model
 
 We'll use the [`engine.Execute()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_) method to perform inference. This method takes in the input Tensor and schedules the network execution.
 
-![execute_model](\images\barracuda-posenet-tutorial\part-3\execute_model.png)
+![execute_model](../images/barracuda-posenet-tutorial/part-3/execute_model.png)
 
 ### Release Input Tensor Resources
 
 We'll need to manually release the allocated resources for the Tensor with the `input.Dispose()` method.
 
-![dispose_input_tensor](\images\barracuda-posenet-tutorial\part-3\dispose_input_tensor.png)
+![dispose_input_tensor](../images/barracuda-posenet-tutorial/part-3/dispose_input_tensor.png)
 
 Here is the revised `Update()` method.
 
-![perform_inference_update_method](\images\barracuda-posenet-tutorial\part-3\perform_inference_update_method_3.png)
+![perform_inference_update_method](../images/barracuda-posenet-tutorial/part-3/perform_inference_update_method_3.png)
 
 ## Summary
 
