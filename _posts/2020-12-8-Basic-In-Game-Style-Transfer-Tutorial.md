@@ -392,7 +392,13 @@ You might see a warning saying that there isn't a camera rendering. This would b
 
 We can finally press the play button and see how it looks.
 
-![basic_in_game_style_transfer_4](..../images/basic-in-game-style-transfer-tutorial/basic_in_game_style_transfer_4.gif)
+
+
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/basic-in-game-style-transfer-tutorial/basic_in_game_style_transfer_4.mp4" type="video/mp4">
+	</video>
+</center>
 
 
 
