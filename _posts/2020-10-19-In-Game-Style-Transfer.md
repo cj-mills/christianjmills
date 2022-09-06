@@ -49,7 +49,12 @@ My current results might need a seizure warning, but they are still way better t
 
 This recently released [project](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) on GitHub is very promising. Not only does it perform way better with videos, but it's also possible to modify the style while your using it. I haven't tried exporting the model to ONNX yet but I plan to fairly soon. Even if it's fully supported by ONNX, I'll still need to see if the Barracuda library supports it. But, it should be worth the effort to get it working. You can see just how much smoother video from this new model is in this short sample I made with it.
 
-![lynx_mosaic](../images/in-game-style-transfer/lynx_mosaic_small5.gif)
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/in-game-style-transfer/lynx_mosaic_small5.mp4" type="video/mp4">
+	</video>
+</center>
+
 
 It's not 100% perfect. There's still a tiny bit of flickering in the background. However, this was made with just two sample frames. Also that mosaic image makes it more likely for such flickering to appear. If we use a different style image, the flickering is basically nonexistent. The noise is present because the Gif below was made from an mp4 rather than PNGs.
 
