@@ -26,11 +26,11 @@ Annoyingly, now that I've finally fixed this issue the post processing bottlenec
 
 ### Before:
 
-![pose_estimation_swapped_offsets](\images\barracuda-pose-estimation-project-log\part-4\pose_estimation_swapped_offsets.gif)
+![pose_estimation_swapped_offsets](../images/barracuda-pose-estimation-project-log/part-4/pose_estimation_swapped_offsets.gif)
 
 ### After:
 
-![pose_estimation_corrected_offsets](\images\barracuda-pose-estimation-project-log\part-4\pose_estimation_corrected_offsets.gif)
+![pose_estimation_corrected_offsets](../images/barracuda-pose-estimation-project-log/part-4/pose_estimation_corrected_offsets.gif)
 
 
 
