@@ -76,7 +76,12 @@ In short, I have some homework to do. I've only glanced through the code for Uni
 
 **Note:** Performance dropped slightly when recording for the Gifs below. Hence, the displayed fps is a bit lower.
 
-![unity_style_transfer](..\images\in-game-style-transfer-experiments\part-1\unity_style_transfer.gif)
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/in-game-style-transfer-experiments\part-1\unity_style_transfer.mp4" type="video/mp4">
+	</video>
+</center>
+
 
 The actual scene is about as simple as it gets so I can't directly compare the lack of flickering just yet. I'll wait until I get this running in the Kinematica demo for that.
 
