@@ -38,7 +38,12 @@ My current results might need a seizure warning, but they are still way better t
 
 ### My Results:
 
-<img src="../images/in-game-style-transfer/style_transfer_mosaic_360_480p.gif" alt="style_transfer_mosaic_360" style="zoom:100%;" />
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/in-game-style-transfer/style_transfer_mosaic_360_480p.mp4" type="video/mp4">
+	</video>
+</center>
+
 
 ### Future Work:
 
