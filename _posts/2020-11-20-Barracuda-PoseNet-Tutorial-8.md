@@ -139,7 +139,13 @@ Now we can test the modifications on some vertical videos from [Pexels](https://
 1. [Woman Doing a Jump Rope Exercise](https://www.pexels.com/video/woman-doing-a-jump-rope-exercise-2785536/)
 2. [Man Dancing Hip-Hop](https://www.pexels.com/video/man-dancing-hip-hop-2795742/)
 
-![jump_rope_pose_estimation_4](../images/barracuda-posenet-tutorial/part-8/jump_rope_pose_estimation_4.gif)
+
+
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/barracuda-posenet-tutorial/part-8/jump_rope_pose_estimation_4.mp4" type="video/mp4">
+	</video>
+</center>
 
 
 
