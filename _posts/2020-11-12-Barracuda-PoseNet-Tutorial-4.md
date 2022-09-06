@@ -33,7 +33,7 @@ So far, major operations have been performed on the GPU. We'll be performing the
 
 The post processing steps will be handled in a new method called `ProcessOutput()`. The method will take in the output `Tensors` from the `predictionLayer` and the `offsetsLayer`. 
 
-![processoutput_method_empty](\images\barracuda-posenet-tutorial\part-4\processoutput_method_empty.png)
+![processoutput_method_empty](../images/barracuda-posenet-tutorial/part-4/processoutput_method_empty.png)
 
 Before filling out the function, we need to create a new constant and a new variable.
 
@@ -63,7 +63,7 @@ The PoseNet model estimates the 2D locations of `17` key points on a human body.
 
 Since the number of key points never changes, we'll store it in an `int` constant. Name the constant `numKeypoints` and set the value to `17`.
 
-![numKeypoints_constant](\images\barracuda-posenet-tutorial\part-4\numKeypoints_constant.png)
+![numKeypoints_constant](../images/barracuda-posenet-tutorial/part-4/numKeypoints_constant.png)
 
 ### Create `keypointLocations` Variable
 
@@ -73,13 +73,13 @@ This variable will also store the confidence values associated with the coordina
 
 There are many ways we can store this information. For simplicity, we'll stick with an array of arrays. The array will have `17` elements. Each element will contain the location information for the key point that matches their index.
 
-![numKeyPoints_and_keypointLocations](\images\barracuda-posenet-tutorial\part-4\keypointLocations_variable.png)
+![numKeyPoints_and_keypointLocations](../images/barracuda-posenet-tutorial/part-4/keypointLocations_variable.png)
 
 ### Retrieve Output Tenors
 
 Call `ProcessOutput()` after `engine.Execute(input)` in the `Update()`  method. We'll use the [`engine.PeekOutput()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_PeekOutput_System_String_) method to get a reference to the output `Tensors` from the model. Since they are just references, we don't need to manually dispose of them.
 
-![update_method_processoutput](\images\barracuda-posenet-tutorial\part-4\update_method_processoutput.png)
+![update_method_processoutput](../images/barracuda-posenet-tutorial/part-4/update_method_processoutput.png)
 
 Now we can start filling out the `ProcessOutput()` method.
 
@@ -101,19 +101,19 @@ To get the stride value, we'll select a dimension of `inputImage` and subtract `
 
 For most input resolutions this will yield a value that is slightly above the actual stride. If we left it there, the key point locations would be offset from the `videoTexture`. To compensate, we'll subtract the remainder of the calculated stride divided by `8`. The stride for the PoseNet models provided in this tutorial series are all multiples of `8`.  
 
-![stride](\images\barracuda-posenet-tutorial\part-4\stride.png)
+![stride](../images/barracuda-posenet-tutorial/part-4/stride.png)
 
 ### Calculate Image Scale
 
 After scaling the output back to the `inputImage` resolution, we'll need to scale the output up to the source resolution. We can use the dimensions of `videoTexture` to calculate this scale.
 
-![scale](\images\barracuda-posenet-tutorial\part-4\scale.png)
+![scale](../images/barracuda-posenet-tutorial/part-4/scale.png)
 
 ### Calculate Aspect Ratio Scale
 
 As I noted in [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Barracuda-PoseNet-Tutorial-2.html#resize-the-image), we need to compensate for the change in aspect ratio that results from resizing the image. We can use the dimensions of the `videoTexture` to stretch the output to the original aspect ratio. 
 
-![unsqueezeScale](\images\barracuda-posenet-tutorial\part-4\unsqueezeScale.png)
+![unsqueezeScale](../images/barracuda-posenet-tutorial/part-4/unsqueezeScale.png)
 
 
 
@@ -121,7 +121,7 @@ As I noted in [Part 2](https://christianjmills.com/unity/tutorial/2020/11/04/Bar
 
 Now we can iterate through each of the heatmaps and determine the location of the associated key points.
 
-![iterate_through_heatmaps](\images\barracuda-posenet-tutorial\part-4\iterate_through_heatmaps_2.png)
+![iterate_through_heatmaps](../images/barracuda-posenet-tutorial/part-4/iterate_through_heatmaps_2.png)
 
 ### Locate Key Point Indices
 
@@ -129,13 +129,13 @@ For each heatmap, we'll first need to locate the index with the  highest confide
 
 The new method will be called `LocateKeyPointIndex()` and take in the `heatmaps` and `offsets` tensors along with the current `keypointIndex`. It will return a [`Tuple`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-tuples) containing the `(x,y)` coordinates from the heatmap index, the associated offset vector, and the confidence value at the heatmap index.
 
-![locateKeyPointIndex_method](\images\barracuda-posenet-tutorial\part-4\locateKeyPointIndex_method.png)
+![locateKeyPointIndex_method](../images/barracuda-posenet-tutorial/part-4/locateKeyPointIndex_method.png)
 
 #### Call the Method
 
 We'll call `LocateKeyPointIndex()` at the start of each iteration through the for loop in `ProcessOutput()`.
 
-![processOutput_locateIndices](\images\barracuda-posenet-tutorial\part-4\processOutput_locateIndices_2.png)
+![processOutput_locateIndices](../images/barracuda-posenet-tutorial/part-4/processOutput_locateIndices_2.png)
 
 ### Calculate Key Point Positions
 
@@ -143,13 +143,13 @@ Now we can calculate the estimated key point locations relative to the source `v
 
 Only the x-axis position is scaled by the `unsqueezeValue`. This is specific to our current `videoTexture` aspect ratio. I will cover a more dynamic approach in a later post.
 
-![calculate_position](\images\barracuda-posenet-tutorial\part-4\calculate_position_2.png)
+![calculate_position](../images/barracuda-posenet-tutorial/part-4/calculate_position_2.png)
 
 #### Store Key Point Positions
 
 Finally, we'll store the location data for the current key point at the corresponding index in the `keypointLocations` array.
 
-![store_position](\images\barracuda-posenet-tutorial\part-4\store_position_2.png)
+![store_position](../images/barracuda-posenet-tutorial/part-4/store_position_2.png)
 
 ## Summary
 
