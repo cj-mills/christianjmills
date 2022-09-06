@@ -35,7 +35,7 @@ We can add the option to use a webcam feed by making some modifications to the `
 
 Open the `PoseNet` script and create a new public `bool` variable. Name the variable `useWebcam` and set the default value to `false`. This will create a checkbox in the `Inspector` tab that we can use to enable and disable the webcam.
 
-![useWebcam_variable](\images\barracuda-posenet-tutorial\part-7\useWebcam_variable.png)
+![useWebcam_variable](../images/barracuda-posenet-tutorial/part-7/useWebcam_variable.png)
 
 
 
@@ -43,7 +43,7 @@ Open the `PoseNet` script and create a new public `bool` variable. Name the vari
 
 We'll use a [`WebCamTexture`](https://docs.unity3d.com/ScriptReference/WebCamTexture.html) variable to store the live video input from our webcam. Name the variable `webcamTexture`.
 
-![webcamTexture_variable](\images\barracuda-posenet-tutorial\part-7\webcamTexture_variable.png)
+![webcamTexture_variable](../images/barracuda-posenet-tutorial/part-7/webcamTexture_variable.png)
 
 
 
@@ -69,7 +69,7 @@ Finally, we'll deactivate the `Video Player` as it's not being used.
 
 #### Completed Code
 
-![initialize_webcam_start_method](\images\barracuda-posenet-tutorial\part-7\initialize_webcam_start_method.png)
+![initialize_webcam_start_method](../images/barracuda-posenet-tutorial/part-7/initialize_webcam_start_method.png)
 
 
 
@@ -79,7 +79,7 @@ Finally, we'll deactivate the `Video Player` as it's not being used.
 
 We'll use the `Graphics.Blit()` method to update the `videoTexture` with the data from `webcamTexture`. Add the following code at the top of the `Update()` method. 
 
-![useWebcam_update_method](\images\barracuda-posenet-tutorial\part-7\useWebcam_update_method.png)
+![useWebcam_update_method](../images/barracuda-posenet-tutorial/part-7/useWebcam_update_method.png)
 
 
 
@@ -87,7 +87,7 @@ We'll use the `Graphics.Blit()` method to update the `videoTexture` with the dat
 
 Flipping the `VideoScreen` does not flip the `videoTexture` itself. Therefore, the output of the model will not be flipped either. We can fix this by mirroring the `xPos` values for the calculated key point locations.
 
-![useWebcam_processOutput_method](\images\barracuda-posenet-tutorial\part-7\useWebcam_processOutput_method.png)
+![useWebcam_processOutput_method](../images/barracuda-posenet-tutorial/part-7/useWebcam_processOutput_method.png)
 
 
 
@@ -95,7 +95,7 @@ Flipping the `VideoScreen` does not flip the `videoTexture` itself. Therefore, t
 
 Now we can enable and disable the webcam from the `Inspector` tab.
 
-![enable_useWebcam_inspector](\images\barracuda-posenet-tutorial\part-7\enable_useWebcam_inspector.PNG)
+![enable_useWebcam_inspector](../images/barracuda-posenet-tutorial/part-7/enable_useWebcam_inspector.PNG)
 
 `Note:` Don't toggle the `useWebcam` parameter during runtime with the code as it is.
 
