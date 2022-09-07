@@ -98,7 +98,11 @@ With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `Inp
 
 Make sure the `Display Input` checkbox is ticked in the `Inspector` tab. It will be easier to see the changes to the preprocessed images if we use a full color video. We can set the `Video Clip` for the `Video Player` to the `pexels_woman_dancing` file that we downloaded in [Part 1](https://christianjmills.com/Barracuda-PoseNet-Tutorial-1/#import-video-files).
 
-![preprocessed_image_preview6](../images/barracuda-posenet-tutorial/part-2-5/preprocessed_image_preview6.gif)
+<center>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
+		<source src="../videos/barracuda-posenet-tutorial/part-2-5/preprocessed_image_preview6.mp4" type="video/mp4">
+	</video>
+</center>
 
 ## Rescale Pixel Values
 
