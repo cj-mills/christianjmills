@@ -8,7 +8,7 @@ categories: [onnx, directml, yolox, object-detection, unity, tutorial]
 hide: false
 permalink: /:title/
 search_exclude: false
-images/onnx-directml-unity-tutorial/social-media/hero.jpg
+image: images/onnx-directml-unity-tutorial/social-media/hero.jpg
 ---
 
 
