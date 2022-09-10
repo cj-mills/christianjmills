@@ -29,12 +29,12 @@ The previous [fastai-to-unity](https://christianjmills.com/Fastai-to-Unity-Tutor
 
 This follow-up series covers using [LibTorch](https://pytorch.org/cppdocs/installing.html), the C++ distribution of [PyTorch](https://pytorch.org/), to perform inference with these newer model architectures. We'll modify the original tutorial code and create a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to access the LibTorch functionality in Unity.
 
-
 <center>
-	<video style="width:12800px;max-width:100%;height:auto;" controls loop>
+	<video style="width:auto;max-width:100%;height:auto;" controls loop>
 		<source src="../videos/fastai-libtorch-unity-tutorial/libtorch-plugin-demo.mp4" type="video/mp4">
 	</video>
 </center>
+
 
 
 
