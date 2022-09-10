@@ -8,6 +8,7 @@ categories: [icevision, openvino, yolox, object-detection, unity, tutorial]
 hide: false
 permalink: /:title/
 search_exclude: false
+image: images/icevision-openvino-unity-tutorial/social-media/hero.png
 ---
 
 
