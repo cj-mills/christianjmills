@@ -1149,11 +1149,11 @@ public void ScaleBoundingBoxes()
     {
         // The smallest dimension of the screen
         float minScreenDim = Mathf.Min(screen.transform.localScale.x, screen.transform.localScale.y);
-        // 
+        // The smallest input dimension
         int minInputDim = Mathf.Min(inputTextureCPU.width, inputTextureCPU.height);
-        // 
+        // Calculate the scale value between the in-game screen and input dimensions
         float minImgScale = minScreenDim / minInputDim;
-        // 
+        // Calculate the scale value between the in-game screen and display
         float displayScale = Screen.height / screen.transform.localScale.y;
 
         // Scale bounding box to in-game screen resolution and flip the bbox coordinates vertically
@@ -1162,7 +1162,7 @@ public void ScaleBoundingBoxes()
         float width = objectInfoArray[i].width * minImgScale;
         float height = objectInfoArray[i].height * minImgScale;
 
-        // 
+        // Mirror bounding box across screen
         if (mirrorScreen && useWebcam) x0 = screen.transform.localScale.x - x0 - width;
 
         // Scale bounding boxes to display resolution
