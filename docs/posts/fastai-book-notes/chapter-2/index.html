@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-14">
+<meta name="description" content="Chapter 2 covers how to train an image classification model using a custom dataset and turn it into an online application.">
+
+<title>Christian Mills - Notes on fastai Book Ch. 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Notes on fastai Book Ch. 2">
+<meta property="og:description" content="Chapter 2 covers how to train an image classification model using a custom dataset and turn it into an online application.">
+<meta property="og:image" content="https://christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Notes on fastai Book Ch. 2">
+<meta name="twitter:description" content="Chapter 2 covers how to train an image classification model using a custom dataset and turn it into an online application.">
+<meta name="twitter:image" content="https://christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Notes on fastai Book Ch. 2</h1>
+  </div>
+
+<div>
+  <div class="description">
+    Chapter 2 covers how to train an image classification model using a custom dataset and turn it into an online application.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 14, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#the-practice-of-deep-learning">The Practice of Deep Learning</a></li>
+<li><a href="#gathering-data">Gathering Data</a></li>
+<li><a href="#from-data-to-dataloaders">From Data to DataLoaders</a></li>
+<li><a href="#using-a-model-to-clean-your-data">Using a Model to Clean Your Data</a></li>
+<li><a href="#turn-your-model-into-an-online-application">Turn Your Model into an Online Application</a></li>
+<li><a href="#how-to-avoid-disaster">How to Avoid Disaster</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<section id="the-practice-of-deep-learning" class="level2">
+<h2 class="anchored" data-anchor-id="the-practice-of-deep-learning">The Practice of Deep Learning</h2>
+<ul>
+<li>Keep an open mind</li>
+<li>Underestimating the constraints and overestimating the capabilities of deep learning may lead to poor results</li>
+<li>Overestimating the constraints and underestimating the capabilities of deep learning may lead prevent you from exploring solvable problems</li>
+<li>Design a process through which you can find the specific capabilities and constraints related to your particular problem</li>
+</ul>
+<section id="starting-your-project" class="level3">
+<h3 class="anchored" data-anchor-id="starting-your-project">Starting Your Project</h3>
+<ul>
+<li>Data availability is the most important consideration when selecting a deep learning project</li>
+<li>Do not attempt to find the “perfect” dataset
+<ul>
+<li>Just get started and iterate</li>
+</ul></li>
+<li>Iterate from end-to-end
+<ul>
+<li>Don’t spend months fine-tuning your model, polishing the GUI, or labeling the perfect dataset</li>
+<li>Complete every step as well as you can in a reasonable amount of time</li>
+<li>If your final goal is an application that runs on a mobile phone, that should be what you have after each iteration</li>
+<li>Can take shortcuts in early iterations like running the model on a remote server rather than on device</li>
+<li>Iteration exposes the trickiest bits and which bits make the biggest difference to the final result</li>
+<li>Gives you a better understanding of how much data you really need</li>
+<li>Gives you a working prototype to demo your project
+<ul>
+<li>The secret to getting good organizational buy-in for a project</li>
+</ul></li>
+</ul></li>
+<li>It is easiest to get started on a project for which you already have available data</li>
+<li>Can sometimes find a relevant dataset created for a previous machine learning project</li>
+<li>Start with projects in areas that deep learning has already been shown to work</li>
+</ul>
+</section>
+<section id="the-state-of-deep-learning-early-2020" class="level3">
+<h3 class="anchored" data-anchor-id="the-state-of-deep-learning-early-2020">The State of Deep Learning (Early 2020)</h3>
+<section id="computer-vision" class="level4">
+<h4 class="anchored" data-anchor-id="computer-vision">Computer Vision</h4>
+<ul>
+<li>Deep learning has been shown to recognize items in an image at least as well as people in nearly every domain
+<ul>
+<li>Known as object recognition</li>
+</ul></li>
+<li>Deep learning is good at locating objects in an image
+<ul>
+<li>Known as object detection</li>
+<li>Labeling images for object detection can be slow and expensive</li>
+</ul></li>
+<li>Deep learning models are generally not good at recognizing images that are significantly different in structure or style from those used to train the model
+<ul>
+<li>Color images vs black and white images</li>
+<li>Real images vs hand drawn images</li>
+</ul></li>
+<li>It is often possible to represent data for a non-computer vision problem as an image</li>
+</ul>
+</section>
+<section id="text-natural-language-processing" class="level4">
+<h4 class="anchored" data-anchor-id="text-natural-language-processing">Text (Natural Language Processing)</h4>
+<ul>
+<li>Deep learning is good at classifying both short and long documents based on categories
+<ul>
+<li>Spam vs not spam</li>
+<li>Positive vs negative reviews</li>
+<li>Author</li>
+<li>Source website</li>
+</ul></li>
+<li>Deep learning is good at generating context-appropriate text
+<ul>
+<li>Replies to social media posts</li>
+<li>Imitating a particular author’s style</li>
+</ul></li>
+<li>Deep learning is not good at generating correct responses</li>
+<li>We do not have a reliable way to combine a knowledge base with a deep learning model to generate factually accurate responses</li>
+<li>Danger of deep learning models being used at scale to generate context appropriate, highly compelling responses on social media to spread disinformation, create unrest and encourage conflict
+<ul>
+<li>Text generation models will always be a bit ahead of models for automatically recognizing generated text</li>
+<li>Models for automatically recognizing generated text can be used to improve text generation models</li>
+</ul></li>
+<li>Deep learning has many applications in NLP
+<ul>
+<li>Translating text between languages
+<ul>
+<li>The translation might include completely incorrect information</li>
+</ul></li>
+<li>Summarizing long documents
+<ul>
+<li>The translation might include completely incorrect information</li>
+</ul></li>
+<li>Find all mentions of a concept of interest</li>
+</ul></li>
+<li>Avoid using deep learning as an entirely automated process when it is generating text that needs to be accurate
+<ul>
+<li>Instead use is as part of a process in which the model and a human user closely interact</li>
+</ul></li>
+</ul>
+</section>
+<section id="combining-text-and-images" class="level4">
+<h4 class="anchored" data-anchor-id="combining-text-and-images">Combining Text and Images</h4>
+<ul>
+<li>Deep learning models can combine both text and images
+<ul>
+<li>Generate captions based on an input image</li>
+</ul></li>
+</ul>
+</section>
+<section id="tabular-data" class="level4">
+<h4 class="anchored" data-anchor-id="tabular-data">Tabular Data</h4>
+<ul>
+<li>Deep learning has made significant improvements but is still used as part of an ensemble of multiple types of model</li>
+<li>Greatly increases the variety of columns that you can include
+<ul>
+<li>Columns containing natural language
+<ul>
+<li>Book titles</li>
+<li>Reviews</li>
+</ul></li>
+<li>High-cardinality categorical columns
+<ul>
+<li>Something that contains a large number of discrete choices
+<ul>
+<li>Zip code</li>
+<li>Product id</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>Deep learning models generally take longer to train than more traditional methods like random forests or gradient boosting machines
+<ul>
+<li>This is changing thanks to libraries such as <a href="https://rapids.ai/">RAPIDS</a> which provides GPU acceleration</li>
+</ul></li>
+</ul>
+</section>
+<section id="recommendation-systems" class="level4">
+<h4 class="anchored" data-anchor-id="recommendation-systems">Recommendation Systems</h4>
+<ul>
+<li>A special type of tabular data
+<ul>
+<li>Generally have a high-cardinality categorical variable representing users and another representing things to recommend (e.g.&nbsp;products)</li>
+</ul></li>
+<li>Deep learning models are good at handling recommendation systems since they are good at handling high-cardinality categorical variables</li>
+<li>Nearly all machine learning approaches have the downside that they tell you only which products a particular user might like rather than what recommendation would be helpful to a user
+<ul>
+<li>A recommendation system might recommend nothing but hammers because you recently bought a hammer</li>
+</ul></li>
+</ul>
+</section>
+<section id="other-data-types" class="level4">
+<h4 class="anchored" data-anchor-id="other-data-types">Other Data Types</h4>
+<ul>
+<li>Domain-specific data types often fit well into existing categories
+<ul>
+<li>Protein chains look a lot like natural language documents
+<ul>
+<li>Long sequences of discrete tokens with complex relationships and meaning throughout the sequence</li>
+</ul></li>
+<li>Sounds can be represented in image format as spectrograms</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="the-drivetrain-approach" class="level3">
+<h3 class="anchored" data-anchor-id="the-drivetrain-approach">The Drivetrain Approach</h3>
+<ul>
+<li><a href="https://www.oreilly.com/radar/drivetrain-approach-data-products/">Designing great data products</a></li>
+<li>Data scientists need a systematic design approach to build increasingly sophisticated products
+<ul>
+<li>We use data to produce actionable outcomes</li>
+<li>Practical implementation of models requires a lot more than just training the model</li>
+</ul></li>
+<li>Defined Objective → Levers → Data → Models</li>
+<li>Steps
+<ol type="1">
+<li>Defined Objective
+<ul>
+<li>Consider your objective</li>
+</ul></li>
+<li>Levers
+<ul>
+<li>What inputs can we control?</li>
+<li>Think about what actions you can take to meet that objective</li>
+</ul></li>
+<li>Data
+<ul>
+<li>What inputs can we collect?</li>
+<li>Think about what data you have or can acquire that can help</li>
+</ul></li>
+<li>Models
+<ul>
+<li>Build a model that you can use to determine the best actions to take to get the best results in terms of your objective</li>
+<li>The models we can build are determined by the objective, available levers and available data</li>
+</ul></li>
+</ol></li>
+</ul>
+</section>
+</section>
+<section id="gathering-data" class="level2">
+<h2 class="anchored" data-anchor-id="gathering-data">Gathering Data</h2>
+<ul>
+<li>Can often find the data you need for a project online</li>
+<li><a href="https://www.microsoft.com/en-us/bing/apis/bing-web-search-api">Bing Web Search API</a>
+<ul>
+<li>Can be used to download images from web searches</li>
+</ul></li>
+<li>Models can only reflect the data used to train them
+<ul>
+<li>Think carefully about the types of data that you expect to see in production and make sure all these types are reflected in your model’s source data</li>
+</ul></li>
+<li><a href="https://dl.acm.org/doi/10.1145/3306618.3314244">Actionable Auditing: Investigating the Impact of Publicly Naming Biased Performance Results of Commercial AI Products</a></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> os.environ.get(<span class="st">'AZURE_SEARCH_KEY'</span>, <span class="st">'f4be28837a074dfa90a1b72900a971ef'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>search_images_bing</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;function fastbook.search_images_bing(key, term, min_sz=128, max_images=150)&gt;</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><code>python results = search_images_bing(key, 'grizzly bear')</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(results))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of results: </span><span class="sc">{</span><span class="bu">len</span>(results)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;class 'fastcore.foundation.L'&gt;
+Number of results: 150</code></pre>
+<hr>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(results).head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+<pre><code>&lt;table border="1" class="dataframe"&gt;</code></pre>
+
+
+
+
+
+webSearchUrl
+
+
+name
+
+
+thumbnailUrl
+
+
+datePublished
+
+
+isFamilyFriendly
+
+
+contentUrl
+
+
+hostPageUrl
+
+
+contentSize
+
+
+encodingFormat
+
+
+hostPageDisplayUrl
+
+
+width
+
+
+height
+
+
+hostPageFavIconUrl
+
+
+hostPageDomainFriendlyName
+
+
+hostPageDiscoveredDate
+
+
+thumbnail
+
+
+imageInsightsToken
+
+
+insightsMetadata
+
+
+imageId
+
+
+accentColor
+
+
+creativeCommons
+
+
+
+
+
+
+0
+
+
+https://www.bing.com/images/search?view=detailv2&amp;FORM=OIIRPO&amp;q=grizzly+bear&amp;id=4FE226180F7071D1B3F36B29C2EA074B00E3CBEC&amp;simid=607989609245709244
+
+
+Grizzly Bear Basic Facts And New Pictures | The Wildlife
+
+
+https://tse1.mm.bing.net/th?id=OIP.Mw_Mi-jVWv9_0SNTuiGaSQHaE8&amp;pid=Api
+
+
+2012-10-15T12:00:00.0000000Z
+
+
+True
+
+
+http://2.bp.blogspot.com/-NjMTuklENdE/UHzVv_8dIxI/AAAAAAAAA-U/tNBsQDn8kFI/s1600/Grizzly+Bear+Pic.jpg
+
+
+http://wildlifeanimalz.blogspot.com/2012/10/Grizzly-Bear.html
+
+
+332689 B
+
+
+jpeg
+
+
+wildlifeanimalz.blogspot.com/2012/10/Grizzly-Bear.html
+
+
+1600
+
+
+1068
+
+
+https://www.bing.com/th?id=ODF.kCKFU1-d0l3Elu2Vvbpmew&amp;pid=Api
+
+
+blogspot.com
+
+
+2012-10-15T12:00:00.0000000Z
+
+
+{‘width’: 474, ‘height’: 316}
+
+
+ccid_Mw/Mi+jV<em>cp_433560BB77158852D3AB8C7F61E351BF</em>mid_4FE226180F7071D1B3F36B29C2EA074B00E3CBEC<em>simid_607989609245709244</em>thid_OIP.Mw!_Mi-jVWv9!_0SNTuiGaSQHaE8
+
+
+{‘recipeSourcesCount’: 0, ‘pagesIncludingCount’: 37, ‘availableSizesCount’: 22}
+
+
+4FE226180F7071D1B3F36B29C2EA074B00E3CBEC
+
+
+8C623F
+
+
+NaN
+
+
+
+
+1
+
+
+https://www.bing.com/images/search?view=detailv2&amp;FORM=OIIRPO&amp;q=grizzly+bear&amp;id=753BAE8D7E8284DA0D378113DB437A15800814ED&amp;simid=608022027642737229
+
+
+The Legacy of Big Boy the Grizzly Bear | Blog | Nature | PBS
+
+
+https://tse4.mm.bing.net/th?id=OIP.P710tottl5nl_DmTEEDv-gHaEK&amp;pid=Api
+
+
+2018-08-22T02:23:00.0000000Z
+
+
+True
+
+
+http://www.pbs.org/wnet/nature/files/2018/07/Bear133.jpg
+
+
+http://www.pbs.org/wnet/nature/blog/legacy-big-boy-grizzly-bear/
+
+
+631006 B
+
+
+jpeg
+
+
+www.pbs.org/wnet/nature/blog/legacy-big-boy-grizzly-bear
+
+
+1920
+
+
+1080
+
+
+https://www.bing.com/th?id=ODF.6ks36T98eL13adVA4nwLZA&amp;pid=Api
+
+
+PBS
+
+
+2018-08-21T00:00:00.0000000Z
+
+
+{‘width’: 474, ‘height’: 266}
+
+
+ccid_P710tott<em>cp_0F0D46773348FABEE8C97ACBB9037F98</em>mid_753BAE8D7E8284DA0D378113DB437A15800814ED<em>simid_608022027642737229</em>thid_OIP.P710tottl5nl!_DmTEEDv-gHaEK
+
+
+{‘pagesIncludingCount’: 21, ‘availableSizesCount’: 10}
+
+
+753BAE8D7E8284DA0D378113DB437A15800814ED
+
+
+717C4F
+
+
+NaN
+
+
+
+
+2
+
+
+https://www.bing.com/images/search?view=detailv2&amp;FORM=OIIRPO&amp;q=grizzly+bear&amp;id=CB17B3DC66E2F4684C9CA770135FF2F3D1B2070D&amp;simid=608018286723871513
+
+
+Idaho Grizzly Bears are Waking Up, Emerging from Dens
+
+
+https://tse4.mm.bing.net/th?id=OIP.H3h0vO_c6L61im-L99pEegHaE8&amp;pid=Api
+
+
+2015-04-22T09:38:00.0000000Z
+
+
+True
+
+
+https://tetonvalleylodge.com/wp-content/uploads/2015/04/grizzly-bear-idaho.jpg
+
+
+https://tetonvalleylodge.com/grizzly-bears-idaho-are-waking-up/
+
+
+477917 B
+
+
+jpeg
+
+
+https://tetonvalleylodge.com/grizzly-bears-idaho-are-waking-up
+
+
+3150
+
+
+2100
+
+
+NaN
+
+
+NaN
+
+
+2015-04-22T09:38:24.0000000Z
+
+
+{‘width’: 474, ‘height’: 316}
+
+
+ccid_H3h0vO/c<em>cp_9AD6DD7A0450257A1DD35511F3C7D0B5</em>mid_CB17B3DC66E2F4684C9CA770135FF2F3D1B2070D<em>simid_608018286723871513</em>thid_OIP.H3h0vO!_c6L61im-L99pEegHaE8
+
+
+{‘recipeSourcesCount’: 0, ‘pagesIncludingCount’: 6, ‘availableSizesCount’: 3}
+
+
+CB17B3DC66E2F4684C9CA770135FF2F3D1B2070D
+
+
+846847
+
+
+NaN
+
+
+
+
+3
+
+
+https://www.bing.com/images/search?view=detailv2&amp;FORM=OIIRPO&amp;q=grizzly+bear&amp;id=92DD5424F3ECF22292A0A370FE25492F4057F1C6&amp;simid=608029569602050472
+
+
+Grizzly Bear forum Ellen downtown Bozeman – March 2, 2019
+
+
+https://tse3.mm.bing.net/th?id=OIP.zMGLZFixVpyMGWZOH8oe3QHaEN&amp;pid=Api
+
+
+2019-03-02T12:00:00.0000000Z
+
+
+True
+
+
+https://bozone.com/site/wp-content/uploads/2019/03/GRIZZLY.jpeg
+
+
+https://bozone.com/grizzly-bear-forum-ellen-downtown-bozeman-march-2-2019/
+
+
+655514 B
+
+
+jpeg
+
+
+https://bozone.com/grizzly-bear-forum-ellen-downtown-bozeman-march-2-2019
+
+
+2951
+
+
+1680
+
+
+NaN
+
+
+NaN
+
+
+2019-03-02T00:00:00.0000000Z
+
+
+{‘width’: 474, ‘height’: 269}
+
+
+ccid_zMGLZFix<em>cp_C07AA690D0C3FEF983C6BB52766E8160</em>mid_92DD5424F3ECF22292A0A370FE25492F4057F1C6<em>simid_608029569602050472</em>thid_OIP.zMGLZFixVpyMGWZOH8oe3QHaEN
+
+
+{‘recipeSourcesCount’: 0, ‘pagesIncludingCount’: 13, ‘availableSizesCount’: 6}
+
+
+92DD5424F3ECF22292A0A370FE25492F4057F1C6
+
+
+818843
+
+
+NaN
+
+
+
+
+4
+
+
+https://www.bing.com/images/search?view=detailv2&amp;FORM=OIIRPO&amp;q=grizzly+bear&amp;id=861CAB82AE35F116E2E1A1AAE921DEDFCD75B4BB&amp;simid=608013171422092302
+
+
+Grisly outlook: Bears kill more and more livestock as their population grows | TSLN.com
+
+
+https://tse3.mm.bing.net/th?id=OIP.G7bi9KTwAG79A0emOjD8IAHaE6&amp;pid=Api
+
+
+2019-04-11T21:24:00.0000000Z
+
+
+True
+
+
+https://www.tsln.com/wp-content/uploads/2018/10/bears-tsln-101318-1240x823.jpg
+
+
+https://www.tsln.com/news/wyoming-grizzly-bear-update/
+
+
+225897 B
+
+
+jpeg
+
+
+https://www.tsln.com/news/wyoming-grizzly-bear-update
+
+
+1240
+
+
+823
+
+
+https://www.bing.com/th?id=ODF.naaPSqp1Pz37bdCNwXhx_Q&amp;pid=Api
+
+
+Tri-State Livestock News
+
+
+2018-10-13T00:00:00.0000000Z
+
+
+{‘width’: 474, ‘height’: 314}
+
+
+ccid_G7bi9KTw<em>cp_268C8D29BC3775D345836BFB181C377D</em>mid_861CAB82AE35F116E2E1A1AAE921DEDFCD75B4BB<em>simid_608013171422092302</em>thid_OIP.G7bi9KTwAG79A0emOjD8IAHaE6
+
+
+{‘recipeSourcesCount’: 0, ‘pagesIncludingCount’: 67, ‘availableSizesCount’: 50}
+
+
+861CAB82AE35F116E2E1A1AAE921DEDFCD75B4BB
+
+
+91633A
+
+
+NaN
+
+
+
+
+
+</div>
+<hr>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ims <span class="op">=</span> results.attrgot(<span class="st">'contentUrl'</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(ims)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>150</code></pre>
+<hr>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dest <span class="op">=</span> <span class="st">'images/grizzly.jpg'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download `url` to `dest`</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>download_url(ims[<span class="dv">0</span>], dest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Path('images/grizzly.jpg')</code></pre>
+<hr>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> Image.<span class="bu">open</span>(dest)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>im.to_thumb(<span class="dv">256</span>,<span class="dv">256</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_13_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the parent directory for the dataset</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>datasets_dir <span class="op">=</span> <span class="st">"/mnt/980SSD/Datasets"</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the main directory for the dataset</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>datasets_dir<span class="sc">}</span><span class="ss">/bears'</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(path)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the class subdirectories for the dataset</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>bear_types <span class="op">=</span> <span class="st">'grizzly'</span>,<span class="st">'black'</span>,<span class="st">'teddy'</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> b <span class="kw">in</span> bear_types:</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>path<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>/mnt/980SSD/Datasets/bears
+/mnt/980SSD/Datasets/bears/grizzly
+/mnt/980SSD/Datasets/bears/black
+/mnt/980SSD/Datasets/bears/teddy</code></pre>
+<hr>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if the path exists</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> path.exists():</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a new directory at this given path</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Creating new directory: </span><span class="sc">{</span>path<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    path.mkdir()</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> bear_types:</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Define subdirectory name for bear type        </span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        dest <span class="op">=</span> (path<span class="op">/</span>o)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create subdirectory for bear type</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\t</span><span class="ss">Creating subdirectory: </span><span class="sc">{</span>dest<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        dest.mkdir(exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Search for images of bear type</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        search_query <span class="op">=</span> <span class="ss">f'</span><span class="sc">{</span>o<span class="sc">}</span><span class="ss"> bear'</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        results <span class="op">=</span> search_images_bing(key, search_query)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Download images from URL results</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\t\t</span><span class="ss">Downloading results for search query: </span><span class="sc">{</span>search_query<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        download_images(dest, urls<span class="op">=</span>results.attrgot(<span class="st">'contentUrl'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fns <span class="op">=</span> get_image_files(path)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fns[:<span class="dv">5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>[Path('/mnt/980SSD/Datasets/bears/black/00000000.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000001.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000002.jpg'), Path('/mnt/980SSD/Datasets/bears/black/00000003.png'), Path('/mnt/980SSD/Datasets/bears/black/00000004.jpg')]</code></pre>
+<hr>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find images in `fns` that can't be opened</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>failed <span class="op">=</span> verify_images(fns)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(failed[:<span class="dv">5</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>/home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/PIL/TiffImagePlugin.py:822: UserWarning: Corrupt EXIF data.  Expecting to read 2 bytes but only got 0. 
+  warnings.warn(str(msg))</code></pre>
+<pre class="text"><code>[]</code></pre>
+<hr>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove image files that failed verification</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>failed.<span class="bu">map</span>(Path.unlink)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="from-data-to-dataloaders" class="level2">
+<h2 class="anchored" data-anchor-id="from-data-to-dataloaders">From Data to DataLoaders</h2>
+<section id="dataloaders" class="level4">
+<h4 class="anchored" data-anchor-id="dataloaders">DataLoaders</h4>
+<ul>
+<li><p>A thin fastai class that just stores whatever DataLoader objects passed to it and makes them available as the properties <code>train</code> and <code>valid</code></p></li>
+<li><p>Provides the data for your model</p></li>
+<li><p>Information needed to turn downloaded data into DataLoaders objects</p>
+<ul>
+<li>The kind of data we are working with</li>
+<li>How to get the list of items</li>
+<li>How to label these items</li>
+<li>How to create the validation set</li>
+</ul></li>
+</ul>
+</section>
+<section id="dataloader" class="level4">
+<h4 class="anchored" data-anchor-id="dataloader">DataLoader</h4>
+<ul>
+<li>A class that provides batches of a few items at a time to the GPU</li>
+</ul>
+</section>
+<section id="data-block-api" class="level4">
+<h4 class="anchored" data-anchor-id="data-block-api">Data block API</h4>
+<ul>
+<li>A flexible system to fully customize every stage of the creation of your DataLoaders</li>
+<li>Data block: a template for creating a DataLoaders object</li>
+<li>Independent variable: the thing we are using to make predictions</li>
+<li>Dependent variable: the target variable to predict</li>
+<li>Training data is fed to a model in batches
+<ul>
+<li>Each image in a batch needs to be the same size</li>
+</ul></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generic container to quickly build `Datasets` and `DataLoaders`</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>bears <span class="op">=</span> DataBlock(</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define blocks for the data and labels</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    blocks<span class="op">=</span>(</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># A `TransformBlock` for images</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        ImageBlock, </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># A `TransformBlock` for single-label categorical targets</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>        CategoryBlock</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get image files in `path` recursively</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    get_items<span class="op">=</span>get_image_files, </span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create function that splits `items` between train/val with `valid_pct` randomly</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    splitter<span class="op">=</span>RandomSplitter(</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Use 20% of data for validation set</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        valid_pct<span class="op">=</span><span class="fl">0.2</span>, </span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set random seed to get the same split across different training sessions</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>        seed<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Label `item` with the parent folder name</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    get_y<span class="op">=</span>parent_label,</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Resize and crop image to 128x128</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    item_tfms<span class="op">=</span>Resize(<span class="dv">128</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a `DataLoaders` object from `path`</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> bears.dataloaders(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show some samples from the validation set</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>dls.valid.show_batch(max_n<span class="op">=</span><span class="dv">4</span>, nrows<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_22_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new `DataBlock` that resizes and squishes images to 128x128</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>bears <span class="op">=</span> bears.new(item_tfms<span class="op">=</span>Resize(<span class="dv">128</span>, ResizeMethod.Squish))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> bears.dataloaders(path)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>dls.valid.show_batch(max_n<span class="op">=</span><span class="dv">4</span>, nrows<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_24_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new `DataBlock` that pads each image to squares with black pixels and resizes to 128x128</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>bears <span class="op">=</span> bears.new(item_tfms<span class="op">=</span>Resize(<span class="dv">128</span>, ResizeMethod.Pad, pad_mode<span class="op">=</span><span class="st">'zeros'</span>))</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> bears.dataloaders(path)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>dls.valid.show_batch(max_n<span class="op">=</span><span class="dv">4</span>, nrows<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_25_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new `DataBlock` that picks a random scaled crop of an image and resize it to 128x128</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>bears <span class="op">=</span> bears.new(item_tfms<span class="op">=</span>RandomResizedCrop(<span class="dv">128</span>, min_scale<span class="op">=</span><span class="fl">0.3</span>))</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> bears.dataloaders(path)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Show some unique random crops of a single sample from the validation set</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>dls.train.show_batch(max_n<span class="op">=</span><span class="dv">4</span>, nrows<span class="op">=</span><span class="dv">1</span>, unique<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_26_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="data-augmentation" class="level3">
+<h3 class="anchored" data-anchor-id="data-augmentation">Data Augmentation</h3>
+<ul>
+<li>Refers to creating random variations of our input data, such that they appear different but do not change the meaning of the data</li>
+<li>Common Types of Data Augmentation for Images
+<ul>
+<li><a href="https://docs.fast.ai/vision.augment.html#Rotate">rotation</a></li>
+<li><a href="https://docs.fast.ai/vision.augment.html#FlipItem">flipping</a></li>
+<li><a href="https://docs.fast.ai/vision.augment.html#Warping">perspective warping</a></li>
+<li><a href="https://docs.fast.ai/vision.augment.html#Brightness">brightness changes</a></li>
+<li><a href="https://docs.fast.ai/vision.augment.html#Contrast">contrast changes</a></li>
+</ul></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new `DataBlock` that crops and resizes each image to 128x128</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and applies a list of data augmentations including flip, rotate, zoom, warp, lighting transforms</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co"># to each batch on the GPU</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>bears <span class="op">=</span> bears.new(item_tfms<span class="op">=</span>Resize(<span class="dv">128</span>), batch_tfms<span class="op">=</span>aug_transforms(mult<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> bears.dataloaders(path)</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>dls.train.show_batch(max_n<span class="op">=</span><span class="dv">8</span>, nrows<span class="op">=</span><span class="dv">2</span>, unique<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>/home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/torch/_tensor.py:1051: UserWarning: torch.solve is deprecated in favor of torch.linalg.solveand will be removed in a future PyTorch release.
+torch.linalg.solve has its arguments reversed and does not return the LU factorization.
+To get the LU factorization see torch.lu, which can be used with torch.lu_solve or torch.lu_unpack.
+X = torch.solve(B, A).solution
+should be replaced with
+X = torch.linalg.solve(A, B) (Triggered internally at  ../aten/src/ATen/native/BatchLinearAlgebra.cpp:766.)
+  ret = func(*args, **kwargs)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_28_1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="using-a-model-to-clean-your-data" class="level2">
+<h2 class="anchored" data-anchor-id="using-a-model-to-clean-your-data">Using a Model to Clean Your Data</h2>
+<ul>
+<li>Cleaning data and getting it ready for your model are two of the biggest challenges for data scientists
+<ul>
+<li>Data scientists say it takes 90% of their time</li>
+</ul></li>
+<li>Using the model for data cleaning
+<ol type="1">
+<li>Train the model on the current dataset</li>
+<li>Examine the incorrectly classified images with the highest confidence score
+<ul>
+<li>There might be images that were incorrectly labeled</li>
+</ul></li>
+<li>Examine the incorrectly labeled images with the lowest confidence scores
+<ul>
+<li>There might be poor quality images in the training set</li>
+</ul></li>
+<li>Move any misplaced images to the correct folder</li>
+<li>Remove any poor quality images</li>
+<li>Retrain model on updated dataset</li>
+</ol></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>bears <span class="op">=</span> bears.new(</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    item_tfms<span class="op">=</span>RandomResizedCrop(<span class="dv">224</span>, min_scale<span class="op">=</span><span class="fl">0.5</span>),</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    batch_tfms<span class="op">=</span>aug_transforms())</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> bears.dataloaders(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> cnn_learner(dls, resnet18, metrics<span class="op">=</span>error_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>learn.fine_tune(<span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+<pre><code>&lt;table border="1" class="dataframe"&gt;</code></pre>
+
+
+
+epoch
+
+
+train_loss
+
+
+valid_loss
+
+
+error_rate
+
+
+time
+
+
+
+
+
+
+0
+
+
+1.493479
+
+
+0.147736
+
+
+0.057471
+
+
+00:05
+
+
+
+
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+epoch
+</th>
+<th>
+train_loss
+</th>
+<th>
+valid_loss
+</th>
+<th>
+error_rate
+</th>
+<th>
+time
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+0
+</td>
+<td>
+0.272248
+</td>
+<td>
+0.107368
+</td>
+<td>
+0.057471
+</td>
+<td>
+00:05
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+0.173436
+</td>
+<td>
+0.091117
+</td>
+<td>
+0.034483
+</td>
+<td>
+00:05
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td>
+0.151810
+</td>
+<td>
+0.106020
+</td>
+<td>
+0.034483
+</td>
+<td>
+00:05
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td>
+0.122778
+</td>
+<td>
+0.110871
+</td>
+<td>
+0.034483
+</td>
+<td>
+00:05
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<hr>
+<div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Contains interpretation methods for classification models</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>interp <span class="op">=</span> ClassificationInterpretation.from_learner(learn)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the confusion matrix</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>interp.plot_confusion_matrix()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_36_2.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>interp.plot_top_losses(<span class="dv">5</span>, nrows<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_37_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><code>python cleaner = ImageClassifierCleaner(learn) cleaner</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for idx in cleaner.delete(): cleaner.fns[idx].unlink()</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co"># for idx,cat in cleaner.change(): shutil.move(str(cleaner.fns[idx]), path/cat)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="turn-your-model-into-an-online-application" class="level2">
+<h2 class="anchored" data-anchor-id="turn-your-model-into-an-online-application">Turn Your Model into an Online Application</h2>
+<ul>
+<li>inference: using a trained model to make predictions on new data</li>
+</ul>
+<section id="creating-a-notebook-app-from-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-notebook-app-from-the-model">Creating a Notebook App From the Model</h3>
+<ul>
+<li><a href="https://ipywidgets.readthedocs.io/en/latest/">IPython Widgets</a>
+<ul>
+<li>GUI components that bring together JavaScript and Python functionality in a web browser</li>
+<li>can be created and used within a Jupyter Notebook</li>
+</ul></li>
+<li><a href="https://voila.readthedocs.io/en/stable/index.html">Voila</a>
+<ul>
+<li>A system for making applications consisting of IPython widgets available to end users without them having to use Jupyter</li>
+</ul></li>
+</ul>
+</section>
+<section id="deploying-your-app" class="level3">
+<h3 class="anchored" data-anchor-id="deploying-your-app">Deploying Your App</h3>
+<ul>
+<li>Use a CPU for inference when a GPU is not required</li>
+<li>Need to be careful with managing GPU memory in production</li>
+<li>CPU inference is much cheaper than GPU</li>
+<li>There are often free CPU servers available for demoing prototype application</li>
+<li>Run your model on a server instead of an edge device when possible</li>
+</ul>
+</section>
+</section>
+<section id="how-to-avoid-disaster" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-avoid-disaster">How to Avoid Disaster</h2>
+<ul>
+<li>A deep learning model will be just one piece of a larger production system</li>
+<li>Building a data product requires thinking about the end-to-end process, from conception to use in production</li>
+<li>Managing deployed data products
+<ul>
+<li>Managing multiple versions of models</li>
+<li>A/B testing</li>
+<li>Canarying</li>
+<li>Refreshing the data
+<ul>
+<li>Should we just continue adding to our datasets or should we regularly remove some of the old data?</li>
+</ul></li>
+<li>Handling data labeling</li>
+<li>Monitoring everything</li>
+<li>Detecting model rot</li>
+<li>etc.</li>
+</ul></li>
+<li><a href="https://www.oreilly.com/library/view/building-machine-learning/9781492045106/">Building Machine Learning Powered Applications</a></li>
+<li>Understanding and testing the behavior of a deep learning model is much more difficult than with most other code you write
+<ul>
+<li>With normal software development, you can analyze the exact steps that the software is taking</li>
+<li>With a neural network, the behavior emerges from the model’s attempt to match the training data, rather than being exactly defined</li>
+</ul></li>
+<li>A common problems with training a models on images people upload to the internet
+<ul>
+<li>The kinds of photos people upload are the kinds of photos that do a good job of clearly and artistically displaying their subject matter
+<ul>
+<li>This is not the kind of input a system is most likely going to encounter</li>
+</ul></li>
+</ul></li>
+<li>Out-of-domain data
+<ul>
+<li>There may be data that our model sees in production that is very different from what it saw during training</li>
+<li>There is not a complete technical solution to this problem</li>
+<li>Need to be careful about our approach to rolling out the model</li>
+</ul></li>
+<li>Domain shift
+<ul>
+<li>The type of data that our model sees changes over time, making the original training data irrelevant</li>
+</ul></li>
+<li>You can never fully understand all the possible behaviors of a neural network
+<ul>
+<li>A natural downside to their inherent flexibility</li>
+</ul></li>
+</ul>
+<section id="deployment-process" class="level3">
+<h3 class="anchored" data-anchor-id="deployment-process">Deployment Process</h3>
+<ol type="1">
+<li>Manual Process
+<ul>
+<li>Run a model in parallel, but do not use directly to drive any actions</li>
+<li>Humans check all predictions
+<ul>
+<li>look at the deep learning outputs and check whether they make sense</li>
+</ul></li>
+</ul></li>
+<li>Limited scope deployment
+<ul>
+<li>Careful human supervision</li>
+<li>Time or geography limited</li>
+</ul></li>
+<li>Gradual Expansion
+<ul>
+<li>Good reporting systems needed
+<ul>
+<li>Make sure you are aware of any significant changes to the actions being taken compared to your manual process</li>
+</ul></li>
+<li>Consider what could go wrong
+<ul>
+<li>Think about what measure or report or picture could reflect that problem and ensure that your regular reporting includes that information</li>
+</ul></li>
+</ul></li>
+</ol>
+</section>
+<section id="unforeseen-consequences-and-feedback-loops" class="level3">
+<h3 class="anchored" data-anchor-id="unforeseen-consequences-and-feedback-loops">Unforeseen Consequences and Feedback Loops</h3>
+<ul>
+<li>One of the biggest challenges in rolling out a model is that your model may change the behavior of the system it is part of</li>
+<li>When bias is present, feedback loops can result in negative implications of that bias getting worse and worse</li>
+<li>Questions to consider when rolling out a significant machine learning system
+<ul>
+<li>What would happen if it went really, really well?</li>
+<li>What if the predictive power was extremely high and its ability to influence behavior extremely significant?</li>
+<li>Who would be most impacted?</li>
+<li>What would the most extreme results potentially look like?</li>
+<li>How would you know what was really going on?</li>
+</ul></li>
+<li>Make sure that reliable and resilient communication channels exist so that the right people will be aware of issues and will have the power to fix them</li>
+</ul>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li><a href="https://www.oreilly.com/library/view/deep-learning-for/9781492045519/">Deep Learning for Coders with fastai &amp; PyTorch</a></li>
+<li><a href="https://github.com/fastai/fastbook">The fastai book GitHub Repository</a></li>
+</ul>
+<p><strong>Previous:</strong> <a href="../chapter-1/">Notes on fastai Book Ch. 1</a></p>
+<p><strong>Next:</strong> <a href="../chapter-3/">Notes on fastai Book Ch. 3</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

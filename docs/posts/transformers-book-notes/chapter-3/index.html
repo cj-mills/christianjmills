@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-04-06">
+<meta name="description" content="Chapter 3 covers the Transformer architecture and different types of transformer models available on the Hugging Face Hub.">
+
+<title>Christian Mills - Notes on Transformers Book Ch. 3</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Notes on Transformers Book Ch. 3">
+<meta property="og:description" content="Chapter 3 covers the Transformer architecture and different types of transformer models available on the Hugging Face Hub.">
+<meta property="og:image" content="https://christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Notes on Transformers Book Ch. 3">
+<meta name="twitter:description" content="Chapter 3 covers the Transformer architecture and different types of transformer models available on the Hugging Face Hub.">
+<meta name="twitter:image" content="https://christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Notes on Transformers Book Ch. 3</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">ai</div>
+    <div class="quarto-category">huggingface</div>
+    <div class="quarto-category">nlp</div>
+    <div class="quarto-category">notes</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Chapter 3 covers the Transformer architecture and different types of transformer models available on the Hugging Face Hub.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 6, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#the-transformer-architecture">The Transformer Architecture</a></li>
+<li><a href="#the-encoder">The Encoder</a></li>
+<li><a href="#the-decoder">The Decoder</a></li>
+<li><a href="#meet-the-transformers">Meet the Transformers</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> transformers</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datasets</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> accelerate</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Only print error messages</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>transformers.logging.set_verbosity_error()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>datasets.logging.set_verbosity_error()</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>transformers.__version__, datasets.__version__, accelerate.__version__</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    ('4.11.3', '1.16.1', '0.5.1')</code></pre>
+<hr>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ast</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://astor.readthedocs.io/en/latest/</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> astor</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> inspect</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> textwrap</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> print_source(obj, exclude_doc<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get source code</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    source <span class="op">=</span> inspect.getsource(obj)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove any common leading whitespace from every line</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    cleaned_source <span class="op">=</span> textwrap.dedent(source)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse the source into an AST node.</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    parsed <span class="op">=</span> ast.parse(cleaned_source)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> ast.walk(parsed):</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Skip any nodes that are not class or function definitions</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> <span class="bu">isinstance</span>(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)):</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> exclude_doc <span class="kw">and</span> <span class="bu">len</span>(node.body) <span class="op">&gt;</span> <span class="dv">1</span>: node.body <span class="op">=</span> node.body[<span class="dv">1</span>:]</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(astor.to_source(parsed))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="the-transformer-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="the-transformer-architecture">The Transformer Architecture</h2>
+<ul>
+<li>Standard Transformers use an encoder-decoder architecture.
+<ul>
+<li>An encoder converts an input sequence of tokens into embedding vectors called the hidden state or context.</li>
+<li>A decoder uses the encoder’s hidden state to iteratively generate an output of tokens, one token at a time.</li>
+</ul></li>
+<li>The encoder-decoder architecture is well-suited to sequence-to-sequence tasks like machine translation.</li>
+</ul>
+<section id="steps" class="level3">
+<h3 class="anchored" data-anchor-id="steps">Steps:</h3>
+<ol type="1">
+<li>Tokenize the input and convert it to token embeddings.</li>
+<li>Combine the token embeddings with positional embeddings, which contain the positional information for each token.</li>
+<li>Feed the updated embeddings to the encoder.
+<ol type="1">
+<li>The encoder is composed of a sequence of embedding layers, similar to stacking convolutional layers in computer vision.</li>
+</ol></li>
+<li>Feed the encoder’s output to each decoder layer.</li>
+<li>The decoder predicts the most probable next token in the sequence.</li>
+<li>The decoder output serves as input for the decoder to generate the next token.</li>
+<li>The process repeats until the decoder predicts the End- of-Sequence (EOS) token or we reach the maximum length.</li>
+</ol>
+</section>
+<section id="types-of-transformer-models" class="level3">
+<h3 class="anchored" data-anchor-id="types-of-transformer-models">Types of Transformer Models</h3>
+<section id="encoder-only" class="level4">
+<h4 class="anchored" data-anchor-id="encoder-only">Encoder-Only</h4>
+<ul>
+<li>Convert an input sequence into a rich numerical representation.</li>
+<li>The numerical representation is dependent on both the contexts to the left and right of the token (i.e., bidirectional attention).</li>
+<li>These models are well-suited for tasks like text classification or named entity recognition.</li>
+</ul>
+</section>
+<section id="decoder-only" class="level4">
+<h4 class="anchored" data-anchor-id="decoder-only">Decoder-Only</h4>
+<ul>
+<li>Take in a text prompt and autocomplete the sequence by iteratively predicting the most probable next word.</li>
+<li>The representation for a given token depends only on the left context (i.e., causal or autoregressive attention).</li>
+</ul>
+</section>
+<section id="encoder-decoder" class="level4">
+<h4 class="anchored" data-anchor-id="encoder-decoder">Encoder-Decoder</h4>
+<ul>
+<li>Model complex mappings from one sequence to another.</li>
+<li>These models are well-suited for machine translation or summarization tasks.</li>
+</ul>
+<p><strong>Note</strong>: * The line between applications for decoder-only versus encoder-only architectures is blurry. * We can prime decoder-only models for tasks like machine translation. * We can apply encoder-only models to summarization tasks. * <a href="https://arxiv.org/abs/1908.08345">Text Summarization with Pretrained Encoders</a></p>
+</section>
+</section>
+</section>
+<section id="the-encoder" class="level2">
+<h2 class="anchored" data-anchor-id="the-encoder">The Encoder</h2>
+<ul>
+<li>The encoder consists of many encoder layers stacked next to each other.</li>
+<li>The encoder stack updates the input embeddings to produce representations that encode some contextual information in the sequence.</li>
+<li>Each encoder layer receives a sequence of embeddings and feeds them through a multi-head self-attention sublayer.</li>
+<li>The output of the multi-head attention layer serves as input for a fully connected feed-forward sublayer.</li>
+<li>We apply the fully connected feed-forward layer to each input embedding.</li>
+<li>Each sublayer uses skip connections and <a href="https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html?highlight=layer%20normalization">layer normalization</a>.</li>
+<li>The output embeddings of each encoder layer have the same size as the inputs.</li>
+</ul>
+<section id="self-attention" class="level3">
+<h3 class="anchored" data-anchor-id="self-attention">Self-Attention</h3>
+<ul>
+<li>Attention is a mechanism that allows neural networks to assign a different amount of weight to each element in a sequence.</li>
+<li>For text sequences, the elements are token embeddings where each token maps to a vector of some fixed dimension.
+<ul>
+<li>A BERT model represents each token as a 768-dimensional vector.</li>
+</ul></li>
+<li>The attention mechanism associated with recurrent models involves computing the relevance of each hidden state of the encoder to the decoder’s hidden state at a given decoding timestep.</li>
+<li>Self-attention involves computing weights for all hidden states in the same set.
+<ul>
+<li>We use the whole sequence to compute a weighted average of each embedding.</li>
+</ul></li>
+<li>Given a sequence of token embeddings <span class="math inline">\(x_{1},\ldots,x_{n}\)</span>, self-attention produces a sequence of new embeddings <span class="math display">\[x^{\prime}_{1},\ldots,x^{\prime}_{n}\]</span> where each <span class="math display">\[x^{\prime}_{i}\]</span> is a linear combination of all the <span class="math inline">\(x_{j}\)</span>: ### <span class="math display">\[x^{\prime}_{i} = \sum^{n}_{j=1}{w_{ij}x_{j}}\]</span></li>
+<li>The coefficients <span class="math inline">\(w_{ij}\)</span> are called attention weights, and we normalize them to add up to one.</li>
+<li>Averaging the token embeddings allows us to incorporate context from the entire sequence.</li>
+</ul>
+<section id="scaled-dot-product-attention" class="level4">
+<h4 class="anchored" data-anchor-id="scaled-dot-product-attention">Scaled dot-product attention</h4>
+<ul>
+<li>Scaled dot-product attention is the most common way to implement a self-attention layer.</li>
+</ul>
+<section id="implementation-steps" class="level5">
+<h5 class="anchored" data-anchor-id="implementation-steps">Implementation Steps</h5>
+<ol type="1">
+<li>Project each token into three vectors called “query,” “key,” and “value,” respectively.
+<ul>
+<li>The names query, key, and value originate from information retrieval systems.</li>
+</ul></li>
+<li>Determine how much the query and key vectors relate to each other by computing the dot product of the two vectors.
+<ul>
+<li>Queries and keys similar to each other will have a large dot product, while those that are not will have little to no overlap.</li>
+<li>The dot products of the queries and keys are called the attention scores.</li>
+<li>For a sequence with <span class="math inline">\(n\)</span> input tokens, there is a corresponding <span class="math inline">\(n \times n\)</span> matrix of attention scores.</li>
+</ul></li>
+<li>Multiply the attention scores by a scaling factor to normalize their variance and then apply the softmax function to ensure all column values sum to one.
+<ul>
+<li>The resulting <span class="math inline">\(n \times n\)</span> matrix contains all the attention weights.</li>
+</ul></li>
+<li>Matrix multiply the attention weights by the value vector <span class="math inline">\(v_{1},\ldots,v_{n}\)</span> to obtain an updated representation for embedding <span class="math display">\[x^{\prime}_{i} = \sum{w_{ji}v_{j}}\]</span>.</li>
+</ol>
+</section>
+</section>
+<section id="bertviz" class="level4">
+<h4 class="anchored" data-anchor-id="bertviz">BertViz</h4>
+<ul>
+<li><a href="https://github.com/jessevig/bertviz">GitHub Repository</a></li>
+<li>BertViz is an interactive tool to visualize attention in Transformer language models.</li>
+</ul>
+<p><strong>Note:</strong> Need to add the <a href="https://d3js.org/">D3.js</a> and <a href="https://jquery.com/">jQuery</a> libraries to use <a href="https://github.com/jessevig/bertviz"><code>bertviz</code></a> in JupyterLab.</p>
+<hr>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>javascript</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>require<span class="op">.</span><span class="fu">config</span>({</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">paths</span><span class="op">:</span> {</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">d3</span><span class="op">:</span> <span class="st">'//cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min'</span><span class="op">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">jquery</span><span class="op">:</span> <span class="st">'//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min'</span><span class="op">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bertviz.transformers_neuron_view <span class="im">import</span> BertModel</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bertviz.neuron_view <span class="im">import</span> show</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="neuron_view" class="level4">
+<h4 class="anchored" data-anchor-id="neuron_view">neuron_view</h4>
+<ul>
+<li><a href="https://github.com/jessevig/bertviz#neuron-view-1">Documentation</a></li>
+<li>Trace the computation of the weights to show how the query and key vectors combine to produce the final weight.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select a BERT model checkpoint</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>model_ckpt <span class="op">=</span> <span class="st">"bert-base-uncased"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Instantiate a BERT tokenizer</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(model_ckpt)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Instantiate a pretrained pytorch model from a pre-trained model configuration</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> BertModel.from_pretrained(model_ckpt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>text <span class="op">=</span> <span class="st">"time flies like an arrow"</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>show(model, <span class="st">"bert"</span>, tokenizer, text, display_mode<span class="op">=</span><span class="st">"light"</span>, layer<span class="op">=</span><span class="dv">0</span>, head<span class="op">=</span><span class="dv">8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/query-vector-to-key-vector-visualization.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Note:</strong> The <code>query</code> vector for “flies” has the most overlap with the <code>key</code> vector for “arrow.”</p>
+</section>
+<section id="neuron_view.show" class="level4">
+<h4 class="anchored" data-anchor-id="neuron_view.show">neuron_view.show</h4>
+<ul>
+<li><a href="https://github.com/jessevig/bertviz/blob/24ed45268a0c616d9d7e342bf3c460e4aaac0035/bertviz/neuron_view.py#L37">Source Code</a></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>print_source(show, <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    def show(model, model_type, tokenizer, sentence_a, sentence_b=None,
+        display_mode='dark', layer=None, head=None):
+        if sentence_b:
+            vis_html = """
+            &lt;div id="bertviz" style='padding:8px'&gt;
+              &lt;span style="user-select:none"&gt;
+                &lt;span class="dropdown-label"&gt;Layer: &lt;/span&gt;&lt;select id="layer"&gt;&lt;/select&gt;
+                &lt;span class="dropdown-label"&gt;Head: &lt;/span&gt;&lt;select id="att_head"&gt;&lt;/select&gt;
+                &lt;span class="dropdown-label"&gt;Attention: &lt;/span&gt;&lt;select id="filter"&gt;
+                  &lt;option value="all"&gt;All&lt;/option&gt;
+                  &lt;option value="aa"&gt;Sentence A -&gt; Sentence A&lt;/option&gt;
+                  &lt;option value="ab"&gt;Sentence A -&gt; Sentence B&lt;/option&gt;
+                  &lt;option value="ba"&gt;Sentence B -&gt; Sentence A&lt;/option&gt;
+                  &lt;option value="bb"&gt;Sentence B -&gt; Sentence B&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/span&gt;
+              &lt;div id='vis'&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            """
+        else:
+            vis_html = """
+                &lt;div id="bertviz" style='padding:8px'&gt;
+                  &lt;span style="user-select:none"&gt;
+                    &lt;span class="dropdown-label"&gt;Layer: &lt;/span&gt;&lt;select id="layer"&gt;&lt;/select&gt;
+                    &lt;span class="dropdown-label"&gt;Head: &lt;/span&gt; &lt;select id="att_head"&gt;&lt;/select&gt;
+                  &lt;/span&gt;
+                  &lt;div id='vis'&gt;&lt;/div&gt;
+                &lt;/div&gt;
+             """
+        display(HTML(
+            '&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"&gt;&lt;/script&gt;'
+            ))
+        display(HTML(vis_html))
+        __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.
+            dirname(__file__)))
+        attn_data = get_attention(model, model_type, tokenizer, sentence_a,
+            sentence_b, include_queries_and_keys=True)
+        if model_type == 'gpt2':
+            bidirectional = False
+        else:
+            bidirectional = True
+        params = {'attention': attn_data, 'default_filter': 'all',
+            'bidirectional': bidirectional, 'display_mode': display_mode,
+            'layer': layer, 'head': head}
+        vis_js = open(os.path.join(__location__, 'neuron_view.js')).read()
+        display(Javascript('window.bertviz_params = %s' % json.dumps(params)))
+        display(Javascript(vis_js))</code></pre>
+</section>
+<section id="neuron_view.get_attention" class="level4">
+<h4 class="anchored" data-anchor-id="neuron_view.get_attention">neuron_view.get_attention</h4>
+<ul>
+<li><a href="https://github.com/jessevig/bertviz/blob/24ed45268a0c616d9d7e342bf3c460e4aaac0035/bertviz/neuron_view.py#L101">Source Code</a></li>
+<li>Compute representation of attention to pass to the d3 visualization</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>model_ckpt <span class="op">=</span> <span class="st">"bert-base-uncased"</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>text <span class="op">=</span> <span class="st">"time flies like an arrow"</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(model_ckpt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get encoded inputs as PyTorch tensors and exclude special tokens</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>inputs <span class="op">=</span> tokenizer(text, return_tensors<span class="op">=</span><span class="st">"pt"</span>, add_special_tokens<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>inputs.input_ids</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([[ 2051, 10029,  2066,  2019,  8612]])</code></pre>
+<hr>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoConfig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Note:</strong> * Every checkpoint in Hugging Face Transformers is assigned a configuration file, which specifies various hyperparameters. * The AutoConfig class also stores metadata such as label names.</p>
+</section>
+<section id="bertconfig" class="level4">
+<h4 class="anchored" data-anchor-id="bertconfig">BertConfig</h4>
+<ul>
+<li><a href="https://huggingface.co/docs/transformers/main/en/model_doc/bert#transformers.BertConfig">Documentation</a></li>
+<li>This is the configuration class to store the configuration of a BERT model.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>config <span class="op">=</span> AutoConfig.from_pretrained(model_ckpt)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    BertConfig {
+      "architectures": [
+        "BertForMaskedLM"
+      ],
+      "attention_probs_dropout_prob": 0.1,
+      "classifier_dropout": null,
+      "gradient_checkpointing": false,
+      "hidden_act": "gelu",
+      "hidden_dropout_prob": 0.1,
+      "hidden_size": 768,
+      "initializer_range": 0.02,
+      "intermediate_size": 3072,
+      "layer_norm_eps": 1e-12,
+      "max_position_embeddings": 512,
+      "model_type": "bert",
+      "num_attention_heads": 12,
+      "num_hidden_layers": 12,
+      "pad_token_id": 0,
+      "position_embedding_type": "absolute",
+      "transformers_version": "4.11.3",
+      "type_vocab_size": 2,
+      "use_cache": true,
+      "vocab_size": 30522
+    }
+</code></pre>
+<hr>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch <span class="im">import</span> nn</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="nn.embedding" class="level4">
+<h4 class="anchored" data-anchor-id="nn.embedding">nn.Embedding</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html">Documentation</a></li>
+<li>Create a simple lookup table that stores embeddings of a fixed dictionary size.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize dense embeddings where each entry contains a nonzero value</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>token_emb <span class="op">=</span> nn.Embedding(config.vocab_size, config.hidden_size)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>token_emb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    Embedding(30522, 768)
+</code></pre>
+<p><strong>Note:</strong> * The embeddings at this point are independent of their context. * Words that are spelled the same but have different meanings have indistinguishable representations. * The subsequent attention layers provide the missing context.</p>
+<hr>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate embeddings for the input sequence</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>inputs_embeds <span class="op">=</span> token_emb(inputs.input_ids)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>inputs_embeds.size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5, 768])</code></pre>
+<hr>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> math <span class="im">import</span> sqrt </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="torch.bmm" class="level4">
+<h4 class="anchored" data-anchor-id="torch.bmm">torch.bmm</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.bmm.html?highlight=torch%20bmm#torch.bmm">Documentation</a></li>
+<li>Perform a batched matrix multiplication.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Initialize the query, key, and value vectors using the input embeddings</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> key <span class="op">=</span> value <span class="op">=</span> inputs_embeds</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>dim_k <span class="op">=</span> key.size(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Calculate the dot product of the query and key vectors</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3.1: and scale the result using the size of the embedding vectors</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> torch.bmm(query, key.transpose(<span class="dv">1</span>,<span class="dv">2</span>)) <span class="op">/</span> sqrt(dim_k)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>scores.size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5, 5])</code></pre>
+<p><strong>Note:</strong> * We now have a <span class="math inline">\(5x5\)</span> matrix of attention scores per sample in the batch. * We ordinarily generate the query, key, and value vectors by applying independent weight matrices <span class="math inline">\(W_{Q,K,V}\)</span> to the embeddings.</p>
+<hr>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="functional.softmax" class="level4">
+<h4 class="anchored" data-anchor-id="functional.softmax">functional.softmax</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html#torch.nn.functional.softmax">Documentation</a></li>
+<li>Apply the softmax function to a tensor.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3.2: Apply the softmax function to the scaled dot product</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> F.softmax(scores, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>weights.<span class="bu">sum</span>(dim<span class="op">=-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([[1., 1., 1., 1., 1.]], grad_fn=&lt;SumBackward1&gt;)</code></pre>
+<hr>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>weights[<span class="dv">0</span>][<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([1.0000e+00, 5.1735e-12, 3.7513e-13, 2.1163e-12, 9.7180e-13],
+           grad_fn=&lt;SelectBackward0&gt;)</code></pre>
+<hr>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Matrix multiply the attention weights by the value vector</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>attn_outputs <span class="op">=</span> torch.bmm(weights, value)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>attn_outputs.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5, 768])</code></pre>
+<hr>
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> scaled_dot_product_attention(query, key, value):</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Refactor all four steps to compute self-attention into a single function</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="co">    1. Compute the dot product of the query and key vectors.</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="co">    2. Scale the dot product using the square root of the embedding size</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="co">    3. Apply the softmax function.</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="co">    4. Matrix multiply the attention weights by the value vector.</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    dim_k <span class="op">=</span> query.size(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> torch.bmm(query, key.transpose(<span class="dv">1</span>, <span class="dv">2</span>)) <span class="op">/</span> sqrt(dim_k)</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    weights <span class="op">=</span> F.softmax(scores, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.bmm(weights, value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Note:</strong> * The attention mechanism will assign a high score to identical words when the “query” and “key” vectors are equal. * In practice, complementary words in the context better inform the meaning of a word than identical words. * The self-attention layer typically applies three independent linear transformations to each embedding to generate the query, key, and value vectors rather than using the same vector for each.</p>
+</section>
+<section id="multi-headed-attention" class="level4">
+<h4 class="anchored" data-anchor-id="multi-headed-attention">Multi-headed attention</h4>
+<ul>
+<li>The softmax of one attention head tends to focus on one aspect of similarity.</li>
+<li>Having several heads allows the model to focus on several aspects at once.</li>
+<li>The model learns what aspects of similarity to focus on from the data, similar to the convolutional filters in computer vision models.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> AttentionHead(nn.Module):</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A single self-attention head that produces tensors of shape [batch_size, seq_len, head_dim]</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="co">        embed_dim: the number of embedding dimensions of the tokens</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="co">        head_dim: the number of dimensions we are projecting into</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, embed_dim, head_dim):</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.q <span class="op">=</span> nn.Linear(embed_dim, head_dim)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.k <span class="op">=</span> nn.Linear(embed_dim, head_dim)</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.v <span class="op">=</span> nn.Linear(embed_dim, head_dim)</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, hidden_state):</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>        attn_outputs <span class="op">=</span> scaled_dot_product_attention(</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.q(hidden_state), <span class="va">self</span>.k(hidden_state), <span class="va">self</span>.v(hidden_state))</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> attn_outputs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Note:</strong> It is common practice to use a multiple of <code>embed_dim</code> for <code>head_dim</code> so that the computation across each head is constant.</p>
+</section>
+<section id="torch.nn.modulelist" class="level4">
+<h4 class="anchored" data-anchor-id="torch.nn.modulelist">torch.nn.ModuleList</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html?highlight=modulelist#torch.nn.ModuleList">Documentation</a></li>
+<li>Store properly registered Modules in an indexable list.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MultiHeadAttention(nn.Module):</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A multi-head attention layer that concatenates the output of each attention head</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>        embed_dim <span class="op">=</span> config.hidden_size</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>        num_heads <span class="op">=</span> config.num_attention_heads</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>        head_dim <span class="op">=</span> embed_dim <span class="op">//</span> num_heads</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.heads <span class="op">=</span> nn.ModuleList(</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>            [AttentionHead(embed_dim, head_dim) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_heads)]</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.output_linear <span class="op">=</span> nn.Linear(embed_dim, embed_dim)</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, hidden_state):</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Concatenate the output of each attention head</span></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> torch.cat([h(hidden_state) <span class="cf">for</span> h <span class="kw">in</span> <span class="va">self</span>.heads], dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Pass the concatenated output through a linear layer to</span></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># produce a tensor of shape [batch_size, seq_len, hidden_dim]</span></span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.output_linear(x)</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a multi-head attention layer using the BertConfig</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>multihead_attn <span class="op">=</span> MultiHeadAttention(config)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Pass the input embeddings through the attention layer</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>attn_output <span class="op">=</span> multihead_attn(inputs_embeds)    </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>attn_output.size() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5, 768])</code></pre>
+<hr>
+<div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bertviz <span class="im">import</span> head_view</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoModel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="head_view" class="level4">
+<h4 class="anchored" data-anchor-id="head_view">head_view</h4>
+<ul>
+<li><a href="https://github.com/jessevig/bertviz#head-and-model-views">Documentation</a></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a BERT model using the pretrained model checkpoint</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModel.from_pretrained(model_ckpt, output_attentions<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>sentence_a <span class="op">=</span> <span class="st">"time flies like an arrow"</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>sentence_b <span class="op">=</span> <span class="st">"fruit flies like a banana"</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Tokenize the input sentences</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>viz_inputs <span class="op">=</span> tokenizer(sentence_a, sentence_b, return_tensors<span class="op">=</span><span class="st">'pt'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k,v <span class="kw">in</span> viz_inputs.items(): <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>v<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    input_ids: tensor([[  101,  2051, 10029,  2066,  2019,  8612,   102,  5909, 10029,  2066,
+              1037, 15212,   102]])
+    token_type_ids: tensor([[0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]])
+    attention_mask: tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])</code></pre>
+<hr>
+<div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>viz_inputs.input_ids.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 13])</code></pre>
+<hr>
+<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>attention <span class="op">=</span> model(<span class="op">**</span>viz_inputs).attentions</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(attention), attention[<span class="dv">0</span>].shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    (12, torch.Size([1, 12, 13, 13]))</code></pre>
+<p><strong>Note:</strong> BERT has 12 attention heads.</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>sentence_b_start <span class="op">=</span> (viz_inputs.token_type_ids <span class="op">==</span> <span class="dv">0</span>).<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>sentence_b_start</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([7])</code></pre>
+<hr>
+<div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> tokenizer.convert_ids_to_tokens(viz_inputs.input_ids[<span class="dv">0</span>])</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>tokens</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    ['[CLS]',
+     'time',
+     'flies',
+     'like',
+     'an',
+     'arrow',
+     '[SEP]',
+     'fruit',
+     'flies',
+     'like',
+     'a',
+     'banana',
+     '[SEP]']</code></pre>
+<hr>
+<div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>head_view(attention, tokens, sentence_b_start, heads<span class="op">=</span>[<span class="dv">8</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="..//images/notes-transformers-book/chapter-3/head_view.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Note:</strong> * The attention weights are highest between words in the same sentence. * The attention weights allow the model to distinguish the use of “flies” as a verb or a noun.</p>
+</section>
+</section>
+<section id="the-feed-forward-layer" class="level3">
+<h3 class="anchored" data-anchor-id="the-feed-forward-layer">The Feed-Forward Layer</h3>
+<ul>
+<li>The feed-forward sublayer contains two linear layers and processes each embedding independently.</li>
+<li>A rule of thumb is to have the hidden size of the first layer be four times the size of the embeddings.</li>
+<li>The feed-forward layer typically uses the <a href="https://pytorch.org/docs/stable/generated/torch.nn.GELU.html?highlight=gelu">Gaussian Error Linear Units (GELU)</a> activation function.
+<ul>
+<li>The GELU function weights inputs by their value, whereas the ReLU function gates inputs by their sign.</li>
+</ul></li>
+<li>The predominant theory is most of the capacity and memorization happens in the feed-forward layer.
+<ul>
+<li>Most choose to scale the feed-forward layer when scaling a model.</li>
+</ul></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>config.hidden_size, config.intermediate_size</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    (768, 3072)</code></pre>
+<hr>
+<div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>config.hidden_size<span class="op">*</span><span class="dv">4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    3072</code></pre>
+<hr>
+<div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FeedForward(nn.Module):</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A simple two-layer fully-connected network that processes each embedding independently</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.linear_1 <span class="op">=</span> nn.Linear(config.hidden_size, config.intermediate_size)</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.linear_2 <span class="op">=</span> nn.Linear(config.intermediate_size, config.hidden_size)</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.gelu <span class="op">=</span> nn.GELU()</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.dropout <span class="op">=</span> nn.Dropout(config.hidden_dropout_prob)</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.linear_1(x)</span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.gelu(x)</span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.linear_2(x)</span>
+<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.dropout(x)</span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>feed_forward <span class="op">=</span> FeedForward(config)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>ff_outputs <span class="op">=</span> feed_forward(attn_outputs)</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>ff_outputs.size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5, 768])</code></pre>
+</section>
+<section id="adding-layer-normalization" class="level3">
+<h3 class="anchored" data-anchor-id="adding-layer-normalization">Adding Layer Normalization</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/1607.06450">Layer Normalization Paper</a></li>
+<li>Layer normalization normalizes each input in the batch to have zero mean and a variance of one.</li>
+<li>Skip connections pass a tensor to the next layer of the model without processing and add it to the processed tensor.</li>
+<li>The original Transformer paper uses post-layer normalization, which performs normalization between skip connections.
+<ul>
+<li>Post-layer normalization typically requires gradually increasing the learning rate during training to prevent the gradients from diverging.</li>
+</ul></li>
+<li>The most common approach is to use pre-layer normalization, which performs normalization within the span of skip connections.
+<ul>
+<li>Training is typically more stable with pre-layer normalization.</li>
+</ul></li>
+</ul>
+<section id="nn.layernorm" class="level4">
+<h4 class="anchored" data-anchor-id="nn.layernorm">nn.LayerNorm</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html?highlight=layer%20normalization">Documentation</a></li>
+<li>Apply Layer Normalization over a mini-batch of inputs</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>inputs_embeds[<span class="dv">0</span>][<span class="dv">0</span>][<span class="dv">0</span>], inputs_embeds.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    (tensor(0.0497, grad_fn=&lt;SelectBackward0&gt;), torch.Size([1, 5, 768]))</code></pre>
+<hr>
+<div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>layer_norm <span class="op">=</span> nn.LayerNorm(config.hidden_size)</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Activate module</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>layer_norm_embeds <span class="op">=</span> layer_norm(inputs_embeds)</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>layer_norm_embeds[<span class="dv">0</span>][<span class="dv">0</span>][<span class="dv">0</span>], layer_norm_embeds.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    (tensor(0.0352, grad_fn=&lt;SelectBackward0&gt;), torch.Size([1, 5, 768]))</code></pre>
+<hr>
+<div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TransformerEncoderLayer(nn.Module):</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A complete encoder layer that performs pre-layer normalization</span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.layer_norm_1 <span class="op">=</span> nn.LayerNorm(config.hidden_size)</span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.layer_norm_2 <span class="op">=</span> nn.LayerNorm(config.hidden_size)</span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.attention <span class="op">=</span> MultiHeadAttention(config)</span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.feed_forward <span class="op">=</span> FeedForward(config)</span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Apply layer normalization and then copy input into query, key, value</span></span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>        hidden_state <span class="op">=</span> <span class="va">self</span>.layer_norm_1(x)</span>
+<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Apply attention with a skip connection</span></span>
+<span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x <span class="op">+</span> <span class="va">self</span>.attention(hidden_state)</span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Apply feed-forward layer with a skip connection</span></span>
+<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x <span class="op">+</span> <span class="va">self</span>.feed_forward(<span class="va">self</span>.layer_norm_2(x))</span>
+<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>encoder_layer <span class="op">=</span> TransformerEncoderLayer(config)</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>inputs_embeds.shape, encoder_layer(inputs_embeds).size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    (torch.Size([1, 5, 768]), torch.Size([1, 5, 768]))</code></pre>
+</section>
+</section>
+<section id="positional-embeddings" class="level3">
+<h3 class="anchored" data-anchor-id="positional-embeddings">Positional Embeddings</h3>
+<ul>
+<li>Augment the token embeddings with a positional-dependent pattern of values arranged in a vector.</li>
+<li>The attention heads and feed-forward layers in each stack learn to incorporate positional information when the pattern is characteristic for each position.</li>
+</ul>
+<section id="learnable-position-embeddings" class="level4">
+<h4 class="anchored" data-anchor-id="learnable-position-embeddings">Learnable Position Embeddings</h4>
+<ul>
+<li>A popular approach involves learning a pattern during pretraining.</li>
+<li>This approach works the same as the token embeddings but uses the position index as input.</li>
+<li>Learnable position embeddings work best when there is a large amount of pretraining data.</li>
+</ul>
+</section>
+<section id="absolute-position-representations" class="level4">
+<h4 class="anchored" data-anchor-id="absolute-position-representations">Absolute Position Representations</h4>
+<ul>
+<li>Use static patterns consisting of modulated sine and cosine signals to encode the positions of tokens.</li>
+<li>This approach works well when we don’t have access to a large dataset.</li>
+</ul>
+</section>
+<section id="relative-positional-encoding" class="level4">
+<h4 class="anchored" data-anchor-id="relative-positional-encoding">Relative Positional Encoding</h4>
+<ul>
+<li>Encode the relative positions between tokens.</li>
+<li>Relative Positional Encoding requires modifying the attention mechanism with additional terms that account for the relative position between tokens.</li>
+</ul>
+</section>
+<section id="rotary-position-embeddings" class="level4">
+<h4 class="anchored" data-anchor-id="rotary-position-embeddings">Rotary Position Embeddings</h4>
+<ul>
+<li>Combine the idea of absolute and relative positional representations.</li>
+<li>Rotary position embeddings achieve excellent results on many tasks.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Embeddings(nn.Module):</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A custom embedding layer that combines a token embedding layer that projects the `input_ids` </span></span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a><span class="co">    to a dense hidden state with the positional embedding that does the same for `position_ids`</span></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.token_embeddings <span class="op">=</span> nn.Embedding(config.vocab_size, </span>
+<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a>                                             config.hidden_size)</span>
+<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.position_embeddings <span class="op">=</span> nn.Embedding(config.max_position_embeddings,</span>
+<span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a>                                                config.hidden_size)</span>
+<span id="cb65-12"><a href="#cb65-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.layer_norm <span class="op">=</span> nn.LayerNorm(config.hidden_size, eps<span class="op">=</span><span class="fl">1e-12</span>)</span>
+<span id="cb65-13"><a href="#cb65-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.dropout <span class="op">=</span> nn.Dropout()</span>
+<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-15"><a href="#cb65-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, input_ids):</span>
+<span id="cb65-16"><a href="#cb65-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create position IDs for input sequence</span></span>
+<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a>        seq_length <span class="op">=</span> input_ids.size(<span class="dv">1</span>)</span>
+<span id="cb65-18"><a href="#cb65-18" aria-hidden="true" tabindex="-1"></a>        position_ids <span class="op">=</span> torch.arange(seq_length, dtype<span class="op">=</span>torch.<span class="bu">long</span>).unsqueeze(<span class="dv">0</span>)</span>
+<span id="cb65-19"><a href="#cb65-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create token and position embeddings</span></span>
+<span id="cb65-20"><a href="#cb65-20" aria-hidden="true" tabindex="-1"></a>        token_embeddings <span class="op">=</span> <span class="va">self</span>.token_embeddings(input_ids)</span>
+<span id="cb65-21"><a href="#cb65-21" aria-hidden="true" tabindex="-1"></a>        position_embeddings <span class="op">=</span> <span class="va">self</span>.position_embeddings(position_ids)</span>
+<span id="cb65-22"><a href="#cb65-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Combine token and position embeddings</span></span>
+<span id="cb65-23"><a href="#cb65-23" aria-hidden="true" tabindex="-1"></a>        embeddings <span class="op">=</span> token_embeddings <span class="op">+</span> position_embeddings</span>
+<span id="cb65-24"><a href="#cb65-24" aria-hidden="true" tabindex="-1"></a>        embeddings <span class="op">=</span> <span class="va">self</span>.layer_norm(embeddings)</span>
+<span id="cb65-25"><a href="#cb65-25" aria-hidden="true" tabindex="-1"></a>        embeddings <span class="op">=</span> <span class="va">self</span>.dropout(embeddings)</span>
+<span id="cb65-26"><a href="#cb65-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> embeddings</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Note:</strong> The embedding layer creates a single dense embedding for each token.</p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>config.max_position_embeddings</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    512</code></pre>
+<div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>inputs.input_ids.size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5])</code></pre>
+<div class="sourceCode" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>torch.arange(<span class="dv">5</span>, dtype<span class="op">=</span>torch.<span class="bu">long</span>).unsqueeze(<span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([[0, 1, 2, 3, 4]])</code></pre>
+<hr>
+<div class="sourceCode" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>embedding_layer <span class="op">=</span> Embeddings(config)</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>embedding_layer(inputs.input_ids).size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5, 768])</code></pre>
+<hr>
+<div class="sourceCode" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TransformerEncoder(nn.Module):</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A full encoder</span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.embeddings <span class="op">=</span> Embeddings(config)</span>
+<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.layers <span class="op">=</span> nn.ModuleList([TransformerEncoderLayer(config) </span>
+<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a>                                     <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(config.num_hidden_layers)])</span>
+<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-11"><a href="#cb74-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb74-12"><a href="#cb74-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Incorporate positional information</span></span>
+<span id="cb74-13"><a href="#cb74-13" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.embeddings(x)</span>
+<span id="cb74-14"><a href="#cb74-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> layer <span class="kw">in</span> <span class="va">self</span>.layers: x <span class="op">=</span> layer(x)</span>
+<span id="cb74-15"><a href="#cb74-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> TransformerEncoder(config)</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>encoder(inputs.input_ids).size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 5, 768])</code></pre>
+</section>
+</section>
+<section id="adding-a-classification-head" class="level3">
+<h3 class="anchored" data-anchor-id="adding-a-classification-head">Adding a Classification Head</h3>
+<ul>
+<li>Transformer models typically consist of a task-independent body and a task-dependent head.</li>
+<li>We can attach a dropout and linear layer to the pretrained body to make a classification prediction.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TransformerForSequenceClassification(nn.Module):</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A classification head that extends and existing encoder for sequence classification</span></span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.encoder <span class="op">=</span> TransformerEncoder(config)</span>
+<span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.dropout <span class="op">=</span> nn.Dropout(config.hidden_dropout_prob)</span>
+<span id="cb77-9"><a href="#cb77-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.classifier <span class="op">=</span> nn.Linear(config.hidden_size, config.num_labels)</span>
+<span id="cb77-10"><a href="#cb77-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb77-11"><a href="#cb77-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb77-12"><a href="#cb77-12" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.encoder(x)[:, <span class="dv">0</span>, :] <span class="co"># select hidden state of [CLS] token</span></span>
+<span id="cb77-13"><a href="#cb77-13" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.dropout(x)</span>
+<span id="cb77-14"><a href="#cb77-14" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.classifier(x)</span>
+<span id="cb77-15"><a href="#cb77-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>config.num_labels <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>encoder_classifier <span class="op">=</span> TransformerForSequenceClassification(config)</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>encoder_classifier(inputs.input_ids).size()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    torch.Size([1, 3])</code></pre>
+<hr>
+<div class="sourceCode" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>encoder_classifier(inputs.input_ids)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([[ 0.8427, -0.7799, -0.4482]], grad_fn=&lt;AddmmBackward0&gt;)</code></pre>
+<p><strong>Note:</strong> For each example in the batch, we get the unnormalized logits for each class in the output.</p>
+</section>
+</section>
+<section id="the-decoder" class="level2">
+<h2 class="anchored" data-anchor-id="the-decoder">The Decoder</h2>
+<ul>
+<li>The main difference between the encoder and decoder is that the decoder has two attention sublayers.</li>
+</ul>
+<section id="mingpt" class="level3">
+<h3 class="anchored" data-anchor-id="mingpt">minGPT</h3>
+<ul>
+<li><a href="https://github.com/karpathy/minGPT">GitHub Repository</a></li>
+<li>A minimal PyTorch re-implementation of the OpenAI GPT (Generative Pretrained Transformer) training</li>
+</ul>
+</section>
+<section id="masked-multi-head-self-attention-layer" class="level3">
+<h3 class="anchored" data-anchor-id="masked-multi-head-self-attention-layer">Masked Multi-Head Self-Attention Layer</h3>
+<ul>
+<li>The Masked Multi-Head Attention Layer ensures the tokens generated at each timestep depend only on the past outputs and the current token by masking the inputs.</li>
+<li>The goal is to prevent the decoder from cheating during training by copying the target translation.</li>
+<li>Use a mask matrix with ones on the lower diagonal and zeros above.</li>
+</ul>
+</section>
+<section id="encoder-decoder-attention-layer" class="level3">
+<h3 class="anchored" data-anchor-id="encoder-decoder-attention-layer">Encoder-Decoder Attention Layer</h3>
+<ul>
+<li>The Encoder-Decoder Attention Layer performs multi-head attention using the encoder stack’s output “key” and “value” vectors.</li>
+<li>The intermediate representations from the decoder serve as the “query” vectors.</li>
+<li>The encoder-decoder attention layer learns to relate tokens from two different sequences.</li>
+<li>The decoder has access to the encoder keys and values in each block.</li>
+</ul>
+<section id="torch.tril" class="level4">
+<h4 class="anchored" data-anchor-id="torch.tril">torch.tril</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.tril.html?highlight=torch%20tril#torch.tril">Documentation</a></li>
+<li>Get the lower triangular part of the matrix or batch of matrices</li>
+</ul>
+<div class="sourceCode" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>seq_len <span class="op">=</span> inputs.input_ids.size(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> torch.tril(torch.ones(seq_len, seq_len)).unsqueeze(<span class="dv">0</span>)</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>mask[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([[1., 0., 0., 0., 0.],
+            [1., 1., 0., 0., 0.],
+            [1., 1., 1., 0., 0.],
+            [1., 1., 1., 1., 0.],
+            [1., 1., 1., 1., 1.]])</code></pre>
+<hr>
+<div class="sourceCode" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace the values above the diagonal with negative infinity</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>scores.masked_fill(mask <span class="op">==</span> <span class="dv">0</span>, <span class="op">-</span><span class="bu">float</span>(<span class="st">"inf"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    tensor([[[27.0041,    -inf,    -inf,    -inf,    -inf],
+             [ 1.0166, 25.6633,    -inf,    -inf,    -inf],
+             [-1.6074, -0.4446, 28.2530,    -inf,    -inf],
+             [ 0.1228, -1.1218, -1.4012, 26.3671,    -inf],
+             [-0.6555, -1.0425,  0.4620, -1.5529, 27.0796]]],
+           grad_fn=&lt;MaskedFillBackward0&gt;)</code></pre>
+<p><strong>Note:</strong> Setting the upper values to negative infinity guarantees the attention weights are all zero after applying softmax.</p>
+<hr>
+<div class="sourceCode" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> scaled_dot_product_attention(query, key, value, mask<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Compute self-attention and apply a mask to the atttention scores</span></span>
+<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>    dim_k <span class="op">=</span> query.size(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb86-6"><a href="#cb86-6" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> torch.bmm(query, key.transpose(<span class="dv">1</span>, <span class="dv">2</span>)) <span class="op">/</span> sqrt(dim_k)</span>
+<span id="cb86-7"><a href="#cb86-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> mask <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb86-8"><a href="#cb86-8" aria-hidden="true" tabindex="-1"></a>        scores <span class="op">=</span> scores.masked_fill(mask <span class="op">==</span> <span class="dv">0</span>, <span class="bu">float</span>(<span class="st">"-inf"</span>))</span>
+<span id="cb86-9"><a href="#cb86-9" aria-hidden="true" tabindex="-1"></a>    weights <span class="op">=</span> F.softmax(scores, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb86-10"><a href="#cb86-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> weights.bmm(value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="meet-the-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="meet-the-transformers">Meet the Transformers</h2>
+<section id="the-encoder-branch" class="level3">
+<h3 class="anchored" data-anchor-id="the-encoder-branch">The Encoder Branch</h3>
+<ul>
+<li>Encoder-only models still dominate research and industry on NLU tasks such as text classification, named entity recognition, and question answering.</li>
+</ul>
+<section id="bert" class="level4">
+<h4 class="anchored" data-anchor-id="bert"><a href="https://arxiv.org/abs/1810.04805">BERT</a></h4>
+<ul>
+<li>BERT was the first encoder-only Transformer model and outperformed all state-of-the-art models on the <a href="https://arxiv.org/abs/1804.07461">GLUE benchmark</a>.
+<ul>
+<li>The GLUE Benchmark measures natural language understanding (NLU) across several tasks of varying difficulty.</li>
+</ul></li>
+<li>BERT is pretrained to predict masked tokens in a piece of text (Masked Language Modeling) and determine if one text passage likely follows another (Next Sentence Prediction).</li>
+</ul>
+</section>
+<section id="distilbert" class="level4">
+<h4 class="anchored" data-anchor-id="distilbert"><a href="https://arxiv.org/abs/1910.01108">DistilBERT</a></h4>
+<ul>
+<li>DistilBERT uses knowledge distillation during pretraining to achieve 97% of BERT’s performance while using 40% less memory and is 60% faster.</li>
+</ul>
+</section>
+<section id="roberta" class="level4">
+<h4 class="anchored" data-anchor-id="roberta"><a href="https://arxiv.org/abs/1907.11692">RoBERTa</a></h4>
+<ul>
+<li>RoBERTa trains for longer on larger batches with more training data than BERT and drops the Next Sentence Prediction task.</li>
+<li>RoBERTa achieves significantly higher performance compared to BERT.</li>
+</ul>
+</section>
+<section id="xlm-cross-lingual-language-model" class="level4">
+<h4 class="anchored" data-anchor-id="xlm-cross-lingual-language-model"><a href="https://arxiv.org/abs/1901.07291">XLM: Cross-lingual Language Model</a></h4>
+<ul>
+<li>The XLM paper explores the effectiveness of cross-lingual model pretraining.</li>
+<li>The authors introduced Translation Language Modeling (TLM), which extends Masked Language Modeling to multiple languages.</li>
+<li>The authors achieved state-of-the-art results on several multilingual NLU benchmarks and translation tasks.</li>
+</ul>
+</section>
+<section id="xlm-roberta" class="level4">
+<h4 class="anchored" data-anchor-id="xlm-roberta"><a href="https://arxiv.org/abs/1911.02116">XLM-RoBERTa</a></h4>
+<ul>
+<li>XLM-Roberta massively upscales the amount of training data used for multilingual pretraining.</li>
+<li>The developers created a dataset with 2.5 terabytes of text and pretrained an encoder with Masked Language Modeling.</li>
+</ul>
+</section>
+<section id="albert" class="level4">
+<h4 class="anchored" data-anchor-id="albert"><a href="https://arxiv.org/abs/1909.11942">ALBERT</a></h4>
+<ul>
+<li>Alberta decouples the token embedding and hidden dimensions to decrease parameter count.</li>
+<li>All layers share the same parameters, decreasing the “effective” number of parameters even further.</li>
+<li>A Sentence Ordering Prediction (SOP) objective replaces the Next Sentence Prediction objective.</li>
+<li>With Sentence Ordering Prediction, the model predicts whether two consecutive sentences are out of order.</li>
+<li>These changes make it possible to train larger models with fewer parameters and achieve superior performance on NLU tasks.</li>
+</ul>
+</section>
+<section id="electra" class="level4">
+<h4 class="anchored" data-anchor-id="electra"><a href="https://arxiv.org/abs/2003.10555">ELECTRA</a></h4>
+<ul>
+<li>Standard MLM pretraining only updates the representations of the masked tokens.</li>
+<li>ELECTRA uses a two-model approach to address this limitation.
+<ul>
+<li>The first model predicts masked tokens.</li>
+<li>The second model, called the discriminator, distinguishes between original tokens and predicted tokens in the first model’s output.
+<ul>
+<li>The discriminator makes a binary classification for every token, making training 30 times more efficient.</li>
+<li>We fine-tune the discriminator for downstream tasks.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="deberta" class="level4">
+<h4 class="anchored" data-anchor-id="deberta"><a href="https://arxiv.org/abs/2006.03654">DeBERTa</a></h4>
+<ul>
+<li>DeBERTa represents each token using a vector for the content and a vector for relative position.
+<ul>
+<li>Disentangling the tokens’ content from their relative positions helps the self-attention layers better model the dependency of nearby token pairs.</li>
+</ul></li>
+<li>DeBERTa adds an absolute position embedding just before the softmax layer of the token decoding head.</li>
+<li>DeBERTa was the first model (as an ensemble) to beat the human baseline on the <a href="https://arxiv.org/abs/1905.00537">SuperGLUE</a> benchmark.</li>
+</ul>
+</section>
+</section>
+<section id="the-decoder-branch" class="level3">
+<h3 class="anchored" data-anchor-id="the-decoder-branch">The Decoder Branch</h3>
+<ul>
+<li>Decoder models are exceptionally good at predicting the next word in a sequence.</li>
+<li>Most of the progress for decoder models comes from training with larger datasets and scaling the language models to larger sizes.</li>
+</ul>
+<section id="gpt-generative-pretrained-transformer" class="level4">
+<h4 class="anchored" data-anchor-id="gpt-generative-pretrained-transformer"><a href="https://openai.com/blog/language-unsupervised/">GPT: Generative Pretrained Transformer</a></h4>
+<ul>
+<li>GPT combined the transformer decoder architecture and transfer learning.</li>
+<li>The training process involves predicting the next word based on the previous ones.</li>
+<li>The model also achieved impressive results on downstream tasks such as classification.</li>
+</ul>
+</section>
+<section id="gpt-2" class="level4">
+<h4 class="anchored" data-anchor-id="gpt-2"><a href="https://openai.com/blog/better-language-models/">GPT-2</a></h4>
+<ul>
+<li>GPT-2 upscales the original GPT model and training set.</li>
+<li>The model can produce longer sequences of coherent text.</li>
+</ul>
+</section>
+<section id="ctrl-conditional-transformer-language" class="level4">
+<h4 class="anchored" data-anchor-id="ctrl-conditional-transformer-language"><a href="https://arxiv.org/abs/1909.05858">CTRL: Conditional Transformer Language</a></h4>
+<ul>
+<li>CTRL adds “control tokens” at the beginning of a sequence to control the style of the generated text.</li>
+</ul>
+</section>
+<section id="gpt-3" class="level4">
+<h4 class="anchored" data-anchor-id="gpt-3"><a href="https://arxiv.org/abs/2005.14165">GPT-3</a></h4>
+<ul>
+<li><a href="https://arxiv.org/abs/2001.08361">Scaling Laws for Neural Language Models</a>
+<ul>
+<li>There are simple power laws that govern the relationship between compute, dataset size, model size, and the performance of a language model.</li>
+</ul></li>
+<li>GPT-3 upscales GPT-2 to 175 billion parameters.</li>
+<li>The model can generate impressively realistic text passages and exhibits few-shot learning capabilities.</li>
+</ul>
+</section>
+<section id="gpt-neogpt-j-6b" class="level4">
+<h4 class="anchored" data-anchor-id="gpt-neogpt-j-6b"><a href="https://zenodo.org/record/5297715">GPT-Neo</a>/<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J-6B</a></h4>
+<ul>
+<li>These are GPT-like models trained by <a href="https://www.eleuther.ai/">EleutherAI</a>, a collective of researchers who aim to recreate and release GPT-3 scale models.</li>
+<li>The current models come in 1.3, 2.7, and 6 billion variants and are competitive with the smaller GPT-3 models offered by OpenAI.</li>
+</ul>
+</section>
+</section>
+<section id="the-encoder-decoder-branch" class="level3">
+<h3 class="anchored" data-anchor-id="the-encoder-decoder-branch">The Encoder-Decoder Branch</h3>
+<section id="t5" class="level4">
+<h4 class="anchored" data-anchor-id="t5"><a href="https://arxiv.org/abs/1910.10683">T5</a></h4>
+<ul>
+<li>The T5 model frames all Natural Language Understanding and Generation tasks as sequence-to-sequence tasks.</li>
+<li>The model handles text classification problems by feeding the text to the encoder and generating a label as plain text instead of a class id.</li>
+<li>The T5 architecture uses the original Transformer architecture.</li>
+<li>The model trains on the C4 dataset using masked language modeling and the SuperGLUE tasks.</li>
+</ul>
+</section>
+<section id="bart" class="level4">
+<h4 class="anchored" data-anchor-id="bart"><a href="https://arxiv.org/abs/1910.13461">BART</a></h4>
+<ul>
+<li>BART combines the pretraining procedures of BERT and GPT within the encoder-decoder architecture.</li>
+<li>The input sequences undergo one of several possible transformations, including simple masking, sentence permutation, token deletion, and document rotation.</li>
+<li>The modified inputs pass through the encoder, and the decoder reconstructs the original texts.</li>
+</ul>
+</section>
+<section id="m2m-100" class="level4">
+<h4 class="anchored" data-anchor-id="m2m-100"><a href="https://arxiv.org/abs/2010.11125">M2M-100</a></h4>
+<ul>
+<li>M2M-100 is the first model able to translate between 100 languages.
+<ul>
+<li>This capability enables high-quality translation between rare and underrepresented languages.</li>
+</ul></li>
+<li>The model uses prefix tokens to indicate the source and target language.</li>
+</ul>
+</section>
+<section id="bigbird" class="level4">
+<h4 class="anchored" data-anchor-id="bigbird"><a href="https://arxiv.org/abs/2007.14062">BigBird</a></h4>
+<ul>
+<li>BigBird uses a sparse form of attention that scales linearly to avoid the quadratic memory requirements of standard attention mechanisms.</li>
+<li>BigBird has a maximum context size of 4092 compared to the context size of 512 in most BERT models.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li><a href="https://transformersbook.com/">Natural Language Processing with Transformers Book</a></li>
+<li><a href="https://github.com/nlp-with-transformers/notebooks">The Transformers book GitHub Repository</a></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

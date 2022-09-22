@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-08-09">
+<meta name="description" content="Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with the object detection model.">
+
+<title>Christian Mills - End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2">
+<meta property="og:description" content="Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with the object detection model.">
+<meta property="og:image" content="https://christianjmills.com/posts/icevision-openvino-unity-tutorial/social-media/cover.jpg">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2">
+<meta name="twitter:description" content="Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with the object detection model.">
+<meta name="twitter:image" content="https://christianjmills.com/posts/icevision-openvino-unity-tutorial/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">icevision</div>
+    <div class="quarto-category">openvino</div>
+    <div class="quarto-category">yolox</div>
+    <div class="quarto-category">object-detection</div>
+    <div class="quarto-category">unity</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with the object detection model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 9, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#install-openvino">Install OpenVINO</a></li>
+<li><a href="#create-dll-project">Create DLL Project</a></li>
+<li><a href="#configure-the-project">Configure the Project</a></li>
+<li><a href="#add-include-directories">Add Include Directories</a></li>
+<li><a href="#link-libraries">Link Libraries</a></li>
+<li><a href="#post-build-events">Post Build Events</a></li>
+<li><a href="#update-precompiled-header-file">Update Precompiled Header File</a></li>
+<li><a href="#update-dllmain-file">Update dllmain File</a></li>
+<li><a href="#build-solution">Build Solution</a></li>
+<li><a href="#gather-dependencies">Gather Dependencies</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p><a href="../part-1/">Part 1</a> covered finetuning an object detection model using the IceVision library and exporting it as an OpenVINO IR model. This post covers creating a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file in Visual Studio to perform inference with this model using <a href="https://docs.openvino.ai/latest/index.html">OpenVINO</a>.</p>
+<blockquote class="blockquote">
+<p><strong>Important:</strong> This post assumes <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio</a> is present on your system.</p>
+</blockquote>
+</section>
+<section id="install-openvino" class="level2">
+<h2 class="anchored" data-anchor-id="install-openvino">Install OpenVINO</h2>
+<p>We need to download the OpenVINO Toolkit before creating our Visual Studio project. Go to the OpenVINO download page linked below.</p>
+<ul>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/download.html">OpenVINO Download page</a></li>
+</ul>
+<p><strong>Download OpenVINO Toolkit</strong></p>
+<p>Select the options outlined in the image below and click the Download button.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_download_page.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_download_page</figcaption><p></p>
+</figure>
+</div>
+<p>Double-click the file once it finishes downloading and click the Extract button in the popup window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_installer_extract_files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_installer_extract_files</figcaption><p></p>
+</figure>
+</div>
+<p>The installer will then verify the computer meets the system requirements. The toolkit includes the Python scripts for converting models, which require Python 3.6, 3.7, 3.8, or 3.9 to run. We will only use the files for C++ development in this post.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_installer_check_system_requirements.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_installer_check_system_requirements</figcaption><p></p>
+</figure>
+</div>
+<p>We can stick with the default <code>Recommended Installation</code> option.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_installer_recommended_installation.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_installer_recommended_installation</figcaption><p></p>
+</figure>
+</div>
+<p>The installer will then ask whether Intel can collect some information before starting the installation process.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_installer_software_improvement_program.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_installer_software_improvement_program</figcaption><p></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_installer_installation_in_progress.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_installer_installation_in_progress</figcaption><p></p>
+</figure>
+</div>
+<p>Click Finish once the installation process completes.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_installer_finish.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_installer_finish</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Inspect OpenVINO Folder</strong></p>
+<p>If we look at the installation folder for the toolkit, we can see it also includes a version of OpenCV. We’ll use OpenCV to prepare image data from Unity before feeding it to the model.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_install_folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_install_folder</figcaption><p></p>
+</figure>
+</div>
+<p>I like to copy the OpenVINO folder to a separate directory with other dependencies for my C++ projects.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/openvino_move_folder_to_dependencies_directory.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">openvino_move_folder_to_dependencies_directory</figcaption><p></p>
+</figure>
+</div>
+<p>Now we can create our Visual Studio DLL project.</p>
+</section>
+<section id="create-dll-project" class="level2">
+<h2 class="anchored" data-anchor-id="create-dll-project">Create DLL Project</h2>
+<p>Open Visual Studio and select the <code>Create a new project</code> option.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-create-new-project.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-create-new-project</figcaption><p></p>
+</figure>
+</div>
+<p>Type <code>DLL</code> into the text box and select the <code>Dynamic-Link Library (DLL)</code> option. This option automatically configures a few parameters for us compared to starting with a standard console application.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-new-dll-project.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-new-dll-project</figcaption><p></p>
+</figure>
+</div>
+<p>Choose a name and location for the project and click the <code>Create</code> button. By default, the DLL file will use the project name.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-choose-project-name-and-location.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-choose-project-name-and-location</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="configure-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="configure-the-project">Configure the Project</h2>
+<p>At the top of the window, open the Solution Configurations dropdown menu, and select <code>Release</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-switch-to-release.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-switch-to-release</figcaption><p></p>
+</figure>
+</div>
+<p>Then, open the Solution Platform dropdown menu and select <code>x64</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-switch-to-64-bit.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-switch-to-64-bit</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="add-include-directories" class="level2">
+<h2 class="anchored" data-anchor-id="add-include-directories">Add Include Directories</h2>
+<p>We need to tell Visual Studio where OpenVINO and OpenCV are so we can access their APIs. Right-click the project name in the Solution Explorer panel.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-solution-explorer-select-project-name.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-solution-explorer-select-project-name</figcaption><p></p>
+</figure>
+</div>
+<p>Select the <code>Properties</code> option in the popup menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-properties.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-properties</figcaption><p></p>
+</figure>
+</div>
+<p>In the Properties Window, open on the <code>C/C++</code> dropdown. Select the <code>Additional Include Directories</code> section and click on <code>&lt;Edit..&gt;</code> in the dropdown.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-additional-include-directories.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-additional-include-directories</figcaption><p></p>
+</figure>
+</div>
+<p>Add the paths for the following folders, replacing <code>&lt;parent-folder-path&gt;</code> with the full path to the parent folder for the OpenVINO Toolkit, and click <code>OK</code>.</p>
+<ul>
+<li><code>&lt;parent-folder-path&gt;\openvino_2022.1.0.643\runtime\include\ie</code></li>
+<li><code>&lt;parent-folder-path&gt;\openvino_2022.1.0.643\runtime\include</code></li>
+<li><code>&lt;parent-folder-path&gt;\openvino_2022.1.0.643\opencv\include</code></li>
+<li><code>&lt;parent-folder-path&gt;\openvino_2022.1.0.643\runtime\3rdparty\tbb\include</code></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-add-additional-include-directories.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-add-additional-include-directories</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="link-libraries" class="level2">
+<h2 class="anchored" data-anchor-id="link-libraries">Link Libraries</h2>
+<p>Next, open the <code>Linker</code> dropdown in the Properties window and select <code>Input</code>. Select <code>Additional Dependencies</code> and click <code>&lt;Edit..&gt;</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-linker-additional-dependencies.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-linker-additional-dependencies</figcaption><p></p>
+</figure>
+</div>
+<p>Add the paths to the following files, replacing <code>&lt;parent-folder-path&gt;</code> with the full path to the parent folder for the OpenVINO Toolkit, and click <code>OK</code>.</p>
+<ul>
+<li><code>&lt;parent-folder-path&gt;\openvino_2022.1.0.643\opencv\lib\*</code></li>
+<li><code>&lt;parent-folder-path&gt;\openvino_2022.1.0.643\runtime\lib\intel64\Release\*</code></li>
+<li><code>&lt;parent-folder-path&gt;\openvino_2022.1.0.643\runtime\3rdparty\tbb\lib\*.lib</code></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-linker-add-additional-dependencies.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-linker-add-additional-dependencies</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="post-build-events" class="level2">
+<h2 class="anchored" data-anchor-id="post-build-events">Post Build Events</h2>
+<p>Our DLL file will depend on the following DLL files included with the OpenVINO and OpenCV libraries.</p>
+<p><strong>OpenCV DLL files</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/get-opencv-dll-files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">get-opencv-dll-files</figcaption><p></p>
+</figure>
+</div>
+<p><strong>OpenVINO DLL files</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/get-openvino-dll-files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">get-openvino-dll-files</figcaption><p></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/get-openvino-tbb-dll-file.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">get-openvino-tbb-dll-file</figcaption><p></p>
+</figure>
+</div>
+<p>We can add a post-build event in Visual Studio to automatically copy these DLL files to the build folder for the project at compile time. Open the <code>Build Events</code> dropdown in the Properties window and select <code>Post-Build Event</code>. Select <code>Command Line</code> and click <code>&lt;Edit..&gt;</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-post-build-event-edit-command-line-events.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-post-build-event-edit-command-line-events</figcaption><p></p>
+</figure>
+</div>
+<p>Add the following commands, replacing <code>&lt;parent-folder-path&gt;</code> with the full path to the parent folder for the OpenVINO Toolkit, and click <code>OK</code>.</p>
+<ul>
+<li><code>xcopy &lt;parent-folder-path&gt;\openvino_2022.1.0.643\opencv\bin\opencv_core453.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></li>
+<li><code>xcopy &lt;parent-folder-path&gt;\openvino_2022.1.0.643\opencv\bin\opencv_imgproc453.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></li>
+<li><code>xcopy &lt;parent-folder-path&gt;\openvino_2022.1.0.643\opencv\bin\opencv_imgcodecs453.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></li>
+<li><code>xcopy &lt;parent-folder-path&gt;\openvino_2022.1.0.643\runtime\bin\intel64\Release\* $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></li>
+<li><code>xcopy &lt;parent-folder-path&gt;\openvino_2022.1.0.643\runtime\3rdparty\tbb\bin\tbb.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-post-build-event-add-xcopy-commands.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-post-build-event-add-xcopy-commands</figcaption><p></p>
+</figure>
+</div>
+<p>Finally, click the <code>Apply</code> button and close the Properties window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-properties-apply-changes.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-properties-apply-changes</figcaption><p></p>
+</figure>
+</div>
+<p>With the dependencies taken care of, we can start modifying the code.</p>
+</section>
+<section id="update-precompiled-header-file" class="level2">
+<h2 class="anchored" data-anchor-id="update-precompiled-header-file">Update Precompiled Header File</h2>
+<p>We’ll first update the <code>pch.h</code> <a href="https://docs.microsoft.com/en-us/cpp/build/creating-precompiled-header-files?view=msvc-160">Precompiled Header file</a> with the required header files. We can open the <code>pch.h</code> file by selecting it in the Solution Explorer window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-pch-header-file.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-pch-header-file</figcaption><p></p>
+</figure>
+</div>
+<p>Comment or remove the <code>#include</code> line for the <code>framework.h</code> header file.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// pch.h: This is a precompiled header file.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Files listed below are compiled only once, improving build performance for future builds.</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// This also affects IntelliSense performance, including code completion and many code browsing features.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// However, files listed here are ALL re-compiled if any one of them is updated between builds.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Do not add files here that you will be updating frequently as this negates the performance advantage.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef PCH_H</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define PCH_H</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">// add headers that you want to pre-compile here</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">//#include "framework.h"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">//PCH_H</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Add required header files</strong></p>
+<p>Next, we’ll add the required header files for OpenVINO and OpenCV below <code>//#include "framework.h"</code> line.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// pch.h: This is a precompiled header file.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Files listed below are compiled only once, improving build performance for future builds.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// This also affects IntelliSense performance, including code completion and many code browsing features.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">// However, files listed here are ALL re-compiled if any one of them is updated between builds.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Do not add files here that you will be updating frequently as this negates the performance advantage.</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef PCH_H</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define PCH_H</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">// add headers that you want to pre-compile here</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">//#include "framework.h"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"openvino/openvino.hpp"</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;opencv2/opencv.hpp&gt;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">//PCH_H</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-dllmain-file" class="level2">
+<h2 class="anchored" data-anchor-id="update-dllmain-file">Update dllmain File</h2>
+<p>By default, the <code>dllmain.cpp</code> file contains the following code.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// dllmain.cpp : Defines the entry point for the DLL application.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"pch.h"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>BOOL APIENTRY DllMain<span class="op">(</span> HMODULE hModule<span class="op">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                       DWORD  ul_reason_for_call<span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                       LPVOID lpReserved</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                     <span class="op">)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">switch</span> <span class="op">(</span>ul_reason_for_call<span class="op">)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_PROCESS_ATTACH<span class="op">:</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_THREAD_ATTACH<span class="op">:</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_THREAD_DETACH<span class="op">:</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_PROCESS_DETACH<span class="op">:</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> TRUE<span class="op">;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can delete everything below the <code>#include "pch.h"</code> line.</p>
+<p><strong>Create a macro to mark functions we want to make accessible in Unity</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// dllmain.cpp : Defines the entry point for the DLL application.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"pch.h"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Create a macro to quickly mark a function for export</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DLLExport </span><span class="ex">__declspec (dllexport)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">**</span>Wrap the code in <span class="at">extern</span> <span class="st">"C"</span> to prevent name<span class="op">-</span>mangling issues with the compiler<span class="op">**</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>The rest of our code will go inside here<span class="op">.</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="er">```</span>c<span class="op">++</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">// Wrap code to prevent name-mangling issues</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">extern</span> <span class="st">"C"</span> <span class="op">{</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define variables</strong></p>
+<p>Inside the wrapper, we will declare the persistent variables needed for the DLL.</p>
+<ul>
+<li><a href="https://docs.openvino.ai/nightly/classov_1_1Core.html">ov::Core</a>: represents an OpenVINO runtime Core entity</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1Model.html#doxid-classov-1-1-model">ov::Model</a>: A user-defined model</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1CompiledModel.html">ov::CompiledModel</a>: represents a compiled model</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request">ov::InferRequest</a>: an infer request that can be run in asynchronous or synchronous manners</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1Tensor.html">ov::Tensor</a>: API holding host memory</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Inference engine instance</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ov<span class="op">::</span>Core core<span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">// The user define model representation</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>shared_ptr<span class="op">&lt;</span>ov<span class="op">::</span>Model<span class="op">&gt;</span> model<span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">// A device-specific compiled model</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>ov<span class="op">::</span>CompiledModel compiled_model<span class="op">;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">// List of available compute devices</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">&gt;</span> available_devices<span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">// An inference request for a compiled model</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ov<span class="op">::</span>InferRequest infer_request<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores the model input data</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>ov<span class="op">::</span>Tensor input_tensor<span class="op">;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co">// A pointer for accessing the input tensor data</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span><span class="op">*</span> input_data<span class="op">;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">// model has only one output</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>ov<span class="op">::</span>Tensor output_tensor<span class="op">;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">// A pointer for accessing the output tensor data</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span><span class="op">*</span> out_data<span class="op">;</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">// The current source image width</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> img_w<span class="op">;</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co">// The current source image height</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> img_h<span class="op">;</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co">// The current model input width</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> input_w<span class="op">;</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co">// The current model input height</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> input_h<span class="op">;</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co">// The total number pixels in the input image</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> n_pixels<span class="op">;</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">// The number of color channels </span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> n_channels <span class="op">=</span> <span class="dv">3</span><span class="op">;</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores information about a single object prediction</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Object</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> x0<span class="op">;</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> y0<span class="op">;</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> width<span class="op">;</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> height<span class="op">;</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> label<span class="op">;</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> prob<span class="op">;</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="co">// Store grid offset and stride values to decode a section of the model output</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> GridAndStride</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> grid0<span class="op">;</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> grid1<span class="op">;</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> stride<span class="op">;</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="co">// The scale values used to adjust the model output to the source image resolution</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> scale_x<span class="op">;</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> scale_y<span class="op">;</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="co">// The minimum confidence score to consider an object proposal</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> bbox_conf_thresh <span class="op">=</span> <span class="fl">0.3</span><span class="op">;</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="co">// The maximum intersection over union value before an object proposal will be ignored</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> nms_thresh <span class="op">=</span> <span class="fl">0.45</span><span class="op">;</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores the grid and stride values to navigate the raw model output</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span>GridAndStride<span class="op">&gt;</span> grid_strides<span class="op">;</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores the object proposals with confidence scores above bbox_conf_thresh</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span>Object<span class="op">&gt;</span> proposals<span class="op">;</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores the indices for the object proposals selected using non-maximum suppression</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> proposal_indices<span class="op">;</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="co">// The stride values used to generate the gride_strides vector</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> strides <span class="op">=</span> <span class="op">{</span> <span class="dv">8</span><span class="op">,</span> <span class="dv">16</span><span class="op">,</span> <span class="dv">32</span> <span class="op">};</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to get the number of compute devices</strong></p>
+<p>The first function we’ll define will create a list of available device names and return the number of devices accessible by OpenVINO. We’ll use this information to select which device to use to perform inference from the Unity application. There might be an option named GNA (Gaussian &amp; Neural Accelerator). GNA is a highly specialized neural coprocessor for tasks like noise cancellation. We’ll exclude it from the list of devices presented to the end user.</p>
+<ul>
+<li><a href="https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1aabd82bca4826ee53893f7b5fc9bce813">ov::Core::get_available_devices()</a>: Returns devices available for inference</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Get the number of available compute devices</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">The number of available devices</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">int</span> GetDeviceCount<span class="op">()</span> </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Reset list of available compute devices</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    available_devices<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Populate list of available compute devices</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="bu">std::</span>string<span class="op"> </span>device <span class="op">:</span> core<span class="op">.</span>get_available_devices<span class="op">())</span> <span class="op">{</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Skip GNA device</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>device<span class="op">.</span>find<span class="op">(</span><span class="st">"GNA"</span><span class="op">)</span> <span class="op">==</span> <span class="bu">std::</span>string<span class="bu">::</span>npos<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>            available_devices<span class="op">.</span>push_back<span class="op">(</span>device<span class="op">);</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Return the number of available compute devices</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> available_devices<span class="op">.</span>size<span class="op">();</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to get the name of a compute device</strong></p>
+<p>Next, we’ll define a function to return the name of a device at a specified index for the list of available devices.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Get the name of the compute device name at the specified index</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"index"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">The name of the device at the specified index</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="bu">std::</span>string<span class="op">*</span> GetDeviceName<span class="op">(</span><span class="dt">int</span> index<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">&amp;</span>available_devices<span class="op">[</span>index<span class="op">];</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define method to generate stride values to navigate the raw model output</strong></p>
+<p>The method for generating the offset values used to traverse the output array is almost identical to the Python implementation from <a href="../part-1/#define-post-processing-steps">part 1</a>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Generate offset values to navigate the raw model output</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"height"</span><span class="kw">&gt;</span><span class="co">The model input height</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"width"</span><span class="kw">&gt;</span><span class="co">The model input width</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> GenerateGridsAndStride<span class="op">(</span><span class="dt">int</span> height<span class="op">,</span> <span class="dt">int</span> width<span class="op">)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remove the values for the previous input resolution</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    grid_strides<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iterate through each stride value</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span> stride <span class="op">:</span> strides<span class="op">)</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Calculate the grid dimensions</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> grid_height <span class="op">=</span> height <span class="op">/</span> stride<span class="op">;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> grid_width <span class="op">=</span> width <span class="op">/</span> stride<span class="op">;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Store each combination of grid coordinates</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> g1 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> g1 <span class="op">&lt;</span> grid_height<span class="op">;</span> g1<span class="op">++)</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> g0 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> g0 <span class="op">&lt;</span> grid_width<span class="op">;</span> g0<span class="op">++)</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>                grid_strides<span class="op">.</span>push_back<span class="op">(</span>GridAndStride<span class="op">{</span> g0<span class="op">,</span> g1<span class="op">,</span> stride <span class="op">});</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to set the minimum confidence score from Unity</strong></p>
+<p>We might want to try different confidence thresholds for keeping object proposals from the Unity application, so we’ll add a function to enable this.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Set minimum confidence score for keeping bounding box proposals</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"min_confidence"</span><span class="kw">&gt;</span><span class="co">The minimum confidence score for keeping bounding box proposals</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">void</span> SetConfidenceThreshold<span class="op">(</span><span class="dt">float</span> min_confidence<span class="op">)</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    bbox_conf_thresh <span class="op">=</span> min_confidence<span class="op">;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to load an OpenVINO model</strong></p>
+<p>OpenVINO needs to compile models for the target device. This process can take several seconds when using GPU inference. We can create a cache directory, so we only need to compile models for a specific resolution-device pair once.</p>
+<p>We’ll place the code for loading an OpenVINO model inside a try-catch block to avoid crashing the application if we pass an incorrect file path.</p>
+<p>If the model loads successfully, we’ll attempt to reshape the model input to the desired input dimensions. After reshaping the model input, we can compile the model for the target device.</p>
+<p>We can get pointers to the model input tensor and create an inference request using the compiled model.</p>
+<ul>
+<li><a href="https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1a14cba2136b972ee34478dd11633293a2">ov::Core::set_property()</a>: Sets properties for a device</li>
+<li><a href="https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1ae0576a95f841c3a6f5e46e4802716981">ov::Core::read_model()</a>: Reads models from IR/ONNX/PDPD formats</li>
+<li><a href="https://docs.openvino.ai/latest/openvino_docs_OV_UG_ShapeInference.html">ov::Model::reshape()</a>: Updates input shapes and propagates them down to the outputs of the model through all intermediate layers</li>
+<li><a href="https://docs.openvino.ai/nightly/classov_1_1Core.html#doxid-classov-1-1-core-1a46555f0803e8c29524626be08e7f5c5a">ov::Core::compile_model()</a>: Creates a compiled model from a source model object</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1CompiledModel.html#doxid-classov-1-1-compiled-model-1ae3633c0eb5173ed776446fba32b95953">ov::CompiledModel::create_infer_request()</a>: Creates an inference request object used to infer the compiled model</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a5f0bc1ab40de6a7a12136b4a4e6a8b54">ov::InferRequest::get_input_tensor()</a>: Gets an input tensor for inference</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Load a model from the specified file path</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"model_path"</span><span class="kw">&gt;</span><span class="co">The full model path to the OpenVINO IR model</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"index"</span><span class="kw">&gt;</span><span class="co">The index for the available_devices vector</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"image_dims"</span><span class="kw">&gt;</span><span class="co">The source image dimensions</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">A status value indicating success or failure to load and reshape the model</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">int</span> LoadModel<span class="op">(</span><span class="dt">char</span><span class="op">*</span> model_path<span class="op">,</span> <span class="dt">int</span> index<span class="op">,</span> <span class="dt">int</span> image_dims<span class="op">[</span><span class="dv">2</span><span class="op">])</span> </span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> return_val <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the cache directory for compiled GPU models</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    core<span class="op">.</span>set_property<span class="op">(</span><span class="st">"GPU"</span><span class="op">,</span> ov<span class="op">::</span>cache_dir<span class="op">(</span><span class="st">"cache"</span><span class="op">));</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Try loading the specified model</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> <span class="op">{</span> model <span class="op">=</span> core<span class="op">.</span>read_model<span class="op">(</span>model_path<span class="op">);</span> <span class="op">}</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">catch</span> <span class="op">(...)</span> <span class="op">{</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The dimensions of the source input image</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    img_w <span class="op">=</span> image_dims<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    img_h <span class="op">=</span> image_dims<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate new input dimensions based on the max stride value</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    input_w <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>strides<span class="op">.</span>back<span class="op">()</span> <span class="op">*</span> <span class="bu">std::</span>roundf<span class="op">(</span>img_w <span class="op">/</span> strides<span class="op">.</span>back<span class="op">()));</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    input_h <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>strides<span class="op">.</span>back<span class="op">()</span> <span class="op">*</span> <span class="bu">std::</span>roundf<span class="op">(</span>img_h <span class="op">/</span> strides<span class="op">.</span>back<span class="op">()));</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    n_pixels <span class="op">=</span> input_w <span class="op">*</span> input_h<span class="op">;</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the value used to adjust the model output to the source image resolution</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    scale_x <span class="op">=</span> input_w <span class="op">/</span> <span class="op">(</span>img_w <span class="op">*</span> <span class="fl">1.0</span><span class="op">);</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    scale_y <span class="op">=</span> input_h <span class="op">/</span> <span class="op">(</span>img_h <span class="op">*</span> <span class="fl">1.0</span><span class="op">);</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Generate the grid and stride values based on input resolution</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    grid_strides<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>    GenerateGridsAndStride<span class="op">(</span>input_h<span class="op">,</span> input_w<span class="op">);</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Try updating the model input dimensions</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> <span class="op">{</span> model<span class="op">-&gt;</span>reshape<span class="op">({</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> input_h<span class="op">,</span> input_w <span class="op">});</span> <span class="op">}</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">catch</span> <span class="op">(...)</span> <span class="op">{</span> return_val <span class="op">=</span> <span class="dv">2</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a compiled model for the taret compute device</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> compiled_model <span class="op">=</span> core<span class="op">.</span>compile_model<span class="op">(</span>model<span class="op">,</span> <span class="st">"MULTI"</span><span class="op">,</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>                                             ov<span class="op">::</span>device<span class="op">::</span>priorities<span class="op">(</span>available_devices<span class="op">[</span>index<span class="op">]),</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>                                             ov<span class="op">::</span>hint<span class="op">::</span>performance_mode<span class="op">(</span>ov<span class="op">::</span>hint<span class="op">::</span>PerformanceMode<span class="op">::</span>LATENCY<span class="op">),</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>                                             ov<span class="op">::</span>hint<span class="op">::</span>inference_precision<span class="op">(</span>ov<span class="op">::</span>element<span class="op">::</span>f32<span class="op">));</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create an inference request</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>    infer_request <span class="op">=</span> compiled_model<span class="op">.</span>create_infer_request<span class="op">();</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get input tensor by index</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>    input_tensor <span class="op">=</span> infer_request<span class="op">.</span>get_input_tensor<span class="op">(</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get a pointer to the input tensor data</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>    input_data <span class="op">=</span> input_tensor<span class="op">.</span>data<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;();</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get output tensor</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>    output_tensor <span class="op">=</span> infer_request<span class="op">.</span>get_output_tensor<span class="op">();</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get a pointer to the output tensor data</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>    out_data <span class="op">=</span> output_tensor<span class="op">.</span>data<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;();</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Replace the initial input dims with the updated values</span></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>    image_dims<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> input_w<span class="op">;</span></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>    image_dims<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> input_h<span class="op">;</span></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Return a value of 0 if the model loads successfully</span></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> return_val<span class="op">;</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define method to generate object detection proposals from the raw model output</strong></p>
+<p>The method to generate object proposals is nearly identical to the Python implementation from part 1.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Generate object detection proposals from the raw model output</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"out_ptr"</span><span class="kw">&gt;</span><span class="co">A pointer to the output tensor data</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> GenerateYoloxProposals<span class="op">(</span><span class="dt">float</span><span class="op">*</span> out_ptr<span class="op">,</span> <span class="dt">int</span> proposal_length<span class="op">)</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remove the proposals for the previous model output</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    proposals<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Obtain the number of classes the model was trained to detect</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> num_classes <span class="op">=</span> proposal_length <span class="op">-</span> <span class="dv">5</span><span class="op">;</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> anchor_idx <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> anchor_idx <span class="op">&lt;</span> grid_strides<span class="op">.</span>size<span class="op">();</span> anchor_idx<span class="op">++)</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Get the current grid and stride values</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> grid0 <span class="op">=</span> grid_strides<span class="op">[</span>anchor_idx<span class="op">].</span>grid0<span class="op">;</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> grid1 <span class="op">=</span> grid_strides<span class="op">[</span>anchor_idx<span class="op">].</span>grid1<span class="op">;</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> stride <span class="op">=</span> grid_strides<span class="op">[</span>anchor_idx<span class="op">].</span>stride<span class="op">;</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Get the starting index for the current proposal</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> start_idx <span class="op">=</span> anchor_idx <span class="op">*</span> proposal_length<span class="op">;</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Get the coordinates for the center of the predicted bounding box</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> x_center <span class="op">=</span> <span class="op">(</span>out_ptr<span class="op">[</span>start_idx <span class="op">+</span> <span class="dv">0</span><span class="op">]</span> <span class="op">+</span> grid0<span class="op">)</span> <span class="op">*</span> stride<span class="op">;</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> y_center <span class="op">=</span> <span class="op">(</span>out_ptr<span class="op">[</span>start_idx <span class="op">+</span> <span class="dv">1</span><span class="op">]</span> <span class="op">+</span> grid1<span class="op">)</span> <span class="op">*</span> stride<span class="op">;</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Get the dimensions for the predicted bounding box</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> w <span class="op">=</span> exp<span class="op">(</span>out_ptr<span class="op">[</span>start_idx <span class="op">+</span> <span class="dv">2</span><span class="op">])</span> <span class="op">*</span> stride<span class="op">;</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> h <span class="op">=</span> exp<span class="op">(</span>out_ptr<span class="op">[</span>start_idx <span class="op">+</span> <span class="dv">3</span><span class="op">])</span> <span class="op">*</span> stride<span class="op">;</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Calculate the coordinates for the upper left corner of the bounding box</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> x0 <span class="op">=</span> x_center <span class="op">-</span> w <span class="op">*</span> <span class="fl">0.5</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> y0 <span class="op">=</span> y_center <span class="op">-</span> h <span class="op">*</span> <span class="fl">0.5</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Get the confidence score that an object is present</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> box_objectness <span class="op">=</span> out_ptr<span class="op">[</span>start_idx <span class="op">+</span> <span class="dv">4</span><span class="op">];</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Initialize object struct with bounding box information</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>        Object obj <span class="op">=</span> <span class="op">{</span> x0<span class="op">,</span> y0<span class="op">,</span> w<span class="op">,</span> h<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span> <span class="op">};</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Find the object class with the highest confidence score</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> class_idx <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> class_idx <span class="op">&lt;</span> num_classes<span class="op">;</span> class_idx<span class="op">++)</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Get the confidence score for the current object class</span></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>            <span class="dt">float</span> box_cls_score <span class="op">=</span> out_ptr<span class="op">[</span>start_idx <span class="op">+</span> <span class="dv">5</span> <span class="op">+</span> class_idx<span class="op">];</span></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Calculate the final confidence score for the object proposal</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>            <span class="dt">float</span> box_prob <span class="op">=</span> box_objectness <span class="op">*</span> box_cls_score<span class="op">;</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Check for the highest confidence score</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>box_prob <span class="op">&gt;</span> obj<span class="op">.</span>prob<span class="op">)</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>                obj<span class="op">.</span>label <span class="op">=</span> class_idx<span class="op">;</span></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>                obj<span class="op">.</span>prob <span class="op">=</span> box_prob<span class="op">;</span></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Only add object proposals with high enough confidence scores</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>obj<span class="op">.</span>prob <span class="op">&gt;</span> bbox_conf_thresh<span class="op">)</span> proposals<span class="op">.</span>push_back<span class="op">(</span>obj<span class="op">);</span></span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Sort the proposals based on the confidence score in descending order</span></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>sort<span class="op">(</span>proposals<span class="op">.</span>begin<span class="op">(),</span> proposals<span class="op">.</span>end<span class="op">(),</span> <span class="op">[](</span>Object<span class="op">&amp;</span> a<span class="op">,</span> Object<span class="op">&amp;</span> b<span class="op">)</span> <span class="op">-&gt;</span> <span class="dt">bool</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>              <span class="op">{</span> <span class="cf">return</span> a<span class="op">.</span>prob <span class="op">&gt;</span> b<span class="op">.</span>prob<span class="op">;</span> <span class="op">});</span></span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define function to sort bounding box proposals using Non-Maximum Suppression</strong></p>
+<p>The C++ API for OpenCV has built-in functionality to perform comparison operations between rectangles. Therefore, we don’t need to define helper functions to calculate the intersection and union areas of two bounding boxes. Otherwise, the method to sort bounding box proposals using Non-Maximum Suppression is almost identical to the Python implementation from part 1.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Filter through a sorted list of object proposals using Non-maximum suppression</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> NmsSortedBboxes<span class="op">()</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remove the picked proposals for the previous model outptut</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    proposal_indices<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iterate through the object proposals</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> proposals<span class="op">.</span>size<span class="op">();</span> i<span class="op">++)</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        Object<span class="op">&amp;</span> a <span class="op">=</span> proposals<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Create OpenCV rectangle for the Object bounding box</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>        cv<span class="op">::</span>Rect_<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;</span> rect_a <span class="op">=</span> cv<span class="op">::</span>Rect_<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;(</span>a<span class="op">.</span>x0<span class="op">,</span> a<span class="op">.</span>y0<span class="op">,</span> a<span class="op">.</span>width<span class="op">,</span> a<span class="op">.</span>height<span class="op">);</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">bool</span> keep <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Check if the current object proposal overlaps any selected objects too much</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> j <span class="op">:</span> proposal_indices<span class="op">)</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>            Object<span class="op">&amp;</span> b <span class="op">=</span> proposals<span class="op">[</span>j<span class="op">];</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Create OpenCV rectangle for the Object bounding box</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>            cv<span class="op">::</span>Rect_<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;</span> rect_b <span class="op">=</span> cv<span class="op">::</span>Rect_<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;(</span>b<span class="op">.</span>x0<span class="op">,</span> b<span class="op">.</span>y0<span class="op">,</span> b<span class="op">.</span>width<span class="op">,</span> b<span class="op">.</span>height<span class="op">);</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Calculate the area where the two object bounding boxes overlap</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>            <span class="dt">float</span> inter_area <span class="op">=</span> <span class="op">(</span>rect_a <span class="op">&amp;</span> rect_b<span class="op">).</span>area<span class="op">();</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Calculate the union area of both bounding boxes</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>            <span class="dt">float</span> union_area <span class="op">=</span> rect_a<span class="op">.</span>area<span class="op">()</span> <span class="op">+</span> rect_b<span class="op">.</span>area<span class="op">()</span> <span class="op">-</span> inter_area<span class="op">;</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Ignore object proposals that overlap selected objects too much</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>inter_area <span class="op">/</span> union_area <span class="op">&gt;</span> nms_thresh<span class="op">)</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>                keep <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Keep object proposals that do not overlap selected objects too much</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>keep<span class="op">)</span> proposal_indices<span class="op">.</span>push_back<span class="op">(</span>i<span class="op">);</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to perform inference</strong></p>
+<p>We will access the pixel data for the input image from Unity with a pointer to a <a href="https://docs.opencv.org/4.5.1/d1/d1b/group__core__hal__interface.html#ga65f85814a8290f9797005d3b28e7e5fc">uchar</a> (unsigned 1-byte integer) array and wrap the data in a <a href="https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html">cv::Mat</a> variable for processing.</p>
+<p>We don’t need to normalize the input image since the IR model does it internally.</p>
+<p>After processing the model output, we’ll return the final number of detected objects to Unity so we can initialize an array of objects.</p>
+<ul>
+<li><a href="https://docs.opencv.org/3.4/d3/d63/classcv_1_1Mat.html">cv::Mat</a>: n-dimensional dense array class<br>
+</li>
+<li><a href="https://docs.opencv.org/3.4/d8/d01/group__imgproc__color__conversions.html#ga397ae87e1288a81d2363b61574eb8cab">cv::cvtColor()</a>: Converts an image from one color space to another</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1abcb7facc9f7c4b9226a1fd343e56958d">ov::InferRequest::infer()</a>: Infers specified input in synchronous mode</li>
+<li><a href="https://docs.openvino.ai/latest/classov_1_1InferRequest.html#doxid-classov-1-1-infer-request-1a9bf7bf67c58858bda86ae01e83cd14c1">ov::InferRequest::get_output_tensor()</a>: Gets an output tensor for inference</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Perform inference with the provided texture data</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"image_data"</span><span class="kw">&gt;</span><span class="co">The source image data from Unity</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">The final number of detected objects</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">int</span> PerformInference<span class="op">(</span><span class="ex">uchar</span><span class="op">*</span> image_data<span class="op">)</span> </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Store the pixel data for the source input image in an OpenCV Mat</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">::</span>Mat input_image <span class="op">=</span> cv<span class="op">::</span>Mat<span class="op">(</span>img_h<span class="op">,</span> img_w<span class="op">,</span> CV_8UC4<span class="op">,</span> image_data<span class="op">);</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remove the alpha channel</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">::</span>cvtColor<span class="op">(</span>input_image<span class="op">,</span> input_image<span class="op">,</span> cv<span class="op">::</span>COLOR_RGBA2RGB<span class="op">);</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Resize the input image</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">::</span>resize<span class="op">(</span>input_image<span class="op">,</span> input_image<span class="op">,</span> cv<span class="op">::</span>Size<span class="op">(</span>input_w<span class="op">,</span> input_h<span class="op">));</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iterate over each pixel in image</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> p <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> p <span class="op">&lt;</span> n_pixels<span class="op">;</span> p<span class="op">++)</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        input_data<span class="op">[</span><span class="dv">0</span><span class="op">*</span>n_pixels <span class="op">+</span> p<span class="op">]</span> <span class="op">=</span> input_image<span class="op">.</span>data<span class="op">[</span>p<span class="op">*</span>n_channels <span class="op">+</span> <span class="dv">0</span><span class="op">]</span> <span class="op">/</span> <span class="fl">255.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        input_data<span class="op">[</span><span class="dv">1</span><span class="op">*</span>n_pixels <span class="op">+</span> p<span class="op">]</span> <span class="op">=</span> input_image<span class="op">.</span>data<span class="op">[</span>p<span class="op">*</span>n_channels <span class="op">+</span> <span class="dv">1</span><span class="op">]</span> <span class="op">/</span> <span class="fl">255.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        input_data<span class="op">[</span><span class="dv">2</span><span class="op">*</span>n_pixels <span class="op">+</span> p<span class="op">]</span> <span class="op">=</span> input_image<span class="op">.</span>data<span class="op">[</span>p<span class="op">*</span>n_channels <span class="op">+</span> <span class="dv">2</span><span class="op">]</span> <span class="op">/</span> <span class="fl">255.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Perform inference</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    infer_request<span class="op">.</span>infer<span class="op">();</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Generate new proposals for the current model output</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    GenerateYoloxProposals<span class="op">(</span>out_data<span class="op">,</span> output_tensor<span class="op">.</span>get_shape<span class="op">()[</span><span class="dv">2</span><span class="op">]);</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Pick detected objects to keep using Non-maximum Suppression</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    NmsSortedBboxes<span class="op">();</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// return the final number of detected objects</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span>proposal_indices<span class="op">.</span>size<span class="op">();</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to populate an array of objects from Unity</strong></p>
+<p>Next, we’ll define a function to populate an array of objects from Unity. We call this function after initializing the list based on the current number of detected objects. We’ll also scale the bounding box information from the input dimensions to the source image resolution.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Fill the provided array with the detected objects</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"objects"</span><span class="kw">&gt;</span><span class="co">A pointer to a list of objects from Unity</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">void</span> PopulateObjectsArray<span class="op">(</span>Object<span class="op">*</span> objects<span class="op">)</span> </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> proposal_indices<span class="op">.</span>size<span class="op">();</span> i<span class="op">++)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        Object obj <span class="op">=</span> proposals<span class="op">[</span>proposal_indices<span class="op">[</span>i<span class="op">]];</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Adjust offset to source image resolution and clamp the bounding box</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        objects<span class="op">[</span>i<span class="op">].</span>x0 <span class="op">=</span> <span class="bu">std::</span>min<span class="op">(</span>obj<span class="op">.</span>x0 <span class="op">/</span> scale_x<span class="op">,</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>img_w<span class="op">);</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        objects<span class="op">[</span>i<span class="op">].</span>y0 <span class="op">=</span> <span class="bu">std::</span>min<span class="op">(</span>obj<span class="op">.</span>y0 <span class="op">/</span> scale_y<span class="op">,</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>img_h<span class="op">);</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>        objects<span class="op">[</span>i<span class="op">].</span>width <span class="op">=</span> <span class="bu">std::</span>min<span class="op">(</span>obj<span class="op">.</span>width <span class="op">/</span> scale_x<span class="op">,</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>img_w<span class="op">);</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        objects<span class="op">[</span>i<span class="op">].</span>height <span class="op">=</span> <span class="bu">std::</span>min<span class="op">(</span>obj<span class="op">.</span>height <span class="op">/</span> scale_y<span class="op">,</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>img_h<span class="op">);</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>        objects<span class="op">[</span>i<span class="op">].</span>label <span class="op">=</span> obj<span class="op">.</span>label<span class="op">;</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        objects<span class="op">[</span>i<span class="op">].</span>prob <span class="op">=</span> obj<span class="op">.</span>prob<span class="op">;</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to reset the vectors when the Unity application exits</strong></p>
+<p>This last function will free the memory allocated by the vectors. We’ll call it when the Unity application shuts down.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Reset vectors</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">void</span> FreeResources<span class="op">()</span> </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    available_devices<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    grid_strides<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    proposals<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    proposal_indices<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>That is all the code needed for the plugin. We can now build the solution to generate the DLL file.</p>
+</section>
+<section id="build-solution" class="level2">
+<h2 class="anchored" data-anchor-id="build-solution">Build Solution</h2>
+<p>Open the Build menu at the top of the Visual Studio window and click <code>Build Solution</code>. Visual Studio will generate a new x64 folder in the project directory containing the DLL file and its dependencies.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-build-solution.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-build-solution</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="gather-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="gather-dependencies">Gather Dependencies</h2>
+<p>Right-click the project name in the Solution Explorer panel and select <code>Open Folder in File Explorer</code> from the popup menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-folder-in-explorer.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-folder-in-explorer</figcaption><p></p>
+</figure>
+</div>
+<p>In the new File Explorer window, go to the parent folder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-project-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-project-folder</figcaption><p></p>
+</figure>
+</div>
+<p>Open the <code>x64 → Release</code> subfolder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-project-folder-x64-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-project-folder-x64-folder</figcaption><p></p>
+</figure>
+</div>
+<p>We’ll need to copy all the DLL files in this folder and the plugins.xml file to the Unity project.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/file-explorer-select-dll-files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">file-explorer-select-dll-files</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This post covered creating a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file to perform inference with a YOLOX model using <a href="https://docs.openvino.ai/latest/index.html">OpenVINO</a>. In part 3, we build a project in <a href="https://unity.com/">Unity</a> that uses this DLL.</p>
+<p><strong>Previous:</strong> <a href="../part-1/">End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1</a></p>
+<p><strong>Next:</strong> <a href="../part-3/">End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 3</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/icevision-openvino-unity-tutorial">GitHub Repository</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

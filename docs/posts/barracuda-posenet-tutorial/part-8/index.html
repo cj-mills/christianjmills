@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2020-11-20">
+<meta name="description" content="This post covers how to handle video input with different aspect ratios.">
+
+<title>Christian Mills - Barracuda PoseNet Tutorial Pt. 8 (Outdated)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Barracuda PoseNet Tutorial Pt. 8 (Outdated)">
+<meta property="og:description" content="This post covers how to handle video input with different aspect ratios.">
+<meta property="og:image" content="https://christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Barracuda PoseNet Tutorial Pt. 8 (Outdated)">
+<meta name="twitter:description" content="This post covers how to handle video input with different aspect ratios.">
+<meta name="twitter:image" content="https://christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Barracuda PoseNet Tutorial Pt. 8 (Outdated)</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to handle video input with different aspect ratios.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 20, 2020</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<p><strong>Version 2:</strong> <a href="../../barracuda-posenet-tutorial-v2/part-1/">Part 1</a></p>
+<p><strong>Last Updated:</strong> Dec 1, 2020</p>
+<section id="previous-part-7" class="level3">
+<h3 class="anchored" data-anchor-id="previous-part-7">Previous: <a href="../part-7/">Part 7</a></h3>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#add-unityenginevideo-namespace">Add UnityEngine.Video Namespace</a></li>
+<li><a href="#add-video-resolution-variables">Add Video Resolution Variables</a></li>
+<li><a href="#update-start-method">Update Start() Method</a></li>
+<li><a href="#update-processoutput-method">Update ProcessOutput() Method</a></li>
+<li><a href="#try-it-out">Try It Out</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>So far, we’ve only worked with video sources that have <code>16:9</code> aspect ratios. You might need to work with input that has a taller or wider aspect ratio depending on your application and equipment. In this post, we’ll cover how to adjust to the current source resolution at runtime.</p>
+</section>
+<section id="add-unityengine.video-namespace" class="level2">
+<h2 class="anchored" data-anchor-id="add-unityengine.video-namespace">Add <code>UnityEngine.Video</code> Namespace</h2>
+<p>Open the <code>PoseNet</code> script and add a new <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive"><code>using directive</code></a> at the top. We need the <code>UnityEngine.Video</code> namespace to work with the <code>Video Player</code> object.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/import_unityengine_video.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">import_unityengine_video</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="add-webcam-variables" class="level2">
+<h2 class="anchored" data-anchor-id="add-webcam-variables">Add Webcam Variables</h2>
+<p>Unity defaults to a resolution of <code>640 x 480</code> for webcams. There is no built-in method that returns the frame rate. However, the default does not appear to be over 30fps. We can request a resolution and frame rate when initializing the <code>webcamTexture</code>. Unity should accept the requested settings as long as the camera supports them. Unity defaults to its closest preset if the requested settings are not supported.</p>
+<section id="create-webcamheight-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-webcamheight-variable">Create <code>webcamHeight</code> Variable</h3>
+<p>Add a new public <code>int</code> variable so we can adjust the camera height from the <code>Inspector</code> tab. Name the variable <code>webcamHeight</code>. My webcam supports 720p at 60fps, so I’ve set the default value to <code>720</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/webcamHeight_variable.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">webcamHeight_variable</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-webcamwidth-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-webcamwidth-variable">Create <code>webcamWidth</code> Variable</h3>
+<p>Next, create a variable for the camera’s width and name it <code>webcamWidth</code>. I’ve set the default value to <code>1280</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/webcamWidth_variable.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">webcamWidth_variable</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-webcamfps-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-webcamfps-variable">Create <code>webcamFPS</code> Variable</h3>
+<p>We’ll also add a variable to set the frame rate for the camera and name it <code>webcamFPS</code>. Set the default value to <code>60</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/webcam_fps_variable.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">webcam_fps_variable</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="add-video-resolution-variables" class="level2">
+<h2 class="anchored" data-anchor-id="add-video-resolution-variables">Add Video Resolution Variables</h2>
+<p>Next, we need to create a couple of private <code>int</code> variables to store the dimensions of the video source. Name the variables <code>videoHeight</code> and <code>videoWidth</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/video_resolution_variables.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">video_resolution_variables</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="update-start-method" class="level2">
+<h2 class="anchored" data-anchor-id="update-start-method">Update <code>Start()</code> Method</h2>
+<p>We’ll make some modifications to the <code>Start()</code> method to prepare for input with different aspect ratios.</p>
+<section id="get-reference-to-video-player" class="level3">
+<h3 class="anchored" data-anchor-id="get-reference-to-video-player">Get Reference to <code>Video Player</code></h3>
+<p>Create a new <code>GameObject</code> variable to access the <code>Video Player</code> object. Name the variable <code>videoPlayer</code> and place it at the top of the <code>Start()</code> method. We’ll also move the <code>Transform videoScreen</code> variable outside of the <code>if (useWebcam)</code> statement.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/find_video_player.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">find_video_player</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="get-webcam-resolution" class="level3">
+<h3 class="anchored" data-anchor-id="get-webcam-resolution">Get Webcam Resolution</h3>
+<p>We can’t access the webcam resolution until after the webcam has started. Therefore, we’ll update the values for <code>videoHeight</code> and <code>videoWidth</code> after <code>webcamTexture.Play()</code> has been called.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/get_webcam_resolution.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">get_webcam_resolution</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="get-video-clip-dimensions" class="level3">
+<h3 class="anchored" data-anchor-id="get-video-clip-dimensions">Get Video Clip Dimensions</h3>
+<p>We need to get the video resolution from the <code>Video Player</code> object when we’re not using a webcam. We can get the height and width by accessing the <code>VideoPlayer</code> component.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/get_video_clip_dimensions.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">get_video_clip_dimensions</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="replace-videotexture" class="level3">
+<h3 class="anchored" data-anchor-id="replace-videotexture">Replace <code>videoTexture</code></h3>
+<p>The dimensions for <code>videoTexture</code> can’t be updated once it’s been created. We’ll need to replace it with a new <code>RenderTexture</code> that uses the new <code>videoHeight</code> and <code>videoWidth</code> values. We also need to set the new <code>videoTexture</code> as the <code>targetTexture</code> for the <code>Video Player</code> object.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/replace_videoTexture.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">replace_videoTexture</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="update-videoscreen" class="level3">
+<h3 class="anchored" data-anchor-id="update-videoscreen">Update <code>VideoScreen</code></h3>
+<p>Next, we need to apply the new <code>videoTexture</code> to the <code>VideoScreen</code> object. We’ll also resize and reposition the <code>VideoScreen</code> to account for any changes in the <code>videoTexture</code> dimensions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/update_videoScreen_2.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">update_videoScreen</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="adjust-main-camera" class="level3">
+<h3 class="anchored" data-anchor-id="adjust-main-camera">Adjust <code>Main Camera</code></h3>
+<p>We’ll also resize and reposition the <code>Main Camera</code> object to account for changes to the <code>VideoScreen</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/adjust_main_camera.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">adjust_main_camera</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="update-processoutput-method" class="level2">
+<h2 class="anchored" data-anchor-id="update-processoutput-method">Update <code>ProcessOutput()</code> Method</h2>
+<p>Finally, we need to modify how we calculate the key point locations.</p>
+<section id="update-scaling-calculations" class="level3">
+<h3 class="anchored" data-anchor-id="update-scaling-calculations">Update Scaling Calculations</h3>
+<p>We’ll account for different aspect ratios by first determining whether the height or width of <code>videoTexture</code> is larger. We then use that information to calculate the <code>scale</code> and <code>unsqueezeScale</code> values.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/update_scaling_calculations.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">update_scaling_calculations</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="update-key-point-calculations" class="level3">
+<h3 class="anchored" data-anchor-id="update-key-point-calculations">Update Key Point Calculations</h3>
+<p>We should only scale the <code>xPos</code> value by the <code>unsqueezeScale</code> if the width larger than the height. Remove that part from the initial <code>xPos</code> calculation. We also need to move the <code>if (useWebcam)</code> statement.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/update_key_point_calculations_part1v2.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">update_key_point_calculations_part1</figcaption><p></p>
+</figure>
+</div>
+<p>We’ll scale either <code>xPos</code> or <code>yPos</code> by <code>unsqueezeScale</code> depending on whether the width or height value for <code>videoTexture</code> is larger. Place the <code>if (useWebcam)</code> statement after this calculation.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/update_key_point_calculations_part2.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">update_key_point_calculations_part2</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="try-it-out" class="level2">
+<h2 class="anchored" data-anchor-id="try-it-out">Try It Out</h2>
+<p>Now we can test the modifications on some vertical videos from <a href="https://www.pexels.com/">Pexels</a>.</p>
+<ol type="1">
+<li><a href="https://www.pexels.com/video/woman-doing-a-jump-rope-exercise-2785536/">Woman Doing a Jump Rope Exercise</a></li>
+<li><a href="https://www.pexels.com/video/man-dancing-hip-hop-2795742/">Man Dancing Hip-Hop</a></li>
+</ol>
+<p><video src="./videos/jump_rope_pose_estimation_4.mp4" class="img-fluid" controls=""><a href="./videos/jump_rope_pose_estimation_4.mp4">Video</a></video></p>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>Now we can use video sources with different aspect ratios without needing to manually change any parameters.</p>
+<section id="github-repository---version-1" class="level3">
+<h3 class="anchored" data-anchor-id="github-repository---version-1"><a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial/tree/Version-1">GitHub Repository - Version 1</a></h3>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

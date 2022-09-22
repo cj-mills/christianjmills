@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-12-06">
+<meta name="description" content="This post covers the changes needed to use the in-game camera as input for the YOLOX model.">
+
+<title>Christian Mills - OpenVINO Object Detection in Unity Using the In-Game Camera</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - OpenVINO Object Detection in Unity Using the In-Game Camera">
+<meta property="og:description" content="This post covers the changes needed to use the in-game camera as input for the YOLOX model.">
+<meta property="og:image" content="https://christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - OpenVINO Object Detection in Unity Using the In-Game Camera">
+<meta name="twitter:description" content="This post covers the changes needed to use the in-game camera as input for the YOLOX model.">
+<meta name="twitter:image" content="https://christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">OpenVINO Object Detection in Unity Using the In-Game Camera</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">openvino</div>
+    <div class="quarto-category">object-detection</div>
+    <div class="quarto-category">yolox</div>
+    <div class="quarto-category">tutorial</div>
+    <div class="quarto-category">unity</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers the changes needed to use the in-game camera as input for the YOLOX model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 6, 2021</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="previous-in-editor" class="level3">
+<h3 class="anchored" data-anchor-id="previous-in-editor">Previous: <a href="../in-game-camera/">In-Editor</a></h3>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#update-boundingbox-script">Update BoundingBox Script</a></li>
+<li><a href="#update-objectdetector-script">Update ObjectDetector Script</a></li>
+<li><a href="#attach-script-to-camera">Attach Script to Camera</a></li>
+<li><a href="#update-gui-events">Update GUI Events</a></li>
+<li><a href="#test-it-out">Test it Out</a></li>
+</ul>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>In this follow-up post, we will update the Unity code so that we can use the in-game camera as input for the YOLOX model. This can be useful for performing object detection on the in-game environment as shown below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/yolox_in-game-camera_no_ui.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">yolox_in-game-camera_no_ui</figcaption><p></p>
+</figure>
+</div>
+<p>The baseline models used in this series were trained exclusively on real-world images. While the larger model variants are somewhat accurate in video game environments, they would need to be trained on images similar to the target game environment to maintain reliable accuracy. Therefore, we will be sticking with the demo project that has been used so far in this tutorial series.</p>
+</section>
+<section id="update-boundingbox-script" class="level2">
+<h2 class="anchored" data-anchor-id="update-boundingbox-script">Update BoundingBox Script</h2>
+<p>Open the BoundingBox script in the code editor.</p>
+<section id="delete-the-linerenderer" class="level3">
+<h3 class="anchored" data-anchor-id="delete-the-linerenderer">Delete the LineRenderer</h3>
+<p>We need to update how the bounding box is created so that the bounding boxes are not included in the current camera frame. Otherwise, the bounding box will be included in the input images to the model, reducing the models accuracy. This means we can no longer use the <a href="https://docs.unity3d.com/Manual/class-LineRenderer.html">LineRenderer</a> component.</p>
+</section>
+<section id="add-new-public-properties" class="level3">
+<h3 class="anchored" data-anchor-id="add-new-public-properties">Add New Public Properties</h3>
+<p>We need to add a few new public properties that will be accessed in the <code>ObjectDetector</code> script.</p>
+<ul>
+<li>renderBox: Indicates whether to render the bounding box on screen</li>
+<li>boxRect: The bounding box defined in GUI space</li>
+<li>boxTex: The texture used for rendering the bounding box on screen</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Indicates whether to render the bounding box on screen</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">bool</span> renderBox <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// The bounding box</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Rect boxRect <span class="op">=</span> <span class="kw">new</span> <span class="fu">Rect</span><span class="op">();</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// The texture used for rendering the bounding box on screen</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Texture2D boxTex <span class="op">=</span> Texture2D<span class="op">.</span><span class="fu">whiteTexture</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Also, set the <code>color</code> and <code>lineWidth</code> variables to public.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The object class color</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Color color<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The adjusted line width for the bounding box</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> lineWidth <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>Screen<span class="op">.</span><span class="fu">width</span> <span class="op">*</span> <span class="fl">1.75e-3</span><span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-togglebbox-method" class="level3">
+<h3 class="anchored" data-anchor-id="update-togglebbox-method">Update ToggleBBox Method</h3>
+<p>We need to update the value for <code>renderBox</code> inside the <code>ToggleBox</code> method.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Toggle the visibility for the bounding box</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"show"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">ToggleBBox</span><span class="op">(</span><span class="dt">bool</span> show<span class="op">)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    renderBox <span class="op">=</span> show<span class="op">;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    bbox<span class="op">.</span><span class="fu">SetActive</span><span class="op">(</span>show<span class="op">);</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    text<span class="op">.</span><span class="fu">SetActive</span><span class="op">(</span>show<span class="op">);</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-initializelabel-method" class="level3">
+<h3 class="anchored" data-anchor-id="update-initializelabel-method">Update InitializeLabel Method</h3>
+<p>Since we are already working in screen space, we no longer need to convert from world to screen coordinates.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize the label for the bounding box</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"label"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeLabel</span><span class="op">()</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the label text</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    textContent<span class="op">.</span><span class="fu">text</span> <span class="op">=</span> $<span class="st">"{text.name}: {(info.prob * 100).ToString("</span><span class="fl">0.</span>##<span class="st">")}%"</span><span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the text color</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    textContent<span class="op">.</span><span class="fu">color</span> <span class="op">=</span> color<span class="op">;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the text alignment</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    textContent<span class="op">.</span><span class="fu">alignment</span> <span class="op">=</span> TextAlignmentOptions<span class="op">.</span><span class="fu">MidlineLeft</span><span class="op">;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the font size</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    textContent<span class="op">.</span><span class="fu">fontSize</span> <span class="op">=</span> fontSize<span class="op">;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Resize the text area</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    RectTransform rectTransform <span class="op">=</span> text<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>RectTransform<span class="op">&gt;();</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    rectTransform<span class="op">.</span><span class="fu">sizeDelta</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector2</span><span class="op">(</span><span class="dv">250</span><span class="op">,</span> <span class="dv">50</span><span class="op">);</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Position the label above the top left corner of the bounding box</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    Vector3 textPos <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>info<span class="op">.</span><span class="fu">x0</span><span class="op">,</span> info<span class="op">.</span><span class="fu">y0</span><span class="op">,</span> <span class="op">-</span>10f<span class="op">);</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> xOffset <span class="op">=</span> rectTransform<span class="op">.</span><span class="fu">rect</span><span class="op">.</span><span class="fu">width</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    textPos <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>textPos<span class="op">.</span><span class="fu">x</span> <span class="op">+</span> xOffset<span class="op">,</span> textPos<span class="op">.</span><span class="fu">y</span> <span class="op">+</span> textContent<span class="op">.</span><span class="fu">fontSize</span><span class="op">,</span> textPos<span class="op">.</span><span class="fu">z</span><span class="op">);</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    text<span class="op">.</span><span class="fu">transform</span><span class="op">.</span><span class="fu">position</span> <span class="op">=</span> textPos<span class="op">;</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-initializebbox-method" class="level3">
+<h3 class="anchored" data-anchor-id="update-initializebbox-method">Update InitializeBBox Method</h3>
+<p>Since we are not using a <code>LineRenderer</code>, we just need to update the <code>boxRect</code> variable with the new starting position and dimensions.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize the position and dimensions for the bounding box</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeBBox</span><span class="op">()</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the position and dimensions</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    boxRect <span class="op">=</span> <span class="kw">new</span> <span class="fu">Rect</span><span class="op">(</span>info<span class="op">.</span><span class="fu">x0</span><span class="op">,</span> Screen<span class="op">.</span><span class="fu">height</span> <span class="op">-</span> info<span class="op">.</span><span class="fu">y0</span><span class="op">,</span> info<span class="op">.</span><span class="fu">width</span><span class="op">,</span> info<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Make sure the bounding box is rendered</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ToggleBBox</span><span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-the-constructor" class="level3">
+<h3 class="anchored" data-anchor-id="update-the-constructor">Update the Constructor</h3>
+<p>Lastly, we need to remove any references to the <code>lineRenderer</code> variable.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Constructor for the bounding box</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"objectInfo"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="fu">BoundingBox</span><span class="op">(</span>Utils<span class="op">.</span><span class="fu">Object</span> objectInfo<span class="op">)</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add a text componenet to store the label text</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    textContent <span class="op">=</span> text<span class="op">.</span><span class="fu">AddComponent</span><span class="op">&lt;</span>TextMeshProUGUI<span class="op">&gt;();</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Assign text object to the label canvas</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    text<span class="op">.</span><span class="fu">transform</span><span class="op">.</span><span class="fu">SetParent</span><span class="op">(</span>canvas<span class="op">.</span><span class="fu">transform</span><span class="op">);</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the object info for the bounding box</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SetObjectInfo</span><span class="op">(</span>objectInfo<span class="op">);</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="update-objectdetector-script" class="level2">
+<h2 class="anchored" data-anchor-id="update-objectdetector-script">Update ObjectDetector Script</h2>
+<p>Next, open the <code>ObjectDetector</code> script. We don’t need to add any new variables for this script.</p>
+<section id="update-initializetextures-method" class="level3">
+<h3 class="anchored" data-anchor-id="update-initializetextures-method">Update InitializeTextures Method</h3>
+<p>Since we are receiving input from the current Camera frame, we need to initialize the textures using the screen dimensions instead of the <code>videoTexture</code> dimensions.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Calculate the dimensions for the input image</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"newVideo"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeTextures</span><span class="op">(</span><span class="dt">bool</span> newVideo <span class="op">=</span> <span class="kw">false</span><span class="op">)</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the input dimensions to maintain the current aspect ratio</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">!=</span> targetDims<span class="op">.</span><span class="fu">x</span><span class="op">)</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> targetDims<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        aspectRatioScale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>Screen<span class="op">.</span><span class="fu">height</span> <span class="op">/</span> Screen<span class="op">.</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>targetDims<span class="op">.</span><span class="fu">x</span> <span class="op">*</span> aspectRatioScale<span class="op">);</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">!=</span> targetDims<span class="op">.</span><span class="fu">y</span><span class="op">)</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> targetDims<span class="op">.</span><span class="fu">y</span><span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        aspectRatioScale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>Screen<span class="op">.</span><span class="fu">width</span> <span class="op">/</span> Screen<span class="op">.</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>targetDims<span class="op">.</span><span class="fu">y</span> <span class="op">*</span> aspectRatioScale<span class="op">);</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> imageDims<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the RenderTexture that will store the processed input image</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    rTex <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGB32</span><span class="op">);</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update inputTex with the new dimensions</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    inputTex <span class="op">=</span> <span class="kw">new</span> <span class="fu">Texture2D</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> TextureFormat<span class="op">.</span><span class="fu">RGBA32</span><span class="op">,</span> <span class="kw">false</span><span class="op">);</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the values for the width and height input fields</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Setting Input Dims to W: {imageDims.x} x H: {imageDims.y}"</span><span class="op">);</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    width<span class="op">.</span><span class="fu">text</span> <span class="op">=</span> $<span class="st">"{imageDims.x}"</span><span class="op">;</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    height<span class="op">.</span><span class="fu">text</span> <span class="op">=</span> $<span class="st">"{imageDims.y}"</span><span class="op">;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modify-updateboundingboxes-method" class="level3">
+<h3 class="anchored" data-anchor-id="modify-updateboundingboxes-method">Modify UpdateBoundingBoxes Method</h3>
+<p>Likewise, in the <code>UpdateBoundingBoxes</code> method we now need to determine the value for <code>minDimension</code> using the screen dimensions instead of <code>videoTexture</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Update the list of bounding boxes based on the latest output from the model</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">UpdateBoundingBoxes</span><span class="op">()</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Process new detected objects</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> objectInfoArray<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// The smallest dimension of the screen</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> minDimension <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>Screen<span class="op">.</span><span class="fu">width</span><span class="op">,</span> Screen<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="co">// The value used to scale the bbox locations up to the source resolution</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> scale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>minDimension <span class="op">/</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">);</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Flip the bbox coordinates vertically</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        objectInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">y0</span> <span class="op">=</span> rTex<span class="op">.</span><span class="fu">height</span> <span class="op">-</span> objectInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">y0</span><span class="op">;</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        objectInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">x0</span> <span class="op">*=</span> scale<span class="op">;</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        objectInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">y0</span> <span class="op">*=</span> scale<span class="op">;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        objectInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">width</span> <span class="op">*=</span> scale<span class="op">;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        objectInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">height</span> <span class="op">*=</span> scale<span class="op">;</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update bounding box list with new object info</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        <span class="kw">try</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>            boundingBoxes<span class="op">[</span>i<span class="op">].</span><span class="fu">SetObjectInfo</span><span class="op">(</span>objectInfoArray<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">catch</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Add a new bounding box object when needed</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>            boundingBoxes<span class="op">.</span><span class="fu">Add</span><span class="op">(</span><span class="kw">new</span> <span class="fu">BoundingBox</span><span class="op">(</span>objectInfoArray<span class="op">[</span>i<span class="op">]));</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Turn off extra bounding boxes</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> boundingBoxes<span class="op">.</span><span class="fu">Count</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>i <span class="op">&gt;</span> objectInfoArray<span class="op">.</span><span class="fu">Length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>            boundingBoxes<span class="op">[</span>i<span class="op">].</span><span class="fu">ToggleBBox</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modify-update-method" class="level3">
+<h3 class="anchored" data-anchor-id="modify-update-method">Modify Update Method</h3>
+<p>We will be moving most of the code in the <code>Update()</code> method to the <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnRenderImage.html">OnRenderImage()</a> method.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Update is called once per frame</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Update</span><span class="op">()</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Toggle the user interface</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>Input<span class="op">.</span><span class="fu">GetKeyDown</span><span class="op">(</span><span class="st">"space"</span><span class="op">))</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        canvas<span class="op">.</span><span class="fu">SetActive</span><span class="op">(!</span>canvas<span class="op">.</span><span class="fu">activeInHierarchy</span><span class="op">);</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy webcamTexture to videoTexture if using webcam</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useWebcam<span class="op">.</span><span class="fu">isOn</span><span class="op">)</span> Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>webcamTexture<span class="op">,</span> videoTexture<span class="op">);</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-onrenderimage-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-onrenderimage-method">Define OnRenderImage Method</h3>
+<p>Instead of copying the contents of <code>videoTexture</code> to <code>rTex</code>, we will copy the contents of the current camera frame. We will not be modifying the <code>source</code> texture, so we can copy it directly to the <code>destination</code> texture.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">OnRenderImage</span><span class="op">(</span>RenderTexture source<span class="op">,</span> RenderTexture destination<span class="op">)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>performInference <span class="op">==</span> <span class="kw">true</span><span class="op">)</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Copy the source texture to the rTex RenderTexture</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>source<span class="op">,</span> rTex<span class="op">);</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Flip image before sending to DLL</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">FlipImage</span><span class="op">(</span>rTex<span class="op">,</span> <span class="st">"FlipXAxis"</span><span class="op">);</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Download pixel data from GPU to CPU</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>useAsync<span class="op">.</span><span class="fu">isOn</span><span class="op">)</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>            AsyncGPUReadback<span class="op">.</span><span class="fu">Request</span><span class="op">(</span>rTex<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> TextureFormat<span class="op">.</span><span class="fu">RGBA32</span><span class="op">,</span> OnCompleteReadback<span class="op">);</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>            RenderTexture<span class="op">.</span><span class="fu">active</span> <span class="op">=</span> rTex<span class="op">;</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>            inputTex<span class="op">.</span><span class="fu">ReadPixels</span><span class="op">(</span><span class="kw">new</span> <span class="fu">Rect</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> rTex<span class="op">.</span><span class="fu">width</span><span class="op">,</span> rTex<span class="op">.</span><span class="fu">height</span><span class="op">),</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>            inputTex<span class="op">.</span><span class="fu">Apply</span><span class="op">();</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Send reference to inputData to DLL</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">UploadTexture</span><span class="op">(</span>inputTex<span class="op">.</span><span class="fu">GetRawTextureData</span><span class="op">());</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update bounding boxes with new object info</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">UpdateBoundingBoxes</span><span class="op">();</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>source<span class="op">,</span> destination<span class="op">);</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-ongui-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-ongui-method">Define OnGUI Method</h3>
+<p>We will render all the bounding boxes using the <a href="https://docs.unity3d.com/ScriptReference/GUI.DrawTexture.html">GUI.DrawTexture</a> method. This method can only be called in the <code>OnGUI</code> method. When calling <code>GUI.DrawTexture()</code>, will pass in the <code>boxRect</code>, <code>boxTex</code>, <code>color</code>, and <code>lineWidth</code> properties for the current bounding box.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">OnGUI</span><span class="op">()</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>performInference <span class="op">==</span> <span class="kw">false</span><span class="op">)</span> <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">foreach</span> <span class="op">(</span>BoundingBox boundingBox <span class="kw">in</span> boundingBoxes<span class="op">)</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>boundingBox<span class="op">.</span><span class="fu">renderBox</span><span class="op">)</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>            GUI<span class="op">.</span><span class="fu">DrawTexture</span><span class="op">(</span>boundingBox<span class="op">.</span><span class="fu">boxRect</span><span class="op">,</span> boundingBox<span class="op">.</span><span class="fu">boxTex</span><span class="op">,</span> ScaleMode<span class="op">.</span><span class="fu">StretchToFill</span><span class="op">,</span> <span class="kw">true</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> boundingBox<span class="op">.</span><span class="fu">color</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> boundingBox<span class="op">.</span><span class="fu">lineWidth</span><span class="op">);</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="attach-script-to-camera" class="level2">
+<h2 class="anchored" data-anchor-id="attach-script-to-camera">Attach Script to Camera</h2>
+<p>Now we need to attach the <code>ObjectDetector</code> script to the main camera, so we can use the <code>OnRenderImage()</code> method. Select the <code>Object Detector</code> object in the Hierarchy tab. In the Inspector tab, click and hold on the <code>Object Detector (Script)</code> component.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/click-and-hold-component.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">click-and-hold-component</figcaption><p></p>
+</figure>
+</div>
+<p>Then, drag and drop the component onto the <code>Main Camera</code> object in the Hierarchy tab. The component should now be attached to the <code>Main Camera</code> object.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/drop-component-onto-camera.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">drop-component-onto-camera</figcaption><p></p>
+</figure>
+</div>
+<p>We can delete the <code>Object Detector</code> object, as it will not be used anymore.</p>
+</section>
+<section id="update-gui-events" class="level2">
+<h2 class="anchored" data-anchor-id="update-gui-events">Update GUI Events</h2>
+<p>Lastly, we need to reassign all the GUI events as show <a href="../part-3//#assign-ui-events">here</a>. This time, we drag and drop the <code>Main Camera</code> object from the Hierarchy tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/reassign-gui-events.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">reassign-gui-events</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="test-it-out" class="level2">
+<h2 class="anchored" data-anchor-id="test-it-out">Test it Out</h2>
+<p>If we run the project now, the results should be basically the same.</p>
+<p><strong>Project Resources:</strong></p>
+<p><a href="https://github.com/cj-mills/Unity-OpenVINO-YOLOX-In-Editor/tree/in-game-camera">GitHub Repository</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

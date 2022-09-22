@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-07-30">
+<meta name="description" content="This post covers how to create pose skeletons and manipulate them using output from the model.">
+
+<title>Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 7</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 7">
+<meta property="og:description" content="This post covers how to create pose skeletons and manipulate them using output from the model.">
+<meta property="og:image" content="https://christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 7">
+<meta name="twitter:description" content="This post covers how to create pose skeletons and manipulate them using output from the model.">
+<meta name="twitter:image" content="https://christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Barracuda PoseNet Tutorial 2nd Edition Pt. 7</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to create pose skeletons and manipulate them using output from the model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 30, 2021</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#create-poseskeleton-script">Create <code>PoseSkeleton</code> Script</a></li>
+<li><a href="#update-poseestimator-script">Update <code>PoseEstimator</code> Script</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>In this post, we will cover how to create pose skeletons so that we can compare the estimated key point locations to the source video feed.</p>
+</section>
+<section id="create-poseskeleton-script" class="level2">
+<h2 class="anchored" data-anchor-id="create-poseskeleton-script">Create <code>PoseSkeleton</code> Script</h2>
+<p>We will implement the functionality for creating pose skeletons in a new script. Open the <code>Scripts</code> folder in the Assets section and create a new <code>C#</code> script called <code>PoseSkeleton</code>. The <code>PoseSkeleton</code> class will handle creating a single pose skeleton and updating the positions of its key points. We will be creating as many <code>PoseSkeleton</code> instances as is specified by the <code>maxPoses</code> variable in the <code>PoseEstimator</code> script.</p>
+<section id="add-required-namespace" class="level3">
+<h3 class="anchored" data-anchor-id="add-required-namespace">Add Required Namespace</h3>
+<p>We need to add the <a href="https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0"><code>System</code></a> namespace as we will once again be using the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.tuple-2?view=net-5.0"><code>Tuple</code></a> class.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="remove-monobehaviour-inheritance" class="level3">
+<h3 class="anchored" data-anchor-id="remove-monobehaviour-inheritance">Remove <code>MonoBehaviour</code> Inheritance</h3>
+<p>The <code>PoseSkeleton</code> class does not need to be a <code>MonoBehaviour</code> so we can remove it.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> PoseSkeleton</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="add-variables" class="level3">
+<h3 class="anchored" data-anchor-id="add-variables">Add Variables</h3>
+<p>We will need a <a href="https://docs.unity3d.com/ScriptReference/Transform.html"><code>Transform</code></a> array to keep track of the positions of the key point objects in the scene.</p>
+<p>We also need a <code>GameObject</code> array to store the lines connecting the key point objects.</p>
+<p>Next, we will create a <code>static string</code> array to store the names of the key points predicted by the model. The names will be ordered based on their key point id number (e.g.&nbsp;nose is in index <code>0</code>).</p>
+<p>The number of key point predicted by the model will not change, so we will store the number in a <code>static int</code> variable.</p>
+<p>Much like the <code>parentChildrenTuples</code> variable in the <code>Utils</code> script, we will create a <code>Tuple</code> array to keep track of which key points should be connected by lines. We could actually just use the pairs from <code>parentChildrenTuples</code>, but the skeleton would look a bit weird.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/parentChildrenTuples-skeleton.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">parentChildrenTuples-skeleton</figcaption><p></p>
+</figure>
+</div>
+<p>Instead, we will make a pose skeleton that looks like this.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/jointPairs-skeleton.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">jointPairs-skeleton</figcaption><p></p>
+</figure>
+</div>
+<p>To help distinguish the different body areas, we will create a <a href="https://docs.unity3d.com/ScriptReference/Color.html"><code>Color</code></a> array so that we can specify what color we want each line to be.</p>
+<p>Lastly, we need is a <code>float</code> variable to specify the line width for the pose skeleton lines.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The list of key point GameObjects that make up the pose skeleton</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Transform<span class="op">[]</span> keypoints<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">// The GameObjects that contain data for the lines between key points</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> GameObject<span class="op">[]</span> lines<span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">// The names of the body parts that will be detected by the PoseNet model</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">static</span> <span class="dt">string</span><span class="op">[]</span> partNames <span class="op">=</span> <span class="kw">new</span> <span class="dt">string</span><span class="op">[]{</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nose"</span><span class="op">,</span> <span class="st">"leftEye"</span><span class="op">,</span> <span class="st">"rightEye"</span><span class="op">,</span> <span class="st">"leftEar"</span><span class="op">,</span> <span class="st">"rightEar"</span><span class="op">,</span> <span class="st">"leftShoulder"</span><span class="op">,</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"rightShoulder"</span><span class="op">,</span> <span class="st">"leftElbow"</span><span class="op">,</span> <span class="st">"rightElbow"</span><span class="op">,</span> <span class="st">"leftWrist"</span><span class="op">,</span> <span class="st">"rightWrist"</span><span class="op">,</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"leftHip"</span><span class="op">,</span> <span class="st">"rightHip"</span><span class="op">,</span> <span class="st">"leftKnee"</span><span class="op">,</span> <span class="st">"rightKnee"</span><span class="op">,</span> <span class="st">"leftAnkle"</span><span class="op">,</span> <span class="st">"rightAnkle"</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">static</span> <span class="dt">int</span> NUM_KEYPOINTS <span class="op">=</span> partNames<span class="op">.</span><span class="fu">Length</span><span class="op">;</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">// The pairs of key points that should be connected on a body</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">,</span> <span class="dt">int</span><span class="op">&gt;[]</span> jointPairs <span class="op">=</span> <span class="kw">new</span> Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">,</span> <span class="dt">int</span><span class="op">&gt;[]{</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Nose to Left Eye</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">),</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Nose to Right Eye</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">2</span><span class="op">),</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Eye to Left Ear</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="dv">3</span><span class="op">),</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Eye to Right Ear</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">2</span><span class="op">,</span> <span class="dv">4</span><span class="op">),</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Shoulder to Right Shoulder</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">5</span><span class="op">,</span> <span class="dv">6</span><span class="op">),</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Shoulder to Left Hip</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">5</span><span class="op">,</span> <span class="dv">11</span><span class="op">),</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Shoulder to Right Hip</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">6</span><span class="op">,</span> <span class="dv">12</span><span class="op">),</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Shoulder to Right Hip</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">5</span><span class="op">,</span> <span class="dv">12</span><span class="op">),</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Rigth Shoulder to Left Hip</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">6</span><span class="op">,</span> <span class="dv">11</span><span class="op">),</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Hip to Right Hip</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">11</span><span class="op">,</span> <span class="dv">12</span><span class="op">),</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Shoulder to Left Elbow</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">5</span><span class="op">,</span> <span class="dv">7</span><span class="op">),</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Elbow to Left Wrist</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">7</span><span class="op">,</span> <span class="dv">9</span><span class="op">),</span> </span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Shoulder to Right Elbow</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">6</span><span class="op">,</span> <span class="dv">8</span><span class="op">),</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Elbow to Right Wrist</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">8</span><span class="op">,</span> <span class="dv">10</span><span class="op">),</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Hip to Left Knee</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">11</span><span class="op">,</span> <span class="dv">13</span><span class="op">),</span> </span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Knee to Left Ankle</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">13</span><span class="op">,</span> <span class="dv">15</span><span class="op">),</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Hip to Right Knee</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">12</span><span class="op">,</span> <span class="dv">14</span><span class="op">),</span> </span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Knee to Right Ankle</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">14</span><span class="op">,</span> <span class="dv">16</span><span class="op">)</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="co">// Colors for the skeleton lines</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Color<span class="op">[]</span> colors <span class="op">=</span> <span class="kw">new</span> Color<span class="op">[]</span> <span class="op">{</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Head</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>    Color<span class="op">.</span><span class="fu">magenta</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">magenta</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">magenta</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">magenta</span><span class="op">,</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Torso</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    Color<span class="op">.</span><span class="fu">red</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">red</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">red</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">red</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">red</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">red</span><span class="op">,</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Arms</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>    Color<span class="op">.</span><span class="fu">green</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">green</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">green</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">green</span><span class="op">,</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Legs</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>    Color<span class="op">.</span><span class="fu">blue</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">blue</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">blue</span><span class="op">,</span> Color<span class="op">.</span><span class="fu">blue</span></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a><span class="co">// The width for the skeleton lines</span></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">float</span> lineWidth<span class="op">;</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a><span class="co">// The material for the key point objects</span></span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Material keypointMat<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-initializeline-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-initializeline-method">Create <code>InitializeLine</code> Method</h3>
+<p>The first method we will create will handle the initialization of a single line in the pose skeleton.</p>
+<section id="method-steps" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps">Method Steps</h4>
+<ol type="1">
+<li>Get the starting and ending joint pair indices to indicate what two key point are being connected</li>
+<li>Use the names of the two key points to create the name for the line object</li>
+<li>Create a new standard <code>GameObject</code></li>
+<li>Add a <a href="https://docs.unity3d.com/Manual/class-LineRenderer.html"><code>LineRenderer</code></a> component to the new <code>GameObject</code></li>
+<li>Create a new <a href="https://docs.unity3d.com/ScriptReference/Material.html"><code>Material</code></a> for the line with the appropriate color from the <code>Color</code> array</li>
+<li>Indicate that the line with only have two points</li>
+<li>Set the line width</li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Create a line between the key point specified by the start and end point indices</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"pairIndex"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"startIndex"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"endIndex"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"width"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"color"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeLine</span><span class="op">(</span><span class="dt">int</span> pairIndex<span class="op">,</span> <span class="dt">float</span> width<span class="op">,</span> Color color<span class="op">)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> startIndex <span class="op">=</span> jointPairs<span class="op">[</span>pairIndex<span class="op">].</span><span class="fu">Item1</span><span class="op">;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> endIndex <span class="op">=</span> jointPairs<span class="op">[</span>pairIndex<span class="op">].</span><span class="fu">Item2</span><span class="op">;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create new line GameObject</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">string</span> name <span class="op">=</span> $<span class="st">"{keypoints[startIndex].name}_to_{keypoints[endIndex].name}"</span><span class="op">;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    lines<span class="op">[</span>pairIndex<span class="op">]</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">GameObject</span><span class="op">(</span>name<span class="op">);</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add LineRenderer component</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    LineRenderer lineRenderer <span class="op">=</span> lines<span class="op">[</span>pairIndex<span class="op">].</span><span class="fu">AddComponent</span><span class="op">&lt;</span>LineRenderer<span class="op">&gt;();</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Make LineRenderer Shader Unlit</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    lineRenderer<span class="op">.</span><span class="fu">material</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Material</span><span class="op">(</span>Shader<span class="op">.</span><span class="fu">Find</span><span class="op">(</span><span class="st">"Unlit/Color"</span><span class="op">));</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the material color</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    lineRenderer<span class="op">.</span><span class="fu">material</span><span class="op">.</span><span class="fu">color</span> <span class="op">=</span> color<span class="op">;</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The line will consist of two points</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    lineRenderer<span class="op">.</span><span class="fu">positionCount</span> <span class="op">=</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the width from the start point</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    lineRenderer<span class="op">.</span><span class="fu">startWidth</span> <span class="op">=</span> width<span class="op">;</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the width from the end point</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    lineRenderer<span class="op">.</span><span class="fu">endWidth</span> <span class="op">=</span> width<span class="op">;</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-initializeskeleton-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-initializeskeleton-method">Create <code>InitializeSkeleton</code> Method</h3>
+<p>We will call the <code>InitializeLine</code> method for each joint pair in <code>jointPairs</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize the pose skeleton</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeSkeleton</span><span class="op">()</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> jointPairs<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">InitializeLine</span><span class="op">(</span>i<span class="op">,</span> lineWidth<span class="op">,</span> colors<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-constructor" class="level3">
+<h3 class="anchored" data-anchor-id="create-constructor">Create Constructor</h3>
+<p>Now we can define the class constructor that will initialize the pose skeleton.</p>
+<section id="method-steps-1" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps-1">Method Steps</h4>
+<ol type="1">
+<li>Initialize the <code>keypoints</code> array</li>
+<li>Create a new material for the key point objects</li>
+<li>Create a new <code>GameObject</code> for each key point
+<ol type="1">
+<li>Create a sphere <code>GameObject</code></li>
+<li>Set the position to the <a href="https://en.wikipedia.org/wiki/Origin_(mathematics)">origin</a></li>
+<li>Set the size of the <code>GameObject</code> using the provided <code>pointScale</code> value</li>
+<li>Assign the new material</li>
+<li>Set the name for the object</li>
+</ol></li>
+<li>Set the <code>lineWidth</code> value</li>
+<li>Initialize the <code>lines</code> array</li>
+<li>Call the the <code>InitializeSkeleton</code> method</li>
+</ol>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="fu">PoseSkeleton</span><span class="op">(</span><span class="dt">float</span> pointScale <span class="op">=</span> 10f<span class="op">,</span> <span class="dt">float</span> lineWidth <span class="op">=</span> 5f<span class="op">)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span> <span class="op">=</span> <span class="kw">new</span> Transform<span class="op">[</span>NUM_KEYPOINTS<span class="op">];</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    Material keypointMat <span class="op">=</span> <span class="kw">new</span> <span class="fu">Material</span><span class="op">(</span>Shader<span class="op">.</span><span class="fu">Find</span><span class="op">(</span><span class="st">"Unlit/Color"</span><span class="op">));</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    keypointMat<span class="op">.</span><span class="fu">color</span> <span class="op">=</span> Color<span class="op">.</span><span class="fu">yellow</span><span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> NUM_KEYPOINTS<span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> GameObject<span class="op">.</span><span class="fu">CreatePrimitive</span><span class="op">(</span>PrimitiveType<span class="op">.</span><span class="fu">Sphere</span><span class="op">).</span><span class="fu">transform</span><span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>i<span class="op">].</span><span class="fu">position</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>i<span class="op">].</span><span class="fu">localScale</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>pointScale<span class="op">,</span> pointScale<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>i<span class="op">].</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">material</span> <span class="op">=</span> keypointMat<span class="op">;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>i<span class="op">].</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">name</span> <span class="op">=</span> partNames<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">lineWidth</span> <span class="op">=</span> lineWidth<span class="op">;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The number of joint pairs</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numPairs <span class="op">=</span> keypoints<span class="op">.</span><span class="fu">Length</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the lines array</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> <span class="kw">new</span> GameObject<span class="op">[</span>numPairs<span class="op">];</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the pose skeleton</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeSkeleton</span><span class="op">();</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-toggleskeleton-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-toggleskeleton-method">Create <code>ToggleSkeleton</code> Method</h3>
+<p>Just because we initialize a given number of pose skeletons based on the value for <code>maxPoses</code> does not mean that the model will find that many poses in an input image. We will need to hide the excess skeletons when they are not needed. We will hide the skeletons by deactivating the associated key point and line objects. We can use the same function to unhide the skeleton when it is needed. This method will be called from the <code>PoseEstimator</code> script, so it needs to be <code>public</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Toggles visibility for the skeleton</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"show"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">ToggleSkeleton</span><span class="op">(</span><span class="dt">bool</span> show<span class="op">)</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i<span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> jointPairs<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        lines<span class="op">[</span>i<span class="op">].</span><span class="fu">SetActive</span><span class="op">(</span>show<span class="op">);</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        keypoints<span class="op">[</span>jointPairs<span class="op">[</span>i<span class="op">].</span><span class="fu">Item1</span><span class="op">].</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">SetActive</span><span class="op">(</span>show<span class="op">);</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        keypoints<span class="op">[</span>jointPairs<span class="op">[</span>i<span class="op">].</span><span class="fu">Item2</span><span class="op">].</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">SetActive</span><span class="op">(</span>show<span class="op">);</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-cleanup-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-cleanup-method">Create <code>Cleanup</code> Method</h3>
+<p>When we reduce the max number of poses to estimate, we should remove the skeletons that are no longer needed. This method is nearly identical to the <code>ToggleSkeleton</code> except that we will be destroying the objects rather than deactivating them.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Clean up skeleton GameObjects</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">Cleanup</span><span class="op">()</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> jointPairs<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        GameObject<span class="op">.</span><span class="fu">Destroy</span><span class="op">(</span>lines<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        GameObject<span class="op">.</span><span class="fu">Destroy</span><span class="op">(</span>keypoints<span class="op">[</span>jointPairs<span class="op">[</span>i<span class="op">].</span><span class="fu">Item1</span><span class="op">].</span><span class="fu">gameObject</span><span class="op">);</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        GameObject<span class="op">.</span><span class="fu">Destroy</span><span class="op">(</span>keypoints<span class="op">[</span>jointPairs<span class="op">[</span>i<span class="op">].</span><span class="fu">Item2</span><span class="op">].</span><span class="fu">gameObject</span><span class="op">);</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-updatekeypointpositions-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-updatekeypointpositions-method">Create <code>UpdateKeyPointPositions</code> Method</h3>
+<p>We will update the key point positions with the latest model output in a new method called <code>UpdateKeyPointPositions</code>.</p>
+<p>This method will take in the following as input:</p>
+<ol type="1">
+<li><code>Keypoint</code> array for a single pose</li>
+<li>The scale value to scale the key point positions from the input resolution to the source resolution</li>
+<li>The source <code>RenderTexture</code></li>
+<li>A <code>bool</code> to indicate whether to mirror the key point positions when using a webcam</li>
+<li>A <code>float</code> value to indicate the minimum confidence score a key point needs to have to be displayed</li>
+</ol>
+<section id="method-steps-2" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps-2">Method Steps</h4>
+<ol type="1">
+<li>Iterate through the <code>Keypoint</code> array</li>
+<li>Hide the key point objects that do not meet the minimum confidence score</li>
+<li>Scale the key point positions from the input resolution up to the source resolution</li>
+<li>Flip the <code>Y</code> axis coordinates vertically to compensate for the difference between heatmap indices and scene coordinates</li>
+<li>Mirror the <code>X</code> axis coordinates if using a webcam</li>
+<li>Update the key point object positions with the new coordinate values</li>
+</ol>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Update the positions for the key point GameObjects</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"keypoints"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"sourceScale"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"sourceTexture"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"mirrorImage"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"minConfidence"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">UpdateKeyPointPositions</span><span class="op">(</span>Utils<span class="op">.</span><span class="fu">Keypoint</span><span class="op">[]</span> keypoints<span class="op">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                                    <span class="dt">float</span> sourceScale<span class="op">,</span> RenderTexture sourceTexture<span class="op">,</span> <span class="dt">bool</span> mirrorImage<span class="op">,</span> <span class="dt">float</span> minConfidence<span class="op">)</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iterate through the key points</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> k <span class="op">&lt;</span> keypoints<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> k<span class="op">++)</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Check if the current confidence value meets the confidence threshold</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>keypoints<span class="op">[</span>k<span class="op">].</span><span class="fu">score</span> <span class="op">&gt;=</span> minConfidence <span class="op">/</span> 100f<span class="op">)</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Activate the current key point GameObject</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>k<span class="op">].</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">enabled</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Deactivate the current key point GameObject</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>            <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>k<span class="op">].</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">enabled</span> <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Scale the keypoint position to the original resolution</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        Vector2 coords <span class="op">=</span> keypoints<span class="op">[</span>k<span class="op">].</span><span class="fu">position</span> <span class="op">*</span> sourceScale<span class="op">;</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Flip the keypoint position vertically</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        coords<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> sourceTexture<span class="op">.</span><span class="fu">height</span> <span class="op">-</span> coords<span class="op">.</span><span class="fu">y</span><span class="op">;</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Mirror the x position if using a webcam</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>mirrorImage<span class="op">)</span> coords<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> sourceTexture<span class="op">.</span><span class="fu">width</span> <span class="op">-</span> coords<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the current key point location</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Set the z value to -1f to place it in front of the video screen</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="fu">keypoints</span><span class="op">[</span>k<span class="op">].</span><span class="fu">position</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>coords<span class="op">.</span><span class="fu">x</span><span class="op">,</span> coords<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="op">-</span>1f<span class="op">);</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-updatelines-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-updatelines-method">Create <code>UpdateLines</code> Method</h3>
+<p>Once we have update the positions of the key point objects in the scene, we need to update the starting and ending coordinates for the skeleton lines. We will do so in a new method called <code>UpdateLines</code>.</p>
+<section id="method-steps-3" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps-3">Method Steps</h4>
+<ol type="1">
+<li>Get references to the starting and ending key point objects</li>
+<li>Check if both the starting and ending key point objects are visible
+<ol type="1">
+<li>If true
+<ol type="1">
+<li>Make the line object active</li>
+<li>Update the starting position for the line</li>
+<li>Update the ending positions for the line</li>
+</ol></li>
+<li>if false, deactivate the line object</li>
+</ol></li>
+</ol>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Draw the pose skeleton based on the latest location data</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">UpdateLines</span><span class="op">()</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iterate through the joint pairs</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> jointPairs<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Set the GameObject for the starting key point</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        Transform startingKeyPoint <span class="op">=</span> keypoints<span class="op">[</span>jointPairs<span class="op">[</span>i<span class="op">].</span><span class="fu">Item1</span><span class="op">];</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Set the GameObject for the ending key point</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        Transform endingKeyPoint <span class="op">=</span> keypoints<span class="op">[</span>jointPairs<span class="op">[</span>i<span class="op">].</span><span class="fu">Item2</span><span class="op">];</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Check if both the starting and ending key points are active</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>startingKeyPoint<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">enabled</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>            endingKeyPoint<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">enabled</span><span class="op">)</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Activate the line</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>            lines<span class="op">[</span>i<span class="op">].</span><span class="fu">SetActive</span><span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            LineRenderer lineRenderer <span class="op">=</span> lines<span class="op">[</span>i<span class="op">].</span><span class="fu">GetComponent</span><span class="op">&lt;</span>LineRenderer<span class="op">&gt;();</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Update the starting position</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>            lineRenderer<span class="op">.</span><span class="fu">SetPosition</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> startingKeyPoint<span class="op">.</span><span class="fu">position</span><span class="op">);</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Update the ending position</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>            lineRenderer<span class="op">.</span><span class="fu">SetPosition</span><span class="op">(</span><span class="dv">1</span><span class="op">,</span> endingKeyPoint<span class="op">.</span><span class="fu">position</span><span class="op">);</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Deactivate the line</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>            lines<span class="op">[</span>i<span class="op">].</span><span class="fu">SetActive</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="update-poseestimator-script" class="level2">
+<h2 class="anchored" data-anchor-id="update-poseestimator-script">Update <code>PoseEstimator</code> Script</h2>
+<p>Back in the <code>PoseEstimator</code> script, we need to add some new variables to use the <code>PoseSkeleton</code> class.</p>
+<section id="add-public-variables" class="level3">
+<h3 class="anchored" data-anchor-id="add-public-variables">Add Public Variables</h3>
+<p>We will add a couple <code>public float</code> variables for setting the size of the key point objects and the width of the skeleton lines.</p>
+<p>We will also add a <code>public int</code> variable to specify the minimum confidence value a key point need to have for it to be used for the pose skeleton.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The size of the pose skeleton key points"</span><span class="op">)]</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">float</span> pointScale <span class="op">=</span> 10f<span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The width of the pose skeleton lines"</span><span class="op">)]</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">float</span> lineWidth <span class="op">=</span> 5f<span class="op">;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The minimum confidence level required to display the key point"</span><span class="op">)]</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">100</span><span class="op">)]</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> minConfidence <span class="op">=</span> <span class="dv">70</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="add-private-variables" class="level3">
+<h3 class="anchored" data-anchor-id="add-private-variables">Add Private Variables</h3>
+<p>Lastly we will declare a <code>PoseSkeleton</code> array to store the pose skeletons.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Array of pose skeletons</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> PoseSkeleton<span class="op">[]</span> skeletons<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-initializeskeletons-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-initializeskeletons-method">Create <code>InitializeSkeletons</code> Method</h3>
+<p>We will create a new method called <code>InitializeSkeletons</code> to populate the <code>skeletons</code> array. When the performing single pose estimation, the max number of poses will be set to <code>1</code>. This method will be called in the <code>Start</code> method as well as any time the <code>maxPoses</code> value gets updated.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize pose skeletons</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeSkeletons</span><span class="op">()</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the list of pose skeletons</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>estimationType <span class="op">==</span> EstimationType<span class="op">.</span><span class="fu">SinglePose</span><span class="op">)</span> maxPoses <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    skeletons <span class="op">=</span> <span class="kw">new</span> PoseSkeleton<span class="op">[</span>maxPoses<span class="op">];</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Populate the list of pose skeletons</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> maxPoses<span class="op">;</span> i<span class="op">++)</span> skeletons<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">PoseSkeleton</span><span class="op">(</span>pointScale<span class="op">,</span> lineWidth<span class="op">);</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modify-start-method" class="level3">
+<h3 class="anchored" data-anchor-id="modify-start-method">Modify <code>Start</code> Method</h3>
+<p>We will call the <code>InitializeSkeletons</code> method at the end of the <code>Start</code> method.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Initialize pose skeletons</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">InitializeSkeletons</span><span class="op">();</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="full-code" class="level4">
+<h4 class="anchored" data-anchor-id="full-code">Full Code</h4>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Start is called before the first frame update</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Start</span><span class="op">()</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useWebcam<span class="op">)</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Limit application framerate to the target webcam framerate</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>        Application<span class="op">.</span><span class="fu">targetFrameRate</span> <span class="op">=</span> webcamFPS<span class="op">;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Create a new WebCamTexture</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        webcamTexture <span class="op">=</span> <span class="kw">new</span> <span class="fu">WebCamTexture</span><span class="op">(</span>webcamDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> webcamDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> webcamFPS<span class="op">);</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Start the Camera</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        webcamTexture<span class="op">.</span><span class="fu">Play</span><span class="op">();</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Deactivate the Video Player</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">enabled</span> <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.y</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> webcamTexture<span class="op">.</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.x</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> webcamTexture<span class="op">.</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.y</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span>videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.x</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span>videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a new videoTexture using the current video dimensions</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    videoTexture <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>videoDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> videoDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the videoScreen</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeVideoScreen</span><span class="op">(</span>videoDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> videoDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> useWebcam<span class="op">);</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the camera based on the source video dimensions</span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeCamera</span><span class="op">();</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the input dimensions to maintain the source aspect ratio</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    aspectRatioScale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>videoTexture<span class="op">.</span><span class="fu">width</span> <span class="op">/</span> videoTexture<span class="op">.</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>    targetDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">*</span> aspectRatioScale<span class="op">);</span></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>    imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> targetDims<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the RenderTexture that will store the processed input image</span></span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>    rTex <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the Barracuda inference engine based on the selected model</span></span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeBarracuda</span><span class="op">();</span></span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize pose skeletons</span></span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeSkeletons</span><span class="op">();</span></span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="modify-update-method" class="level3">
+<h3 class="anchored" data-anchor-id="modify-update-method">Modify <code>Update</code> Method</h3>
+<p>At the end of the <code>Update</code> method, we need to first check if the <code>maxPoses</code> value has been updated.</p>
+<p>We then need to calculate the scale value to upscale the key point positions from the input image resolution to the source video resolution.</p>
+<p>We can then iterate through the pose skeletons in the <code>skeleton</code> array. If there are more pose skeletons than poses returned by the <code>ProcessOutput</code> method, we will hide the extra pose skeletons.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Reinitialize pose skeletons</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> <span class="op">(</span>maxPoses <span class="op">!=</span> skeletons<span class="op">.</span><span class="fu">Length</span><span class="op">)</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">foreach</span> <span class="op">(</span>PoseSkeleton skeleton <span class="kw">in</span> skeletons<span class="op">)</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>        skeleton<span class="op">.</span><span class="fu">Cleanup</span><span class="op">();</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize pose skeletons</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeSkeletons</span><span class="op">();</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co">// The smallest dimension of the videoTexture</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> minDimension <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>videoTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> videoTexture<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co">// The value used to scale the key point locations up to the source resolution</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> scale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>minDimension <span class="op">/</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">);</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co">// Update the pose skeletons</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> skeletons<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>i <span class="op">&lt;=</span> poses<span class="op">.</span><span class="fu">Length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">ToggleSkeleton</span><span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the positions for the key point GameObjects</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">UpdateKeyPointPositions</span><span class="op">(</span>poses<span class="op">[</span>i<span class="op">],</span> scale<span class="op">,</span> videoTexture<span class="op">,</span> useWebcam<span class="op">,</span> minConfidence<span class="op">);</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">UpdateLines</span><span class="op">();</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>        skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">ToggleSkeleton</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="full-code-1" class="level4">
+<h4 class="anchored" data-anchor-id="full-code-1">Full Code</h4>
+<div class="sourceCode" id="cb17"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Update is called once per frame</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Update</span><span class="op">()</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy webcamTexture to videoTexture if using webcam</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useWebcam<span class="op">)</span> Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>webcamTexture<span class="op">,</span> videoTexture<span class="op">);</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Prevent the input dimensions from going too low for the model</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Max</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> <span class="dv">64</span><span class="op">);</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Max</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">64</span><span class="op">);</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the input dimensions while maintaining the source aspect ratio</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">!=</span> targetDims<span class="op">.</span><span class="fu">x</span><span class="op">)</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        aspectRatioScale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>videoTexture<span class="op">.</span><span class="fu">height</span> <span class="op">/</span> videoTexture<span class="op">.</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">*</span> aspectRatioScale<span class="op">);</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> targetDims<span class="op">.</span><span class="fu">y</span><span class="op">;</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> imageDims<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">!=</span> targetDims<span class="op">.</span><span class="fu">y</span><span class="op">)</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        aspectRatioScale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>videoTexture<span class="op">.</span><span class="fu">width</span> <span class="op">/</span> videoTexture<span class="op">.</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">*</span> aspectRatioScale<span class="op">);</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> targetDims<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">;</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the rTex dimensions to the new input dimensions</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">!=</span> rTex<span class="op">.</span><span class="fu">width</span> <span class="op">||</span> imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">!=</span> rTex<span class="op">.</span><span class="fu">height</span><span class="op">)</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        RenderTexture<span class="op">.</span><span class="fu">ReleaseTemporary</span><span class="op">(</span>rTex<span class="op">);</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Assign a temporary RenderTexture with the new dimensions</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>        rTex <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> rTex<span class="op">.</span><span class="fu">format</span><span class="op">);</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the src RenderTexture to the new rTex RenderTexture</span></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>videoTexture<span class="op">,</span> rTex<span class="op">);</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Prepare the input image to be fed to the selected model</span></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ProcessImage</span><span class="op">(</span>rTex<span class="op">);</span></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Reinitialize Barracuda with the selected model and backend </span></span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>engine<span class="op">.</span><span class="fu">modelType</span> <span class="op">!=</span> modelType <span class="op">||</span> engine<span class="op">.</span><span class="fu">workerType</span> <span class="op">!=</span> workerType<span class="op">)</span></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>        engine<span class="op">.</span><span class="fu">worker</span><span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>        <span class="fu">InitializeBarracuda</span><span class="op">();</span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Execute neural network with the provided input</span></span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>    engine<span class="op">.</span><span class="fu">worker</span><span class="op">.</span><span class="fu">Execute</span><span class="op">(</span>input<span class="op">);</span></span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release GPU resources allocated for the Tensor</span></span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>    input<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Decode the keypoint coordinates from the model output</span></span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ProcessOutput</span><span class="op">(</span>engine<span class="op">.</span><span class="fu">worker</span><span class="op">);</span></span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Reinitialize pose skeletons</span></span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>maxPoses <span class="op">!=</span> skeletons<span class="op">.</span><span class="fu">Length</span><span class="op">)</span></span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>        <span class="kw">foreach</span> <span class="op">(</span>PoseSkeleton skeleton <span class="kw">in</span> skeletons<span class="op">)</span></span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a>            skeleton<span class="op">.</span><span class="fu">Cleanup</span><span class="op">();</span></span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Initialize pose skeletons</span></span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a>        <span class="fu">InitializeSkeletons</span><span class="op">();</span></span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-68"><a href="#cb17-68" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The smallest dimension of the videoTexture</span></span>
+<span id="cb17-69"><a href="#cb17-69" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> minDimension <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>videoTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> videoTexture<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb17-70"><a href="#cb17-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-71"><a href="#cb17-71" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The value used to scale the key point locations up to the source resolution</span></span>
+<span id="cb17-72"><a href="#cb17-72" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> scale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>minDimension <span class="op">/</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">);</span></span>
+<span id="cb17-73"><a href="#cb17-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-74"><a href="#cb17-74" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the pose skeletons</span></span>
+<span id="cb17-75"><a href="#cb17-75" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> skeletons<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb17-76"><a href="#cb17-76" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-77"><a href="#cb17-77" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>i <span class="op">&lt;=</span> poses<span class="op">.</span><span class="fu">Length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb17-78"><a href="#cb17-78" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb17-79"><a href="#cb17-79" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">ToggleSkeleton</span><span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb17-80"><a href="#cb17-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-81"><a href="#cb17-81" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Update the positions for the key point GameObjects</span></span>
+<span id="cb17-82"><a href="#cb17-82" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">UpdateKeyPointPositions</span><span class="op">(</span>poses<span class="op">[</span>i<span class="op">],</span> scale<span class="op">,</span> videoTexture<span class="op">,</span> useWebcam<span class="op">,</span> minConfidence<span class="op">);</span></span>
+<span id="cb17-83"><a href="#cb17-83" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">UpdateLines</span><span class="op">();</span></span>
+<span id="cb17-84"><a href="#cb17-84" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb17-85"><a href="#cb17-85" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span></span>
+<span id="cb17-86"><a href="#cb17-86" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb17-87"><a href="#cb17-87" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">ToggleSkeleton</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span>
+<span id="cb17-88"><a href="#cb17-88" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb17-89"><a href="#cb17-89" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-90"><a href="#cb17-90" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>Now we can compare the estimated key point locations to the source video feed.</p>
+<p><strong>Previous:</strong> <a href="../part-6/">Part 6</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial">GitHub Repository</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-10">
+<meta name="description" content="This post covers how to modify the Barracuda PoseNet project to run in the browser using WebGL.">
+
+<title>Christian Mills - Barracuda PoseNet WebGL Tutorial</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Barracuda PoseNet WebGL Tutorial">
+<meta property="og:description" content="This post covers how to modify the Barracuda PoseNet project to run in the browser using WebGL.">
+<meta property="og:image" content="https://christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Barracuda PoseNet WebGL Tutorial">
+<meta name="twitter:description" content="This post covers how to modify the Barracuda PoseNet project to run in the browser using WebGL.">
+<meta name="twitter:image" content="https://christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Barracuda PoseNet WebGL Tutorial</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to modify the Barracuda PoseNet project to run in the browser using WebGL.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 10, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="last-updated-3232022" class="level3">
+<h3 class="anchored" data-anchor-id="last-updated-3232022">Last Updated: 3/23/2022</h3>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#download-github-project">Download GitHub Project</a></li>
+<li><a href="#update-barracuda-library">Update Barracuda Library</a></li>
+<li><a href="#remove-video-player">Remove Video Player</a></li>
+<li><a href="#add-image-effect-shaders">Add Image Effect Shaders</a></li>
+<li><a href="#create-scriptable-objects">Create Scriptable Objects</a></li>
+<li><a href="#update-poseestimator-script">Update PoseEstimator Script</a></li>
+<li><a href="#configure-poseestimator-component">Configure PoseEstimator Component</a></li>
+<li><a href="#build-project">Build Project</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<section id="update-5272022-upgrade-to-unity-2022.1.0-to-resolve-build-errors." class="level4">
+<h4 class="anchored" data-anchor-id="update-5272022-upgrade-to-unity-2022.1.0-to-resolve-build-errors.">Update 5/27/2022: Upgrade to Unity 2022.1.0+ to resolve build errors.</h4>
+</section>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Until recently, it was infeasible to use the Barracuda inference engine in WebGL builds. CPU inference was single-thread only, and we could not use the GPU at all. However, updates to the Barracuda library added a Pixel Shader worker type. This new worker type enables GPU inference even when the target platform does not support Compute Shaders.</p>
+<p>We will cover how to leverage the Pixel Shader worker type to run the <a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial">PoseNet project</a> in a web browser.</p>
+<p>You can try out a live demo at the link below.</p>
+<ul>
+<li><a href="https://cj-mills.github.io/Barracuda-PoseNet-WebGL-Demo/">Barracuda PoseNet WebGL Demo</a></li>
+</ul>
+</section>
+<section id="download-github-project" class="level2">
+<h2 class="anchored" data-anchor-id="download-github-project">Download GitHub Project</h2>
+<p>First, we need to clone the existing PoseNet project from GitHub. Once downloaded, open the project in the Unity Editor.</p>
+<p><strong>GitHub Repository:</strong> <a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial">Barracuda-PoseNet-Tutorial</a></p>
+</section>
+<section id="update-barracuda-library" class="level2">
+<h2 class="anchored" data-anchor-id="update-barracuda-library">Update Barracuda Library</h2>
+<p>Open the package manager window and navigate to the Barracuda package. We can see there is a new <code>3.0.0</code> version available. At the time of writing, this was the most recent version of the package. Click the <code>Update to 3.0.0</code> button to start the update process.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/update-barracuda-library-1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">update-barracuda-library-1</figcaption><p></p>
+</figure>
+</div>
+<p>A popup window will open stating we need to restart the editor. Click the OK button, then close and reopen the project.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/burst-package-update-detected.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">burst-package-update-detected</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="remove-video-player" class="level2">
+<h2 class="anchored" data-anchor-id="remove-video-player">Remove Video Player</h2>
+<p>WebGL builds do not support playing local video files. The video files would need to be hosted on a web server and accessed via URL. Since real-world applications would likely take input from a webcam, we will focus on that instead. Select the <code>VideoScreen</code> object in the Hierarchy tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/select-videoscreen-hierarchy-tab.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">select-videoscreen-hierarchy-tab</figcaption><p></p>
+</figure>
+</div>
+<p>Right-click the Video Player component in the Inspector tab and select <code>Remove Component</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/remove-videoplayer-component.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">remove-videoplayer-component</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="add-image-effect-shaders" class="level2">
+<h2 class="anchored" data-anchor-id="add-image-effect-shaders">Add Image Effect Shaders</h2>
+<p>The new version of Barracuda also added support for creating a Tensor from a <code>RenderTexture</code> even when Compute Shaders are not available. We can implement the preprocessing steps using Image Effect Shaders to avoid downloading the texture data to the CPU.</p>
+<section id="define-shaders" class="level3">
+<h3 class="anchored" data-anchor-id="define-shaders">Define Shaders</h3>
+<p>Open the Shaders folder in the Assets section. Right-click to open the context menu and select <code>Create → Shader → Image Effect Shader</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create-image-effect-shader.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create-image-effect-shader</figcaption><p></p>
+</figure>
+</div>
+<p>We will need to create two of these shaders for the MobileNet and ResNet models, respectively. Name the two shaders ProcessMobileNet and ProcessResNet.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/image-effect-shaders.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">image-effect-shaders</figcaption><p></p>
+</figure>
+</div>
+<p>We will start by modifying the <code>MobileNet</code> shader. Open the file in the code editor. First, replace the default context menu string of <code>Hidden/ProcessMobileNet</code> with <code>PoseNet/ProcessMobileNet</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode glsl code-with-copy"><code class="sourceCode glsl"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Shader "PoseNet<span class="op">/</span>ProcessResNet"</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    Properties</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">_MainTex</span> <span class="op">(</span>"Texture"<span class="op">,</span> 2D<span class="op">)</span> <span class="op">=</span> "white" <span class="op">{}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then, replace the <code>fixed4 frag</code> function with the code below. This code implements the same steps as in the PoseNetShader Compute Shader.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode glsl code-with-copy"><code class="sourceCode glsl"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>float4 <span class="fu">frag</span><span class="op">(</span>v2f i<span class="op">)</span> <span class="op">:</span> SV_Target</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    float4 col <span class="op">=</span> <span class="fu">tex2D</span><span class="op">(</span>_MainTex<span class="op">,</span> i<span class="op">.</span><span class="fu">uv</span><span class="op">);</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    col<span class="op">.</span><span class="fu">r</span> <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> col<span class="op">.</span><span class="fu">r</span> <span class="op">/</span> <span class="fl">1.0</span> <span class="op">-</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    col<span class="op">.</span><span class="fu">g</span> <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> col<span class="op">.</span><span class="fu">g</span> <span class="op">/</span> <span class="fl">1.0</span> <span class="op">-</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    col<span class="op">.</span><span class="fu">b</span> <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> col<span class="op">.</span><span class="fu">b</span> <span class="op">/</span> <span class="fl">1.0</span> <span class="op">-</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> col<span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can perform the same steps for the ResNet shader. This time, name the shader <code>PoseNet/ProcessResNet</code> and replace the <code>fixed4 frag</code> function with the code below.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode glsl code-with-copy"><code class="sourceCode glsl"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>float4 <span class="fu">frag</span><span class="op">(</span>v2f i<span class="op">)</span> <span class="op">:</span> SV_Target</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    float4 col <span class="op">=</span> <span class="fu">tex2D</span><span class="op">(</span>_MainTex<span class="op">,</span> i<span class="op">.</span><span class="fu">uv</span><span class="op">);</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    col<span class="op">.</span><span class="fu">r</span> <span class="op">=</span> col<span class="op">.</span><span class="fu">r</span> <span class="op">*</span> <span class="fl">255.0</span> <span class="op">-</span> <span class="fl">123.15</span><span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    col<span class="op">.</span><span class="fu">g</span> <span class="op">=</span> col<span class="op">.</span><span class="fu">g</span> <span class="op">*</span> <span class="fl">255.0</span> <span class="op">-</span> <span class="fl">115.90</span><span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    col<span class="op">.</span><span class="fu">b</span> <span class="op">=</span> col<span class="op">.</span><span class="fu">b</span> <span class="op">*</span> <span class="fl">255.0</span> <span class="op">-</span> <span class="fl">103.06</span><span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> col<span class="op">;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-materials" class="level3">
+<h3 class="anchored" data-anchor-id="create-materials">Create Materials</h3>
+<p>We need to attach the shaders to materials to apply them using the <code>Graphics.Blit()</code> function. Right-click to open the context menu and select <code>Create → Material</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create-material.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create-material</figcaption><p></p>
+</figure>
+</div>
+<p>We need materials for both the <code>MobileNet</code> and <code>ResNet</code> models. We can use the same names as the shaders.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/name-materials.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">name-materials</figcaption><p></p>
+</figure>
+</div>
+<p>Select the <code>MobileNet</code> Material, then drag the <code>MobileNet</code> Shader into the Inspector Tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/assign-mobilenet-shader.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">assign-mobilenet-shader</figcaption><p></p>
+</figure>
+</div>
+<p>Do the same for the <code>ResNet</code>Material.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/assign-resnet-shader.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">assign-resnet-shader</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="create-scriptable-objects" class="level2">
+<h2 class="anchored" data-anchor-id="create-scriptable-objects">Create Scriptable Objects</h2>
+<p>It can be cumbersome to keep track of the individual requirements for the different versions of the PoseNet model. We can tidy things up a bit using Scriptable Objects.</p>
+<section id="define-posenetmodel-scriptable-object" class="level3">
+<h3 class="anchored" data-anchor-id="define-posenetmodel-scriptable-object">Define PoseNetModel Scriptable Object</h3>
+<p>Open the <code>Assets → Scripts</code> folder and create a new C# script. Name it PoseNetModel and open it in the code editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create-posenetmodel-script.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create-posenetmodel-script</figcaption><p></p>
+</figure>
+</div>
+<p>Replace the MonoBehaviour inheritance with ScriptableObject and delete the default methods. Add the Barracuda namespace as well.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Unity<span class="op">.</span><span class="fu">Barracuda</span><span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> PoseNetModel <span class="op">:</span> ScriptableObject</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, we will keep track of the model asset, processing material, and output layer indices for individual versions of the PoseNet model.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Unity<span class="op">.</span><span class="fu">Barracuda</span><span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> PoseNetModel <span class="op">:</span> ScriptableObject</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The ONNX model asset file to use when performing inference"</span><span class="op">)]</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> NNModel modelAsset<span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The material with the required preprocessing shader"</span><span class="op">)]</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> Material preprocessingMaterial<span class="op">;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the heatmap output layer"</span><span class="op">)]</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> heatmapLayerIndex <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the offsets output layer"</span><span class="op">)]</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> offsetsLayerIndex <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the forward displacement layer"</span><span class="op">)]</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> displacementFWDLayerIndex<span class="op">;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the backwared displacement layer"</span><span class="op">)]</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> displacementBWDLayerIndex<span class="op">;</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Lastly, We need to provide a name for the context menu. That way, we can create instances of this scriptable object in the Assets section.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Unity<span class="op">.</span><span class="fu">Barracuda</span><span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">CreateAssetMenu</span><span class="op">(</span>menuName <span class="op">=</span> <span class="st">"PoseNet Model"</span><span class="op">)]</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> PoseNetModel <span class="op">:</span> ScriptableObject</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The ONNX model asset file to use when performing inference"</span><span class="op">)]</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> NNModel modelAsset<span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The material with the required preprocessing shader"</span><span class="op">)]</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> Material preprocessingMaterial<span class="op">;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the heatmap output layer"</span><span class="op">)]</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> heatmapLayerIndex <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the offsets output layer"</span><span class="op">)]</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> offsetsLayerIndex <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the forward displacement layer"</span><span class="op">)]</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> displacementFWDLayerIndex<span class="op">;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The index for the backwared displacement layer"</span><span class="op">)]</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> displacementBWDLayerIndex<span class="op">;</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-posenetmodel-assets" class="level3">
+<h3 class="anchored" data-anchor-id="create-posenetmodel-assets">Create PoseNetModel Assets</h3>
+<p>Back in the Assets section, right-click to open the context menu and select <code>Create → PoseNet Model</code> to create a new instance of the Scriptable Object.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create-posenetmodel-asset.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create-posenetmodel-asset</figcaption><p></p>
+</figure>
+</div>
+<p>Name the <code>.asset</code> file <code>MobileNet</code>. With the asset selected, drag the <code>Assets/Models/mobilenet.onnx</code> file into the <code>Model Asset</code> field in the Inspector Tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/mobilenet-assign-modelasset.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">mobilenet-assign-modelasset</figcaption><p></p>
+</figure>
+</div>
+<p>Next, drag the associated processing material into the Preprocessing Material field. Enter <code>2</code> and <code>3</code> for the forward and backward displacement layer indices, respectively.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/populate-mobilenet-asset-fields.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">populate-mobilenet-asset-fields</figcaption><p></p>
+</figure>
+</div>
+<p>Create a second instance called <code>ResNet</code> and assign the associated ONNX file and Material. This time, enter <code>3</code> for the forward displacement layer and <code>2</code> for the backward displacement layer.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/populate-resnet-asset-fields.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">populate-resnet-asset-fields</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="update-poseestimator-script" class="level2">
+<h2 class="anchored" data-anchor-id="update-poseestimator-script">Update PoseEstimator Script</h2>
+<p>Now we can update the PoseEstimator script to work with WebGL. It might be easier to delete the current class content and start fresh.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Unity<span class="op">.</span><span class="fu">Barracuda</span><span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> PoseEstimator <span class="op">:</span> MonoBehaviour</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We will only go over the bare minimum changes required for using WebGL to prevent this post from getting too long. A more developed project is available at the link at the bottom of this page.</p>
+<section id="define-public-variables" class="level3">
+<h3 class="anchored" data-anchor-id="define-public-variables">Define Public Variables</h3>
+<p>Most of the public variables remain the same as the original project. The only new addition is <code>public PoseNetModel[] models</code> variable. This variable will store the instances of the <code>PoseNetModel</code> Scriptable Object we created earlier.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">enum</span> EstimationType</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    MultiPose<span class="op">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    SinglePose</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The requested webcam dimensions"</span><span class="op">)]</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Vector2Int webcamDims <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector2Int</span><span class="op">(</span><span class="dv">1280</span><span class="op">,</span> <span class="dv">720</span><span class="op">);</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The requested webcam frame rate"</span><span class="op">)]</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> webcamFPS <span class="op">=</span> <span class="dv">60</span><span class="op">;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The screen for viewing the input source"</span><span class="op">)]</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Transform videoScreen<span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Stores the models available for inference"</span><span class="op">)]</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> PoseNetModel<span class="op">[]</span> models<span class="op">;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The dimensions of the image being fed to the model"</span><span class="op">)]</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Vector2Int imageDims <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector2Int</span><span class="op">(</span><span class="dv">256</span><span class="op">,</span> <span class="dv">256</span><span class="op">);</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The backend to use when performing inference"</span><span class="op">)]</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> WorkerFactory<span class="op">.</span><span class="fu">Type</span> workerType <span class="op">=</span> WorkerFactory<span class="op">.</span><span class="fu">Type</span><span class="op">.</span><span class="fu">Auto</span><span class="op">;</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The type of pose estimation to be performed"</span><span class="op">)]</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> EstimationType estimationType <span class="op">=</span> EstimationType<span class="op">.</span><span class="fu">SinglePose</span><span class="op">;</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The maximum number of posees to estimate"</span><span class="op">)]</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="dv">20</span><span class="op">)]</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> maxPoses <span class="op">=</span> <span class="dv">20</span><span class="op">;</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The score threshold for multipose estimation"</span><span class="op">)]</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="fl">1.0f</span><span class="op">)]</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">float</span> scoreThreshold <span class="op">=</span> <span class="fl">0.25f</span><span class="op">;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Non-maximum suppression distance"</span><span class="op">)]</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> nmsRadius <span class="op">=</span> <span class="dv">100</span><span class="op">;</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The size of the pose skeleton key points"</span><span class="op">)]</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">float</span> pointScale <span class="op">=</span> 10f<span class="op">;</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The width of the pose skeleton lines"</span><span class="op">)]</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">float</span> lineWidth <span class="op">=</span> 5f<span class="op">;</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The minimum confidence level required to display a key point"</span><span class="op">)]</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">100</span><span class="op">)]</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> minConfidence <span class="op">=</span> <span class="dv">70</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-private-variables" class="level3">
+<h3 class="anchored" data-anchor-id="define-private-variables">Define Private Variables</h3>
+<p>We only need to define one new private variable to keep track of the current PoseNetModel in use.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Live video input from a webcam</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> WebCamTexture webcamTexture<span class="op">;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">// The source video texture</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> RenderTexture videoTexture<span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Target dimensions for model input</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Vector2Int targetDims<span class="op">;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Used to scale the input image dimensions while maintaining aspect ratio</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">float</span> aspectRatioScale<span class="op">;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">// The texture used to create the input tensor</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> RenderTexture rTex<span class="op">;</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores the input data for the model</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Tensor input<span class="op">;</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">// The interface used to execute the neural network</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> IWorker engine<span class="op">;</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co">// The name for the heatmap layer in the model asset</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">string</span> heatmapLayer<span class="op">;</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">// The name for the offsets layer in the model asset</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">string</span> offsetsLayer<span class="op">;</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co">// The name for the forwards displacement layer in the model asset</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">string</span> displacementFWDLayer<span class="op">;</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">// The name for the backwards displacement layer in the model asset</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">string</span> displacementBWDLayer<span class="op">;</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">// The name for the Sigmoid layer that returns the heatmap predictions</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">string</span> predictionLayer <span class="op">=</span> <span class="st">"heatmap_predictions"</span><span class="op">;</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores the current estimated 2D keypoint locations in videoTexture</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Utils<span class="op">.</span><span class="fu">Keypoint</span><span class="op">[][]</span> poses<span class="op">;</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="co">// Array of pose skeletons</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> PoseSkeleton<span class="op">[]</span> skeletons<span class="op">;</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="co">// Stores the PoseNetModel currently in use</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> PoseNetModel currentModel<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-initializevideoscreen-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-initializevideoscreen-method">Define InitializeVideoScreen Method</h3>
+<p>The <code>InitializeVideoScreen</code> method is nearly identical to the original project. The only differences are that is no <code>VideoPlayer</code> component, and we will initialize the video texture inside this method instead of the start method.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Prepares the videoScreen GameObject to display the chosen video source.</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"width"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"height"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"mirrorScreen"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeVideoScreen</span><span class="op">(</span><span class="dt">int</span> width<span class="op">,</span> <span class="dt">int</span> height<span class="op">,</span> <span class="dt">bool</span> mirrorScreen<span class="op">)</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release temporary RenderTexture</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    RenderTexture<span class="op">.</span><span class="fu">ReleaseTemporary</span><span class="op">(</span>videoTexture<span class="op">);</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a new videoTexture using the current video dimensions</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    videoTexture <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>width<span class="op">,</span> height<span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>mirrorScreen<span class="op">)</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Flip the VideoScreen around the Y-Axis</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        videoScreen<span class="op">.</span><span class="fu">rotation</span> <span class="op">=</span> Quaternion<span class="op">.</span><span class="fu">Euler</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">180</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Invert the scale value for the Z-Axis</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>        videoScreen<span class="op">.</span><span class="fu">localScale</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>videoScreen<span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">x</span><span class="op">,</span> videoScreen<span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="op">-</span>1f<span class="op">);</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Apply the new videoTexture to the VideoScreen Gameobject</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">material</span><span class="op">.</span><span class="fu">shader</span> <span class="op">=</span> Shader<span class="op">.</span><span class="fu">Find</span><span class="op">(</span><span class="st">"Unlit/Texture"</span><span class="op">);</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">material</span><span class="op">.</span><span class="fu">SetTexture</span><span class="op">(</span><span class="st">"_MainTex"</span><span class="op">,</span> videoTexture<span class="op">);</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the VideoScreen dimensions for the new videoTexture</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">localScale</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>width<span class="op">,</span> height<span class="op">,</span> videoScreen<span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">z</span><span class="op">);</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the VideoScreen position for the new videoTexture</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">position</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>width <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> height <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-initializecamera-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-initializecamera-method">Define InitializeCamera Method</h3>
+<p>The <code>InitializeCamera</code> method is nearly identical to the original project. The only difference is that we will use the video texture directly to adjust the camera position and size.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Resizes and positions the in-game Camera to accommodate the video dimensions</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeCamera</span><span class="op">()</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get a reference to the Main Camera GameObject</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    GameObject mainCamera <span class="op">=</span> GameObject<span class="op">.</span><span class="fu">Find</span><span class="op">(</span><span class="st">"Main Camera"</span><span class="op">);</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the camera position to account for updates to the VideoScreen</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    mainCamera<span class="op">.</span><span class="fu">transform</span><span class="op">.</span><span class="fu">position</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>videoTexture<span class="op">.</span><span class="fu">width</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> videoTexture<span class="op">.</span><span class="fu">height</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> <span class="op">-</span>10f<span class="op">);</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Render objects with no perspective (i.e. 2D)</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    mainCamera<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>Camera<span class="op">&gt;().</span><span class="fu">orthographic</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the camera size to account for updates to the VideoScreen</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    mainCamera<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>Camera<span class="op">&gt;().</span><span class="fu">orthographicSize</span> <span class="op">=</span> videoTexture<span class="op">.</span><span class="fu">height</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-initializebarracuda-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-initializebarracuda-method">Define InitializeBarracuda Method</h3>
+<p>The steps for the <code>InitializeBarracuda</code> method are the same as the original project. We only need to update it to use the <code>currentModel</code> variable.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Updates the output layer names based on the selected model architecture</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// and initializes the Barracuda inference engine with the selected model.</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeBarracuda</span><span class="op">()</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The compiled model used for performing inference</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    Model m_RunTimeModel<span class="op">;</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Compile the model asset into an object oriented representation</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    m_RunTimeModel <span class="op">=</span> ModelLoader<span class="op">.</span><span class="fu">Load</span><span class="op">(</span>currentModel<span class="op">.</span><span class="fu">modelAsset</span><span class="op">);</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get output layer names</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    heatmapLayer <span class="op">=</span> m_RunTimeModel<span class="op">.</span><span class="fu">outputs</span><span class="op">[</span>currentModel<span class="op">.</span><span class="fu">heatmapLayerIndex</span><span class="op">];</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    offsetsLayer <span class="op">=</span> m_RunTimeModel<span class="op">.</span><span class="fu">outputs</span><span class="op">[</span>currentModel<span class="op">.</span><span class="fu">offsetsLayerIndex</span><span class="op">];</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    displacementFWDLayer <span class="op">=</span> m_RunTimeModel<span class="op">.</span><span class="fu">outputs</span><span class="op">[</span>currentModel<span class="op">.</span><span class="fu">displacementFWDLayerIndex</span><span class="op">];</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    displacementBWDLayer <span class="op">=</span> m_RunTimeModel<span class="op">.</span><span class="fu">outputs</span><span class="op">[</span>currentModel<span class="op">.</span><span class="fu">displacementBWDLayerIndex</span><span class="op">];</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a model builder to modify the m_RunTimeModel</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    ModelBuilder modelBuilder <span class="op">=</span> <span class="kw">new</span> <span class="fu">ModelBuilder</span><span class="op">(</span>m_RunTimeModel<span class="op">);</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add a new Sigmoid layer that takes the output of the heatmap layer</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    modelBuilder<span class="op">.</span><span class="fu">Sigmoid</span><span class="op">(</span>predictionLayer<span class="op">,</span> heatmapLayer<span class="op">);</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Validate if backend is supported, otherwise use fallback type.</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    workerType <span class="op">=</span> WorkerFactory<span class="op">.</span><span class="fu">ValidateType</span><span class="op">(</span>workerType<span class="op">);</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a worker that will execute the model with the selected backend</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    engine <span class="op">=</span> WorkerFactory<span class="op">.</span><span class="fu">CreateWorker</span><span class="op">(</span>workerType<span class="op">,</span> modelBuilder<span class="op">.</span><span class="fu">model</span><span class="op">);</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-initializeskeletons-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-initializeskeletons-method">Define InitializeSkeletons Method</h3>
+<p>The <code>InitializeSkeletons</code> method is unchanged from the original project.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize pose skeletons</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeSkeletons</span><span class="op">()</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the list of pose skeletons</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>estimationType <span class="op">==</span> EstimationType<span class="op">.</span><span class="fu">SinglePose</span><span class="op">)</span> maxPoses <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    skeletons <span class="op">=</span> <span class="kw">new</span> PoseSkeleton<span class="op">[</span>maxPoses<span class="op">];</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Populate the list of pose skeletons</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> maxPoses<span class="op">;</span> i<span class="op">++)</span> skeletons<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">PoseSkeleton</span><span class="op">(</span>pointScale<span class="op">,</span> lineWidth<span class="op">);</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-initializeinputdims-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-initializeinputdims-method">Define InitializeInputDims Method</h3>
+<p>We will implement the steps for updating the texture dimensions inside a new method rather than the Update method. That way, we can call this method when the input dimensions are updated using a GUI rather than the Inspector tab. The actual steps remain the same.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize the input dimensions for the model</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeInputDims</span><span class="op">()</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Prevent the input dimensions from going too low for the model</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Max</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> <span class="dv">64</span><span class="op">);</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Max</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">64</span><span class="op">);</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the input dimensions while maintaining the source aspect ratio</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">!=</span> targetDims<span class="op">.</span><span class="fu">y</span><span class="op">)</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        aspectRatioScale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>videoTexture<span class="op">.</span><span class="fu">width</span> <span class="op">/</span> videoTexture<span class="op">.</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">*</span> aspectRatioScale<span class="op">);</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> targetDims<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">;</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">!=</span> targetDims<span class="op">.</span><span class="fu">x</span><span class="op">)</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        aspectRatioScale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>videoTexture<span class="op">.</span><span class="fu">height</span> <span class="op">/</span> videoTexture<span class="op">.</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>imageDims<span class="op">.</span><span class="fu">x</span> <span class="op">*</span> aspectRatioScale<span class="op">);</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> targetDims<span class="op">.</span><span class="fu">y</span><span class="op">;</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>        targetDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> imageDims<span class="op">.</span><span class="fu">x</span><span class="op">;</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    RenderTexture<span class="op">.</span><span class="fu">ReleaseTemporary</span><span class="op">(</span>rTex<span class="op">);</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Assign a temporary RenderTexture with the new dimensions</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    rTex <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-initializeposeestimator-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-initializeposeestimator-method">Define InitializePoseEstimator Method</h3>
+<p>We will define a new function that calls the initialization methods.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Perform initialization steps</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializePoseEstimator</span><span class="op">()</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the Barracuda inference engine based on the selected model</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeBarracuda</span><span class="op">();</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize pose skeletons</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeSkeletons</span><span class="op">();</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the videoScreen</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeVideoScreen</span><span class="op">(</span>webcamTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> webcamTexture<span class="op">.</span><span class="fu">height</span><span class="op">,</span> <span class="kw">true</span><span class="op">);</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the camera based on the source video dimensions</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeCamera</span><span class="op">();</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize input dimensions</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeInputDims</span><span class="op">();</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-start-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-start-method">Define Start Method</h3>
+<p>In the Start method, we only need to create a new webcam texture, start the camera and initialize the <code>currentModel</code> variable. For real-world applications, we would update this value using a GUI. For now, we can just set it to the first element in the <code>models</code> array.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Start is called before the first frame update</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Start</span><span class="op">()</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a new WebCamTexture</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    webcamTexture <span class="op">=</span> <span class="kw">new</span> <span class="fu">WebCamTexture</span><span class="op">(</span>webcamDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> webcamDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> webcamFPS<span class="op">);</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Start the Camera</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    webcamTexture<span class="op">.</span><span class="fu">Play</span><span class="op">();</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Default to the first PoseNetModel in the list</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    currentModel <span class="op">=</span> models<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-processimage-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-processimage-method">Define ProcessImage Method</h3>
+<p>For the <code>ProcessImage</code> method, we no longer need to worry about processing input on the CPU. We only need to call the <code>Graphics.Blit</code> method using the Material for the current model.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Calls the appropriate preprocessing function to prepare</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// the input for the selected model</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"image"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">ProcessImage</span><span class="op">(</span>RenderTexture image<span class="op">)</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define a temporary HDR RenderTexture</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    RenderTexture result <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>image<span class="op">.</span><span class="fu">width</span><span class="op">,</span> image<span class="op">.</span><span class="fu">height</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    RenderTexture<span class="op">.</span><span class="fu">active</span> <span class="op">=</span> result<span class="op">;</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Apply preprocessing steps</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>image<span class="op">,</span> result<span class="op">,</span> currentModel<span class="op">.</span><span class="fu">preprocessingMaterial</span><span class="op">);</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a new Tensor</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    input <span class="op">=</span> <span class="kw">new</span> <span class="fu">Tensor</span><span class="op">(</span>result<span class="op">,</span> channels<span class="op">:</span> <span class="dv">3</span><span class="op">);</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    RenderTexture<span class="op">.</span><span class="fu">ReleaseTemporary</span><span class="op">(</span>result<span class="op">);</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-processoutput-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-processoutput-method">Define ProcessOutput Method</h3>
+<p>The <code>ProcessOutput</code> method is unchanged from the original project.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Obtains the model output and either decodes single or mutlple poses</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"engine"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">ProcessOutput</span><span class="op">(</span>IWorker engine<span class="op">)</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the model output</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    Tensor heatmaps <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>predictionLayer<span class="op">);</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    Tensor offsets <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>offsetsLayer<span class="op">);</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    Tensor displacementFWD <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>displacementFWDLayer<span class="op">);</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    Tensor displacementBWD <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>displacementBWDLayer<span class="op">);</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the stride used to scale down the inputImage</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> stride <span class="op">=</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span>heatmaps<span class="op">.</span><span class="fu">shape</span><span class="op">.</span><span class="fu">height</span> <span class="op">-</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    stride <span class="op">-=</span> <span class="op">(</span>stride <span class="op">%</span> <span class="dv">8</span><span class="op">);</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>estimationType <span class="op">==</span> EstimationType<span class="op">.</span><span class="fu">SinglePose</span><span class="op">)</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Initialize the array of Keypoint arrays</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>        poses <span class="op">=</span> <span class="kw">new</span> Utils<span class="op">.</span><span class="fu">Keypoint</span><span class="op">[</span><span class="dv">1</span><span class="op">][];</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Determine the key point locations</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>        poses<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> Utils<span class="op">.</span><span class="fu">DecodeSinglePose</span><span class="op">(</span>heatmaps<span class="op">,</span> offsets<span class="op">,</span> stride<span class="op">);</span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Determine the key point locations</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>        poses <span class="op">=</span> Utils<span class="op">.</span><span class="fu">DecodeMultiplePoses</span><span class="op">(</span></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>            heatmaps<span class="op">,</span> offsets<span class="op">,</span></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>            displacementFWD<span class="op">,</span> displacementBWD<span class="op">,</span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>            stride<span class="op">:</span> stride<span class="op">,</span> maxPoseDetections<span class="op">:</span> maxPoses<span class="op">,</span></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>            scoreThreshold<span class="op">:</span> scoreThreshold<span class="op">,</span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>            nmsRadius<span class="op">:</span> nmsRadius<span class="op">);</span></span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release the resources allocated for the output Tensors</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>    heatmaps<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>    offsets<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>    displacementFWD<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>    displacementBWD<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-update-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-update-method">Define Update Method</h3>
+<p>Most web browsers will likely require user permission to access the webcam. The webcam texture will not fully initialize until the user allows access. We will add a check at the top of the Update method to prevent the rest of the code from executing until the webcam texture initializes.</p>
+<p>The default resolution for a webcam texture is 16x16. It seems reasonable to assume any webcam would have a higher resolution. Therefore we will use this as our condition to check when the webcam texture initializes.</p>
+<p>The rest of the Update method is nearly identical to the original project with one critical addition. We need to call <code>Resources.UnloadUnusedAssets</code> at the end of the Update method. The <code>UnloadUnusedAssets</code> method will prevent GPU memory from filling up.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Update is called once per frame</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Update</span><span class="op">()</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Skip the rest of the method if the webcam is not initialized</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>webcamTexture<span class="op">.</span><span class="fu">width</span> <span class="op">&lt;=</span> <span class="dv">16</span><span class="op">)</span> <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Only perform initialization steps if the videoTexture has not been initialized</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(!</span>videoTexture<span class="op">)</span> <span class="fu">InitializePoseEstimator</span><span class="op">();</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy webcamTexture to videoTexture</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>webcamTexture<span class="op">,</span> videoTexture<span class="op">);</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the videoTexture data to rTex</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>videoTexture<span class="op">,</span> rTex<span class="op">);</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Prepare the input image to be fed to the selected model</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ProcessImage</span><span class="op">(</span>rTex<span class="op">);</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Execute neural network with the provided input</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    engine<span class="op">.</span><span class="fu">Execute</span><span class="op">(</span>input<span class="op">);</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release GPU resources allocated for the Tensor</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    input<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Decode the keypoint coordinates from the model output</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ProcessOutput</span><span class="op">(</span>engine<span class="op">);</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Reinitialize pose skeletons</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>maxPoses <span class="op">!=</span> skeletons<span class="op">.</span><span class="fu">Length</span><span class="op">)</span></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>        <span class="kw">foreach</span> <span class="op">(</span>PoseSkeleton skeleton <span class="kw">in</span> skeletons<span class="op">)</span></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>            skeleton<span class="op">.</span><span class="fu">Cleanup</span><span class="op">();</span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Initialize pose skeletons</span></span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a>        <span class="fu">InitializeSkeletons</span><span class="op">();</span></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The smallest dimension of the videoTexture</span></span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> minDimension <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>videoTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> videoTexture<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The value used to scale the key point locations up to the source resolution</span></span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> scale <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>minDimension <span class="op">/</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>imageDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> imageDims<span class="op">.</span><span class="fu">y</span><span class="op">);</span></span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the pose skeletons</span></span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> skeletons<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>i <span class="op">&lt;=</span> poses<span class="op">.</span><span class="fu">Length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">ToggleSkeleton</span><span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Update the positions for the key point GameObjects</span></span>
+<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">UpdateKeyPointPositions</span><span class="op">(</span>poses<span class="op">[</span>i<span class="op">],</span> scale<span class="op">,</span> videoTexture<span class="op">,</span> <span class="kw">true</span><span class="op">,</span> minConfidence<span class="op">);</span></span>
+<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">UpdateLines</span><span class="op">();</span></span>
+<span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span></span>
+<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a>            skeletons<span class="op">[</span>i<span class="op">].</span><span class="fu">ToggleSkeleton</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span>
+<span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb19-61"><a href="#cb19-61" aria-hidden="true" tabindex="-1"></a>    Resources<span class="op">.</span><span class="fu">UnloadUnusedAssets</span><span class="op">();</span></span>
+<span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-ondisable-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-ondisable-method">Define OnDisable Method</h3>
+<p>For the <code>OnDisable</code> method, we only need to update the line to release the resources for the inference engine to <code>engine.Dispose()</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">OnDisable</span><span class="op">()</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release the resources allocated for the inference engine</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    engine<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="configure-poseestimator-component" class="level2">
+<h2 class="anchored" data-anchor-id="configure-poseestimator-component">Configure PoseEstimator Component</h2>
+<p>Before we test the modified project, we need to assign the <code>MobileNet</code> and <code>ResNet</code> assets to the Pose Estimator component. Select the <code>PoseEstimator</code> object in the Hierarchy tab. Then drag the <code>MobileNet</code> and <code>ResNet</code> assets onto the Models field in the Inspector tab. Make sure to place the model you want to test in the <code>Element 0</code> field. Lastly, open the <code>Worker Type</code> dropdown and select <code>Pixel Shader</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/configure-poseestimator-component.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">poseestimator-select-pixel-shader</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="build-project" class="level2">
+<h2 class="anchored" data-anchor-id="build-project">Build Project</h2>
+<p>Press Ctrl+B to build and run the project. Select or create a Build folder in the popup window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/select-build-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">select-build-folder</figcaption><p></p>
+</figure>
+</div>
+<p>The first build attempt will likely fail, with Unity displaying lots of errors and warnings in the console. The console error messages all say that Bitwise integer instructions are not supported on GLES 2.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/webgl-barracuda-build-errors.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">webgl-barracuda-build-errors</figcaption><p></p>
+</figure>
+</div>
+<p>However, if we press Ctrl+B again, the build will complete successfully.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/webgl-barracuda-build-completed.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">webgl-barracuda-build-completed</figcaption><p></p>
+</figure>
+</div>
+<p>Once the project build is complete, a new window will open, and the project will start.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/browser-window-default-scene.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">browser-window-default-scene</figcaption><p></p>
+</figure>
+</div>
+<p>There should be a prompt asking for permission to access the webcam. If not, try refreshing the page.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/webcam-permission-prompt.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">webcam-permission-prompt</figcaption><p></p>
+</figure>
+</div>
+<p>The project should automatically perform the initialization steps once the browser accesses the webcam.</p>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>We now have a way to use the Barracuda inference engine in WebGL builds.</p>
+<p><strong>Previous:</strong> <a href="../part-7/">Part 7</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial/tree/WebGL">GitHub Repository</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
