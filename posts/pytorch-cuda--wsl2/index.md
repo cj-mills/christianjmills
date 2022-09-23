@@ -1,27 +1,20 @@
 ---
-categories:
-- log
-- tutorial
-- pytorch
-- wsl2
-date: '2020-12-31'
-description: This post covers my experience getting PyTorch to run with CUDA on WSL2.
-hide: false
-layout: post
-search_exclude: false
 title: Using PyTorch with CUDA on WSL2
+date: '2020-12-31'
+image: /images/empty.gif
+title-block-categories: false
+layout: post
 toc: false
-
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
+description: This post covers my experience getting PyTorch to run with CUDA on WSL2.
+categories: [log, tutorial, pytorch, wsl2]
 
 aliases:
 - /Using-PyTorch-with-CUDA-on-WSL2/
-
-twitter-card:
-  creator: "@cdotjdotmills"
-  site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
-open-graph:
-  image: ../social-media/cover.jpg
 
 ---
 
