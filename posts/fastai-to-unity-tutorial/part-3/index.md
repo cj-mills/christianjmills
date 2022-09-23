@@ -11,6 +11,9 @@ description: Part 3 covers building a Unity project to run in a web browser and 
   it using GitHub Pages.
 categories: [fastai, unity, barracuda]
 
+aliases:
+- /Fastai-to-Unity-Tutorial-3/
+
 ---
 
 * [Overview](#overview)

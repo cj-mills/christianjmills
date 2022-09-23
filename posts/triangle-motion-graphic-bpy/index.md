@@ -1,18 +1,23 @@
 ---
-categories:
-- blender
-- python
-- tutorial
-date: 2021-3-27
+title: Create a Triangle Motion Graphic with the Blender Python API
+date: 3-27-2021
+title-block-categories: false
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post covers how to create a simple triangle motion graphic in Blender
   using the Python API.
-hide: false
-layout: post
-search_exclude: false
-title: Create a Triangle Motion Graphic with the Blender Python API
-toc: false
+categories: [blender, python, tutorial]
+
+aliases:
+- /Create-a-Triangle-Motion-Graphic-With-the-Blender-Python-API/
 
 ---
+
 
 * [Introduction](#introduction)
 * [Import Dependencies](#import-dependencies)
@@ -39,7 +44,7 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=xeH4
 
 The only dependencies strictly required for this tutorial are `bpy` and `bmesh`. The `bpy` package is the base API for Blender and the `bmesh` module provides access to Blender's internal mesh editing API. I also used the `math` module from the Python Standard Library for one of my helper functions. 
 
-![import-dependencies](..\images\shape-key-motion-graphic-bpy\import-dependencies.png)
+![import-dependencies](./images/import-dependencies.png)
 
 
 
@@ -59,7 +64,7 @@ I also made a function to empty the default collection so that nothing gets dupl
 
 Lastly, I made a function to easily add sequences of keyframes to a given object. The function uses the built-in `setattr()` method to set the desired value for the target object and uses the `object.keyframe_insert()` method to add the keyframe. 
 
-![define-helper-functions](..\images\shape-key-motion-graphic-bpy\define-helper-functions_2.png)
+![define-helper-functions](./images/define-helper-functions_2.png)
 
 
 

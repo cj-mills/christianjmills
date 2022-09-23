@@ -10,6 +10,9 @@ search_exclude: false
 description: Part 2 covers implementing a trained model in a Unity project.
 categories: [fastai, unity, barracuda]
 
+aliases:
+- /Fastai-to-Unity-Tutorial-2/
+
 ---
 
 * [Overview](#overview)

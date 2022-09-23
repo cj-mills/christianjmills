@@ -17,7 +17,6 @@ categories: [unity, barracuda, tutorial]
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-7/
 
-
 ---
 
 * [Overview](#overview)
