@@ -12,6 +12,8 @@ search_exclude: false
 title: Notes on fastai Book Ch. 17
 toc: false
 
+aliases:
+- /Notes-on-Fastai-Book-17/
 ---
 
 * [A Neural Net from the Foundations](#a-neural-net-from-the-foundations)

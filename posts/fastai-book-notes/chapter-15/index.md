@@ -13,6 +13,9 @@ search_exclude: false
 title: Notes on fastai Book Ch. 15
 toc: false
 
+aliases:
+- /Notes-on-Fastai-Book-15/
+
 ---
 
 * [Application Architectures Deep Dive](#application-architectures-deep-dive)

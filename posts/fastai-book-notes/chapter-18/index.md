@@ -9,6 +9,9 @@ hide: false
 search_exclude: false
 description: Chapter 18 covers interpreting convolutional neural networks using class-activation maps.
 categories: [ai, fastai, notes, pytorch]
+
+aliases:
+- /Notes-on-Fastai-Book-18/
 ---
 
 * [CNN Interpretation with CAM](#cnn-interpretation-with-cam)

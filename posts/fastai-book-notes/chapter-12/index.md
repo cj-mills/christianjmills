@@ -12,6 +12,9 @@ search_exclude: false
 title: Notes on fastai Book Ch. 12
 toc: false
 
+aliases:
+- /Notes-on-Fastai-Book-12/
+
 ---
 
 * [The Data](#the-data)

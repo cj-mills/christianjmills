@@ -10,7 +10,10 @@ search_exclude: false
 description: Chapter 14 covers building a ResNet from scratch.
 categories: [ai, fastai, notes, pytorch]
 
+aliases:
+- /Notes-on-Fastai-Book-14/
 ---
+
 
 * [ResNets](#resnets)
 * [Going Back to Imagenette](#going-back-to-imagenette)

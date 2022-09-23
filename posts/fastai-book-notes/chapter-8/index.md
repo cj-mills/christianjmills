@@ -2,13 +2,16 @@
 title: Notes on fastai Book Ch. 8
 date: 2022-3-28
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false
 search_exclude: false
 description: Chapter 8 provides a deep dive into collaborative filtering.
 categories: [ai, fastai, notes, pytorch]
+
+aliases:
+- /Notes-on-Fastai-Book-08/
 
 ---
 

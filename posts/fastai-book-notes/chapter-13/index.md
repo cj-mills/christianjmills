@@ -10,6 +10,9 @@ search_exclude: false
 description: Chapter 13 provides a deep dive into convolutional neural networks.
 categories: [ai, fastai, notes, pytorch]
 
+aliases:
+- /Notes-on-Fastai-Book-13/
+
 ---
 
 * [The Magic of Convolutions](#the-magic-of-convolutions)

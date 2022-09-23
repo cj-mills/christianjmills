@@ -12,6 +12,9 @@ search_exclude: false
 title: Notes on fastai Book Ch. 09
 toc: false
 
+aliases:
+- /Notes-on-Fastai-Book-09/
+
 ---
 
 * [Tabular Modeling](#tabular-modeling)

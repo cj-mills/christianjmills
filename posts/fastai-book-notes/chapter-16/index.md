@@ -13,6 +13,9 @@ search_exclude: false
 title: Notes on fastai Book Ch. 16
 toc: false
 
+aliases:
+- /Notes-on-Fastai-Book-16/
+
 ---
 
 * [Establishing a Baseline](#establishing-a-baseline)

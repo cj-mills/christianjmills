@@ -12,6 +12,9 @@ search_exclude: false
 title: Notes on fastai Book Ch. 10
 toc: false
 
+aliases:
+- /Notes-on-Fastai-Book-10/
+
 ---
 
 * [NLP Deep Dive](#nlp-deep-dive)

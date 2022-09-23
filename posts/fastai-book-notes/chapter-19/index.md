@@ -10,6 +10,8 @@ search_exclude: false
 description: Chapter 19 covers creating a fast.ai Learner from scratch.
 categories: [ai, fastai, notes, pytorch]
 
+aliases:
+- /Notes-on-Fastai-Book-19/
 ---
 
 * [A fastai Learner from Scratch](#a-fastai-learner-from-scratch)

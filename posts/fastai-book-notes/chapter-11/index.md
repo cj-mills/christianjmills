@@ -2,13 +2,16 @@
 title: Notes on fastai Book Ch. 11
 date: 2022-3-29
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false
 search_exclude: false
 description: Chapter 11 covers data munging with fast.ai's mid-level data API.
 categories: [ai, fastai, notes, pytorch]
+
+aliases:
+- /Notes-on-Fastai-Book-11/
 
 ---
 

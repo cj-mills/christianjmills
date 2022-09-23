@@ -2,7 +2,7 @@
 title: Notes on fastai Book Ch. 5
 date: 2022-3-14
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false
@@ -11,6 +11,9 @@ description: Chapter 5 covers creating a custom DataBlock for an image classifie
   pre-sizing, cross-entropy loss, model interpretation, picking learning rates, transfer
   learning, and discriminative learning rates.
 categories: [ai, fastai, notes, pytorch]
+
+aliases:
+- /Notes-on-Fastai-Book-05/
 
 ---
 
