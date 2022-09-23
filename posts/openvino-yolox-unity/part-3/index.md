@@ -11,6 +11,8 @@ description: This post demonstrates how to create a Unity project to access the 
   as a plugin.
 categories: [openvino, object-detection, yolox, tutorial, unity]
 
+aliases:
+- /OpenVINO-Object-Detection-for-Unity-Tutorial-3/
 ---
 
 ### 8/11/2022:

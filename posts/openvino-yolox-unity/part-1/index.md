@@ -14,6 +14,8 @@ search_exclude: false
 title: OpenVINO Object Detection for Unity Tutorial Pt.1 (Outdated)
 toc: false
 
+aliases:
+- /OpenVINO-Object-Detection-for-Unity-Tutorial-1/
 ---
 
 ### 8/11/2022:

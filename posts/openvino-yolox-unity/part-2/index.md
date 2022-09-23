@@ -11,6 +11,8 @@ description: This post walks through the steps needed to create a Dynamic link l
   (DLL) in Visual Studio to perform inference with the pretrained deep learning model.
 categories: [openvino, object-detection, yolox, tutorial, unity]
 
+aliases:
+- /OpenVINO-Object-Detection-for-Unity-Tutorial-2/
 ---
 
 ### 8/11/2022:

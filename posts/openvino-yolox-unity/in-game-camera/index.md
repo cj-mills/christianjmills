@@ -14,6 +14,8 @@ search_exclude: false
 title: OpenVINO Object Detection in Unity Using the In-Game Camera
 toc: false
 
+aliases:
+- /OpenVINO-Object-Detection-for-Unity-Tutorial-In-Game-Camera/
 ---
 
 ### Previous: [In-Editor](../in-game-camera/)

@@ -11,6 +11,8 @@ description: This post covers how to modify the existing YOLOX project so that t
   plugin can be using in the Unity Editor.
 categories: [openvino, object-detection, yolox, tutorial, unity]
 
+aliases:
+- /OpenVINO-Object-Detection-for-Unity-Tutorial-In-Editor/
 ---
 
 ### 8/11/2022:
