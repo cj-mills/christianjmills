@@ -10,6 +10,8 @@ search_exclude: false
 description: This post covers how to handle video input with different aspect ratios.
 categories: [unity, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-8/
 ---
 
 **Version 2:** [Part 1](../../barracuda-posenet-tutorial-v2/part-1/) 

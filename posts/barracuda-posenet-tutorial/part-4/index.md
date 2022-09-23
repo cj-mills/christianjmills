@@ -10,6 +10,8 @@ search_exclude: false
 description: This post covers how to process the output of the PoseNet model.
 categories: [unity, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-4/
 ---
 
 **Version 2:** [Part 1](../../barracuda-posenet-tutorial-v2/part-1/) 

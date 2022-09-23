@@ -11,6 +11,8 @@ description: This post covers how to create a pose skeleton by drawing lines bet
   key points.
 categories: [unity, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-6/
 ---
 
 **Version 2:** [Part 1](../../barracuda-posenet-tutorial-v2/part-1/) 

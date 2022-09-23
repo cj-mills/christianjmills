@@ -11,6 +11,8 @@ description: This post covers how to implement the preprocessing steps for the P
   model.
 categories: [unity, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-2/
 ---
 
 **Version 2:** [Part 1](../../barracuda-posenet-tutorial-v2/part-1/) 

@@ -10,6 +10,8 @@ search_exclude: false
 description: This post covers how to view preprocessed images during runtime.
 categories: [unity, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-2-5/
 ---
 
 **Version 2:** [Part 1](../../barracuda-posenet-tutorial-v2/part-1/) 
