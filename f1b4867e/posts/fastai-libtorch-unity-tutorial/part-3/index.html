@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-06-28">
+<meta name="description" content="Part 3 covers modifying the Unity project from the fastai-to-unity tutorial to classify images with a LibTorch DLL.">
+
+<title>Christian Mills - How to Create a LibTorch Plugin for Unity on Windows Pt. 3</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - How to Create a LibTorch Plugin for Unity on Windows Pt. 3">
+<meta property="og:description" content="Part 3 covers modifying the Unity project from the fastai-to-unity tutorial to classify images with a LibTorch DLL.">
+<meta property="og:image" content="christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - How to Create a LibTorch Plugin for Unity on Windows Pt. 3">
+<meta name="twitter:description" content="Part 3 covers modifying the Unity project from the fastai-to-unity tutorial to classify images with a LibTorch DLL.">
+<meta name="twitter:image" content="christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">How to Create a LibTorch Plugin for Unity on Windows Pt. 3</h1>
+  </div>
+
+<div>
+  <div class="description">
+    Part 3 covers modifying the Unity project from the fastai-to-unity tutorial to classify images with a LibTorch DLL.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 28, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#open-unity-project">Open Unity Project</a></li>
+<li><a href="#add-new-asset-files">Add New Asset Files</a></li>
+<li><a href="#allow-unsafe-code">Allow Unsafe Code</a></li>
+<li><a href="#modify-compute-shader">Modify Compute Shader</a></li>
+<li><a href="#create-imageclassifiertorch-script">Create <code>ImageClassifierTorch</code> Script</a></li>
+<li><a href="#modify-gui">Modify GUI</a></li>
+<li><a href="#add-imageclassifiertorch-component">Add <code>ImageClassifierTorch</code> Component</a></li>
+<li><a href="#update-on-value-changed-events">Update On Value Changed Events</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p><a href="../part-2/">Part 2</a> covered creating a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file to perform image classification with TorchScript modules using <a href="https://pytorch.org/cppdocs/installing.html">LibTorch</a>. This post covers the required modifications for the Unity project from the fastai-to-unity tutorial to use this DLL.</p>
+</section>
+<section id="open-unity-project" class="level2">
+<h2 class="anchored" data-anchor-id="open-unity-project">Open Unity Project</h2>
+<p>Open the <a href="../../fastai-to-unity-tutorial/part-1/">Fastai-Unity-Tutorial</a> project in the Unity Editor. The project is available in the GitHub repository linked below for anyone who did not follow the previous tutorial series.</p>
+<ul>
+<li><strong><a href="https://github.com/cj-mills/fastai-to-unity-tutorial">fastai-to-unity-tutorial GitHub repository</a></strong></li>
+</ul>
+</section>
+<section id="add-new-asset-files" class="level2">
+<h2 class="anchored" data-anchor-id="add-new-asset-files">Add New Asset Files</h2>
+<p>First, we’ll create a new folder to store the <a href="../part-2/#gather-dependencies">DLL files</a> from part 2. Create a new folder called <code>Plugins</code>, then create a subfolder named <code>x86_64</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-plugins-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-plugins-folder</figcaption><p></p>
+</figure>
+</div>
+<p>Copy all the DLL files into the <code>Assets/Plugins/x86_64</code> folder. We then need to close and reopen the project for Unity to load the plugin files.</p>
+<ul>
+<li><a href="https://drive.google.com/drive/folders/1eH1JdyFkQQRAK8EA0gsTxXtOylWxZ9Nd?usp=sharing">Plugins Folder Google Drive</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-add-dll-files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-add-dll-files</figcaption><p></p>
+</figure>
+</div>
+<p>Next, we’ll create a folder to store the TorchScript modules. TorchScript modules are not <a href="https://docs.unity3d.com/Manual/AssetTypes.html">supported asset types</a>, so we need to place them in a <a href="https://docs.unity3d.com/Manual/StreamingAssets.html">StreamingAssets</a> folder. Create a new folder named <code>StreamingAssets</code>. We’ll put the files in a new subfolder called <code>TorchScriptModules</code> to keep things organized.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-streaming-assets-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-streaming-assets-folder</figcaption><p></p>
+</figure>
+</div>
+<p>Add any TorchScript files into the <code>Assets/StreamingAssets/TorchScriptModules</code> folder.</p>
+<ul>
+<li><a href="https://drive.google.com/drive/folders/1J6keeA3w22Lk0s-mSHfPcFbSosalCSyL?usp=sharing">TorchScriptModules Folder Google Drive</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-add-torchscript-modules.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-add-torchscript-modules</figcaption><p></p>
+</figure>
+</div>
+<p>Lastly, we’ll store the JSON files with the normalization stats in a new assets folder called <code>NormalizationStats</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-normalization-stats-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-normalization-stats-folder</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="allow-unsafe-code" class="level2">
+<h2 class="anchored" data-anchor-id="allow-unsafe-code">Allow Unsafe Code</h2>
+<p>Rather than copying the input image from Unity to the LibTorch plugin, we’ll pass a pointer to the pixel data. First, we need to allow unsafe code for the Unity project. Select <code>Edit → Project Settings...</code> from the top menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-open-project-settings.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-open-project-settings</figcaption><p></p>
+</figure>
+</div>
+<p>Open the <code>Player → Other Settings</code> dropdown and scroll down to the <code>Allow 'unsafe' Code</code> checkbox. Enable the setting and close the Project Settings window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-allow-unsafe-code.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-allow-unsafe-code</figcaption><p></p>
+</figure>
+</div>
+<p>Now we can start modifying the code.</p>
+</section>
+<section id="modify-compute-shader" class="level2">
+<h2 class="anchored" data-anchor-id="modify-compute-shader">Modify Compute Shader</h2>
+<p>The input image gets flipped upside down when we send it to the plugin. We can pre-flip the image in the <code>ProcessingShader</code> compute shader before sending it to the plugin. We need to know the height of the input image, which we can access with the <a href="https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-texture2d-getdimensions">Texture2D::GetDimensions</a> function.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Each #kernel tells which function to compile; you can have many kernels</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>#pragma kernel NormalizeImageNet</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>#pragma kernel FlipXAxis</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// The pixel data for the input image</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>Texture2D<span class="op">&lt;</span>float4<span class="op">&gt;</span> InputImage<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">// The pixel data for the processed image</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>RWTexture2D<span class="op">&lt;</span>float4<span class="op">&gt;</span> Result<span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Flip the image around the x-axis</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">numthreads</span><span class="op">(</span><span class="dv">8</span><span class="op">,</span> <span class="dv">8</span><span class="op">,</span> <span class="dv">1</span><span class="op">)]</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">FlipXAxis</span><span class="op">(</span>uint3 id <span class="op">:</span> SV_DispatchThreadID<span class="op">)</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Stores the InputImage width</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint</span> width<span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Stores the InputImage height</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint</span> height<span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the dimensions of the InputImage</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    InputImage<span class="op">.</span><span class="fu">GetDimensions</span><span class="op">(</span>width<span class="op">,</span> height<span class="op">);</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the y value for the pixel coordinates</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    int2 coords <span class="op">=</span> <span class="fu">int2</span><span class="op">(</span>id<span class="op">.</span><span class="fu">x</span><span class="op">,</span> height <span class="op">-</span> id<span class="op">.</span><span class="fu">y</span><span class="op">);</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">[</span>id<span class="op">.</span><span class="fu">xy</span><span class="op">]</span> <span class="op">=</span> <span class="fu">float4</span><span class="op">(</span>InputImage<span class="op">[</span>coords<span class="op">].</span><span class="fu">x</span><span class="op">,</span> InputImage<span class="op">[</span>coords<span class="op">].</span><span class="fu">y</span><span class="op">,</span> InputImage<span class="op">[</span>coords<span class="op">].</span><span class="fu">z</span><span class="op">,</span> <span class="fl">1.0f</span><span class="op">);</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co">// Apply the ImageNet normalization stats from PyTorch to an image</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">numthreads</span><span class="op">(</span><span class="dv">8</span><span class="op">,</span> <span class="dv">8</span><span class="op">,</span> <span class="dv">1</span><span class="op">)]</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">NormalizeImageNet</span><span class="op">(</span>uint3 id <span class="op">:</span> SV_DispatchThreadID<span class="op">)</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the pixel color values for the processed image</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    Result<span class="op">[</span>id<span class="op">.</span><span class="fu">xy</span><span class="op">]</span> <span class="op">=</span> <span class="fu">float4</span><span class="op">(</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Normalize the red color channel values</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span>InputImage<span class="op">[</span>id<span class="op">.</span><span class="fu">xy</span><span class="op">].</span><span class="fu">r</span> <span class="op">-</span> <span class="fl">0.4850f</span><span class="op">)</span> <span class="op">/</span> <span class="fl">0.2290f</span><span class="op">,</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Normalize the green color channel values</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span>InputImage<span class="op">[</span>id<span class="op">.</span><span class="fu">xy</span><span class="op">].</span><span class="fu">g</span> <span class="op">-</span> <span class="fl">0.4560f</span><span class="op">)</span> <span class="op">/</span> <span class="fl">0.2240f</span><span class="op">,</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Normalize the blue color channel values</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span>InputImage<span class="op">[</span>id<span class="op">.</span><span class="fu">xy</span><span class="op">].</span><span class="fu">b</span> <span class="op">-</span> <span class="fl">0.4060f</span><span class="op">)</span> <span class="op">/</span> <span class="fl">0.2250f</span><span class="op">,</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Ignore the alpha/transparency channel</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        InputImage<span class="op">[</span>id<span class="op">.</span><span class="fu">xy</span><span class="op">].</span><span class="fu">a</span><span class="op">);</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-imageclassifiertorch-script" class="level2">
+<h2 class="anchored" data-anchor-id="create-imageclassifiertorch-script">Create <code>ImageClassifierTorch</code> Script</h2>
+<p>Duplicate the <code>ImageClassifier</code> script and name the copy <code>ImageClassifierTorch</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-image-classifier-torch-script.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-image-classifier-torch-script</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Update class name</strong></p>
+<p>Open the new script in the code editor and replace the class name with the new file name.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> ImageClassifierTorch <span class="op">:</span> MonoBehaviour</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Update required namespaces</strong></p>
+<p>We no longer need the Barracuda namespace. Instead, we need the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices?view=net-5.0">System.Runtime.InteropServices</a> namespace to handle interactions with the LibTorch plugin.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">.</span><span class="fu">Rendering</span><span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">.</span><span class="fu">UI</span><span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Remove Barracuda code</strong></p>
+<p>We need to delete all the public and private Barracuda variables, along with the <code>InitializeWorker</code> and <code>OnDisable</code> methods.</p>
+<p><strong>Update data processing variables</strong></p>
+<p>We can remove the <code>processingMaterial</code> variable from the Data Processing section. We no longer need to download model output from the GPU to the CPU. However, we now need to download the input image to the CPU before sending it to the plugin. We can do this asynchronously to help reduce the GPU-to-CPU performance bottleneck.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Header</span><span class="op">(</span><span class="st">"Data Processing"</span><span class="op">)]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The target minimum model input dimensions"</span><span class="op">)]</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> targetDim <span class="op">=</span> <span class="dv">216</span><span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The compute shader for GPU processing"</span><span class="op">)]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> ComputeShader processingShader<span class="op">;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Asynchronously download input image from the GPU to the CPU."</span><span class="op">)]</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">bool</span> useAsyncGPUReadback <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Update variables for user interface</strong></p>
+<p>We’ll add a new dropdown so that we can switch between the available TorchScript modules at runtime.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Header</span><span class="op">(</span><span class="st">"GUI"</span><span class="op">)]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Display predicted class"</span><span class="op">)]</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">bool</span> displayPredictedClass <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Display fps"</span><span class="op">)]</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">bool</span> displayFPS <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The on-screen text color"</span><span class="op">)]</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Color textColor <span class="op">=</span> Color<span class="op">.</span><span class="fu">red</span><span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The scale value for the on-screen font size"</span><span class="op">)]</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">99</span><span class="op">)]</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> fontScale <span class="op">=</span> <span class="dv">50</span><span class="op">;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The number of seconds to wait between refreshing the fps value"</span><span class="op">)]</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="fl">0.01f</span><span class="op">,</span> <span class="fl">1.0f</span><span class="op">)]</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">float</span> fpsRefreshRate <span class="op">=</span> <span class="fl">0.1f</span><span class="op">;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The toggle for using a webcam as the input source"</span><span class="op">)]</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Toggle useWebcamToggle<span class="op">;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The dropdown menu that lists available webcam devices"</span><span class="op">)]</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Dropdown webcamDropdown<span class="op">;</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The dropdown menu that lists available torchscript models"</span><span class="op">)]</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> Dropdown modelDropdown<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define public variables for the LibTorch plugin</strong></p>
+<p>Next, we’ll create variables to indicate the StreamingAssets subfolder for the TorchScript modules and add the JSON files with the normalization stats.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Header</span><span class="op">(</span><span class="st">"Libtorch"</span><span class="op">)]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The name of the libtorch models folder"</span><span class="op">)]</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">string</span> torchscriptModulesDir <span class="op">=</span> <span class="st">"TorchScriptModules"</span><span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"A list json files containing the normalization stats for available models"</span><span class="op">)]</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> TextAsset<span class="op">[]</span> normalizationStatsList<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Update input variables</strong></p>
+<p>Like in the previous tutorial series, when using asynchronous GPU readback, we need one Texture that stores data on the GPU and one that stores data on the CPU.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The test image dimensions</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Vector2Int imageDims<span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">// The test image texture</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Texture imageTexture<span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">// The current screen object dimensions</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Vector2Int screenDims<span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">// The model GPU input texture</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> RenderTexture inputTextureGPU<span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">// The model CPU input texture</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Texture2D inputTextureCPU<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define private variables for the LibTorch plugin</strong></p>
+<p>We’ll store the full paths and names for the Torchscript modules in separate lists. We also need to create another little class that indicates the structure of the JSON content for files with normalization stats.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// File paths for the available torchscript models</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> modelPaths <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;();</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Names of the available torchscript models</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> modelNames <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;();</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">// A class for reading in normalization stats from a JSON file</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> NormalizationStats <span class="op">{</span> <span class="kw">public</span> <span class="dt">float</span><span class="op">[]</span> mean<span class="op">;</span> <span class="kw">public</span> <span class="dt">float</span><span class="op">[]</span> std<span class="op">;</span> <span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Import functions from the LibTorch plugin</strong></p>
+<p>We pass the pointer to the input pixel data as an <a href="https://docs.microsoft.com/en-us/dotnet/api/system.intptr?view=net-6.0">IntPtr</a>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Name of the DLL file</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">string</span> dll <span class="op">=</span> <span class="st">"Libtorch_CPU_Image_Classifier_DLL"</span><span class="op">;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">static</span> <span class="kw">extern</span> <span class="dt">int</span> <span class="fu">LoadModel</span><span class="op">(</span><span class="dt">string</span> model<span class="op">,</span> <span class="dt">float</span><span class="op">[]</span> mean<span class="op">,</span> <span class="dt">float</span><span class="op">[]</span> std<span class="op">);</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">static</span> <span class="kw">extern</span> <span class="dt">int</span> <span class="fu">PerformInference</span><span class="op">(</span>IntPtr inputData<span class="op">,</span> <span class="dt">int</span> width<span class="op">,</span> <span class="dt">int</span> height<span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define method to get the available TorchScript modules</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Get the file paths for available torchscript models</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">GetTorchModels</span><span class="op">()</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the paths for the .pt file for each model</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">foreach</span> <span class="op">(</span><span class="dt">string</span> file <span class="kw">in</span> System<span class="op">.</span><span class="fu">IO</span><span class="op">.</span><span class="fu">Directory</span><span class="op">.</span><span class="fu">GetFiles</span><span class="op">(</span>$<span class="st">"{Application.streamingAssetsPath}/{modelsDir}"</span><span class="op">))</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>file<span class="op">.</span><span class="fu">EndsWith</span><span class="op">(</span><span class="st">".pt"</span><span class="op">))</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>            modelPaths<span class="op">.</span><span class="fu">Add</span><span class="op">(</span>file<span class="op">);</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>            <span class="dt">string</span> modelName <span class="op">=</span> file<span class="op">.</span><span class="fu">Split</span><span class="op">(</span><span class="ch">'\\'</span><span class="op">)[</span><span class="dv">1</span><span class="op">].</span><span class="fu">Split</span><span class="op">(</span><span class="ch">'.'</span><span class="op">)[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>            modelNames<span class="op">.</span><span class="fu">Add</span><span class="op">(</span>modelName<span class="op">.</span><span class="fu">Substring</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> modelName<span class="op">.</span><span class="fu">Length</span><span class="op">));</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Update method to initialize GUI dropdown menu options</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize the GUI dropdown list</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeDropdown</span><span class="op">()</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create list of webcam device names</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> webcamNames <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;();</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">foreach</span><span class="op">(</span>WebCamDevice device <span class="kw">in</span> webcamDevices<span class="op">)</span> webcamNames<span class="op">.</span><span class="fu">Add</span><span class="op">(</span>device<span class="op">.</span><span class="fu">name</span><span class="op">);</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remove default dropdown options</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    webcamDropdown<span class="op">.</span><span class="fu">ClearOptions</span><span class="op">();</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add webcam device names to dropdown menu</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    webcamDropdown<span class="op">.</span><span class="fu">AddOptions</span><span class="op">(</span>webcamNames<span class="op">);</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the value for the dropdown to the current webcam device</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    webcamDropdown<span class="op">.</span><span class="fu">SetValueWithoutNotify</span><span class="op">(</span>webcamNames<span class="op">.</span><span class="fu">IndexOf</span><span class="op">(</span>currentWebcam<span class="op">));</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remove default dropdown options</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    modelDropdown<span class="op">.</span><span class="fu">ClearOptions</span><span class="op">();</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add TorchScript model names to menu</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    modelDropdown<span class="op">.</span><span class="fu">AddOptions</span><span class="op">(</span>modelNames<span class="op">);</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Select the first option in the dropdown</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    modelDropdown<span class="op">.</span><span class="fu">SetValueWithoutNotify</span><span class="op">(</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Update Start method</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Start is called before the first frame update</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Start</span><span class="op">()</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the source image texture</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    imageTexture <span class="op">=</span> screen<span class="op">.</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">material</span><span class="op">.</span><span class="fu">mainTexture</span><span class="op">;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the source image dimensions as a Vector2Int</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    imageDims <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector2Int</span><span class="op">(</span>imageTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> imageTexture<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize list of available webcam devices</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    webcamDevices <span class="op">=</span> WebCamTexture<span class="op">.</span><span class="fu">devices</span><span class="op">;</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">foreach</span> <span class="op">(</span>WebCamDevice device <span class="kw">in</span> webcamDevices<span class="op">)</span> Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>device<span class="op">.</span><span class="fu">name</span><span class="op">);</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    currentWebcam <span class="op">=</span> webcamDevices<span class="op">[</span><span class="dv">0</span><span class="op">].</span><span class="fu">name</span><span class="op">;</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    useWebcam <span class="op">=</span> webcamDevices<span class="op">.</span><span class="fu">Length</span> <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> useWebcam <span class="op">:</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize webcam</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useWebcam<span class="op">)</span> <span class="fu">InitializeWebcam</span><span class="op">(</span>currentWebcam<span class="op">);</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Resize and position the screen object using the source image dimensions</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeScreen</span><span class="op">();</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Resize and position the main camera using the source image dimensions</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeCamera</span><span class="op">(</span>screenDims<span class="op">);</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize list of class labels from JSON file</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    classes <span class="op">=</span> JsonUtility<span class="op">.</span><span class="fu">FromJson</span><span class="op">&lt;</span>ClassLabels<span class="op">&gt;(</span>classLabels<span class="op">.</span><span class="fu">text</span><span class="op">).</span><span class="fu">classes</span><span class="op">;</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the file paths for available torchscript models</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">GetTorchModels</span><span class="op">();</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the webcam dropdown list</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeDropdown</span><span class="op">();</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the selected torchscript model</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">UpdateTorchScriptModel</span><span class="op">();</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Update method to process images using a compute shader</strong></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Process the provided image using the specified function on the GPU</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"image"</span><span class="kw">&gt;</span><span class="co">The target image RenderTexture</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"computeShader"</span><span class="kw">&gt;</span><span class="co">The target ComputerShader</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"functionName"</span><span class="kw">&gt;</span><span class="co">The target ComputeShader function</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;&lt;/returns&gt;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">ProcessImageGPU</span><span class="op">(</span>RenderTexture image<span class="op">,</span> ComputeShader computeShader<span class="op">,</span> <span class="dt">string</span> functionName<span class="op">)</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Specify the number of threads on the GPU</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numthreads <span class="op">=</span> <span class="dv">8</span><span class="op">;</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the index for the specified function in the ComputeShader</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> kernelHandle <span class="op">=</span> computeShader<span class="op">.</span><span class="fu">FindKernel</span><span class="op">(</span>functionName<span class="op">);</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define a temporary HDR RenderTexture</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    RenderTexture result <span class="op">=</span> <span class="kw">new</span> <span class="fu">RenderTexture</span><span class="op">(</span>image<span class="op">.</span><span class="fu">width</span><span class="op">,</span> image<span class="op">.</span><span class="fu">height</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Enable random write access</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    result<span class="op">.</span><span class="fu">enableRandomWrite</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create the HDR RenderTexture</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    result<span class="op">.</span><span class="fu">Create</span><span class="op">();</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the value for the Result variable in the ComputeShader</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    computeShader<span class="op">.</span><span class="fu">SetTexture</span><span class="op">(</span>kernelHandle<span class="op">,</span> <span class="st">"Result"</span><span class="op">,</span> result<span class="op">);</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the value for the InputImage variable in the ComputeShader</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    computeShader<span class="op">.</span><span class="fu">SetTexture</span><span class="op">(</span>kernelHandle<span class="op">,</span> <span class="st">"InputImage"</span><span class="op">,</span> image<span class="op">);</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Execute the ComputeShader</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    computeShader<span class="op">.</span><span class="fu">Dispatch</span><span class="op">(</span>kernelHandle<span class="op">,</span> result<span class="op">.</span><span class="fu">width</span> <span class="op">/</span> numthreads<span class="op">,</span> result<span class="op">.</span><span class="fu">height</span> <span class="op">/</span> numthreads<span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the result into the source RenderTexture</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>result<span class="op">,</span> image<span class="op">);</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release RenderTexture</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    result<span class="op">.</span><span class="fu">Release</span><span class="op">();</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Update method to handle asynchronous GPU readback</strong></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Called once AsyncGPUReadback has been completed</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"request"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">OnCompleteReadback</span><span class="op">(</span>AsyncGPUReadbackRequest request<span class="op">)</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>request<span class="op">.</span><span class="fu">hasError</span><span class="op">)</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span><span class="st">"GPU readback error detected."</span><span class="op">);</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Make sure the Texture2D is not null</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>inputTextureCPU<span class="op">)</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Fill Texture2D with raw data from the AsyncGPUReadbackRequest</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">LoadRawTextureData</span><span class="op">(</span>request<span class="op">.</span><span class="fu">GetData</span><span class="op">&lt;</span><span class="dt">uint</span><span class="op">&gt;());</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Apply changes to Textur2D</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">Apply</span><span class="op">();</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define method to send the input texture data to the plugin</strong></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Pin memory for the input data and pass a reference to the plugin for inference</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"texture"</span><span class="kw">&gt;</span><span class="co">The input texture</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;&lt;/returns&gt;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">unsafe</span> <span class="dt">int</span> <span class="fu">UploadTexture</span><span class="op">(</span>Texture2D texture<span class="op">)</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> classIndex <span class="op">=</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">//Pin Memory</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fixed</span> <span class="op">(</span><span class="dt">byte</span><span class="op">*</span> p <span class="op">=</span> texture<span class="op">.</span><span class="fu">GetRawTextureData</span><span class="op">())</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Perform inference and get the predicted class index</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        classIndex <span class="op">=</span> <span class="fu">PerformInference</span><span class="op">((</span>IntPtr<span class="op">)</span>p<span class="op">,</span> texture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> texture<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> classIndex<span class="op">;</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Modify Update method</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Update is called once per frame</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Update</span><span class="op">()</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    useWebcam <span class="op">=</span> webcamDevices<span class="op">.</span><span class="fu">Length</span> <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">?</span> useWebcam <span class="op">:</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useWebcam<span class="op">)</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Initialize webcam if it is not already playing</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(!</span>webcamTexture <span class="op">||</span> <span class="op">!</span>webcamTexture<span class="op">.</span><span class="fu">isPlaying</span><span class="op">)</span> <span class="fu">InitializeWebcam</span><span class="op">(</span>currentWebcam<span class="op">);</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Skip the rest of the method if the webcam is not initialized</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>webcamTexture<span class="op">.</span><span class="fu">width</span> <span class="op">&lt;=</span> <span class="dv">16</span><span class="op">)</span> <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Make sure screen dimensions match webcam resolution when using webcam</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>screenDims<span class="op">.</span><span class="fu">x</span> <span class="op">!=</span> webcamTexture<span class="op">.</span><span class="fu">width</span><span class="op">)</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Resize and position the screen object using the source image dimensions</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">InitializeScreen</span><span class="op">();</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Resize and position the main camera using the source image dimensions</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">InitializeCamera</span><span class="op">(</span>screenDims<span class="op">);</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span>webcamTexture <span class="op">&amp;&amp;</span> webcamTexture<span class="op">.</span><span class="fu">isPlaying</span><span class="op">)</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Stop the current webcam</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        webcamTexture<span class="op">.</span><span class="fu">Stop</span><span class="op">();</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Resize and position the screen object using the source image dimensions</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">InitializeScreen</span><span class="op">();</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Resize and position the main camera using the source image dimensions</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">InitializeCamera</span><span class="op">(</span>screenDims<span class="op">);</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Scale the source image resolution</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    Vector2Int inputDims <span class="op">=</span> <span class="fu">CalculateInputDims</span><span class="op">(</span>screenDims<span class="op">,</span> targetDim<span class="op">);</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>printDebugMessages<span class="op">)</span> Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Input Dims: {inputDims.x} x {inputDims.y}"</span><span class="op">);</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the input texture with the calculated input dimensions</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>    inputTextureGPU <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>inputDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> inputDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(!</span>inputTextureCPU <span class="op">||</span> inputTextureCPU<span class="op">.</span><span class="fu">width</span> <span class="op">!=</span> inputTextureGPU<span class="op">.</span><span class="fu">width</span><span class="op">)</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU <span class="op">=</span> <span class="kw">new</span> <span class="fu">Texture2D</span><span class="op">(</span>inputDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> inputDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> TextureFormat<span class="op">.</span><span class="fu">RGBA32</span><span class="op">,</span> <span class="kw">false</span><span class="op">);</span></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>printDebugMessages<span class="op">)</span> Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Input Dims: {inputTextureGPU.width}x{inputTextureGPU.height}"</span><span class="op">);</span></span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the source texture into model input texture</span></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">((</span>useWebcam <span class="op">?</span> webcamTexture <span class="op">:</span> imageTexture<span class="op">),</span> inputTextureGPU<span class="op">);</span></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Flip image before sending to DLL</span></span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ProcessImageGPU</span><span class="op">(</span>inputTextureGPU<span class="op">,</span> processingShader<span class="op">,</span> <span class="st">"FlipXAxis"</span><span class="op">);</span></span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Download pixel data from GPU to CPU</span></span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useAsyncGPUReadback<span class="op">)</span></span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>        AsyncGPUReadback<span class="op">.</span><span class="fu">Request</span><span class="op">(</span>inputTextureGPU<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> TextureFormat<span class="op">.</span><span class="fu">RGBA32</span><span class="op">,</span> OnCompleteReadback<span class="op">);</span></span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>        RenderTexture<span class="op">.</span><span class="fu">active</span> <span class="op">=</span> inputTextureGPU<span class="op">;</span></span>
+<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">ReadPixels</span><span class="op">(</span><span class="kw">new</span> <span class="fu">Rect</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> inputTextureGPU<span class="op">.</span><span class="fu">width</span><span class="op">,</span> inputTextureGPU<span class="op">.</span><span class="fu">height</span><span class="op">),</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">Apply</span><span class="op">();</span></span>
+<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Send reference to inputData to DLL</span></span>
+<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a>    classIndex <span class="op">=</span> <span class="fu">UploadTexture</span><span class="op">(</span>inputTextureCPU<span class="op">);</span></span>
+<span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>printDebugMessages<span class="op">)</span> Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Class Index: {classIndex}"</span><span class="op">);</span></span>
+<span id="cb16-68"><a href="#cb16-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-69"><a href="#cb16-69" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Check if index is valid</span></span>
+<span id="cb16-70"><a href="#cb16-70" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> validIndex <span class="op">=</span> classIndex <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> classIndex <span class="op">&lt;</span> classes<span class="op">.</span><span class="fu">Length</span><span class="op">;</span></span>
+<span id="cb16-71"><a href="#cb16-71" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>printDebugMessages<span class="op">)</span> Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>validIndex <span class="op">?</span> $<span class="st">"Predicted Class: {classes[classIndex]}"</span> <span class="op">:</span> <span class="st">"Invalid index"</span><span class="op">);</span></span>
+<span id="cb16-72"><a href="#cb16-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-73"><a href="#cb16-73" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release the input texture</span></span>
+<span id="cb16-74"><a href="#cb16-74" aria-hidden="true" tabindex="-1"></a>    RenderTexture<span class="op">.</span><span class="fu">ReleaseTemporary</span><span class="op">(</span>inputTextureGPU<span class="op">);</span></span>
+<span id="cb16-75"><a href="#cb16-75" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a method to update the current TorchScript model</strong></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Update the selected torchscript model</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">UpdateTorchScriptModel</span><span class="op">()</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">string</span> modelName <span class="op">=</span> modelNames<span class="op">[</span>modelDropdown<span class="op">.</span><span class="fu">value</span><span class="op">];</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">[]</span> mean <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[]</span> <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">[]</span> std <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[]</span> <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">foreach</span> <span class="op">(</span>TextAsset textAsset <span class="kw">in</span> normalizationStatsList<span class="op">)</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>modelName<span class="op">.</span><span class="fu">Contains</span><span class="op">(</span>textAsset<span class="op">.</span><span class="fu">name</span><span class="op">.</span><span class="fu">Split</span><span class="op">(</span><span class="st">"-"</span><span class="op">)[</span><span class="dv">0</span><span class="op">]))</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Initialize the normalization stats from JSON file</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>            mean <span class="op">=</span> JsonUtility<span class="op">.</span><span class="fu">FromJson</span><span class="op">&lt;</span>NormalizationStats<span class="op">&gt;(</span>textAsset<span class="op">.</span><span class="fu">text</span><span class="op">).</span><span class="fu">mean</span><span class="op">;</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>            std <span class="op">=</span> JsonUtility<span class="op">.</span><span class="fu">FromJson</span><span class="op">&lt;</span>NormalizationStats<span class="op">&gt;(</span>textAsset<span class="op">.</span><span class="fu">text</span><span class="op">).</span><span class="fu">std</span><span class="op">;</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>mean<span class="op">.</span><span class="fu">Length</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span><span class="st">"Unable to find normalization stats"</span><span class="op">);</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        <span class="dt">string</span> mean_str <span class="op">=</span> <span class="st">""</span><span class="op">;</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">foreach</span> <span class="op">(</span><span class="dt">float</span> val <span class="kw">in</span> mean<span class="op">)</span> mean_str <span class="op">+=</span> $<span class="st">"{val} "</span><span class="op">;</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Mean Stats: {mean_str}"</span><span class="op">);</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        <span class="dt">string</span> std_str <span class="op">=</span> <span class="st">""</span><span class="op">;</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        <span class="kw">foreach</span> <span class="op">(</span><span class="dt">float</span> val <span class="kw">in</span> std<span class="op">)</span> std_str <span class="op">+=</span> $<span class="st">"{val} "</span><span class="op">;</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Std Stats: {std_str}"</span><span class="op">);</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Load the specified torchscript model</span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> result <span class="op">=</span> <span class="fu">LoadModel</span><span class="op">(</span>modelPaths<span class="op">[</span>modelDropdown<span class="op">.</span><span class="fu">value</span><span class="op">],</span> mean<span class="op">,</span> std<span class="op">);</span></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>    Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>result <span class="op">==</span> <span class="dv">0</span> <span class="op">?</span> <span class="st">"Model loaded successfully"</span> <span class="op">:</span> <span class="st">"error loading the model"</span><span class="op">);</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modify-gui" class="level2">
+<h2 class="anchored" data-anchor-id="modify-gui">Modify GUI</h2>
+<p>As mentioned earlier, we’ll add a new dropdown menu to the GUI so we can switch between available TorchScript modules at runtime. Select the <code>WebcamDeviceText</code> and <code>WebcamDropdown</code> objects and press Ctrl-d to duplicate them. Rename the duplicates to <code>TorchScriptModelText</code> and <code>TorchScriptModelDropdown</code> respectively.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-add-torchscript-model-dropdown.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-add-torchscript-model-dropdown</figcaption><p></p>
+</figure>
+</div>
+<p>Select the <code>TorchScriptModelText</code> object and update the <code>Pos Y</code> value to <code>-145</code> and the Text value to <code>TorchScript Model:</code> in the Inspector tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-update-torchscript-model-text-position-and-text.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-update-torchscript-model-text-position</figcaption><p></p>
+</figure>
+</div>
+<p>Then, select the <code>TorchScriptModelDropdown</code> object and update the <code>Pos Y</code> value to <code>-165</code> in the Inspector tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-update-torchscript-model-dropdown-position.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-update-torchscript-model-dropdown-position</figcaption><p></p>
+</figure>
+</div>
+<p>The updated GUI should look like the image below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-view-updated-gui.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-view-updated-gui</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="add-imageclassifiertorch-component" class="level2">
+<h2 class="anchored" data-anchor-id="add-imageclassifiertorch-component">Add <code>ImageClassifierTorch</code> Component</h2>
+<p>Now we can add the new <code>ImageClassifierTorch</code> script to the <code>InferenceManager</code> object. Make sure to disable the existing <code>ImageClassifier</code> component, as shown below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-add-image-classifier-torch-component.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-add-image-classifier-torch-component</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="update-on-value-changed-events" class="level2">
+<h2 class="anchored" data-anchor-id="update-on-value-changed-events">Update On Value Changed Events</h2>
+<p>With the <code>ImageClassifierTorch</code> component added, we can update the On Value Changed events for the <code>WebcamToggle</code>, <code>WebcamDropdown</code>, and <code>TorchScriptModelDropdown</code> objects.</p>
+<p><strong>Update the <code>WebcamToggle</code> On Value Changed Event</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-webcam-toggle-update-on-value-changed.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-webcam-toggle-update-on-value-changed</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Update the <code>WebcamDropdown</code> On Value Changed Event</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-webcam-dropdown-update-on-value-changed.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-webcam-dropdown-update-on-value-changed</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Update the <code>TorchScriptModelDropdown</code> On Value Changed Event</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-update-torchscript-model-dropdown-on-value-changed.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-update-torchscript-model-dropdown-on-value-changed</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This tutorial series covered creating a LibTorch plugin to perform inference with recent model architectures in the Unity game engine. LibTorch also provides the ability to update the model weights within the Unity application, which we might explore in a future tutorial.</p>
+<p><strong>Previous:</strong> <a href="../part-2/">How to Create a LibTorch Plugin for Unity on Windows Pt.2</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial">GitHub Repository</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
