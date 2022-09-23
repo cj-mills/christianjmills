@@ -16,6 +16,9 @@ description: This tutorial covers creating an object detection plugin for a Unit
   model.
 categories: [onnx, directml, yolox, object-detection, unity, tutorial]
 
+aliases:
+- /ONNX-DiretML-to-Unity-Tutorial-1/
+
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"

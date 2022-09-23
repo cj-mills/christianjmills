@@ -10,6 +10,9 @@ search_exclude: false
 categories: [icevision, openvino, yolox, object-detection, unity, tutorial]
 description: Part 3 covers performing object detection in a Unity project with OpenVINO.
 
+aliases:
+- /IceVision-to-OpenVINO-to-Unity-Tutorial-3/
+
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"

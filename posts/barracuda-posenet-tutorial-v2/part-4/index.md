@@ -13,6 +13,9 @@ comments:
 description: This post covers how to load, modify, and execute the PoseNet models.
 categories: [unity, barracuda, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-V2-4/
+
 ---
 
 * [Overview](#overview)

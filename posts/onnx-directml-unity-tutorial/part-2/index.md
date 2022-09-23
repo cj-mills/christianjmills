@@ -11,6 +11,9 @@ description: Part 2 covers performing object detection in a Unity project with O
   Runtime and DirectML.
 categories: [onnx, directml, yolox, object-detection, unity, tutorial]
 
+aliases:
+- /ONNX-DiretML-to-Unity-Tutorial-2/
+
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"

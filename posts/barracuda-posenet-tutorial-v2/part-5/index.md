@@ -14,6 +14,9 @@ description: This post covers how to implement the post processing steps for sin
   pose estimation.
 categories: [unity, barracuda, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-V2-5/
+
 ---
 
 * [Overview](#overview)

@@ -13,6 +13,10 @@ comments:
 description: This post covers how to implement the post processing steps for multi-pose
   estimation.
 categories: [unity, barracuda, tutorial]
+
+aliases:
+- /Barracuda-PoseNet-Tutorial-V2-6/
+
 ---
 
 * [Overview](#overview)

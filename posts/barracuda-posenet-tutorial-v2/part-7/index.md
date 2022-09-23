@@ -14,6 +14,10 @@ description: This post covers how to create pose skeletons and manipulate them u
   output from the model.
 categories: [unity, barracuda, tutorial]
 
+aliases:
+- /Barracuda-PoseNet-Tutorial-V2-7/
+
+
 ---
 
 * [Overview](#overview)
