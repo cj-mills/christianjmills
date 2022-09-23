@@ -11,6 +11,9 @@ description: Part 2 covers creating a dynamic link library (DLL) file in Visual 
   to perform inference with TorchScript modules using LibTorch.
 categories: [fastai, libtorch, unity]
 
+aliases:
+- /Fastai-to-LibTorch-to-Unity-Tutorial-Windows-2/
+
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"

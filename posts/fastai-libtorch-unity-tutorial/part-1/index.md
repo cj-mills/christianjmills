@@ -12,6 +12,9 @@ description: This follow-up to the fastai-to-unity tutorial covers creating a Li
   original training code.
 categories: [fastai, libtorch, unity]
 
+aliases:
+- /Fastai-to-LibTorch-to-Unity-Tutorial-Windows-1/
+
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"

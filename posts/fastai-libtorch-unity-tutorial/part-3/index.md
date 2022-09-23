@@ -11,6 +11,9 @@ description: Part 3 covers modifying the Unity project from the fastai-to-unity 
   to classify images with a LibTorch DLL.
 categories: [fastai, libtorch, unity]
 
+aliases:
+- /Fastai-to-LibTorch-to-Unity-Tutorial-Windows-3/
+
 ---
 
 * [Overview](#overview)
