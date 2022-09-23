@@ -2,7 +2,7 @@
 title: Notes on fastai Book Ch. 2
 date: 2022-3-14
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false
@@ -10,6 +10,10 @@ search_exclude: false
 description: Chapter 2 covers how to train an image classification model using a custom
   dataset and turn it into an online application.
 categories: [ai, fastai, notes, pytorch]
+
+aliases:
+- /Notes-on-Fastai-Book-02/
+
 ---
 
 * [The Practice of Deep Learning](#the-practice-of-deep-learning)

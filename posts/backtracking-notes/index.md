@@ -1,16 +1,19 @@
 ---
-aliases:
-- /notes/python/2021/12/31/Notes-on-Backtracking-Problems-in-Python
-categories:
-- python
-- notes
-date: '2021-12-31'
-description: My notes from Lynn Zheng's video on solving LeetCode backtracking problems.
-hide: false
-layout: post
-search_exclude: false
 title: Notes on Backtracking Problems in Python
+date: '2021-12-31'
+title-block-categories: true
+layout: post
 toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
+description: My notes from Lynn Zheng's video on solving LeetCode backtracking problems.
+categories: [python, notes]
+
+aliases:
+- /Notes-on-Backtracking-Problems-in-Python/
 
 ---
 

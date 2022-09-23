@@ -1,16 +1,20 @@
 ---
-categories:
-- game-dev
-- procedural-generation
-- notes
+title: Notes on Procedural Map Generation Techniques
 date: 2021-12-9
+title-block-categories: true
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: My notes on Herbert Wolverson's talk on procedural map generation techniques
   from the 2020 virtual Roguelike Celebration.
-hide: false
-layout: post
-search_exclude: false
-title: Notes on Procedural Map Generation Techniques
-toc: false
+categories: [game-dev, procedural-generation, notes]
+
+aliases:
+- /Notes-on-Procedural-Map-Generation-Techniques/
 
 ---
 
@@ -271,3 +275,8 @@ Takeaway: Guide the randomness and use algorithms to check the randomness.
 * Online Book: [Roguelike Tutorial - In Rust](https://bfnightly.bracketproductions.com/chapter23-prefix.html)
 
   
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
+
