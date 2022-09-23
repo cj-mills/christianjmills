@@ -14,6 +14,8 @@ search_exclude: false
 title: Notes on Creating Data Science Apps With Streamlit
 toc: false
 
+aliases:
+- /Notes-on-Creating-Data-Science-Apps-With-Streamlit/
 ---
 
 * [Overview](#overview)

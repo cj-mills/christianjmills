@@ -5,6 +5,8 @@ image: /images/empty.gif
 description: My notes from learning how to customize my GitHub profile.
 categories: [github, notes]
 
+aliases:
+- /Notes-on-Customizing-Your-GitHub-Profile/
 ---
 
 * [Introduction](#introduction)

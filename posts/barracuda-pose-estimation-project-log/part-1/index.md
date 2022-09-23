@@ -13,6 +13,8 @@ search_exclude: false
 title: Barracuda Pose Estimation Project Log Pt. 1
 toc: false
 
+aliases:
+- /Barracuda-Pose-Estimation-Project-Log-1/
 ---
 
 ### Update 3/29/2021: [Barracuda PoseNet Tutorial](../../barracuda-posenet-tutorial/part-1/)

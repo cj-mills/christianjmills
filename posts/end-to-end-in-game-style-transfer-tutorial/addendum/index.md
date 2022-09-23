@@ -11,6 +11,8 @@ description: This post covers how to use a different style transfer model that i
   specialized for video.
 categories: [style_transfer, pytorch, unity, tutorial]
 
+aliases:
+- /End-To-End-In-Game-Style-Transfer-Tutorial-Addendum/
 ---
 
 ### Previous: [Part 3](../part-3/)

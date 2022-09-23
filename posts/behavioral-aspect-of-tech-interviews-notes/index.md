@@ -1,6 +1,4 @@
 ---
-aliases:
-- /career/notes/2021/12/16/Notes-on-the-Behavioral-Aspect-of-Technical-Interviews
 categories:
 - career
 - notes
@@ -13,6 +11,8 @@ search_exclude: false
 title: Notes on the Behavioral Aspect of Technical Interviews
 toc: false
 
+aliases:
+- /Notes-on-the-Behavioral-Aspect-of-Technical-Interviews/
 ---
 
 * [Overview](#overview)

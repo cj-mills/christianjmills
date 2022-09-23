@@ -9,6 +9,8 @@ search_exclude: false
 title: Daily Recap
 toc: false
 
+aliases:
+- /Daily-Recap-5/
 ---
 
 * [Targeted In-Game Style Transfer](#targeted-in-game-style-transfer)

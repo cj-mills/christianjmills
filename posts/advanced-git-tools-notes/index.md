@@ -1,6 +1,4 @@
 ---
-aliases:
-- /git/notes/2021/12/29/Notes-on-Advanced-Git-Tools
 categories:
 - git
 - notes
@@ -12,6 +10,8 @@ search_exclude: false
 title: Notes on Advanced Git Tools
 toc: false
 
+aliases:
+- /Notes-on-Advanced-Git-Tools/
 ---
 
 * [Overview](#overview)

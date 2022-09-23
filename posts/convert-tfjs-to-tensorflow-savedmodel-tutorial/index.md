@@ -1,6 +1,4 @@
 ---
-aliases:
-- /tensorflow/tutorial/2020/09/15/How-to-Convert-a-TensorFlow-js-Graph-Model-to-a-Tensorflow-SavedModel
 categories:
 - tensorflow
 - tutorial
@@ -11,6 +9,8 @@ layout: post
 title: How to Convert a TensorFlow.js Graph Model to a TensorFlow SavedModel
 toc: true
 
+aliases:
+- /How-to-Convert-a-TensorFlow-js-Graph-Model-to-a-Tensorflow-SavedModel/
 ---
 
 ## Motivation

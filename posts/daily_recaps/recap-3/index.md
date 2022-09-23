@@ -9,6 +9,8 @@ search_exclude: false
 title: Daily Recap
 toc: false
 
+aliases:
+- /Daily-Recap-3/
 ---
 
 * [Unity GPU Targeting](#unity-gpu-targeting)

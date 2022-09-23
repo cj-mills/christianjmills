@@ -10,6 +10,9 @@ search_exclude: false
 description: This post covers how to use the Unity Recorder tool to generate additional
   training data for our style transfer model.
 categories: [style_transfer, pytorch, unity, tutorial]
+
+aliases:
+- /End-To-End-In-Game-Style-Transfer-Tutorial-1-5/
 ---
 
 ### Previous: [Part 1](../part-1/)

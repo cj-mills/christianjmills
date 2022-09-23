@@ -1,6 +1,4 @@
 ---
-aliases:
-- /career/notes/2021/12/28/Notes-on-Creating-Pitch-Decks
 categories:
 - career
 - notes
@@ -12,6 +10,8 @@ search_exclude: false
 title: Notes on Creating Pitch Decks
 toc: false
 
+aliases:
+- /Notes-on-Creating-Pitch-Decks/
 ---
 
 * [Overview](#overview)

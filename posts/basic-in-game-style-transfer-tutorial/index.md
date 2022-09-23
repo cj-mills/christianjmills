@@ -2,7 +2,7 @@
 title: Basic In-Game Style Transfer Tutorial (Outdated)
 date: 2020-12-8
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false
@@ -10,6 +10,8 @@ search_exclude: false
 description: This post provides a basic method for performing in-game style transfer.
 categories: [unity, tutorial]
 
+aliases:
+- /Basic-In-Game-Style-Transfer-Tutorial/
 ---
 
 ### Update 3/29/2021: [End-to-End In-Game Style Transfer Tutorial](../end-to-end-in-game-style-transfer-tutorial/part-1/)

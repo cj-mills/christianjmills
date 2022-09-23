@@ -1,6 +1,4 @@
 ---
-aliases:
-- /notes/procedural-generation/2021/12/28/Notes-on-Dungeon-Generation-via-WaveFunctionCollapse
 categories:
 - procedural-generation
 - notes
@@ -13,6 +11,8 @@ search_exclude: false
 title: Notes on Dungeon Generation via WaveFunctionCollapse
 toc: false
 
+aliases:
+- /Notes-on-Dungeon-Generation-via-WaveFunctionCollapse/
 ---
 
 * [Overview](#overview)

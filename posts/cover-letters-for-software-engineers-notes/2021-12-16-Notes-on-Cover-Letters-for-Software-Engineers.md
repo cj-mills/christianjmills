@@ -1,6 +1,4 @@
 ---
-aliases:
-- /career/notes/2021/12/16/Notes-on-Cover-Letters-for-Software-Engineers
 categories:
 - career
 - notes
@@ -13,6 +11,8 @@ search_exclude: false
 title: Notes on Cover Letters for Software Engineers
 toc: false
 
+aliases:
+- /Notes-on-Cover-Letters-for-Software-Engineers/
 ---
 
 * [Overview](#overview)

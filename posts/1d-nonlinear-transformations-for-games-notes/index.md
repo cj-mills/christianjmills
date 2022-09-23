@@ -1,6 +1,4 @@
 ---
-aliases:
-- /game-dev/notes/2021/12/29/Notes-on-1D-Nonlinear-Transformations-for-Games
 categories:
 - game-dev
 - notes
@@ -13,6 +11,8 @@ search_exclude: false
 title: Notes on 1D Nonlinear Transformations for Games
 toc: false
 
+aliases:
+- /Notes-on-1D-Nonlinear-Transformations-for-Games/
 ---
 
 * [Overview](#overview)

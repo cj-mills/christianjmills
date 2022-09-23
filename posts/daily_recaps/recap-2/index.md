@@ -9,6 +9,8 @@ search_exclude: false
 title: Daily Recap
 toc: false
 
+aliases:
+- /Daily-Recap-2/
 ---
 
 * [Barracuda Background Execution](#barracuda-background-execution)

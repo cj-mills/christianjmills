@@ -11,6 +11,8 @@ description: This tutorial series covers how to train your own style transfer mo
   with PyTorch and implement it in Unity using the Barracuda library.
 categories: [style_transfer, pytorch, unity, tutorial]
 
+aliases:
+- /End-To-End-In-Game-Style-Transfer-Tutorial-1/
 ---
 
 * [Introduction](#introduction)

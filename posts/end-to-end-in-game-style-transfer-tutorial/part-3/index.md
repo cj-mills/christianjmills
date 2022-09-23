@@ -13,6 +13,8 @@ search_exclude: false
 title: End-to-End In-Game Style Transfer Tutorial Pt.3
 toc: false
 
+aliases:
+- /End-To-End-In-Game-Style-Transfer-Tutorial-3/
 ---
 
 ### Previous: [Part 2](../part-2/)

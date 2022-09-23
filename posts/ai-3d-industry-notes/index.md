@@ -12,6 +12,8 @@ search_exclude: false
 title: Notes on How A.I. Will Change the 3D Industry
 toc: false
 
+aliases:
+- /Notes-on-How-AI-Will-Change-The-3D-Industry/
 ---
 
 * [Overview](#overview)

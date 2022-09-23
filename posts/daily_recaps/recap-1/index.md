@@ -9,6 +9,8 @@ search_exclude: false
 title: Daily Recap
 toc: false
 
+aliases:
+- /Daily-Recap-1/
 ---
 
 * [Introduction](#introduction)
