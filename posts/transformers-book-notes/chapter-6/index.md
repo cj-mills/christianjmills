@@ -1,17 +1,21 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
+title: Notes on Transformers Book Ch. 6
 date: 2022-4-10
+image: /images/empty.gif
+title-block-categories: false
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 6 covers building an encoder-decoder model to condense dialogues
   between several people into a crisp summary.
-hide: false
-layout: post
-search_exclude: false
-title: Notes on Transformers Book Ch. 6
-toc: false
+categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-06/
 
 ---
 
@@ -1818,5 +1822,4 @@ print(pipe(custom_dialogue, **gen_kwargs)[0]["summary_text"])
 
 
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
-
 

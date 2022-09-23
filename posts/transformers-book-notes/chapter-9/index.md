@@ -13,6 +13,9 @@ comments:
 description: Chapter 9 covers how to deal with few to no labels by training a model
   that automatically tags GitHub issues for the Hugging Face Transformers library.
 categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-09/
 ---
 
 * [Dealing with Few to No Labels](#dealing-with-few-to-no-labels)

@@ -1,16 +1,20 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
-date: 2022-4-8
-description: Chapter 5 covers different methods for generating text with GPT-2.
-hide: false
-layout: post
-search_exclude: false
 title: Notes on Transformers Book Ch. 5
+date: 2022-4-8
+image: /images/empty.gif
+title-block-categories: false
+layout: post
 toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
+description: Chapter 5 covers different methods for generating text with GPT-2.
+categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-05/
 
 ---
 

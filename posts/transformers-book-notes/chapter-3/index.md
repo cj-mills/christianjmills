@@ -1,17 +1,21 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
+title: Notes on Transformers Book Ch. 3
 date: 2022-4-6
+image: /images/empty.gif
+title-block-categories: false
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 3 covers the Transformer architecture and different types of
   transformer models available on the Hugging Face Hub.
-hide: false
-layout: post
-search_exclude: false
-title: Notes on Transformers Book Ch. 3
-toc: false
+categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-03/
 
 ---
 

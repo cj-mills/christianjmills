@@ -13,6 +13,9 @@ comments:
 description: Chapter 10 covers how to train a GPT-like model to generate Python source
   code from scratch.
 categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-10/
 ---
 
 * [Training Transformers from Scratch](#training-transformers-from-scratch)

@@ -1,18 +1,20 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
-date: 2022-3-30
-description: Chapter 1 covers essential advancements for transformers, recurrent architectures,
-  the encoder-decoder framework, attention mechanisms, transfer learning in NLP, and
-  the HuggingFace ecosystem.
-hide: false
-layout: post
-search_exclude: false
 title: Notes on Transformers Book Ch. 1
+date: 2022-3-30
+image: /images/empty.gif
+title-block-categories: false
+layout: post
 toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
+description: Chapter 1 covers essential advancements for transformers, recurrent architectures, the encoder-decoder framework, attention mechanisms, transfer learning in NLP, and the HuggingFace ecosystem.
+categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-01/
 
 ---
 

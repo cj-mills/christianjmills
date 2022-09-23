@@ -1,17 +1,18 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
+title: Notes on Transformers Book Ch. 7
 date: 2022-4-12
+image: /images/empty.gif
+title-block-categories: false
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 7 covers building a question-answering model that finds answers
   to questions in customer reviews.
-hide: false
-layout: post
-search_exclude: false
-title: Notes on Transformers Book Ch. 7
-toc: false
+categories: [ai, huggingface, nlp, notes]
 
 aliases:
 - /Notes-on-Transformers-Book-07/

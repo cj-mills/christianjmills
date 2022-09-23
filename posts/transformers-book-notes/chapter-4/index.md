@@ -1,17 +1,21 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
+title: Notes on Transformers Book Ch. 4
 date: 2022-4-7
+image: /images/empty.gif
+title-block-categories: false
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 4 covers fine-tuning a multilingual transformer model to perform
   named entity recognition.
-hide: false
-layout: post
-search_exclude: false
-title: Notes on Transformers Book Ch. 4
-toc: false
+categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-04/
 
 ---
 

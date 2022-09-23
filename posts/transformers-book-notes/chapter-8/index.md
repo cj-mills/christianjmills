@@ -1,17 +1,21 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
+title: Notes on Transformers Book Ch. 8
 date: 2022-4-14
+image: /images/empty.gif
+title-block-categories: false
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 8 covers different methods to make transformer models more efficient
   in production.
-hide: false
-layout: post
-search_exclude: false
-title: Notes on Transformers Book Ch. 8
-toc: false
+categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-08/
 
 ---
 

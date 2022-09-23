@@ -1,17 +1,21 @@
 ---
-categories:
-- ai
-- huggingface
-- nlp
-- notes
+title: Notes on Transformers Book Ch. 2
 date: 2022-4-1
+image: /images/empty.gif
+title-block-categories: false
+layout: post
+toc: false
+hide: false
+search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 2 covers training a model to classify emotions expressed in Twitter
   messages.
-hide: false
-layout: post
-search_exclude: false
-title: Notes on Transformers Book Ch. 2
-toc: false
+categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-02/
 
 ---
 

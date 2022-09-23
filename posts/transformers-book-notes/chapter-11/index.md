@@ -13,6 +13,10 @@ comments:
 description: Chapter 11 explores scaling up transformers, methods to make self-attention
   more efficient, and multimodel transformers.
 categories: [ai, huggingface, nlp, notes]
+
+aliases:
+- /Notes-on-Transformers-Book-11/
+
 ---
 
 * [Scaling Transformers](#scaling-transformers)
