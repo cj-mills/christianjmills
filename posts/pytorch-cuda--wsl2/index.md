@@ -1,6 +1,4 @@
 ---
-aliases:
-- /log/pytorch/tutorial/wsl2/2020/12/31/Using-PyTorch-with-CUDA-on-WSL2
 categories:
 - log
 - tutorial
@@ -13,6 +11,17 @@ layout: post
 search_exclude: false
 title: Using PyTorch with CUDA on WSL2
 toc: false
+
+
+aliases:
+- /Using-PyTorch-with-CUDA-on-WSL2/
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: ../social-media/cover.jpg
+open-graph:
+  image: ../social-media/cover.jpg
 
 ---
 
@@ -174,3 +183,9 @@ You currently need to do this every time you want to reclaim disk space from WSL
 ## Conclusion
 
 I'm excited about the future of WSL. Having such tight integration between Windows and Linux has a lot of potential. Unfortunately, it's not at a point where I'd feel comfortable switching over from a dual-boot setup. I'm hoping that the issues I encountered will get resolved in 2021. I'll give it another shot when CUDA support comes out of preview.
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

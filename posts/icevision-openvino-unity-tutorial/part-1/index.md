@@ -12,6 +12,9 @@ description: This tutorial covers training an object detection model using IceVi
   and creating an OpenVINO plugin for the Unity game engine to perform inference with
   the trained model. Part 1 covers training and exporting the model.
 
+aliases:
+- /IceVision-to-OpenVINO-to-Unity-Tutorial-1/
+
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
@@ -2804,5 +2807,5 @@ In this post, we finetuned an object detection model using the IceVision library
 
 
 
-
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
 

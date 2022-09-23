@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-07-30">
+<meta name="description" content="This post covers how to implement the post processing steps for multi-pose estimation.">
+
+<title>Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 6</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 6">
+<meta property="og:description" content="This post covers how to implement the post processing steps for multi-pose estimation.">
+<meta property="og:image" content="christianjmills.com/images\logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 6">
+<meta name="twitter:description" content="This post covers how to implement the post processing steps for multi-pose estimation.">
+<meta name="twitter:image" content="christianjmills.com/images\logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Barracuda PoseNet Tutorial 2nd Edition Pt. 6</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to implement the post processing steps for multi-pose estimation.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 30, 2021</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#update-utils-script">Update <code>Utils</code> Script</a></li>
+<li><a href="#update-poseestimator-script">Update <code>PoseEstimator</code> Script</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>In this post, we will cover how to implement the post processing steps for multi-pose estimation. This method is more complex than what is required to perform single pose estimation. However, it can produce more reliable results.</p>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> The original JavaScript code for decoding multiple poses can be found in the official <a href="https://github.com/tensorflow/tfjs-models/tree/master/posenet/src/multi_pose">tfjs-models</a> repository on GitHub. The code has been modified for this tutorial to better take advantage of functionality provided by Unity and <a href="https://docs.microsoft.com/en-us/dotnet/">.NET</a>.</p>
+</blockquote>
+</section>
+<section id="update-utils-script" class="level2">
+<h2 class="anchored" data-anchor-id="update-utils-script">Update <code>Utils</code> Script</h2>
+<p>There are a couple new variables and several methods that we will need to add to decode multiple poses from the model output.</p>
+<section id="add-required-namespace" class="level3">
+<h3 class="anchored" data-anchor-id="add-required-namespace">Add Required Namespace</h3>
+<p>First, we need to add the <a href="https://docs.microsoft.com/en-us/dotnet/api/system?view=net-5.0"><code>System</code></a> namespace to access the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.tuple-2?view=net-5.0"><code>Tuple</code></a> class. We also need to access the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.linq?view=net-5.0"><code>System.Linq</code></a> namespace to access classes and interfaces for querying data structures.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Unity<span class="op">.</span><span class="fu">Barracuda</span><span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Linq</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="add-public-variables" class="level3">
+<h3 class="anchored" data-anchor-id="add-public-variables">Add Public Variables</h3>
+<p>When iterating through the heatmaps from the model output, we will only be considering heatmap indices with the highest confidence score within a local radius called <code>kLocalMaximumRadius</code>. Naturally, setting this value to be larger than the dimensions of the heatmap would not do any good. The <a href="https://github.com/tensorflow/tfjs-models/blob/c3f5aa3ff74787457082f6683655c9d0c7cf3df7/posenet/src/multi_pose/decode_multiple_poses.ts#L54">original code</a> sets this radius to a constant value of <code>1</code> so we will do the same.</p>
+<p>When decoding the key point locations for a single body, we will need to traverse from the current key point to its neighboring key point. For example, the nose neighbors both the left eye and right eye. We will keep track of which key points neighbor each other in a <code>TupleTuple&lt;int, int&gt;</code> array, where the values are the key point id numbers.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Defines the size of the local window in the heatmap to look for</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// confidence scores higher than the one at the current heatmap coordinate</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">int</span> kLocalMaximumRadius <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// Defines the parent-&gt;child relationships used for multipose detection.</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">static</span> Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">,</span> <span class="dt">int</span><span class="op">&gt;[]</span> parentChildrenTuples <span class="op">=</span> <span class="kw">new</span> Tuple<span class="op">&lt;</span><span class="dt">int</span><span class="op">,</span> <span class="dt">int</span><span class="op">&gt;[]{</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Nose to Left Eye</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">),</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Eye to Left Ear</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="dv">3</span><span class="op">),</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Nose to Right Eye</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">2</span><span class="op">),</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Eye to Right Ear</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">2</span><span class="op">,</span> <span class="dv">4</span><span class="op">),</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Nose to Left Shoulder</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">5</span><span class="op">),</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Shoulder to Left Elbow</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">5</span><span class="op">,</span> <span class="dv">7</span><span class="op">),</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Elbow to Left Wrist</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">7</span><span class="op">,</span> <span class="dv">9</span><span class="op">),</span> </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Shoulder to Left Hip</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">5</span><span class="op">,</span> <span class="dv">11</span><span class="op">),</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Hip to Left Knee</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">11</span><span class="op">,</span> <span class="dv">13</span><span class="op">),</span> </span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Left Knee to Left Ankle</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">13</span><span class="op">,</span> <span class="dv">15</span><span class="op">),</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Nose to Right Shoulder</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">6</span><span class="op">),</span> </span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Shoulder to Right Elbow</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">6</span><span class="op">,</span> <span class="dv">8</span><span class="op">),</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Elbow to Right Wrist</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">8</span><span class="op">,</span> <span class="dv">10</span><span class="op">),</span> </span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Shoulder to Right Hip</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">6</span><span class="op">,</span> <span class="dv">12</span><span class="op">),</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Hip to Right Knee</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">12</span><span class="op">,</span> <span class="dv">14</span><span class="op">),</span> </span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Right Knee to Right Ankle</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    Tuple<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="dv">14</span><span class="op">,</span> <span class="dv">16</span><span class="op">)</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-getstridedindexnearpoint-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-getstridedindexnearpoint-method">Create <code>GetStridedIndexNearPoint</code> Method</h3>
+<p>In order to traverse from a key point to its neighboring key point, we will need to downscale the key point position back down to the heatmap resolution. We can calculate the nearest heatmap indices by dividing the position by the stride value for the model and clamping the result.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Calculate the heatmap indices closest to the provided point</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"point"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"stride"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"height"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"width"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">A vector with the nearest heatmap coordinates</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> Vector2Int <span class="fu">GetStridedIndexNearPoint</span><span class="op">(</span>Vector2 point<span class="op">,</span> <span class="dt">int</span> stride<span class="op">,</span> <span class="dt">int</span> height<span class="op">,</span> <span class="dt">int</span> width<span class="op">)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Downscale the point coordinates to the heatmap dimensions</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> <span class="kw">new</span> <span class="fu">Vector2Int</span><span class="op">(</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="dt">int</span><span class="op">)</span>Mathf<span class="op">.</span><span class="fu">Clamp</span><span class="op">(</span>Mathf<span class="op">.</span><span class="fu">Round</span><span class="op">(</span>point<span class="op">.</span><span class="fu">x</span> <span class="op">/</span> stride<span class="op">),</span> <span class="dv">0</span><span class="op">,</span> width <span class="op">-</span> <span class="dv">1</span><span class="op">),</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="dt">int</span><span class="op">)</span>Mathf<span class="op">.</span><span class="fu">Clamp</span><span class="op">(</span>Mathf<span class="op">.</span><span class="fu">Round</span><span class="op">(</span>point<span class="op">.</span><span class="fu">y</span> <span class="op">/</span> stride<span class="op">),</span> <span class="dv">0</span><span class="op">,</span> height <span class="op">-</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">);</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-getdisplacement-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-getdisplacement-method">Create <code>GetDisplacement</code> Method</h3>
+<p>The displacement layers from the model output are used to find the location of the nearest neighboring key point. Much like the offset layer, they provide vectors that we then add to the current key point position.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Retrieve the displacement values for the provided point</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"edgeId"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"point"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"displacements"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">A vector witht he displacement values for the provided point</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> Vector2 <span class="fu">GetDisplacement</span><span class="op">(</span><span class="dt">int</span> edgeId<span class="op">,</span> Vector2Int point<span class="op">,</span> Tensor displacements<span class="op">)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the number of edges for the pose skeleton</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numEdges <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>displacements<span class="op">.</span><span class="fu">channels</span> <span class="op">/</span> <span class="dv">2</span><span class="op">);</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the displacement values for the provided heatmap coordinates</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> <span class="kw">new</span> <span class="fu">Vector2</span><span class="op">(</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        displacements<span class="op">[</span><span class="dv">0</span><span class="op">,</span> point<span class="op">.</span><span class="fu">y</span><span class="op">,</span> point<span class="op">.</span><span class="fu">x</span><span class="op">,</span> numEdges <span class="op">+</span> edgeId<span class="op">],</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        displacements<span class="op">[</span><span class="dv">0</span><span class="op">,</span> point<span class="op">.</span><span class="fu">y</span><span class="op">,</span> point<span class="op">.</span><span class="fu">x</span><span class="op">,</span> edgeId<span class="op">]</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">);</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-traversetotargetkeypoint-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-traversetotargetkeypoint-method">Create <code>TraverseToTargetKeypoint</code> Method</h3>
+<p>We can use the <code>GetStridedIndexNearPoint</code> and <code>GetDisplacement</code> methods to find the location of the neighboring key point for a given <code>Keypoint</code>.</p>
+<section id="method-steps" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps">Method Steps</h4>
+<ol type="1">
+<li><p>Get the nearest heatmap indices for the current key point position</p></li>
+<li><p>Get the displacement vector for the nearest heatmap indices</p></li>
+<li><p>Calculate the position for a neighboring key point using the displacement vector</p></li>
+<li><p>Get the nearest heatmap indices for the displaced point</p></li>
+<li><p>Refine the location key point location with the associated offset vector</p></li>
+<li><p>Get the confidence score for the neighboring key point</p></li>
+<li><p>Return the neighboring <code>Keypoint</code></p></li>
+</ol>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Get a new keypoint along the provided edgeId for the pose instance.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"edgeId"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"sourceKeypoint"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"targetKeypointId"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"scores"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"offsets"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"stride"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"displacements"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">A new keypoint with the displaced coordinates</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> Keypoint <span class="fu">TraverseToTargetKeypoint</span><span class="op">(</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> edgeId<span class="op">,</span> Keypoint sourceKeypoint<span class="op">,</span> <span class="dt">int</span> targetKeypointId<span class="op">,</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    Tensor scores<span class="op">,</span> Tensor offsets<span class="op">,</span> <span class="dt">int</span> stride<span class="op">,</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    Tensor displacements<span class="op">)</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get heatmap dimensions</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> height <span class="op">=</span> scores<span class="op">.</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> width <span class="op">=</span> scores<span class="op">.</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get neareast heatmap indices for source keypoint</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    Vector2Int sourceKeypointIndices <span class="op">=</span> <span class="fu">GetStridedIndexNearPoint</span><span class="op">(</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        sourceKeypoint<span class="op">.</span><span class="fu">position</span><span class="op">,</span> stride<span class="op">,</span> height<span class="op">,</span> width<span class="op">);</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Retrieve the displacement values for the current indices</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    Vector2 displacement <span class="op">=</span> <span class="fu">GetDisplacement</span><span class="op">(</span>edgeId<span class="op">,</span> sourceKeypointIndices<span class="op">,</span> displacements<span class="op">);</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add the displacement values to the keypoint position</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    Vector2 displacedPoint <span class="op">=</span> sourceKeypoint<span class="op">.</span><span class="fu">position</span> <span class="op">+</span> displacement<span class="op">;</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get neareast heatmap indices for displaced keypoint</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    Vector2Int displacedPointIndices <span class="op">=</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">GetStridedIndexNearPoint</span><span class="op">(</span>displacedPoint<span class="op">,</span> stride<span class="op">,</span> height<span class="op">,</span> width<span class="op">);</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the offset vector for the displaced keypoint indices</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    Vector2 offsetVector <span class="op">=</span> <span class="fu">GetOffsetVector</span><span class="op">(</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>        displacedPointIndices<span class="op">.</span><span class="fu">y</span><span class="op">,</span> displacedPointIndices<span class="op">.</span><span class="fu">x</span><span class="op">,</span> targetKeypointId<span class="op">,</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>        offsets<span class="op">);</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the heatmap value at the displaced keypoint location</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> score <span class="op">=</span> scores<span class="op">[</span><span class="dv">0</span><span class="op">,</span> displacedPointIndices<span class="op">.</span><span class="fu">y</span><span class="op">,</span> displacedPointIndices<span class="op">.</span><span class="fu">x</span><span class="op">,</span> targetKeypointId<span class="op">];</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the position for the displaced keypoint</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    Vector2 targetKeypoint <span class="op">=</span> <span class="op">(</span>displacedPointIndices <span class="op">*</span> stride<span class="op">)</span> <span class="op">+</span> offsetVector<span class="op">;</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> <span class="kw">new</span> <span class="fu">Keypoint</span><span class="op">(</span>score<span class="op">,</span> targetKeypoint<span class="op">,</span> targetKeypointId<span class="op">);</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-decodepose-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-decodepose-method">Create <code>DecodePose</code> Method</h3>
+<p>We don’t know which key point (e.g.&nbsp;nose, left shoulder, right wrist) we will start from when decoding a single pose. Therefore, we will need to traverse the list of neighboring key points both forwards and backwards to get all 17 of the key points for an individual in the input image.</p>
+<section id="method-steps-1" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps-1">Method Steps</h4>
+<ol type="1">
+<li><p>Initialize a new <code>Keypoint</code> array</p></li>
+<li><p>Get the input image coordinates for the starting key point</p></li>
+<li><p>Store the starting key point in the <code>Keypoint</code> array</p></li>
+<li><p>Iterate upwards through the list of neighboring key points</p>
+<ol type="1">
+<li>Confirm that the current child key point has already been found and that the parent key point has <em>not</em> already been found.
+<ol type="1">
+<li>Call the <code>TraverseToTargetKeypoint</code> method to obtain neighboring key points</li>
+<li>Store each neighboring key point in the <code>Keypoint</code> array according to its id number</li>
+</ol></li>
+</ol></li>
+<li><p>Iterate downwards through the list of neighboring key points</p>
+<ol type="1">
+<li>Confirm that the current parent key point has already been found and that the child key point has <em>not</em> already been found.
+<ol type="1">
+<li>Call the <code>TraverseToTargetKeypoint</code> method to obtain neighboring key points</li>
+<li>Store each neighboring key point in the <code>Keypoint</code> array according to its id number</li>
+</ol></li>
+</ol></li>
+<li><p>Return the <code>Keypoint</code> array</p></li>
+</ol>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Follows the displacement fields to decode the full pose of the object</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// instance given the position of a part that acts as root.</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"root"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"scores"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"offsets"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"stride"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"displacementsFwd"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"displacementsBwd"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">An array of keypoints for a single pose</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> Keypoint<span class="op">[]</span> <span class="fu">DecodePose</span><span class="op">(</span>Keypoint root<span class="op">,</span> Tensor scores<span class="op">,</span> Tensor offsets<span class="op">,</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                             <span class="dt">int</span> stride<span class="op">,</span> Tensor displacementsFwd<span class="op">,</span> Tensor displacementsBwd<span class="op">)</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    Keypoint<span class="op">[]</span> instanceKeypoints <span class="op">=</span> <span class="kw">new</span> Keypoint<span class="op">[</span>scores<span class="op">.</span><span class="fu">channels</span><span class="op">];</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Start a new detection instance at the position of the root.</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    Vector2 rootPoint <span class="op">=</span> <span class="fu">GetImageCoords</span><span class="op">(</span>root<span class="op">,</span> stride<span class="op">,</span> offsets<span class="op">);</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    instanceKeypoints<span class="op">[</span>root<span class="op">.</span><span class="fu">id</span><span class="op">]</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Keypoint</span><span class="op">(</span>root<span class="op">.</span><span class="fu">score</span><span class="op">,</span> rootPoint<span class="op">,</span> root<span class="op">.</span><span class="fu">id</span><span class="op">);</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numEdges <span class="op">=</span> parentChildrenTuples<span class="op">.</span><span class="fu">Length</span><span class="op">;</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Decode the part positions upwards in the tree, following the backward</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// displacements.</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> edge <span class="op">=</span> numEdges <span class="op">-</span> <span class="dv">1</span><span class="op">;</span> edge <span class="op">&gt;=</span> <span class="dv">0</span><span class="op">;</span> <span class="op">--</span>edge<span class="op">)</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> sourceKeypointId <span class="op">=</span> parentChildrenTuples<span class="op">[</span>edge<span class="op">].</span><span class="fu">Item2</span><span class="op">;</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> targetKeypointId <span class="op">=</span> parentChildrenTuples<span class="op">[</span>edge<span class="op">].</span><span class="fu">Item1</span><span class="op">;</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>instanceKeypoints<span class="op">[</span>sourceKeypointId<span class="op">].</span><span class="fu">score</span> <span class="op">&gt;</span> <span class="fl">0.0f</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>            instanceKeypoints<span class="op">[</span>targetKeypointId<span class="op">].</span><span class="fu">score</span> <span class="op">==</span> <span class="fl">0.0f</span><span class="op">)</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>            instanceKeypoints<span class="op">[</span>targetKeypointId<span class="op">]</span> <span class="op">=</span> <span class="fu">TraverseToTargetKeypoint</span><span class="op">(</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>                edge<span class="op">,</span> instanceKeypoints<span class="op">[</span>sourceKeypointId<span class="op">],</span> targetKeypointId<span class="op">,</span> scores<span class="op">,</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>                offsets<span class="op">,</span> stride<span class="op">,</span> displacementsBwd<span class="op">);</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Decode the part positions downwards in the tree, following the forward</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">// displacements.</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> edge <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> edge <span class="op">&lt;</span> numEdges<span class="op">;</span> <span class="op">++</span>edge<span class="op">)</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> sourceKeypointId <span class="op">=</span> parentChildrenTuples<span class="op">[</span>edge<span class="op">].</span><span class="fu">Item1</span><span class="op">;</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> targetKeypointId <span class="op">=</span> parentChildrenTuples<span class="op">[</span>edge<span class="op">].</span><span class="fu">Item2</span><span class="op">;</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>instanceKeypoints<span class="op">[</span>sourceKeypointId<span class="op">].</span><span class="fu">score</span> <span class="op">&gt;</span> <span class="fl">0.0f</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>            instanceKeypoints<span class="op">[</span>targetKeypointId<span class="op">].</span><span class="fu">score</span> <span class="op">==</span> <span class="fl">0.0f</span><span class="op">)</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>            instanceKeypoints<span class="op">[</span>targetKeypointId<span class="op">]</span> <span class="op">=</span> <span class="fu">TraverseToTargetKeypoint</span><span class="op">(</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>                edge<span class="op">,</span> instanceKeypoints<span class="op">[</span>sourceKeypointId<span class="op">],</span> targetKeypointId<span class="op">,</span> scores<span class="op">,</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>                offsets<span class="op">,</span> stride<span class="op">,</span> displacementsFwd<span class="op">);</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> instanceKeypoints<span class="op">;</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-scoreismaximuminlocalwindow-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-scoreismaximuminlocalwindow-method">Create <code>ScoreIsMaximumInLocalWindow</code> Method</h3>
+<p>As mentioned earlier, we only consider key points with the highest confidence score in their local area as potential starting key points. We will determine whether a given key point has the highest score in a new method called <code>ScoreIsMaximumInLocalWindow</code>.</p>
+<section id="method-steps-2" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps-2">Method Steps</h4>
+<ol type="1">
+<li><p>Calculate the starting and ending indices for the local heatmap window</p></li>
+<li><p>Iterate through the heatmap indices within the local window</p></li>
+<li><p>Compare each confidence score in the local window to the score for the provided key point</p>
+<ol type="1">
+<li>Return <code>false</code> if any higher scores are found</li>
+</ol></li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Compare the value at the current heatmap location to the surrounding values</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"keypointId"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"score"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"heatmapY"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"heatmapX"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"localMaximumRadius"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"scores"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">True if the value is the highest within a given radius</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> <span class="dt">bool</span> <span class="fu">ScoreIsMaximumInLocalWindow</span><span class="op">(</span><span class="dt">int</span> keypointId<span class="op">,</span> <span class="dt">float</span> score<span class="op">,</span> <span class="dt">int</span> heatmapY<span class="op">,</span> <span class="dt">int</span> heatmapX<span class="op">,</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                                        <span class="dt">int</span> localMaximumRadius<span class="op">,</span> Tensor heatmaps<span class="op">)</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> localMaximum <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the starting heatmap colummn index</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> yStart <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Max</span><span class="op">(</span>heatmapY <span class="op">-</span> localMaximumRadius<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the ending heatmap colummn index</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> yEnd <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>heatmapY <span class="op">+</span> localMaximumRadius <span class="op">+</span> <span class="dv">1</span><span class="op">,</span> heatmaps<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iterate through calulated range of heatmap columns</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> yCurrent <span class="op">=</span> yStart<span class="op">;</span> yCurrent <span class="op">&lt;</span> yEnd<span class="op">;</span> <span class="op">++</span>yCurrent<span class="op">)</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Calculate the starting heatmap row index</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> xStart <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Max</span><span class="op">(</span>heatmapX <span class="op">-</span> localMaximumRadius<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Calculate the ending heatmap row index</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> xEnd <span class="op">=</span> Mathf<span class="op">.</span><span class="fu">Min</span><span class="op">(</span>heatmapX <span class="op">+</span> localMaximumRadius <span class="op">+</span> <span class="dv">1</span><span class="op">,</span> heatmaps<span class="op">.</span><span class="fu">width</span><span class="op">);</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Iterate through calulated range of heatmap rows</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> xCurrent <span class="op">=</span> xStart<span class="op">;</span> xCurrent <span class="op">&lt;</span> xEnd<span class="op">;</span> <span class="op">++</span>xCurrent<span class="op">)</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Check if the score for at the current heatmap location</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>            <span class="co">// is the highest within the specified radius</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> <span class="op">(</span>heatmaps<span class="op">[</span><span class="dv">0</span><span class="op">,</span> yCurrent<span class="op">,</span> xCurrent<span class="op">,</span> keypointId<span class="op">]</span> <span class="op">&gt;</span> score<span class="op">)</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>                localMaximum <span class="op">=</span> <span class="kw">false</span><span class="op">;</span> </span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>                <span class="kw">break</span><span class="op">;</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(!</span>localMaximum<span class="op">)</span> <span class="kw">break</span><span class="op">;</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> localMaximum<span class="op">;</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-buildpartlist-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-buildpartlist-method">Create <code>BuildPartList</code> Method</h3>
+<p>This is where we will build the list of potential starting key points that be passed to the <code>DecodePose</code> method.</p>
+<p>Much like the <code>DecodeSinglePose</code> method, we need to iterate through the entire heatmap Tensor. This time, we will only consider heatmap indices with a value above the provided score threshold. When we get to an index with a value that meets this threshold, we will call the <code>ScoreIsMaximumInLocalWindow</code> method to confirm that it is the highest score in its local area. The heatmap indices with the highest local score will be added to a <code>Keypoint</code> <a href="https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1?view=net-5.0"><code>List</code></a>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Iterate through the heatmaps and create a list of indicies </span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// with the highest values within the provided radius.</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"scoreThreshold"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"localMaximumRadius"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"scores"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">A list of keypoints with the highest values in their local area</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> List<span class="op">&lt;</span>Keypoint<span class="op">&gt;</span> <span class="fu">BuildPartList</span><span class="op">(</span><span class="dt">float</span> scoreThreshold<span class="op">,</span> <span class="dt">int</span> localMaximumRadius<span class="op">,</span> Tensor heatmaps<span class="op">)</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    List<span class="op">&lt;</span>Keypoint<span class="op">&gt;</span> list <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span>Keypoint<span class="op">&gt;();</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iterate through heatmaps</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> c <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> c <span class="op">&lt;</span> heatmaps<span class="op">.</span><span class="fu">channels</span><span class="op">;</span> c<span class="op">++)</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Iterate through heatmap columns</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> y <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> y <span class="op">&lt;</span> heatmaps<span class="op">.</span><span class="fu">height</span><span class="op">;</span> y<span class="op">++)</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Iterate through column rows</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>            <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> x <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> x <span class="op">&lt;</span> heatmaps<span class="op">.</span><span class="fu">width</span><span class="op">;</span> x<span class="op">++)</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                <span class="dt">float</span> score <span class="op">=</span> heatmaps<span class="op">[</span><span class="dv">0</span><span class="op">,</span> y<span class="op">,</span> x<span class="op">,</span> c<span class="op">];</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>                <span class="co">// Skip parts with score less than the scoreThreshold</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>                <span class="kw">if</span> <span class="op">(</span>score <span class="op">&lt;</span> scoreThreshold<span class="op">)</span> <span class="kw">continue</span><span class="op">;</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>                <span class="co">// Only add keypoints with the highest score in a local window.</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>                <span class="kw">if</span> <span class="op">(</span><span class="fu">ScoreIsMaximumInLocalWindow</span><span class="op">(</span>c<span class="op">,</span> score<span class="op">,</span> y<span class="op">,</span> x<span class="op">,</span> localMaximumRadius<span class="op">,</span> heatmaps<span class="op">))</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>                <span class="op">{</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>                    list<span class="op">.</span><span class="fu">Add</span><span class="op">(</span><span class="kw">new</span> <span class="fu">Keypoint</span><span class="op">(</span>score<span class="op">,</span> <span class="kw">new</span> <span class="fu">Vector2</span><span class="op">(</span>x<span class="op">,</span> y<span class="op">),</span> c<span class="op">));</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>                <span class="op">}</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> list<span class="op">;</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-withinnmsradiusofcorrespondingpoint-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-withinnmsradiusofcorrespondingpoint-method">Create <code>WithinNmsRadiusOfCorrespondingPoint</code> Method</h3>
+<p>We want to make sure that any key points that have already been assigned to a body do not get used again. We can prevent this by only sending key points to the <code>DecodePose</code> method that are not too close to any key points in an existing <code>Keypoint</code> array.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Check if the provided image coordinates are too close to any keypoints in existing poses</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"poses"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"squaredNmsRadius"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"vec"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"keypointId"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">True if there are any existing poses too close to the provided coords</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> <span class="dt">bool</span> <span class="fu">WithinNmsRadiusOfCorrespondingPoint</span><span class="op">(</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    List<span class="op">&lt;</span>Keypoint<span class="op">[]&gt;</span> poses<span class="op">,</span> <span class="dt">float</span> squaredNmsRadius<span class="op">,</span> Vector2 vec<span class="op">,</span> <span class="dt">int</span> keypointId<span class="op">)</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// SquaredDistance</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> poses<span class="op">.</span><span class="fu">Any</span><span class="op">(</span>pose <span class="op">=&gt;</span> <span class="op">(</span>vec <span class="op">-</span> pose<span class="op">[</span>keypointId<span class="op">].</span><span class="fu">position</span><span class="op">).</span><span class="fu">sqrMagnitude</span> <span class="op">&lt;=</span> squaredNmsRadius<span class="op">);</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-decodemultipleposes-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-decodemultipleposes-method">Create <code>DecodeMultiplePoses</code> Method</h3>
+<p>This is the method that will be called from the <code>PoseEstimator</code> script after executing the model. It will take in all four output Tensors from the model output along with the stride value, max number poses to decode, a minimum confidence score threshold, and the radius for determining if a key point is too close to an existing pose.</p>
+<section id="method-steps-3" class="level4">
+<h4 class="anchored" data-anchor-id="method-steps-3">Method Steps</h4>
+<ol type="1">
+<li>Initialize a new <code>List</code> of <code>Keypoint</code> arrays.</li>
+<li>Square the provided radius value</li>
+<li>Call the <code>BuildPartList</code> method to get the <code>List</code> of potential starting key points</li>
+<li>Sort the <code>List</code> in descending order based on the confidence scores for the key points</li>
+<li>Iterate through the <code>List</code> of starting key points
+<ol type="1">
+<li>Create a copy of the key point with the highest score</li>
+<li>Remove the key point from the <code>List</code></li>
+<li>Get the input image coordinates for the key point</li>
+<li>Skip the key point if it is too close to an existing <code>Keypoint</code> array</li>
+<li>Call the <code>DecodePose</code> method with the key point as the starting key point</li>
+<li>Add the new <code>Keypoint</code> array to the <code>List</code></li>
+</ol></li>
+<li>Return the <code>List</code> of <code>Keypoint</code> arrays as an array.</li>
+</ol>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Detects multiple poses and finds their parts from part scores and displacement vectors. </span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"heatmaps"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"offsets"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"displacementsFwd"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"displacementBwd"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"stride"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"maxPoseDetections"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"scoreThreshold"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"nmsRadius"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">An array of poses up to maxPoseDetections in size</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">static</span> Keypoint<span class="op">[][]</span> <span class="fu">DecodeMultiplePoses</span><span class="op">(</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    Tensor heatmaps<span class="op">,</span> Tensor offsets<span class="op">,</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    Tensor displacementsFwd<span class="op">,</span> Tensor displacementBwd<span class="op">,</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> stride<span class="op">,</span> <span class="dt">int</span> maxPoseDetections<span class="op">,</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> scoreThreshold <span class="op">=</span> <span class="fl">0.5f</span><span class="op">,</span> <span class="dt">int</span> nmsRadius <span class="op">=</span> <span class="dv">20</span><span class="op">)</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Stores the final poses</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    List<span class="op">&lt;</span>Keypoint<span class="op">[]&gt;</span> poses <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span>Keypoint<span class="op">[]&gt;();</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// </span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> squaredNmsRadius <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>nmsRadius <span class="op">*</span> nmsRadius<span class="op">;</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get a list of indicies with the highest values within the provided radius.</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    List<span class="op">&lt;</span>Keypoint<span class="op">&gt;</span> list <span class="op">=</span> <span class="fu">BuildPartList</span><span class="op">(</span>scoreThreshold<span class="op">,</span> kLocalMaximumRadius<span class="op">,</span> heatmaps<span class="op">);</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Order the list in descending order based on score</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    list <span class="op">=</span> list<span class="op">.</span><span class="fu">OrderByDescending</span><span class="op">(</span>x <span class="op">=&gt;</span> x<span class="op">.</span><span class="fu">score</span><span class="op">).</span><span class="fu">ToList</span><span class="op">();</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Decode poses until the max number of poses has been reach or the part list is empty</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">while</span> <span class="op">(</span>poses<span class="op">.</span><span class="fu">Count</span> <span class="op">&lt;</span> maxPoseDetections <span class="op">&amp;&amp;</span> list<span class="op">.</span><span class="fu">Count</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Get the part with the highest score in the list</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>        Keypoint root <span class="op">=</span> list<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Remove the keypoint from the list</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>        list<span class="op">.</span><span class="fu">RemoveAt</span><span class="op">(</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Calculate the input image coordinates for the current part</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>        Vector2 rootImageCoords <span class="op">=</span> <span class="fu">GetImageCoords</span><span class="op">(</span>root<span class="op">,</span> stride<span class="op">,</span> offsets<span class="op">);</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Skip parts that are too close to existing poses</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span><span class="fu">WithinNmsRadiusOfCorrespondingPoint</span><span class="op">(</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>            poses<span class="op">,</span> squaredNmsRadius<span class="op">,</span> rootImageCoords<span class="op">,</span> root<span class="op">.</span><span class="fu">id</span><span class="op">))</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>            <span class="kw">continue</span><span class="op">;</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Find the keypoints in the same pose as the root part</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>        Keypoint<span class="op">[]</span> keypoints <span class="op">=</span> <span class="fu">DecodePose</span><span class="op">(</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>            root<span class="op">,</span> heatmaps<span class="op">,</span> offsets<span class="op">,</span> stride<span class="op">,</span> displacementsFwd<span class="op">,</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>            displacementBwd<span class="op">);</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>        <span class="co">// The current list of keypoints</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>        poses<span class="op">.</span><span class="fu">Add</span><span class="op">(</span>keypoints<span class="op">);</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> poses<span class="op">.</span><span class="fu">ToArray</span><span class="op">();</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="update-poseestimator-script" class="level2">
+<h2 class="anchored" data-anchor-id="update-poseestimator-script">Update <code>PoseEstimator</code> Script</h2>
+<p>Now we can complete the <code>ProcessOutput</code> method in the <code>PoseEstimator</code> script.</p>
+<section id="add-public-variables-1" class="level3">
+<h3 class="anchored" data-anchor-id="add-public-variables-1">Add Public Variables</h3>
+<p>First, we will add some public variables so that we can adjust the max number of poses to decode, score threshold, and radius for determining whether a key point is too close to an existing pose from the Inspector tab.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The maximum number of posees to estimate"</span><span class="op">)]</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="dv">20</span><span class="op">)]</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> maxPoses <span class="op">=</span> <span class="dv">20</span><span class="op">;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The score threshold for multipose estimation"</span><span class="op">)]</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Range</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="fl">1.0f</span><span class="op">)]</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">float</span> scoreThreshold <span class="op">=</span> <span class="fl">0.25f</span><span class="op">;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Non-maximum suppression part distance"</span><span class="op">)]</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">int</span> nmsRadius <span class="op">=</span> <span class="dv">100</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modify-processoutput-method" class="level3">
+<h3 class="anchored" data-anchor-id="modify-processoutput-method">Modify <code>ProcessOutput</code> Method</h3>
+<p>We will assign the output from the <code>DecodeMultiplePoses</code> to the <code>poses</code> variable.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Determine the key point locations</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>poses <span class="op">=</span> Utils<span class="op">.</span><span class="fu">DecodeMultiplePoses</span><span class="op">(</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    heatmaps<span class="op">,</span> offsets<span class="op">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    displacementFWD<span class="op">,</span> displacementBWD<span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    stride<span class="op">:</span> stride<span class="op">,</span> maxPoseDetections<span class="op">:</span> maxPoses<span class="op">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    scoreThreshold<span class="op">:</span> scoreThreshold<span class="op">,</span> </span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    nmsRadius<span class="op">:</span> nmsRadius<span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="full-code" class="level4">
+<h4 class="anchored" data-anchor-id="full-code">Full Code</h4>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Obtains the model output and either decodes single or mutlple poses</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"engine"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">ProcessOutput</span><span class="op">(</span>IWorker engine<span class="op">)</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the model output</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    Tensor heatmaps <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>predictionLayer<span class="op">);</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    Tensor offsets <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>offsetsLayer<span class="op">);</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    Tensor displacementFWD <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>displacementFWDLayer<span class="op">);</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    Tensor displacementBWD <span class="op">=</span> engine<span class="op">.</span><span class="fu">PeekOutput</span><span class="op">(</span>displacementBWDLayer<span class="op">);</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the stride used to scale down the inputImage</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> stride <span class="op">=</span> <span class="op">(</span>imageDims<span class="op">.</span><span class="fu">y</span> <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span>heatmaps<span class="op">.</span><span class="fu">shape</span><span class="op">.</span><span class="fu">height</span> <span class="op">-</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    stride <span class="op">-=</span> <span class="op">(</span>stride <span class="op">%</span> <span class="dv">8</span><span class="op">);</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>estimationType <span class="op">==</span> EstimationType<span class="op">.</span><span class="fu">SinglePose</span><span class="op">)</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>        poses <span class="op">=</span> <span class="kw">new</span> Utils<span class="op">.</span><span class="fu">Keypoint</span><span class="op">[</span><span class="dv">1</span><span class="op">][];</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Determine the key point locations</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        poses<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> Utils<span class="op">.</span><span class="fu">DecodeSinglePose</span><span class="op">(</span>heatmaps<span class="op">,</span> offsets<span class="op">,</span> stride<span class="op">);</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Determine the key point locations</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>        poses <span class="op">=</span> Utils<span class="op">.</span><span class="fu">DecodeMultiplePoses</span><span class="op">(</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>            heatmaps<span class="op">,</span> offsets<span class="op">,</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>            displacementFWD<span class="op">,</span> displacementBWD<span class="op">,</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>            stride<span class="op">:</span> stride<span class="op">,</span> maxPoseDetections<span class="op">:</span> maxPoses<span class="op">,</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>            scoreThreshold<span class="op">:</span> scoreThreshold<span class="op">,</span> </span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>            nmsRadius<span class="op">:</span> nmsRadius<span class="op">);</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    heatmaps<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    offsets<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>    displacementFWD<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>    displacementBWD<span class="op">.</span><span class="fu">Dispose</span><span class="op">();</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>We now have everything need to perform pose estimation. However, we cannot currently gauge the accuracy of the estimated poses. In the next post, we will demonstrate how to add pose skeletons so that we can compare the estimated key point locations to the source video feed.</p>
+<p><strong>Previous:</strong> <a href="../part-5/">Part 5</a></p>
+<p><strong>Next:</strong> <a href="../part-7/">Part 7</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial">GitHub Repository</a></p>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

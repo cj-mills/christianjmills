@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-07-20">
+<meta name="description" content="This post covers how to set up a video player and webcam in Unity. We’ll be using the video player to check the accuracy of the PoseNet model.">
+
+<title>Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 2">
+<meta property="og:description" content="This post covers how to set up a video player and webcam in Unity. We’ll be using the video player to check the accuracy of the PoseNet model.">
+<meta property="og:image" content="christianjmills.com/images\logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Barracuda PoseNet Tutorial 2nd Edition Pt. 2">
+<meta name="twitter:description" content="This post covers how to set up a video player and webcam in Unity. We’ll be using the video player to check the accuracy of the PoseNet model.">
+<meta name="twitter:image" content="christianjmills.com/images\logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Barracuda PoseNet Tutorial 2nd Edition Pt. 2</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to set up a video player and webcam in Unity. We’ll be using the video player to check the accuracy of the PoseNet model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 20, 2021</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#create-the-video-player">Create the Video Player</a></li>
+<li><a href="#create-poseestimator-script">Create <code>PoseEstimator</code> Script</a></li>
+<li><a href="#test-it-out">Test it Out</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<p><strong>Update 7/6/2022:</strong> Fixed a <a href="https://github.com/cj-mills/christianjmills/issues/29">code discrepancy</a> between the blog post and the GitHub repository.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>This post demonstrates how to play and view videos inside Unity from both video files and a webcam. We’ll later perform pose estimation on individual frames while the video is playing. We can gauge the model’s accuracy by comparing the estimated key point locations to the source video.</p>
+</section>
+<section id="create-the-video-player" class="level2">
+<h2 class="anchored" data-anchor-id="create-the-video-player">Create the Video Player</h2>
+<p>To start, we will create a new <code>GameObject</code> to play and view a video feed.</p>
+<section id="create-the-video-screen" class="level3">
+<h3 class="anchored" data-anchor-id="create-the-video-screen">Create the Video Screen</h3>
+<p>We will use a <a href="https://docs.unity3d.com/Manual/PrimitiveObjects.html">Quad</a> object for the screen. Right-click an empty space in the <code>Hierarchy</code> tab. Select the <code>3D Object</code> section and click <code>Quad</code>. We can just name it <code>VideoScreen</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-quad.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-quad</figcaption><p></p>
+</figure>
+</div>
+<p>Since we are only working in 2D, we can switch the scene to 2D view by clicking the <code>2D</code> button in the scene tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-toggle-2D-scene-view.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-toggle-2D-scene-view</figcaption><p></p>
+</figure>
+</div>
+<p>This will remove perspective from the scene view and align it with the <code>VideoScreen</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-2D-scene-view.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-2D-scene-view</figcaption><p></p>
+</figure>
+</div>
+<p>We will be updating the <code>VideoScreen</code> dimensions in code based on the resolution of the video or webcam feed.</p>
+</section>
+<section id="add-video-player-component" class="level3">
+<h3 class="anchored" data-anchor-id="add-video-player-component">Add Video Player Component</h3>
+<p>Unity has a <a href="https://docs.unity3d.com/Manual/class-VideoPlayer.html">Video Player component</a> that provides the functionality to attach video files to the <code>VideoScreen</code>. With the <code>VideoScreen</code> object selected in the Hierarchy tab, click the <code>Add Component</code> button in the Inspector tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/videoScreen-add-component.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">videoScreen-add-component</figcaption><p></p>
+</figure>
+</div>
+<p>Type <code>video</code> into the search box and select <code>Video Player</code> from the search results.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/videoScreen-add-video-player-component.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">videoScreen-add-video-player-component</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="assign-video-clip" class="level3">
+<h3 class="anchored" data-anchor-id="assign-video-clip">Assign Video Clip</h3>
+<p>Video files can be assigned by dragging them from the Assets section into the <a href="https://docs.unity3d.com/ScriptReference/Video.VideoClip.html"><code>Video Clip</code></a> spot in the Inspector tab. We will start with the <code>pexels_boardslides</code> file.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-assign-video-clip.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-assign-video-clip</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="make-the-video-loop" class="level3">
+<h3 class="anchored" data-anchor-id="make-the-video-loop">Make the Video Loop</h3>
+<p>Tick the <code>Loop</code> checkbox in the <code>Inspector</code> tab to make the video repeat when the project is running.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-loop-video.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-loop-video</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="create-poseestimator-script" class="level2">
+<h2 class="anchored" data-anchor-id="create-poseestimator-script">Create <code>PoseEstimator</code> Script</h2>
+<p>We will be adjusting both the <code>VideoScreen</code> and <code>Main Camera</code> objects in the script where the PoseNet model will be executed.</p>
+<p>Create a new folder in the Assets section and name it <code>Scripts</code>. Enter the Scripts folder and right-click an empty space. Select <code>C# Script</code> in the <code>Create</code> submenu and name it <code>PoseEstimator</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create-csharp-script.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create-csharp-script</figcaption><p></p>
+</figure>
+</div>
+<p>Double-click the new script to open it in the code editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create-pose-estimator-script.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create-pose-estimator-script</figcaption><p></p>
+</figure>
+</div>
+<section id="add-required-namespace" class="level3">
+<h3 class="anchored" data-anchor-id="add-required-namespace">Add Required Namespace</h3>
+<p>We first need to add the <code>UnityEngine.Video</code> namespace to access the functionality for the <code>Video Player</code> component. Add the line <code>using UnityEngine.Video;</code> at the top of the script.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">.</span><span class="fu">Video</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-public-variables" class="level3">
+<h3 class="anchored" data-anchor-id="define-public-variables">Define Public Variables</h3>
+<p>We can specify a desired resolution and framerate for webcams in Unity. If the provided resolution and framerate is not supported by the hardware, Unity will use a default resolution.</p>
+<p>We will specify the desired webcam resolution using a <code>public</code> <a href="https://docs.unity3d.com/ScriptReference/Vector2Int.html"><code>Vector2Int</code></a> variable called <code>webcamDims</code>. Set the default values to <code>1280x720</code>.</p>
+<p>Next, create a <code>public</code> <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/integral-numeric-types"><code>int</code></a> variable called <code>webcamFPS</code> and give it a default value of <code>60</code>.</p>
+<p>We will use a <code>public</code> <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/bool"><code>bool</code></a> variable to toggle between using a video file or webcam as input for the model. Set the default value to <code>false</code> as we will be starting with a video file.</p>
+<p>Lastly, create a <code>public</code> <a href="https://docs.unity3d.com/ScriptReference/Transform.html"><code>Transform</code></a> variable called <code>videoScreen</code>. We will use this variable to access the <code>VideoScreen</code> object and its <code>Video Player</code> component.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> PoseEstimator <span class="op">:</span> MonoBehaviour</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The requested webcam dimensions"</span><span class="op">)]</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> Vector2Int webcamDims <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector2Int</span><span class="op">(</span><span class="dv">1280</span><span class="op">,</span> <span class="dv">720</span><span class="op">);</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The requested webcam frame rate"</span><span class="op">)]</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">int</span> webcamFPS <span class="op">=</span> <span class="dv">60</span><span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Use webcam feed as input"</span><span class="op">)]</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">bool</span> useWebcam <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The screen for viewing preprocessed images"</span><span class="op">)]</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> Transform videoScreen<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-private-variables" class="level3">
+<h3 class="anchored" data-anchor-id="define-private-variables">Define Private Variables</h3>
+<p>We need a <code>private</code> <a href="https://docs.unity3d.com/ScriptReference/WebCamTexture.html"><code>WebCamTexture</code></a> variable to access the video feed from a webcam.</p>
+<p>We will store the final dimensions from either the video or webcam feed in a <code>private Vector2Int</code> variable called <code>videoDims</code>.</p>
+<p>The last variable we need is a <code>private</code> <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.html"><code>RenderTexture</code></a> variable called <code>videoTexture</code>. This will store the pixel data for the current video or webcam frame.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Live video input from a webcam</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> WebCamTexture webcamTexture<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">// The dimensions of the current video source</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Vector2Int videoDims<span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">// The source video texture</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> RenderTexture videoTexture<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-initializevideoscreen-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-initializevideoscreen-method">Create <code>InitializeVideoScreen()</code> Method</h3>
+<p>We will update the position, orientation, and size of the <code>VideoScreen</code> object in a new method called <code>InitializeVideoScreen</code>. The method will take in width and height value along with a <code>bool</code> to indicate whether to mirror the screen. When using a webcam, we need to mirror the <code>VideoScreen</code> object so that the user’s position is mirrored on screen (e.g.&nbsp;their right side is on the right side of the screen).</p>
+<p>First, we will set the video player component to render to a <code>RenderTexture</code> and set <code>videoTexture</code> as the target texture.</p>
+<p>When <code>mirrorScreen</code> is set to <code>true</code> the <code>VideoScreen</code> will be rotated <code>180</code> around the Y-Axis and scaled by <code>-1</code> along the Z-Axis.</p>
+<p>The default <a href="https://docs.unity3d.com/ScriptReference/Shader.html">shader</a> assigned to the <code>VideoScreen</code> object needs to be replaced with an <code>Unlit/Texture</code> shader. This will remove the need for the screen to be lit by an in-game light.</p>
+<blockquote class="blockquote">
+<p><strong>Important:</strong> By default, the <code>Unlit/Texture</code> shader is not included in project builds. We need to manually include it in the project settings</p>
+<p>Open the <code>Edit</code> menu in the Unity Editor and select <code>Project Settings</code></p>
+<p><img src="./images/editor-open-project-settings.png" alt="editor-open-project-settings" style="zoom:80%;"></p>
+<p>In the Project Settings window, select the <code>Graphics</code> submenu and scroll down to the <code>Always Included Shaders</code> section. Update the <code>Size</code> value to add an extra <code>Element</code> spot.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/project-settings-increase-included-shaders-size.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">project-settings-increase-included-shaders-size</figcaption><p></p>
+</figure>
+</div>
+<p>Select the new bottom shader spot.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/select-bottom-shader-spot.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">select-bottom-shader-spot</figcaption><p></p>
+</figure>
+</div>
+<p>Type <code>Unlit/Texture</code> shader into the <code>Select Shader</code> window and select <code>Unlit/Texture</code> from the available options. We can then close the <code>Select Shader</code> window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/select-unlit-texture-shader.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">select-unlit-texture-shader</figcaption><p></p>
+</figure>
+</div>
+<p>We will also need the <code>Unlit/Color</code> shader later in this series so repeat these steps to add it as well.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/add-unlit-color-shader.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">add-unlit-color-shader</figcaption><p></p>
+</figure>
+</div>
+</blockquote>
+<p>We will then assign the <code>videoTexture</code> created earlier as the texture for the <code>VideoScreen</code>. This will allow us to access to pixel data for the current video frame.</p>
+<p>We can adjust the dimensions of the <code>VideoScreen</code> object by updating it’s <a href="https://docs.unity3d.com/ScriptReference/Transform-localScale.html"><code>localScale</code></a> attribute.</p>
+<p>The last step is to reposition the screen based on the the new dimensions, so that the bottom left corner is at <code>X:0, Y:0, Z:0</code>. This will simplify the process for updating the positions of objects with the estimated key point locations.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Prepares the videoScreen GameObject to display the chosen video source.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"width"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"height"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"mirrorScreen"</span><span class="kw">&gt;&lt;/param&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeVideoScreen</span><span class="op">(</span><span class="dt">int</span> width<span class="op">,</span> <span class="dt">int</span> height<span class="op">,</span> <span class="dt">bool</span> mirrorScreen<span class="op">)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set the render mode for the video player</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">renderMode</span> <span class="op">=</span> VideoRenderMode<span class="op">.</span><span class="fu">RenderTexture</span><span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Use new videoTexture for Video Player</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">targetTexture</span> <span class="op">=</span> videoTexture<span class="op">;</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>mirrorScreen<span class="op">)</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Flip the VideoScreen around the Y-Axis</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        videoScreen<span class="op">.</span><span class="fu">rotation</span> <span class="op">=</span> Quaternion<span class="op">.</span><span class="fu">Euler</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">180</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Invert the scale value for the Z-Axis</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        videoScreen<span class="op">.</span><span class="fu">localScale</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>videoScreen<span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">x</span><span class="op">,</span> videoScreen<span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="op">-</span>1f<span class="op">);</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Apply the new videoTexture to the VideoScreen Gameobject</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">material</span><span class="op">.</span><span class="fu">shader</span> <span class="op">=</span> Shader<span class="op">.</span><span class="fu">Find</span><span class="op">(</span><span class="st">"Unlit/Texture"</span><span class="op">);</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">gameObject</span><span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>MeshRenderer<span class="op">&gt;().</span><span class="fu">material</span><span class="op">.</span><span class="fu">SetTexture</span><span class="op">(</span><span class="st">"_MainTex"</span><span class="op">,</span> videoTexture<span class="op">);</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the VideoScreen dimensions for the new videoTexture</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">localScale</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>width<span class="op">,</span> height<span class="op">,</span> videoScreen<span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">z</span><span class="op">);</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the VideoScreen position for the new videoTexture</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    videoScreen<span class="op">.</span><span class="fu">position</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>width <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> height <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-initializecamera-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-initializecamera-method">Create <code>InitializeCamera()</code> Method</h3>
+<p>Once the <code>VideoScreen</code> has been updated, we need to resize and reposition the in-game camera. We will do so in a new method called <code>InitializeCamera</code>.</p>
+<p>We can access the <code>Main Camera</code> object with <a href="https://docs.unity3d.com/ScriptReference/GameObject.Find.html"><code>GameObject.Find("Main Camera")</code></a>. We will set the <code>X</code> and <code>Y</code> coordinates to the same as the <code>VideoScreen</code> position.</p>
+<p>The camera also needs to be set to <a href="https://docs.unity3d.com/ScriptReference/Camera-orthographic.html"><code>orthographic</code></a> mode to remove perspective.</p>
+<p>Lastly, we need to update the size of the camera. The <a href="https://docs.unity3d.com/ScriptReference/Camera-orthographicSize.html"><code>orthographicSize</code></a> attribute is actually the half size, so we need to divide <code>videoDims.y</code> (i.e.&nbsp;the height) by <code>2</code> as well.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Resizes and positions the in-game Camera to accommodate the video dimensions</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">InitializeCamera</span><span class="op">()</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get a reference to the Main Camera GameObject</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    GameObject mainCamera <span class="op">=</span> GameObject<span class="op">.</span><span class="fu">Find</span><span class="op">(</span><span class="st">"Main Camera"</span><span class="op">);</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the camera position to account for updates to the VideoScreen</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    mainCamera<span class="op">.</span><span class="fu">transform</span><span class="op">.</span><span class="fu">position</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector3</span><span class="op">(</span>videoDims<span class="op">.</span><span class="fu">x</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> videoDims<span class="op">.</span><span class="fu">y</span> <span class="op">/</span> <span class="dv">2</span><span class="op">,</span> <span class="op">-</span>10f<span class="op">);</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Render objects with no perspective (i.e. 2D)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    mainCamera<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>Camera<span class="op">&gt;().</span><span class="fu">orthographic</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the camera size to account for updates to the VideoScreen</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    mainCamera<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>Camera<span class="op">&gt;().</span><span class="fu">orthographicSize</span> <span class="op">=</span> videoDims<span class="op">.</span><span class="fu">y</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modify-start-method" class="level3">
+<h3 class="anchored" data-anchor-id="modify-start-method">Modify <code>Start()</code> Method</h3>
+<p>In the <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"><code>Start</code></a> method, we will first check if <code>useWebcam</code> is set to <code>true</code>. If it is, we will first limit the target framerate to the same as the target framerate for the webcam. We will then initialize the <code>webcamTexture</code> with the specified resolution and framerate. We will also disable the <code>Video Player</code> component. Lastly, we will update the values for <code>videoDims</code> with the final dimensions for the <code>webcamTexture</code>.</p>
+<p>If we are not using a webcam, we will instead update <code>videoDims</code> with the dimensions from the <code>Video Player</code> component.</p>
+<p>Next, we need to initialize the <code>videoTexture</code> with the new dimensions and the <a href="https://docs.unity3d.com/ScriptReference/RenderTextureFormat.ARGBHalf.html"><code>ARGBHalf</code></a> HDR texture format. We <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@2.1/api/Unity.Barracuda.Tensor.html#Unity_Barracuda_Tensor__ctor_UnityEngine_Texture_System_Int32_System_String_">need</a> to use an HDR texture format so that we can store color values outside the standard Unity range of <code>[0,1]</code>. The MobileNet version of the PoseNet model expects values to be in the range <code>[-1,1]</code> while the ResNet50 version expects values in the range <code>[0,255]</code>.</p>
+<p>We will then call the <code>InitializeVideoScreen()</code> and <code>InitializeCamera()</code> methods.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Start is called before the first frame update</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Start</span><span class="op">()</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useWebcam<span class="op">)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Limit application framerate to the target webcam framerate</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        Application<span class="op">.</span><span class="fu">targetFrameRate</span> <span class="op">=</span> webcamFPS<span class="op">;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Create a new WebCamTexture</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        webcamTexture <span class="op">=</span> <span class="kw">new</span> <span class="fu">WebCamTexture</span><span class="op">(</span>webcamDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> webcamDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> webcamFPS<span class="op">);</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Start the Camera</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        webcamTexture<span class="op">.</span><span class="fu">Play</span><span class="op">();</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Deactivate the Video Player</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">enabled</span> <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.y</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> webcamTexture<span class="op">.</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.x</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> webcamTexture<span class="op">.</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.y</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">y</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span>videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">height</span><span class="op">;</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the videoDims.x</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        videoDims<span class="op">.</span><span class="fu">x</span> <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span>videoScreen<span class="op">.</span><span class="fu">GetComponent</span><span class="op">&lt;</span>VideoPlayer<span class="op">&gt;().</span><span class="fu">width</span><span class="op">;</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a new videoTexture using the current video dimensions</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    videoTexture <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>videoDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> videoDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the videoScreen</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeVideoScreen</span><span class="op">(</span>videoDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> videoDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> useWebcam<span class="op">);</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Adjust the camera based on the source video dimensions</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">InitializeCamera</span><span class="op">();</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modify-update-method" class="level3">
+<h3 class="anchored" data-anchor-id="modify-update-method">Modify <code>Update()</code> Method</h3>
+<p>For now, the only thing we need to do in the <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Update.html"><code>Update</code></a> method is to “copy” the pixel data from <code>webcamTexture</code> to <code>videoTexture</code> when using a webcam.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Update is called once per frame</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="fu">Update</span><span class="op">()</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy webcamTexture to videoTexture if using webcam</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useWebcam<span class="op">)</span> Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>webcamTexture<span class="op">,</span> videoTexture<span class="op">);</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-poseestimator-object" class="level2">
+<h2 class="anchored" data-anchor-id="create-poseestimator-object">Create <code>PoseEstimator</code> Object</h2>
+<p>With the required code completed, we just need to attach the script to a <code>GameObject</code>. Right-click an empty space in the Hierarchy tab and select <code>Create Empty</code>. Name the new object <code>PoseEstimator</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create-empty-gameobject.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create-empty-gameobject</figcaption><p></p>
+</figure>
+</div>
+<section id="attach-poseestimator-script" class="level3">
+<h3 class="anchored" data-anchor-id="attach-poseestimator-script">Attach <code>PoseEstimator</code> Script</h3>
+<p>With the <code>PoseEstimator</code> object selected in the Hierarchy tab, drag and drop the <code>PoseEstimator</code> script into the Inspector tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/attach-pose-estimator-script.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">attach-pose-estimator-script</figcaption><p></p>
+</figure>
+</div>
+<section id="assign-videoscreen-object" class="level4">
+<h4 class="anchored" data-anchor-id="assign-videoscreen-object">Assign <code>VideoScreen</code> Object</h4>
+<p>Drag and drop the VideoScreen object from the Hierarchy tab into the <code>Video Screen</code> spot in the Inspector tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/populate-pose-estimator-component.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">populate-pose-estimator-component</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="test-it-out" class="level2">
+<h2 class="anchored" data-anchor-id="test-it-out">Test it Out</h2>
+<p>Now we can press the play button to test out the video player.</p>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> By default the <code>Aspect</code> for the <a href="https://docs.unity3d.com/Manual/GameView.html">Game view</a> is set to <code>Free Aspect</code>, so the <code>VideoScreen</code> might not fill the entire view.</p>
+</blockquote>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/video-player-test-3.gif" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">video-player-test-3</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>We now have a video player that we can use to feed input to the PoseNet model. In the next post, we will implement the preprocessing steps for the PoseNet models.</p>
+<p><strong>Previous:</strong> <a href="../part-1/">Part 1</a></p>
+<p><strong>Next:</strong> <a href="../part-3/">Part 3</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial">GitHub Repository</a></p>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

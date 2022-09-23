@@ -1126,3 +1126,9 @@ def scaled_dot_product_attention(query, key, value, mask=None):
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

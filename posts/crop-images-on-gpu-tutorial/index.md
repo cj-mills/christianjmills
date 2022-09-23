@@ -7,8 +7,23 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post covers how to efficiently crop images in Unity with a GPU.
 categories: [unity, tutorial]
+
+aliases:
+- /Crop-Images-on-the-GPU-In-Unity/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: ./images/crop_image_on_gpu_unity_1.gif
+open-graph:
+  image: ./images/crop_image_on_gpu_unity_1.gif
+
 ---
 
 * [Introduction](#introduction)
@@ -164,3 +179,9 @@ That is one method to efficiently crop images on the GPU in Unity. As mentioned 
 
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Crop-Image-on-GPU-Unity)
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

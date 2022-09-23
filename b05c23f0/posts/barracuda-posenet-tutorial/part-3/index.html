@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2020-11-06">
+<meta name="description" content="This post covers how to perform inference with the PoseNet model.">
+
+<title>Christian Mills - Barracuda PoseNet Tutorial Pt. 3 (Outdated)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Barracuda PoseNet Tutorial Pt. 3 (Outdated)">
+<meta property="og:description" content="This post covers how to perform inference with the PoseNet model.">
+<meta property="og:image" content="christianjmills.com/images\logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Barracuda PoseNet Tutorial Pt. 3 (Outdated)">
+<meta name="twitter:description" content="This post covers how to perform inference with the PoseNet model.">
+<meta name="twitter:image" content="christianjmills.com/images\logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Barracuda PoseNet Tutorial Pt. 3 (Outdated)</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to perform inference with the PoseNet model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 6, 2020</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<p><strong>Version 2:</strong> <a href="../../barracuda-posenet-tutorial-v2/part-1/">Part 1</a></p>
+<p><strong>Last Updated:</strong> Nov 30, 2020</p>
+<section id="previous-part-2-part-2.5" class="level3">
+<h3 class="anchored" data-anchor-id="previous-part-2-part-2.5">Previous: <a href="../part-2/">Part 2</a> <a href="../part-2-5/">Part 2.5</a></h3>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#install-barracuda-package">Install Barracuda Package</a></li>
+<li><a href="#import-posenet-model">Import PoseNet Model</a></li>
+<li><a href="#load-the-model">Load the Model</a></li>
+<li><a href="#set-inspector-variables">Set Inspector Variables</a></li>
+<li><a href="#perform-inference">Perform Inference</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>We can now start using the Barracuda library. We’ll first install the Barracuda package for our project and import the PoseNet model. We’re going to modify the model a bit to make postprocessing easier. Finally, we’ll perform inference using a preprocessed image as input.</p>
+</section>
+<section id="install-barracuda-package" class="level2">
+<h2 class="anchored" data-anchor-id="install-barracuda-package">Install Barracuda Package</h2>
+<p>Select the <code>Package Manager</code> tab in the Unity editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/select_package_manager_tab.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">select_package_manager_tab</figcaption><p></p>
+</figure>
+</div>
+<p>Type <code>Barracuda</code> into the search box. The version of the package used in the tutorial is <code>1.0.4</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/barracuda_search.PNG" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">barracuda_search</figcaption><p></p>
+</figure>
+</div>
+<p>Click the <code>Install</code> button to install the package.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/barracuda_install.PNG" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">barracuda_install</figcaption><p></p>
+</figure>
+</div>
+<p>Wait for Unity to install the dependencies.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/barracuda_installation_progress.PNG" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">barracuda_installation_progress</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="import-posenet-model" class="level2">
+<h2 class="anchored" data-anchor-id="import-posenet-model">Import PoseNet Model</h2>
+<p>Now we can import the model into Unity. The Barracuda dev team has focused on supporting the <a href="https://onnx.ai/">ONNX</a> format for models. We aren’t able to directly import models from TensorFlow or PyTorch. I’ve already converted the PoseNet model to ONNX. You can check out my tutorial for converting TensorFlow SavedModels to ONNX (<a href="../../tensorflow-savedmodel-to-onnx-tutorial/">here</a>). PyTorch provides built-in support for ONNX (<a href="https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html">link</a>).</p>
+<section id="download-the-onnx-file" class="level3">
+<h3 class="anchored" data-anchor-id="download-the-onnx-file">Download the ONNX File</h3>
+<p>You can download the converted PoseNet model from the link below.</p>
+<ul>
+<li>ResNet50: (<a href="https://drive.google.com/file/d/1oKrlraI3m3ecme-pAvAh25-Jzzu86sv_/view?usp=sharing">download</a>)</li>
+</ul>
+</section>
+<section id="import-model-to-assets" class="level3">
+<h3 class="anchored" data-anchor-id="import-model-to-assets">Import Model to Assets</h3>
+<p>Create a new folder in the <code>Assets</code> window and name it <code>Models</code>. Drag and drop the ONNX file into the <code>Models</code> folder.</p>
+<p>If you select the <code>resnet50</code> asset, you should see the following in the <code>Inspector</code> tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/resnet50_inspector_tab.PNG" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">resnet50_inspector_tab</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="load-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="load-the-model">Load the Model</h2>
+<p>Next, we need to implement the code for loading the model in the <code>PoseNet</code> <a href="../part-2/#create-the-posenet-script">script</a>.</p>
+<section id="add-unity.barracuda-namespace" class="level3">
+<h3 class="anchored" data-anchor-id="add-unity.barracuda-namespace">Add <code>Unity.Barracuda</code> Namespace</h3>
+<p>Open the <code>PoseNet</code> script and add the <code>Unity.Barracuda</code> namespace at the top of the script.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/add_barracuda_namespace.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">add_barracuda_namespace</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-modelasset-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-modelasset-variable">Create <code>modelAsset</code> Variable</h3>
+<p>Make a new public <code>NNModel</code> variable called <code>modelAsset</code>. We’ll assign the <code>resnet50</code> asset to this variable in the Unity Editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_modelAsset_variable.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create_modelAsset_variable</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-workertype-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-workertype-variable">Create <code>workerType</code> Variable</h3>
+<p>We’ll also add a variable that let’s us choose which <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Worker.html">backend</a> to use when performing inference. The options are divided into <code>CPU</code> and <code>GPU</code>. I believe there are plans to add support for specialized hardware such as Neural Processing Units in the future. Our preprocessing pipeline runs entirely on the <code>GPU</code> so we’ll be sticking with the <code>GPU</code> options for this tutorial series.</p>
+<p>Make a new public <code>WorkerFactory.Type</code> called <code>workerType</code>. Give it a default value of <code>WorkerFactory.Type.Auto</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_workerType_variable.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">load_model_variables_1</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-m_runtimemodel-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-m_runtimemodel-variable">Create <code>m_RuntimeModel</code> Variable</h3>
+<p>We need to compile the <code>modelAsset</code> into a run-time model to perform inference. We’ll store the compiled model in a new private <code>Model</code> variable called <code>m_RuntimeModel</code>. This is the naming convention used in the Barracuda <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/Loading.html">documentation</a>.</p>
+</section>
+<section id="create-engine-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-engine-variable">Create <code>engine</code> Variable</h3>
+<p>Next, we’ll create a new private <code>IWorker</code> variable to store our inference engine. Name the variable <code>engine</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/load_model_variables_2.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">load_model_variables_2</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-heatmaplayer-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-heatmaplayer-variable">Create <code>heatmapLayer</code> Variable</h3>
+<p>Add a new private <code>string</code> variable to store the name of the heatmap layer in the <code>resnet50</code> model. We’ll need the output of this layer to determine the location of key points (e.g.&nbsp;nose, elbows, knees, etc.) in the input image. We can find the name for the model’s output layers in the <code>Inspector</code> tab. For our model, the heatmap layer is named <code>float_heamap</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/resnet50_output_layers.PNG" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">resnet50_output_layers</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Note:</strong> The last two output layers, <code>resnet_v1_50/displacement_bwd_2/BiasAd</code> and <code>resnet_v1_50/displacement_fwd_2/BiasAd</code>, are used when estimating the pose of multiple people. We’ll be sticking to single pose estimation for this series.</p>
+</section>
+<section id="create-offsetslayer-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-offsetslayer-variable">Create <code>offsetsLayer</code> Variable</h3>
+<p>We’ll go ahead and create a variable for the <code>float_short_offsets</code> layer as well since we’ll need it later. The output from this layer is used to refine the estimated key point locations determined with the heatmap layer.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/layer_name_variables.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">layer_name_variables</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="compile-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="compile-the-model">Compile the Model</h3>
+<p>We need to get an object oriented representation of the model before we can work with it. We’ll do this in the <code>Start()</code> method and store it in the <code>m_RuntimeModel</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/compile_model.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">compile_model</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="modify-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="modify-the-model">Modify the Model</h3>
+<p>We need to add a <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.ModelBuilder.html#Unity_Barracuda_ModelBuilder_Sigmoid_System_String_System_Object_"><code>Sigmoid</code></a> layer to the end of the model before creating our inference engine. This will map the output values to the range <code>[0,1]</code>. We’ll use these values to measure the model’s confidence that a given key point is in a given spot in the input image. A value of <code>1</code> would indicate that the model is <code>100%</code> confident the key point is in that location. We won’t be getting any <code>1</code>’s.</p>
+<p>First, we need to make a new private <code>string</code> variable to store the name of this new layer. We’ll name the variable <code>predictionLayer</code> and name the layer <code>heatmap_predictions</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/predictionLayer_name.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">predictionLayer_name</figcaption><p></p>
+</figure>
+</div>
+<p>We’ll add the new layer using a <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.ModelBuilder.html"><code>ModelBuilder</code></a>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/add_sigmoid_layer.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">add_sigmoid_layer</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="initialize-the-inference-engine" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-the-inference-engine">Initialize the Inference Engine</h3>
+<p>Now we can create a worker to execute the modified model using the selected backend. We’ll do this using the <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_"><code>WorkerFactory.CreateWorker()</code></a> method.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_worker.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create_worker</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="release-inference-engine-resources" class="level3">
+<h3 class="anchored" data-anchor-id="release-inference-engine-resources">Release Inference Engine Resources</h3>
+<p>We need to manually release the resources that get allocated for the inference <code>engine</code>. This should be one of the last actions performed. Therefore, we’ll do it in the <code>OnDisable()</code> method. This method gets called when the Unity project exits. We need to implement this method in the <code>PoseNet</code> script.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/onDisable_method.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">onDisable_method</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="set-inspector-variables" class="level2">
+<h2 class="anchored" data-anchor-id="set-inspector-variables">Set Inspector Variables</h2>
+<p>Now we just need to set the values for the <code>Model Asset</code> and select the inference backend.</p>
+<section id="assign-the-model-asset" class="level3">
+<h3 class="anchored" data-anchor-id="assign-the-model-asset">Assign the Model Asset</h3>
+<p>With the <code>PoseEstimator</code> object selected, drag and drop the <code>resnet50</code> asset into the <code>Model Asset</code> variable.</p>
+</section>
+<section id="select-inference-backend" class="level3">
+<h3 class="anchored" data-anchor-id="select-inference-backend">Select Inference Backend</h3>
+<p>Set the backend to the <code>Compute Precompiled</code> option in the <code>Worker Type</code> drop-down. This is the most efficient GPU backend.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/assign_model_asset_and_backend.PNG" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">assign_model_asset_and_backend</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="perform-inference" class="level2">
+<h2 class="anchored" data-anchor-id="perform-inference">Perform Inference</h2>
+<p>Finally, we’ll add the code to perform inference in the <code>Update()</code> method.</p>
+<section id="create-the-input-tensor" class="level3">
+<h3 class="anchored" data-anchor-id="create-the-input-tensor">Create the <code>input</code> Tensor</h3>
+<p>We need to convert the <code>processedImage</code> to a <code>Tensor</code> before we can feed it to the model. The <code>Tensor</code> constructor requires us to specify the number of channels in the image. We don’t need the alpha (transparency) channel so we’ll specify <code>3</code> for the RGB color channels.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_input_tensor.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">create_input_tensor</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="execute-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="execute-the-model">Execute the Model</h3>
+<p>We’ll use the <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_"><code>engine.Execute()</code></a> method to perform inference. This method takes in the input Tensor and schedules the network execution.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/execute_model.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">execute_model</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="release-input-tensor-resources" class="level3">
+<h3 class="anchored" data-anchor-id="release-input-tensor-resources">Release Input Tensor Resources</h3>
+<p>We’ll need to manually release the allocated resources for the Tensor with the <code>input.Dispose()</code> method.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/dispose_input_tensor.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">dispose_input_tensor</figcaption><p></p>
+</figure>
+</div>
+<p>Here is the revised <code>Update()</code> method.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/perform_inference_update_method_3.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">perform_inference_update_method</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>We’ve finally performed inference using a PoseNet model in Unity. However, we need to process the output from the model to determine the estimated key point locations. We’ll cover how to perform the postprocessing operations in part 4.</p>
+<section id="github-repository---version-1" class="level3">
+<h3 class="anchored" data-anchor-id="github-repository---version-1"><a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial/tree/Version-1">GitHub Repository - Version 1</a></h3>
+</section>
+<section id="next-part-4" class="level3">
+<h3 class="anchored" data-anchor-id="next-part-4">Next: <a href="../part-4/">Part 4</a></h3>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

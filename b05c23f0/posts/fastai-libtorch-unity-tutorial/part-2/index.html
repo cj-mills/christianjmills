@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-06-28">
+<meta name="description" content="Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with TorchScript modules using LibTorch.">
+
+<title>Christian Mills - How to Create a LibTorch Plugin for Unity on Windows Pt. 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - How to Create a LibTorch Plugin for Unity on Windows Pt. 2">
+<meta property="og:description" content="Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with TorchScript modules using LibTorch.">
+<meta property="og:image" content="christianjmills.com/images\logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - How to Create a LibTorch Plugin for Unity on Windows Pt. 2">
+<meta name="twitter:description" content="Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with TorchScript modules using LibTorch.">
+<meta name="twitter:image" content="christianjmills.com/images\logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">How to Create a LibTorch Plugin for Unity on Windows Pt. 2</h1>
+  </div>
+
+<div>
+  <div class="description">
+    Part 2 covers creating a dynamic link library (DLL) file in Visual Studio to perform inference with TorchScript modules using LibTorch.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 28, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#download-dependencies">Download Dependencies</a></li>
+<li><a href="#create-dll-project">Create DLL Project</a></li>
+<li><a href="#configure-the-project">Configure the Project</a></li>
+<li><a href="#add-include-directories">Add Include Directories</a></li>
+<li><a href="#link-libraries">Link Libraries</a></li>
+<li><a href="#post-build-events">Post Build Events</a></li>
+<li><a href="#update-precompiled-header-file">Update Precompiled Header File</a></li>
+<li><a href="#update-dllmain-file">Update dllmain File</a></li>
+<li><a href="#build-solution">Build Solution</a></li>
+<li><a href="#gather-dependencies">Gather Dependencies</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p><a href="../part-1/">Part 1</a> covered modifying the training code from the <a href="../../fastai-to-unity-tutorial/part-1/">fastai-to-unity tutorial</a> to finetune models from the Timm library and export them as TorchScript modules. This post covers creating a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file in Visual Studio to perform inference with these TorchScript modules using <a href="https://pytorch.org/cppdocs/installing.html">LibTorch</a>.</p>
+</section>
+<section id="download-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="download-dependencies">Download Dependencies</h2>
+<p>We need to download some dependencies before creating our Visual Studio project.</p>
+<section id="download-opencv" class="level3">
+<h3 class="anchored" data-anchor-id="download-opencv">Download OpenCV</h3>
+<p>Our LibTorch DLL requires the <a href="https://github.com/opencv/opencv">OpenCV</a> library to process image data from Unity. The tutorial uses OpenCV 4.6.0, which is available at the link below.</p>
+<ul>
+<li><a href="https://github.com/opencv/opencv/releases/tag/4.6.0">OpenCV 4.6.0 GitHub</a></li>
+</ul>
+<p>Select the <code>opencv-4.6.0-vc14_vc15.exe</code> option from the Assets list.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/opencv_github_download_executable.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">opencv_github_download_executable</figcaption><p></p>
+</figure>
+</div>
+<p>Run the executable once it finishes downloading. You might get a warning from Windows that the executable is an unrecognized app. We can bypass this by clicking the <code>More info</code> text, then the Run anyway button.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-defender-smartscreen-warning.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">windows-defender-smartscreen-warning</figcaption><p></p>
+</figure>
+</div>
+<p>Then, click the <code>Run anyway</code> button.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-defender-smartscreen-warning-run-anyway.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">windows-defender-smartscreen-warning-run-anyway</figcaption><p></p>
+</figure>
+</div>
+<p>The executable will prompt us to select a location to extract the opencv folder. We’ll need to give Visual Studio this location to access the library’s functionality. I tend to place my C++ dependencies in a dedicated folder for consistency.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/opencv-select-extraction-location.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">opencv-select-extraction-location</figcaption><p></p>
+</figure>
+</div>
+<p>If we open the opencv folder, we can see a build folder and a source folder. Everything we need is in the build folder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/opencv-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">opencv-folder</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="download-libtorch" class="level3">
+<h3 class="anchored" data-anchor-id="download-libtorch">Download LibTorch</h3>
+<p>PyTorch provides CPU and CUDA versions of LibTorch for Windows, but we’ll only be working with the CPU version for this post.</p>
+<p>I encountered significant variance in CUDA performance between the Stable, Preview, and LTS releases. Stable CUDA inference speed was slower than CPU inference for the ConvNext and MobileViT models. The LTS release did not seem to support those models at all.</p>
+<p>More importantly, LibTorch requires a “warmup” phase for CUDA inference where the initial model executions take a few seconds instead of a few milliseconds. Unity did not handle this well and kept crashing. There might be a way around this issue, but I’ll leave that for a future post.</p>
+<p>The LibTorch releases are available on the PyTorch install page linked below. The tutorial uses the <code>Stable (1.1.0)</code> version.</p>
+<ul>
+<li><a href="https://pytorch.org/get-started/locally/">PyTorch install page</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/download-libtorch-cpu.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">download-libtorch-cpu</figcaption><p></p>
+</figure>
+</div>
+<p>As with the OpenCV library, we must pick a location to extract the LibTorch library.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/libtorch-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">libtorch-folder</figcaption><p></p>
+</figure>
+</div>
+<p>Now we can create the Visual Studio DLL project.</p>
+</section>
+</section>
+<section id="create-dll-project" class="level2">
+<h2 class="anchored" data-anchor-id="create-dll-project">Create DLL Project</h2>
+<p>Open Visual Studio and select the <code>Create a new project</code> option.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-create-new-project.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-create-new-project</figcaption><p></p>
+</figure>
+</div>
+<p>Type <code>DLL</code> into the text box and select the <code>Dynamic-Link Library (DLL)</code> option. This option automatically configures a few parameters for us compared to starting with a standard console application.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-new-dll-project.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-new-dll-project</figcaption><p></p>
+</figure>
+</div>
+<p>Choose a name and location for the project and click the <code>Create</code> button. By default, the DLL file will use the project name.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-choose-project-name-and-location.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-choose-project-name-and-location</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="configure-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="configure-the-project">Configure the Project</h2>
+<p>At the top of the window, open the Solution Configurations dropdown menu, and select <code>Release</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-switch-to-release.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-switch-to-release</figcaption><p></p>
+</figure>
+</div>
+<p>Then, open the Solution Platform dropdown menu and select <code>x64</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-switch-to-64-bit.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-switch-to-64-bit</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="add-include-directories" class="level2">
+<h2 class="anchored" data-anchor-id="add-include-directories">Add Include Directories</h2>
+<p>We need to tell Visual Studio where LibTorch and OpenCV are so we can access their APIs. Right-click the project name in the Solution Explorer panel.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-solution-explorer-select-project-name.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-solution-explorer-select-project-name</figcaption><p></p>
+</figure>
+</div>
+<p>Select the <code>Properties</code> option in the popup menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-properties.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-properties</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Note:</strong> We can change the name of the DLL file using the Target Name parameter.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-properties-target-name.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-properties-target-name</figcaption><p></p>
+</figure>
+</div>
+<p>In the Properties Window, open on the <code>C/C++</code> dropdown. Select the <code>Additional Include Directories</code> section and click on <code>&lt;Edit..&gt;</code> in the dropdown.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-additional-include-directories.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-additional-include-directories</figcaption><p></p>
+</figure>
+</div>
+<p>Add the paths for the following folders and click <code>OK</code>.</p>
+<ul>
+<li><code>opencv\build\include</code></li>
+<li><code>libtorch-win-shared-with-deps-1.11.0+cpu\libtorch\include</code></li>
+<li><code>libtorch-win-shared-with-deps-1.11.0+cpu\libtorch\include\torch\csrc\api\include</code></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-add-additional-include-directories.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-add-additional-include-directories</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="link-libraries" class="level2">
+<h2 class="anchored" data-anchor-id="link-libraries">Link Libraries</h2>
+<p>Next, open the <code>Linker</code> dropdown in the Properties window and select <code>Input</code>. Select <code>Additional Dependencies</code> and click <code>&lt;Edit..&gt;</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-linker-additional-dependencies.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-linker-additional-dependencies</figcaption><p></p>
+</figure>
+</div>
+<p>Add the paths to the following files and click <code>OK</code>.</p>
+<ul>
+<li><code>opencv\build\x64\vc15\lib\*</code></li>
+<li><code>libtorch-win-shared-with-deps-1.11.0+cpu\libtorch\lib\c10.lib</code></li>
+<li><code>libtorch-win-shared-with-deps-1.11.0+cpu\libtorch\lib\torch.lib</code></li>
+<li><code>libtorch-win-shared-with-deps-1.11.0+cpu\libtorch\lib\torch_cpu.lib</code></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-linker-add-additional-dependencies.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-linker-add-additional-dependencies</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="post-build-events" class="level2">
+<h2 class="anchored" data-anchor-id="post-build-events">Post Build Events</h2>
+<p>Our DLL file will depend on the following DLL files included with the LibTorch and OpenCV libraries.</p>
+<p><strong>OpenCV DLL file</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/get-opencv-world-dll-file.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">get-opencv-world-dll-file</figcaption><p></p>
+</figure>
+</div>
+<p><strong>LibTorch DLL files</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/get-libtorch-dll-files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">get-libtorch-dll-files</figcaption><p></p>
+</figure>
+</div>
+<p>We can add a post-build event in Visual Studio to automatically copy these DLL files to the build folder for the project at compile time. Open the <code>Build Events</code> dropdown in the Properties window and select <code>Post-Build Event</code>. Select <code>Command Line</code> and click <code>&lt;Edit..&gt;</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-post-build-event-edit-command-line-events.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-post-build-event-edit-command-line-events</figcaption><p></p>
+</figure>
+</div>
+<p>Add the following commands, replacing <code>&lt;parent-folder-path&gt;</code> with the path to the parent folder on your system and click <code>OK</code>.</p>
+<ul>
+<li><p><code>xcopy &lt;parent-folder-path&gt;\opencv\build\x64\vc15\bin\opencv_world452.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></p></li>
+<li><p><code>xcopy &lt;parent-folder-path&gt;\libtorch\lib\*.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></p></li>
+<li><p><strong>Example:</strong> <code>xcopy G:\Projects\C++_Projects\Dependencies\opencv\build\x64\vc15\bin\opencv_world452.dll $(SolutionDir)$(Platform)\$(Configuration)\ /c /y</code></p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-post-build-event-add-xcopy-commands.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-post-build-event-add-xcopy-commands</figcaption><p></p>
+</figure>
+</div>
+<p>Finally, click the <code>Apply</code> button and close the Properties window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-properties-apply-changes.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-properties-apply-changes</figcaption><p></p>
+</figure>
+</div>
+<p>With the dependencies taken care of, we can start modifying the code.</p>
+</section>
+<section id="update-precompiled-header-file" class="level2">
+<h2 class="anchored" data-anchor-id="update-precompiled-header-file">Update Precompiled Header File</h2>
+<p>We need to make a small change to the <code>pch.h</code> <a href="https://docs.microsoft.com/en-us/cpp/build/creating-precompiled-header-files?view=msvc-160">Precompiled Header file</a> to avoid some conflicts with LibTorch. Open the <code>pch.h</code> file by selecting it in the Solution Explorer window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-pch-header-file.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-pch-header-file</figcaption><p></p>
+</figure>
+</div>
+<p>Comment or remove the “#include” line for the <code>framework.h</code> header file.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// pch.h: This is a precompiled header file.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Files listed below are compiled only once, improving build performance for future builds.</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// This also affects IntelliSense performance, including code completion and many code browsing features.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// However, files listed here are ALL re-compiled if any one of them is updated between builds.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Do not add files here that you will be updating frequently as this negates the performance advantage.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef PCH_H</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define PCH_H</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">// add headers that you want to pre-compile here</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">//#include "framework.h"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">//PCH_H</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Add required header files</strong></p>
+<p>Next, we’ll add the required header files for LibTorch and OpenCV below <code>//#include "framework.h"</code> line.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// pch.h: This is a precompiled header file.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Files listed below are compiled only once, improving build performance for future builds.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// This also affects IntelliSense performance, including code completion and many code browsing features.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">// However, files listed here are ALL re-compiled if any one of them is updated between builds.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Do not add files here that you will be updating frequently as this negates the performance advantage.</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef PCH_H</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define PCH_H</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">// add headers that you want to pre-compile here</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">//#include "framework.h"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">// One-stop LibTorch header</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;torch/script.h&gt;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">// One-stop OpenCV header</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;opencv2/opencv.hpp&gt;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">//PCH_H</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-dllmain-file" class="level2">
+<h2 class="anchored" data-anchor-id="update-dllmain-file">Update dllmain File</h2>
+<p>By default, the <code>dllmain.cpp</code> file contains the following code.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// dllmain.cpp : Defines the entry point for the DLL application.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"pch.h"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>BOOL APIENTRY DllMain<span class="op">(</span> HMODULE hModule<span class="op">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                       DWORD  ul_reason_for_call<span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                       LPVOID lpReserved</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                     <span class="op">)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">switch</span> <span class="op">(</span>ul_reason_for_call<span class="op">)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_PROCESS_ATTACH<span class="op">:</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_THREAD_ATTACH<span class="op">:</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_THREAD_DETACH<span class="op">:</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> DLL_PROCESS_DETACH<span class="op">:</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> TRUE<span class="op">;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can delete everything below the <code>#include "pch.h"</code> line.</p>
+<p><strong>Create a macro to mark functions we want to make accessible in Unity</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// dllmain.cpp : Defines the entry point for the DLL application.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"pch.h"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Create a macro to quickly mark a function for export</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DLLExport </span><span class="ex">__declspec (dllexport)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Wrap the code in extern “C” to prevent name-mangling issues with the compiler</strong></p>
+<p>The rest of our code will go inside here.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Wrap code to prevent name-mangling issues</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">extern</span> <span class="st">"C"</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define variables</strong></p>
+<p>Inside the wrapper, we will declare the persistent variables needed for the DLL.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The current torchscript model</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>torch<span class="op">::</span>jit<span class="op">::</span>Module network<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">// The mean normalization stats for the current model</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;</span> mean_stats<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">// The std normalization stats for the current model</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;</span> std_stats<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to load a TorchScript module</strong></p>
+<p>We’ll place the code for loading a TorchScript module inside a try-catch block to avoid crashing the application if we pass an incorrect file path. We’ll also update the mean and std vectors here since each model might use different normalization stats.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Load a torchscript model from the specified file path</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">int</span> LoadModel<span class="op">(</span><span class="dt">char</span><span class="op">*</span> modelPath<span class="op">,</span> <span class="dt">float</span> mean<span class="op">[</span><span class="dv">3</span><span class="op">],</span> <span class="dt">float</span> std<span class="op">[</span><span class="dv">3</span><span class="op">])</span> <span class="op">{</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> <span class="op">{</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Deserialize the ScriptModule from a file using torch::jit::load().</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        network <span class="op">=</span> torch<span class="op">::</span>jit<span class="op">::</span>load<span class="op">(</span>modelPath<span class="op">);</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Empty the normalization vectors</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        mean_stats<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        std_stats<span class="op">.</span>clear<span class="op">();</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the normalization vectors</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">3</span><span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            mean_stats<span class="op">.</span>push_back<span class="op">(</span>mean<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>            std_stats<span class="op">.</span>push_back<span class="op">(</span>std<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>           </span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">catch</span> <span class="op">(</span><span class="at">const</span> c10<span class="op">::</span>Error<span class="op">&amp;</span> e<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Return a value of -1 if the model fails to load</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Return a value of 0 if the model loads successfully</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define a function to perform inference</strong></p>
+<p>We will access the pixel data for the input image from Unity with a pointer to a <a href="https://docs.opencv.org/4.5.1/d1/d1b/group__core__hal__interface.html#ga65f85814a8290f9797005d3b28e7e5fc">uchar</a> (unsigned 1 byte integer) array and wrap the data in a <a href="https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html">cv::Mat</a> variable for processing.</p>
+<p>We must first remove the alpha channel and convert the image to a three-channel matrix of 32-bit floats. We can then initialize an input tensor with the pixel data and apply the usual preprocessing steps.</p>
+<p>Once again, we’ll use a try-catch block to avoid crashing the application if an error occurs during the forward pass. We can apply the same postprocessing steps as in the training code and return the predicted class index to Unity.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Perform inference with the provided texture data</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">int</span> PerformInference<span class="op">(</span><span class="ex">uchar</span><span class="op">*</span> inputData<span class="op">,</span> <span class="dt">int</span> width<span class="op">,</span> <span class="dt">int</span> height<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Store the pixel data for the source input image in an OpenCV Mat</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">::</span>Mat texture <span class="op">=</span> cv<span class="op">::</span>Mat<span class="op">(</span>height<span class="op">,</span> width<span class="op">,</span> CV_8UC4<span class="op">,</span> inputData<span class="op">);</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remove the alpha channel</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">::</span>cvtColor<span class="op">(</span>texture<span class="op">,</span> texture<span class="op">,</span> cv<span class="op">::</span>COLOR_RGBA2RGB<span class="op">);</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Convert RGB image to a three-channel matrix of 32-bit floats</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    texture<span class="op">.</span>convertTo<span class="op">(</span>texture<span class="op">,</span> CV_32FC3<span class="op">);</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize a tensor using the texture data</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    torch<span class="op">::</span>Tensor input <span class="op">=</span> torch<span class="op">::</span>from_blob<span class="op">(</span>texture<span class="op">.</span>data<span class="op">,</span> <span class="op">{</span> <span class="dv">1</span><span class="op">,</span> height<span class="op">,</span> width<span class="op">,</span> <span class="dv">3</span> <span class="op">});</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Permute tensor dimensions</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    input <span class="op">=</span> input<span class="op">.</span>permute<span class="op">({</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span> <span class="op">});</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Scale and normalize color channel values</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">3</span><span class="op">;</span> i<span class="op">++)</span> input<span class="op">[</span><span class="dv">0</span><span class="op">][</span>i<span class="op">].</span><span class="va">div_</span><span class="op">(</span><span class="fl">255.0</span><span class="bu">f</span><span class="op">).</span><span class="va">sub_</span><span class="op">(</span>mean_stats<span class="op">[</span>i<span class="op">]).</span><span class="va">div_</span><span class="op">(</span>std_stats<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize a vector to store model inputs</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>vector<span class="op">&lt;</span>torch<span class="op">::</span>jit<span class="op">::</span>IValue<span class="op">&gt;</span> inputs<span class="op">;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add input tensor to inputs vector</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    inputs<span class="op">.</span>push_back<span class="op">(</span>input<span class="op">);</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize predicted class index to an invalid value</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> class_idx <span class="op">=</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> <span class="op">{</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Enable inference mode</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        torch<span class="op">::</span>InferenceMode guard<span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Perform inference and extract the predicted class index</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>        class_idx <span class="op">=</span> torch<span class="op">::</span>softmax<span class="op">(</span>network<span class="op">.</span>forward<span class="op">(</span>inputs<span class="op">).</span>toTensor<span class="op">(),</span> <span class="dv">1</span><span class="op">).</span>argmax<span class="op">().</span>item<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;();</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">catch</span> <span class="op">(...)</span> <span class="op">{</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Return a value of -2 if an error occurs during the forward pass</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>        class_idx <span class="op">=</span> <span class="op">-</span><span class="dv">2</span><span class="op">;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> class_idx<span class="op">;</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>That is all the code needed for the plugin. We can now build the solution to generate the DLL file.</p>
+</section>
+<section id="build-solution" class="level2">
+<h2 class="anchored" data-anchor-id="build-solution">Build Solution</h2>
+<p>Open the Build menu at the top of the Visual Studio window and click Build Solution. Visual Studio will generate a new x64 folder in the project directory containing the DLL file and its dependencies.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-build-solution.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-build-solution</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="gather-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="gather-dependencies">Gather Dependencies</h2>
+<p>Right-click the project name in the Solution Explorer panel and select <code>Open Folder in File Explorer</code> from the popup menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-folder-in-explorer.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-open-folder-in-explorer</figcaption><p></p>
+</figure>
+</div>
+<p>In the new File Explorer window, go to the parent folder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-project-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-project-folder</figcaption><p></p>
+</figure>
+</div>
+<p>Open the <code>x64 → Release</code> subfolder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-project-folder-x64-folder.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">visual-studio-project-folder-x64-folder</figcaption><p></p>
+</figure>
+</div>
+<p>We’ll need to copy all the DLL files in this folder to the Unity project.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/file-explorer-select-dll-files.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">file-explorer-select-dll-files</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This post covered creating a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file to perform inference with TorchScript modules using <a href="https://pytorch.org/cppdocs/installing.html">LibTorch</a>. Part 3 will cover the required modifications for the original Unity project to use this DLL.</p>
+<p><strong>Previous:</strong> <a href="../part-1/">How to Create a LibTorch Plugin for Unity on Windows Pt.1</a></p>
+<p><strong>Next:</strong> <a href="../part-3/">How to Create a LibTorch Plugin for Unity on Windows Pt.3</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial">GitHub Repository</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

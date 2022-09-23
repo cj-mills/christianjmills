@@ -1,0 +1,5517 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-14">
+<meta name="description" content="Chapter 4 covers broadcasting, stochastic gradient descent, the MNIST loss function, and the sigmoid activation functions.">
+
+<title>Christian Mills - Notes on fastai Book Ch. 4</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Notes on fastai Book Ch. 4">
+<meta property="og:description" content="Chapter 4 covers broadcasting, stochastic gradient descent, the MNIST loss function, and the sigmoid activation functions.">
+<meta property="og:image" content="christianjmills.com/images\logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Notes on fastai Book Ch. 4">
+<meta name="twitter:description" content="Chapter 4 covers broadcasting, stochastic gradient descent, the MNIST loss function, and the sigmoid activation functions.">
+<meta name="twitter:image" content="christianjmills.com/images\logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Notes on fastai Book Ch. 4</h1>
+  </div>
+
+<div>
+  <div class="description">
+    Chapter 4 covers broadcasting, stochastic gradient descent, the MNIST loss function, and the sigmoid activation functions.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 14, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#tenacity-and-deep-learning">Tenacity and Deep Learning</a></li>
+<li><a href="#the-foundations-of-computer-vision">The Foundations of Computer Vision</a></li>
+<li><a href="#pixels">Pixels</a></li>
+<li><a href="#pixel-similarity">Pixel Similarity</a></li>
+<li><a href="#computing-metrics-using-broadcasting">Computing Metrics Using Broadcasting</a></li>
+<li><a href="#stochastic-gradient-descent">Stochastic Gradient Descent</a></li>
+<li><a href="#the-mnist-loss-function">The MNIST Loss Function</a></li>
+<li><a href="#putting-it-all-together">Putting It All Together</a></li>
+<li><a href="#adding-a-nonlinearity">Adding a Nonlinearity</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<section id="tenacity-and-deep-learning" class="level2">
+<h2 class="anchored" data-anchor-id="tenacity-and-deep-learning">Tenacity and Deep Learning</h2>
+<ul>
+<li>Deep learning practitioners need to be tenacious</li>
+<li>Only a handful of researchers kept trying to make neural networks work through the 1990s and 2000s.
+<ul>
+<li>Yann Lecun, <a href="https://en.wikipedia.org/wiki/Yoshua_Bengio">Yoshua Bengio</a>, and <a href="https://en.wikipedia.org/wiki/Geoffrey_Hinton">Geoffrey Hinton</a> were not awarded the Turing Award until 2018</li>
+</ul></li>
+<li>Academic Papers for neural networks were rejected by top journals and conferences, despite showing dramatically better results than anything previously published</li>
+<li><a href="https://en.wikipedia.org/wiki/J%C3%BCrgen_Schmidhuber">Jurgen Schmidhuber</a>
+<ul>
+<li>pioneered many important ideas</li>
+<li>worked with his student <a href="https://en.wikipedia.org/wiki/Sepp_Hochreiter">Sepp Hochreiter</a> on the long short-term memory (LSTM) architecture
+<ul>
+<li>LSTMs are now widely used for speech recognition and other text modelling tasks</li>
+</ul></li>
+</ul></li>
+<li><a href="https://en.wikipedia.org/wiki/Paul_Werbos">Paul Werbos</a>
+<ul>
+<li>Invented backpropagation for neural networks in 1974
+<ul>
+<li>considered the most important foundation of modern AI</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="the-foundations-of-computer-vision" class="level2">
+<h2 class="anchored" data-anchor-id="the-foundations-of-computer-vision">The Foundations of Computer Vision</h2>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/MNIST_database">MNIST Database</a>
+<ul>
+<li>contains images of handwritten digits, collected by the National Institute of Standards and Technology</li>
+<li>created in 1998</li>
+</ul></li>
+<li><a href="https://en.wikipedia.org/wiki/LeNet">LeNet-5</a>
+<ul>
+<li>A convolutional neural network structure proposed by <a href="https://en.wikipedia.org/wiki/Yann_LeCun">Yann Lecun</a> and his colleagues</li>
+<li>Demonstrated the first practically useful recognition of handwritten digit sequences in 1998</li>
+<li>One of the most important breakthroughs in the history of AI</li>
+</ul></li>
+</ul>
+</section>
+<section id="pixels" class="level2">
+<h2 class="anchored" data-anchor-id="pixels">Pixels</h2>
+<section id="mnist_sample" class="level3">
+<h3 class="anchored" data-anchor-id="mnist_sample">MNIST_SAMPLE</h3>
+<ul>
+<li>A sample of the famous <a href="http://yann.lecun.com/exdb/mnist/">MNIST dataset</a> consisting of handwritten digits.</li>
+<li>contains training data for the digits <code>3</code> and <code>7</code></li>
+<li>images are in 1-dimensional grayscale format</li>
+<li>already split into training and validation sets</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastbook <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>matplotlib.rc(<span class="st">'image'</span>, cmap<span class="op">=</span><span class="st">'Greys'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(URLs.MNIST_SAMPLE)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> untar_data(URLs.MNIST_SAMPLE)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>https://s3.amazonaws.com/fast-ai-sample/mnist_sample.tgz
+/home/innom-dt/.fastai/data/mnist_sample</code></pre>
+<hr>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set base path to mnist_sample directory</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Path.BASE_PATH <span class="op">=</span> path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A custom fastai method that returns the contents of path as a list</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>path.ls()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(#3) [Path('labels.csv'),Path('train'),Path('valid')]</code></pre>
+<section id="fastcore-l-class" class="level4">
+<h4 class="anchored" data-anchor-id="fastcore-l-class">fastcore <code>L</code> Class</h4>
+<ul>
+<li><a href="https://fastcore.fast.ai/foundation.html#L">https://fastcore.fast.ai/foundation.html#L</a></li>
+<li>Behaves like a list of <code>items</code> but can also index with list of indices or masks</li>
+<li>Displays the number of items before printing the items</li>
+</ul>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python type(path.ls())</code> <code>text fastcore.foundation.L</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python (path/'train').ls()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>threes <span class="op">=</span> (path<span class="op">/</span><span class="st">'train'</span><span class="op">/</span><span class="st">'3'</span>).ls().<span class="bu">sorted</span>()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>sevens <span class="op">=</span> (path<span class="op">/</span><span class="st">'train'</span><span class="op">/</span><span class="st">'7'</span>).ls().<span class="bu">sorted</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>threes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(#6131) [Path('train/3/10.png'),Path('train/3/10000.png'),Path('train/3/10011.png'),Path('train/3/10031.png'),Path('train/3/10034.png'),Path('train/3/10042.png'),Path('train/3/10052.png'),Path('train/3/1007.png'),Path('train/3/10074.png'),Path('train/3/10091.png')...]</code></pre>
+<hr>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>im3_path <span class="op">=</span> threes[<span class="dv">1</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(im3_path)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>im3 <span class="op">=</span> Image.<span class="bu">open</span>(im3_path)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>im3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>/home/innom-dt/.fastai/data/mnist_sample/train/3/10000.png</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_10_1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="pil-image-module" class="level3">
+<h3 class="anchored" data-anchor-id="pil-image-module">PIL Image Module</h3>
+<ul>
+<li><a href="https://pillow.readthedocs.io/en/stable/reference/Image.html">https://pillow.readthedocs.io/en/stable/reference/Image.html</a></li>
+<li>provides a class with the same name which is used to represent a PIL image</li>
+<li>provides a number of factory functions, including functions to load images from files, and to create new images</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(im3))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(im3.size)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;class 'PIL.PngImagePlugin.PngImageFile'&gt;
+(28, 28)</code></pre>
+<hr>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Slice of the image from index 4 up to, but not including, index 10</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>array(im3)[<span class="dv">4</span>:<span class="dv">10</span>,<span class="dv">4</span>:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>array([[  0,   0,   0,   0,   0,   0],
+       [  0,   0,   0,   0,   0,  29],
+       [  0,   0,   0,  48, 166, 224],
+       [  0,  93, 244, 249, 253, 187],
+       [  0, 107, 253, 253, 230,  48],
+       [  0,   3,  20,  20,  15,   0]], dtype=uint8)</code></pre>
+</section>
+<section id="numpy-arrays-and-pytorch-tensors" class="level3">
+<h3 class="anchored" data-anchor-id="numpy-arrays-and-pytorch-tensors">NumPy Arrays and PyTorch Tensors</h3>
+<ul>
+<li><a href="https://numpy.org/">NumPy</a>
+<ul>
+<li>the most widely used library for scientific and numeric programming in Python</li>
+<li>does not support using GPUs or calculating gradients</li>
+</ul></li>
+<li>Python is slow compared to many languages
+<ul>
+<li>anything fast in Python is likely to be a wrapper for a compiled object written and optimized in another language like <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a></li>
+<li>NumPy arrays and PyTorch tensors can finish computations many thousands of times than using pure Python</li>
+</ul></li>
+<li>NumPy array
+<ul>
+<li>a multidimensional table of data</li>
+<li>all items are the same type</li>
+<li>can use any type, including arrays, for the array type</li>
+<li>simple types are stored as a compact C data structure in memory</li>
+</ul></li>
+<li>PyTorch tensor
+<ul>
+<li>nearly identical to NumPy arrays</li>
+<li>can only use a single basic numeric type for all elements</li>
+<li>not as flexible as a genuine array of arrays
+<ul>
+<li>must always be a regularly shaped multi-dimensional rectangular structure
+<ul>
+<li>cannot be jagged</li>
+</ul></li>
+</ul></li>
+<li>supports using GPUs</li>
+<li>PyTorch can automatically calculate derivatives of operations performed with tensors
+<ul>
+<li>impossible to do deep learning without this capability</li>
+</ul></li>
+</ul></li>
+<li>perform operations directly on arrays or tensors as much as possible instead of using loops</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> [[<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>],[<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>]]</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>arr <span class="op">=</span> array (data)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>tns <span class="op">=</span> tensor(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python arr  # numpy</code> <code>text array([[1, 2, 3], [4, 5, 6]])</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python tns  # pytorch</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># select a row</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>tns[<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([4, 5, 6])</code></pre>
+<hr>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># select a column</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>tns[:,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([2, 5])</code></pre>
+<hr>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># select a slice</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>tns[<span class="dv">1</span>,<span class="dv">1</span>:<span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([5, 6])</code></pre>
+<hr>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform element-wise addition</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>tns<span class="op">+</span><span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([[2, 3, 4],
+        [5, 6, 7]])</code></pre>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python tns.type()</code> <code>text 'torch.LongTensor'</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Perform element-wise multiplication tns*1.5</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">### NumPy Array Objects</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://numpy.org/doc/stable/reference/arrays.html">https://numpy.org/doc/stable/reference/arrays.html</a> * an N-dimensional array type, the ndarray, which describes a collection of “items” of the same type</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### numpy.array function</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html">https://numpy.org/doc/stable/reference/generated/numpy.array.html</a> * creates an array</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(array(im3)[<span class="dv">4</span>:<span class="dv">10</span>,<span class="dv">4</span>:<span class="dv">10</span>]))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>array</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;class 'numpy.ndarray'&gt;
+&lt;function numpy.array&gt;</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python print(array(im3)[4:10,4:10][0].data) print(array(im3)[4:10,4:10][0].dtype)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python print(type(tensor(im3)[4:10,4:10][0])) tensor</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tensor(im3)[<span class="dv">4</span>:<span class="dv">10</span>,<span class="dv">4</span>:<span class="dv">10</span>][<span class="dv">0</span>].data)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tensor(im3)[<span class="dv">4</span>:<span class="dv">10</span>,<span class="dv">4</span>:<span class="dv">10</span>][<span class="dv">0</span>].dtype)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([0, 0, 0, 0, 0, 0], dtype=torch.uint8)
+torch.uint8</code></pre>
+</section>
+<section id="pandas-dataframe" class="level3">
+<h3 class="anchored" data-anchor-id="pandas-dataframe">Pandas DataFrame</h3>
+<ul>
+<li><a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html">https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html</a></li>
+<li>Two-dimensional, size-mutable, potentially heterogeneous tabular data</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Full Image</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(tensor(im3))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table style="overflow-x:scroll; width: 600px;" class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+<th>
+1
+</th>
+<th>
+2
+</th>
+<th>
+3
+</th>
+<th>
+4
+</th>
+<th>
+5
+</th>
+<th>
+6
+</th>
+<th>
+7
+</th>
+<th>
+8
+</th>
+<th>
+9
+</th>
+<th>
+10
+</th>
+<th>
+11
+</th>
+<th>
+12
+</th>
+<th>
+13
+</th>
+<th>
+14
+</th>
+<th>
+15
+</th>
+<th>
+16
+</th>
+<th>
+17
+</th>
+<th>
+18
+</th>
+<th>
+19
+</th>
+<th>
+20
+</th>
+<th>
+21
+</th>
+<th>
+22
+</th>
+<th>
+23
+</th>
+<th>
+24
+</th>
+<th>
+25
+</th>
+<th>
+26
+</th>
+<th>
+27
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+29
+</td>
+<td>
+150
+</td>
+<td>
+195
+</td>
+<td>
+254
+</td>
+<td>
+255
+</td>
+<td>
+254
+</td>
+<td>
+176
+</td>
+<td>
+193
+</td>
+<td>
+150
+</td>
+<td>
+96
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+48
+</td>
+<td>
+166
+</td>
+<td>
+224
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+234
+</td>
+<td>
+196
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+233
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+93
+</td>
+<td>
+244
+</td>
+<td>
+249
+</td>
+<td>
+253
+</td>
+<td>
+187
+</td>
+<td>
+46
+</td>
+<td>
+10
+</td>
+<td>
+8
+</td>
+<td>
+4
+</td>
+<td>
+10
+</td>
+<td>
+194
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+233
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+8
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+107
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+230
+</td>
+<td>
+48
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+192
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+156
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+9
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+3
+</td>
+<td>
+20
+</td>
+<td>
+20
+</td>
+<td>
+15
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+43
+</td>
+<td>
+224
+</td>
+<td>
+253
+</td>
+<td>
+245
+</td>
+<td>
+74
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+10
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+249
+</td>
+<td>
+253
+</td>
+<td>
+245
+</td>
+<td>
+126
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+11
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+14
+</td>
+<td>
+101
+</td>
+<td>
+223
+</td>
+<td>
+253
+</td>
+<td>
+248
+</td>
+<td>
+124
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+12
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+11
+</td>
+<td>
+166
+</td>
+<td>
+239
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+187
+</td>
+<td>
+30
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+13
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+16
+</td>
+<td>
+248
+</td>
+<td>
+250
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+232
+</td>
+<td>
+213
+</td>
+<td>
+111
+</td>
+<td>
+2
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+14
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+43
+</td>
+<td>
+98
+</td>
+<td>
+98
+</td>
+<td>
+208
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+187
+</td>
+<td>
+22
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+15
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+9
+</td>
+<td>
+51
+</td>
+<td>
+119
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+76
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+16
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+1
+</td>
+<td>
+183
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+139
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+17
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+182
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+104
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+18
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+85
+</td>
+<td>
+249
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+36
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+19
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+60
+</td>
+<td>
+214
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+173
+</td>
+<td>
+11
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+20
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+98
+</td>
+<td>
+247
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+226
+</td>
+<td>
+9
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+21
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+42
+</td>
+<td>
+150
+</td>
+<td>
+252
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+233
+</td>
+<td>
+53
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+22
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+42
+</td>
+<td>
+115
+</td>
+<td>
+42
+</td>
+<td>
+60
+</td>
+<td>
+115
+</td>
+<td>
+159
+</td>
+<td>
+240
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+250
+</td>
+<td>
+175
+</td>
+<td>
+25
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+23
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+187
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+197
+</td>
+<td>
+86
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+24
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+103
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+253
+</td>
+<td>
+232
+</td>
+<td>
+67
+</td>
+<td>
+1
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+25
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+26
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+27
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<hr>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>tensor(im3).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([28, 28])</code></pre>
+<hr>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>im3_t <span class="op">=</span> tensor(im3)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a pandas DataFrame from image slice</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame(im3_t[<span class="dv">4</span>:<span class="dv">15</span>,<span class="dv">4</span>:<span class="dv">22</span>])</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Set defined CSS-properties to each ``&lt;td&gt;`` HTML element within the given subset.</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Color-code the values using a gradient</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>df.style.set_properties(<span class="op">**</span>{<span class="st">'font-size'</span>:<span class="st">'6pt'</span>}).background_gradient(<span class="st">'Greys'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table id="T_75288">
+<thead>
+<tr>
+<th class="blank level0">
+&nbsp;
+</th>
+<th id="T_75288_level0_col0" class="col_heading level0 col0">
+0
+</th>
+<th id="T_75288_level0_col1" class="col_heading level0 col1">
+1
+</th>
+<th id="T_75288_level0_col2" class="col_heading level0 col2">
+2
+</th>
+<th id="T_75288_level0_col3" class="col_heading level0 col3">
+3
+</th>
+<th id="T_75288_level0_col4" class="col_heading level0 col4">
+4
+</th>
+<th id="T_75288_level0_col5" class="col_heading level0 col5">
+5
+</th>
+<th id="T_75288_level0_col6" class="col_heading level0 col6">
+6
+</th>
+<th id="T_75288_level0_col7" class="col_heading level0 col7">
+7
+</th>
+<th id="T_75288_level0_col8" class="col_heading level0 col8">
+8
+</th>
+<th id="T_75288_level0_col9" class="col_heading level0 col9">
+9
+</th>
+<th id="T_75288_level0_col10" class="col_heading level0 col10">
+10
+</th>
+<th id="T_75288_level0_col11" class="col_heading level0 col11">
+11
+</th>
+<th id="T_75288_level0_col12" class="col_heading level0 col12">
+12
+</th>
+<th id="T_75288_level0_col13" class="col_heading level0 col13">
+13
+</th>
+<th id="T_75288_level0_col14" class="col_heading level0 col14">
+14
+</th>
+<th id="T_75288_level0_col15" class="col_heading level0 col15">
+15
+</th>
+<th id="T_75288_level0_col16" class="col_heading level0 col16">
+16
+</th>
+<th id="T_75288_level0_col17" class="col_heading level0 col17">
+17
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th id="T_75288_level0_row0" class="row_heading level0 row0">
+0
+</th>
+<td id="T_75288_row0_col0" class="data row0 col0">
+0
+</td>
+<td id="T_75288_row0_col1" class="data row0 col1">
+0
+</td>
+<td id="T_75288_row0_col2" class="data row0 col2">
+0
+</td>
+<td id="T_75288_row0_col3" class="data row0 col3">
+0
+</td>
+<td id="T_75288_row0_col4" class="data row0 col4">
+0
+</td>
+<td id="T_75288_row0_col5" class="data row0 col5">
+0
+</td>
+<td id="T_75288_row0_col6" class="data row0 col6">
+0
+</td>
+<td id="T_75288_row0_col7" class="data row0 col7">
+0
+</td>
+<td id="T_75288_row0_col8" class="data row0 col8">
+0
+</td>
+<td id="T_75288_row0_col9" class="data row0 col9">
+0
+</td>
+<td id="T_75288_row0_col10" class="data row0 col10">
+0
+</td>
+<td id="T_75288_row0_col11" class="data row0 col11">
+0
+</td>
+<td id="T_75288_row0_col12" class="data row0 col12">
+0
+</td>
+<td id="T_75288_row0_col13" class="data row0 col13">
+0
+</td>
+<td id="T_75288_row0_col14" class="data row0 col14">
+0
+</td>
+<td id="T_75288_row0_col15" class="data row0 col15">
+0
+</td>
+<td id="T_75288_row0_col16" class="data row0 col16">
+0
+</td>
+<td id="T_75288_row0_col17" class="data row0 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row1" class="row_heading level0 row1">
+1
+</th>
+<td id="T_75288_row1_col0" class="data row1 col0">
+0
+</td>
+<td id="T_75288_row1_col1" class="data row1 col1">
+0
+</td>
+<td id="T_75288_row1_col2" class="data row1 col2">
+0
+</td>
+<td id="T_75288_row1_col3" class="data row1 col3">
+0
+</td>
+<td id="T_75288_row1_col4" class="data row1 col4">
+0
+</td>
+<td id="T_75288_row1_col5" class="data row1 col5">
+29
+</td>
+<td id="T_75288_row1_col6" class="data row1 col6">
+150
+</td>
+<td id="T_75288_row1_col7" class="data row1 col7">
+195
+</td>
+<td id="T_75288_row1_col8" class="data row1 col8">
+254
+</td>
+<td id="T_75288_row1_col9" class="data row1 col9">
+255
+</td>
+<td id="T_75288_row1_col10" class="data row1 col10">
+254
+</td>
+<td id="T_75288_row1_col11" class="data row1 col11">
+176
+</td>
+<td id="T_75288_row1_col12" class="data row1 col12">
+193
+</td>
+<td id="T_75288_row1_col13" class="data row1 col13">
+150
+</td>
+<td id="T_75288_row1_col14" class="data row1 col14">
+96
+</td>
+<td id="T_75288_row1_col15" class="data row1 col15">
+0
+</td>
+<td id="T_75288_row1_col16" class="data row1 col16">
+0
+</td>
+<td id="T_75288_row1_col17" class="data row1 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row2" class="row_heading level0 row2">
+2
+</th>
+<td id="T_75288_row2_col0" class="data row2 col0">
+0
+</td>
+<td id="T_75288_row2_col1" class="data row2 col1">
+0
+</td>
+<td id="T_75288_row2_col2" class="data row2 col2">
+0
+</td>
+<td id="T_75288_row2_col3" class="data row2 col3">
+48
+</td>
+<td id="T_75288_row2_col4" class="data row2 col4">
+166
+</td>
+<td id="T_75288_row2_col5" class="data row2 col5">
+224
+</td>
+<td id="T_75288_row2_col6" class="data row2 col6">
+253
+</td>
+<td id="T_75288_row2_col7" class="data row2 col7">
+253
+</td>
+<td id="T_75288_row2_col8" class="data row2 col8">
+234
+</td>
+<td id="T_75288_row2_col9" class="data row2 col9">
+196
+</td>
+<td id="T_75288_row2_col10" class="data row2 col10">
+253
+</td>
+<td id="T_75288_row2_col11" class="data row2 col11">
+253
+</td>
+<td id="T_75288_row2_col12" class="data row2 col12">
+253
+</td>
+<td id="T_75288_row2_col13" class="data row2 col13">
+253
+</td>
+<td id="T_75288_row2_col14" class="data row2 col14">
+233
+</td>
+<td id="T_75288_row2_col15" class="data row2 col15">
+0
+</td>
+<td id="T_75288_row2_col16" class="data row2 col16">
+0
+</td>
+<td id="T_75288_row2_col17" class="data row2 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row3" class="row_heading level0 row3">
+3
+</th>
+<td id="T_75288_row3_col0" class="data row3 col0">
+0
+</td>
+<td id="T_75288_row3_col1" class="data row3 col1">
+93
+</td>
+<td id="T_75288_row3_col2" class="data row3 col2">
+244
+</td>
+<td id="T_75288_row3_col3" class="data row3 col3">
+249
+</td>
+<td id="T_75288_row3_col4" class="data row3 col4">
+253
+</td>
+<td id="T_75288_row3_col5" class="data row3 col5">
+187
+</td>
+<td id="T_75288_row3_col6" class="data row3 col6">
+46
+</td>
+<td id="T_75288_row3_col7" class="data row3 col7">
+10
+</td>
+<td id="T_75288_row3_col8" class="data row3 col8">
+8
+</td>
+<td id="T_75288_row3_col9" class="data row3 col9">
+4
+</td>
+<td id="T_75288_row3_col10" class="data row3 col10">
+10
+</td>
+<td id="T_75288_row3_col11" class="data row3 col11">
+194
+</td>
+<td id="T_75288_row3_col12" class="data row3 col12">
+253
+</td>
+<td id="T_75288_row3_col13" class="data row3 col13">
+253
+</td>
+<td id="T_75288_row3_col14" class="data row3 col14">
+233
+</td>
+<td id="T_75288_row3_col15" class="data row3 col15">
+0
+</td>
+<td id="T_75288_row3_col16" class="data row3 col16">
+0
+</td>
+<td id="T_75288_row3_col17" class="data row3 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row4" class="row_heading level0 row4">
+4
+</th>
+<td id="T_75288_row4_col0" class="data row4 col0">
+0
+</td>
+<td id="T_75288_row4_col1" class="data row4 col1">
+107
+</td>
+<td id="T_75288_row4_col2" class="data row4 col2">
+253
+</td>
+<td id="T_75288_row4_col3" class="data row4 col3">
+253
+</td>
+<td id="T_75288_row4_col4" class="data row4 col4">
+230
+</td>
+<td id="T_75288_row4_col5" class="data row4 col5">
+48
+</td>
+<td id="T_75288_row4_col6" class="data row4 col6">
+0
+</td>
+<td id="T_75288_row4_col7" class="data row4 col7">
+0
+</td>
+<td id="T_75288_row4_col8" class="data row4 col8">
+0
+</td>
+<td id="T_75288_row4_col9" class="data row4 col9">
+0
+</td>
+<td id="T_75288_row4_col10" class="data row4 col10">
+0
+</td>
+<td id="T_75288_row4_col11" class="data row4 col11">
+192
+</td>
+<td id="T_75288_row4_col12" class="data row4 col12">
+253
+</td>
+<td id="T_75288_row4_col13" class="data row4 col13">
+253
+</td>
+<td id="T_75288_row4_col14" class="data row4 col14">
+156
+</td>
+<td id="T_75288_row4_col15" class="data row4 col15">
+0
+</td>
+<td id="T_75288_row4_col16" class="data row4 col16">
+0
+</td>
+<td id="T_75288_row4_col17" class="data row4 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row5" class="row_heading level0 row5">
+5
+</th>
+<td id="T_75288_row5_col0" class="data row5 col0">
+0
+</td>
+<td id="T_75288_row5_col1" class="data row5 col1">
+3
+</td>
+<td id="T_75288_row5_col2" class="data row5 col2">
+20
+</td>
+<td id="T_75288_row5_col3" class="data row5 col3">
+20
+</td>
+<td id="T_75288_row5_col4" class="data row5 col4">
+15
+</td>
+<td id="T_75288_row5_col5" class="data row5 col5">
+0
+</td>
+<td id="T_75288_row5_col6" class="data row5 col6">
+0
+</td>
+<td id="T_75288_row5_col7" class="data row5 col7">
+0
+</td>
+<td id="T_75288_row5_col8" class="data row5 col8">
+0
+</td>
+<td id="T_75288_row5_col9" class="data row5 col9">
+0
+</td>
+<td id="T_75288_row5_col10" class="data row5 col10">
+43
+</td>
+<td id="T_75288_row5_col11" class="data row5 col11">
+224
+</td>
+<td id="T_75288_row5_col12" class="data row5 col12">
+253
+</td>
+<td id="T_75288_row5_col13" class="data row5 col13">
+245
+</td>
+<td id="T_75288_row5_col14" class="data row5 col14">
+74
+</td>
+<td id="T_75288_row5_col15" class="data row5 col15">
+0
+</td>
+<td id="T_75288_row5_col16" class="data row5 col16">
+0
+</td>
+<td id="T_75288_row5_col17" class="data row5 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row6" class="row_heading level0 row6">
+6
+</th>
+<td id="T_75288_row6_col0" class="data row6 col0">
+0
+</td>
+<td id="T_75288_row6_col1" class="data row6 col1">
+0
+</td>
+<td id="T_75288_row6_col2" class="data row6 col2">
+0
+</td>
+<td id="T_75288_row6_col3" class="data row6 col3">
+0
+</td>
+<td id="T_75288_row6_col4" class="data row6 col4">
+0
+</td>
+<td id="T_75288_row6_col5" class="data row6 col5">
+0
+</td>
+<td id="T_75288_row6_col6" class="data row6 col6">
+0
+</td>
+<td id="T_75288_row6_col7" class="data row6 col7">
+0
+</td>
+<td id="T_75288_row6_col8" class="data row6 col8">
+0
+</td>
+<td id="T_75288_row6_col9" class="data row6 col9">
+0
+</td>
+<td id="T_75288_row6_col10" class="data row6 col10">
+249
+</td>
+<td id="T_75288_row6_col11" class="data row6 col11">
+253
+</td>
+<td id="T_75288_row6_col12" class="data row6 col12">
+245
+</td>
+<td id="T_75288_row6_col13" class="data row6 col13">
+126
+</td>
+<td id="T_75288_row6_col14" class="data row6 col14">
+0
+</td>
+<td id="T_75288_row6_col15" class="data row6 col15">
+0
+</td>
+<td id="T_75288_row6_col16" class="data row6 col16">
+0
+</td>
+<td id="T_75288_row6_col17" class="data row6 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row7" class="row_heading level0 row7">
+7
+</th>
+<td id="T_75288_row7_col0" class="data row7 col0">
+0
+</td>
+<td id="T_75288_row7_col1" class="data row7 col1">
+0
+</td>
+<td id="T_75288_row7_col2" class="data row7 col2">
+0
+</td>
+<td id="T_75288_row7_col3" class="data row7 col3">
+0
+</td>
+<td id="T_75288_row7_col4" class="data row7 col4">
+0
+</td>
+<td id="T_75288_row7_col5" class="data row7 col5">
+0
+</td>
+<td id="T_75288_row7_col6" class="data row7 col6">
+0
+</td>
+<td id="T_75288_row7_col7" class="data row7 col7">
+14
+</td>
+<td id="T_75288_row7_col8" class="data row7 col8">
+101
+</td>
+<td id="T_75288_row7_col9" class="data row7 col9">
+223
+</td>
+<td id="T_75288_row7_col10" class="data row7 col10">
+253
+</td>
+<td id="T_75288_row7_col11" class="data row7 col11">
+248
+</td>
+<td id="T_75288_row7_col12" class="data row7 col12">
+124
+</td>
+<td id="T_75288_row7_col13" class="data row7 col13">
+0
+</td>
+<td id="T_75288_row7_col14" class="data row7 col14">
+0
+</td>
+<td id="T_75288_row7_col15" class="data row7 col15">
+0
+</td>
+<td id="T_75288_row7_col16" class="data row7 col16">
+0
+</td>
+<td id="T_75288_row7_col17" class="data row7 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row8" class="row_heading level0 row8">
+8
+</th>
+<td id="T_75288_row8_col0" class="data row8 col0">
+0
+</td>
+<td id="T_75288_row8_col1" class="data row8 col1">
+0
+</td>
+<td id="T_75288_row8_col2" class="data row8 col2">
+0
+</td>
+<td id="T_75288_row8_col3" class="data row8 col3">
+0
+</td>
+<td id="T_75288_row8_col4" class="data row8 col4">
+0
+</td>
+<td id="T_75288_row8_col5" class="data row8 col5">
+11
+</td>
+<td id="T_75288_row8_col6" class="data row8 col6">
+166
+</td>
+<td id="T_75288_row8_col7" class="data row8 col7">
+239
+</td>
+<td id="T_75288_row8_col8" class="data row8 col8">
+253
+</td>
+<td id="T_75288_row8_col9" class="data row8 col9">
+253
+</td>
+<td id="T_75288_row8_col10" class="data row8 col10">
+253
+</td>
+<td id="T_75288_row8_col11" class="data row8 col11">
+187
+</td>
+<td id="T_75288_row8_col12" class="data row8 col12">
+30
+</td>
+<td id="T_75288_row8_col13" class="data row8 col13">
+0
+</td>
+<td id="T_75288_row8_col14" class="data row8 col14">
+0
+</td>
+<td id="T_75288_row8_col15" class="data row8 col15">
+0
+</td>
+<td id="T_75288_row8_col16" class="data row8 col16">
+0
+</td>
+<td id="T_75288_row8_col17" class="data row8 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row9" class="row_heading level0 row9">
+9
+</th>
+<td id="T_75288_row9_col0" class="data row9 col0">
+0
+</td>
+<td id="T_75288_row9_col1" class="data row9 col1">
+0
+</td>
+<td id="T_75288_row9_col2" class="data row9 col2">
+0
+</td>
+<td id="T_75288_row9_col3" class="data row9 col3">
+0
+</td>
+<td id="T_75288_row9_col4" class="data row9 col4">
+0
+</td>
+<td id="T_75288_row9_col5" class="data row9 col5">
+16
+</td>
+<td id="T_75288_row9_col6" class="data row9 col6">
+248
+</td>
+<td id="T_75288_row9_col7" class="data row9 col7">
+250
+</td>
+<td id="T_75288_row9_col8" class="data row9 col8">
+253
+</td>
+<td id="T_75288_row9_col9" class="data row9 col9">
+253
+</td>
+<td id="T_75288_row9_col10" class="data row9 col10">
+253
+</td>
+<td id="T_75288_row9_col11" class="data row9 col11">
+253
+</td>
+<td id="T_75288_row9_col12" class="data row9 col12">
+232
+</td>
+<td id="T_75288_row9_col13" class="data row9 col13">
+213
+</td>
+<td id="T_75288_row9_col14" class="data row9 col14">
+111
+</td>
+<td id="T_75288_row9_col15" class="data row9 col15">
+2
+</td>
+<td id="T_75288_row9_col16" class="data row9 col16">
+0
+</td>
+<td id="T_75288_row9_col17" class="data row9 col17">
+0
+</td>
+</tr>
+<tr>
+<th id="T_75288_level0_row10" class="row_heading level0 row10">
+10
+</th>
+<td id="T_75288_row10_col0" class="data row10 col0">
+0
+</td>
+<td id="T_75288_row10_col1" class="data row10 col1">
+0
+</td>
+<td id="T_75288_row10_col2" class="data row10 col2">
+0
+</td>
+<td id="T_75288_row10_col3" class="data row10 col3">
+0
+</td>
+<td id="T_75288_row10_col4" class="data row10 col4">
+0
+</td>
+<td id="T_75288_row10_col5" class="data row10 col5">
+0
+</td>
+<td id="T_75288_row10_col6" class="data row10 col6">
+0
+</td>
+<td id="T_75288_row10_col7" class="data row10 col7">
+43
+</td>
+<td id="T_75288_row10_col8" class="data row10 col8">
+98
+</td>
+<td id="T_75288_row10_col9" class="data row10 col9">
+98
+</td>
+<td id="T_75288_row10_col10" class="data row10 col10">
+208
+</td>
+<td id="T_75288_row10_col11" class="data row10 col11">
+253
+</td>
+<td id="T_75288_row10_col12" class="data row10 col12">
+253
+</td>
+<td id="T_75288_row10_col13" class="data row10 col13">
+253
+</td>
+<td id="T_75288_row10_col14" class="data row10 col14">
+253
+</td>
+<td id="T_75288_row10_col15" class="data row10 col15">
+187
+</td>
+<td id="T_75288_row10_col16" class="data row10 col16">
+22
+</td>
+<td id="T_75288_row10_col17" class="data row10 col17">
+0
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</section>
+</section>
+<section id="pixel-similarity" class="level2">
+<h2 class="anchored" data-anchor-id="pixel-similarity">Pixel Similarity</h2>
+<ul>
+<li>Establish a baseline to compare against your model
+<ul>
+<li>a simple model that you are confident should perform reasonably well</li>
+<li>should be simple to implement and easy to test</li>
+<li>helps indicate whether your super-fancy models are any good</li>
+</ul></li>
+</ul>
+<section id="method" class="level3">
+<h3 class="anchored" data-anchor-id="method">Method</h3>
+<ul>
+<li>Calculate the average values for each pixel location across all images for each digit
+<ul>
+<li>This will generate a blurry image of the target digit</li>
+</ul></li>
+<li>Compare the values for each pixel location in a new image to the average</li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Store all images of the digit 7 in a list of tensors seven_tensors = [tensor(Image.open(o)) for o in sevens] # Store all iamges of the digit 3 in a list of tensors three_tensors = [tensor(Image.open(o)) for o in threes] len(three_tensors),len(seven_tensors)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python show_image(three_tensors[1]);</code> <img src="./images/output_27_0.png" class="img-fluid" alt="png"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### PyTorch Stack Function * <a href="https://pytorch.org/docs/stable/generated/torch.stack.html">https://pytorch.org/docs/stable/generated/torch.stack.html</a> * Concatenates a sequence of tensors along a new dimension</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Stack all images for each digit into a single tensor</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and scale pixel values from the range [0,255] to [0,1]</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>stacked_sevens <span class="op">=</span> torch.stack(seven_tensors).<span class="bu">float</span>()<span class="op">/</span><span class="dv">255</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>stacked_threes <span class="op">=</span> torch.stack(three_tensors).<span class="bu">float</span>()<span class="op">/</span><span class="dv">255</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>stacked_threes.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([6131, 28, 28])</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python len(stacked_threes.shape)</code> <code>text 3</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python stacked_threes.ndim</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the mean values for each pixel location across all images of the digit 3</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>mean3 <span class="op">=</span> stacked_threes.mean(<span class="dv">0</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>show_image(mean3)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_32_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Calculate the mean values for each pixel location across all images of the digit 7 mean7 = stacked_sevens.mean(0) show_image(mean7);</code> <img src="./images/output_33_0.png" class="img-fluid" alt="png"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Pick a single image to compare to the average a_3 = stacked_threes[1] show_image(a_3);</code> <img src="./images/output_34_0.png" class="img-fluid" alt="png"></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the Mean Absolute Error between the single image and the mean pixel values</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>dist_3_abs <span class="op">=</span> (a_3 <span class="op">-</span> mean3).<span class="bu">abs</span>().mean()</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the Root Mean Squared Error between the single image and the mean pixel values</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>dist_3_sqr <span class="op">=</span> ((a_3 <span class="op">-</span> mean3)<span class="op">**</span><span class="dv">2</span>).mean().sqrt()</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"MAE: </span><span class="sc">{</span>dist_3_abs<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"RMSE: </span><span class="sc">{</span>dist_3_sqr<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>MAE: 0.11143654584884644
+RMSE: 0.20208320021629333</code></pre>
+<p>Khan Academy: <a href="https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals/x2f8bb11595b61c86:radicals/v/understanding-square-roots">Understanding Square Roots</a></p>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python dist_7_abs = (a_3 - mean7).abs().mean() dist_7_sqr = ((a_3 - mean7)**2).mean().sqrt() print(f"MAE: {dist_7_abs}") print(f"RMSE: {dist_7_sqr}")</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python F</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### PyTorch l1_loss function * <a href="https://pytorch.org/docs/stable/generated/torch.nn.functional.l1_loss.html#torch.nn.functional.l1_loss">https://pytorch.org/docs/stable/generated/torch.nn.functional.l1_loss.html#torch.nn.functional.l1_loss</a> * takes the mean element-wise absolute value difference</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#### PyTorch mse_loss function * <a href="https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss">https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss</a> * Measures the element-wise mean squared error * Penalizes bigger mistakes more heavily</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the Mean Absolute Error aka L1 norm</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(F.l1_loss(a_3.<span class="bu">float</span>(),mean7))</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the Root Mean Squared Error aka L2 norm</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(F.mse_loss(a_3,mean7).sqrt())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor(0.1586)
+tensor(0.3021)</code></pre>
+</section>
+</section>
+<section id="computing-metrics-using-broadcasting" class="level2">
+<h2 class="anchored" data-anchor-id="computing-metrics-using-broadcasting">Computing Metrics Using Broadcasting</h2>
+<ul>
+<li>broadcasting
+<ul>
+<li>automatically expanding a tensor with a smaller rank to have the same size one with a larger rank to perform an operation</li>
+<li>an important capability that makes tensor code much easier to write</li>
+<li>PyTorch does not allocate additional memory for broadcasting
+<ul>
+<li>it does not actually create multiple copies of the smaller tensor</li>
+</ul></li>
+<li>PyTorch performs broadcast calculations in <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C</a> on the CPU and <a href="https://en.wikipedia.org/wiki/CUDA">CUDA</a> on the GPU
+<ul>
+<li>tens of thousands of times faster than pure Python</li>
+<li>up to millions of times faster on GPU</li>
+</ul></li>
+</ul></li>
+</ul>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td>```python # Create tensors for the validation set for the digit 3 # and stack them into a single tensor valid_3_tens = torch.stack([tensor(Image.open(o)) for o in (path/‘valid’/‘3’).ls()]) # Scale pixel values from [0,255] to [0,1] valid_3_tens = valid_3_tens.float()/255</td>
+</tr>
+<tr class="even">
+<td># Create tensors for the validation set for the digit 7 # and stack them into a single tensor valid_7_tens = torch.stack([tensor(Image.open(o)) for o in (path/‘valid’/‘7’).ls()]) # Scale pixel values from [0,255] to [0,1] valid_7_tens = valid_7_tens.float()/255</td>
+</tr>
+<tr class="odd">
+<td>valid_3_tens.shape,valid_7_tens.shape</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate Mean Absolute Error using broadcasting</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Subtraction operation is performed using broadcasting</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Absolute Value operation is performed elementwise</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Mean operation is performed over the values indexed by the height and width axes</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mnist_distance(a,b): <span class="cf">return</span> (a<span class="op">-</span>b).<span class="bu">abs</span>().mean((<span class="op">-</span><span class="dv">1</span>,<span class="op">-</span><span class="dv">2</span>))</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate MAE for two single images</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>mnist_distance(a_3, mean3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor(0.1114)</code></pre>
+<hr>
+<div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate MAE between a single image and a vector of images</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>valid_3_dist <span class="op">=</span> mnist_distance(valid_3_tens, mean3)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>valid_3_dist, valid_3_dist.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(tensor([0.1422, 0.1230, 0.1055,  ..., 0.1244, 0.1188, 0.1103]),
+ torch.Size([1010]))</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python tensor([1,2,3]) + tensor([1,1,1])</code> <code>text tensor([2, 3, 4])</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python (valid_3_tens-mean3).shape</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare the MAE value between the single and the mean values for the digits 3 and 7</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_3(x): <span class="cf">return</span> mnist_distance(x,mean3) <span class="op">&lt;</span> mnist_distance(x,mean7)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><code>python is_3(a_3), is_3(a_3).float()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>is_3(valid_3_tens)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([ True,  True,  True,  ..., False,  True,  True])</code></pre>
+<hr>
+<div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>accuracy_3s <span class="op">=</span>      is_3(valid_3_tens).<span class="bu">float</span>() .mean()</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>accuracy_7s <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> is_3(valid_7_tens).<span class="bu">float</span>()).mean()</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>accuracy_3s,accuracy_7s,(accuracy_3s<span class="op">+</span>accuracy_7s)<span class="op">/</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(tensor(0.9168), tensor(0.9854), tensor(0.9511))</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><code>python print(f"Correct 3s: {accuracy_3s * valid_3_tens.shape[0]:.0f}") print(f"Incorrect 3s: {(1 - accuracy_3s) * valid_3_tens.shape[0]:.0f}")</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Correct 7s: </span><span class="sc">{</span>accuracy_7s <span class="op">*</span> valid_7_tens<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">:.0f}</span><span class="ss">"</span>)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Incorrect 7s: </span><span class="sc">{</span>(<span class="dv">1</span> <span class="op">-</span> accuracy_7s) <span class="op">*</span> valid_7_tens<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">:.0f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Correct 7s: 1013
+Incorrect 7s: 15</code></pre>
+</section>
+<section id="stochastic-gradient-descent" class="level2">
+<h2 class="anchored" data-anchor-id="stochastic-gradient-descent">Stochastic Gradient Descent</h2>
+<ul>
+<li>the key to having a model that can improve</li>
+<li>need to represent a task such that their are weight assignments that can be evaluated and updated</li>
+<li>Sample function:
+<ul>
+<li>assign a weight value to each pixel location</li>
+<li><code>X</code> is the image represented as a vector
+<ul>
+<li>all of the rows are stacked up end to end into a single long line</li>
+</ul></li>
+<li><code>W</code> contains the weights for each pixel</li>
+</ul></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pr_eight(x,w) <span class="op">=</span> (x<span class="op">*</span>w).<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_66_0.svg" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">svg</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f(x): <span class="cf">return</span> x<span class="op">**</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="plot_function" class="level4">
+<h4 class="anchored" data-anchor-id="plot_function">plot_function</h4>
+<ul>
+<li><a href="https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70">https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70</a></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>plot_function(f, <span class="st">'x'</span>, <span class="st">'x**2'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_69_1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>plot_function(f, <span class="st">'x'</span>, <span class="st">'x**2'</span>)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>plt.scatter(<span class="op">-</span><span class="fl">1.5</span>, f(<span class="op">-</span><span class="fl">1.5</span>), color<span class="op">=</span><span class="st">'red'</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_70_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="calculating-gradients" class="level3">
+<h3 class="anchored" data-anchor-id="calculating-gradients">Calculating Gradients</h3>
+<ul>
+<li>the gradients tell us how much we need to change each weight to make our model better
+<ul>
+<li><span class="math inline">\(\frac{rise}{run} = \frac{the \ change \ in \ value \ of \ the \ function}{the \ change \ in \ the \ value \ of \ the \ parameter}\)</span></li>
+</ul></li>
+<li>derivative of a function
+<ul>
+<li>tells you how much a change in its parameters will change its result</li>
+<li><a href="https://www.khanacademy.org/math/differential-calculus/dc-diff-intro">Khan Academy: Basic Derivatives</a></li>
+</ul></li>
+<li>when we know how our function will change, we know how to make it smaller
+<ul>
+<li>the key to machine learning</li>
+</ul></li>
+<li>PyTorch is able to automatically compute the derivative of nearly any function</li>
+<li>The gradient only tells us the slope of the function
+<ul>
+<li>it does not indicate exactly how far to adjust the parameters</li>
+<li>if the slope is large, more adjustments may be required</li>
+<li>if the slope is small, we may be close to the optimal value</li>
+</ul></li>
+</ul>
+<section id="tensor.requires_grad" class="level4">
+<h4 class="anchored" data-anchor-id="tensor.requires_grad">Tensor.requires_grad</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad.html">https://pytorch.org/docs/stable/generated/torch.Tensor.requires_grad.html</a></li>
+<li>is <code>True</code> if gradients need to be computed for the Tensor</li>
+<li>here gradient refers to the value of a function’s derivative at a particular argument value</li>
+<li>The PyTorch API puts the focus onto the argument, not the function</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>xt <span class="op">=</span> tensor(<span class="fl">3.</span>).requires_grad_()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<tbody>
+<tr class="odd">
+<td><code>python yt = f(xt) yt</code></td>
+</tr>
+<tr class="even">
+<td>#### Tensor.grad_fn</td>
+</tr>
+<tr class="odd">
+<td>* <a href="https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history">https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history</a> * references a function that has created a function</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>yt.grad_fn</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;PowBackward0 at 0x7f91e90a6670&gt;</code></pre>
+</section>
+<section id="tensor.backward" class="level4">
+<h4 class="anchored" data-anchor-id="tensor.backward">Tensor.backward()</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward">https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward</a></li>
+<li>Computes the gradient of current tensor w.r.t. graph leaves.
+<ul>
+<li>uses the chain rule</li>
+</ul></li>
+<li>backward refers to backpropagation
+<ul>
+<li>the process of calculating the derivative for each layer</li>
+</ul></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>yt.backward()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The derivative of <code>f(x) = x**2</code> is <code>2x</code>, so the derivative at <code>x=3</code> is <code>6</code></p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>xt.grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor(6.)</code></pre>
+<p>Derivatives should be <code>6</code>, <code>8</code>, <code>20</code></p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>xt <span class="op">=</span> tensor([<span class="fl">3.</span>,<span class="fl">4.</span>,<span class="fl">10.</span>]).requires_grad_()</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>xt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([ 3.,  4., 10.], requires_grad=True)</code></pre>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">```python def f(x): return (x**2).sum()</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python yt.backward() xt.grad</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">### Stepping with a Learning Rate</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">- nearly all approaches to updating model parameters start with multiplying the gradient by some small number called the learning rate - Learning rate is often a number between <code>0.001</code> and <code>0.1</code> - could be value - stepping: adjusting your model parameters - size of step is determined by the learning rate - picking a learning rate that is too small means more steps are needed to reach the optimal parameter values - picking a learning rate that is too big can result in the loss getting worse or bouncing around the same range of values</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">### An End-to-End SGD Example - Steps to turn function into classifier 1. Initialize the weights - initialize parameters to random values 2. For each image, use these weights to predict whether it appears to be a 3 or a 7. 3. Based on these predictions, calculate how good the model is (it loss) - “testing the effectiveness of any current weight assignment in terms of actual performance” - need a function that will return a number that is small when performance is good - standard convention is to treat a small loss as good and a large loss as bad 4. Calculate the gradient, which measures for each weight how changing that weight would change the loss - use calculus to determine whether to increase or decrease individual weight values 5. Step (update) the weights based on that calculation 6. Go back to step 2 and repeat the process 7. Iterate until you decide to stop the training process - until either the model is good enough, the model accuracy starts to decrease or you don’t want to wait any longer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Scenario:</strong> build a model of how the speed of a rollercoaster changes over time</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### torch.arange()</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://pytorch.org/docs/stable/generated/torch.arange.html?highlight=arange#torch.arange">https://pytorch.org/docs/stable/generated/torch.arange.html?highlight=arange#torch.arange</a> * Returns a 1-D tensor of size <span class="math inline">\(\left\lceil \frac{\text{end} - \text{start}}{\text{step}} \right\rceil\)</span> with values from the interval <code>[start, end)</code> taken with common difference <code>step</code> beginning from <code>start</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>time <span class="op">=</span> torch.arange(<span class="dv">0</span>,<span class="dv">20</span>).<span class="bu">float</span>()<span class="op">;</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(time)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.])</code></pre>
+</section>
+<section id="torch.randn" class="level4">
+<h4 class="anchored" data-anchor-id="torch.randn">torch.randn()</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.randn.html?highlight=randn#torch.randn">https://pytorch.org/docs/stable/generated/torch.randn.html?highlight=randn#torch.randn</a></li>
+<li>Returns a tensor filled with random numbers from a normal distribution with mean 0 and variance 1 (also called the standard normal distribution)</li>
+</ul>
+</section>
+<section id="matplotlib.pyplot.scatter" class="level4">
+<h4 class="anchored" data-anchor-id="matplotlib.pyplot.scatter">matplotlib.pyplot.scatter()</h4>
+<ul>
+<li><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html">https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html</a></li>
+<li>A scatter plot of y vs.&nbsp;x with varying marker size and/or color.</li>
+</ul>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Add some random noise to mimic manually measuring the speed speed = torch.randn(20)*3 + 0.75*(time-9.5)**2 + 1 plt.scatter(time,speed);</code> <img src="./images/output_90_0.png" class="img-fluid" alt="png"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # A quadratic function with trainable parameters def f(t, params): a,b,c = params return a*(t**2) + (b*t) + c</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mse(preds, targets): <span class="cf">return</span> ((preds<span class="op">-</span>targets)<span class="op">**</span><span class="dv">2</span>).mean().sqrt()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="step-1-initialize-the-parameters" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-initialize-the-parameters">Step 1: Initialize the parameters</h4>
+<div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize trainable parameters with random values</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Let PyTorch know that we want to track the gradients</span></span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> torch.randn(<span class="dv">3</span>).requires_grad_()</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>params</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python #hide orig_params = params.clone()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python def show_preds(preds, ax=None): if ax is None: ax=plt.subplots()[1] ax.scatter(time, speed) ax.scatter(time, to_np(preds), color='red') ax.set_ylim(-300,100)</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>show_preds(preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_99_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="step-3-calculate-the-loss" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-calculate-the-loss">Step 3: Calculate the loss</h4>
+<ul>
+<li>goal is to minimize this value</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> mse(preds, speed)</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor(160.6979, grad_fn=&lt;SqrtBackward0&gt;)</code></pre>
+</section>
+<section id="step-4-calculate-the-gradients" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-calculate-the-gradients">Step 4: Calculate the gradients</h4>
+<div class="sourceCode" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>loss.backward()</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>params.grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([-165.5151,  -10.6402,   -0.7900])</code></pre>
+<hr>
+<div class="sourceCode" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set learning rate to 0.00001</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Multiply the graients by the learning rate params.grad * lr</code> <code>text tensor([-1.6552e-03, -1.0640e-04, -7.8996e-06])</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python params</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### Step 5: Step the weights.</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test the updated parameter values</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> f(time,params)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>mse(preds, speed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor(157.9476, grad_fn=&lt;SqrtBackward0&gt;)</code></pre>
+<hr>
+<div class="sourceCode" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>show_preds(preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_110_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> apply_step(params, prn<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>    preds <span class="op">=</span> f(time, params)</span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> mse(preds, speed)</span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>    loss.backward()</span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>    params.data <span class="op">-=</span> lr <span class="op">*</span> params.grad.data</span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>    params.grad <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> prn: <span class="bu">print</span>(loss.item())</span>
+<span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> preds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="step-6-repeat-the-process" class="level4">
+<h4 class="anchored" data-anchor-id="step-6-repeat-the-process">Step 6: Repeat the process</h4>
+<div class="sourceCode" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10</span>): apply_step(params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>157.9476318359375
+155.1999969482422
+152.45513916015625
+149.71319580078125
+146.97434997558594
+144.23875427246094
+141.50660705566406
+138.77809143066406
+136.05340576171875
+133.33282470703125</code></pre>
+<hr>
+<div class="sourceCode" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>_,axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">4</span>,figsize<span class="op">=</span>(<span class="dv">12</span>,<span class="dv">3</span>))</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax <span class="kw">in</span> axs: show_preds(apply_step(params, <span class="va">False</span>), ax)</span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_114_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p>Many steps later…</p>
+<div class="sourceCode" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>_,axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">4</span>,figsize<span class="op">=</span>(<span class="dv">12</span>,<span class="dv">3</span>))</span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax <span class="kw">in</span> axs: show_preds(apply_step(params, <span class="va">False</span>), ax)</span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_116_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="step-7-stop" class="level4">
+<h4 class="anchored" data-anchor-id="step-7-stop">Step 7: Stop</h4>
+<ul>
+<li>Watch the training and validation losses and our metrics to decide when to stop</li>
+</ul>
+</section>
+</section>
+<section id="summarizing-gradient-descent" class="level3">
+<h3 class="anchored" data-anchor-id="summarizing-gradient-descent">Summarizing Gradient Descent</h3>
+<ul>
+<li>Initial model weights can be randomly initialized or from a pretrained model</li>
+<li>Compare the model output with our labeled training data using a loss function</li>
+<li>The loss function returns a number that we want to minimize by improving the model weights</li>
+<li>We change the weights a little bit to make the model slightly better based on gradients calculated using calculus
+<ul>
+<li>the magnitude of the gradients indicate how big of a step needs to be taken</li>
+</ul></li>
+<li>Multiply the gradients by a learning rate to control how big of a change to make for each update</li>
+<li>Iterate</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_119_0.svg" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">svg</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="the-mnist-loss-function" class="level2">
+<h2 class="anchored" data-anchor-id="the-mnist-loss-function">The MNIST Loss Function</h2>
+<ul>
+<li>Khan Academy: <a href="https://www.youtube.com/watch?v=kT4Mp9EdVqs">Intro to Matrix Multiplication</a></li>
+<li>Accuracy is not useful as a loss function
+<ul>
+<li>accuracy only changes when prediction changes from a 3 to a 7 or vice versa</li>
+<li>its derivative is 0 almost everywhere</li>
+</ul></li>
+<li>need a loss function that gives a slightly better loss when our weights result in slightly better prediction</li>
+</ul>
+<section id="torch.cat" class="level4">
+<h4 class="anchored" data-anchor-id="torch.cat">torch.cat()</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.cat.html">https://pytorch.org/docs/stable/generated/torch.cat.html</a></li>
+<li>Concatenates a given sequence of tensors in the specified dimension</li>
+<li>All tensor must have the same shape except in the specified dimension</li>
+</ul>
+</section>
+<section id="tensor.view" class="level4">
+<h4 class="anchored" data-anchor-id="tensor.view">Tensor.view()</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view">https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view</a></li>
+<li>Returns a new tensor with the same data as the self tensor but of a different shape.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Concatenate all independent variables into a single tensor</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Flatten each image matrix into a vector</span></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a><span class="co">#    -1: auto adjust axis to maintain fit all the data </span></span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>train_x <span class="op">=</span> torch.cat([stacked_threes, stacked_sevens]).view(<span class="op">-</span><span class="dv">1</span>, <span class="dv">28</span><span class="op">*</span><span class="dv">28</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python train_x.shape</code> <code>text torch.Size([12396, 784])</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Label 3s as `1` and label 7s as `0` train_y = tensor([1]*len(threes) + [0]*len(sevens)).unsqueeze(1) train_y.shape</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine independent and dependent variables into a dataset</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>dset <span class="op">=</span> <span class="bu">list</span>(<span class="bu">zip</span>(train_x,train_y))</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>x,y <span class="op">=</span> dset[<span class="dv">0</span>]</span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>x.shape,y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(torch.Size([784]), tensor([1]))</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python valid_x = torch.cat([valid_3_tens, valid_7_tens]).view(-1, 28*28) valid_y = tensor([1]*len(valid_3_tens) + [0]*len(valid_7_tens)).unsqueeze(1) valid_dset = list(zip(valid_x,valid_y))</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Randomly initialize parameters def init_params(size, std=1.0): return (torch.randn(size)*std).requires_grad_()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize weight values</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> init_params((<span class="dv">28</span><span class="op">*</span><span class="dv">28</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Initialize bias values bias = init_params(1)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Calculate a prediction for a single image (train_x[0]*weights.T).sum() + bias</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">### Matrix Multiplication</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create copies of the tensors that don't require gradients</span></span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>train_x_clone <span class="op">=</span> train_x.clone().detach()</span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>weights_clone <span class="op">=</span> weights.clone().detach()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python %%time # Matrix multiplication using @ operator (train_x_clone@weights_clone)[:5]</code> ```text CPU times: user 2.35 ms, sys: 4.15 ms, total: 6.5 ms Wall time: 5.29 ms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python %%time # This is why you should avoid using loops mat_mul(train_x_clone, weights_clone)[:5]</code> ```text CPU times: user 1min 37s, sys: 28 ms, total: 1min 37s Wall time: 1min 37s</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">[tensor(-6.5802, device=‘cuda:0’), tensor(-10.9860, device=‘cuda:0’), tensor(-21.2337, device=‘cuda:0’), tensor(-18.2173, device=‘cuda:0’), tensor(-1.7079, device=‘cuda:0’)] ```</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Move tensor copies to GPU</span></span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>train_x_clone <span class="op">=</span> train_x_clone.to(<span class="st">'cuda'</span>)<span class="op">;</span></span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>weights_clone <span class="op">=</span> weights_clone.to(<span class="st">'cuda'</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python %%time (train_x_clone@weights_clone)[:5]</code> ```text CPU times: user 2.19 ms, sys: 131 µs, total: 2.32 ms Wall time: 7.78 ms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Over 86,000 times faster on GPU print(f"{(44.9 * 1e+6) / 522:,.2f}")</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb87"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a linear layer</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrix-multiply xb and weights and add the bias</span></span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> linear1(xb): <span class="cf">return</span> xb<span class="op">@</span>weights <span class="op">+</span> bias</span>
+<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> linear1(train_x)</span>
+<span id="cb87-5"><a href="#cb87-5" aria-hidden="true" tabindex="-1"></a>preds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([[ -6.2330],
+        [-10.6388],
+        [-20.8865],
+        ...,
+        [-15.9176],
+        [ -1.6866],
+        [-11.3568]], grad_fn=&lt;AddBackward0&gt;)</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Determine which predictions were correct corrects = (preds&gt;0.0).float() == train_y corrects</code> <code>text tensor([[False], [False], [False], ..., [ True], [ True], [ True]])</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Calculate the current model accuracy corrects.float().mean().item()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb89"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test a small change in the weights</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>    weights[<span class="dv">0</span>] <span class="op">*=</span> <span class="fl">1.0001</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python preds = linear1(train_x) ((preds&gt;0.0).float() == train_y).float().mean().item()</code> <code>text 0.5379961133003235</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python trgts  = tensor([1,0,1]) prds   = tensor([0.9, 0.4, 0.2])</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### torch.where(condition, x, y)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://pytorch.org/docs/stable/generated/torch.where.html">https://pytorch.org/docs/stable/generated/torch.where.html</a> * Return a tensor of elements selected from either <code>x</code> or <code>y</code>, depending on <code>condition</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Measures how distant each prediction is from 1 if it should be one</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and how distant it is from 0 if it should be 0 and take the mean of those distances</span></span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a><span class="co"># returns a lower number when predictions are more accurate</span></span>
+<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Assumes that all predictions are between 0 and 1</span></span>
+<span id="cb90-5"><a href="#cb90-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mnist_loss(predictions, targets):</span>
+<span id="cb90-6"><a href="#cb90-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># return </span></span>
+<span id="cb90-7"><a href="#cb90-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.where(targets<span class="op">==</span><span class="dv">1</span>, <span class="dv">1</span><span class="op">-</span>predictions, predictions).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python torch.where(trgts==1, 1-prds, prds)</code> <code>text tensor([0.1000, 0.4000, 0.8000])</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python mnist_loss(prds,trgts)</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb91"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>mnist_loss(tensor([<span class="fl">0.9</span>, <span class="fl">0.4</span>, <span class="fl">0.8</span>]),trgts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor(0.2333)</code></pre>
+</section>
+<section id="sigmoid-function" class="level3">
+<h3 class="anchored" data-anchor-id="sigmoid-function">Sigmoid Function</h3>
+<ul>
+<li>always returns a value between 0 and 1</li>
+<li>function is a smooth curve only goes up
+<ul>
+<li>makes it easier for SGD to find meaningful gradients</li>
+</ul></li>
+</ul>
+<section id="torch.expx" class="level4">
+<h4 class="anchored" data-anchor-id="torch.expx">torch.exp(x)</h4>
+<p><em><a href="https://pytorch.org/docs/stable/generated/torch.exp.html">https://pytorch.org/docs/stable/generated/torch.exp.html</a> </em> returns <span class="math inline">\(e^{x}\)</span> where <span class="math inline">\(e\)</span> is [Euler’s number](https://en.wikipedia.org/wiki/E_(mathematical_constant) * <span class="math inline">\(e \approx 2.7183\)</span></p>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python print(torch.exp(tensor(1))) print(torch.exp(tensor(2)))</code> <code>text tensor(2.7183) tensor(7.3891)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Always returns a number between 0 and 1 def sigmoid(x): return 1/(1+torch.exp(-x))</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb93"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>plot_function(torch.sigmoid, title<span class="op">=</span><span class="st">'Sigmoid'</span>, <span class="bu">min</span><span class="op">=-</span><span class="dv">4</span>, <span class="bu">max</span><span class="op">=</span><span class="dv">4</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_156_1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mnist_loss(predictions, targets):</span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> predictions.sigmoid()</span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.where(targets<span class="op">==</span><span class="dv">1</span>, <span class="dv">1</span><span class="op">-</span>predictions, predictions).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="sgd-and-mini-batches" class="level3">
+<h3 class="anchored" data-anchor-id="sgd-and-mini-batches">SGD and Mini-Batches</h3>
+<ul>
+<li>calculating the loss for the entire dataset would take a lot of time
+<ul>
+<li>the full dataset is also unlikely to fit in memory</li>
+</ul></li>
+<li>calculating the loss for single data item would result in an imprecise and unstable gradient</li>
+<li>we can compromise by calculating the loss for a few data items at a time</li>
+<li>mini-batch: a subset of data items</li>
+<li>batch size: the number of data items in a mini-batch
+<ul>
+<li>larger batch-size
+<ul>
+<li>typically results in a more accurate and stable estimate of your dataset’s gradient from the loss function</li>
+<li>takes longer per mini-batch</li>
+<li>fewer mini-batches processed per epoch</li>
+</ul></li>
+<li>the batch size is limited by the amount of available memory for the CPU or GPU</li>
+<li>ideal batch-size is context dependent</li>
+</ul></li>
+<li>accelerators like GPUs work best when they have lots of work to do at a time
+<ul>
+<li>typically want to use the largest batch-size that will fit in GPU memory</li>
+</ul></li>
+<li>typically want to randomly shuffle the contents of mini-batches for each epoch</li>
+<li>DataLoader
+<ul>
+<li>handles shuffling and mini-batch collation</li>
+<li>can take any Python collection and turn it into an iterator over many batches</li>
+</ul></li>
+<li>PyTorch Dataset: a collection that contains tuples of independent and dependent variables</li>
+</ul>
+<p>In-Place Operations:</p>
+<ul>
+<li>methods in PyTorch that end in an underscore modify their objects in place</li>
+</ul>
+<section id="pytorch-dataloader" class="level4">
+<h4 class="anchored" data-anchor-id="pytorch-dataloader">PyTorch DataLoader:</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader</a></li>
+<li>Combines a dataset and a sampler, and provides an iterable over the given dataset.</li>
+<li>supports both map-style and iterable-style datasets with single- or multi-process loading, customizing loading order and optional automatic batching (collation) and memory pinning</li>
+</ul>
+</section>
+<section id="pytorch-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="pytorch-dataset">PyTorch Dataset:</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset">https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset</a></li>
+<li>an abstract class representing a dataset</li>
+</ul>
+</section>
+<section id="map-style-datasets" class="level4">
+<h4 class="anchored" data-anchor-id="map-style-datasets">Map-style datasets:</h4>
+<ul>
+<li>implements the <code>__getitem__()</code> and <code>__len__()</code> protocols, and represents a map from indices/keys to data samples</li>
+</ul>
+</section>
+<section id="iterable-style-datasets" class="level4">
+<h4 class="anchored" data-anchor-id="iterable-style-datasets">Iterable-style datasets:</h4>
+<ul>
+<li>an instance of a subclass of <code>IterableDataset</code> that implements the <code>__iter__()</code> protocol, and represents an iterable over data samples</li>
+<li>particularly suitable for cases where random reads are expensive or even improbable, and where the batch size depends on the fetched data</li>
+</ul>
+</section>
+<section id="fastai-dataloader" class="level4">
+<h4 class="anchored" data-anchor-id="fastai-dataloader">fastai DataLoader:</h4>
+<ul>
+<li><a href="https://docs.fast.ai/data.load.html#DataLoader">https://docs.fast.ai/data.load.html#DataLoader</a></li>
+<li>API compatible with PyTorch DataLoader, with a lot more callbacks and flexibility</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb95"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.data.load.DataLoader</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Sample collection coll = range(15)</code> <code>text range(0, 15)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Sample collection coll = range(15) dl = DataLoader(coll, batch_size=5, shuffle=True) list(dl)</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb97"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample dataset of independent and dependent variables</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> L(<span class="bu">enumerate</span>(string.ascii_lowercase))</span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(#26) [(0, 'a'),(1, 'b'),(2, 'c'),(3, 'd'),(4, 'e'),(5, 'f'),(6, 'g'),(7, 'h'),(8, 'i'),(9, 'j')...]</code></pre>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python dl = DataLoader(ds, batch_size=6, shuffle=True) list(dl)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Create data loader for training dataset dl = DataLoader(dset, batch_size=256)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### fastcore first(): * <a href="https://fastcore.fast.ai/basics.html#first">https://fastcore.fast.ai/basics.html#first</a> * First element of x, optionally filtered by f, or None if missing</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb99"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>first</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;function fastcore.basics.first(x, f=None, negate=False, **kwargs)&gt;</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Get the first mini-batch from the data loader xb,yb = first(dl) xb.shape,yb.shape</code> <code>text (torch.Size([256, 784]), torch.Size([256, 1]))</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Create data loader for validation dataset valid_dl = DataLoader(valid_dset, batch_size=256)</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb101"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Smaller example mini-batch for testing</span></span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>batch <span class="op">=</span> train_x[:<span class="dv">4</span>]</span>
+<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a>batch.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([4, 784])</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # Test model smaller mini-batch preds = linear1(batch) preds</code> <code>text tensor([[ -9.2139], [-20.0299], [-16.8065], [-14.1171]], grad_fn=&lt;AddBackward0&gt;)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python # Calculate the loss loss = mnist_loss(preds, train_y[:4]) loss</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb103"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the gradients</span></span>
+<span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a>loss.backward()</span>
+<span id="cb103-3"><a href="#cb103-3" aria-hidden="true" tabindex="-1"></a>weights.grad.shape,weights.grad.mean(),bias.grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(torch.Size([784, 1]), tensor(-3.5910e-06), tensor([-2.5105e-05]))</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python def calc_grad(xb, yb, model): preds = model(xb) loss = mnist_loss(preds, yb) loss.backward()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python calc_grad(batch, train_y[:4], linear1) weights.grad.mean(),bias.grad</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">&gt; <strong>Note:</strong> loss.backward() adds the gradients of loss to any gradients that are currently stored. This means we need to zero the gradients first</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb105"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>calc_grad(batch, train_y[:<span class="dv">4</span>], linear1)</span>
+<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>weights.grad.mean(),bias.grad</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(tensor(-1.0773e-05), tensor([-7.5314e-05]))</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python weights.grad.zero_() bias.grad.zero_();</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python def train_epoch(model, lr, params): for xb,yb in dl: calc_grad(xb, yb, model) for p in params: # Assign directly to the data attribute to prevent # PyTorch from taking the gradient of that step p.data -= p.grad*lr p.grad.zero_()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb107"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate accuracy using broadcasting</span></span>
+<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>(preds<span class="op">&gt;</span><span class="fl">0.0</span>).<span class="bu">float</span>() <span class="op">==</span> train_y[:<span class="dv">4</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([[False],
+        [False],
+        [False],
+        [False]])</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python def batch_accuracy(xb, yb): preds = xb.sigmoid() correct = (preds&gt;0.5) == yb return correct.float().mean()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python batch_accuracy(linear1(batch), train_y[:4])</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb109"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> validate_epoch(model):</span>
+<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>    accs <span class="op">=</span> [batch_accuracy(model(xb), yb) <span class="cf">for</span> xb,yb <span class="kw">in</span> valid_dl]</span>
+<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">round</span>(torch.stack(accs).mean().item(), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python validate_epoch(linear1)</code> <code>text 0.3407</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python lr = 1. params = weights,bias # Train for one epoch train_epoch(linear1, lr, params) validate_epoch(linear1)</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb110"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Train for twenty epochs</span></span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>):</span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>    train_epoch(linear1, lr, params)</span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(validate_epoch(linear1), end<span class="op">=</span><span class="st">' '</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>0.7358 0.9052 0.9438 0.9575 0.9638 0.9692 0.9726 0.9741 0.975 0.976 0.9765 0.9765 0.9765 0.9779 0.9784 0.9784 0.9784 0.9784 0.9789 0.9784 </code></pre>
+<p><strong>Note:</strong> Accuracy improves from 0.7358 to 0.9784</p>
+</section>
+</section>
+<section id="creating-an-optimizer" class="level3">
+<h3 class="anchored" data-anchor-id="creating-an-optimizer">Creating an Optimizer</h3>
+<p>Why we need Non-Linear activation functions</p>
+<ul>
+<li>a series of any number of linear layers in a row can be replaced with a single linear layer with different parameters</li>
+<li>adding a non-linear layer between linear layers helps decouple the linear layers from each other so they can learn separate features</li>
+</ul>
+<section id="torch.nn" class="level4">
+<h4 class="anchored" data-anchor-id="torch.nn">torch.nn:</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/nn.html">https://pytorch.org/docs/stable/nn.html</a></li>
+<li>provides the basic building blocks for building PyTorch models</li>
+</ul>
+</section>
+<section id="nn.linear" class="level4">
+<h4 class="anchored" data-anchor-id="nn.linear">nn.Linear():</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html">https://pytorch.org/docs/stable/generated/torch.nn.Linear.html</a></li>
+<li>Applies a linear transformation to the incoming data: <span class="math inline">\(y=xA^{T}+b\)</span></li>
+<li>contains both the weights and biases in a single class</li>
+<li>inherits from <a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module">nn.Module()</a></li>
+</ul>
+</section>
+<section id="nn.module" class="level4">
+<h4 class="anchored" data-anchor-id="nn.module">nn.Module():</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module">https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module</a></li>
+<li>Base class for all neural network modules</li>
+<li>any PyTorch models should subclass this class</li>
+<li>modules can contain other modules</li>
+<li>submodules can be assigned as regular attributes</li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python nn.Linear</code> <code>text torch.nn.modules.linear.Linear</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python linear_model = nn.Linear(28*28,1) linear_model</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### nn.Parameter():</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter">https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter</a> * A Tensor sublcass * A kind of Tensor that is to be considered a module parameter.</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb112"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>w,b <span class="op">=</span> linear_model.parameters()</span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>w.shape,b.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(torch.Size([1, 784]), torch.Size([1]))</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python print(type(w)) print(type(b))</code> <code>text &lt;class 'torch.nn.parameter.Parameter'&gt; &lt;class 'torch.nn.parameter.Parameter'&gt;</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python b</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb114"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Implements the basic optimization steps used earlier for use with a PyTorch Module</span></span>
+<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> BasicOptim:</span>
+<span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>,params,lr): <span class="va">self</span>.params,<span class="va">self</span>.lr <span class="op">=</span> <span class="bu">list</span>(params),lr</span>
+<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb114-5"><a href="#cb114-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> step(<span class="va">self</span>, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
+<span id="cb114-6"><a href="#cb114-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> p <span class="kw">in</span> <span class="va">self</span>.params: p.data <span class="op">-=</span> p.grad.data <span class="op">*</span> <span class="va">self</span>.lr</span>
+<span id="cb114-7"><a href="#cb114-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb114-8"><a href="#cb114-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> zero_grad(<span class="va">self</span>, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
+<span id="cb114-9"><a href="#cb114-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> p <span class="kw">in</span> <span class="va">self</span>.params: p.grad <span class="op">=</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python # PyTorch optimizers need a reference to the target model parameters opt = BasicOptim(linear_model.parameters(), lr)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python def train_epoch(model): for xb,yb in dl: calc_grad(xb, yb, model) opt.step() opt.zero_grad()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb115"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>validate_epoch(linear_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>0.4673</code></pre>
+<hr>
+<div class="sourceCode" id="cb117"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_model(model, epochs):</span>
+<span id="cb117-2"><a href="#cb117-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(epochs):</span>
+<span id="cb117-3"><a href="#cb117-3" aria-hidden="true" tabindex="-1"></a>        train_epoch(model)</span>
+<span id="cb117-4"><a href="#cb117-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(validate_epoch(model), end<span class="op">=</span><span class="st">' '</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python train_model(linear_model, 20)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python SGD</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb118"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>linear_model <span class="op">=</span> nn.Linear(<span class="dv">28</span><span class="op">*</span><span class="dv">28</span>,<span class="dv">1</span>)</span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SGD(linear_model.parameters(), lr)</span>
+<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>train_model(linear_model, <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>0.4932 0.8135 0.8481 0.916 0.9341 0.9487 0.956 0.9634 0.9653 0.9673 0.9692 0.9717 0.9746 0.9751 0.9756 0.9765 0.9775 0.9775 0.978 0.978 </code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python dls = DataLoaders(dl, valid_dl)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python Learner</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb120"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(dls, nn.Linear(<span class="dv">28</span><span class="op">*</span><span class="dv">28</span>,<span class="dv">1</span>), opt_func<span class="op">=</span>SGD,</span>
+<span id="cb120-2"><a href="#cb120-2" aria-hidden="true" tabindex="-1"></a>                loss_func<span class="op">=</span>mnist_loss, metrics<span class="op">=</span>batch_accuracy)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="fastai-learner.fit" class="level4">
+<h4 class="anchored" data-anchor-id="fastai-learner.fit">fastai Learner.fit:</h4>
+<ul>
+<li><a href="https://docs.fast.ai/learner.html#Learner.fit">https://docs.fast.ai/learner.html#Learner.fit</a></li>
+<li>fit a model for a specifed number of epochs using a specified learning rate</li>
+</ul>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python lr</code> <code>text 1.0</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python learn.fit(10, lr=lr)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">## Adding a Nonlinearity</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb121"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a>w1 <span class="op">=</span> init_params((<span class="dv">28</span><span class="op">*</span><span class="dv">28</span>,<span class="dv">30</span>))</span>
+<span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a>b1 <span class="op">=</span> init_params(<span class="dv">30</span>)</span>
+<span id="cb121-3"><a href="#cb121-3" aria-hidden="true" tabindex="-1"></a>w2 <span class="op">=</span> init_params((<span class="dv">30</span>,<span class="dv">1</span>))</span>
+<span id="cb121-4"><a href="#cb121-4" aria-hidden="true" tabindex="-1"></a>b2 <span class="op">=</span> init_params(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="pytorch-f.relu" class="level4">
+<h4 class="anchored" data-anchor-id="pytorch-f.relu">PyTorch F.relu:</h4>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu">https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu</a></li>
+<li>Applies the rectified linear unit function element-wise.</li>
+<li><span class="math inline">\(\text{ReLU}(x) = (x)^+ = \max(0, x)\)</span></li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python F.relu</code> <code>text &lt;function torch.nn.functional.relu(input: torch.Tensor, inplace: bool = False) -&gt; torch.Tensor&gt;</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python plot_function(F.relu)</code> <img src="./images/output_220_0.png" class="img-fluid" alt="png"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### nn.Sequential:</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential">https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential</a> * A sequential container. * Treats the whole container as a single module * ouputs from the previous layer are fed as input to the next layer in the list</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb122"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a>simple_net <span class="op">=</span> nn.Sequential(</span>
+<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a>    nn.Linear(<span class="dv">28</span><span class="op">*</span><span class="dv">28</span>,<span class="dv">30</span>),</span>
+<span id="cb122-3"><a href="#cb122-3" aria-hidden="true" tabindex="-1"></a>    nn.ReLU(),</span>
+<span id="cb122-4"><a href="#cb122-4" aria-hidden="true" tabindex="-1"></a>    nn.Linear(<span class="dv">30</span>,<span class="dv">1</span>)</span>
+<span id="cb122-5"><a href="#cb122-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb122-6"><a href="#cb122-6" aria-hidden="true" tabindex="-1"></a>simple_net</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Sequential(
+  (0): Linear(in_features=784, out_features=30, bias=True)
+  (1): ReLU()
+  (2): Linear(in_features=30, out_features=1, bias=True)
+)</code></pre>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python learn = Learner(dls, simple_net, opt_func=SGD, loss_func=mnist_loss, metrics=batch_accuracy)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python learn.fit(40, 0.1)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### matplotlib.pyplot.plot:</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html</a> * Plot y versus x as lines and/or markers</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb124"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>plt.plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;function matplotlib.pyplot.plot(*args, scalex=True, scaley=True, data=None, **kwargs)&gt;</code></pre>
+</section>
+<section id="fastai-learner.recorder" class="level4">
+<h4 class="anchored" data-anchor-id="fastai-learner.recorder">fastai learner.Recorder:</h4>
+<ul>
+<li><a href="https://docs.fast.ai/learner.html#Recorder">https://docs.fast.ai/learner.html#Recorder</a></li>
+<li>Callback that registers statistics (lr, loss and metrics) during training</li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python learn.recorder</code> <code>text Recorder</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python Recorder</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#### fastcore L.itemgot():</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">* <a href="https://fastcore.fast.ai/foundation.html#L.itemgot">https://fastcore.fast.ai/foundation.html#L.itemgot</a> * Create new L with item idx of all items</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb126"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>L.itemgot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;function fastcore.foundation.L.itemgot(self, *idxs)&gt;</code></pre>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>python plt.plot(L(learn.recorder.values).itemgot(2));</code> <img src="./images/output_232_0.png" class="img-fluid" alt="png"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>python learn.recorder.values[-1][2]</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">### Going Deeper - deeper models: models with more layers - deeper models are more difficult to optimize the more layers - deeper models require fewer parameters - we can use smaller matrices with more layers - we can train the model more quickly using less memory - typically perform better</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb128"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> ImageDataLoaders.from_folder(path)</span>
+<span id="cb128-2"><a href="#cb128-2" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> cnn_learner(dls, resnet18, pretrained<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb128-3"><a href="#cb128-3" aria-hidden="true" tabindex="-1"></a>                    loss_func<span class="op">=</span>F.cross_entropy, metrics<span class="op">=</span>accuracy)</span>
+<span id="cb128-4"><a href="#cb128-4" aria-hidden="true" tabindex="-1"></a>learn.fit_one_cycle(<span class="dv">1</span>, <span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+epoch
+</th>
+<th>
+train_loss
+</th>
+<th>
+valid_loss
+</th>
+<th>
+accuracy
+</th>
+<th>
+time
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+0
+</td>
+<td>
+0.066122
+</td>
+<td>
+0.008277
+</td>
+<td>
+0.997547
+</td>
+<td>
+00:04
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<hr>
+<div class="sourceCode" id="cb129"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>learn.model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Sequential(
+  (0): Sequential(
+    (0): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): ReLU(inplace=True)
+    (3): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+    (4): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (5): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(64, 128, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (6): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(128, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (7): Sequential(
+      (0): BasicBlock(
+        (conv1): Conv2d(256, 512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): BasicBlock(
+        (conv1): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu): ReLU(inplace=True)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+  )
+  (1): Sequential(
+    (0): AdaptiveConcatPool2d(
+      (ap): AdaptiveAvgPool2d(output_size=1)
+      (mp): AdaptiveMaxPool2d(output_size=1)
+    )
+    (1): Flatten(full=False)
+    (2): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (3): Dropout(p=0.25, inplace=False)
+    (4): Linear(in_features=1024, out_features=512, bias=False)
+    (5): ReLU(inplace=True)
+    (6): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (7): Dropout(p=0.5, inplace=False)
+    (8): Linear(in_features=512, out_features=2, bias=False)
+  )
+)</code></pre>
+</section>
+</section>
+</section>
+<section id="jargon-recap" class="level2">
+<h2 class="anchored" data-anchor-id="jargon-recap">Jargon Recap</h2>
+<ul>
+<li>neural networks contain two types of numbers
+<ol type="1">
+<li>Parameters: numbers that are randomly initialized and optimized
+<ul>
+<li>define the model</li>
+</ul></li>
+<li>Activations: numbers that are calculated using the parameter values</li>
+</ol></li>
+<li>tensors
+<ul>
+<li>regularly-shaped arrays like a matrix</li>
+<li>have rows and columns
+<ul>
+<li>called the axes or dimensions</li>
+</ul></li>
+</ul></li>
+<li>rank: the number of dimensions of a tensor
+<ul>
+<li>Rank-0: scalar</li>
+<li>Rank-1: vector</li>
+<li>Rank-2: matrix</li>
+</ul></li>
+<li>a neural network contains a number of linear and non-linear layers</li>
+<li>non-linear layers are referred to as activation layers</li>
+<li>ReLU: a function that sets any negative values to zero</li>
+<li>Mini-batch: a small group of inputs and labels gathered together in two arrays to perform gradient descent</li>
+<li>Forward pass: Applying the model to some input and computing the predictions</li>
+<li>Loss: A value that represents how the model is doing</li>
+<li>Gradient: The derivative of the loss with respect to all model parameters</li>
+<li>Gradient descent: Taking a step in the direction opposite to the gradients to make the model parameters a little bit better</li>
+<li>Learning rate: The size of the step we take when applying SGD to update the parameters of the model</li>
+</ul>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li><a href="https://www.oreilly.com/library/view/deep-learning-for/9781492045519/">Deep Learning for Coders with fastai &amp; PyTorch</a></li>
+<li><a href="https://github.com/fastai/fastbook">The fastai book GitHub Repository</a></li>
+</ul>
+<p><strong>Previous:</strong> <a href="../chapter-3/">Notes on fastai Book Ch. 3</a></p>
+<p><strong>Next:</strong> <a href="../chapter-5/">Notes on fastai Book Ch. 5</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
