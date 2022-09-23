@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-03-21">
+<meta name="description" content="This post covers how to flip an image with a compute shader in Unity.">
+
+<title>Christian Mills - How to Flip an Image With a Compute Shader</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/favicon.ico" rel="icon">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Christian Mills - How to Flip an Image With a Compute Shader">
+<meta property="og:description" content="This post covers how to flip an image with a compute shader in Unity.">
+<meta property="og:image" content="christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - How to Flip an Image With a Compute Shader">
+<meta name="twitter:description" content="This post covers how to flip an image with a compute shader in Unity.">
+<meta name="twitter:image" content="christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">How to Flip an Image With a Compute Shader</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to flip an image with a compute shader in Unity.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 21, 2021</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#create-a-2d-unity-project">Create a 2D Unity Project</a></li>
+<li><a href="#create-compute-shader">Create Compute Shader</a></li>
+<li><a href="#create-flip-script">Create <code>Flip</code> Script</a></li>
+<li><a href="#create-screen-gameobject">Create Screen GameObject</a></li>
+<li><a href="#create-imagecropper">Create ImageFlipper</a></li>
+<li><a href="#test-it-out">Test it Out</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this post, we’ll cover how to use a <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">compute shader</a> to flip an image across the x-axis, y-axis, and diagonal axis. We will also demonstrate how these operations can be combined to rotate an image.</p>
+</section>
+<section id="create-a-2d-unity-project" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-2d-unity-project">Create a 2D Unity Project</h2>
+<p>Open the Unity Hub and create a new 2D project. I’m using <code>Unity 2019.4.20f1</code>, but you should be fine using other versions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-hub-create-project.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-hub-create-project</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-compute-shader" class="level2">
+<h2 class="anchored" data-anchor-id="create-compute-shader">Create Compute Shader</h2>
+<p>In Unity, right-click an empty space in the Assets folder and open the <code>Create</code> submenu. Select <code>ComputeShader</code> from the <code>Shader</code> submenu and name it <code>FlipShader</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-compute-shader.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-compute-shader</figcaption><p></p>
+</figure>
+</div>
+<p>Open the new compute shader in your code editor. By default, compute shaders contain the following code.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flipshader-default-code.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flipshader-default-code</figcaption><p></p>
+</figure>
+</div>
+<p>We’ll delete the <code>CSMain</code> function and create a new one for each of our three flip operations.</p>
+<section id="define-variables" class="level3">
+<h3 class="anchored" data-anchor-id="define-variables">Define Variables</h3>
+<p>Before we create our functions, we need to define some extra variables.</p>
+<ul>
+<li><code>Texture2D&lt;float4&gt; InputImage</code>: stores the original image</li>
+<li><code>int height</code>: the height of the input image</li>
+<li><code>int width</code>: the width of the input image</li>
+<li><code>int2 coords</code>: stores the new <code>(x,y)</code> coordinates for individual pixel values</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flipshader-define-variables.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flipshader-define-variables</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="define-flip-functions" class="level3">
+<h3 class="anchored" data-anchor-id="define-flip-functions">Define Flip Functions</h3>
+<p>The individual flip operations quite simple. They determine the coordinates of the pixel that will replace the values for a given pixel in the image. The RGB pixel values at the calculated coordinates will be stored at the current coordinates in the <code>Result</code> variable.</p>
+<ul>
+<li><code>Flip x-axis</code>: subtract the y value for the current pixel’s <code>(x,y)</code> coordinates from the height of the image</li>
+<li><code>Flip y-axis</code>: subtract the x value for the current pixel’s <code>(x,y)</code> coordinates from the width of the image</li>
+<li><code>Flip diagonal</code>: swap the x and y values for the current pixel’s <code>(x,y)</code> coordinates</li>
+</ul>
+<p>These operations are performed on each pixel in parallel on the GPU. We’ll use the default <code>numthreads(8, 8, 1)</code> for each function.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-shader-define-functions-2.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-shader-define-functions</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="create-flip-script" class="level2">
+<h2 class="anchored" data-anchor-id="create-flip-script">Create <code>Flip</code> Script</h2>
+<p>Back in Unity, right-click an empty space in the Assets folder and select <code>C# Script</code> in the <code>Create</code> submenu. Name the new script, <code>Flip</code> and open it in your code editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-flip-script.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-flip-script</figcaption><p></p>
+</figure>
+</div>
+<section id="define-variables-1" class="level3">
+<h3 class="anchored" data-anchor-id="define-variables-1">Define Variables</h3>
+<p>We’ll define the following variables at the top of the script.</p>
+<ul>
+<li><code>public ComputeShader computeShader</code>: The compute shader that contains the flip operations</li>
+<li><code>public GameObject screen</code>: The screen to which the test image is attached</li>
+<li><code>public bool flipXAxis</code>: Toggle whether to flip the image across the x-axis</li>
+<li><code>public bool flipYAxis</code>: Toggle whether to flip the image across the y-axis</li>
+<li><code>public bool flipDiag</code>: Toggle whether to flip the image across the diagonal axis</li>
+<li><code>private GameObject mainCamera</code>: Stores a reference to the Main Camera object</li>
+<li><code>private RenderTexture image</code>: A copy of the original test image</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-script-define-variables.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-script-define-variables</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="define-start-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-start-method">Define <code>Start()</code> Method</h3>
+<p>In the <code>Start()</code> method, we’ll store a copy the original test image in the <code>image</code> <code>RenderTexture</code>. We can do so by getting a reference to the <code>Texture</code> attached to the <code>screen</code> and using the <a href="https://docs.unity3d.com/ScriptReference/Graphics.Blit.html"><code>Graphics.Blit()</code></a> method. We’ll also get a reference to the camera so that we can adjust the view to fit the current image.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-script-start-method.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-script-start-method</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="define-flipimage-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-flipimage-method">Define <code>FlipImage()</code> Method</h3>
+<p>Next, we’ll define a new method called <code>FlipImage</code> to handle executing the compute shader. This method will take in the image to be flipped, an empty <code>RenderTexture</code> to store the flipped image, and the name of the function to execute on the compute shader.</p>
+<p>To execute the compute shader, we need to first get the kernel index for the specified function and initialize the variables we defined in the compute shader. Once we execute the compute shader using the <code>computeShader.Dispatch()</code> method, we can copy the result to the empty <code>RenderTexture</code> we passed in. We could copy the result directly to the <code>RenderTexture</code> containing the original image. However, this would cause an error when flipping non-square images across the diagonal axis. This is because a <code>RenderTexture</code> can not dynamically change dimensions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-script-flipImage-method.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-script-flipImage-method</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="define-update-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-update-method">Define <code>Update()</code> Method</h3>
+<p>First, we need to make another copy of the original image so that we can edit it. We’ll store this copy in a <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html">temporary</a> <code>RenderTexture</code> called <code>rTex</code> that will get released at the end of the method.</p>
+<p>The steps are basically the same for performing each of the three flip operations. We first allocate a temporary <code>RenderTexture</code> called <code>tempTex</code> to store the flipped image. We then call the <code>FlipImage</code> method with the appropriate function name. Next, we copy the flipped image to <code>rTex</code>. Finally, we release the resources allocated for <code>tempTex</code>. The steps for flipping the image across the diagonal axis is slightly different as we can’t directly copy a flipped image with different dimensions back to <code>rTex</code>. Instead, we have to directly assign the currently active <code>RenderTexture</code> to <code>rTex</code>.</p>
+<p>After we copy <code>tempTex</code> back to <code>rTex</code> we’ll update the <code>Texture</code> for the <code>screen</code> with the flipped image and adjust the shape of the screen to fit the new dimensions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-script-update-method.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-script-update-method</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="create-screen-gameobject" class="level2">
+<h2 class="anchored" data-anchor-id="create-screen-gameobject">Create Screen GameObject</h2>
+<p>Back in Unity, right-click an empty space in the <code>Hierarchy</code> tab and select <code>Quad</code> from the <code>3D Object</code> submenu. Name the new object <code>Screen</code>. The size will be updated automatically by the <code>Flip.cs</code> script.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-screen-object.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-screen-object</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="create-imageflipper" class="level2">
+<h2 class="anchored" data-anchor-id="create-imageflipper">Create ImageFlipper</h2>
+<p>Right-click an empty space in the <code>Hierarchy</code> tab and select <code>Create Empty</code> from the pop-up menu. Name the empty object <code>ImageFlipper</code></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-image-cropper-object.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-create-image-cropper-object</figcaption><p></p>
+</figure>
+</div>
+<p>With the <code>ImageFlipper</code> selected, drag and drop the <code>Flip.cs</code> script into the <code>Inspector</code> tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-inspector-attach-flip-script.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-inspector-attach-flip-script</figcaption><p></p>
+</figure>
+</div>
+<p>Drag and drop the <code>Screen</code> object from the <code>Hierarchy</code> tab as well as the <code>FlipShader</code> from the <code>Assets</code> folder onto their respective spots in the <code>Inspector</code> tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-inspector-assign-parameters.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-inspector-assign-parameters</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="test-it-out" class="level2">
+<h2 class="anchored" data-anchor-id="test-it-out">Test it Out</h2>
+<p>We’ll need a test image to try out the <code>ImageFlipper</code>. You can use your own or download the one I used for this tutorial.</p>
+<ul>
+<li><a href="https://drive.google.com/file/d/18_e6CpvsZcGuym66bGXsioAPEB0We8zV/view?usp=sharing">Test Image</a></li>
+</ul>
+<p>Drag and drop the test image into the <code>Assets</code> folder. Then drag it onto the <code>Screen</code> in the <code>Scene</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-import-image.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-import-image</figcaption><p></p>
+</figure>
+</div>
+<p>Next, we need to set our Screen to use an <code>Unlit</code> shader. Otherwise it will be a bit dim. With the Screen object selected, open the <code>Shader</code> drop-down menu in the <code>Inspector</code> tab and select <code>Unlit</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-inspector-tab-shader-drop-down.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-inspector-tab-shader-drop-down</figcaption><p></p>
+</figure>
+</div>
+<p>Select <code>Texture</code> from the <code>Unlit</code> submenu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-inspector-tab-unlit-texture.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">unity-inspector-tab-unlit-texture</figcaption><p></p>
+</figure>
+</div>
+<p>Now we can click the Play button and toggle the different flip checkboxes to confirm our script is working properly. If you check the performance stats, you should see that there is a negligible performance hit from flipping the image even when performing all three operations at once.</p>
+<section id="default-image" class="level3">
+<h3 class="anchored" data-anchor-id="default-image">Default Image</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/default-image.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">default-image</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="flip-x-axis" class="level3">
+<h3 class="anchored" data-anchor-id="flip-x-axis">Flip X-Axis</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-x-axis.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-x-axis</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="flip-y-axis" class="level3">
+<h3 class="anchored" data-anchor-id="flip-y-axis">Flip Y-Axis</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-y-axis.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-y-axis</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="flip-diagonal-axis" class="level3">
+<h3 class="anchored" data-anchor-id="flip-diagonal-axis">Flip Diagonal Axis</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-diagonal-axis.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-diagonal-axis</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="flip-x-axis-and-y-axis" class="level3">
+<h3 class="anchored" data-anchor-id="flip-x-axis-and-y-axis">Flip X-Axis and Y-Axis</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-x-axis-and-y-axis.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-x-axis-and-y-axis</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="flip-x-axis-and-diagonal-axis" class="level3">
+<h3 class="anchored" data-anchor-id="flip-x-axis-and-diagonal-axis">Flip X-Axis and Diagonal Axis</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-x-axis-and-diagonal-axis.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-x-axis-and-diagonal-axis</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="flip-y-axis-and-diagonal-axis" class="level3">
+<h3 class="anchored" data-anchor-id="flip-y-axis-and-diagonal-axis">Flip Y-Axis and Diagonal Axis</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-y-axis-and-diagonal-axis.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-y-axis-and-diagonal-axis</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="flip-x-axis-y-axis-and-diagonal-axis" class="level3">
+<h3 class="anchored" data-anchor-id="flip-x-axis-y-axis-and-diagonal-axis">Flip X-Axis, Y-Axis and Diagonal Axis</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flip-x-axis-y-axis-and-diagonal-axis.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">flip-x-axis-y-axis-and-diagonal-axis</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>That is one approach to efficiently flip images on the GPU in Unity. As demonstrated above, the operations can be combined in different ways to rotate the image as well.</p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/Flip-Image-Compute-Shader">GitHub Repository</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

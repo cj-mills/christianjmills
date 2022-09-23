@@ -1,0 +1,3448 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-08-08">
+<meta name="description" content="This tutorial covers training an object detection model using IceVision and creating an OpenVINO plugin for the Unity game engine to perform inference with the trained model. Part 1 covers training and exporting the model.">
+
+<title>Christian Mills - End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1">
+<meta property="og:description" content="This tutorial covers training an object detection model using IceVision and creating an OpenVINO plugin for the Unity game engine to perform inference with the trained model. Part 1 covers training and exporting the model.">
+<meta property="og:image" content="christianjmills.com/posts/icevision-openvino-unity-tutorial/social-media/cover.jpg">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1">
+<meta name="twitter:description" content="This tutorial covers training an object detection model using IceVision and creating an OpenVINO plugin for the Unity game engine to perform inference with the trained model. Part 1 covers training and exporting the model.">
+<meta name="twitter:image" content="christianjmills.com/posts/icevision-openvino-unity-tutorial/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1</h1>
+  </div>
+
+<div>
+  <div class="description">
+    This tutorial covers training an object detection model using IceVision and creating an OpenVINO plugin for the Unity game engine to perform inference with the trained model. Part 1 covers training and exporting the model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 8, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#setup-conda-environment">Setup Conda Environment</a></li>
+<li><a href="#import-dependencies">Import Dependencies</a></li>
+<li><a href="#configure-kaggle-api">Configure Kaggle API</a></li>
+<li><a href="#download-the-dataset">Download the Dataset</a></li>
+<li><a href="#inspect-the-dataset">Inspect the Dataset</a></li>
+<li><a href="#create-dataset-parser">Create Dataset Parser</a></li>
+<li><a href="#define-dataloader-objects">Define DataLoader Objects</a></li>
+<li><a href="#finetune-the-model">Finetune the Model</a></li>
+<li><a href="#prepare-model-for-export">Prepare Model for Export</a></li>
+<li><a href="#export-the-model">Export the Model</a></li>
+<li><a href="#verify-openvino-inference">Verify OpenVINO Inference</a></li>
+<li><a href="#define-post-processing-steps">Define Post-processing Steps</a></li>
+<li><a href="#generate-colormap">Generate Colormap</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial series, we will walk through training an object detector using the <a href="https://airctic.com/0.12.0/">IceVision</a> library. We will then implement the trained model in a <a href="https://unity.com/">Unity</a> game engine project using <a href="https://docs.openvino.ai/latest/index.html">OpenVINO</a>, an open-source toolkit for optimizing model inference.</p>
+<p>The tutorial uses a downscaled subsample of <a href="https://github.com/hukenovs/hagrid">HaGRID</a> (HAnd Gesture Recognition Image Dataset). The dataset contains annotated sample images for 18 distinct hand gestures and an additional <code>no_gesture</code> class to account for idle hands.</p>
+<div>
+<details>
+<summary style="font-size: 1.25rem;">
+Reference Images
+</summary>
+<br>
+
+<table>
+<thead>
+<tr>
+<th>
+Class
+</th>
+<th>
+Image
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+call
+</td>
+<td>
+<img alt="call" src="./images/call.jpg">
+</td>
+</tr>
+<tr>
+<td>
+dislike
+</td>
+<td>
+<img alt="dislike" src="./images/dislike.jpg">
+</td>
+</tr>
+<tr>
+<td>
+fist
+</td>
+<td>
+<img alt=" fist" src="./images/fist.jpg">
+</td>
+</tr>
+<tr>
+<td>
+four
+</td>
+<td>
+<img alt="four" src="./images/four.jpg">
+</td>
+</tr>
+<tr>
+<td>
+like
+</td>
+<td>
+<img alt=" like" src="./images/like.jpg">
+</td>
+</tr>
+<tr>
+<td>
+mute
+</td>
+<td>
+<img alt=" mute" src="./images/mute.jpg">
+</td>
+</tr>
+<tr>
+<td>
+ok
+</td>
+<td>
+<img alt=" ok" src="./images/ok.jpg">
+</td>
+</tr>
+<tr>
+<td>
+one
+</td>
+<td>
+<img alt=" one" src="./images/one.jpg">
+</td>
+</tr>
+<tr>
+<td>
+palm
+</td>
+<td>
+<img alt=" palm" src="./images/palm.jpg">
+</td>
+</tr>
+<tr>
+<td>
+peace
+</td>
+<td>
+<img alt="peace" src="./images/peace.jpg">
+</td>
+</tr>
+<tr>
+<td>
+peace_inverted
+</td>
+<td>
+<img alt="peace_inverted" src="./images/peace_inverted.jpg">
+</td>
+</tr>
+<tr>
+<td>
+rock
+</td>
+<td>
+<img alt="rock" src="./images/rock.jpg">
+</td>
+</tr>
+<tr>
+<td>
+stop
+</td>
+<td>
+<img alt="stop" src="./images/stop.jpg">
+</td>
+</tr>
+<tr>
+<td>
+stop_inverted
+</td>
+<td>
+<img alt="stop_inverted" src="./images/stop_inverted.jpg">
+</td>
+</tr>
+<tr>
+<td>
+three
+</td>
+<td>
+<img alt="three" src="./images/three.jpg">
+</td>
+</tr>
+<tr>
+<td>
+three2
+</td>
+<td>
+<img alt="three2" src="./images/three2.jpg">
+</td>
+</tr>
+<tr>
+<td>
+two_up
+</td>
+<td>
+<img alt=" two_up" src="./images/two_up.jpg">
+</td>
+</tr>
+<tr>
+<td>
+two_up_inverted
+</td>
+<td>
+<img alt="two_up_inverted" src="./images/two_up_inverted.jpg">
+</td>
+</tr>
+</tbody>
+
+</table>
+</details>
+</div>
+<p>One could use a model trained on this dataset to map hand gestures and locations to user input in Unity.</p>
+<section id="unity-demo" class="level4">
+<h4 class="anchored" data-anchor-id="unity-demo">Unity Demo</h4>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><video src="./videos/HaGRID-demo.mp4" class="img-fluid" controls=""><a href="./videos/HaGRID-demo.mp4">Video</a></video></p>
+<p></p><figcaption class="figure-caption">HaGRID-demo</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Part 1 covers finetuning a <a href="https://github.com/Megvii-BaseDetection/YOLOX">YOLOX</a> Tiny model using the IceVision library and exporting it to OpenVINO’s <a href="https://docs.openvino.ai/latest/openvino_docs_MO_DG_IR_and_opsets.html">Intermediate Representation</a> (IR) format. The training code is available in the Jupyter notebook linked below, and links for training on <a href="https://colab.research.google.com/?utm_source=scs-index">Google Colab</a> and <a href="https://www.kaggle.com/docs/notebooks">Kaggle</a> are also available below.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Jupyter Notebook</th>
+<th>Colab</th>
+<th>Kaggle</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/cj-mills/icevision-openvino-unity-tutorial/blob/main/notebooks/Icevision-YOLOX-to-OpenVINO-Tutorial-HaGRID.ipynb">GitHub Repository</a></td>
+<td><a href="https://colab.research.google.com/github/cj-mills/icevision-openvino-unity-tutorial/blob/main/notebooks/Icevision-YOLOX-to-OpenVINO-Tutorial-HaGRID-Colab.ipynb">Open In Colab</a></td>
+<td><a href="https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/icevision-openvino-unity-tutorial/blob/main/notebooks/Icevision-YOLOX-to-OpenVINO-Tutorial-HaGRID-Kaggle.ipynb"><img src="https://kaggle.com/static/images/open-in-kaggle.svg" class="img-fluid" alt="Kaggle"></a></td>
+</tr>
+</tbody>
+</table>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> The free GPU tier for Google Colab takes approximately 11 minutes per epoch, while the free GPU tier for Kaggle Notebooks takes around 15 minutes per epoch.</p>
+</blockquote>
+</section>
+<section id="setup-conda-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setup-conda-environment">Setup Conda Environment</h2>
+<p>The IceVision library builds upon specific versions of libraries like <a href="https://docs.fast.ai/">fastai</a> and <a href="https://mmdetection.readthedocs.io/en/latest/">mmdetection</a>, and the cumulative dependency requirements mean it is best to use a dedicated <a href="https://docs.python.org/3/tutorial/venv.html">virtual environment</a>. Below are the steps to create a virtual environment using <a href="https://docs.conda.io/en/latest/">Conda</a>. Be sure to execute each command in the provided order.</p>
+<blockquote class="blockquote">
+<p><strong>Important:</strong> IceVision currently only supports Linux/macOS. Try using <a href="https://docs.microsoft.com/en-us/windows/wsl/install">WSL</a> (Windows Subsystem for Linux) if training locally on Windows.</p>
+</blockquote>
+<p><strong>Install CUDA Toolkit</strong></p>
+<p>You might need to install the CUDA Toolkit on your system if you plan to run the training code locally. CUDA requires an Nvidia GPU. Version 11.1.0 of the toolkit is available at the link below. Both Google Colab and Kaggle Notebooks already have CUDA installed.</p>
+<ul>
+<li><a href="https://developer.nvidia.com/cuda-11.1.0-download-archive">CUDA Toolkit 11.1.0</a></li>
+<li><a href="https://developer.nvidia.com/cuda-toolkit-archive">CUDA Toolkit Archive</a></li>
+</ul>
+<p><strong>Conda environment setup steps</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">--name</span> icevision python==3.8</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate icevision</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch==1.10.0+cu111 torchvision==0.11.1+cu111 <span class="at">-f</span> https://download.pytorch.org/whl/torch_stable.html</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install mmcv-full==1.3.17 <span class="at">-f</span> https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install mmdet==2.17.0</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install icevision==0.11.0</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install icedata==0.5.1</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install setuptools==59.5.0</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install openvino-dev</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install distinctipy</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install jupyter</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnxruntime</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnx-simplifier</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install kaggle</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <a href="https://pypi.org/project/mmdet/"><code>mmdet</code></a> package contains the pretrained YOLOX Tiny model we will finetune with IceVision. The package depends on the <a href="https://mmcv.readthedocs.io/en/latest/"><code>mmcv-full</code></a> library, which is picky about the CUDA version used by <a href="https://pytorch.org/">PyTorch</a>. We need to install the PyTorch version with the exact CUDA version expected by <code>mmcv-full</code>.</p>
+<p>The <a href="https://pypi.org/project/icevision/"><code>icevision</code></a> package provides the functionality for data curation, data transforms, and training loops we’ll use to train the model. The <a href="https://airctic.github.io/icedata/"><code>icedata</code></a> package provides the functionality we’ll use to create a custom parser to read the dataset.</p>
+<p>The <a href="https://pypi.org/project/openvino-dev/"><code>openvino-dev</code></a> pip package contains the model-conversion script to convert trained models from <a href="https://onnx.ai/">ONNX</a> to OpenVINO’s IR format.</p>
+<p>We’ll use the <a href="https://pypi.org/project/distinctipy/"><code>distinctipy</code></a> pip package to generate a visually distinct colormap for drawing bounding boxes on images.</p>
+<p>The ONNX models generated by PyTorch are not always the most concise. We can use the <a href="https://pypi.org/project/onnx-simplifier/">onnx-simplifier</a> package to tidy up the exported model. This step is entirely optional.</p>
+<p><strong>Original ONNX model (<a href="https://netron.app/">Netron</a>)</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/onnx-model.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">onnx-model</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Simplified ONNX model (<a href="https://netron.app/">Netron</a>)</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/onnx-model-simplified.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">onnx-model-simplified</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Colab and Kaggle Setup Requirements</strong></p>
+<p>When running the training code on Google Colab and Kaggle Notebooks, we need to uninstall several packages before installing IceVision and its dependencies to avoid conflicts. The platform-specific setup steps are at the top of the notebooks linked above.</p>
+</section>
+<section id="import-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="import-dependencies">Import Dependencies</h2>
+<p>IceVision will download some additional resources the first time we import the library.</p>
+<p><strong>Import IceVision library</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> icevision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Import and configure Pandas</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'max_colwidth'</span>, <span class="va">None</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'display.max_rows'</span>, <span class="va">None</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'display.max_columns'</span>, <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="configure-kaggle-api" class="level2">
+<h2 class="anchored" data-anchor-id="configure-kaggle-api">Configure Kaggle API</h2>
+<p>The Kaggle API tool requires an API Key for a Kaggle account. Sign in or create a Kaggle account using the link below, then click the <code>Create New API Token</code> button.</p>
+<ul>
+<li><strong>Kaggle Account Settings:</strong> <a href="https://www.kaggle.com/me/account">https://www.kaggle.com/me/account</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/kaggle-create-new-api-token.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">kaggle-create-new-api-token</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Enter Kaggle username and API token</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>creds <span class="op">=</span> <span class="st">'{"username":"","key":""}'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Save Kaggle credentials if none are present</strong> * <strong>Source:</strong> <a href="https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb">https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb</a></p>
+<hr>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>cred_path <span class="op">=</span> Path(<span class="st">'~/.kaggle/kaggle.json'</span>).expanduser()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Save API key to a json file if it does not already exist</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> cred_path.exists():</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    cred_path.parent.mkdir(exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    cred_path.write_text(creds)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    cred_path.chmod(<span class="bn">0o600</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Import Kaggle API</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> kaggle <span class="im">import</span> api</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="download-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="download-the-dataset">Download the Dataset</h2>
+<p>Now that we have our Kaggle credentials set, we need to define the dataset and where to store it. I made two versions of the dataset available on Kaggle. One contains approximately thirty thousand training samples, and the other has over one hundred and twenty thousand.</p>
+<ul>
+<li><a href="https://www.kaggle.com/datasets/innominate817/hagrid-sample-30k-384p">HaGRID Sample 30k 384p</a></li>
+<li><a href="https://www.kaggle.com/datasets/innominate817/hagrid-sample-120k-384p">HaGRID Sample 120k 384p</a></li>
+</ul>
+<p><strong>Define path to dataset</strong></p>
+<p>We’ll use the default archive and data folders for the fastai library (installed with IceVision) to store the compressed and uncompressed datasets.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.data.external <span class="im">import</span> URLs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dataset_name <span class="op">=</span> <span class="st">'hagrid-sample-30k-384p'</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># dataset_name = 'hagrid-sample-120k-384p'</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>kaggle_dataset <span class="op">=</span> <span class="ss">f'innominate817/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>archive_dir <span class="op">=</span> URLs.path()</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>dataset_dir <span class="op">=</span> archive_dir<span class="op">/</span><span class="st">'../data'</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>archive_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>archive_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">.zip'</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>dataset_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>dataset_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define method to extract the dataset from an archive file</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> file_extract(fname, dest<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Extract `fname` to `dest` using `tarfile` or `zipfile`."</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> dest <span class="kw">is</span> <span class="va">None</span>: dest <span class="op">=</span> Path(fname).parent</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    fname <span class="op">=</span> <span class="bu">str</span>(fname)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>   fname.endswith(<span class="st">'gz'</span>):  tarfile.<span class="bu">open</span>(fname, <span class="st">'r:gz'</span>).extractall(dest)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> fname.endswith(<span class="st">'zip'</span>): zipfile.ZipFile(fname     ).extractall(dest)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: <span class="cf">raise</span> <span class="pp">Exception</span>(<span class="ss">f'Unrecognized archive: </span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Download the dataset if it is not present</strong></p>
+<p>The archive file for the 30K dataset is 4GB, so we don’t want to download it more than necessary.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> archive_path.exists():</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    api.dataset_download_cli(kaggle_dataset, path<span class="op">=</span>archive_dir)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    file_extract(fname<span class="op">=</span>archive_path, dest<span class="op">=</span>dataset_dir)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="inspect-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="inspect-the-dataset">Inspect the Dataset</h2>
+<p>We can start inspecting the dataset once it finishes downloading.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dir_content <span class="op">=</span> <span class="bu">list</span>(dataset_path.ls())</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>annotation_dir <span class="op">=</span> dataset_path<span class="op">/</span><span class="st">'ann_train_val'</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>dir_content.remove(annotation_dir)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>img_dir <span class="op">=</span> dir_content[<span class="dv">0</span>]</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>annotation_dir, img_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val'),
+ Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k'))</code></pre>
+<p><strong>Inspect the annotation folder</strong></p>
+<p>The bounding box annotations for each image are stored in JSON files organized by object class. The files contain annotations for all 552,992 images from the full HaGRID dataset.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame([<span class="bu">file</span>.name <span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> <span class="bu">list</span>(annotation_dir.ls())])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+call.json
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+dislike.json
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+fist.json
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+four.json
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+like.json
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+mute.json
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+ok.json
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+one.json
+</td>
+</tr>
+<tr>
+<th>
+8
+</th>
+<td>
+palm.json
+</td>
+</tr>
+<tr>
+<th>
+9
+</th>
+<td>
+peace.json
+</td>
+</tr>
+<tr>
+<th>
+10
+</th>
+<td>
+peace_inverted.json
+</td>
+</tr>
+<tr>
+<th>
+11
+</th>
+<td>
+rock.json
+</td>
+</tr>
+<tr>
+<th>
+12
+</th>
+<td>
+stop.json
+</td>
+</tr>
+<tr>
+<th>
+13
+</th>
+<td>
+stop_inverted.json
+</td>
+</tr>
+<tr>
+<th>
+14
+</th>
+<td>
+three.json
+</td>
+</tr>
+<tr>
+<th>
+15
+</th>
+<td>
+three2.json
+</td>
+</tr>
+<tr>
+<th>
+16
+</th>
+<td>
+two_up.json
+</td>
+</tr>
+<tr>
+<th>
+17
+</th>
+<td>
+two_up_inverted.json
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Inspect the image folder</strong></p>
+<p>The sample images are stored in folders separated by object class.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame([folder.name <span class="cf">for</span> folder <span class="kw">in</span> <span class="bu">list</span>(img_dir.ls())])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+train_val_call
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+train_val_dislike
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+train_val_fist
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+train_val_four
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+train_val_like
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+train_val_mute
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+train_val_ok
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+train_val_one
+</td>
+</tr>
+<tr>
+<th>
+8
+</th>
+<td>
+train_val_palm
+</td>
+</tr>
+<tr>
+<th>
+9
+</th>
+<td>
+train_val_peace
+</td>
+</tr>
+<tr>
+<th>
+10
+</th>
+<td>
+train_val_peace_inverted
+</td>
+</tr>
+<tr>
+<th>
+11
+</th>
+<td>
+train_val_rock
+</td>
+</tr>
+<tr>
+<th>
+12
+</th>
+<td>
+train_val_stop
+</td>
+</tr>
+<tr>
+<th>
+13
+</th>
+<td>
+train_val_stop_inverted
+</td>
+</tr>
+<tr>
+<th>
+14
+</th>
+<td>
+train_val_three
+</td>
+</tr>
+<tr>
+<th>
+15
+</th>
+<td>
+train_val_three2
+</td>
+</tr>
+<tr>
+<th>
+16
+</th>
+<td>
+train_val_two_up
+</td>
+</tr>
+<tr>
+<th>
+17
+</th>
+<td>
+train_val_two_up_inverted
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Get image file paths</strong></p>
+<p>We can use the <code>get_image_file</code> method to get the full paths for every image file in the image directory.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> get_image_files(img_dir)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(files)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>31833</code></pre>
+<p><strong>Inspect files</strong></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame([files[<span class="dv">0</span>], files[<span class="op">-</span><span class="dv">1</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00005c9c-3548-4a8f-9d0b-2dd4aff37fc9.jpg
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_two_up_inverted/fff4d2f6-9890-4225-8d9c-73a02ba8f9ac.jpg
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Inspect one of the training images</strong></p>
+<p>The sample images are all downscaled to 384p.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> PIL</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>img <span class="op">=</span> PIL.Image.<span class="bu">open</span>(files[<span class="dv">0</span>]).convert(<span class="st">'RGB'</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Image Dims: </span><span class="sc">{</span>img<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>img</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Image Dims: (512, 384)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_28_1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Create a dictionary that maps image names to file paths</strong></p>
+<p>Let’s create a dictionary to quickly obtain full image file paths, given a file name. We’ll need this later.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>img_dict <span class="op">=</span> {<span class="bu">file</span>.name.split(<span class="st">'.'</span>)[<span class="dv">0</span>] : <span class="bu">file</span> <span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> files}</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(img_dict.items())[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>('00005c9c-3548-4a8f-9d0b-2dd4aff37fc9',
+ Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00005c9c-3548-4a8f-9d0b-2dd4aff37fc9.jpg'))</code></pre>
+<p><strong>Get list of annotation file paths</strong></p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> glob <span class="im">import</span> glob</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>annotation_paths <span class="op">=</span> glob(os.path.join(annotation_dir, <span class="st">"*.json"</span>))</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>annotation_paths</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>['/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/fist.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/one.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/rock.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/stop_inverted.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/like.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/two_up.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/two_up_inverted.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/peace.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/stop.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/four.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/dislike.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/palm.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/call.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/three2.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/ok.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/mute.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/three.json',
+ '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/peace_inverted.json']</code></pre>
+<p><strong>Create annotations dataframe</strong></p>
+<p>Next, we’ll read all the image annotations into a single Pandas DataFrame and filter out annotations for images not present in the current subsample.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>cls_dataframes <span class="op">=</span> (pd.read_json(f).transpose() <span class="cf">for</span> f <span class="kw">in</span> annotation_paths)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>annotation_df <span class="op">=</span> pd.concat(cls_dataframes, ignore_index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>annotation_df <span class="op">=</span> annotation_df.loc[<span class="bu">list</span>(img_dict.keys())]</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>annotation_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+bboxes
+</th>
+<th>
+labels
+</th>
+<th>
+leading_hand
+</th>
+<th>
+leading_conf
+</th>
+<th>
+user_id
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+00005c9c-3548-4a8f-9d0b-2dd4aff37fc9
+</th>
+<td>
+[[0.23925175, 0.28595301, 0.25055143, 0.20777627]]
+</td>
+<td>
+[call]
+</td>
+<td>
+right
+</td>
+<td>
+1
+</td>
+<td>
+5a389ffe1bed6660a59f4586c7d8fe2770785e5bf79b09334aa951f6f119c024
+</td>
+</tr>
+<tr>
+<th>
+0020a3db-82d8-47aa-8642-2715d4744db5
+</th>
+<td>
+[[0.5801012999999999, 0.53265105, 0.14562138, 0.12286348]]
+</td>
+<td>
+[call]
+</td>
+<td>
+left
+</td>
+<td>
+1
+</td>
+<td>
+0d6da2c87ef8eabeda2dcfee2dc5b5035e878137a91b149c754a59804f3dce32
+</td>
+</tr>
+<tr>
+<th>
+004ac93f-0f7c-49a4-aadc-737e0ad4273c
+</th>
+<td>
+[[0.46294793, 0.26419774, 0.13834939000000002, 0.10784189]]
+</td>
+<td>
+[call]
+</td>
+<td>
+right
+</td>
+<td>
+1
+</td>
+<td>
+d50f05d9d6ca9771938cec766c3d621ff863612f9665b0e4d991c086ec04acc9
+</td>
+</tr>
+<tr>
+<th>
+006cac69-d3f0-47f9-aac9-38702d038ef1
+</th>
+<td>
+[[0.38799208, 0.44643898, 0.27068787, 0.18277858]]
+</td>
+<td>
+[call]
+</td>
+<td>
+right
+</td>
+<td>
+1
+</td>
+<td>
+998f6ad69140b3a59cb9823ba680cce62bf2ba678058c2fc497dbbb8b22b29fe
+</td>
+</tr>
+<tr>
+<th>
+00973fac-440e-4a56-b60c-2a06d5fb155d
+</th>
+<td>
+[[0.40980118, 0.38144198, 0.08338464, 0.06229785], [0.6122035100000001, 0.6780825500000001, 0.04700606, 0.07640522]]
+</td>
+<td>
+[call, no_gesture]
+</td>
+<td>
+right
+</td>
+<td>
+1
+</td>
+<td>
+4bb3ee1748be58e05bd1193939735e57bb3c0ca59a7ee38901744d6b9e94632e
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p>Notice that one of the samples contains a <code>no_gesture</code> label to identify an idle hand in the image.</p>
+<p><strong>Inspect annotation data for sample image</strong></p>
+<p>We can retrieve the annotation data for a specific image file using its name.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>file_id <span class="op">=</span> files[<span class="dv">0</span>].name.split(<span class="st">'.'</span>)[<span class="dv">0</span>]</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>file_id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'00005c9c-3548-4a8f-9d0b-2dd4aff37fc9'</code></pre>
+<p>The image file names are the index values for the annotation DataFrame.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>annotation_df.loc[file_id].to_frame()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+00005c9c-3548-4a8f-9d0b-2dd4aff37fc9
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+bboxes
+</th>
+<td>
+[[0.23925175, 0.28595301, 0.25055143, 0.20777627]]
+</td>
+</tr>
+<tr>
+<th>
+labels
+</th>
+<td>
+[call]
+</td>
+</tr>
+<tr>
+<th>
+leading_hand
+</th>
+<td>
+right
+</td>
+</tr>
+<tr>
+<th>
+leading_conf
+</th>
+<td>
+1
+</td>
+</tr>
+<tr>
+<th>
+user_id
+</th>
+<td>
+5a389ffe1bed6660a59f4586c7d8fe2770785e5bf79b09334aa951f6f119c024
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p>The <code>bboxes</code> entry contains the <code>[top-left-X-position, top-left-Y-position, width, height]</code> information for any bounding boxes. The values are scaled based on the image dimensions. We multiply <code>top-left-X-position</code> and <code>width</code> values by the image width and multiply <code>top-left-Y-position</code> and <code>height</code> values by the image height to obtain the actual values.</p>
+<p><strong>Download font file</strong></p>
+<p>We need a font file to annotate the images with class labels. We can download one from <a href="https://fonts.google.com/">Google Fonts</a>.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>font_file <span class="op">=</span> <span class="st">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> os.path.exists(font_file): </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">!</span>wget https:<span class="op">//</span>fonts.gstatic.com<span class="op">/</span>s<span class="op">/</span>roboto<span class="op">/</span>v30<span class="op">/</span>$font_file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Annotate sample image</strong></p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> ImageDraw</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>width, height <span class="op">=</span> img.size</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>annotated_img <span class="op">=</span> img.copy()</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>draw <span class="op">=</span> ImageDraw.Draw(annotated_img)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>fnt_size <span class="op">=</span> <span class="dv">25</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>annotation <span class="op">=</span> annotation_df.loc[file_id]</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(annotation[<span class="st">'labels'</span>])):</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    x, y, w, h <span class="op">=</span> annotation[<span class="st">'bboxes'</span>][i]</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    x <span class="op">*=</span> width</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    y <span class="op">*=</span> height</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    w <span class="op">*=</span> width</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    h <span class="op">*=</span> height</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    shape <span class="op">=</span> (x, y, x<span class="op">+</span>w, y<span class="op">+</span>h)</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>    draw.rectangle(shape, outline<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>    fnt <span class="op">=</span> PIL.ImageFont.truetype(font_file, fnt_size)</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>    draw.multiline_text((x, y<span class="op">-</span>fnt_size<span class="op">-</span><span class="dv">5</span>), <span class="ss">f"</span><span class="sc">{</span>annotation[<span class="st">'labels'</span>][i]<span class="sc">}</span><span class="ss">"</span>, font<span class="op">=</span>fnt, fill<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(annotated_img.size) </span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>annotated_img</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(384, 512)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_43_1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Create a class map</strong></p>
+<p>We need to provide IceVision with a class map that maps index values to unique class names.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> annotation_df[<span class="st">'labels'</span>].explode().unique().tolist()</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>['call',
+ 'no_gesture',
+ 'dislike',
+ 'fist',
+ 'four',
+ 'like',
+ 'mute',
+ 'ok',
+ 'one',
+ 'palm',
+ 'peace',
+ 'peace_inverted',
+ 'rock',
+ 'stop',
+ 'stop_inverted',
+ 'three',
+ 'three2',
+ 'two_up',
+ 'two_up_inverted']</code></pre>
+<p>IceVision adds an additional <code>background</code> class at index <code>0</code>.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>class_map <span class="op">=</span> ClassMap(labels)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>class_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;ClassMap: {'background': 0, 'call': 1, 'no_gesture': 2, 'dislike': 3, 'fist': 4, 'four': 5, 'like': 6, 'mute': 7, 'ok': 8, 'one': 9, 'palm': 10, 'peace': 11, 'peace_inverted': 12, 'rock': 13, 'stop': 14, 'stop_inverted': 15, 'three': 16, 'three2': 17, 'two_up': 18, 'two_up_inverted': 19}&gt;</code></pre>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> The <code>background</code> class is not included in the final model.</p>
+</blockquote>
+</section>
+<section id="create-dataset-parser" class="level2">
+<h2 class="anchored" data-anchor-id="create-dataset-parser">Create Dataset Parser</h2>
+<p>Now we can create a custom <code>Parser</code> class that tells IceVision how to read the dataset.</p>
+<p><strong>View template for an object detection record</strong></p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>template_record <span class="op">=</span> ObjectDetectionRecord()</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>template_record</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>BaseRecord
+
+common: 
+    - Image size None
+    - Record ID: None
+    - Filepath: None
+    - Img: None
+detection: 
+    - Class Map: None
+    - Labels: []
+    - BBoxes: []</code></pre>
+<p><strong>View template for an object detection parser</strong></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>Parser.generate_template(template_record)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class MyParser(Parser):
+    def __init__(self, template_record):
+        super().__init__(template_record=template_record)
+    def __iter__(self) -&gt; Any:
+    def __len__(self) -&gt; int:
+    def record_id(self, o: Any) -&gt; Hashable:
+    def parse_fields(self, o: Any, record: BaseRecord, is_new: bool):
+        record.set_img_size(&lt;ImgSize&gt;)
+        record.set_filepath(&lt;Union[str, Path]&gt;)
+        record.detection.set_class_map(&lt;ClassMap&gt;)
+        record.detection.add_labels(&lt;Sequence[Hashable]&gt;)
+        record.detection.add_bboxes(&lt;Sequence[BBox]&gt;)</code></pre>
+<p><strong>Define custom parser class</strong></p>
+<p>As mentioned earlier, we need the dimensions for an image to scale the corresponding bounding box information. The dataset contains images with different resolutions, so we need to check for each image.</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> HagridParser(Parser):</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, template_record, annotations_df, img_dict, class_map):</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>(template_record<span class="op">=</span>template_record)</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.img_dict <span class="op">=</span> img_dict</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.df <span class="op">=</span> annotations_df</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.class_map <span class="op">=</span> class_map</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>) <span class="op">-&gt;</span> Any:</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> o <span class="kw">in</span> <span class="va">self</span>.df.itertuples(): <span class="cf">yield</span> o</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">int</span>: </span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.df)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> record_id(<span class="va">self</span>, o: Any) <span class="op">-&gt;</span> Hashable:</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> o.Index</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> parse_fields(<span class="va">self</span>, o: Any, record: BaseRecord, is_new: <span class="bu">bool</span>):</span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>        filepath <span class="op">=</span> <span class="va">self</span>.img_dict[o.Index]</span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>        width, height <span class="op">=</span> PIL.Image.<span class="bu">open</span>(filepath).convert(<span class="st">'RGB'</span>).size</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>        record.set_img_size(ImgSize(width<span class="op">=</span>width, height<span class="op">=</span>height))</span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>        record.set_filepath(filepath)</span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>        record.detection.set_class_map(<span class="va">self</span>.class_map)</span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a>        record.detection.add_labels(o.labels)</span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a>        bbox_list <span class="op">=</span> []</span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i, label <span class="kw">in</span> <span class="bu">enumerate</span>(o.labels):</span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> o.bboxes[i][<span class="dv">0</span>]<span class="op">*</span>width</span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a>            y <span class="op">=</span> o.bboxes[i][<span class="dv">1</span>]<span class="op">*</span>height</span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>            w <span class="op">=</span> o.bboxes[i][<span class="dv">2</span>]<span class="op">*</span>width</span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>            h <span class="op">=</span> o.bboxes[i][<span class="dv">3</span>]<span class="op">*</span>height</span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a>            bbox_list.append( BBox.from_xywh(x, y, w, h))</span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a>        record.detection.add_bboxes(bbox_list)</span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a>            </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Create a custom parser object</strong></p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>parser <span class="op">=</span> HagridParser(template_record, annotation_df, img_dict, class_map)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(parser)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>31833</code></pre>
+<p><strong>Parse annotations to create records</strong></p>
+<p>We’ll randomly split the samples into training and validation sets.</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Randomly split our data into train/valid</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>data_splitter <span class="op">=</span> RandomSplitter([<span class="fl">0.8</span>, <span class="fl">0.2</span>])</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>train_records, valid_records <span class="op">=</span> parser.parse(data_splitter, cache_filepath<span class="op">=</span><span class="ss">f'</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">-cache.pkl'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Inspect training records</strong></p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>train_records[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>BaseRecord
+
+common: 
+    - Filepath: /mnt/980SSD_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_one/2507aacb-43d2-4114-91f1-008e3c7a181c.jpg
+    - Img: None
+    - Record ID: 2507aacb-43d2-4114-91f1-008e3c7a181c
+    - Image size ImgSize(width=640, height=853)
+detection: 
+    - BBoxes: [&lt;BBox (xmin:153.0572608, ymin:197.40873228, xmax:213.5684992, ymax:320.45228481000004)&gt;, &lt;BBox (xmin:474.20276479999995, ymin:563.67557885, xmax:520.8937472, ymax:657.61167499)&gt;]
+    - Class Map: &lt;ClassMap: {'background': 0, 'call': 1, 'no_gesture': 2, 'dislike': 3, 'fist': 4, 'four': 5, 'like': 6, 'mute': 7, 'ok': 8, 'one': 9, 'palm': 10, 'peace': 11, 'peace_inverted': 12, 'rock': 13, 'stop': 14, 'stop_inverted': 15, 'three': 16, 'three2': 17, 'two_up': 18, 'two_up_inverted': 19}&gt;
+    - Labels: [9, 2]</code></pre>
+<div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>show_record(train_records[<span class="dv">0</span>], figsize <span class="op">=</span> (<span class="dv">10</span>,<span class="dv">10</span>), display_label<span class="op">=</span><span class="va">True</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_59_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>show_records(train_records[<span class="dv">1</span>:<span class="dv">4</span>], ncols<span class="op">=</span><span class="dv">3</span>,display_label<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_60_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="define-dataloader-objects" class="level2">
+<h2 class="anchored" data-anchor-id="define-dataloader-objects">Define DataLoader Objects</h2>
+<p>The YOLOX model examines an input image using the stride values <code>[8, 16, 32]</code> to detect objects of various sizes.</p>
+<p>The max number of detections depends on the input resolution and these stride values. Given a <code>384x512</code> image, the model will make <code>(384/8)*(512/8) + (384/16)*(512/16) + (384/32)*(512/32) = 4032</code> predictions. Although, many of those predictions get filtered out during post-processing.</p>
+<p>Here, we can see the difference in results when using a single stride value in isolation with a YOLOX model trained on the <a href="https://cocodataset.org/#home">COCO</a> dataset.</p>
+<p><strong>Stride 8</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/stride_8_demo.jpg" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">stride_8_demo</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Stride 16</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/stride_16_demo.jpg" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">stride_16_demo</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Stride 32</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/stride_32_demo.jpg" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">stride_32_demo</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Define stride values</strong></p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>strides <span class="op">=</span> [<span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>]</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>max_stride <span class="op">=</span> <span class="bu">max</span>(strides)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Select a multiple of the max stride value as the input resolution</strong></p>
+<p>We need to set the input height and width to multiples of the highest stride value (i.e., 32).</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>[max_stride<span class="op">*</span>i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">7</span>,<span class="dv">21</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>[224, 256, 288, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640] </code></pre>
+<p><strong>Define input resolution</strong></p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>image_size <span class="op">=</span> <span class="dv">384</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>presize <span class="op">=</span> <span class="dv">512</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> You can lower the image_size to reduce training time at the cost of a potential decrease in accuracy.</p>
+</blockquote>
+<p><strong>Define Transforms</strong></p>
+<p>IceVision provides several default methods for data augmentation to help the model generalize. It automatically updates the bounding box information for an image based on the applied augmentations.</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(tfms.A.aug_tfms(size<span class="op">=</span>image_size, presize<span class="op">=</span>presize))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+SmallestMaxSize(always_apply=False, p=1, max_size=512, interpolation=1)
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+HorizontalFlip(always_apply=False, p=0.5)
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+ShiftScaleRotate(always_apply=False, p=0.5, shift_limit_x=(-0.0625, 0.0625), shift_limit_y=(-0.0625, 0.0625), scale_limit=(-0.09999999999999998, 0.10000000000000009), rotate_limit=(-15, 15), interpolation=1, border_mode=4, value=None, mask_value=None)
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+RGBShift(always_apply=False, p=0.5, r_shift_limit=(-10, 10), g_shift_limit=(-10, 10), b_shift_limit=(-10, 10))
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+RandomBrightnessContrast(always_apply=False, p=0.5, brightness_limit=(-0.2, 0.2), contrast_limit=(-0.2, 0.2), brightness_by_max=True)
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+Blur(always_apply=False, p=0.5, blur_limit=(1, 3))
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+OneOrOther([RandomSizedBBoxSafeCrop(always_apply=False, p=0.5, height=384, width=384, erosion_rate=0.0, interpolation=1),LongestMaxSize(always_apply=False, p=1, max_size=384, interpolation=1),], p=0.5)
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+PadIfNeeded(always_apply=False, p=1.0, min_height=384, min_width=384, pad_height_divisor=None, pad_width_divisor=None, border_mode=0, value=[124, 116, 104], mask_value=None)
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(tfms.A.resize_and_pad(size<span class="op">=</span>image_size))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+LongestMaxSize(always_apply=False, p=1, max_size=384, interpolation=1)
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+PadIfNeeded(always_apply=False, p=1.0, min_height=384, min_width=384, pad_height_divisor=None, pad_width_divisor=None, border_mode=0, value=[124, 116, 104], mask_value=None)
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>train_tfms <span class="op">=</span> tfms.A.Adapter([<span class="op">*</span>tfms.A.aug_tfms(size<span class="op">=</span>image_size, presize<span class="op">=</span>presize), tfms.A.Normalize()])</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>valid_tfms <span class="op">=</span> tfms.A.Adapter([<span class="op">*</span>tfms.A.resize_and_pad(image_size), tfms.A.Normalize()])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Get normalization stats</strong></p>
+<p>We can extract the normalization stats from the <code>tfms.A.Normalize()</code> method for future use. We’ll use these same stats when performing inference with the trained model.</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>mean <span class="op">=</span> tfms.A.Normalize().mean</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>std <span class="op">=</span> tfms.A.Normalize().std</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>mean, std</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))</code></pre>
+<p><strong>Define Datasets</strong></p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>train_ds <span class="op">=</span> Dataset(train_records, train_tfms)</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>valid_ds <span class="op">=</span> Dataset(valid_records, valid_tfms)</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>train_ds, valid_ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(&lt;Dataset with 25466 items&gt;, &lt;Dataset with 6367 items&gt;)</code></pre>
+<p><strong>Apply augmentations to a training sample</strong></p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> [train_ds[<span class="dv">0</span>] <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>show_samples(samples, ncols<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_76_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Define model type</strong></p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>model_type <span class="op">=</span> models.mmdet.yolox</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define backbone</strong></p>
+<p>We’ll use a model pretrained on the COCO dataset rather than train a new model from scratch.</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>backbone <span class="op">=</span> model_type.backbones.yolox_tiny_8x8(pretrained<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame.from_dict(backbone.__dict__, orient<span class="op">=</span><span class="st">'index'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+model_name
+</th>
+<td>
+yolox
+</td>
+</tr>
+<tr>
+<th>
+config_path
+</th>
+<td>
+/home/innom-dt/.icevision/mmdetection_configs/mmdetection_configs-2.16.0/configs/yolox/yolox_tiny_8x8_300e_coco.py
+</td>
+</tr>
+<tr>
+<th>
+weights_url
+</th>
+<td>
+https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_tiny_8x8_300e_coco/yolox_tiny_8x8_300e_coco_20210806_234250-4ff3b67e.pth
+</td>
+</tr>
+<tr>
+<th>
+pretrained
+</th>
+<td>
+True
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Define batch size</strong></p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>bs <span class="op">=</span> <span class="dv">32</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> Adjust the batch size based on the available GPU memory.</p>
+</blockquote>
+<p><strong>Define DataLoaders</strong></p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>train_dl <span class="op">=</span> model_type.train_dl(train_ds, batch_size<span class="op">=</span>bs, num_workers<span class="op">=</span><span class="dv">2</span>, shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>valid_dl <span class="op">=</span> model_type.valid_dl(valid_ds, batch_size<span class="op">=</span>bs, num_workers<span class="op">=</span><span class="dv">2</span>, shuffle<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> Be careful when increasing the number of workers. There is a bug that significantly increases system memory usage with more workers.</p>
+</blockquote>
+</section>
+<section id="finetune-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="finetune-the-model">Finetune the Model</h2>
+<p>Now, we can move on to training the model.</p>
+<p><strong>Instantiate the model</strong></p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> model_type.model(backbone<span class="op">=</span>backbone(pretrained<span class="op">=</span><span class="va">True</span>), num_classes<span class="op">=</span><span class="bu">len</span>(parser.class_map)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define metrics</strong></p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="op">=</span> [COCOMetric(metric_type<span class="op">=</span>COCOMetricType.bbox)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define Learner object</strong></p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> model_type.fastai.learner(dls<span class="op">=</span>[train_dl, valid_dl], model<span class="op">=</span>model, metrics<span class="op">=</span>metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Find learning rate</strong></p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>learn.lr_find()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>SuggestedLRs(valley=0.0012022644514217973)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_92_3.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Define learning rate</strong></p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define number of epochs</strong></p>
+<div class="sourceCode" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">20</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Finetune model</strong></p>
+<div class="sourceCode" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>learn.fine_tune(epochs, lr, freeze_epochs<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+epoch
+</th>
+<th>
+train_loss
+</th>
+<th>
+valid_loss
+</th>
+<th>
+COCOMetric
+</th>
+<th>
+time
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+0
+</td>
+<td>
+5.965206
+</td>
+<td>
+5.449240
+</td>
+<td>
+0.343486
+</td>
+<td>
+03:31
+</td>
+</tr>
+</tbody>
+
+</table>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+epoch
+</th>
+<th>
+train_loss
+</th>
+<th>
+valid_loss
+</th>
+<th>
+COCOMetric
+</th>
+<th>
+time
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+0
+</td>
+<td>
+3.767774
+</td>
+<td>
+3.712888
+</td>
+<td>
+0.572857
+</td>
+<td>
+03:53
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+3.241024
+</td>
+<td>
+3.204471
+</td>
+<td>
+0.615708
+</td>
+<td>
+03:50
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td>
+2.993548
+</td>
+<td>
+3.306303
+</td>
+<td>
+0.578024
+</td>
+<td>
+03:48
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td>
+2.837985
+</td>
+<td>
+3.157353
+</td>
+<td>
+0.607766
+</td>
+<td>
+03:51
+</td>
+</tr>
+<tr>
+<td>
+4
+</td>
+<td>
+2.714989
+</td>
+<td>
+2.684248
+</td>
+<td>
+0.687850
+</td>
+<td>
+03:52
+</td>
+</tr>
+<tr>
+<td>
+5
+</td>
+<td>
+2.614549
+</td>
+<td>
+2.545124
+</td>
+<td>
+0.708479
+</td>
+<td>
+03:49
+</td>
+</tr>
+<tr>
+<td>
+6
+</td>
+<td>
+2.466678
+</td>
+<td>
+2.597708
+</td>
+<td>
+0.677954
+</td>
+<td>
+03:54
+</td>
+</tr>
+<tr>
+<td>
+7
+</td>
+<td>
+2.395620
+</td>
+<td>
+2.459959
+</td>
+<td>
+0.707709
+</td>
+<td>
+03:53
+</td>
+</tr>
+<tr>
+<td>
+8
+</td>
+<td>
+2.295367
+</td>
+<td>
+2.621239
+</td>
+<td>
+0.679657
+</td>
+<td>
+03:48
+</td>
+</tr>
+<tr>
+<td>
+9
+</td>
+<td>
+2.201542
+</td>
+<td>
+2.636252
+</td>
+<td>
+0.681469
+</td>
+<td>
+03:47
+</td>
+</tr>
+<tr>
+<td>
+10
+</td>
+<td>
+2.177531
+</td>
+<td>
+2.352600
+</td>
+<td>
+0.723354
+</td>
+<td>
+03:48
+</td>
+</tr>
+<tr>
+<td>
+11
+</td>
+<td>
+2.086292
+</td>
+<td>
+2.376842
+</td>
+<td>
+0.726306
+</td>
+<td>
+03:47
+</td>
+</tr>
+<tr>
+<td>
+12
+</td>
+<td>
+2.009476
+</td>
+<td>
+2.424167
+</td>
+<td>
+0.712507
+</td>
+<td>
+03:46
+</td>
+</tr>
+<tr>
+<td>
+13
+</td>
+<td>
+1.951761
+</td>
+<td>
+2.324901
+</td>
+<td>
+0.730893
+</td>
+<td>
+03:49
+</td>
+</tr>
+<tr>
+<td>
+14
+</td>
+<td>
+1.916571
+</td>
+<td>
+2.243153
+</td>
+<td>
+0.739224
+</td>
+<td>
+03:45
+</td>
+</tr>
+<tr>
+<td>
+15
+</td>
+<td>
+1.834777
+</td>
+<td>
+2.208674
+</td>
+<td>
+0.747359
+</td>
+<td>
+03:52
+</td>
+</tr>
+<tr>
+<td>
+16
+</td>
+<td>
+1.802138
+</td>
+<td>
+2.120061
+</td>
+<td>
+0.757734
+</td>
+<td>
+04:00
+</td>
+</tr>
+<tr>
+<td>
+17
+</td>
+<td>
+1.764611
+</td>
+<td>
+2.187056
+</td>
+<td>
+0.746236
+</td>
+<td>
+03:53
+</td>
+</tr>
+<tr>
+<td>
+18
+</td>
+<td>
+1.753366
+</td>
+<td>
+2.143199
+</td>
+<td>
+0.754093
+</td>
+<td>
+04:03
+</td>
+</tr>
+<tr>
+<td>
+19
+</td>
+<td>
+1.735740
+</td>
+<td>
+2.154315
+</td>
+<td>
+0.751422
+</td>
+<td>
+03:55
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</section>
+<section id="prepare-model-for-export" class="level2">
+<h2 class="anchored" data-anchor-id="prepare-model-for-export">Prepare Model for Export</h2>
+<p>Once the model finishes training, we need to modify it before exporting it. First, we’ll prepare an input image to feed to the model.</p>
+<p><strong>Define method to convert a PIL Image to a Pytorch Tensor</strong></p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> img_to_tensor(img:PIL.Image, mean<span class="op">=</span>[<span class="fl">0.485</span>, <span class="fl">0.456</span>, <span class="fl">0.406</span>], std<span class="op">=</span>[<span class="fl">0.229</span>, <span class="fl">0.224</span>, <span class="fl">0.225</span>]):</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert image to tensor</span></span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>    img_tensor <span class="op">=</span> torch.Tensor(np.array(img)).permute(<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Scale pixels values from [0,255] to [0,1]</span></span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>    scaled_tensor <span class="op">=</span> img_tensor.<span class="bu">float</span>().div_(<span class="dv">255</span>)</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Prepare normalization tensors</span></span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>    mean_tensor <span class="op">=</span> tensor(mean).view(<span class="dv">1</span>,<span class="dv">1</span>,<span class="op">-</span><span class="dv">1</span>).permute(<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>    std_tensor <span class="op">=</span> tensor(std).view(<span class="dv">1</span>,<span class="dv">1</span>,<span class="op">-</span><span class="dv">1</span>).permute(<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Normalize tensor    </span></span>
+<span id="cb73-10"><a href="#cb73-10" aria-hidden="true" tabindex="-1"></a>    normalized_tensor <span class="op">=</span> (scaled_tensor <span class="op">-</span> mean_tensor) <span class="op">/</span> std_tensor</span>
+<span id="cb73-11"><a href="#cb73-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Batch tensor</span></span>
+<span id="cb73-12"><a href="#cb73-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> normalized_tensor.unsqueeze(dim<span class="op">=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Select a test image</strong></p>
+<div class="sourceCode" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>annotation_df.iloc[<span class="dv">4</span>].to_frame()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+00973fac-440e-4a56-b60c-2a06d5fb155d
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+bboxes
+</th>
+<td>
+[[0.40980118, 0.38144198, 0.08338464, 0.06229785], [0.6122035100000001, 0.6780825500000001, 0.04700606, 0.07640522]]
+</td>
+</tr>
+<tr>
+<th>
+labels
+</th>
+<td>
+[call, no_gesture]
+</td>
+</tr>
+<tr>
+<th>
+leading_hand
+</th>
+<td>
+right
+</td>
+</tr>
+<tr>
+<th>
+leading_conf
+</th>
+<td>
+1
+</td>
+</tr>
+<tr>
+<th>
+user_id
+</th>
+<td>
+4bb3ee1748be58e05bd1193939735e57bb3c0ca59a7ee38901744d6b9e94632e
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Get the test image file path</strong></p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>test_file <span class="op">=</span> img_dict[annotation_df.iloc[<span class="dv">4</span>].name]</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>test_file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00973fac-440e-4a56-b60c-2a06d5fb155d.jpg')</code></pre>
+<p><strong>Load the test image</strong></p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> PIL.Image.<span class="bu">open</span>(test_file).convert(<span class="st">'RGB'</span>)</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>test_img</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_108_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Calculate valid input dimensions</strong></p>
+<div class="sourceCode" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>input_h <span class="op">=</span> test_img.height <span class="op">-</span> (test_img.height <span class="op">%</span> max_stride)</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>input_w <span class="op">=</span> test_img.width <span class="op">-</span> (test_img.width <span class="op">%</span> max_stride)</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>input_h, input_w</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(512, 384)</code></pre>
+<p><strong>Crop image to supported resolution</strong></p>
+<div class="sourceCode" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> test_img.crop_pad((input_w, input_h))</span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>test_img</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_112_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Convert image to a normalized tensor</strong></p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>test_tensor <span class="op">=</span> img_to_tensor(test_img, mean<span class="op">=</span>mean, std<span class="op">=</span>std)</span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>test_tensor.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([1, 3, 512, 384])</code></pre>
+<p><strong>Inspect raw model output</strong></p>
+<p>Before making any changes, let’s inspect the current model output.</p>
+<div class="sourceCode" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>model_output <span class="op">=</span> model.cpu().forward_dummy(test_tensor.cpu())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The model currently organizes the output into three tuples. The first tuple contains three tensors storing the object class predictions using the three stride values. Recall that there are 19 object classes, excluding the background class added by IceVision.</p>
+<p>The second tuple contains three tensors with the predicted bounding box coordinates and dimensions using the three stride values.</p>
+<p>The third tuple contains three tensors with the confidence score for whether an object is present in a given section of the input image using the three stride values.</p>
+<div class="sourceCode" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> raw_out <span class="kw">in</span> model_output:</span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> out <span class="kw">in</span> raw_out:</span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(out.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([1, 19, 64, 48])
+torch.Size([1, 19, 32, 24])
+torch.Size([1, 19, 16, 12])
+torch.Size([1, 4, 64, 48])
+torch.Size([1, 4, 32, 24])
+torch.Size([1, 4, 16, 12])
+torch.Size([1, 1, 64, 48])
+torch.Size([1, 1, 32, 24])
+torch.Size([1, 1, 16, 12])</code></pre>
+<ul>
+<li><p><code>512/8 = 64</code>, <code>512/16 = 32</code>, <code>512/32 = 16</code></p></li>
+<li><p><code>384/8 = 48</code>, <code>384/16 = 24</code>, <code>384/32 = 12</code></p></li>
+</ul>
+<p>If we examine the end of a model from the official <a href="https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/ONNXRuntime">YOLOX repo</a>, we can see the output looks a bit different.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/yolox_official_model.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">yolox_official_model</figcaption><p></p>
+</figure>
+</div>
+<p>The official model first passes the tensors with the object class and “objectness” scores through sigmoid functions. It then combines the three tensors for each stride value into a single tensor before combining the resulting three tensors into a single flat array.</p>
+<p>We can apply these same steps to our model by adding a new forward function using <a href="https://machinelearningmastery.com/monkey-patching-python-code/">monkey patching</a>.</p>
+<p><strong>Define custom forward function for exporting the model</strong></p>
+<div class="sourceCode" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> forward_export(<span class="va">self</span>, input_tensor):</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get raw model output</span></span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>    model_output <span class="op">=</span> <span class="va">self</span>.forward_dummy(input_tensor.cpu())</span>
+<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract class scores</span></span>
+<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>    cls_scores <span class="op">=</span> model_output[<span class="dv">0</span>]</span>
+<span id="cb86-6"><a href="#cb86-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract bounding box predictions</span></span>
+<span id="cb86-7"><a href="#cb86-7" aria-hidden="true" tabindex="-1"></a>    bbox_preds <span class="op">=</span> model_output[<span class="dv">1</span>]</span>
+<span id="cb86-8"><a href="#cb86-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract objectness scores</span></span>
+<span id="cb86-9"><a href="#cb86-9" aria-hidden="true" tabindex="-1"></a>    objectness <span class="op">=</span> model_output[<span class="dv">2</span>]</span>
+<span id="cb86-10"><a href="#cb86-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb86-11"><a href="#cb86-11" aria-hidden="true" tabindex="-1"></a>    stride_8_cls <span class="op">=</span> torch.sigmoid(cls_scores[<span class="dv">0</span>])</span>
+<span id="cb86-12"><a href="#cb86-12" aria-hidden="true" tabindex="-1"></a>    stride_8_bbox <span class="op">=</span> bbox_preds[<span class="dv">0</span>]</span>
+<span id="cb86-13"><a href="#cb86-13" aria-hidden="true" tabindex="-1"></a>    stride_8_objectness <span class="op">=</span> torch.sigmoid(objectness[<span class="dv">0</span>])</span>
+<span id="cb86-14"><a href="#cb86-14" aria-hidden="true" tabindex="-1"></a>    stride_8_cat <span class="op">=</span> torch.cat((stride_8_bbox, stride_8_objectness, stride_8_cls), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb86-15"><a href="#cb86-15" aria-hidden="true" tabindex="-1"></a>    stride_8_flat <span class="op">=</span> torch.flatten(stride_8_cat, start_dim<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb86-16"><a href="#cb86-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-17"><a href="#cb86-17" aria-hidden="true" tabindex="-1"></a>    stride_16_cls <span class="op">=</span> torch.sigmoid(cls_scores[<span class="dv">1</span>])</span>
+<span id="cb86-18"><a href="#cb86-18" aria-hidden="true" tabindex="-1"></a>    stride_16_bbox <span class="op">=</span> bbox_preds[<span class="dv">1</span>]</span>
+<span id="cb86-19"><a href="#cb86-19" aria-hidden="true" tabindex="-1"></a>    stride_16_objectness <span class="op">=</span> torch.sigmoid(objectness[<span class="dv">1</span>])</span>
+<span id="cb86-20"><a href="#cb86-20" aria-hidden="true" tabindex="-1"></a>    stride_16_cat <span class="op">=</span> torch.cat((stride_16_bbox, stride_16_objectness, stride_16_cls), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb86-21"><a href="#cb86-21" aria-hidden="true" tabindex="-1"></a>    stride_16_flat <span class="op">=</span> torch.flatten(stride_16_cat, start_dim<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb86-22"><a href="#cb86-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-23"><a href="#cb86-23" aria-hidden="true" tabindex="-1"></a>    stride_32_cls <span class="op">=</span> torch.sigmoid(cls_scores[<span class="dv">2</span>])</span>
+<span id="cb86-24"><a href="#cb86-24" aria-hidden="true" tabindex="-1"></a>    stride_32_bbox <span class="op">=</span> bbox_preds[<span class="dv">2</span>]</span>
+<span id="cb86-25"><a href="#cb86-25" aria-hidden="true" tabindex="-1"></a>    stride_32_objectness <span class="op">=</span> torch.sigmoid(objectness[<span class="dv">2</span>])</span>
+<span id="cb86-26"><a href="#cb86-26" aria-hidden="true" tabindex="-1"></a>    stride_32_cat <span class="op">=</span> torch.cat((stride_32_bbox, stride_32_objectness, stride_32_cls), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb86-27"><a href="#cb86-27" aria-hidden="true" tabindex="-1"></a>    stride_32_flat <span class="op">=</span> torch.flatten(stride_32_cat, start_dim<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb86-28"><a href="#cb86-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-29"><a href="#cb86-29" aria-hidden="true" tabindex="-1"></a>    full_cat <span class="op">=</span> torch.cat((stride_8_flat, stride_16_flat, stride_32_flat), dim<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb86-30"><a href="#cb86-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb86-31"><a href="#cb86-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> full_cat.permute(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Add custom forward function to model</strong></p>
+<div class="sourceCode" id="cb87"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>model.forward_export <span class="op">=</span> forward_export.<span class="fu">__get__</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Verify output shape</strong></p>
+<p>Let’s verify the new forward function works as intended. The output should have a batch size of 1 and contain 4032 elements, given the input dimensions (calculated earlier), each with 24 values (19 classes + 1 objectness score + 4 bounding box values).</p>
+<div class="sourceCode" id="cb88"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>model.forward_export(test_tensor).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([1, 4032, 24])</code></pre>
+<p>We need to replace the current forward function before exporting the model.</p>
+<p><strong>Create a backup of the default model forward function</strong></p>
+<p>We can create a backup of the original forward function just in case.</p>
+<div class="sourceCode" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>origin_forward <span class="op">=</span> model.forward</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Replace model forward function with custom function</strong></p>
+<div class="sourceCode" id="cb91"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>model.forward <span class="op">=</span> model.forward_export</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Verify output shape</strong></p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>model(test_tensor).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([1, 4032, 24])</code></pre>
+</section>
+<section id="export-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="export-the-model">Export the Model</h2>
+<p>The OpenVINO model conversion script does not support PyTorch models, so we need to export the trained model to ONNX. We can then convert the ONNX model to OpenVINO’s IR format.</p>
+<p><strong>Define ONNX file name</strong></p>
+<div class="sourceCode" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>onnx_file_name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>dataset_path<span class="sc">.</span>name<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span><span class="bu">type</span>(model)<span class="sc">.</span><span class="va">__name__</span><span class="sc">}</span><span class="ss">.onnx"</span></span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>onnx_file_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'hagrid-sample-30k-384p-YOLOX.onnx'</code></pre>
+<p><strong>Export trained model to ONNX</strong></p>
+<div class="sourceCode" id="cb96"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>torch.onnx.export(model,</span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>                  test_tensor,</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>                  onnx_file_name,</span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>                  export_params<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a>                  opset_version<span class="op">=</span><span class="dv">11</span>,</span>
+<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>                  do_constant_folding<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>                  input_names <span class="op">=</span> [<span class="st">'input'</span>],</span>
+<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a>                  output_names <span class="op">=</span> [<span class="st">'output'</span>],</span>
+<span id="cb96-9"><a href="#cb96-9" aria-hidden="true" tabindex="-1"></a>                  dynamic_axes<span class="op">=</span>{<span class="st">'input'</span>: {<span class="dv">2</span> : <span class="st">'height'</span>, <span class="dv">3</span> : <span class="st">'width'</span>}}</span>
+<span id="cb96-10"><a href="#cb96-10" aria-hidden="true" tabindex="-1"></a>                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Simplify ONNX model</strong></p>
+<p>As mentioned earlier, this step is entirely optional.</p>
+<div class="sourceCode" id="cb97"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnx</span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> onnxsim <span class="im">import</span> simplify</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb98"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load model</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>onnx_model <span class="op">=</span> onnx.load(onnx_file_name)</span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a><span class="co"># convert model</span></span>
+<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>model_simp, check <span class="op">=</span> simplify(onnx_model)</span>
+<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a><span class="co"># save model</span></span>
+<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>onnx.save(model_simp, onnx_file_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now we can export the ONNX model to OpenVINO’s IR format.</p>
+<p><strong>Import OpenVINO Dependencies</strong></p>
+<div class="sourceCode" id="cb99"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openvino.runtime <span class="im">import</span> Core</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb100"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> Markdown, display</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define export directory</strong></p>
+<div class="sourceCode" id="cb101"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>output_dir <span class="op">=</span> Path(<span class="st">'./'</span>)</span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>output_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Path('.')</code></pre>
+<p><strong>Define path for OpenVINO IR xml model file</strong></p>
+<p>The conversion script generates an XML file containing information about the model architecture and a BIN file that stores the trained weights. We need both files to perform inference. OpenVINO uses the same name for the BIN file as provided for the XML file.</p>
+<div class="sourceCode" id="cb103"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a>ir_path <span class="op">=</span> Path(<span class="ss">f"</span><span class="sc">{</span>onnx_file_name<span class="sc">.</span>split(<span class="st">'.'</span>)[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">.xml"</span>)</span>
+<span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a>ir_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Path('hagrid-sample-30k-384p-YOLOX.xml')</code></pre>
+<p><strong>Define arguments for model conversion script</strong></p>
+<p>OpenVINO provides the option to include the normalization stats in the IR model. That way, we don’t need to account for different normalization stats when performing inference with multiple models. We can also convert the model to FP16 precision to reduce file size and improve inference speed.</p>
+<div class="sourceCode" id="cb105"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the command for Model Optimizer</span></span>
+<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>mo_command <span class="op">=</span> <span class="ss">f"""mo</span></span>
+<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a><span class="ss">                 --input_model "</span><span class="sc">{</span>onnx_file_name<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a><span class="ss">                 --input_shape "[1,3, </span><span class="sc">{</span>image_size<span class="sc">}</span><span class="ss">, </span><span class="sc">{</span>image_size<span class="sc">}</span><span class="ss">]"</span></span>
+<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a><span class="ss">                 --mean_values="</span><span class="sc">{</span>mean<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a><span class="ss">                 --scale_values="</span><span class="sc">{</span>std<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb105-7"><a href="#cb105-7" aria-hidden="true" tabindex="-1"></a><span class="ss">                 --data_type FP16</span></span>
+<span id="cb105-8"><a href="#cb105-8" aria-hidden="true" tabindex="-1"></a><span class="ss">                 --output_dir "</span><span class="sc">{</span>output_dir<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb105-9"><a href="#cb105-9" aria-hidden="true" tabindex="-1"></a><span class="ss">                 """</span></span>
+<span id="cb105-10"><a href="#cb105-10" aria-hidden="true" tabindex="-1"></a>mo_command <span class="op">=</span> <span class="st">" "</span>.join(mo_command.split())</span>
+<span id="cb105-11"><a href="#cb105-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model Optimizer command to convert the ONNX model to OpenVINO:"</span>)</span>
+<span id="cb105-12"><a href="#cb105-12" aria-hidden="true" tabindex="-1"></a>display(Markdown(<span class="ss">f"`</span><span class="sc">{</span>mo_command<span class="sc">}</span><span class="ss">`"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Model Optimizer command to convert the ONNX model to OpenVINO:</code></pre>
+<div class="sourceCode" id="cb107"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mo</span> <span class="at">--input_model</span> <span class="st">"hagrid-sample-30k-384p-YOLOX.onnx"</span> <span class="at">--input_shape</span> <span class="st">"[1,3, 384, 384]"</span> <span class="at">--mean_values</span><span class="op">=</span><span class="st">"(0.485, 0.456, 0.406)"</span> <span class="at">--scale_values</span><span class="op">=</span><span class="st">"(0.229, 0.224, 0.225)"</span> <span class="at">--data_type</span> FP16 <span class="at">--output_dir</span> <span class="st">"."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Convert ONNX model to OpenVINO IR</strong></p>
+<div class="sourceCode" id="cb108"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> ir_path.exists():</span>
+<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Exporting ONNX model to IR... This may take a few minutes."</span>)</span>
+<span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a>    mo_result <span class="op">=</span> <span class="op">%</span>sx $mo_command</span>
+<span id="cb108-4"><a href="#cb108-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>.join(mo_result))</span>
+<span id="cb108-5"><a href="#cb108-5" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb108-6"><a href="#cb108-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"IR model </span><span class="sc">{</span>ir_path<span class="sc">}</span><span class="ss"> already exists."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Exporting ONNX model to IR... This may take a few minutes.
+Model Optimizer arguments:
+Common parameters:
+    - Path to the Input Model:  /media/innom-dt/Samsung_T3/Projects/GitHub/icevision-openvino-unity-tutorial/notebooks/hagrid-sample-30k-384p-YOLOX.onnx
+    - Path for generated IR:    /media/innom-dt/Samsung_T3/Projects/GitHub/icevision-openvino-unity-tutorial/notebooks/.
+    - IR output name:   hagrid-sample-30k-384p-YOLOX
+    - Log level:    ERROR
+    - Batch:    Not specified, inherited from the model
+    - Input layers:     Not specified, inherited from the model
+    - Output layers:    Not specified, inherited from the model
+    - Input shapes:     [1,3, 384, 384]
+    - Source layout:    Not specified
+    - Target layout:    Not specified
+    - Layout:   Not specified
+    - Mean values:  (0.485, 0.456, 0.406)
+    - Scale values:     (0.229, 0.224, 0.225)
+    - Scale factor:     Not specified
+    - Precision of IR:  FP16
+    - Enable fusing:    True
+    - User transformations:     Not specified
+    - Reverse input channels:   False
+    - Enable IR generation for fixed input shape:   False
+    - Use the transformations config file:  None
+Advanced parameters:
+    - Force the usage of legacy Frontend of Model Optimizer for model conversion into IR:   False
+    - Force the usage of new Frontend of Model Optimizer for model conversion into IR:  False
+OpenVINO runtime found in:  /home/innom-dt/mambaforge/envs/icevision/lib/python3.8/site-packages/openvino
+OpenVINO runtime version:   2022.1.0-7019-cdb9bec7210-releases/2022/1
+Model Optimizer version:    2022.1.0-7019-cdb9bec7210-releases/2022/1
+[ WARNING ]  
+Detected not satisfied dependencies:
+    numpy: installed: 1.23.1, required: &lt; 1.20
+
+Please install required versions of components or run pip installation
+pip install openvino-dev
+[ SUCCESS ] Generated IR version 11 model.
+[ SUCCESS ] XML file: /media/innom-dt/Samsung_T3/Projects/GitHub/icevision-openvino-unity-tutorial/notebooks/hagrid-sample-30k-384p-YOLOX.xml
+[ SUCCESS ] BIN file: /media/innom-dt/Samsung_T3/Projects/GitHub/icevision-openvino-unity-tutorial/notebooks/hagrid-sample-30k-384p-YOLOX.bin
+[ SUCCESS ] Total execution time: 0.47 seconds. 
+[ SUCCESS ] Memory consumed: 115 MB. 
+It's been a while, check for a new version of Intel(R) Distribution of OpenVINO(TM) toolkit here https://software.intel.com/content/www/us/en/develop/tools/openvino-toolkit/download.html?cid=other&amp;source=prod&amp;campid=ww_2022_bu_IOTG_OpenVINO-2022-1&amp;content=upg_all&amp;medium=organic or on the GitHub*
+[ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
+Find more information about API v2.0 and IR v11 at https://docs.openvino.ai</code></pre>
+</section>
+<section id="verify-openvino-inference" class="level2">
+<h2 class="anchored" data-anchor-id="verify-openvino-inference">Verify OpenVINO Inference</h2>
+<p>Now, we can verify the OpenVINO model works as desired using the test image.</p>
+<p><strong>Get available OpenVINO compute devices</strong></p>
+<div class="sourceCode" id="cb110"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>ie <span class="op">=</span> Core()</span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>devices <span class="op">=</span> ie.available_devices</span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> device <span class="kw">in</span> devices:</span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>    device_name <span class="op">=</span> ie.get_property(device_name<span class="op">=</span>device, name<span class="op">=</span><span class="st">"FULL_DEVICE_NAME"</span>)</span>
+<span id="cb110-5"><a href="#cb110-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>device<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>device_name<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>CPU: 11th Gen Intel(R) Core(TM) i7-11700K @ 3.60GHz</code></pre>
+<p><strong>Prepare input image for OpenVINO IR model</strong></p>
+<div class="sourceCode" id="cb112"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert image to tensor</span></span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>img_tensor <span class="op">=</span> torch.Tensor(np.array(test_img)).permute(<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Scale pixels values from [0,255] to [0,1]</span></span>
+<span id="cb112-4"><a href="#cb112-4" aria-hidden="true" tabindex="-1"></a>scaled_tensor <span class="op">=</span> img_tensor.<span class="bu">float</span>().div_(<span class="dv">255</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb113"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>input_image <span class="op">=</span> scaled_tensor.unsqueeze(dim<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>input_image.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>torch.Size([1, 3, 512, 384])</code></pre>
+<p><strong>Test OpenVINO IR model</strong></p>
+<div class="sourceCode" id="cb115"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the network in Inference Engine</span></span>
+<span id="cb115-2"><a href="#cb115-2" aria-hidden="true" tabindex="-1"></a>ie <span class="op">=</span> Core()</span>
+<span id="cb115-3"><a href="#cb115-3" aria-hidden="true" tabindex="-1"></a>model_ir <span class="op">=</span> ie.read_model(model<span class="op">=</span>ir_path)</span>
+<span id="cb115-4"><a href="#cb115-4" aria-hidden="true" tabindex="-1"></a>model_ir.reshape(input_image.shape)</span>
+<span id="cb115-5"><a href="#cb115-5" aria-hidden="true" tabindex="-1"></a>compiled_model_ir <span class="op">=</span> ie.compile_model(model<span class="op">=</span>model_ir, device_name<span class="op">=</span><span class="st">"CPU"</span>)</span>
+<span id="cb115-6"><a href="#cb115-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb115-7"><a href="#cb115-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get input and output layers</span></span>
+<span id="cb115-8"><a href="#cb115-8" aria-hidden="true" tabindex="-1"></a>input_layer_ir <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(compiled_model_ir.inputs))</span>
+<span id="cb115-9"><a href="#cb115-9" aria-hidden="true" tabindex="-1"></a>output_layer_ir <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(compiled_model_ir.outputs))</span>
+<span id="cb115-10"><a href="#cb115-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb115-11"><a href="#cb115-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Run inference on the input image</span></span>
+<span id="cb115-12"><a href="#cb115-12" aria-hidden="true" tabindex="-1"></a>res_ir <span class="op">=</span> compiled_model_ir([input_image])[output_layer_ir]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb116"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>res_ir.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(1, 4032, 24)</code></pre>
+<p>The output shape is correct, meaning we can move on to the post-processing steps.</p>
+</section>
+<section id="define-post-processing-steps" class="level2">
+<h2 class="anchored" data-anchor-id="define-post-processing-steps">Define Post-processing Steps</h2>
+<p>To process the model output, we need to iterate through each of the 4032 object proposals and save the ones that meet a user-defined confidence threshold (e.g., 50%). We then filter out the redundant proposals (i.e., detecting the same object multiple times) from that subset using <a href="https://learnopencv.com/non-maximum-suppression-theory-and-implementation-in-pytorch/">Non-Maximum Suppression (NMS)</a>.</p>
+<p><strong>Define method to generate offset values to navigate the raw model output</strong></p>
+<p>We’ll first define a method that generates offset values based on the input dimensions and stride values, which we can use to traverse the output array.</p>
+<div class="sourceCode" id="cb118"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_grid_strides(height, width, strides<span class="op">=</span>[<span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>]):</span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>    grid_strides <span class="op">=</span> []</span>
+<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate through each stride value</span></span>
+<span id="cb118-6"><a href="#cb118-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> stride <span class="kw">in</span> strides:</span>
+<span id="cb118-7"><a href="#cb118-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the grid dimensions</span></span>
+<span id="cb118-8"><a href="#cb118-8" aria-hidden="true" tabindex="-1"></a>        grid_height <span class="op">=</span> height <span class="op">//</span> stride</span>
+<span id="cb118-9"><a href="#cb118-9" aria-hidden="true" tabindex="-1"></a>        grid_width <span class="op">=</span> width <span class="op">//</span> stride</span>
+<span id="cb118-10"><a href="#cb118-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb118-11"><a href="#cb118-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Store each combination of grid coordinates</span></span>
+<span id="cb118-12"><a href="#cb118-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> g1 <span class="kw">in</span> <span class="bu">range</span>(grid_height):</span>
+<span id="cb118-13"><a href="#cb118-13" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb118-14"><a href="#cb118-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> g0 <span class="kw">in</span> <span class="bu">range</span>(grid_width):</span>
+<span id="cb118-15"><a href="#cb118-15" aria-hidden="true" tabindex="-1"></a>                grid_strides.append({<span class="st">'grid0'</span>:g0, <span class="st">'grid1'</span>:g1, <span class="st">'stride'</span>:stride })</span>
+<span id="cb118-16"><a href="#cb118-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb118-17"><a href="#cb118-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> grid_strides</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Generate offset values to navigate model output</strong></p>
+<div class="sourceCode" id="cb119"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>grid_strides <span class="op">=</span> generate_grid_strides(test_img.height, test_img.width, strides)</span>
+<span id="cb119-2"><a href="#cb119-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(grid_strides)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>4032</code></pre>
+<div class="sourceCode" id="cb121"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(grid_strides).head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+grid0
+</th>
+<th>
+grid1
+</th>
+<th>
+stride
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+8
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+1
+</td>
+<td>
+0
+</td>
+<td>
+8
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+2
+</td>
+<td>
+0
+</td>
+<td>
+8
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+3
+</td>
+<td>
+0
+</td>
+<td>
+8
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+4
+</td>
+<td>
+0
+</td>
+<td>
+8
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Define method to generate object detection proposals from the raw model output</strong></p>
+<p>Next, we’ll define a method to iterate through the output array and decode the bounding box information for each object proposal. As mentioned earlier, we’ll only keep the ones with a high enough confidence score. The model predicts the center coordinates of a bounding box, but we’ll store the coordinates for the top-left corner as that is what the <code>ImageDraw.Draw.rectangle()</code> method expects as input.</p>
+<div class="sourceCode" id="cb122"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_yolox_proposals(model_output, proposal_length, grid_strides, bbox_conf_thresh<span class="op">=</span><span class="fl">0.3</span>):</span>
+<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb122-3"><a href="#cb122-3" aria-hidden="true" tabindex="-1"></a>    proposals <span class="op">=</span> []</span>
+<span id="cb122-4"><a href="#cb122-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb122-5"><a href="#cb122-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Obtain the number of classes the model was trained to detect</span></span>
+<span id="cb122-6"><a href="#cb122-6" aria-hidden="true" tabindex="-1"></a>    num_classes <span class="op">=</span> proposal_length <span class="op">-</span> <span class="dv">5</span></span>
+<span id="cb122-7"><a href="#cb122-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-8"><a href="#cb122-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> anchor_idx <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(grid_strides)):</span>
+<span id="cb122-9"><a href="#cb122-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb122-10"><a href="#cb122-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the current grid and stride values</span></span>
+<span id="cb122-11"><a href="#cb122-11" aria-hidden="true" tabindex="-1"></a>        grid0 <span class="op">=</span> grid_strides[anchor_idx][<span class="st">'grid0'</span>]</span>
+<span id="cb122-12"><a href="#cb122-12" aria-hidden="true" tabindex="-1"></a>        grid1 <span class="op">=</span> grid_strides[anchor_idx][<span class="st">'grid1'</span>]</span>
+<span id="cb122-13"><a href="#cb122-13" aria-hidden="true" tabindex="-1"></a>        stride <span class="op">=</span> grid_strides[anchor_idx][<span class="st">'stride'</span>]</span>
+<span id="cb122-14"><a href="#cb122-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-15"><a href="#cb122-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the starting index for the current proposal</span></span>
+<span id="cb122-16"><a href="#cb122-16" aria-hidden="true" tabindex="-1"></a>        start_idx <span class="op">=</span> anchor_idx <span class="op">*</span> proposal_length</span>
+<span id="cb122-17"><a href="#cb122-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-18"><a href="#cb122-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the coordinates for the center of the predicted bounding box</span></span>
+<span id="cb122-19"><a href="#cb122-19" aria-hidden="true" tabindex="-1"></a>        x_center <span class="op">=</span> (model_output[start_idx <span class="op">+</span> <span class="dv">0</span>] <span class="op">+</span> grid0) <span class="op">*</span> stride</span>
+<span id="cb122-20"><a href="#cb122-20" aria-hidden="true" tabindex="-1"></a>        y_center <span class="op">=</span> (model_output[start_idx <span class="op">+</span> <span class="dv">1</span>] <span class="op">+</span> grid1) <span class="op">*</span> stride</span>
+<span id="cb122-21"><a href="#cb122-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-22"><a href="#cb122-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the dimensions for the predicted bounding box</span></span>
+<span id="cb122-23"><a href="#cb122-23" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> np.exp(model_output[start_idx <span class="op">+</span> <span class="dv">2</span>]) <span class="op">*</span> stride</span>
+<span id="cb122-24"><a href="#cb122-24" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> np.exp(model_output[start_idx <span class="op">+</span> <span class="dv">3</span>]) <span class="op">*</span> stride</span>
+<span id="cb122-25"><a href="#cb122-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-26"><a href="#cb122-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the coordinates for the upper left corner of the bounding box</span></span>
+<span id="cb122-27"><a href="#cb122-27" aria-hidden="true" tabindex="-1"></a>        x0 <span class="op">=</span> x_center <span class="op">-</span> w <span class="op">*</span> <span class="fl">0.5</span></span>
+<span id="cb122-28"><a href="#cb122-28" aria-hidden="true" tabindex="-1"></a>        y0 <span class="op">=</span> y_center <span class="op">-</span> h <span class="op">*</span> <span class="fl">0.5</span></span>
+<span id="cb122-29"><a href="#cb122-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-30"><a href="#cb122-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the confidence score that an object is present</span></span>
+<span id="cb122-31"><a href="#cb122-31" aria-hidden="true" tabindex="-1"></a>        box_objectness <span class="op">=</span> model_output[start_idx <span class="op">+</span> <span class="dv">4</span>]</span>
+<span id="cb122-32"><a href="#cb122-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-33"><a href="#cb122-33" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Initialize object struct with bounding box information</span></span>
+<span id="cb122-34"><a href="#cb122-34" aria-hidden="true" tabindex="-1"></a>        obj <span class="op">=</span> { <span class="st">'x0'</span>:x0, <span class="st">'y0'</span>:y0, <span class="st">'width'</span>:w, <span class="st">'height'</span>:h, <span class="st">'label'</span>:<span class="dv">0</span>, <span class="st">'prob'</span>:<span class="dv">0</span> }</span>
+<span id="cb122-35"><a href="#cb122-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-36"><a href="#cb122-36" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Find the object class with the highest confidence score</span></span>
+<span id="cb122-37"><a href="#cb122-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> class_idx <span class="kw">in</span> <span class="bu">range</span>(num_classes):</span>
+<span id="cb122-38"><a href="#cb122-38" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb122-39"><a href="#cb122-39" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Get the confidence score for the current object class</span></span>
+<span id="cb122-40"><a href="#cb122-40" aria-hidden="true" tabindex="-1"></a>            box_cls_score <span class="op">=</span> model_output[start_idx <span class="op">+</span> <span class="dv">5</span> <span class="op">+</span> class_idx]</span>
+<span id="cb122-41"><a href="#cb122-41" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Calculate the final confidence score for the object proposal</span></span>
+<span id="cb122-42"><a href="#cb122-42" aria-hidden="true" tabindex="-1"></a>            box_prob <span class="op">=</span> box_objectness <span class="op">*</span> box_cls_score</span>
+<span id="cb122-43"><a href="#cb122-43" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb122-44"><a href="#cb122-44" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Check for the highest confidence score</span></span>
+<span id="cb122-45"><a href="#cb122-45" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (box_prob <span class="op">&gt;</span> obj[<span class="st">'prob'</span>]):</span>
+<span id="cb122-46"><a href="#cb122-46" aria-hidden="true" tabindex="-1"></a>                obj[<span class="st">'label'</span>] <span class="op">=</span> class_idx</span>
+<span id="cb122-47"><a href="#cb122-47" aria-hidden="true" tabindex="-1"></a>                obj[<span class="st">'prob'</span>] <span class="op">=</span> box_prob</span>
+<span id="cb122-48"><a href="#cb122-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-49"><a href="#cb122-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Only add object proposals with high enough confidence scores</span></span>
+<span id="cb122-50"><a href="#cb122-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> obj[<span class="st">'prob'</span>] <span class="op">&gt;</span> bbox_conf_thresh: proposals.append(obj)</span>
+<span id="cb122-51"><a href="#cb122-51" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb122-52"><a href="#cb122-52" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sort the proposals based on the confidence score in descending order</span></span>
+<span id="cb122-53"><a href="#cb122-53" aria-hidden="true" tabindex="-1"></a>    proposals.sort(key<span class="op">=</span><span class="kw">lambda</span> x:x[<span class="st">'prob'</span>], reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb122-54"><a href="#cb122-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> proposals</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define minimum confidence score for keeping bounding box proposals</strong></p>
+<div class="sourceCode" id="cb123"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a>bbox_conf_thresh <span class="op">=</span> <span class="fl">0.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Process raw model output</strong></p>
+<div class="sourceCode" id="cb124"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>proposals <span class="op">=</span> generate_yolox_proposals(res_ir.flatten(), res_ir.shape[<span class="dv">2</span>], grid_strides, bbox_conf_thresh)</span>
+<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a>proposals_df <span class="op">=</span> pd.DataFrame(proposals)</span>
+<span id="cb124-3"><a href="#cb124-3" aria-hidden="true" tabindex="-1"></a>proposals_df[<span class="st">'label'</span>] <span class="op">=</span> proposals_df[<span class="st">'label'</span>].<span class="bu">apply</span>(<span class="kw">lambda</span> x: labels[x])</span>
+<span id="cb124-4"><a href="#cb124-4" aria-hidden="true" tabindex="-1"></a>proposals_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+x0
+</th>
+<th>
+y0
+</th>
+<th>
+width
+</th>
+<th>
+height
+</th>
+<th>
+label
+</th>
+<th>
+prob
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+233.453819
+</td>
+<td>
+345.319857
+</td>
+<td>
+20.237036
+</td>
+<td>
+39.237568
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.892190
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+233.411983
+</td>
+<td>
+345.079270
+</td>
+<td>
+20.298084
+</td>
+<td>
+39.369030
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.883036
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+233.482836
+</td>
+<td>
+345.070212
+</td>
+<td>
+20.273870
+</td>
+<td>
+39.556046
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.881625
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+233.226050
+</td>
+<td>
+345.559044
+</td>
+<td>
+20.653538
+</td>
+<td>
+38.985397
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.876668
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+233.354270
+</td>
+<td>
+345.466457
+</td>
+<td>
+20.351070
+</td>
+<td>
+38.968014
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.872296
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+153.331284
+</td>
+<td>
+193.410838
+</td>
+<td>
+38.274513
+</td>
+<td>
+35.176327
+</td>
+<td>
+call
+</td>
+<td>
+0.870502
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+233.583658
+</td>
+<td>
+345.261926
+</td>
+<td>
+20.347435
+</td>
+<td>
+39.517403
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.868382
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+153.666840
+</td>
+<td>
+193.238544
+</td>
+<td>
+38.145180
+</td>
+<td>
+35.976635
+</td>
+<td>
+call
+</td>
+<td>
+0.866106
+</td>
+</tr>
+<tr>
+<th>
+8
+</th>
+<td>
+154.866353
+</td>
+<td>
+194.021563
+</td>
+<td>
+35.857136
+</td>
+<td>
+34.749817
+</td>
+<td>
+call
+</td>
+<td>
+0.862080
+</td>
+</tr>
+<tr>
+<th>
+9
+</th>
+<td>
+155.096351
+</td>
+<td>
+193.696654
+</td>
+<td>
+35.662899
+</td>
+<td>
+35.185398
+</td>
+<td>
+call
+</td>
+<td>
+0.861144
+</td>
+</tr>
+<tr>
+<th>
+10
+</th>
+<td>
+154.931746
+</td>
+<td>
+193.533106
+</td>
+<td>
+35.849140
+</td>
+<td>
+35.373035
+</td>
+<td>
+call
+</td>
+<td>
+0.859096
+</td>
+</tr>
+<tr>
+<th>
+11
+</th>
+<td>
+154.988088
+</td>
+<td>
+193.921200
+</td>
+<td>
+35.850899
+</td>
+<td>
+34.878162
+</td>
+<td>
+call
+</td>
+<td>
+0.856778
+</td>
+</tr>
+<tr>
+<th>
+12
+</th>
+<td>
+153.371142
+</td>
+<td>
+193.670131
+</td>
+<td>
+37.459030
+</td>
+<td>
+35.085506
+</td>
+<td>
+call
+</td>
+<td>
+0.832275
+</td>
+</tr>
+<tr>
+<th>
+13
+</th>
+<td>
+154.885031
+</td>
+<td>
+193.393148
+</td>
+<td>
+37.161541
+</td>
+<td>
+35.756050
+</td>
+<td>
+call
+</td>
+<td>
+0.814937
+</td>
+</tr>
+<tr>
+<th>
+14
+</th>
+<td>
+154.807318
+</td>
+<td>
+193.586627
+</td>
+<td>
+37.247711
+</td>
+<td>
+34.852604
+</td>
+<td>
+call
+</td>
+<td>
+0.803999
+</td>
+</tr>
+<tr>
+<th>
+15
+</th>
+<td>
+233.458529
+</td>
+<td>
+345.055026
+</td>
+<td>
+20.226809
+</td>
+<td>
+39.549839
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.797995
+</td>
+</tr>
+<tr>
+<th>
+16
+</th>
+<td>
+233.216641
+</td>
+<td>
+346.149529
+</td>
+<td>
+20.414558
+</td>
+<td>
+38.401203
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.794114
+</td>
+</tr>
+<tr>
+<th>
+17
+</th>
+<td>
+233.675367
+</td>
+<td>
+345.060542
+</td>
+<td>
+20.194427
+</td>
+<td>
+39.166901
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.612079
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p>We know the test image contains one call gesture and one idle hand. The model seems pretty confident about the locations of those two hands as the bounding box values are nearly identical across the <code>no_gesture</code> predictions and among the <code>call</code> predictions.</p>
+<p>We can filter out the redundant predictions by checking how much the bounding boxes overlap. When two bounding boxes overlap beyond a user-defined threshold, we keep the one with a higher confidence score.</p>
+<p><strong>Define function to calculate the union area of two bounding boxes</strong></p>
+<div class="sourceCode" id="cb125"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_union_area(a, b):</span>
+<span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> <span class="bu">min</span>(a[<span class="st">'x0'</span>], b[<span class="st">'x0'</span>])</span>
+<span id="cb125-3"><a href="#cb125-3" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> <span class="bu">min</span>(a[<span class="st">'y0'</span>], b[<span class="st">'y0'</span>])</span>
+<span id="cb125-4"><a href="#cb125-4" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="bu">max</span>(a[<span class="st">'x0'</span>]<span class="op">+</span>a[<span class="st">'width'</span>], b[<span class="st">'x0'</span>]<span class="op">+</span>b[<span class="st">'width'</span>]) <span class="op">-</span> x</span>
+<span id="cb125-5"><a href="#cb125-5" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> <span class="bu">max</span>(a[<span class="st">'y0'</span>]<span class="op">+</span>a[<span class="st">'height'</span>], b[<span class="st">'y0'</span>]<span class="op">+</span>b[<span class="st">'height'</span>]) <span class="op">-</span> y</span>
+<span id="cb125-6"><a href="#cb125-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> w<span class="op">*</span>h</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define function to calculate the intersection area of two bounding boxes</strong></p>
+<div class="sourceCode" id="cb126"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_inter_area(a, b):</span>
+<span id="cb126-2"><a href="#cb126-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> <span class="bu">max</span>(a[<span class="st">'x0'</span>], b[<span class="st">'x0'</span>])</span>
+<span id="cb126-3"><a href="#cb126-3" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> <span class="bu">max</span>(a[<span class="st">'y0'</span>], b[<span class="st">'y0'</span>])</span>
+<span id="cb126-4"><a href="#cb126-4" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> <span class="bu">min</span>(a[<span class="st">'x0'</span>]<span class="op">+</span>a[<span class="st">'width'</span>], b[<span class="st">'x0'</span>]<span class="op">+</span>b[<span class="st">'width'</span>]) <span class="op">-</span> x</span>
+<span id="cb126-5"><a href="#cb126-5" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> <span class="bu">min</span>(a[<span class="st">'y0'</span>]<span class="op">+</span>a[<span class="st">'height'</span>], b[<span class="st">'y0'</span>]<span class="op">+</span>b[<span class="st">'height'</span>]) <span class="op">-</span> y</span>
+<span id="cb126-6"><a href="#cb126-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> w<span class="op">*</span>h</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define function to sort bounding box proposals using Non-Maximum Suppression</strong></p>
+<div class="sourceCode" id="cb127"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nms_sorted_boxes(nms_thresh<span class="op">=</span><span class="fl">0.45</span>):</span>
+<span id="cb127-2"><a href="#cb127-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb127-3"><a href="#cb127-3" aria-hidden="true" tabindex="-1"></a>    proposal_indices <span class="op">=</span> []</span>
+<span id="cb127-4"><a href="#cb127-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb127-5"><a href="#cb127-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate through the object proposals</span></span>
+<span id="cb127-6"><a href="#cb127-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(proposals)):</span>
+<span id="cb127-7"><a href="#cb127-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb127-8"><a href="#cb127-8" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> proposals[i]</span>
+<span id="cb127-9"><a href="#cb127-9" aria-hidden="true" tabindex="-1"></a>        keep <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb127-10"><a href="#cb127-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb127-11"><a href="#cb127-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check if the current object proposal overlaps any selected objects too much</span></span>
+<span id="cb127-12"><a href="#cb127-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j <span class="kw">in</span> proposal_indices:</span>
+<span id="cb127-13"><a href="#cb127-13" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb127-14"><a href="#cb127-14" aria-hidden="true" tabindex="-1"></a>            b <span class="op">=</span> proposals[j]</span>
+<span id="cb127-15"><a href="#cb127-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb127-16"><a href="#cb127-16" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Calculate the area where the two object bounding boxes overlap</span></span>
+<span id="cb127-17"><a href="#cb127-17" aria-hidden="true" tabindex="-1"></a>            inter_area <span class="op">=</span> calc_inter_area(a, b)</span>
+<span id="cb127-18"><a href="#cb127-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb127-19"><a href="#cb127-19" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Calculate the union area of both bounding boxes</span></span>
+<span id="cb127-20"><a href="#cb127-20" aria-hidden="true" tabindex="-1"></a>            union_area <span class="op">=</span> calc_union_area(a, b)</span>
+<span id="cb127-21"><a href="#cb127-21" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb127-22"><a href="#cb127-22" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Ignore object proposals that overlap selected objects too much</span></span>
+<span id="cb127-23"><a href="#cb127-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> inter_area <span class="op">/</span> union_area <span class="op">&gt;</span> nms_thresh: keep <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb127-24"><a href="#cb127-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb127-25"><a href="#cb127-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Keep object proposals that do not overlap selected objects too much</span></span>
+<span id="cb127-26"><a href="#cb127-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> keep: proposal_indices.append(i)</span>
+<span id="cb127-27"><a href="#cb127-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb127-28"><a href="#cb127-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> proposal_indices</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Define threshold for sorting bounding box proposals</strong></p>
+<div class="sourceCode" id="cb128"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>nms_thresh <span class="op">=</span> <span class="fl">0.45</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Sort bouning box proposals using NMS</strong></p>
+<div class="sourceCode" id="cb129"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>proposal_indices <span class="op">=</span> nms_sorted_boxes(nms_thresh)</span>
+<span id="cb129-2"><a href="#cb129-2" aria-hidden="true" tabindex="-1"></a>proposal_indices</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>[0, 5]</code></pre>
+<p><strong>Filter excluded bounding box proposals</strong></p>
+<div class="sourceCode" id="cb131"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a>proposals_df.iloc[proposal_indices]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+x0
+</th>
+<th>
+y0
+</th>
+<th>
+width
+</th>
+<th>
+height
+</th>
+<th>
+label
+</th>
+<th>
+prob
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+233.453819
+</td>
+<td>
+345.319857
+</td>
+<td>
+20.237036
+</td>
+<td>
+39.237568
+</td>
+<td>
+no_gesture
+</td>
+<td>
+0.892190
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+153.331284
+</td>
+<td>
+193.410838
+</td>
+<td>
+38.274513
+</td>
+<td>
+35.176327
+</td>
+<td>
+call
+</td>
+<td>
+0.870502
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p>Now we have a single prediction for an idle hand and a single prediction for a call sign.</p>
+</section>
+<section id="generate-colormap" class="level2">
+<h2 class="anchored" data-anchor-id="generate-colormap">Generate Colormap</h2>
+<p>Before we annotate the input image with the predicted bounding boxes, let’s generate a colormap for the object classes.</p>
+<p><strong>Import library for generating color palette</strong></p>
+<div class="sourceCode" id="cb132"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> distinctipy <span class="im">import</span> distinctipy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Generate a visually distinct color for each label</strong></p>
+<div class="sourceCode" id="cb133"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>colors <span class="op">=</span> distinctipy.get_colors(<span class="bu">len</span>(labels))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Display the generated color palette</strong></p>
+<div class="sourceCode" id="cb134"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a>distinctipy.color_swatch(colors)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_184_0.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Set precision for color values</strong></p>
+<div class="sourceCode" id="cb135"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a>precision <span class="op">=</span> <span class="dv">5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Round color values to specified precision</strong></p>
+<div class="sourceCode" id="cb136"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb136-1"><a href="#cb136-1" aria-hidden="true" tabindex="-1"></a>colors <span class="op">=</span> [[np.<span class="bu">round</span>(ch, precision) <span class="cf">for</span> ch <span class="kw">in</span> color] <span class="cf">for</span> color <span class="kw">in</span> colors]</span>
+<span id="cb136-2"><a href="#cb136-2" aria-hidden="true" tabindex="-1"></a>colors</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>[[0.0, 1.0, 0.0],
+ [1.0, 0.0, 1.0],
+ [0.0, 0.5, 1.0],
+ [1.0, 0.5, 0.0],
+ [0.5, 0.75, 0.5],
+ [0.30555, 0.01317, 0.67298],
+ [0.87746, 0.03327, 0.29524],
+ [0.05583, 0.48618, 0.15823],
+ [0.95094, 0.48649, 0.83322],
+ [0.0884, 0.99616, 0.95391],
+ [1.0, 1.0, 0.0],
+ [0.52176, 0.27352, 0.0506],
+ [0.55398, 0.36059, 0.57915],
+ [0.08094, 0.99247, 0.4813],
+ [0.49779, 0.8861, 0.03131],
+ [0.49106, 0.6118, 0.97323],
+ [0.98122, 0.81784, 0.51752],
+ [0.02143, 0.61905, 0.59307],
+ [0.0, 0.0, 1.0]]</code></pre>
+<p><strong>Annotate image using bounding box proposals</strong></p>
+<div class="sourceCode" id="cb138"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a>annotated_img <span class="op">=</span> test_img.copy()</span>
+<span id="cb138-2"><a href="#cb138-2" aria-hidden="true" tabindex="-1"></a>draw <span class="op">=</span> ImageDraw.Draw(annotated_img)</span>
+<span id="cb138-3"><a href="#cb138-3" aria-hidden="true" tabindex="-1"></a>fnt_size <span class="op">=</span> <span class="dv">25</span></span>
+<span id="cb138-4"><a href="#cb138-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> proposal_indices:</span>
+<span id="cb138-5"><a href="#cb138-5" aria-hidden="true" tabindex="-1"></a>    x, y, w, h, l, p <span class="op">=</span> proposals[i].values()</span>
+<span id="cb138-6"><a href="#cb138-6" aria-hidden="true" tabindex="-1"></a>    shape <span class="op">=</span> (x, y, x<span class="op">+</span>w, y<span class="op">+</span>h)</span>
+<span id="cb138-7"><a href="#cb138-7" aria-hidden="true" tabindex="-1"></a>    color <span class="op">=</span> <span class="bu">tuple</span>([<span class="bu">int</span>(ch<span class="op">*</span><span class="dv">255</span>) <span class="cf">for</span> ch <span class="kw">in</span> colors[proposals[i][<span class="st">'label'</span>]]])</span>
+<span id="cb138-8"><a href="#cb138-8" aria-hidden="true" tabindex="-1"></a>    draw.rectangle(shape, outline<span class="op">=</span>color)</span>
+<span id="cb138-9"><a href="#cb138-9" aria-hidden="true" tabindex="-1"></a>    fnt <span class="op">=</span> PIL.ImageFont.truetype(<span class="st">"KFOlCnqEu92Fr1MmEU9vAw.ttf"</span>, fnt_size)</span>
+<span id="cb138-10"><a href="#cb138-10" aria-hidden="true" tabindex="-1"></a>    draw.multiline_text((x, y<span class="op">-</span>fnt_size<span class="op">*</span><span class="dv">2</span><span class="op">-</span><span class="dv">5</span>), <span class="ss">f"</span><span class="sc">{</span>labels[l]<span class="sc">}</span><span class="ch">\n</span><span class="sc">{</span>p<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span>, font<span class="op">=</span>fnt, fill<span class="op">=</span>color)</span>
+<span id="cb138-11"><a href="#cb138-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(annotated_img.size) </span>
+<span id="cb138-12"><a href="#cb138-12" aria-hidden="true" tabindex="-1"></a>annotated_img</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(384, 512)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_190_1.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">png</figcaption><p></p>
+</figure>
+</div>
+<p><strong>Create JSON colormap</strong></p>
+<p>We can export the colormap to a JSON file and import it into the Unity project. That way, we can easily swap colormaps for models trained on different datasets without changing any code.</p>
+<div class="sourceCode" id="cb140"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a>color_map <span class="op">=</span> {<span class="st">'items'</span>: <span class="bu">list</span>()}</span>
+<span id="cb140-2"><a href="#cb140-2" aria-hidden="true" tabindex="-1"></a>color_map[<span class="st">'items'</span>] <span class="op">=</span> [{<span class="st">'label'</span>: label, <span class="st">'color'</span>: color} <span class="cf">for</span> label, color <span class="kw">in</span> <span class="bu">zip</span>(labels, colors)]</span>
+<span id="cb140-3"><a href="#cb140-3" aria-hidden="true" tabindex="-1"></a>color_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>{'items': [{'label': 'call', 'color': [0.0, 1.0, 0.0]},
+  {'label': 'no_gesture', 'color': [1.0, 0.0, 1.0]},
+  {'label': 'dislike', 'color': [0.0, 0.5, 1.0]},
+  {'label': 'fist', 'color': [1.0, 0.5, 0.0]},
+  {'label': 'four', 'color': [0.5, 0.75, 0.5]},
+  {'label': 'like', 'color': [0.30555, 0.01317, 0.67298]},
+  {'label': 'mute', 'color': [0.87746, 0.03327, 0.29524]},
+  {'label': 'ok', 'color': [0.05583, 0.48618, 0.15823]},
+  {'label': 'one', 'color': [0.95094, 0.48649, 0.83322]},
+  {'label': 'palm', 'color': [0.0884, 0.99616, 0.95391]},
+  {'label': 'peace', 'color': [1.0, 1.0, 0.0]},
+  {'label': 'peace_inverted', 'color': [0.52176, 0.27352, 0.0506]},
+  {'label': 'rock', 'color': [0.55398, 0.36059, 0.57915]},
+  {'label': 'stop', 'color': [0.08094, 0.99247, 0.4813]},
+  {'label': 'stop_inverted', 'color': [0.49779, 0.8861, 0.03131]},
+  {'label': 'three', 'color': [0.49106, 0.6118, 0.97323]},
+  {'label': 'three2', 'color': [0.98122, 0.81784, 0.51752]},
+  {'label': 'two_up', 'color': [0.02143, 0.61905, 0.59307]},
+  {'label': 'two_up_inverted', 'color': [0.0, 0.0, 1.0]}]}</code></pre>
+<p><strong>Export colormap</strong></p>
+<div class="sourceCode" id="cb142"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb142-2"><a href="#cb142-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb142-3"><a href="#cb142-3" aria-hidden="true" tabindex="-1"></a>color_map_file_name <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>dataset_path<span class="sc">.</span>name<span class="sc">}</span><span class="ss">-colormap.json"</span></span>
+<span id="cb142-4"><a href="#cb142-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb142-5"><a href="#cb142-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(color_map_file_name, <span class="st">"w"</span>) <span class="im">as</span> write_file:</span>
+<span id="cb142-6"><a href="#cb142-6" aria-hidden="true" tabindex="-1"></a>    json.dump(color_map, write_file)</span>
+<span id="cb142-7"><a href="#cb142-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb142-8"><a href="#cb142-8" aria-hidden="true" tabindex="-1"></a>color_map_file_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'hagrid-sample-30k-384p-colormap.json'</code></pre>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>In this post, we finetuned an object detection model using the IceVision library and exported it as an OpenVINO IR model. Part 2 will cover creating a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file in Visual Studio to perform inference with this model using OpenVINO.</p>
+<p><strong>Beginner Tutorial:</strong> <a href="../../fastai-to-unity-tutorial/part-1/">Fastai to Unity Beginner Tutorial Pt. 1</a></p>
+<p><strong>Next:</strong> <a href="../part-2/">End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2</a></p>
+<p><strong>Alternative Next:</strong> <a href="../../onnx-directml-unity-tutorial/part-1/">Object Detection for Unity With ONNX Runtime and DirectML Pt. 1</a></p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/icevision-openvino-unity-tutorial">GitHub Repository</a></p>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
