@@ -11,6 +11,8 @@ search_exclude: false
 title: Notes on NATS Keynote
 toc: false
 
+aliases:
+- /Notes-on-NATS-Keynote/
 ---
 
 * [Overview](#overview)

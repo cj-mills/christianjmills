@@ -11,6 +11,8 @@ search_exclude: false
 title: Notes on Machine Learning and Level Generation
 toc: false
 
+aliases:
+- /Notes-on-Machine-Learning-and-Level-Generation/
 ---
 
 * [Overview](#overview)

@@ -11,6 +11,8 @@ search_exclude: false
 title: Notes on Learning Generative Models of 3D Structures
 toc: false
 
+aliases:
+- /Notes-on-Learning-Generative-Models-of-3D-Structures/
 ---
 
 * [Overview](#overview)

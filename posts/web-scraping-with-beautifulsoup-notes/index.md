@@ -1,6 +1,6 @@
 ---
 aliases:
-- /notes/web-scraping/2021/12/29/Notes-on-Web-Scraping-with-Beautiful-Soup
+- /Notes-on-Web-Scraping-with-Beautiful-Soup/
 categories:
 - web-scraping
 - notes

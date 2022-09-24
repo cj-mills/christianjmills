@@ -1,6 +1,6 @@
 ---
 aliases:
-- /git/notes/2021/12/29/Notes-on-Version-Control
+- /Notes-on-Version-Control/
 categories:
 - git
 - notes

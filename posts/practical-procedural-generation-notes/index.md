@@ -1,6 +1,6 @@
 ---
 aliases:
-- /notes/procedural-generation/2021/12/29/Notes-on-Practical-Procedural-Generation
+- /Notes-on-Practical-Procedural-Generation/
 categories:
 - procedural-generation
 - notes

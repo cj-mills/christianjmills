@@ -1,6 +1,6 @@
 ---
 aliases:
-- /career/notes/2021/12/16/Notes-on-Making-Money-as-a-Freelance-Developer
+- /Notes-on-Making-Money-as-a-Freelance-Developer/
 categories:
 - career
 - notes

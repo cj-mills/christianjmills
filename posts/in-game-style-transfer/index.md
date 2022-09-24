@@ -1,6 +1,6 @@
 ---
 aliases:
-- /style_transfer/unity/2020/10/19/In-Game-Style-Transfer
+- /In-Game-Style-Transfer/
 categories:
 - unity
 - style_transfer

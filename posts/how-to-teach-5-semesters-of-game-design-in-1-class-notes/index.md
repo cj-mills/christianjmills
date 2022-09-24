@@ -1,6 +1,6 @@
 ---
 aliases:
-- /education/game-dev/notes/2021/12/29/Notes-on-How-to-Teach-5-Semesters-of-Game-Design-in-1-Class
+- /Notes-on-How-to-Teach-5-Semesters-of-Game-Design-in-1-Class/
 categories:
 - education
 - game-dev

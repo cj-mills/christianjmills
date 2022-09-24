@@ -9,6 +9,8 @@ search_exclude: false
 title: Weekly Recap
 toc: false
 
+aliases:
+- /Weekly-Recap-8/
 ---
 
 * [Introduction](#introduction)

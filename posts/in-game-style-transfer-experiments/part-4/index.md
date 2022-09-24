@@ -11,6 +11,8 @@ description: Examining results from my initial attempts to optimize the few-shot
   stylization model.
 categories: [unity, log]
 
+aliases:
+- /In-Game-Style-Transfer-Experiments-4/
 ---
 
 * [Introduction](#introduction)

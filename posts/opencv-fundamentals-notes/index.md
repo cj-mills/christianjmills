@@ -12,6 +12,8 @@ search_exclude: false
 title: Notes on OpenCV Fundamentals
 toc: false
 
+aliases:
+- /Notes-on-OpenCV-Fundamentals/
 ---
 
 * [Overview](#overview)

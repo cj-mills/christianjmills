@@ -11,6 +11,8 @@ search_exclude: false
 title: Notes on Foundational Blockchain Concepts
 toc: false
 
+aliases:
+- /Notes-on-Foundational-Blockchain-Concepts/
 ---
 
 * [Overview](#overview)

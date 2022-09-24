@@ -13,6 +13,8 @@ search_exclude: false
 title: Notes on The Hugging Face Deep RL Class Pt.1
 toc: false
 
+aliases:
+- /Notes-on-HF-Deep-Reinforcement-Learning-Class-1/
 ---
 
 * [What is Reinforcement Learning?](#what-is-reinforcement-learning)

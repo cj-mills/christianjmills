@@ -12,6 +12,8 @@ search_exclude: false
 title: Notes on the Procedural Tools Used to Make Far Cry 5
 toc: false
 
+aliases:
+- /Notes-on-the-Procedural-Tools-Used-to-Make-Far-Cry-5/
 ---
 
 * [Overview](#overview)

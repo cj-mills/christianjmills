@@ -12,6 +12,8 @@ search_exclude: false
 title: Targeted In-Game Style Transfer Tutorial
 toc: false
 
+aliases:
+- /Targeted-In-Game-Style-Transfer-Tutorial/
 ---
 
 * [Overview](#overview)

@@ -11,6 +11,8 @@ search_exclude: false
 title: Notes on No ML Degree Book
 toc: false
 
+aliases:
+- /Notes-on-No-ML-Degree-Book/
 ---
 
 * [Key Points](#key-points)

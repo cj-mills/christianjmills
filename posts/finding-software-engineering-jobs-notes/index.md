@@ -1,6 +1,6 @@
 ---
 aliases:
-- /career/notes/2021/12/16/Notes-on-Finding-Software-Engineering-Job-Openings
+- /Notes-on-Finding-Software-Engineering-Job-Openings/
 categories:
 - career
 - notes

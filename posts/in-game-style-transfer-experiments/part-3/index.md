@@ -11,6 +11,8 @@ description: Examining results from my initial attempts to optimize the fast neu
   style transfer model.
 categories: [unity, log]
 
+aliases:
+- /In-Game-Style-Transfer-Experiments-3/
 ---
 
 * [Introduction](#introduction)

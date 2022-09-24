@@ -11,6 +11,8 @@ description: This post demonstrates how to access the DLL as a plugin inside a U
   project.
 categories: [openvino, style_transfer, tutorial, unity]
 
+aliases:
+- /OpenVINO-Plugin-for-Unity-Tutorial-3/
 ---
 
 ### Previous: [Part 2](../part-2/)

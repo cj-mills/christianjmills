@@ -1,6 +1,6 @@
 ---
 aliases:
-- /career/notes/2021/12/16/Notes-on-Getting-Your-First-Tech-Job
+- /Notes-on-Getting-Your-First-Tech-Job/
 categories:
 - career
 - notes

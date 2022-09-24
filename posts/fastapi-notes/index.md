@@ -1,6 +1,4 @@
 ---
-aliases:
-- /api/notes/2021/12/29/Notes-on-FastAPI
 categories:
 - api
 - notes
@@ -13,6 +11,8 @@ search_exclude: false
 title: Notes on FastAPI Basics
 toc: false
 
+aliases:
+- /Notes-on-FastAPI/
 ---
 
 * [Overview](#overview)

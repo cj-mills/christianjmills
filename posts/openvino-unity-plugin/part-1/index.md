@@ -12,6 +12,8 @@ description: This post covers the prerequisite software that need to be installe
   Representation format.
 categories: [openvino, style_transfer, tutorial, unity]
 
+aliases:
+- /OpenVINO-Plugin-for-Unity-Tutorial-1/
 ---
 
 * [Overview](#overview)

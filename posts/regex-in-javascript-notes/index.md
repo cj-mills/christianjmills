@@ -1,6 +1,6 @@
 ---
 aliases:
-- /javascript/notes/regex/2021/12/29/Notes-on-Regex-in-JavaScript
+- /Notes-on-Regex-in-JavaScript/
 categories:
 - javascript
 - regex

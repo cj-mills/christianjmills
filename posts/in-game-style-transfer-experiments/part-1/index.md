@@ -10,6 +10,8 @@ search_exclude: false
 title: In-Game Style Transfer Experiments Pt.1
 toc: false
 
+aliases:
+- /In-Game-Style-Transfer-Experiments-1/
 ---
 
 * [Introduction](#introduction)

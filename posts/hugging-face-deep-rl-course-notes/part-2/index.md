@@ -13,6 +13,8 @@ search_exclude: false
 title: Notes on The Hugging Face Deep RL Class Pt.2
 toc: false
 
+aliases:
+- /Notes-on-HF-Deep-Reinforcement-Learning-Class-2/
 ---
 
 * [Types of Value-Based Methods](#types-of-value-based-methods)

@@ -1,6 +1,6 @@
 ---
 aliases:
-- /career/notes/2021/12/16/Notes-on-Writing-Resumes-for-Software-Developer-Jobs
+- /Notes-on-Writing-Resumes-for-Software-Developer-Jobs/
 categories:
 - career
 - notes

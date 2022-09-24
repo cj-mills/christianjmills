@@ -10,6 +10,8 @@ search_exclude: false
 title: Weekly Recap
 toc: false
 
+aliases:
+- /Weekly-Recap-4/
 ---
 
 * [End-to-End Style Transfer Tutorial](#end-to-end-style-transfer-tutorial)

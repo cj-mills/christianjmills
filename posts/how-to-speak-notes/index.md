@@ -1,6 +1,7 @@
 ---
 aliases:
-- /career/notes/2021/12/16/Notes on How to Speak
+- /Notes on How to Speak/
+- /Notes-on-How-to-Speak/
 categories:
 - career
 - notes

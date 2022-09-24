@@ -1,6 +1,4 @@
 ---
-aliases:
-- /log/project/unity/2020/09/16/Barracuda-Pose-Estimation-Project-Log-1
 categories:
 - unity
 - project

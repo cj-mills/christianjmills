@@ -13,6 +13,8 @@ search_exclude: false
 title: Notes on the Streamlit API
 toc: false
 
+aliases:
+- /Notes-on-Streamlit-API/
 ---
 
 * [Overview](#overview)
