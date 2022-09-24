@@ -45,3 +45,10 @@ There may be hope yet for doing the post processing on the GPU. Updates to Barra
 The current preview release for Barracuda adds a [TopKIndices](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/api/Unity.Barracuda.ModelBuilder.html#Unity_Barracuda_ModelBuilder_TopKIndices_System_String_System_Object_System_Object_System_Int32_System_Boolean_System_Boolean_) layer. According to the documentation, this layer retrieves the indices for the top-K largest (or smallest) elements along the specified axis. That sounds perfect! There is one slight problem. It doesn't seem to work yet. 
 
 It could be that I haven't figured out how to use the layer properly. After digging through the source code, it seems the [TopKIndices](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/api/Unity.Barracuda.ModelBuilder.html#Unity_Barracuda_ModelBuilder_TopKIndices_System_String_System_Object_System_Object_System_Int32_System_Boolean_System_Boolean_) layer expects another layer object as the k parameter. I'm not sure what to do with that. I would have thought that k would just be an integer. Perhaps it wants an input layer that specifies k? It's also possible that the functionality for the layer hasn't been fully implemented yet. This release does seem quite buggy. I think I'll wait until it's out of preview before spending more time with it.
+
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

@@ -135,3 +135,8 @@ The last time I was asked to send someone my resume, I did not even have a resum
 
 * mayuko Video: [How to Write Your Best Resume for Software Engineering Jobs // Tips from an ex-FAANG recruiter](https://www.youtube.com/watch?v=J5gy9iqjwXM)
 
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

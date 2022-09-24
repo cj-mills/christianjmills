@@ -186,3 +186,7 @@ We now have a complete pose skeleton that we can use for debugging or demos. In 
 
 ### Next: [Part  7](../part-7/)
 
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

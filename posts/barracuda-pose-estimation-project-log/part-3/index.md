@@ -41,3 +41,15 @@ So, removing the offset vectors from the key point skeleton revealed some insigh
 It's definitely looking like a cut down ResNet50 model is still way better than a MobileNet. The MobileNet will require extra post processing to clean up the output from the heatmaps. Interestingly, MobileNet seems to do worse with higher resolution input images than lower resolutions.
 
 Since my desktop can handle using a 720p input resolution, I'll stick with that for now and try to improve the heatmap accuracy later. Next, I'm going to focus on mapping the key point locations to a virtual character.
+
+
+
+
+
+
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

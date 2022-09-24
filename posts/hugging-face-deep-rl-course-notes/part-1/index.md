@@ -810,3 +810,9 @@ package_to_hub(model=model, # Our trained model
 
 * [The Hugging Face Deep Reinforcement Learning Class](https://github.com/huggingface/deep-rl-class)
 * [An Introduction to Deep Reinforcement Learning](https://huggingface.co/blog/deep-rl-intro)
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

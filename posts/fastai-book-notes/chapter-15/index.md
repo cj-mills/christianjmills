@@ -797,3 +797,9 @@ def forward(self, x_cat, x_cont=None):
 **Previous:** [Notes on fastai Book Ch. 14](../chapter-14/)
 
 **Next:** [Notes on fastai Book Ch. 16](../chapter-16/)
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

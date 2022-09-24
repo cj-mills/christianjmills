@@ -49,3 +49,9 @@ Since I'm not allowing myself to spend any more time experimenting I've decided 
 ## Conclusion
 
 I'm disappointed that I wasn't able to resolve the flickering while maintaining playable frame rates. Flickering can be reduced by using a lower style influence. However, that feels like it defeats the whole point of style transfer. I'll probably come back to style transfer at some point.  For now, it's time to move on to other projects.
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

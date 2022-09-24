@@ -2075,3 +2075,7 @@ fastai.tabular.model.TabularModel
 **Previous:** [Notes on fastai Book Ch. 7](../chapter-7/)
 
 **Next:** [Notes on fastai Book Ch. 9](../chapter-9/)
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

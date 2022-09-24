@@ -400,3 +400,8 @@ http://127.0.0.1:8000/delete-student/1
 
 * [FastAPI Course for Beginners](https://www.youtube.com/watch?v=tLKKmouUams)
 
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

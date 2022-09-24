@@ -55,3 +55,6 @@ I believe the difference is due to how this video stylization model is trained. 
 
 I did not expect this model to perform as well as it did with so few layers. It's likely that the model can be further optimized with a more thoughtful approach. I'm going to conduct more training experiments to see how much I can make this model generalize. Hopefully, the smaller model can handle a wider variety of input.
 
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

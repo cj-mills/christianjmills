@@ -58,3 +58,6 @@ Here are some notes I took while watching Mayuko's [video](https://www.youtube.c
 
 * mayuko Video: [Are Cover Letters Worth It? // Software Engineering Career Advice](https://www.youtube.com/watch?v=0USpL2kypUg)
 
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

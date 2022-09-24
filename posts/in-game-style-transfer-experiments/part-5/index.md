@@ -58,3 +58,8 @@ The model might have difficulty capturing the style from the lynx image because 
 
 It's annoying that the `fast_neural_style` model can't seem to capture certain types of styles. Fortunately, I can use any style transfer model I want to generate the training examples for the video stylization model. I'd prefer to have a model that can produce good results with a wide variety of styles. However, it might be necessary to use multiple models that handle different styles. I want to develop a reliable workflow before I start writing an end-to-end tutorial.
 
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

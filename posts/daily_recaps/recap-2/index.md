@@ -26,3 +26,9 @@ Unsurprisingly, the amount of lag depends on how demanding the model is to run. 
 If the target application only needs to classify the estimated pose, say for a yoga application, then it should be fine to lag behind the source video a bit. However, it can be problematic if the target application requires real-time motion tracking. If the application needs to be run on a mobile device, this might just be a compromise you need to make for now. This approach does still have the benefit of allowing the rest of the application to run smoothly while the model executes.
 
 I believe a new backend is in the works for the Barracuda library that will make use of the Neural Processing Units (NPUs) that are in newer mobile devices. I don't know how far along the development is, but that should allow models to be executed much more efficiently on supported devices.
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

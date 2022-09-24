@@ -93,3 +93,8 @@ The performance from the video stylization model was lower than I expected. I th
 
 I'm now even more grateful that Unity has released their example project. It applies a level of expertise that would have taken me a long time to figure out on my own. However, it also shows just how much work still remains in optimizing more sophisticated models for end-user devices. I'm curious if it's feasible to automate this optimization process.
 
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

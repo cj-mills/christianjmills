@@ -329,3 +329,6 @@ There is a more recent variant of the style transfer model used in this tutorial
 I had planned to use a [style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) that provides more consistency between frames for this tutorial. Unfortunately, I wasn't able to consistently get satisfying results and decided to exclude it. I still plan to make a stand alone post covering how to adapt the project from this tutorial series to use that model. 
 
 [GitHub Repository](https://github.com/cj-mills/End-to-End-In-Game-Style-Transfer-Tutorial)
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

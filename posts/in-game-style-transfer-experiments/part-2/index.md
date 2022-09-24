@@ -57,3 +57,6 @@ As Unity stated in their blog post, improving the quality of style transfer whil
 
 The video stylization model I tested in the last post seems the most promising for both quality and consistency between frames. The only roadblock is that it requires much more compute power. It might be worthwhile exploring methods to optimize this model. I'd like to try optimization techniques such as [quantization](https://pytorch.org/blog/introduction-to-quantization-on-pytorch/) and [pruning](https://pytorch.org/tutorials/intermediate/pruning_tutorial.html). Both approaches aim to reduce the size of the model and thus reduce hardware requirements. However, I don't know if the Barracuda library supports quantized models yet. I'm also curious how well the [temporal upsampling](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/) from Unity's implementation would work with the video stylization model. I've never used any of these optimization techniques before, so I don't know how long it would take to get them working.
 
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

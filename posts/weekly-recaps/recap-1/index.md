@@ -99,3 +99,9 @@ I'm not really sure what I'll end up including in these recaps. I might start ke
 I should probably start working the end to end tutorial for in-game style transfer. The tutorial will cover training the model in PyTorch and exporting it to ONNX for use in Unity. This time I'll be using the video stylization model in Unity. I'll probably take a break from style transfer after that. It's really easy to burn through time tuning style transfer models to get desirable images.
 
 After that, I'll make an introductory tutorial for training models with the fastai library and using them in Unity. I'll stick with the models trained in the fastai computer vision tutorials to ensure it's easily reproducible.
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

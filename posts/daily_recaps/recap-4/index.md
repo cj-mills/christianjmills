@@ -23,3 +23,8 @@ After a bit more testing, it turns out that the `-force-device-index` command li
 
 Something that I never really considered before is that it does not appear to be possible to switch which GPU an application is running on while the application is running. Every option I have found for manually selecting a GPU requires restarting the application to take effect.
 
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

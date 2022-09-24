@@ -104,3 +104,9 @@ I was able to reduce the size of the model from 6.5MB to less than 600KB without
 ## Conclusion
 
 Now I'm really curious to see how an RTX 3080 or RX6800 XT would perform with this smaller model. 1080p is still out of reach, but 720p should be easily playable on the latest generation of GPUs. The next step is to see how much I can reduce the size of the [video style transfer model](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) I tried previously. That model is roughly twice the size of the original `fast_neural_style` model. I might need to do more than reduce the size of some of the layers to get playable framerates.
+
+
+
+
+
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
