@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 14 covers building a ResNet from scratch.
 categories: [ai, fastai, notes, pytorch]
 

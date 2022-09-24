@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 6 covers multi-label classification and image regression.
 categories: [ai, fastai, notes, pytorch]
 

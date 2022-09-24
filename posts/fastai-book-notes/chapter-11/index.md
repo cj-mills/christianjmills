@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 11 covers data munging with fast.ai's mid-level data API.
 categories: [ai, fastai, notes, pytorch]
 

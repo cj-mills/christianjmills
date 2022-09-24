@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post covers the prerequisite software that need to be installed
   and how to convert a pretrained model from ONNX format to the OpenVINO Intermediate
   Representation format.

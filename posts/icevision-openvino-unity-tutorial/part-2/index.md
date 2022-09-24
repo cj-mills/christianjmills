@@ -6,6 +6,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 categories: [icevision, openvino, yolox, object-detection, unity, tutorial]
 description: Part 2 covers creating a dynamic link library (DLL) file in Visual Studio
   to perform inference with the object detection model.

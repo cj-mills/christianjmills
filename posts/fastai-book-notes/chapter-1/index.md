@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 1 covers the history of artificial neural networks, approaches
   for learning ML/DL, and using the fast.ai library for multiple deep learning tasks.
 categories: [ai, fastai, notes, pytorch]

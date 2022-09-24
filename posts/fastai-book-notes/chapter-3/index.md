@@ -5,6 +5,9 @@ categories:
 - fastai
 - notes
 date: 2022-3-14
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 3 defines data ethics, introduces essential topics in data ethics,
   and explains how to identify and address ethical issues.
 hide: false

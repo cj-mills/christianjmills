@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post provides an overview of Unity's Barracuda inference library
   for executing deep learning models on user devices.
 categories: [unity, barracuda]

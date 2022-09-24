@@ -10,6 +10,9 @@ description: Unit 1 introduces the basic concepts for reinforcement learning and
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: Notes on The Hugging Face Deep RL Class Pt.1
 toc: false
 

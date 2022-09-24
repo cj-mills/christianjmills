@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Part 2 covers performing object detection in a Unity project with ONNX
   Runtime and DirectML.
 categories: [onnx, directml, yolox, object-detection, unity, tutorial]

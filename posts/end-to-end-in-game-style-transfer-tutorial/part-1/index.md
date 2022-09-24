@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This tutorial series covers how to train your own style transfer model
   with PyTorch and implement it in Unity using the Barracuda library.
 categories: [style_transfer, pytorch, unity, tutorial]

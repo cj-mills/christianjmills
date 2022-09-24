@@ -11,6 +11,9 @@ description: This post covers the changes needed to use the in-game camera as in
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: OpenVINO Object Detection in Unity Using the In-Game Camera
 toc: false
 

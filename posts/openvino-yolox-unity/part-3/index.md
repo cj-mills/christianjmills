@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post demonstrates how to create a Unity project to access the DLL
   as a plugin.
 categories: [openvino, object-detection, yolox, tutorial, unity]

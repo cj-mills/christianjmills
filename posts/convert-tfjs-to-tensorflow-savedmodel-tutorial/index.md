@@ -8,6 +8,9 @@ description: A simple example of how to convert a TensorFlow.js graph model to a
 layout: post
 title: How to Convert a TensorFlow.js Graph Model to a TensorFlow SavedModel
 toc: true
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 
 aliases:
 - /How-to-Convert-a-TensorFlow-js-Graph-Model-to-a-Tensorflow-SavedModel/

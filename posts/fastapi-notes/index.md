@@ -8,6 +8,9 @@ description: My notes from Code With Tomi's video providing an introduction to t
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: Notes on FastAPI Basics
 toc: false
 

@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post covers how to train an artistic style transfer model with PyTorch
   in Google Colab.
 categories: [style_transfer, pytorch, unity, tutorial]

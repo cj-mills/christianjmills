@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post covers how to create a pose skeleton by drawing lines between
   key points.
 categories: [unity, tutorial]

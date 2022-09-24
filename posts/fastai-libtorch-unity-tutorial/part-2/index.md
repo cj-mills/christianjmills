@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Part 2 covers creating a dynamic link library (DLL) file in Visual Studio
   to perform inference with TorchScript modules using LibTorch.
 categories: [fastai, libtorch, unity]

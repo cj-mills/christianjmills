@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 categories: [icevision, openvino, yolox, object-detection, unity, tutorial]
 description: This tutorial covers training an object detection model using IceVision
   and creating an OpenVINO plugin for the Unity game engine to perform inference with

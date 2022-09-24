@@ -10,6 +10,9 @@ description: Chapter 16 covers momentum, RMSProp, Adam, decoupled weight decay, 
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: Notes on fastai Book Ch. 16
 toc: false
 

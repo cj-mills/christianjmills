@@ -9,6 +9,9 @@ description: My notes from Andrew Price's talk at Blender Conference 2018 on how
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: Notes on How A.I. Will Change the 3D Industry
 toc: false
 

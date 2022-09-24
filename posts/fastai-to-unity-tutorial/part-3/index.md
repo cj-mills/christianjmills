@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Part 3 covers building a Unity project to run in a web browser and hosting
   it using GitHub Pages.
 categories: [fastai, unity, barracuda]

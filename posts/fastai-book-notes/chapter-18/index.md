@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 18 covers interpreting convolutional neural networks using class-activation maps.
 categories: [ai, fastai, notes, pytorch]
 

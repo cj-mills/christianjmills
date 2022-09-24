@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post covers how to use the Unity Recorder tool to generate additional
   training data for our style transfer model.
 categories: [style_transfer, pytorch, unity, tutorial]

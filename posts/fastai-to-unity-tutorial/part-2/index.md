@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Part 2 covers implementing a trained model in a Unity project.
 categories: [fastai, unity, barracuda]
 

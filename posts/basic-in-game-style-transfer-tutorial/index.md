@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: This post provides a basic method for performing in-game style transfer.
 categories: [unity, tutorial]
 

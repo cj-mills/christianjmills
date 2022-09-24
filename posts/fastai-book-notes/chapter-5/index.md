@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 5 covers creating a custom DataBlock for an image classifier,
   pre-sizing, cross-entropy loss, model interpretation, picking learning rates, transfer
   learning, and discriminative learning rates.

@@ -10,6 +10,9 @@ image: ./images/frozen_lake.gif
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: Notes on The Hugging Face Deep RL Class Pt.2
 toc: false
 

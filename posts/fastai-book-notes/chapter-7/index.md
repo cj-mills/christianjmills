@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 7 covers data normalization, progressive resizing, test-time
   augmentation, mixup, and label smoothing.
 categories: [ai, fastai, notes, pytorch]

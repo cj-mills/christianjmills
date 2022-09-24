@@ -11,6 +11,9 @@ description: This post covers the prerequisite software, pretrained object detec
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: OpenVINO Object Detection for Unity Tutorial Pt.1 (Outdated)
 toc: false
 

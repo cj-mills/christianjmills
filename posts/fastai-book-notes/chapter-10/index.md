@@ -9,6 +9,9 @@ description: Chapter 10 covers text preprocessing and training an RNN for text c
 hide: false
 layout: post
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: Notes on fastai Book Ch. 10
 toc: false
 

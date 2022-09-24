@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Chapter 2 covers how to train an image classification model using a custom
   dataset and turn it into an online application.
 categories: [ai, fastai, notes, pytorch]

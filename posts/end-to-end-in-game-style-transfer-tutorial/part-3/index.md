@@ -10,6 +10,9 @@ description: This post covers how implement the style transfer model in Unity wi
 hide: false
 image: ../social-media/cover.png
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 title: End-to-End In-Game Style Transfer Tutorial Pt.3
 toc: false
 

@@ -7,6 +7,9 @@ layout: post
 toc: false
 hide: false
 search_exclude: false
+comments:
+  utterances:
+    repo: cj-mills/christianjmills
 description: Part 3 covers modifying the Unity project from the fastai-to-unity tutorial
   to classify images with a LibTorch DLL.
 categories: [fastai, libtorch, unity]
