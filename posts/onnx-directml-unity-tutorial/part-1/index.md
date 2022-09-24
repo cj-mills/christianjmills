@@ -2,7 +2,7 @@
 title: Object Detection for Unity With ONNX Runtime and DirectML Pt. 1
 date: 8-18-2022
 image: ../social-media/cover.jpg
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

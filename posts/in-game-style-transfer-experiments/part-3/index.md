@@ -2,7 +2,7 @@
 title: In-Game Style Transfer Experiments Pt.3
 date: 2021-1-6
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

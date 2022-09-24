@@ -2,7 +2,7 @@
 title: Notes on fastai Book Ch. 14
 date: 2022-3-29
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

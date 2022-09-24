@@ -2,7 +2,7 @@
 title: OpenVINO Object Detection for Unity Tutorial Pt.2 (Outdated)
 date: 2021-10-6
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

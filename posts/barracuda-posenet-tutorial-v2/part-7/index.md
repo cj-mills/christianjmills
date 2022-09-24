@@ -2,7 +2,7 @@
 title: Barracuda PoseNet Tutorial 2nd Edition Pt. 7
 date: 2021-7-30
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

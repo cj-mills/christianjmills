@@ -2,7 +2,7 @@
 title: Barracuda PoseNet WebGL Tutorial
 date: 2022-3-10
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

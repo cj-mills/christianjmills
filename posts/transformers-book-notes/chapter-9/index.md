@@ -2,7 +2,7 @@
 title: Notes on Transformers Book Ch. 9
 date: 2022-4-22
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

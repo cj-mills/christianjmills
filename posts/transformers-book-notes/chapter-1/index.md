@@ -2,7 +2,7 @@
 title: Notes on Transformers Book Ch. 1
 date: 2022-3-30
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

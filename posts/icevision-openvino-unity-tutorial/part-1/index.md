@@ -2,7 +2,7 @@
 title: End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1
 date: 2022-8-8
 image: ../social-media/cover.jpg
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false

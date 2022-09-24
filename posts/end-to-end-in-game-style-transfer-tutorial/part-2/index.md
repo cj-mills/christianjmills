@@ -2,7 +2,7 @@
 title: End-to-End In-Game Style Transfer Tutorial Pt.2
 date: 2/26/2021
 image: /images/empty.gif
-title-block-categories: false
+title-block-categories: true
 layout: post
 toc: false
 hide: false
