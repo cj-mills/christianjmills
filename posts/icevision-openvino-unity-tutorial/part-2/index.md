@@ -374,13 +374,11 @@ We can delete everything below the `#include "pch.h"` line.
 
 // Create a macro to quickly mark a function for export
 #define DLLExport __declspec (dllexport)
-
-
+```
 
 **Wrap the code in extern "C" to prevent name-mangling issues with the compiler**
 
 The rest of our code will go inside here.
-
 
 ```c++
 // Wrap code to prevent name-mangling issues
