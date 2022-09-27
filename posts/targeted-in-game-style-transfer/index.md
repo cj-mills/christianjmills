@@ -1,6 +1,6 @@
 ---
 categories:
-- style_transfer
+- style-transfer
 - unity
 - tutorial
 date: 2021-7-4

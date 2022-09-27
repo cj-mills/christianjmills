@@ -3,7 +3,6 @@ aliases:
 - /log/project/unity/2020/09/24/Barracuda-Pose-Estimation-Project-Log-4
 categories:
 - unity
-- project
 - log
 date: '2020-09-24'
 description: I'm an idiot.

@@ -13,7 +13,7 @@ comments:
 description: This post covers the prerequisite software that need to be installed
   and how to convert a pretrained model from ONNX format to the OpenVINO Intermediate
   Representation format.
-categories: [openvino, style_transfer, tutorial, unity]
+categories: [openvino, style-transfer, tutorial, unity]
 
 aliases:
 - /OpenVINO-Plugin-for-Unity-Tutorial-1/

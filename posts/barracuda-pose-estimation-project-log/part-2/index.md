@@ -3,7 +3,6 @@ aliases:
 - /log/project/unity/2020/09/21/Barracuda-Pose-Estimation-Project-Log-2
 categories:
 - unity
-- project
 - log
 date: '2020-09-21'
 description: Trying to remove bottlenecks.

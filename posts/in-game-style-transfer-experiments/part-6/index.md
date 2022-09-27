@@ -1,6 +1,6 @@
 ---
 categories:
-- style_transfer
+- style-transfer
 - log
 date: 2021-2-17
 description: Testing out an arbitrary style transfer model and a change in plans for

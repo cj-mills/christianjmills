@@ -1,6 +1,6 @@
 ---
 categories:
-- style_transfer
+- style-transfer
 - pytorch
 - unity
 - tutorial

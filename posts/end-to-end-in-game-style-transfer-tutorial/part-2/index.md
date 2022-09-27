@@ -12,7 +12,7 @@ comments:
     repo: cj-mills/christianjmills
 description: This post covers how to train an artistic style transfer model with PyTorch
   in Google Colab.
-categories: [style_transfer, pytorch, unity, tutorial]
+categories: [style-transfer, pytorch, unity, tutorial]
 
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-2/

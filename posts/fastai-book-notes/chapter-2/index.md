@@ -200,11 +200,13 @@ Number of results: 150
 
 -----
 
+
 ```python
 pd.DataFrame(results).head()
 ```
+
 <div style="overflow-x:auto;">
-    <table border="1" class="dataframe">
+<table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -739,6 +741,8 @@ interp.plot_top_losses(5, nrows=1)
 
 
 -----
+
+
 ```python
 cleaner = ImageClassifierCleaner(learn)
 cleaner
@@ -749,6 +753,7 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 
 
 -----
+
 ```python
 # for idx in cleaner.delete(): cleaner.fns[idx].unlink()
 # for idx,cat in cleaner.change(): shutil.move(str(cleaner.fns[idx]), path/cat)

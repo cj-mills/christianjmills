@@ -12,7 +12,7 @@ comments:
     repo: cj-mills/christianjmills
 description: This post covers how to use a different style transfer model that is
   specialized for video.
-categories: [style_transfer, pytorch, unity, tutorial]
+categories: [style-transfer, pytorch, unity, tutorial]
 
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-Addendum/

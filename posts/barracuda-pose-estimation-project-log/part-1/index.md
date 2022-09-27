@@ -1,7 +1,6 @@
 ---
 categories:
 - unity
-- project
 - log
 date: '2020-09-16'
 description: The journey so far.

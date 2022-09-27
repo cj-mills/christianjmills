@@ -3,7 +3,6 @@ aliases:
 - /log/project/unity/2020/10/19/Barracuda-Pose-Estimation-Project-Log-5
 categories:
 - unity
-- project
 - log
 date: '2020-10-19'
 description: Back to it.

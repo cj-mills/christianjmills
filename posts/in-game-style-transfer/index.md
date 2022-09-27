@@ -3,7 +3,7 @@ aliases:
 - /In-Game-Style-Transfer/
 categories:
 - unity
-- style_transfer
+- style-transfer
 date: '2020-10-19'
 description: Some optimization is still required.
 hide: false
