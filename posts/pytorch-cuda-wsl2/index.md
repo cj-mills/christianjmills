@@ -15,6 +15,7 @@ categories: [log, tutorial, pytorch, wsl2]
 
 aliases:
 - /Using-PyTorch-with-CUDA-on-WSL2/
+- /posts/pytorch-cuda--wsl2/
 
 ---
 
