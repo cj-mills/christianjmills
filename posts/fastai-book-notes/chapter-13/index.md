@@ -96,7 +96,7 @@ Path('/home/innom-dt/.fastai/data/mnist_sample')
 im3 = Image.open(path/'train'/'3'/'12.png')
 show_image(im3);
 ```
-![png](./images/output_7_0.png)
+![](./images/output_7_0.png){fig-align="center"}
 
 -----
 
@@ -573,7 +573,7 @@ top_edge3 = tensor([[apply_kernel(i,j,top_edge) for j in rng] for i in rng])
 
 show_image(top_edge3);
 ```
-![png](./images/output_23_0.png)
+![](./images/output_23_0.png){fig-align="center"}
 
 
 **Note:** Top edges are black and bottom edges are white.
@@ -588,7 +588,7 @@ left_edge3 = tensor([[apply_kernel(i,j,left_edge) for j in rng] for i in rng])
 
 show_image(left_edge3);
 ```
-![png](./images/output_25_0.png)
+![](./images/output_25_0.png){fig-align="center"}
 
 
 
@@ -601,7 +601,7 @@ right_edge3 = tensor([[apply_kernel(i,j,right_edge) for j in rng] for i in rng])
 
 show_image(right_edge3);
 ```
-![png](./images/output_26_0.png)
+![](./images/output_26_0.png){fig-align="center"}
 
 
 
@@ -614,7 +614,7 @@ bottom_edge3 = tensor([[apply_kernel(i,j,bottom_edge) for j in rng] for i in rng
 
 show_image(bottom_edge3);
 ```
-![png](./images/output_27_0.png)
+![](./images/output_27_0.png){fig-align="center"}
 
 
 ### Convolutions in PyTorch
@@ -806,27 +806,27 @@ for i in range(6):
 ```
 
 
-![png](./images/output_37_0.png)
+![](./images/output_37_0.png){fig-align="center"}
 
 
 
-![png](./images/output_37_1.png)
+![](./images/output_37_1.png){fig-align="center"}
 
 
 
-![png](./images/output_37_2.png)
+![](./images/output_37_2.png){fig-align="center"}
 
 
 
-![png](./images/output_37_3.png)
+![](./images/output_37_3.png){fig-align="center"}
 
 
 
-![png](./images/output_37_4.png)
+![](./images/output_37_4.png){fig-align="center"}
 
 
 
-![png](./images/output_37_5.png)
+![](./images/output_37_5.png){fig-align="center"}
 
 
 ### Strides and Padding
@@ -1176,7 +1176,7 @@ torch.Size([3, 1000, 846])
 ```python
 show_image(im);
 ```
-![png](./images/output_68_0.png)
+![](./images/output_68_0.png){fig-align="center"}
 
 -----
 
@@ -1185,7 +1185,7 @@ _,axs = subplots(1,3)
 for bear,ax,color in zip(im,axs,('Reds','Greens','Blues')):
     show_image(255-bear, ax=ax, cmap=color)
 ```
-![png](./images/output_69_0.png)
+![](./images/output_69_0.png){fig-align="center"}
 
 
 
@@ -1239,7 +1239,7 @@ dls = get_dls()
 ```python
 dls.show_batch(max_n=9, figsize=(4,4))
 ```
-![png](./images/output_75_0.png)
+![](./images/output_75_0.png){fig-align="center"}
 
 
 ### A Simple Baseline
@@ -1409,7 +1409,7 @@ learn = fit()
 ```python
 learn.activation_stats.plot_layer_stats(0)
 ```
-![png](./images/output_85_0.png)
+![](./images/output_85_0.png){fig-align="center"}
 
 
 **Note:** Generally, the model should have a consisten (or at least smooth) mean and standard deviation of layer activations during training.
@@ -1423,7 +1423,7 @@ learn.activation_stats.plot_layer_stats(0)
 # The penultimate layer
 learn.activation_stats.plot_layer_stats(-2)
 ```
-![png](./images/output_87_0.png)
+![](./images/output_87_0.png){fig-align="center"}
 
 
 **Note:** The problems got wors toward the end of the network.
@@ -1471,7 +1471,7 @@ learn = fit()
 ```python
 learn.activation_stats.plot_layer_stats(-2)
 ```
-![png](./images/output_92_0.png)
+![](./images/output_92_0.png){fig-align="center"}
 
 
 **Note:** Still a high number of activations near zero.
@@ -1617,7 +1617,7 @@ learn = fit()
 ```python
 learn.recorder.plot_sched()
 ```
-![png](./images/output_102_0.png)
+![](./images/output_102_0.png){fig-align="center"}
 
 -----
 
@@ -1763,7 +1763,7 @@ def plot_sched(self:Recorder, keys=None, figsize=None):
 ```python
 learn.activation_stats.plot_layer_stats(-2)
 ```
-![png](./images/output_109_0.png)
+![](./images/output_109_0.png){fig-align="center"}
 
 
 **Note:** The percentage of non-zero weight is better, but still high.
@@ -1870,7 +1870,7 @@ matplotlib.rcParams['image.cmap'] = 'viridis'
 ```python
 learn.activation_stats.color_dim(-2)
 ```
-![png](./images/output_115_0.png)
+![](./images/output_115_0.png){fig-align="center"}
 
 
 **Note:** This shows the classic picture of "bad training":
@@ -2033,7 +2033,7 @@ learn = fit()
 ```python
 learn.activation_stats.color_dim(-4)
 ```
-![png](./images/output_122_0.png)
+![](./images/output_122_0.png){fig-align="center"}
 
 
 **Note:** Shows a smooth development of activations, with no crashes.

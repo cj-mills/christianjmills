@@ -535,7 +535,7 @@ files[0]
 im = Image.open(files[0])
 im
 ```
-![png](./images/output_31_0.png)
+![](./images/output_31_0.png){fig-align="center"}
 
 -----
 
@@ -742,7 +742,7 @@ x.shape,y
 ```python
 show_image(x, title=lbls[y]);
 ```
-![png](./images/output_51_0.png)
+![](./images/output_51_0.png){fig-align="center"}
 
 -----
 
@@ -1793,7 +1793,7 @@ learn.fit(2)
 plt.plot(lrfind.lrs[:-2],lrfind.losses[:-2])
 plt.xscale('log')
 ```
-![png](./images/output_140_0.png)
+![](./images/output_140_0.png){fig-align="center"}
 
 -----
 
@@ -1874,7 +1874,7 @@ plt.plot(onecyc.lrs);
 ```
 
 
-![png](./images/output_144_0.png)
+![](./images/output_144_0.png){fig-align="center"}
 
 
 

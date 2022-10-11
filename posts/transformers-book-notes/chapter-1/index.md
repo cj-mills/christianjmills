@@ -18,6 +18,8 @@ aliases:
 
 ---
 
+
+
 * [Key Advancements](#key-advancements)
 * [Recurrent Architectures](#recurrent-architectures)
 * [The Encoder-Decoder Framework](#the-encoder-decoder-framework)
@@ -692,6 +694,10 @@ Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was c
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
+
+
+
+**Next:** [Notes on Transformers Book Ch. 2](../chapter-2/)
 
 
 

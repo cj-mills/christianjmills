@@ -25,6 +25,8 @@ aliases:
 * [Meet the Transformers](#meet-the-transformers)
 * [References](#references)
 
+
+
 ------
 
 ```python
@@ -203,7 +205,7 @@ model = BertModel.from_pretrained(model_ckpt)
 text = "time flies like an arrow"
 show(model, "bert", tokenizer, text, display_mode="light", layer=0, head=8)
 ```
-![png](./images/query-vector-to-key-vector-visualization.png)
+![](./images/query-vector-to-key-vector-visualization.png){fig-align="center"}
 
 
 **Note:** The `query` vector for "flies" has the most overlap with the `key` vector for "arrow."
@@ -649,12 +651,12 @@ tokens
 ```python
 head_view(attention, tokens, sentence_b_start, heads=[8])
 ```
-![png](..//images/notes-transformers-book/chapter-3/head_view.png)
-
+![](./images//head_view.png){fig-align="center"}
 
 
 
 **Note:** 
+
 * The attention weights are highest between words in the same sentence.
 * The attention weights allow the model to distinguish the use of "flies" as a verb or a noun.
 
@@ -1132,6 +1134,12 @@ def scaled_dot_product_attention(query, key, value, mask=None):
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
 
 
+
+
+
+**Previous:** [Notes on Transformers Book Ch. 2](../chapter-2/)
+
+**Next:** [Notes on Transformers Book Ch. 4](../chapter-4/)
 
 
 

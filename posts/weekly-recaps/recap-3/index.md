@@ -29,7 +29,7 @@ I'm probably going to use Unity's FPS Microgame for this tutorial. It should tak
 
 I also came across an [implementation](https://github.com/magenta/magenta/tree/master/magenta/models/arbitrary_image_stylization) of the model that Unity started with for their in-game style transfer project. It actually does such a good job applying styles that I was tempted to redo the jupyter notebook I'd just completed to use it instead.
 
-![arbitrary-style-model](./images/arbitrary-style-model.jpg)
+![](./images/arbitrary-style-model.jpg){fig-align="center"}
 
 However, it looks like it takes considerably more time to fully train than the single style models that I'm currently using. Therefore, I'll leave the tutorial as is and probably make a separate post for using this model in the future. I still need to convert the model and training code to PyTorch anyways.
 

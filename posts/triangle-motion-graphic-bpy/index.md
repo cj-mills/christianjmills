@@ -32,11 +32,13 @@ aliases:
 * [Add Keyframes](#add-keyframes)
 * [Conclusion](#conclusion)
 
+
+
 ## Introduction
 
 I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=xeH41Tz1zGI&list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&index=27) from YouTube to practice using the Blender Python API. This post goes through the code I came up with to replicate the tutorial.
 
-![triangle_mg_4](./images/triangle-mg.gif)
+![](./images/triangle-mg.gif){fig-align="center"}
 
 
 
@@ -44,7 +46,7 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=xeH4
 
 The only dependencies strictly required for this tutorial are `bpy` and `bmesh`. The `bpy` package is the base API for Blender and the `bmesh` module provides access to Blender's internal mesh editing API. I also used the `math` module from the Python Standard Library for one of my helper functions. 
 
-![import-dependencies](./images/import-dependencies.png)
+![](./images/import-dependencies.png){fig-align="center"}
 
 
 
@@ -64,7 +66,7 @@ I also made a function to empty the default collection so that nothing gets dupl
 
 Lastly, I made a function to easily add sequences of keyframes to a given object. The function uses the built-in `setattr()` method to set the desired value for the target object and uses the `object.keyframe_insert()` method to add the keyframe. 
 
-![define-helper-functions](./images/define-helper-functions_2.png)
+![](./images/define-helper-functions_2.png){fig-align="center"}
 
 
 
@@ -78,7 +80,7 @@ Next, I set the background to the desired color. In my case, it's pure black. Th
 
 The last setup step is to clear any objects added from the last time the script was run with the `clear_collection()` function.
 
-![set-up-scene](./images/set-up-scene.png)
+![](./images/set-up-scene.png){fig-align="center"}
 
 
 
@@ -86,7 +88,7 @@ The last setup step is to clear any objects added from the last time the script 
 
 Cameras can be added using the `bpy.ops.object.camera_add()` method. I then positioned the camera using the wrapper functions I defined earlier.
 
-![create_camera](./images/create-camera.png)
+![](./images/create-camera.png){fig-align="center"}
 
 
 
@@ -104,7 +106,7 @@ Next, I remove the default `Principled_BSDF` node as well as any `Emission` node
 
 The `Emission` node needs to be linked to the first slot in the `Material Output` node. Nodes are linked using the `material.node_tree.links.new()` method.
 
-![create-emission-material](./images/create-emission-material.png)
+![](./images/create-emission-material.png){fig-align="center"}
 
 
 
@@ -114,7 +116,7 @@ The motion graphic is made of two triangles with one being a duplicate of the ot
 
 I then assign the previously created material to the cone. Materials can be added to an object with `object.data.materials.append(material)`.
 
-![create-cone](./images/create-cone.png)
+![](./images/create-cone.png){fig-align="center"}
 
 
 
@@ -130,7 +132,7 @@ The mesh then needs to be updated with these alterations using `bm.to_mesh(mesh)
 
 Finally, I reset the origin of the triangle with `bpy.ops.object.origin_set()`.
 
-![cone-to-triangle](./images/cone-to-triangle-2.png)
+![](./images/cone-to-triangle-2.png){fig-align="center"}
 
 
 
@@ -138,7 +140,7 @@ Finally, I reset the origin of the triangle with `bpy.ops.object.origin_set()`.
 
 We can make the second triangle with `bpy.ops.object.duplicate()`.
 
-![duplicate-triangle](./images/duplicate-triangle_2.png)
+![](./images/duplicate-triangle_2.png){fig-align="center"}
 
 
 
@@ -146,7 +148,7 @@ We can make the second triangle with `bpy.ops.object.duplicate()`.
 
 We need to add a `Holdout` material to the second triangle so we can see through anything behind it. The process is the same as adding the `Emission` shader.
 
-![create-holdout-material](./images/create-holdout-material.png)
+![](./images/create-holdout-material.png){fig-align="center"}
 
 
 
@@ -156,7 +158,7 @@ Before adding the keyframes, I set the render frame rate as well the start and e
 
 The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` and `bpy.data.scenes['Scene'].frame_end` respectively. 
 
-![set-up-animation](./images/set-up-animation_2.png)
+![](./images/set-up-animation_2.png){fig-align="center"}
 
 
 
@@ -164,7 +166,7 @@ The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` an
 
 We only need to animate the rotation and scale for the x-ray triangle.
 
-![add-keyframes](./images/add-keyframes_2.png)
+![](./images/add-keyframes_2.png){fig-align="center"}
 
 
 

@@ -34,7 +34,7 @@ aliases:
 
 I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZcFk-dZA&list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&index=11) from YouTube to practice using the Blender Python API. This post goes through the code I came up with to replicate the tutorial plus some small additions.
 
-![shape_key_mg](./images/shape_key_mg_2.gif)
+![](./images/shape_key_mg_2.gif){fig-align="center"}
 
 
 
@@ -42,7 +42,7 @@ I decided to recreate this [short tutorial](https://www.youtube.com/watch?v=N3FZ
 
 The only dependencies strictly required for this tutorial are `bpy` and `bmesh`. The `bpy` package is the base API for Blender and the `bmesh` module provides access to Blender's internal mesh editing API. I also used the `math` module from the Python Standard Library for one of my helper functions. 
 
-![import-dependencies](./images/import-dependencies.png)
+![](./images/import-dependencies.png){fig-align="center"}
 
 
 
@@ -62,7 +62,7 @@ I also made a function to empty the default collection so that nothing gets dupl
 
 Lastly, I made a function to easily add sequences of keyframes to a given object. The function uses the built-in `setattr()` method to set the desired value for the target object and uses the `object.keyframe_insert()` method to add the keyframe. 
 
-![define-helper-functions](./images/define-helper-functions_2.png)
+![](./images/define-helper-functions_2.png){fig-align="center"}
 
 
 
@@ -74,7 +74,7 @@ Next, I set the background to the desired color. In my case, it's pure black. Th
 
 The last setup step is to clear any objects added from the last time the script was run with the `clear_collection()` function.
 
-![set-up-scene](./images/set-up-scene.png)
+![](./images/set-up-scene.png){fig-align="center"}
 
 
 
@@ -82,7 +82,7 @@ The last setup step is to clear any objects added from the last time the script 
 
 Cameras can be added using the `bpy.ops.object.camera_add()` method. I then positioned the camera using the wrapper functions I defined earlier.
 
-![create-camera](./images/create-camera.png)
+![](./images/create-camera.png){fig-align="center"}
 
 
 
@@ -100,7 +100,7 @@ Next, I remove the default `Principled_BSDF` node as well as any `Emission` node
 
 The `Emission` node needs to be linked to the first slot in the `Material Output` node. Nodes are linked using the `material.node_tree.links.new()` method.
 
-![create-emission-material](./images/create-emission-material.png)
+![](./images/create-emission-material.png){fig-align="center"}
 
 
 
@@ -110,7 +110,7 @@ The object in the above motion graphic is a plain. Plains can be added using the
 
 I then assign the previously created material to the plane. Materials can be added to an object with `object.data.materials.append(material)`.
 
-![create-plane](./images/create-plane.png)
+![](./images/create-plane.png){fig-align="center"}
 
 
 
@@ -126,7 +126,7 @@ We can make the square by adding a new inset to the plane using the `bmesh.ops.i
 
 The mesh then needs to be updated with these alterations using `bm.to_mesh(mesh)`. Finally, we need to free the BMesh representation we created with `bm.free()`.
 
-![cut-out-center-square](./images/cut-out-center-square_2.png)
+![](./images/cut-out-center-square_2.png){fig-align="center"}
 
 
 
@@ -144,13 +144,13 @@ After freeing the BMesh representation, we can enter object mode with `bpy.ops.o
 
 #### First Shape Key
 
-![add-shape-keys](./images/add-shape-key-1v2.png)
+![](./images/add-shape-key-1v2.png){fig-align="center"}
 
 ### Second Shape Key
 
 The process for the second shape key is identical except it only moves two of the inner vertices.
 
-![add-shape-key-2](./images/add-shape-key-2v2.png)
+![](./images/add-shape-key-2v2.png){fig-align="center"}
 
 
 
@@ -160,7 +160,7 @@ Before adding the keyframes, I set the render frame rate as well the start and e
 
 The start and end frames are stored in `bpy.data.scenes['Scene'].frame_start` and `bpy.data.scenes['Scene'].frame_end` respectively. 
 
-![set-up-animation](./images/set-up-animation_2.png)
+![](./images/set-up-animation_2.png){fig-align="center"}
 
 
 
@@ -170,21 +170,21 @@ The shape keys for the plane are stored in `bpy.context.selected_objects[0].data
 
 #### First Shape Key
 
-![add-keyframes-first-shape-key](./images/add-keyframes-first-shape-key.png)
+![](./images/add-keyframes-first-shape-key.png){fig-align="center"}
 
 #### Second Shape Key
 
-![add-keyframes-second-shape-key](./images/add-keyframes-second-shape-key.png)
+![](./images/add-keyframes-second-shape-key.png){fig-align="center"}
 
 ### Plane Rotation
 
-![add-keyframes-plane](./images/add-keyframes-plane.png)
+![](./images/add-keyframes-plane.png){fig-align="center"}
 
 ### Material Color
 
 The color for the Emision shader can be accessed at `material.node_tree.nodes["Emission"].inputs["Color"].default_value`.
 
-![add-keyframes-color](./images/add-keyframes-color.png)
+![](./images/add-keyframes-color.png){fig-align="center"}
 
 
 

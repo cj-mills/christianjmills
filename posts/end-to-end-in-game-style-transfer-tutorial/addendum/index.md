@@ -60,11 +60,11 @@ Now we just need to updated our Unity project to support the new model. Unlike t
 
 The only thing we need to add to the Unity project are some new image processing functions in the `ComputeShader` we made in [Part 3](../part-3/#create-compute-shader). This time, we need to remap the RGB values from `[0,1]` to `[-1,1]` instead of `[0,255]`. You can either swap out the code for the existing processing functions or make new ones like in the image below.
 
-![unity-updated-compute-shader](./images/unity-updated-compute-shader.png)
+![](./images/unity-updated-compute-shader.png){fig-align="center"}
 
 If you make new functions, be sure to replace the function names in the `StyleTransfer.cs` script.
 
-![unity-update-styleTransfer-script](./images/unity-update-styleTransfer-script.png)
+![](./images/unity-update-styleTransfer-script.png){fig-align="center"}
 
 
 
@@ -76,7 +76,7 @@ Download the ONNX file from your Google Drive just like in [Part 3](../part-3/#d
 
 Now we just need to assign the ONNX file to the `modelAsset` variable in the `Inspector` tab. This model is less efficient than the one used earlier in this series so we'll lower the `targetHeight` as well.
 
-![unity-inspector-add-video-final](./images/unity-inspector-add-video-final.png)
+![](./images/unity-inspector-add-video-final.png){fig-align="center"}
 
 
 
@@ -84,7 +84,7 @@ Now we just need to assign the ONNX file to the `modelAsset` variable in the `In
 
 You'll probably notice that this model doesn't preserve as much fine detail as the other model. This is because I had to significantly reduce the size of the model to get playable frame rates. The full size model is able to preserve much more detail, but is too large to get playable frame rates on any modern graphics card. Additionally, the model doesn't completely get rid of the flickering effect.
 
-![unity-video-style-transfer-screenshot](./images/unity-video-style-transfer-screenshot.jpg)
+![](./images/unity-video-style-transfer-screenshot.jpg)
 
  
 

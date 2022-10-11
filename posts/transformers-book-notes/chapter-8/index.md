@@ -1068,6 +1068,7 @@ for _ in range(3):
 ```
 
 **Note:** 
+
 * There is a notable spread in the latencies, so we should collect the latencies over many runs to calculate the mean and standard deviation.
 * The latency depends on the query length, and it is good practice to benchmark using queries the models are likely to encounter in production. 
 
@@ -1142,27 +1143,33 @@ perf_metrics = pb.run_benchmark()
 * The goal is to train the student to distill some of this "dark knowledge" learned by the teacher.
 * This "dark knowledge" is not available from the labels alone.
 * We feed an input sequence $x$ to the teacher to generate a vector of logits $z(x) = \left[ z_{1}(x),\ldots,z_{N}(x) \right]$ and convert these logits into probabilities using the softmax function.
+
 ### $$\frac{exp \left( z_{i}(x) \right)}{\sum_{j}{exp \left( z_{i}(x) \right)}}$$
 * The teacher will often assign a high probability to one class, with all other class probabilities close to zero, providing little additional information beyond the ground truth labels.
 * We can "soften" the probabilities by scaling the logits with a temperature hyperparameter $T$ before applying the softmax.
+
 ### $$p_{i}(x) = \frac{exp \left( \frac{ z_{i}(x) }{T} \right)}{\sum_{j}{exp \left( \frac{ z_{i}(x) }{T} \right)}}$$
 * Higher temperature values produce a softer probability distribution over the classes and reveal much more information about the decision boundary learned by the teacher for each example.
     * When T = 1, we get the original softmax distribution. 
 * We can use the [Kullback-Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) to measure the difference between the teacher's probability distribution and the student's probability distribution.
+
 ### $$D_{KL}(p,q) = \sum_{i}{p_{i}(x)\log{\frac{p_{i}(x)}{q_{i}(x)}}}$$
 * With the KL divergence, we can calculate how much is lost when we approximate the probability distribution of the teacher with the student.
 * **Kowledge Distillation Loss:**
+
 ### $$L_{KD} = T^{2}D_{KL}$$
 * $T_{2}$ is the normalization factor to account for the magnitude of the gradients produced by the soft labels scaling as $1/T^{2}$.
 
 * For classification tasks, the student loss is a weighted average of the distillation loss with the usual cross-entropy loss $L_{CE}$ of the ground truth labels.
+
 ### $$L_{student} = \alpha L_{CE} \ + \left( 1 - \alpha \right)L_{KD}$$
 * $\alpha$ is a hyperparameter that controls the relative strength of each loss.
 
 ### Knowledge Distillation for Pretraining
 * We can use knowledge distillation during pretraining to create a general-purpose student that we subsequently fine-tune on downstream tasks.
 * The teacher is a pretrained language model like BERT, which transfers its knowledge about masked-language modeling to the student.
-* For DistilBERT, we augment the masked language modeling loss $L_{mlm}$ with a term from knowledge distillation and a cosine embedding loss $L_{cos} = 1 \ - \ \cos \left( h_{s},h_{t} \right)$ to align the directions of the hidden state vectors between the teacher and student.
+* For DistilBERT, we augment the masked language modeling loss $L_{mlm}$ with a term from knowledge distillation and a cosine embedding loss $L_{cos} = 1 \ - \ \cos \left( h_{s},h_{t} \right)$ to align the directions of the hidden state vectors between the teacher and student.\
+
 ### $$L_{DistilBERT} = \alpha L_{mlm} \ + \ \beta L_{KD} \ + \ y \ Loss_{cos}$$
 
 ### Creating a Knowledge Distillation Trainer
@@ -1199,6 +1206,7 @@ class DistillationTrainingArguments(TrainingArguments):
 
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html)
 * Compute the Kullback-Leibler divergence loss.
+
 ### $$L(y_{\text{pred}},\ y_{\text{true}}) = y_{\text{true}} \cdot \log \frac{y_{\text{true}}}{y_{\text{pred}}} = y_{\text{true}} \cdot (\log y_{\text{true}} - \log y_{\text{pred}})$$
 * where $y_{\text{pred}}$ is the input and $y_{\text{true}}$ is the target
 
@@ -1594,7 +1602,7 @@ def plot_metrics(perf_metrics, current_optim_type):
     
 plot_metrics(perf_metrics, optim_type)
 ```
-![png](./images/output_108_0.png)
+![](./images/output_108_0.png){fig-align="center"}
 
 **Note:** The student is twice as fast and nearly as accurate.
 
@@ -1644,7 +1652,7 @@ plt.show()
 ```
 
 
-![png](./images/output_115_0.png)
+![](./images/output_115_0.png){fig-align="center"}
 
 **Note:** In Optuna, we can find the minimum of the $f(x,y)$ function by defining an `objective()` function that returns the value of the $f(x,y)$.
 
@@ -1713,7 +1721,7 @@ ax.set_xlim(-1.3, 1.3)
 ax.set_ylim(-0.9, 1.7)
 plt.show()
 ```
-![png](./images/output_125_0.png)
+![](./images/output_125_0.png){fig-align="center"}
 
 **Note:** Optuna managed to find values for x and y that are reasonably close to the global minimum.
 
@@ -1941,7 +1949,7 @@ perf_metrics.update(pb.run_benchmark())
 ```python
 plot_metrics(perf_metrics, optim_type)
 ```
-![png](./images/output_153_0.png)
+![](./images/output_153_0.png){fig-align="center"}
 
 
 **Note:** 
@@ -1974,6 +1982,7 @@ plot_metrics(perf_metrics, optim_type)
 * Reducing the number of bits means the model requires less memory, and operations like matrix multiplication are much faster with integer arithmetic.
 * We can quantize models with little to no impact on accuracy.
 * We "discretize" the floating-point values $f$ in each tensor by mapping their range $\left[ f_{max}, f_{min} \right]$ into a smaller one $\left[ q_{max}, q_{min} \right]$ of fixed-point numbers $q$ and linearly distributing all tensor values in between.
+
 ### $$f = \left( \frac{f_{max} - f_{min}}{q_{max} - q_{min}} \right)(q-Z) = S(q-Z)$$
 * where $S$ is a positive floatin-point number and the constant $Z$ has the same type as $q$ and is called the zero point becaue it corresponds to the quentized value of the floating-point value $f=0$
 
@@ -1989,7 +1998,7 @@ weights = state_dict["distilbert.transformer.layer.0.attention.out_lin.weight"]
 plt.hist(weights.flatten().numpy(), bins=250, range=(-0.3,0.3), edgecolor="C0")
 plt.show()
 ```
-![png](./images/output_158_0.png)
+![](./images/output_158_0.png){fig-align="center"}
 
 
 **Note:** The weight values fall in the range $\left[ -0.1, 0.1 \right]$ around zero.
@@ -2092,7 +2101,7 @@ axins.axes.yaxis.set_visible(False)
 mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
 plt.show()
 ```
-![png](./images/output_171_0.png)
+![](./images/output_171_0.png){fig-align="center"}
 
 ------
 
@@ -2242,7 +2251,7 @@ perf_metrics.update(pb.run_benchmark())
 ```python
 plot_metrics(perf_metrics, optim_type)
 ```
-![png](./images/output_191_0.png)
+![](./images/output_191_0.png){fig-align="center"}
 
 
 **Note:** The quantized model is nearly half the size of the distilled model and gained a slight accuracy boost.
@@ -2504,7 +2513,7 @@ perf_metrics.update(pb.run_benchmark())
 ```python
 plot_metrics(perf_metrics, optim_type)
 ```
-![png](./images/output_226_0.png)
+![](./images/output_226_0.png){fig-align="center"}
 
 **Note:** Converting the distilled model to ONNX format decreased latency.
 
@@ -2596,7 +2605,7 @@ perf_metrics.update(pb.run_benchmark())
 ```python
 plot_metrics(perf_metrics, optim_type)
 ```
-![png](./images/output_234_0.png)
+![](./images/output_234_0.png){fig-align="center"}
 
 
 **Note:** 
@@ -2621,10 +2630,12 @@ plot_metrics(perf_metrics, optim_type)
 
 ### Weight Pruning Methods
 * Most weight pruning methods calculate a matrix $S$ of importance scores and select the top $k$ percent of weights by importance.
+
 ### $$Top_{k}(S)_{ij} = 1 \text{ if } S_{ij} \text{ in top k percent else } 0$$
 * $k$ acts as a new hyperparameter to control the amount of sparsity in the model.
 * Lower values of k correspond to sparser matrices.
 * We can use these scores to define a mask matrix $M$ that masks weights $W_{ik}$ during the forward pass with some input and effectively creates a sparse network of activations $a_{i}$.
+
 ### $$a_{i} = \sum_{k}{W_{ik}M_{ik}x_{k}}$$
 
 #### Questions to consider
@@ -2671,7 +2682,7 @@ ax.set_ylabel("Sparsity")
 plt.grid(linestyle="dashed")
 plt.show()
 ```
-![png](./images/output_240_0.png)
+![](./images/output_240_0.png){fig-align="center"}
 
 ------
 
@@ -2696,6 +2707,12 @@ plt.show()
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
 
 
+
+
+
+**Previous:** [Notes on Transformers Book Ch. 7](../chapter-7/)
+
+**Next:** [Notes on Transformers Book Ch. 9](../chapter-9/)
 
 
 

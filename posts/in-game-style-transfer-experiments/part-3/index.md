@@ -45,11 +45,11 @@ I kept the number and types of layers in the model the same but reduced the size
 
 ### Original Model
 
-![TransformerNet_original](./images/TransformerNet_original.png)
+![](./images/TransformerNet_original.png){fig-align="center"}
 
 ### Smaller Model
 
-![TransformerNet_v3](./images/TransformerNet_v3.png)
+![](./images/TransformerNet_v3.png){fig-align="center"}
 
 I was able to reduce the size of the model from 6.5MB to less than 600KB without any significant visual changes in the output. Frame rates improved significantly compared to the original model at a given resolution. The performance gap narrows as the resolution increases, but frame rates for the smaller model are approximately 2x higher than the original. You can see comparisons of output quality and frame rates at different resolutions below.
 
@@ -57,15 +57,15 @@ I was able to reduce the size of the model from 6.5MB to less than 600KB without
 
 #### Original Model
 
-![mosaic_original](./images/mosaic_original.png)
+![](./images/mosaic_original.png){fig-align="center"}
 
-![mosaic_stats](./images/mosaic_stats.gif)
+![](./images/mosaic_stats.gif){fig-align="center"}
 
 #### Smaller Model
 
-![mosaic_small_v3](./images/mosaic_small_v3.png)
+![](./images/mosaic_small_v3.png){fig-align="center"}
 
-![mosaic_small_v3_stats](./images/mosaic_small_v3_stats.gif)
+![](./images/mosaic_small_v3_stats.gif){fig-align="center"}
 
 
 
@@ -73,31 +73,31 @@ I was able to reduce the size of the model from 6.5MB to less than 600KB without
 
 #### Original Model
 
-![mosaic_original_1280x720](./images/mosaic_original_1280x720.png)
+![](./images/mosaic_original_1280x720.png){fig-align="center"}
 
 
 
-![mosaic_original_1280x720_stats](./images/mosaic_original_1280x720_stats.gif)
+![](./images/mosaic_original_1280x720_stats.gif){fig-align="center"}
 
 #### Smaller Model
 
-![mosaic_small_1280x720](./images/mosaic_small_1280x720.png)
+![](./images/mosaic_small_1280x720.png){fig-align="center"}
 
-![mosaic_small_1280x720_stats](./images/mosaic_small_1280x720_stats.gif)
+![](./images/mosaic_small_1280x720_stats.gif){fig-align="center"}
 
 ### Resolution: 1920 x 1080
 
 #### Original Model
 
-![mosaic_original_1920x1080](./images/mosaic_original_1920x1080.png)
+![](./images/mosaic_original_1920x1080.png){fig-align="center"}
 
-![mosaic_original_1920x1080_stats](./images/mosaic_original_1920x1080_stats.gif)
+![](./images/mosaic_original_1920x1080_stats.gif){fig-align="center"}
 
 #### Smaller Model
 
-![mosaic_small_1920x1080](./images/mosaic_small_1920x1080.png)
+![](./images/mosaic_small_1920x1080.png){fig-align="center"}
 
-![mosaic_small_1920x1080_stats](./images/mosaic_small_1920x1080_stats.gif)
+![](./images/mosaic_small_1920x1080_stats.gif){fig-align="center"}
 
 
 

@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This post covers how to create pose skeletons and manipulate them using
-  output from the model.
+description: Create pose skeletons and manipulate them using output from a PoseNet model.
 categories: [unity, barracuda, tutorial]
 
 aliases:
@@ -67,11 +66,11 @@ The number of key point predicted by the model will not change, so we will store
 
 Much like the `parentChildrenTuples` variable in the `Utils` script, we will create a `Tuple` array to keep track of which key points should be connected by lines. We could actually just use the pairs from `parentChildrenTuples`, but the skeleton would look a bit weird.
 
-![parentChildrenTuples-skeleton](./images/parentChildrenTuples-skeleton.png)
+![](./images/parentChildrenTuples-skeleton.png){fig-align="center"}
 
 Instead, we will make a pose skeleton that looks like this.
 
-![jointPairs-skeleton](./images/jointPairs-skeleton.png)
+![](./images/jointPairs-skeleton.png){fig-align="center"}
 
 
 

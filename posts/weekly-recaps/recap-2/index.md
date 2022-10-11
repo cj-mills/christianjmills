@@ -23,11 +23,11 @@ I started planning out how I want to structure the tutorial. I want to provide a
 
 #### 360p
 
-![mosaic_360p](./images/mosaic_360p.png)
+![](./images/mosaic_360p.png){fig-align="center"}
 
 #### 1440p
 
-![mosaic_1440p](./images/mosaic_1440p.png)
+![](./images/mosaic_1440p.png){fig-align="center"}
 
 I also got a bit sidetracked experimenting with customized model architectures. I still haven't found a model that consistently generates superior results across different styles.
 
@@ -57,7 +57,7 @@ I'm finally catching up on episodes of the Gradient Descent podcast. This episod
 
 #### [PolyGen: An Autoregressive Generative Model of 3D Meshes](https://github.com/deepmind/deepmind-research/tree/master/polygen)
 
-<img src="https://raw.githubusercontent.com/deepmind/deepmind-research/master/polygen/media/example_samples.png" style="zoom:67%;" />
+![](https://raw.githubusercontent.com/deepmind/deepmind-research/master/polygen/media/example_samples.png){fig-align="center"}
 
 I learned about this project from the above podcast episode. I haven't tried it yet, but I'm interested in where these types of models are heading.
 
@@ -77,7 +77,7 @@ One of the reasons, I started this blog was to practice [learning in public](htt
 
 #### [Illustrated Essays by Maggie Appleton](https://maggieappleton.com/essays)
 
-[<img src="https://res.cloudinary.com/dg3gyk0gu/image/upload/c_scale,f_auto,q_100,w_1200/v1594114495/maggieappleton.com/databases-101/DB_2.jpg" style="zoom: 50%;" />](https://maggieappleton.com/databases)
+![](https://res.cloudinary.com/dg3gyk0gu/image/upload/c_scale,f_auto,q_100,w_1200/v1594114495/maggieappleton.com/databases-101/DB_2.jpg){fig-align="center"}
 
 I learned about this site from the previous link. I like this idea of using illustrated essays to help build intuition for abstract concepts. It's like the learning apps above but requires less compute power. I haven't done any in-depth explanations yet, but I might try this format when I do. I'm curious how difficult it would be to make an application that helps students build their own visual metaphors for abstract concepts.
 

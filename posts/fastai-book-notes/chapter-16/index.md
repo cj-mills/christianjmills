@@ -166,7 +166,7 @@ learn.lr_find()
 SuggestedLRs(valley=0.004365158267319202)
 ```
 
-![png](./images/output_12_3.png)
+![](./images/output_12_3.png){fig-align="center"}
 
 -----
 
@@ -425,10 +425,11 @@ for beta,ax in zip(betas, axs.flatten()):
     ax.plot(x1[idx],np.array(res), color='red');
     ax.set_title(f'beta={beta}')
 ```
-![png](./images/output_25_0.png)
+![](./images/output_25_0.png){fig-align="center"}
 
 
 **Note:** A beta value that is too high causes the overall changes in the gradient to be ignored.
+
 * A beta value of 0.9 is often used for SGD with Momentum
 * `fit_one_cycle` starts with a beta value of 0.95, gradually adjusts to 0.85, then gradually moves back to 0.95
 
@@ -613,7 +614,7 @@ learn.fit_one_cycle(3, 0.03)
 ```python
 learn.recorder.plot_sched()
 ```
-![png](./images/output_33_0.png)
+![](./images/output_33_0.png){fig-align="center"}
 
 
 ## RMSProp

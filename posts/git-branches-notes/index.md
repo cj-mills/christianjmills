@@ -14,6 +14,7 @@ toc: false
 
 ---
 
+
 * [Overview](#overview)
 * [The HEAD Branch](#the-head-branch)
 * [Local and Remote Branches](#local-and-remote-branches)

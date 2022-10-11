@@ -29,11 +29,11 @@ I tried following a couple basic motion graphic tutorials for Blender using only
 
 ### [Shape-Key Motion Graphic Loading Icon in Blender 2.9 Eevee - Tutorial](https://www.youtube.com/watch?v=N3FZcFk-dZA&list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&index=10)
 
-![shape_key_mg](./images/shape_key_mg.gif)
+![](./images/shape_key_mg.gif){fig-align="center"}
 
 ### [Triangle Motion Graphic Animation - Blender 2.9 Eevee Tutorial](https://www.youtube.com/watch?v=xeH41Tz1zGI&list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&index=21)
 
-[![triangle_mg](./images/triangle_mg.gif)](https://www.youtube.com/watch?v=xeH41Tz1zGI&list=PLGKIkAXk1OeTti1rRVTJF_9_JCC3zY0bh&index=21)
+![](./images/triangle_mg.gif){fig-align="center"}
 
 Figuring out how to add shader nodes to materials was a bit of a pain. I didn't realize that the names for the nodes were different than what gets displayed in the UI. For example, an `Emission` node is actually called `ShaderNodeEmission`. Unlike basically everything else, the Python tooltips did not indicate that. I also learned that you need to manually link new shaders to the material. I'll probably make separate posts going through the code after I clean it up.
 

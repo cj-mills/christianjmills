@@ -545,16 +545,20 @@ for model_name in summaries:
 * We only count a word as many times as it occurs in the reference text.
 * BLEU is a popular metric for tasks like machine translation where precision takes priority. 
 * Given one generated sentence, $snt$, that we to compare against a reference sentence, $snt^{\prime}$, we extract all possible n-grams of degree $n$ and do the accounting to get the precision $P_{n}$.
+
 ### $$P_{n} = \frac{\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}$$
 * We clip the occurrence count of an n-gram at how many times it appears in the reference sentence to avoid repetitive generations.
 * We sum over all the examples in the corpus $C$.
+
 ### $$P_{n} = \frac{\sum_{snt \ \in \ C}\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}$$
 * The precision score favors short sentences.
 * The authors of BLEU introduce a brevity penalty to account for this.
+
 ### $$BR = min \left(1,e^{\frac{1 - \ell_{ref}}{\ell_{gen}}} \right)$$
 * By taking the minimum, we ensure that this penalty never exceeds $1$, and the exponential term becomes exponentially small when the length of the generated text is smaller than the reference text.
 * We don't use recall because it would incentivize translations that used all the words from all reference texts.
 * The equation for the BLEU score:
+
 ### $$\text{BLEU-N} = BR \times \left( \prod^{N}_{n=1}{P_{n}} \right)^{\frac{1}{N}}$$
 * The last term is the geometric mean of the modified precision up to n-gram $N$.
 * The BLEU score does not account for synonyms and uses fragile heuristics.
@@ -772,10 +776,12 @@ pd.DataFrame.from_dict(results, orient="index", columns=["Value"])
 * [ROUGE: A Package for Automatic Evaluation of Summaries](https://aclanthology.org/W04-1013.pdf)
 * The ROUGE score targets applications like summarization, where high recall is more important than precision alone.
 * We check how many n-grams in the reference text also occur in the generated text.
+
 ### $$\text{ROUGE-N} = \frac{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count_{match}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}$$
 * There is a separate score to measure the longest common substring (LCS) called ROUGE-L.
 * We can calculate the LCS for any pair of strings.
 * We need to normalize the LCS value when comparing two samples of different lengths.
+
 ### $$F_{LCS} = \frac{\left( 1 + \beta^{2} \right)R_{LCS}P_{LCS}}{R_{LCS} + \beta P_{LCS}} \text{, where } \beta = \frac{P_{LCS}}{R_{LCS}}$$
 * The Hugging Face Datasets implementation calculates two variants of ROUGE.
 * ROUGE-L calculates the score per sentence and averages it for the summaries.
@@ -1202,6 +1208,7 @@ print(pipe_out[0]["summary_text"].replace(" .<n>", ".\n"))
 ```
 
 **Note:** 
+
 * The model tries to summarize by extracting the key sentences from the dialogue.
 * The summaries in SAMSum are more abstract.
 
@@ -1290,10 +1297,10 @@ axes[1].set_xlabel("Length")
 plt.tight_layout()
 plt.show()
 ```
-![png](./images/output_144_0.png)
-
+![](./images/output_144_0.png){fig-align="center"}
 
 **Note:**
+
 * Most dialogues are shorter than the CNN/DailyMail articles, with 100-200 tokens per dialogue.
 * The summaries are also much short, with around 20-40 tokens.
 
@@ -1817,6 +1824,12 @@ print(pipe(custom_dialogue, **gen_kwargs)[0]["summary_text"])
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
+
+
+
+**Previous:** [Notes on Transformers Book Ch. 5](../chapter-5/)
+
+**Next:** [Notes on Transformers Book Ch. 7](../chapter-7/)
 
 
 

@@ -62,7 +62,7 @@ We'll be performing [inference](https://www.intel.com/content/www/us/en/artifici
 
 First, we need to create a new Unity project. We'll select the 2D template since the PoseNet model only estimates 2D poses.
 
-![create_project](./images/create_project.PNG)
+![](./images/create_project.PNG){fig-align="center"}
 
 ## Import Video Files
 
@@ -80,7 +80,7 @@ We'll be using these two videos available on [Pexels](https://www.pexels.com/), 
 
 In the `Assets` window, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`.
 
-![create_folder](./images/create_folder.PNG)
+![](./images/create_folder.PNG){fig-align="center"}
 
 Double-click the `Videos` folder to open it.
 
@@ -88,7 +88,7 @@ Double-click the `Videos` folder to open it.
 
 Drag and drop the two video files from the file explorer into the `Videos` folder.
 
-![video_file_assets](./images/video_file_assets.PNG)
+![](./images/video_file_assets.PNG){fig-align="center"}
 
 
 
@@ -96,19 +96,19 @@ Drag and drop the two video files from the file explorer into the `Videos` folde
 
 In the `Hierarchy` tab, right-click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`. The default name works well enough so we'll leave it as is.
 
-![create_video_player](./images/create_video_player.PNG)
+![](./images/create_video_player.PNG){fig-align="center"}
 
 ### Set Video Clip
 
 Select the `Video Player` object in the `Hierarchy` tab. Then, drag and drop the `pexels_boardslides` file into the `Video Clip` parameter in the `Inspector` tab.
 
-![video_clip_filled](./images/video_clip_filled.png)
+![](./images/video_clip_filled.png){fig-align="center"}
 
 ### Make the Video Loop
 
 Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when the project is running.
 
-![loop_video_checkbox](./images/loop_video_checkbox.png)
+![](./images/loop_video_checkbox.png){fig-align="center"}
 
 
 
@@ -120,61 +120,61 @@ We need to make a "screen" in Unity to watch the video. We'll use a [`Render Tex
 
 Create a new folder in the `Assets` window and name it `Textures`.
 
-![textures_folder](./images/textures_folder.PNG)
+![](./images/textures_folder.PNG){fig-align="center"}
 
 Open the folder and right-click an empty space. Select `Render Texture` in the `Create` submenu and name it `video_texture`.
 
-![create_render_texture](./images/create_render_texture.PNG)
+![](./images/create_render_texture.PNG){fig-align="center"}
 
 ### Resize the Render Texture
 
 Select the `video_texture` asset and set the `Size` to `1920 x 1080` in the `Inspector` tab. This will match the `video_texture` to the resolution of our videos.
 
-![rt_set_resolution](./images/rt_set_resolution.png)
+![](./images/rt_set_resolution.png){fig-align="center"}
 
 ### Assign the Render Texture
 
 With the resolution set, select the `Video Player` object in the `Hierarchy` tab again. Drag and drop the `video_texture` object into the `Target Texture` parameter in the `Inspector` tab.
 
-![target_texture_filled](./images/target_texture_filled.png)
+![](./images/target_texture_filled.png){fig-align="center"}
 
 ### Create the Screen GameObject
 
 Now, we need to create the screen itself. We'll use a [`Quad`](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
 
-![create_quad](./images/create_quad.PNG)
+![](./images/create_quad.PNG){fig-align="center"}
 
 ### Resize the Screen
 
 With the `VideoScreen` object selected, we need to adjust the `Scale` parameter in the `Inspector` tab. Set the `X` value to 1920 and the `Y` value to 1080. Leave the `Z` value at 1.
 
-![quad_scale_set](./images/quad_scale_set.png)
+![](./images/quad_scale_set.png){fig-align="center"}
 
 ### Set the Screen Position
 
 Next, we'll move `VideoScreen` to make things easier when processing output from the model. We want the bottom left corner to be at the origin. Set the `X` value for `Position` to half the `X` value for the `Scale` parameter. Do the same for the `Y` value. The new `Position` values should be `X: 960 Y: 540 Z: 0`.
 
-![quad_position_set](./images/quad_position_set.png)
+![](./images/quad_position_set.png){fig-align="center"}
 
 ### Reset the Scene Perspective
 
 We should center our perspective on the `VideoScreen`. We can do so by selecting the `VideoScreen` object and pressing the `F` key on our keyboard. You can zoom back in by scrolling up with your mouse wheel.
 
-![recentered_video_screen](./images/recentered_video_screen.PNG)
+![](./images/recentered_video_screen.PNG){fig-align="center"}
 
 ### Apply the Render Texture to the Screen
 
 Drag and drop the `video_texture` asset onto the `VideoScreen` in the `Scene` tab. The `VideoScreen` object should turn completely black.
 
-![empty_screen](./images/empty_screen.PNG)
+![](./images/empty_screen.PNG){fig-align="center"}
 
 ### Make Video Screen Unlit
 
 With the `VideoScreen` object selected, click the `Shader` dropdown in the `Inspector` tab. Select the Unlit option and click `Texture`. This removes the need for a separate light source. The videos would look extremely dim with the `Standard` shader.
 
-![select_unlit_shader](./images/select_unlit_shader.PNG)
+![](./images/select_unlit_shader.PNG){fig-align="center"}
 
-![select_unlit_texture_shader](./images/select_unlit_texture_shader.PNG)
+![](./images/select_unlit_texture_shader.PNG){fig-align="center"}
 
 ## Camera Setup
 
@@ -184,23 +184,23 @@ Before playing the video, we need to reposition and resize the `Main Camera` obj
 
 Select the `Main Camera` object in the `Hierarchy` tab and set the `Position` to same `X: 960 Y: 540` as the `VideoScreen` object. Next, we need to set the `Z` value for the `Position` to the opposite of the `X` value.
 
-![set_main_camera_position](./images/set_main_camera_position_new.png)
+![](./images/set_main_camera_position_new.png){fig-align="center"}
 
 ### Resize the Camera
 
 Finally, we need to adjust the Size parameter to 540 in the `Inspector` tab.
 
-![set_camera_size_new](./images/set_camera_size_new.png)
+![](./images/set_camera_size_new.png){fig-align="center"}
 
 ## Test the Video Player
 
 Now we can finally click the play button and watch the video.
 
-![play_button](./images/play_button.png)
+![](./images/play_button.png){fig-align="center"}
 
 ### Result
 
-![barracuda_posenet_tutorial_420p](./images/barracuda_posenet_tutorial_420p.gif)
+![](./images/barracuda_posenet_tutorial_420p.gif){fig-align="center"}
 
 ## Summary
 

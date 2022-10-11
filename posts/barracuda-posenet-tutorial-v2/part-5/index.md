@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This post covers how to implement the post processing steps for single
-  pose estimation.
+description: Implement the post-processing steps for single pose estimation with PoseNet.
 categories: [unity, barracuda, tutorial]
 
 aliases:

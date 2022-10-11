@@ -77,7 +77,7 @@ First, we need to create a new Unity project. We can use the default 3D template
 
 > **Note:** There appears to currently be an issues with the 2D template where Barracuda does not work when the project is built.
 
-![create-project](./images/create-project.png)
+![](./images/create-project.png){fig-align="center"}
 
 
 
@@ -85,35 +85,35 @@ First, we need to create a new Unity project. We can use the default 3D template
 
 We will start by installing the Barracuda package. This will allow us to import the PoseNet models into the project. Open the `Window` menu at the top of the Unity Editor and select `Package Manager`.
 
-![open-package-manager](./images/open-package-manager.png)
+![](./images/open-package-manager.png){fig-align="center"}
 
 There might be a message in the console indicating that there is a new version of the Visual Studio Editor package. 
 
-![unity-update-visual-studio-editor-package-prompt](./images/unity-update-visual-studio-editor-package-prompt.png)
+![](./images/unity-update-visual-studio-editor-package-prompt.png){fig-align="center"}
 
 Feel free to update the package by selecting it in the Package Manager and clicking the `Update` button.
 
-![update-visual-studio-editor](./images/update-visual-studio-editor.png)
+![](./images/update-visual-studio-editor.png){fig-align="center"}
 
 We will be using version `2.1.0` of the Barracuda package. Unity has this version marked as preview, so we will need to enable preview packages to install it. Click the small gear icon and select the `Advanced Project Settings` option. 
 
-![package-manager-open-advanced-settings](./images/package-manager-open-advanced-settings.png)
+![](./images/package-manager-open-advanced-settings.png){fig-align="center"}
 
 Tick the `Enable Preview Packages` checkbox so that we can install the latest version of Barracuda.
 
-![package-manager-enable-preview-packages](./images/package-manager-enable-preview-packages.png)
+![](./images/package-manager-enable-preview-packages.png){fig-align="center"}
 
 A popup window will appear, warning us that preview packages might not be ready for production. However, the latest version of Barracuda contains bug fixes that are not present in the `Verified` version, so click `I understand` in the popup window.
 
-![package-manager-enable-preview-packages-popup](./images/package-manager-enable-preview-packages-popup.png)
+![](./images/package-manager-enable-preview-packages-popup.png){fig-align="center"}
 
 Even though there is a verified version of Barracuda, it is not available in the package manager by default. We need to either install a package that has it as a dependency (e.g. [ML Agents](https://unity.com/products/machine-learning-agents)) or add it directly with a git URL. Click on the `+` icon in the upper-left corner and select `Add package from git URL...`.
 
-![package-manager-add-git-package](./images/package-manager-add-git-package.png)
+![](./images/package-manager-add-git-package.png){fig-align="center"}
 
 Enter `com.unity.barracuda` into the search box and click `Add`. This will install the latest `Verified` version of the package. Unfortunately, there is a bug with this version that causes an error when performing inference on the CPU. This is resolved in later versions.
 
-![package-manager-add-barracuda-git-package](./images/package-manager-add-barracuda-git-package.png)
+![](./images/package-manager-add-barracuda-git-package.png){fig-align="center"}
 
 
 
@@ -132,19 +132,19 @@ Enter `com.unity.barracuda` into the search box and click `Add`. This will insta
 
 We can view more recent versions of the package by clicking `See other versions`.
 
-![barracuda-package-see-other-versions](./images/barracuda-package-see-other-versions.png)
+![](./images/barracuda-package-see-other-versions.png){fig-align="center"}
 
 Scroll all the way up to version `2.1.0-preview` and click the `Update to 2.1.0-preview` button in the bottom-right corner.
 
-![barracuda-select-latest-version](./images/barracuda-select-latest-version.png)
+![](./images/barracuda-select-latest-version.png){fig-align="center"}
 
 During the installation process a popup window will appear indicating that the version of the [Burst compiler](https://docs.unity3d.com/Packages/com.unity.burst@1.3/manual/index.html) has changed. Click OK to close the window. Once the installation process has finished, close Unity and then reopen the project.
 
-![burst-package-update-detected](./images/burst-package-update-detected.png)
+![](./images/burst-package-update-detected.png){fig-align="center"}
 
 Unity seems to be concerned that anyone who jumps through the multiple hoops to install a preview package might forget that they are indeed using a preview package. To eliminate this possibility, they have added a reminder at the top of the editor that can not be permanently removed.
 
-![unity-preview-packages-in-use-message](./images/unity-preview-packages-in-use-message.png)
+![](./images/unity-preview-packages-in-use-message.png){fig-align="center"}
 
 
 
@@ -164,13 +164,13 @@ We will be using these two videos available on [Pexels](https://www.pexels.com/)
 
 In the `Assets` section, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`. Double-click the `Videos` folder to open it.
 
-![unity-create-folder](./images/unity-create-folder.png)
+![](./images/unity-create-folder.png){fig-align="center"}
 
 
 
 Drag and drop the two video files from the File Explorer into the `Videos` folder.
 
-![unity-add-video-files](./images/unity-add-video-files.png)
+![](./images/unity-add-video-files.png){fig-align="center"}
 
 
 
@@ -189,7 +189,7 @@ The model files used in this tutorial series can be downloaded from the links be
 
 Back in the Assets section, create a new folder called `Models`. Drag and drop the ONNX files from the File Explorer into the `Models` folder.
 
-![unity-add-onnx-models](./images/unity-add-onnx-models.png)
+![](./images/unity-add-onnx-models.png){fig-align="center"}
 
 
 

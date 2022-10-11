@@ -44,15 +44,15 @@ In this part, we will walk through the steps needed to create a [Dynamic link li
 
 Open Visual Studio and select `Create a new project`.
 
-![visual_stuido_create_new_project](./images/visual_studio_create_new_project.png)
+![](./images/visual_studio_create_new_project.png){fig-align="center"}
 
 Type `DLL` into the search bar. Select the `Dynamic-Link Library (DLL)` option and press `Next`. 
 
-![visual_studio_select_dll_template](./images/visual_studio_select_dll_template.png)
+![](./images/visual_studio_select_dll_template.png){fig-align="center"}
 
 In the next window, we'll name the new project `OpenVINO_Plugin`. Take note of the `Location` the project will be saved to and click `Create`. The default location can be replaced, but we will need to access the project folder to get the generated DLL file.
 
-![visual_studio_select_create_OpenVINO_Plugin_project](./images/visual_studio_select_create_OpenVINO_Plugin_project.png)
+![](./images/visual_studio_select_create_OpenVINO_Plugin_project.png){fig-align="center"}
 
 
 
@@ -64,11 +64,11 @@ We need to update the default project configuration to access the OpenVINO™ To
 
 The OpenVINO™ Toolkit does not support `x86` builds. We will need to set the project to build for `x64`. At the top of the window, open the Solution Configurations dropdown menu, and select `Release`. 
 
-![visual_studio_set_solution_configuration](./images/visual_studio_set_solution_configuration.png)
+![](./images/visual_studio_set_solution_configuration.png){fig-align="center"}
 
 Then, open the `Solution Platform` dropdown menu and select `x64`.
 
-![visual_studio_set_solution_platform](./images/visual_studio_set_solution_platform.png)
+![](./images/visual_studio_set_solution_platform.png){fig-align="center"}
 
 
 
@@ -76,19 +76,19 @@ Then, open the `Solution Platform` dropdown menu and select `x64`.
 
 Visual Studio needs to be told where the OpenVINO™ Toolkit is located, so we can access its APIs. In the Solution Explorer panel, right-click the project name.
 
-![solutions_explorer_select_project_name](./images/solutions_explorer_select_project_name.png)
+![](./images/solutions_explorer_select_project_name.png){fig-align="center"}
 
 
 
 Select `Properties` in the popup menu.
 
-![solutions_explorer_open_properties](./images/solutions_explorer_open_properties.png)
+![](./images/solutions_explorer_open_properties.png){fig-align="center"}
 
 
 
 In the Properties Window, open the `C++` dropdown and click on `All Options`. Select the `Additional Include Directories` section and click on `<Edit..>` in the dropdown. 
 
-![properties_c++_all_options](./images/properties_c++_all_options.png)
+![](./images/properties_c++_all_options.png){fig-align="center"}
 
 We need to add the `include` directories for the OpenVINO inference engine and the [OpenCV](https://opencv.org/) libraries included with the OpenVINO™ Toolkit.
 
@@ -98,7 +98,7 @@ Add the following lines and then click `OK`. Feel free to open these folders in 
 
 * `C:\Program Files (x86)\Intel\openvino_2021.3.394\opencv\include`
 
-![add_additional_include_directories](./images/add_additional_include_directories.png)
+![](./images/add_additional_include_directories.png){fig-align="center"}
 
 
 
@@ -106,18 +106,18 @@ Add the following lines and then click `OK`. Feel free to open these folders in 
 
 Next, open the Linker dropdown in the Properties window and select All Options. Scroll up to the top of the All Options section and select `Additional Dependencies`. 
 
-![linker_additional_dependencies](./images/linker_additional_dependencies.png)
+![](./images/linker_additional_dependencies.png){fig-align="center"}
 
 Add the following lines for the OpenVINO and OpenCV libraries, then click `OK`. The `*` at the end tells Visual Studio to add all the `.lib` files contained in those folders. We do not technically need every single one, but this is more convenient than manually typing the specific file names.
 
 * `C:\Program Files (x86)\Intel\openvino_2021.3.394\deployment_tools\inference_engine\lib\intel64\Release\*`
 * `C:\Program Files (x86)\Intel\openvino_2021.3.394\opencv\lib\*`
 
-![linker_additional_dependencies_paths](./images/linker_additional_dependencies_paths.png)
+![](./images/linker_additional_dependencies_paths.png){fig-align="center"}
 
 Finally, click the `Apply` button and close the Properties window.
 
-![properties_apply](./images/properties_apply.png)
+![](./images/properties_apply.png){fig-align="center"}
 
 
 
@@ -491,7 +491,7 @@ When inference is complete, we can get read-only access to the output tensor wit
 
 Valid color values are in the range [0, 255]. However, the model might output values slightly outside of that range. We need to clamp the output values to this range. If we don't, the output in Unity will look like the image below where pixels near pure black or white are discolored.
 
-![output_without_color_clamp](./images/output_without_color_clamp.png)
+![](./images/output_without_color_clamp.png){fig-align="center"}
 
 We will perform this post processing step using the `std::vector<float> data_img` we declared earlier, before assigning the values back into `texture`.
 
@@ -562,11 +562,11 @@ Now that the code is complete, we just need to build the solution to generate th
 
 Open the `Build` menu at the top of the Visual Studio window and click `Build Solution`. This will generate a new `x64` folder in the project's directory. 
 
-![visual_studio_build_solution](./images/visual_studio_build_solution.png)
+![](./images/visual_studio_build_solution.png){fig-align="center"}
 
 Navigate to that folder in the File Explorer and open the `Release` child folder. Inside, you will find the `.dll` file along with a few other files that will not be needed.
 
-![visual_studio_dll_file_location](./images/visual_studio_dll_file_location.png)
+![](./images/visual_studio_dll_file_location.png){fig-align="center"}
 
 
 

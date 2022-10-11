@@ -25,7 +25,7 @@ Well I didn't actually have much time for anything other than homework today, bu
 
 I've started cleaning up the code for the small [motion graphics](https://christianjmills.com/Weekly-Recap-4/#working-with-the-blender-python-api) I made with the Blender Python API. The code was basically scratch paper so there was a lot to clean up. I found using arrays and for loops to set up a bunch of keyframes to be a lot easier. I'll try to make posts going through full code for both of the motion graphics this week.
 
-![add_keyframe_sequence](./images/add_keyframe_sequence.png)
+![](./images/add_keyframe_sequence.png){fig-align="center"}
 
 
 

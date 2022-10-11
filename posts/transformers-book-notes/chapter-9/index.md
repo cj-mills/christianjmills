@@ -964,7 +964,7 @@ plt.xlabel("Number of words")
 plt.ylabel("Number of issues")
 plt.show()
 ```
-![png](./images/output_52_0.png)
+![](./images/output_52_0.png){fig-align="center"}
 
 
 **Note:**
@@ -1486,10 +1486,12 @@ def plot_metrics(micro_scores, macro_scores, sample_sizes, current_model):
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes")
 ```
-![png](./images/output_96_0.png)
-
+![](./images/output_96_0.png){fig-align="center"}
 
 **Note:**
+
+
+
 * The number of samples is on a logarithmic scale.
 * The micro and macro F1 scores improve as the number of training samples increases.
 * The results are slightly noisy since each slice can have a different class distribution.
@@ -1528,6 +1530,7 @@ from transformers import pipeline
 pipe = pipeline("fill-mask", model="bert-base-uncased")
 pipe, type(pipe.model), pipe.device
 ```
+
 ```text
     (<transformers.pipelines.fill_mask.FillMaskPipeline at 0x7fd190bcd3a0>,
      transformers.models.bert.modeling_bert.BertForMaskedLM,
@@ -1660,15 +1663,14 @@ from transformers import pipeline
 
 **Create a zero-shot classification pipeline**
 
-
 ```python
 # Use GPU if available
 pipe = pipeline("zero-shot-classification", device=0, fp16=True)
 pipe, type(pipe.model), pipe.device
 ```
-```text    (<transformers.pipelines.zero_shot_classification.ZeroShotClassificationPipeline at 0x7fd189242d00>,
-     transformers.models.bart.modeling_bart.BartForSequenceClassification,
-     device(type='cuda', index=0))
+
+```text
+(<transformers.pipelines.zero_shot_classification.ZeroShotClassificationPipeline at 0x7fd189242d00>, transformers.models.bart.modeling_bart.BartForSequenceClassification, device(type='cuda', index=0))
 ```
 
 ------
@@ -1762,6 +1764,7 @@ for label, score in zip(output["labels"], output["scores"]):
 ```
 
 **Note:**
+
 * The model is confident the text is about a new model, but it also produces relatively high scores for labels not found in the text.
 * The highly technical domain of the text is very different from the original text distribution in the MNLI dataset.
 * We can feed input with code to the model since we use a subword tokenizer.
@@ -1851,7 +1854,7 @@ plt.ylabel("F1-score")
 plt.legend(loc='best')
 plt.show()
 ```
-![png](./images/output_140_0.png)
+![](./images/output_140_0.png){fig-align="center"}
 
 
 **Note:** We obtain the best results using only the highest score per example (i.e., top-1), given most examples only have one label.
@@ -1881,7 +1884,7 @@ plt.ylabel("F1-score")
 plt.legend(loc="best")
 plt.show()
 ```
-![png](./images/output_144_0.png)
+![](./images/output_144_0.png){fig-align="center"}
 
 **Note:** The threshold approach performs slightly worse than the top-1 approach.
 
@@ -1918,10 +1921,11 @@ for train_slice in train_slices:
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Zero Shot")
 ```
-![png](./images/output_150_0.png)
+![](./images/output_150_0.png){fig-align="center"}
 
 
 **Note:**
+
 * The zero-shot pipeline outperforms the baseline when using less than 60 labeled examples universally outperforms the baseline when considering both micro and macro F1 scores.
 * The baseline model performs better on the more common classes when using more than 60 examples.
 * The zero-shot classification pipeline is sensitive to the names of labels and might perform better when using different or several names in parallel and aggregating them.
@@ -2257,10 +2261,11 @@ for train_slice in train_slices:
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes + Aug")
 ```
-![png](./images/output_191_0.png)
+![](./images/output_191_0.png){fig-align="center"}
 
 
 **Note:**
+
 * A small amount of data augmentation improves the F1 score of the Naive Bayes Classifier.
 * The Naive Bayes Classifier overtakes the zero-shot pipeline for the macro F1 score at around 220 training samples.
 
@@ -2464,6 +2469,7 @@ for score, label, text in zip(scores, samples["labels"], samples["text"]):
 ```
 
 **Note:**
+
 * The three retrieved documents all have the same labels as they should.
 * The query and the retrieved documents all relate to adding new and efficient transformer models.
 
@@ -2533,10 +2539,11 @@ for ax in [ax0, ax1]:
     ax.set_xlabel("m")
 plt.show()
 ```
-![png](./images/output_222_0.png)
+![](./images/output_222_0.png){fig-align="center"}
 
 
 **Note:**
+
 * Choosing a threshold value $m$ that is too large or small for a given $k$ value yields suboptimal results.
 * A ratio of approximately $m/k = 1/3$ achieves the best results. 
 
@@ -2593,10 +2600,11 @@ for train_slice in train_slices:
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Embedding")
 ```
-![png](./images/output_230_0.png)
+![](./images/output_230_0.png){fig-align="center"}
 
 
 **Note:**
+
 * The embedding lookup is competitive on the micro F1 scores while only having two "learnable" parameters, k and m, but performs slightly worse on the macro scores.
 * The method that works best in practice strongly depends on the domain.
 * The zero-shot pipeline might work much better on tasks closer to the pretraining domain.
@@ -2815,7 +2823,7 @@ for train_slice in train_slices:
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (vanilla)")
 ```
-![png](./images/output_253_0.png)
+![](./images/output_253_0.png){fig-align="center"}
 
 
 **Note:** The fine-tuned model is competitive when we have at least 64 training examples.
@@ -3366,7 +3374,7 @@ plt.ylabel("Loss")
 plt.legend(loc="upper right")
 plt.show()
 ```
-![png](./images/output_284_0.png)
+![](./images/output_284_0.png){fig-align="center"}
 
 **Note:** Both the training and validation loss decreased significantly.
 
@@ -3475,7 +3483,7 @@ for train_slice in train_slices:
 ```python
 plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 ```
-![png](./images/output_293_0.png)
+![](./images/output_293_0.png){fig-align="center"}
 
 
 **Note:** The fine-tuned classifier performs better than the vanilla BERT, especially in the low-data domain.
@@ -3524,6 +3532,10 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
 
 
+
+**Previous:** [Notes on Transformers Book Ch. 8](../chapter-8/)
+
+**Next:** [Notes on Transformers Book Ch. 10](../chapter-10/)
 
 
 

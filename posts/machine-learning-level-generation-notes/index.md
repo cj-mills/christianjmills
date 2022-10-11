@@ -37,7 +37,7 @@ I recently started exploring potential applications of machine learning in proce
 
 - Performance is constrained by data and out ability to communicate what is important to the computer.
 
-![Machine_Learning_and_Level_Generation_Diagram_1.png](./images/Machine_Learning_and_Level_Generation_Diagram_1.png)
+![Machine_Learning_and_Level_Generation_Diagram_1.png](./images/Machine_Learning_and_Level_Generation_Diagram_1.png){fig-align="center"}
 
 ## Existing Examples
 

@@ -93,7 +93,7 @@ dls = get_data(URLs.IMAGENETTE_160, 160, 128)
 ```python
 dls.show_batch(max_n=4)
 ```
-![png](./images/output_8_0.png)
+![](./images/output_8_0.png){fig-align="center"}
 
 
 ### Average Pooling
@@ -297,7 +297,7 @@ learn.lr_find()
 SuggestedLRs(valley=0.0008317637839354575)
 ```
 
-![png](./images/output_21_3.png)
+![](./images/output_21_3.png){fig-align="center"}
 
 -----
 
@@ -377,7 +377,7 @@ learn.lr_find()
 SuggestedLRs(valley=0.0002754228771664202)
 ```
 
-![png](./images/output_24_3.png)
+![](./images/output_24_3.png){fig-align="center"}
 
 -----
 
@@ -989,7 +989,7 @@ learn.lr_find()
 SuggestedLRs(valley=2.2908675418875646e-06)
 ```
 
-![png](./images/output_56_3.png)
+![](./images/output_56_3.png){fig-align="center"}
 
 -----
 
@@ -1179,7 +1179,7 @@ learn.lr_find()
 SuggestedLRs(valley=0.002511886414140463)
 ```
 
-![png](./images/output_60_3.png)
+![](./images/output_60_3.png){fig-align="center"}
 
 -----
 

@@ -57,7 +57,7 @@ I wanted to get an idea of where the research is at for using deep learning mode
 
 - 3D shapes and scenes that are decomposed into sub-structures ↔ a monolithic chunk of geometry
 
-![](./images/structured-3d-chair-example.png)
+![](./images/structured-3d-chair-example.png){fig-align="center"}
 
 ### Structure-Aware
 
@@ -90,7 +90,7 @@ I wanted to get an idea of where the research is at for using deep learning mode
 
 ## Methodologies
 
-![methodologies.png](./images/methodologies.png)
+![](./images/methodologies.png){fig-align="center"}
 
 ### Program synthesis
 
@@ -131,7 +131,7 @@ I wanted to get an idea of where the research is at for using deep learning mode
         - Not globally-coherent
     - Iteratively consumes it's output from one iteration as input for the next iteration
       
-        <img src="./images/autoregressive-model-example.png" alt="autoregressive-model-example.png" style="zoom: 80%;" />
+        ![](./images/autoregressive-model-example.png){fig-align="center"}
         
     - Weakness:
         - If one step drifts from the training data, it can cause subsequent output to diverge further
@@ -175,7 +175,9 @@ I wanted to get an idea of where the research is at for using deep learning mode
 - Learning to Infer and Execute 3D Shape Programs (2019)
     - Model can output a 3D shape program consisting of loops and other high level structures
     
-    ![https://camo.githubusercontent.com/6ca24189e3d22bcc13ffa1dd7ade51159a41006d78e3221a6f8c1c2476b728ff/687474703a2f2f73686170653270726f672e637361696c2e6d69742e6564752f73686170655f66696c65732f7465617365722e6a7067](https://camo.githubusercontent.com/6ca24189e3d22bcc13ffa1dd7ade51159a41006d78e3221a6f8c1c2476b728ff/687474703a2f2f73686170653270726f672e637361696c2e6d69742e6564752f73686170655f66696c65732f7465617365722e6a7067)
+    
+    
+    ![](./images/infer-and-execute-3d-shape.jpeg){fig-align="center"}
     
     - https://github.com/HobbitLong/shape2prog
     

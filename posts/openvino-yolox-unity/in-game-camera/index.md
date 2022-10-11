@@ -36,7 +36,7 @@ aliases:
 
 In this follow-up post, we will update the Unity code so that we can use the in-game camera as input for the YOLOX model. This can be useful for performing object detection on the in-game environment as shown below.
 
-![yolox_in-game-camera_no_ui](./images/yolox_in-game-camera_no_ui.png)
+![](./images/yolox_in-game-camera_no_ui.png){fig-align="center"}
 
 
 
@@ -368,11 +368,11 @@ public void OnGUI()
 
 Now we need to attach the `ObjectDetector` script to the main camera, so we can use the `OnRenderImage()` method. Select the `Object Detector` object in the Hierarchy tab. In the Inspector tab, click and hold on the `Object Detector (Script)` component. 
 
-![click-and-hold-component](./images/click-and-hold-component.png)
+![](./images/click-and-hold-component.png){fig-align="center"}
 
 Then, drag and drop the component onto the `Main Camera` object in the Hierarchy tab. The component should now be attached to the `Main Camera` object.
 
-![drop-component-onto-camera](./images/drop-component-onto-camera.png)
+![](./images/drop-component-onto-camera.png){fig-align="center"}
 
 We can delete the `Object Detector` object, as it will not be used anymore.
 
@@ -382,7 +382,7 @@ We can delete the `Object Detector` object, as it will not be used anymore.
 
 Lastly, we need to reassign all the GUI events as show [here](../part-3//#assign-ui-events). This time, we drag and drop the `Main Camera` object from the Hierarchy tab.
 
-![reassign-gui-events](./images/reassign-gui-events.png)
+![](./images/reassign-gui-events.png){fig-align="center"}
 
 
 

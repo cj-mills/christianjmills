@@ -2841,7 +2841,7 @@ def plot_confusion_matrix(y_preds, y_true, labels):
 plot_confusion_matrix(df_tokens["labels"], df_tokens["predicted_label"],
                       tags.names)
 ```
-![png](./images/output_155_0.png)
+![](./images/output_155_0.png){fig-align="center"}
 
 **Note:** The model often confuses the beginning subword (`B-ORG`) of an organizational entity with the subsequent subwords (`I-ORG`).
 
@@ -3737,7 +3737,7 @@ plt.xlabel("Number of Training Samples")
 plt.ylabel("F1 Score")
 plt.show()
 ```
-![png](./images/output_192_0.png)
+![](./images/output_192_0.png){fig-align="center"}
 
 
 **Note:** 
@@ -4122,6 +4122,10 @@ f1_scores_df
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
 
 
+
+**Previous:** [Notes on Transformers Book Ch. 3](../chapter-3/)
+
+**Next:** [Notes on Transformers Book Ch. 5](../chapter-5/)
 
 
 

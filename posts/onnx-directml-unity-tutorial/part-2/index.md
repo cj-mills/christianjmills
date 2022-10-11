@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: Part 2 covers performing object detection in a Unity project with ONNX
-  Runtime and DirectML.
+description: Perform object detection in a Unity project with ONNX Runtime and DirectML.
 categories: [onnx, directml, yolox, object-detection, unity, tutorial]
 
 aliases:
@@ -51,7 +50,7 @@ open-graph:
 
 Open the Unity Hub and click New Project.
 
-![unity-hub-new-project](./images/unity-hub-new-project.png)
+![](./images/unity-hub-new-project.png){fig-align="center"}
 
 
 
@@ -59,7 +58,7 @@ Select the target editor version from the Editor Version dropdown menu. We'll us
 
 
 
-![unity-hub-new-project-select-unity-version](./images/unity-hub-new-project-select-unity-version.png)
+![](./images/unity-hub-new-project-select-unity-version.png){fig-align="center"}
 
 
 
@@ -67,7 +66,7 @@ Select the `2D Core` template.
 
 
 
-![unity-hub-new-project-select-2D-template](./images/unity-hub-new-project-select-2D-template.png)
+![](./images/unity-hub-new-project-select-2D-template.png){fig-align="center"}
 
 
 
@@ -75,7 +74,7 @@ Pick a name for the project and a location for the project folder before clickin
 
 
 
-![unity-hub-new-project-name-project](./images/unity-hub-new-project-name-project.png)
+![](./images/unity-hub-new-project-name-project.png){fig-align="center"}
 
 
 
@@ -85,7 +84,7 @@ Pick a name for the project and a location for the project folder before clickin
 
 Once the project loads, we'll store the DLL files from part 2 in a new folder called `Plugins`. Right-click a space in the Assets section and select `Create → Folder` from the popup menu.
 
-![unity-create-folder](./images/unity-create-folder.png)
+![](./images/unity-create-folder.png){fig-align="center"}
 
 
 
@@ -95,7 +94,7 @@ The DLL targets 64-bit x86 architectures, so we need to place the DLL files in a
 
   
 
-![unity-create-plugins-folder](./images/unity-create-plugins-folder.png)
+![](./images/unity-create-plugins-folder.png){fig-align="center"}
 
 
 
@@ -105,7 +104,7 @@ The DLL targets 64-bit x86 architectures, so we need to place the DLL files in a
 
 Copy all the DLL files into the `Assets/Plugins/x86_64` folder. We then need to close and reopen the Unity Editor to load the plugin files.
 
-![unity-onnx-plugins-folder](./images/unity-onnx-plugins-folder.png)
+![](./images/unity-onnx-plugins-folder.png){fig-align="center"}
 
 
 
@@ -115,7 +114,7 @@ After restarting the Unity Editor, create a new folder called `Colormaps` to sto
 
 * [Colormaps Folder Google Drive](https://drive.google.com/drive/folders/1rs2eD9_3Tyg4ADLbF6CNqwRdnhpsiHgk?usp=sharing)
 
-![unity-colormaps-folder](./images/unity-colormaps-folder.png)
+![](./images/unity-colormaps-folder.png){fig-align="center"}
 
 
 
@@ -125,7 +124,7 @@ We'll place any test images into a new folder called `Images`.
 
 
 
-![unity-import-image-assets](./images/unity-import-image-assets.png)
+![](./images/unity-import-image-assets.png){fig-align="center"}
 
 
 
@@ -133,7 +132,7 @@ Next, we'll create a folder to store the ONNX models. We need to place the `.onn
 
 * [ONNXModels Folder Google Drive](https://drive.google.com/drive/folders/1r543Rs85Qs78_iaP5_npY0Oi2cC5BLdc?usp=sharing)
 
-![unity-onnx-models-folder](./images/unity-onnx-models-folder.png)
+![](./images/unity-onnx-models-folder.png){fig-align="center"}
 
 
 
@@ -143,7 +142,7 @@ Next, we'll create a folder to store the ONNX models. We need to place the `.onn
 
 Rather than copying the input image from Unity to the plugin, we'll pass a pointer to the pixel data. First, we need to allow unsafe code for the Unity project. Select `Edit → Project Settings...` from the top menu.
 
-![unity-open-project-settings](./images/unity-open-project-settings.png)
+![](./images/unity-open-project-settings.png){fig-align="center"}
 
 
 
@@ -151,7 +150,7 @@ Open the `Player → Other Settings` dropdown and scroll down to the `Allow 'uns
 
 
 
-![unity-allow-unsafe-code](./images/unity-allow-unsafe-code.png)
+![](./images/unity-allow-unsafe-code.png){fig-align="center"}
 
 
 
@@ -163,7 +162,7 @@ Now we can start coding.
 
 The input image gets flipped upside down when we send it to the plugin. We can pre-flip the image in a [Compute Shader](https://docs.unity3d.com/Manual/class-ComputeShader.html). We'll add the Compute Shader in a new folder called `Shaders`. Right-click a space in the `Shaders` folder and select `Create → Shader → Compute Shader`.
 
-![unity-create-compute-shader](./images/unity-create-compute-shader.png)
+![](./images/unity-create-compute-shader.png){fig-align="center"}
 
 
 
@@ -232,7 +231,7 @@ void FlipXAxis(uint3 id : SV_DispatchThreadID)
 
 We'll store the C# script that interacts with the plugin in a new `Scripts` folder. Right-click a space inside it and select `Create → C# Script`. 
 
-![unity-create-c-sharp-script](./images/unity-create-c-sharp-script.png)
+![](./images/unity-create-c-sharp-script.png){fig-align="center"}
 
 
 
@@ -240,7 +239,7 @@ Name the script `ObjectDetector` and open it in the code editor.
 
 
 
-![unity-create-object-detector-script](./images/unity-create-object-detector-script.png)
+![](./images/unity-create-object-detector-script.png){fig-align="center"}
 
 
 
@@ -339,11 +338,11 @@ public class Startup
 
 We use the `UNITY_EDITOR` [scripting symbol](https://docs.unity3d.com/Manual/PlatformDependentCompilation.html) to check whether we are in the Unity Editor. We are in the Editor, so it returns true, and the code executes.
 
-![unity_scripting_symbol_in_editor](./images/unity_scripting_symbol_in_editor.png)
+![](./images/unity_scripting_symbol_in_editor.png){fig-align="center"}
 
 If we check if we are not in the Unity Editor, it returns false, and the code block does not execute.
 
-![unity_scripting_symbol_not_in_editor](./images/unity_scripting_symbol_not_in_editor.png)
+![](./images/unity_scripting_symbol_not_in_editor.png){fig-align="center"}
 
 
 
@@ -351,7 +350,7 @@ We can verify the code works by saving the script and going to the parent folder
 
 
 
-![unity-verify-initializeonload](./images/unity-verify-initializeonload.png)
+![](./images/unity-verify-initializeonload.png){fig-align="center"}
 
 
 
@@ -1528,7 +1527,7 @@ Now we can start setting up our Unity scene. We need a screen to display the web
 
 Right-click a space in the Hierarchy tab and select `3D Object → Quad`. We can name the new object Screen.
 
-![unity-create-quad](./images/unity-create-quad.png)
+![](./images/unity-create-quad.png){fig-align="center"}
 
 
 
@@ -1536,7 +1535,7 @@ Right-click a space in the Hierarchy tab and select `3D Object → Quad`. We can
 
 Next, drag and drop a test image from the `Assets → Images` folder onto the Screen object in the Scene view. Note that the Screen looks a bit dim. We need to change the shader for the Screen's Material so that it does not require an external light source.
 
-![unity-attach-image-to-screen](./images/unity-attach-image-to-screen.png)
+![](./images/unity-attach-image-to-screen.png){fig-align="center"}
 
 
 
@@ -1544,7 +1543,7 @@ Select the Screen in the Hierarchy tab and open the `Shader` dropdown menu in th
 
 
 
-![unity-update-screen-material-shader](./images/unity-update-screen-material-shader.png)
+![](./images/unity-update-screen-material-shader.png){fig-align="center"}
 
 
 
@@ -1554,13 +1553,13 @@ Select the Screen in the Hierarchy tab and open the `Shader` dropdown menu in th
 
 Right-click a space in the Hierarchy tab and select `Create Empty`. Name the empty object `InferenceManager`.
 
-![unity-create-empty-gameobject](./images/unity-create-empty-gameobject.png)
+![](./images/unity-create-empty-gameobject.png){fig-align="center"}
 
 
 
 With the `InferenceManager` object selected, drag the `ObjectDetector` script into the Inspector tab.
 
-![unity-attach-object-detector-script](./images/unity-attach-object-detector-script.png)
+![](./images/unity-attach-object-detector-script.png){fig-align="center"}
 
 
 
@@ -1576,13 +1575,13 @@ We still need to create the GUI controls. To save time, I made a [Prefab](https:
 
 Drag and drop the Canvas prefab into a new folder called Prefabs. 
 
-![unity-import-canvas-prefab](./images/unity-import-canvas-prefab.png)
+![](./images/unity-import-canvas-prefab.png){fig-align="center"}
 
 
 
 From there, drag the prefab into the Hierarchy tab. We can see the GUI by switching to the `Game` view.
 
-![unity-add-canvas-to-hierarchy-tab](./images/unity-add-canvas-to-hierarchy-tab.png)
+![](./images/unity-add-canvas-to-hierarchy-tab.png){fig-align="center"}
 
 
 
@@ -1590,19 +1589,19 @@ From there, drag the prefab into the Hierarchy tab. We can see the GUI by switch
 
 Next, we need to pair the `WebcamToggle` with the `UpdateWebcamToggle` function in the `ObjectDetector` script. Expand the Canvas object and select the `WebcamToggle`.
 
-![unity-select-webcamtoggle](./images/unity-select-webcamtoggle.png)
+![](./images/unity-select-webcamtoggle.png){fig-align="center"}
 
 
 
 Click and drag the `InferenceManager` into the `On Value Changed` field.
 
-![unity-webcamtoggle-assign-inference-manager](./images/unity-webcamtoggle-assign-inference-manager.png)
+![](./images/unity-webcamtoggle-assign-inference-manager.png){fig-align="center"}
 
 
 
 Open the `No Function` dropdown menu and select `ObjectDetector → UpdateWebcamToggle`.
 
-![unity-webcamtoggle-assign-inference-manager-function](./images/unity-webcamtoggle-assign-inference-manager-function.png)
+![](./images/unity-webcamtoggle-assign-inference-manager-function.png){fig-align="center"}
 
 
 
@@ -1610,35 +1609,35 @@ Open the `No Function` dropdown menu and select `ObjectDetector → UpdateWebcam
 
 We can follow the same steps to pair the `WebcamDropdown` with the `UpdateWebcamDevice` function in the `ObjectDetector` script.
 
-![unity-webcamdropdown-assign-inference-manager](./images/unity-webcamdropdown-assign-inference-manager.png)
+![](./images/unity-webcamdropdown-assign-inference-manager.png){fig-align="center"}
 
 This time select `ObjectDetector → UpdateWebcamDevice`.
 
-![unity-webcamdropdown-assign-inference-manager-function](./images/unity-webcamdropdown-assign-inference-manager-function.png)
+![](./images/unity-webcamdropdown-assign-inference-manager-function.png){fig-align="center"}
 
 
 
 **Configure `ONNXModelDropdown` On Value Changed Event**
 
-![unity-update-onnx-model-dropdown-on-value-changed](./images/unity-update-onnx-model-dropdown-on-value-changed.png)
+![](./images/unity-update-onnx-model-dropdown-on-value-changed.png){fig-align="center"}
 
 
 
 **Configure `ONNXExecutionProviderDropdown` On Value Changed Event**
 
-![unity-update-onnx-provider-dropdown-on-value-changed](./images/unity-update-onnx-provider-dropdown-on-value-changed.png)
+![](./images/unity-update-onnx-provider-dropdown-on-value-changed.png){fig-align="center"}
 
 
 
 **Configure `ConfidenceThresholdSlider` On Value Changed Event**
 
-![unity-update-confidence-threshold-slider-on-value-changed](./images/unity-update-confidence-threshold-slider-on-value-changed.png)
+![](./images/unity-update-confidence-threshold-slider-on-value-changed.png){fig-align="center"}
 
 
 
 **Configure `QuitButton` On Click Event** 
 
-![unity-quit-button-on-click](./images/unity-quit-button-on-click.png)
+![](./images/unity-quit-button-on-click.png){fig-align="center"}
 
 
 
@@ -1646,7 +1645,7 @@ This time select `ObjectDetector → UpdateWebcamDevice`.
 
 We can now assign the GUI objects to their respective fields for the `ObjectDetector` script.
 
-![unity-inference-manager-assign-gui-objects](./images/unity-inference-manager-assign-gui-objects.png)
+![](./images/unity-inference-manager-assign-gui-objects.png){fig-align="center"}
 
 
 
@@ -1654,7 +1653,7 @@ We can now assign the GUI objects to their respective fields for the `ObjectDete
 
 Before we can use the GUI, we need to add an Event System. Right-click a space in the Hierarchy tab and select `UI → Event System`.
 
-![unity-add-eventsystem](./images/unity-add-eventsystem.png)
+![](./images/unity-add-eventsystem.png){fig-align="center"}
 
 
 
@@ -1662,7 +1661,7 @@ Before we can use the GUI, we need to add an Event System. Right-click a space i
 
 Click the play button in the top-middle of the Editor window to test the project.
 
-![unity-click-play-button](./images/unity-click-play-button.png)
+![](./images/unity-click-play-button.png){fig-align="center"}
 
 
 
@@ -1670,11 +1669,11 @@ There should be a bounding box for the call sign and one for the idle hand.
 
 **CPU Execution Provider**
 
-![unity-test-in-editor-cpu](./images/unity-test-in-editor-cpu.png)
+![](./images/unity-test-in-editor-cpu.png){fig-align="center"}
 
 **DirectML Execution Provider**
 
-![unity-test-in-editor-dml](./images/unity-test-in-editor-dml.png)
+![](./images/unity-test-in-editor-dml.png){fig-align="center"}
 
 
 

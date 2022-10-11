@@ -10,8 +10,7 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 categories: [icevision, openvino, yolox, object-detection, unity, tutorial]
-description: Part 2 covers creating a dynamic link library (DLL) file in Visual Studio
-  to perform inference with the object detection model.
+description: Create a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform object detection with a [YOLOX](https://arxiv.org/abs/2107.08430) model using [OpenVINO](https://docs.openvino.ai/latest/index.html).
 
 aliases:
 - /IceVision-to-OpenVINO-to-Unity-Tutorial-2/
@@ -57,7 +56,7 @@ We need to download the OpenVINO Toolkit before creating our Visual Studio proje
 
 Select the options outlined in the image below and click the Download button.
 
-![openvino_download_page](./images/openvino_download_page.png)
+![](./images/openvino_download_page.png){fig-align="center"}
 
 
 
@@ -65,7 +64,7 @@ Double-click the file once it finishes downloading and click the Extract button 
 
 
 
-![openvino_installer_extract_files](./images/openvino_installer_extract_files.png)
+![](./images/openvino_installer_extract_files.png){fig-align="center"}
 
 
 
@@ -73,7 +72,7 @@ The installer will then verify the computer meets the system requirements. The t
 
 
 
-![openvino_installer_check_system_requirements](./images/openvino_installer_check_system_requirements.png)
+![](./images/openvino_installer_check_system_requirements.png){fig-align="center"}
 
 
 
@@ -81,7 +80,7 @@ We can stick with the default `Recommended Installation` option.
 
 
 
-![openvino_installer_recommended_installation](./images/openvino_installer_recommended_installation.png)
+![](./images/openvino_installer_recommended_installation.png){fig-align="center"}
 
 
 
@@ -89,7 +88,7 @@ The installer will then ask whether Intel can collect some information before st
 
 
 
-![openvino_installer_software_improvement_program](./images/openvino_installer_software_improvement_program.png)
+![](./images/openvino_installer_software_improvement_program.png){fig-align="center"}
 
 
 
@@ -97,7 +96,7 @@ The installer will then ask whether Intel can collect some information before st
 
 
 
-![openvino_installer_installation_in_progress](./images/openvino_installer_installation_in_progress.png)
+![](./images/openvino_installer_installation_in_progress.png){fig-align="center"}
 
 
 
@@ -105,7 +104,7 @@ Click Finish once the installation process completes.
 
 
 
-![openvino_installer_finish](./images/openvino_installer_finish.png)
+![](./images/openvino_installer_finish.png){fig-align="center"}
 
 
 
@@ -117,13 +116,13 @@ Click Finish once the installation process completes.
 
 If we look at the installation folder for the toolkit, we can see it also includes a version of OpenCV. We'll use OpenCV to prepare image data from Unity before feeding it to the model.
 
-![openvino_install_folder](./images/openvino_install_folder.png)
+![](./images/openvino_install_folder.png){fig-align="center"}
 
 
 
 I like to copy the OpenVINO folder to a separate directory with other dependencies for my C++ projects.
 
-![openvino_move_folder_to_dependencies_directory](./images/openvino_move_folder_to_dependencies_directory.png)
+![](./images/openvino_move_folder_to_dependencies_directory.png){fig-align="center"}
 
 Now we can create our Visual Studio DLL project.
 
@@ -132,7 +131,7 @@ Now we can create our Visual Studio DLL project.
 
 Open Visual Studio and select the `Create a new project` option.
 
-![visual-studio-create-new-project](./images/visual-studio-create-new-project.png)
+![](./images/visual-studio-create-new-project.png){fig-align="center"}
 
 
 
@@ -140,7 +139,7 @@ Type `DLL` into the text box and select the `Dynamic-Link Library (DLL)` option.
 
 
 
-![visual-studio-new-dll-project](./images/visual-studio-new-dll-project.png)
+![](./images/visual-studio-new-dll-project.png){fig-align="center"}
 
 
 
@@ -148,7 +147,7 @@ Choose a name and location for the project and click the `Create` button. By def
 
 
 
-![visual-studio-choose-project-name-and-location](./images/visual-studio-choose-project-name-and-location.png)
+![](./images/visual-studio-choose-project-name-and-location.png){fig-align="center"}
 
 
 ## Configure the Project
@@ -157,7 +156,7 @@ At the top of the window, open the Solution Configurations dropdown menu, and se
 
 
 
-![visual-studio-switch-to-release](./images/visual-studio-switch-to-release.png)
+![](./images/visual-studio-switch-to-release.png){fig-align="center"}
 
 
 
@@ -165,25 +164,25 @@ At the top of the window, open the Solution Configurations dropdown menu, and se
 
 Then, open the Solution Platform dropdown menu and select `x64`.
 
-![visual-studio-switch-to-64-bit](./images/visual-studio-switch-to-64-bit.png)
+![](./images/visual-studio-switch-to-64-bit.png){fig-align="center"}
 
 
 ## Add Include Directories
 
 We need to tell Visual Studio where OpenVINO and OpenCV are so we can access their APIs. Right-click the project name in the Solution Explorer panel.
 
-![visual-studio-solution-explorer-select-project-name](./images/visual-studio-solution-explorer-select-project-name.png)
+![](./images/visual-studio-solution-explorer-select-project-name.png){fig-align="center"}
 
 
 
 Select the `Properties` option in the popup menu.
 
-![visual-studio-open-properties](./images/visual-studio-open-properties.png)
+![](./images/visual-studio-open-properties.png){fig-align="center"}
 
 
 In the Properties Window, open on the `C/C++` dropdown. Select the `Additional Include Directories` section and click on `<Edit..>` in the dropdown.
 
-![visual-studio-open-additional-include-directories](./images/visual-studio-open-additional-include-directories.png)
+![](./images/visual-studio-open-additional-include-directories.png){fig-align="center"}
 
 
 Add the paths for the following folders, replacing `<parent-folder-path>` with the full path to the parent folder for the OpenVINO Toolkit, and click `OK`.
@@ -195,7 +194,7 @@ Add the paths for the following folders, replacing `<parent-folder-path>` with t
 
 
 
-![visual-studio-add-additional-include-directories](./images/visual-studio-add-additional-include-directories.png)
+![](./images/visual-studio-add-additional-include-directories.png){fig-align="center"}
 
 
 
@@ -205,7 +204,7 @@ Next, open the `Linker` dropdown in the Properties window and select `Input`. Se
 
 
 
-![visual-studio-linker-additional-dependencies](./images/visual-studio-linker-additional-dependencies.png)
+![](./images/visual-studio-linker-additional-dependencies.png){fig-align="center"}
 
 
 
@@ -217,7 +216,7 @@ Add the paths to the following files, replacing `<parent-folder-path>` with the 
 
 
 
-![visual-studio-linker-add-additional-dependencies](./images/visual-studio-linker-add-additional-dependencies.png)
+![](./images/visual-studio-linker-add-additional-dependencies.png){fig-align="center"}
 
 
 
@@ -229,17 +228,17 @@ Our DLL file will depend on the following DLL files included with the OpenVINO a
 
 **OpenCV DLL files**
 
-![get-opencv-dll-files](./images/get-opencv-dll-files.png)
+![](./images/get-opencv-dll-files.png){fig-align="center"}
 
 
 
 **OpenVINO DLL files**
 
-![get-openvino-dll-files](./images/get-openvino-dll-files.png)
+![](./images/get-openvino-dll-files.png){fig-align="center"}
 
 
 
-![get-openvino-tbb-dll-file](./images/get-openvino-tbb-dll-file.png)
+![](./images/get-openvino-tbb-dll-file.png){fig-align="center"}
 
 
 
@@ -247,7 +246,7 @@ We can add a post-build event in Visual Studio to automatically copy these DLL f
 
 
 
-![visual-studio-post-build-event-edit-command-line-events](./images/visual-studio-post-build-event-edit-command-line-events.png)
+![](./images/visual-studio-post-build-event-edit-command-line-events.png){fig-align="center"}
 
 
 
@@ -261,13 +260,13 @@ Add the following commands, replacing `<parent-folder-path>` with the full path 
 
 
 
-![visual-studio-post-build-event-add-xcopy-commands](./images/visual-studio-post-build-event-add-xcopy-commands.png)
+![](./images/visual-studio-post-build-event-add-xcopy-commands.png){fig-align="center"}
 
 
 
 Finally, click the `Apply` button and close the Properties window.
 
-![visual-studio-properties-apply-changes](./images/visual-studio-properties-apply-changes.png)
+![](./images/visual-studio-properties-apply-changes.png){fig-align="center"}
 
 
 
@@ -281,7 +280,7 @@ With the dependencies taken care of, we can start modifying the code.
 
 We'll first update the `pch.h` [Precompiled Header file](https://docs.microsoft.com/en-us/cpp/build/creating-precompiled-header-files?view=msvc-160) with the required header files. We can open the `pch.h` file by selecting it in the Solution Explorer window.
 
-![visual-studio-open-pch-header-file](./images/visual-studio-open-pch-header-file.png)
+![](./images/visual-studio-open-pch-header-file.png){fig-align="center"}
 
 
 
@@ -920,7 +919,7 @@ Open the Build menu at the top of the Visual Studio window and click `Build Solu
 
 
 
-![visual-studio-build-solution](./images/visual-studio-build-solution.png)
+![](./images/visual-studio-build-solution.png){fig-align="center"}
 
 
 
@@ -930,19 +929,19 @@ Open the Build menu at the top of the Visual Studio window and click `Build Solu
 
 Right-click the project name in the Solution Explorer panel and select `Open Folder in File Explorer` from the popup menu.
 
-![visual-studio-open-folder-in-explorer](./images/visual-studio-open-folder-in-explorer.png)
+![](./images/visual-studio-open-folder-in-explorer.png){fig-align="center"}
 
 
 
 In the new File Explorer window, go to the parent folder.
 
-![visual-studio-project-folder](./images/visual-studio-project-folder.png)
+![](./images/visual-studio-project-folder.png){fig-align="center"}
 
 
 
 Open the `x64 → Release` subfolder.
 
-![visual-studio-project-folder-x64-folder](./images/visual-studio-project-folder-x64-folder.png)
+![](./images/visual-studio-project-folder-x64-folder.png){fig-align="center"}
 
 
 
@@ -950,7 +949,7 @@ Open the `x64 → Release` subfolder.
 
 We'll need to copy all the DLL files in this folder and the plugins.xml file to the Unity project.
 
-![file-explorer-select-dll-files](./images/file-explorer-select-dll-files.png)
+![](./images/file-explorer-select-dll-files.png){fig-align="center"}
 
 
 

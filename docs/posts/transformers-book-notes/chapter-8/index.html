@@ -1747,7 +1747,11 @@ change_volume
 <pre class="text"><code>    Latency (ms) - 29.646
     Latency (ms) - 28.035
     Latency (ms) - 27.233</code></pre>
-<p><strong>Note:</strong> * There is a notable spread in the latencies, so we should collect the latencies over many runs to calculate the mean and standard deviation. * The latency depends on the query length, and it is good practice to benchmark using queries the models are likely to encounter in production.</p>
+<p><strong>Note:</strong></p>
+<ul>
+<li>There is a notable spread in the latencies, so we should collect the latencies over many runs to calculate the mean and standard deviation.</li>
+<li>The latency depends on the query length, and it is good practice to benchmark using queries the models are likely to encounter in production.</li>
+</ul>
 <hr>
 <div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <hr>
@@ -1803,23 +1807,48 @@ change_volume
 <section id="knowledge-distillation-for-fine-tuning" class="level3">
 <h3 class="anchored" data-anchor-id="knowledge-distillation-for-fine-tuning">Knowledge Distillation for Fine-Tuning</h3>
 <ul>
-<li><p>Knowledge distillation for supervised tasks like fine-tuning involves augmenting the ground truth labels with a distribution of “soft probabilities” from the teacher, providing complementary information for the student.</p></li>
-<li><p>If the teacher assigns high probabilities to multiple intents, they might lie close to each other in the feature space.</p></li>
-<li><p>The goal is to train the student to distill some of this “dark knowledge” learned by the teacher.</p></li>
-<li><p>This “dark knowledge” is not available from the labels alone.</p></li>
-<li><p>We feed an input sequence <span class="math inline">\(x\)</span> to the teacher to generate a vector of logits <span class="math inline">\(z(x) = \left[ z_{1}(x),\ldots,z_{N}(x) \right]\)</span> and convert these logits into probabilities using the softmax function. ### <span class="math display">\[\frac{exp \left( z_{i}(x) \right)}{\sum_{j}{exp \left( z_{i}(x) \right)}}\]</span></p></li>
-<li><p>The teacher will often assign a high probability to one class, with all other class probabilities close to zero, providing little additional information beyond the ground truth labels.</p></li>
-<li><p>We can “soften” the probabilities by scaling the logits with a temperature hyperparameter <span class="math inline">\(T\)</span> before applying the softmax. ### <span class="math display">\[p_{i}(x) = \frac{exp \left( \frac{ z_{i}(x) }{T} \right)}{\sum_{j}{exp \left( \frac{ z_{i}(x) }{T} \right)}}\]</span></p></li>
-<li><p>Higher temperature values produce a softer probability distribution over the classes and reveal much more information about the decision boundary learned by the teacher for each example.</p>
+<li>Knowledge distillation for supervised tasks like fine-tuning involves augmenting the ground truth labels with a distribution of “soft probabilities” from the teacher, providing complementary information for the student.</li>
+<li>If the teacher assigns high probabilities to multiple intents, they might lie close to each other in the feature space.</li>
+<li>The goal is to train the student to distill some of this “dark knowledge” learned by the teacher.</li>
+<li>This “dark knowledge” is not available from the labels alone.</li>
+<li>We feed an input sequence <span class="math inline">\(x\)</span> to the teacher to generate a vector of logits <span class="math inline">\(z(x) = \left[ z_{1}(x),\ldots,z_{N}(x) \right]\)</span> and convert these logits into probabilities using the softmax function.</li>
+</ul>
+</section>
+<section id="fracexp-left-z_ix-rightsum_jexp-left-z_ix-right" class="level3">
+<h3 class="anchored" data-anchor-id="fracexp-left-z_ix-rightsum_jexp-left-z_ix-right"><span class="math display">\[\frac{exp \left( z_{i}(x) \right)}{\sum_{j}{exp \left( z_{i}(x) \right)}}\]</span></h3>
+<ul>
+<li>The teacher will often assign a high probability to one class, with all other class probabilities close to zero, providing little additional information beyond the ground truth labels.</li>
+<li>We can “soften” the probabilities by scaling the logits with a temperature hyperparameter <span class="math inline">\(T\)</span> before applying the softmax.</li>
+</ul>
+</section>
+<section id="p_ix-fracexp-left-frac-z_ix-t-rightsum_jexp-left-frac-z_ix-t-right" class="level3">
+<h3 class="anchored" data-anchor-id="p_ix-fracexp-left-frac-z_ix-t-rightsum_jexp-left-frac-z_ix-t-right"><span class="math display">\[p_{i}(x) = \frac{exp \left( \frac{ z_{i}(x) }{T} \right)}{\sum_{j}{exp \left( \frac{ z_{i}(x) }{T} \right)}}\]</span></h3>
+<ul>
+<li>Higher temperature values produce a softer probability distribution over the classes and reveal much more information about the decision boundary learned by the teacher for each example.
 <ul>
 <li>When T = 1, we get the original softmax distribution.</li>
 </ul></li>
-<li><p>We can use the <a href="https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">Kullback-Leibler divergence</a> to measure the difference between the teacher’s probability distribution and the student’s probability distribution. ### <span class="math display">\[D_{KL}(p,q) = \sum_{i}{p_{i}(x)\log{\frac{p_{i}(x)}{q_{i}(x)}}}\]</span></p></li>
-<li><p>With the KL divergence, we can calculate how much is lost when we approximate the probability distribution of the teacher with the student.</p></li>
-<li><p><strong>Kowledge Distillation Loss:</strong> ### <span class="math display">\[L_{KD} = T^{2}D_{KL}\]</span></p></li>
+<li>We can use the <a href="https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">Kullback-Leibler divergence</a> to measure the difference between the teacher’s probability distribution and the student’s probability distribution.</li>
+</ul>
+</section>
+<section id="d_klpq-sum_ip_ixlogfracp_ixq_ix" class="level3">
+<h3 class="anchored" data-anchor-id="d_klpq-sum_ip_ixlogfracp_ixq_ix"><span class="math display">\[D_{KL}(p,q) = \sum_{i}{p_{i}(x)\log{\frac{p_{i}(x)}{q_{i}(x)}}}\]</span></h3>
+<ul>
+<li>With the KL divergence, we can calculate how much is lost when we approximate the probability distribution of the teacher with the student.</li>
+<li><strong>Kowledge Distillation Loss:</strong></li>
+</ul>
+</section>
+<section id="l_kd-t2d_kl" class="level3">
+<h3 class="anchored" data-anchor-id="l_kd-t2d_kl"><span class="math display">\[L_{KD} = T^{2}D_{KL}\]</span></h3>
+<ul>
 <li><p><span class="math inline">\(T_{2}\)</span> is the normalization factor to account for the magnitude of the gradients produced by the soft labels scaling as <span class="math inline">\(1/T^{2}\)</span>.</p></li>
-<li><p>For classification tasks, the student loss is a weighted average of the distillation loss with the usual cross-entropy loss <span class="math inline">\(L_{CE}\)</span> of the ground truth labels. ### <span class="math display">\[L_{student} = \alpha L_{CE} \ + \left( 1 - \alpha \right)L_{KD}\]</span></p></li>
-<li><p><span class="math inline">\(\alpha\)</span> is a hyperparameter that controls the relative strength of each loss.</p></li>
+<li><p>For classification tasks, the student loss is a weighted average of the distillation loss with the usual cross-entropy loss <span class="math inline">\(L_{CE}\)</span> of the ground truth labels.</p></li>
+</ul>
+</section>
+<section id="l_student-alpha-l_ce-left-1---alpha-rightl_kd" class="level3">
+<h3 class="anchored" data-anchor-id="l_student-alpha-l_ce-left-1---alpha-rightl_kd"><span class="math display">\[L_{student} = \alpha L_{CE} \ + \left( 1 - \alpha \right)L_{KD}\]</span></h3>
+<ul>
+<li><span class="math inline">\(\alpha\)</span> is a hyperparameter that controls the relative strength of each loss.</li>
 </ul>
 </section>
 <section id="knowledge-distillation-for-pretraining" class="level3">
@@ -1827,8 +1856,12 @@ change_volume
 <ul>
 <li>We can use knowledge distillation during pretraining to create a general-purpose student that we subsequently fine-tune on downstream tasks.</li>
 <li>The teacher is a pretrained language model like BERT, which transfers its knowledge about masked-language modeling to the student.</li>
-<li>For DistilBERT, we augment the masked language modeling loss <span class="math inline">\(L_{mlm}\)</span> with a term from knowledge distillation and a cosine embedding loss <span class="math inline">\(L_{cos} = 1 \ - \ \cos \left( h_{s},h_{t} \right)\)</span> to align the directions of the hidden state vectors between the teacher and student. ### <span class="math display">\[L_{DistilBERT} = \alpha L_{mlm} \ + \ \beta L_{KD} \ + \ y \ Loss_{cos}\]</span></li>
+<li>For DistilBERT, we augment the masked language modeling loss <span class="math inline">\(L_{mlm}\)</span> with a term from knowledge distillation and a cosine embedding loss <span class="math inline">\(L_{cos} = 1 \ - \ \cos \left( h_{s},h_{t} \right)\)</span> to align the directions of the hidden state vectors between the teacher and student.<br>
+</li>
 </ul>
+</section>
+<section id="l_distilbert-alpha-l_mlm-beta-l_kd-y-loss_cos" class="level3">
+<h3 class="anchored" data-anchor-id="l_distilbert-alpha-l_mlm-beta-l_kd-y-loss_cos"><span class="math display">\[L_{DistilBERT} = \alpha L_{mlm} \ + \ \beta L_{KD} \ + \ y \ Loss_{cos}\]</span></h3>
 </section>
 <section id="creating-a-knowledge-distillation-trainer" class="level3">
 <h3 class="anchored" data-anchor-id="creating-a-knowledge-distillation-trainer">Creating a Knowledge Distillation Trainer</h3>
@@ -1856,8 +1889,14 @@ change_volume
 <section id="nn.kldivloss" class="level4">
 <h4 class="anchored" data-anchor-id="nn.kldivloss"><code>nn.KLDivLoss</code></h4>
 <ul>
-<li><p><a href="https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html">Documentation</a></p></li>
-<li><p>Compute the Kullback-Leibler divergence loss. ### <span class="math display">\[L(y_{\text{pred}},\ y_{\text{true}}) = y_{\text{true}} \cdot \log \frac{y_{\text{true}}}{y_{\text{pred}}} = y_{\text{true}} \cdot (\log y_{\text{true}} - \log y_{\text{pred}})\]</span></p></li>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html">Documentation</a></li>
+<li>Compute the Kullback-Leibler divergence loss.</li>
+</ul>
+</section>
+</section>
+<section id="ly_textpred-y_texttrue-y_texttrue-cdot-log-fracy_texttruey_textpred-y_texttrue-cdot-log-y_texttrue---log-y_textpred" class="level3">
+<h3 class="anchored" data-anchor-id="ly_textpred-y_texttrue-y_texttrue-cdot-log-fracy_texttruey_textpred-y_texttrue-cdot-log-y_texttrue---log-y_textpred"><span class="math display">\[L(y_{\text{pred}},\ y_{\text{true}}) = y_{\text{true}} \cdot \log \frac{y_{\text{true}}}{y_{\text{pred}}} = y_{\text{true}} \cdot (\log y_{\text{true}} - \log y_{\text{pred}})\]</span></h3>
+<ul>
 <li><p>where <span class="math inline">\(y_{\text{pred}}\)</span> is the input and <span class="math inline">\(y_{\text{true}}\)</span> is the target</p></li>
 <li><p>The inputs need to be in the form of log probabilities.</p></li>
 <li><p>The labels need to be in the form of normal probabilities.</p></li>
@@ -1891,7 +1930,6 @@ change_volume
 <span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (loss, outputs_stu) <span class="cf">if</span> return_outputs <span class="cf">else</span> loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Note:</strong> The <code>reduction="batchmean"</code> argument in <code>nn.KVDivLoss()</code> specifies that we average the losses over the batch dimension.</p>
 <hr>
-</section>
 </section>
 <section id="choosing-a-good-student-initialization" class="level3">
 <h3 class="anchored" data-anchor-id="choosing-a-good-student-initialization">Choosing a Good Student Initialization</h3>
@@ -2142,7 +2180,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_108_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> The student is twice as fast and nearly as accurate.</p>
@@ -2179,7 +2216,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_115_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> In Optuna, we can find the minimum of the <span class="math inline">\(f(x,y)\)</span> function by defining an <code>objective()</code> function that returns the value of the <span class="math inline">\(f(x,y)\)</span>.</p>
@@ -2224,7 +2260,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_125_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> Optuna managed to find values for x and y that are reasonably close to the global minimum.</p>
@@ -2468,7 +2503,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_153_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> * The distillation student exceeds the baseline model performance. * The teacher model was likely not fine-tuned as systematically as the student.</p>
@@ -2496,10 +2530,14 @@ Accuracy
 <section id="making-models-faster-with-quantization" class="level2">
 <h2 class="anchored" data-anchor-id="making-models-faster-with-quantization">Making Models Faster with Quantization</h2>
 <ul>
-<li><p>Quantization makes computation more efficient by representing the weights and activations with low-precision data types like an 8-bit integer (INT8) instead of the usual 32-bit floating-point (FP32).</p></li>
-<li><p>Reducing the number of bits means the model requires less memory, and operations like matrix multiplication are much faster with integer arithmetic.</p></li>
-<li><p>We can quantize models with little to no impact on accuracy.</p></li>
-<li><p>We “discretize” the floating-point values <span class="math inline">\(f\)</span> in each tensor by mapping their range <span class="math inline">\(\left[ f_{max}, f_{min} \right]\)</span> into a smaller one <span class="math inline">\(\left[ q_{max}, q_{min} \right]\)</span> of fixed-point numbers <span class="math inline">\(q\)</span> and linearly distributing all tensor values in between. ### <span class="math display">\[f = \left( \frac{f_{max} - f_{min}}{q_{max} - q_{min}} \right)(q-Z) = S(q-Z)\]</span></p></li>
+<li>Quantization makes computation more efficient by representing the weights and activations with low-precision data types like an 8-bit integer (INT8) instead of the usual 32-bit floating-point (FP32).</li>
+<li>Reducing the number of bits means the model requires less memory, and operations like matrix multiplication are much faster with integer arithmetic.</li>
+<li>We can quantize models with little to no impact on accuracy.</li>
+<li>We “discretize” the floating-point values <span class="math inline">\(f\)</span> in each tensor by mapping their range <span class="math inline">\(\left[ f_{max}, f_{min} \right]\)</span> into a smaller one <span class="math inline">\(\left[ q_{max}, q_{min} \right]\)</span> of fixed-point numbers <span class="math inline">\(q\)</span> and linearly distributing all tensor values in between.</li>
+</ul>
+<section id="f-left-fracf_max---f_minq_max---q_min-rightq-z-sq-z" class="level3">
+<h3 class="anchored" data-anchor-id="f-left-fracf_max---f_minq_max---q_min-rightq-z-sq-z"><span class="math display">\[f = \left( \frac{f_{max} - f_{min}}{q_{max} - q_{min}} \right)(q-Z) = S(q-Z)\]</span></h3>
+<ul>
 <li><p>where <span class="math inline">\(S\)</span> is a positive floatin-point number and the constant <span class="math inline">\(Z\)</span> has the same type as <span class="math inline">\(q\)</span> and is called the zero point becaue it corresponds to the quentized value of the floating-point value <span class="math inline">\(f=0\)</span></p></li>
 <li><p>The map needs to be affine (<span class="math inline">\(y=Ax+b\)</span>) to get back floating-point numbers when we dequantize the fixed-point ones.</p></li>
 <li><p>Transformers and other deep neural networks are prime candidates for quantization because the weights and activations tend to take values in relatively small ranges.</p></li>
@@ -2512,7 +2550,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_158_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> The weight values fall in the range <span class="math inline">\(\left[ -0.1, 0.1 \right]\)</span> around zero.</p>
@@ -2576,7 +2613,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_171_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <hr>
@@ -2610,6 +2646,7 @@ Accuracy
 <pre class="text"><code>    3.999755879241598</code></pre>
 <p><strong>Note:</strong> * Quantization reduces memory storage requirements by up to a factor of four (32/8=4). * The actual compression rate for an entire model depends on which layers are quantized.</p>
 <hr>
+</section>
 </section>
 <section id="approaches-to-quantization" class="level3">
 <h3 class="anchored" data-anchor-id="approaches-to-quantization">Approaches to Quantization</h3>
@@ -2679,7 +2716,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_191_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> The quantized model is nearly half the size of the distilled model and gained a slight accuracy boost.</p>
@@ -2847,7 +2883,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_226_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> Converting the distilled model to ONNX format decreased latency.</p>
@@ -2913,7 +2948,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_234_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <p><strong>Note:</strong> * The quantized ONNX model further reduced latency and improved accuracy compared to the quantized PyTorch model. * PyTorch only optimizes the <code>nn.Linear</code> modules while ONNX also quantized the embedding layer.</p>
@@ -2938,11 +2972,19 @@ Accuracy
 <section id="weight-pruning-methods" class="level3">
 <h3 class="anchored" data-anchor-id="weight-pruning-methods">Weight Pruning Methods</h3>
 <ul>
-<li>Most weight pruning methods calculate a matrix <span class="math inline">\(S\)</span> of importance scores and select the top <span class="math inline">\(k\)</span> percent of weights by importance. ### <span class="math display">\[Top_{k}(S)_{ij} = 1 \text{ if } S_{ij} \text{ in top k percent else } 0\]</span></li>
+<li>Most weight pruning methods calculate a matrix <span class="math inline">\(S\)</span> of importance scores and select the top <span class="math inline">\(k\)</span> percent of weights by importance.</li>
+</ul>
+</section>
+<section id="top_ks_ij-1-text-if-s_ij-text-in-top-k-percent-else-0" class="level3">
+<h3 class="anchored" data-anchor-id="top_ks_ij-1-text-if-s_ij-text-in-top-k-percent-else-0"><span class="math display">\[Top_{k}(S)_{ij} = 1 \text{ if } S_{ij} \text{ in top k percent else } 0\]</span></h3>
+<ul>
 <li><span class="math inline">\(k\)</span> acts as a new hyperparameter to control the amount of sparsity in the model.</li>
 <li>Lower values of k correspond to sparser matrices.</li>
-<li>We can use these scores to define a mask matrix <span class="math inline">\(M\)</span> that masks weights <span class="math inline">\(W_{ik}\)</span> during the forward pass with some input and effectively creates a sparse network of activations <span class="math inline">\(a_{i}\)</span>. ### <span class="math display">\[a_{i} = \sum_{k}{W_{ik}M_{ik}x_{k}}\]</span></li>
+<li>We can use these scores to define a mask matrix <span class="math inline">\(M\)</span> that masks weights <span class="math inline">\(W_{ik}\)</span> during the forward pass with some input and effectively creates a sparse network of activations <span class="math inline">\(a_{i}\)</span>.</li>
 </ul>
+</section>
+<section id="a_i-sum_kw_ikm_ikx_k" class="level3">
+<h3 class="anchored" data-anchor-id="a_i-sum_kw_ikm_ikx_k"><span class="math display">\[a_{i} = \sum_{k}{W_{ik}M_{ik}x_{k}}\]</span></h3>
 <section id="questions-to-consider" class="level4">
 <h4 class="anchored" data-anchor-id="questions-to-consider">Questions to consider</h4>
 <ul>
@@ -2993,7 +3035,6 @@ Accuracy
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_240_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
 <hr>
@@ -3021,6 +3062,8 @@ Accuracy
 <li><a href="https://transformersbook.com/">Natural Language Processing with Transformers Book</a></li>
 <li><a href="https://github.com/nlp-with-transformers/notebooks">The Transformers book GitHub Repository</a></li>
 </ul>
+<p><strong>Previous:</strong> <a href="../chapter-7/">Notes on Transformers Book Ch. 7</a></p>
+<p><strong>Next:</strong> <a href="../chapter-9/">Notes on Transformers Book Ch. 9</a></p>
 <!-- Cloudflare Web Analytics -->
 <script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
 <!-- End Cloudflare Web Analytics -->

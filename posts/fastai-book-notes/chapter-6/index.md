@@ -47,15 +47,18 @@ from fastai.vision.all import *
 * classification labels are stored in a CSV file
 
 -----
+
 ```python
 path = untar_data(URLs.PASCAL_2007)
 path
 ```
+
 ```text
 Path('/home/innom-dt/.fastai/data/pascal_2007')
 ```
 
 -----
+
 ```python
 path.ls()
 ```
@@ -133,6 +136,7 @@ Class lables are stored in a space-delimited string
 # Access rows and columns using the `iloc` property 
 df.iloc[:,0]
 ```
+
 ```text
 0       000005.jpg
 1       000007.jpg
@@ -149,12 +153,14 @@ Name: fname, Length: 5011, dtype: object
 ```
 
 -----
+
 ```python
 df.iloc[0,:]
 # Trailing :s are always optional (in numpy, pytorch, pandas, etc.),
 #   so this is equivalent:
 df.iloc[0]
 ```
+
 ```text
 fname       000005.jpg
 labels           chair
@@ -163,6 +169,7 @@ Name: 0, dtype: object
 ```
 
 -----
+
 ```python
 # Get a column by name
 df['fname']
@@ -274,26 +281,31 @@ dblock = DataBlock()
 ```
 
 -----
+
 ```python
 # Add a Datasets object using the DataFrame
 dsets = dblock.datasets(df)
 ```
 
 -----
+
 ```python
 len(dsets.train),len(dsets.valid)
 ```
+
 ```text
 (4009, 1002)
 ```
 
 -----
+
 ```python
 # Grabs the same thing twice
 # Need to specify an input and a target
 x,y = dsets.train[0]
 x,y
 ```
+
 ```text
 (fname       008663.jpg
  labels      car person
@@ -306,14 +318,17 @@ x,y
 ```
 
 -----
+
 ```python
 x['fname']
 ```
+
 ```text
 '008663.jpg'
 ```
 
 -----
+
 ```python
 # Tell the DataBlock how to extract the input and target from the DataFrame
 # Using lamda functions
@@ -321,6 +336,7 @@ dblock = DataBlock(get_x = lambda r: r['fname'], get_y = lambda r: r['labels'])
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
+
 ```text
 ('005620.jpg', 'aeroplane')
 ```
@@ -328,6 +344,7 @@ dsets.train[0]
 **Note:** Do not use lambda functions if you need to export the Learner 
 
 -----
+
 ```python
 # Tell the DataBlock how to extract the input and target from the DataFrame
 # Using standard functions
@@ -337,6 +354,7 @@ dblock = DataBlock(get_x = get_x, get_y = get_y)
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
+
 ```text
 ('002549.jpg', 'tvmonitor')
 ```
@@ -344,6 +362,7 @@ dsets.train[0]
 **Note:** Need the full file path for the dependent variable and need to split the dependent variables on the space character
 
 -----
+
 ```python
 def get_x(r): return path/'train'/r['fname']
 def get_y(r): return r['labels'].split(' ')
@@ -351,6 +370,7 @@ dblock = DataBlock(get_x = get_x, get_y = get_y)
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
+
 ```text
 (Path('/home/innom-dt/.fastai/data/pascal_2007/train/002844.jpg'), ['train'])
 ```
@@ -378,9 +398,11 @@ ImageBlock
 ```
 
 -----
+
 ```python
 MultiCategoryBlock
 ```
+
 ```text
 <function fastai.data.block.MultiCategoryBlock(encoded=False, vocab=None, add_na=False)>
 ```
@@ -393,22 +415,26 @@ dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
+
 ```text
 (PILImage mode=RGB size=500x375,
  TensorMultiCategory([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.]))
 ```
 
 -----
+
 ```python
 # Check which object class is represented by the above one-hot encoding
 idxs = torch.where(dsets.train[0][1]==1.)[0]
 dsets.train.vocab[idxs]
 ```
+
 ```text
 (#1) ['dog']
 ```
 
 -----
+
 ```python
 # Define a function to split the dataset based on the is_valid column
 def splitter(df):
@@ -424,12 +450,14 @@ dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
 dsets = dblock.datasets(df)
 dsets.train[0]
 ```
+
 ```text
 (PILImage mode=RGB size=500x333,
  TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
 ```
 
 -----
+
 ```python
 dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
                    splitter=splitter,
@@ -444,12 +472,15 @@ dls = dblock.dataloaders(df)
 ```python
 dls.show_batch(nrows=1, ncols=3)
 ```
-![png](./images/output_35_0.png)
+
+![](./images/output_35_0.png){fig-align="center"}
 
 -----
+
 ```python
 dblock.summary(df)
 ```
+
 ```text
 Setting-up type transforms pipelines
 Collecting items from            fname          labels  is_valid
@@ -566,27 +597,33 @@ learn = cnn_learner(dls, resnet18)
 * Recursively map lists of tensors in `b` to the cpu.
 
 -----
+
 ```python
 to_cpu
 ```
+
 ```text
 <function fastai.torch_core.to_cpu(b)>
 ```
 
 -----
+
 ```python
 x,y = to_cpu(dls.train.one_batch())
 activs = learn.model(x)
 activs.shape
 ```
+
 ```text
 torch.Size([64, 20])
 ```
 
 -----
+
 ```python
 activs[0]
 ```
+
 ```text
 TensorBase([ 0.5674, -1.2013,  4.5409, -1.5284, -0.6600,  0.0999, -2.4757, -0.8773, -0.2934, -1.4746, -0.1738,  2.1763, -3.4473, -1.1407,  0.1783, -1.6922, -2.3396,  0.7602, -1.4213, -0.4334],
        grad_fn=<AliasBackward0>)
@@ -595,6 +632,7 @@ TensorBase([ 0.5674, -1.2013,  4.5409, -1.5284, -0.6600,  0.0999, -2.4757, -0.87
 **Note:** The raw model activations are not scaled between `[0,1]`
 
 -----
+
 ```python
 def binary_cross_entropy(inputs, targets):
     inputs = inputs.sigmoid()
@@ -602,9 +640,11 @@ def binary_cross_entropy(inputs, targets):
 ```
 
 -----
+
 ```python
 binary_cross_entropy(activs, y)
 ```
+
 ```text
 TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```
@@ -619,19 +659,23 @@ TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 * combines a sigmoid layer and the BCELoss in a single class
 
 -----
+
 ```python
 nn.BCEWithLogitsLoss
 ```
+
 ```text
 torch.nn.modules.loss.BCEWithLogitsLoss
 ```
 
 -----
+
 ```python
 loss_func = nn.BCEWithLogitsLoss()
 loss = loss_func(activs, y)
 loss
 ```
+
 ```text
 TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```
@@ -643,9 +687,11 @@ TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 * allows us to bind a function with some arguments or keyword arguments
 
 -----
+
 ```python
 partial
 ```
+
 ```text
 functools.partial
 ```
@@ -656,15 +702,18 @@ functools.partial
 def say_hello(name, say_what="Hello"): return f"{say_what} {name}."
 say_hello('Jeremy'),say_hello('Jeremy', 'Ahoy!')
 ```
+
 ```text
 ('Hello Jeremy.', 'Ahoy! Jeremy.')
 ```
 
 -----
+
 ```python
 f = partial(say_hello, say_what="Bonjour")
 f("Jeremy"),f("Sylvain")
 ```
+
 ```text
 ('Bonjour Jeremy.', 'Bonjour Sylvain.')
 ```
@@ -674,14 +723,17 @@ f("Jeremy"),f("Sylvain")
 * compute accuracy using a threshold value
 
 -----
+
 ```python
 accuracy_multi
 ```
+
 ```text
 <function fastai.metrics.accuracy_multi(inp, targ, thresh=0.5, sigmoid=True)>
 ```
 
 -----
+
 ```python
 learn = cnn_learner(dls, resnet50, metrics=partial(accuracy_multi, thresh=0.2))
 learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
@@ -770,28 +822,34 @@ learn.fine_tune(3, base_lr=3e-3, freeze_epochs=4)
 learn.metrics = partial(accuracy_multi, thresh=0.1)
 learn.validate()
 ```
+
 ```text
 (#2) [0.10356765240430832,0.9294222593307495]
 ```
 
 -----
+
 ```python
 learn.metrics = partial(accuracy_multi, thresh=0.99)
 learn.validate()
 ```
+
 ```text
 (#2) [0.10356765240430832,0.9427291750907898]
 ```
 
 -----
+
 ```python
 preds,targs = learn.get_preds()
 ```
 
 -----
+
 ```python
 accuracy_multi(preds, targs, thresh=0.9, sigmoid=False)
 ```
+
 ```text
 TensorBase(0.9566)
 ```
@@ -804,7 +862,8 @@ xs = torch.linspace(0.05,0.95,29)
 accs = [accuracy_multi(preds, targs, thresh=i, sigmoid=False) for i in xs]
 plt.plot(xs,accs);
 ```
-![png](./images/output_60_0.png)
+
+![](./images/output_60_0.png){fig-align="center"}
 
 
 
@@ -833,32 +892,39 @@ plt.plot(xs,accs);
     * each image has a corresponding _pose.txt file containing the location of center of the head in 3D and the head rotation encoded as 3D rotation matrix
 
 -----
+
 ```python
 path = untar_data(URLs.BIWI_HEAD_POSE)
 path
 ```
+
 ```text
 Path('/home/innom-dt/.fastai/data/biwi_head_pose')
 ```
 
 -----
+
 ```python
 path.ls().sorted()
 ```
+
 ```text
 (#50) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/02.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/03.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/04.obj'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/05.obj')...]
 ```
 
 -----
+
 ```python
 (path/'01').ls().sorted()
 ```
+
 ```text
 (#1000) [Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/depth.cal'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00003_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00004_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00005_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_pose.txt'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00006_rgb.jpg'),Path('/home/innom-dt/.fastai/data/biwi_head_pose/01/frame_00007_pose.txt')...]
 ```
 
 
 -----
+
 ```python
 # recursivley get all images in the 24 subdirectories
 img_files = get_image_files(path)
@@ -867,14 +933,17 @@ def img2pose(x): return Path(f'{str(x)[:-7]}pose.txt')
 pose_file = img2pose(img_files[0])
 pose_file
 ```
+
 ```text
 Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
 ```
 
 -----
+
 ```python
 !cat $pose_file
 ```
+
 ```text
 0.999485 -0.00797222 -0.031067 
 -0.00416483 0.928156 -0.372168 
@@ -884,19 +953,23 @@ Path('/home/innom-dt/.fastai/data/biwi_head_pose/22/frame_00304_pose.txt')
 ```
 
 -----
+
 ```python
 im = PILImage.create(img_files[0])
 im.shape
 ```
+
 ```text
 (480, 640)
 ```
 
 -----
+
 ```python
 im.to_thumb(160)
 ```
-![png](./images/output_70_0.png)
+
+![](./images/output_70_0.png){fig-align="center"}
 
 #### np.genfromtxt
 
@@ -904,14 +977,17 @@ im.to_thumb(160)
 * Load data from a text file
 
 -----
+
 ```python
 np.genfromtxt
 ```
+
 ```text
 <function numpy.genfromtxt(fname, dtype=<class 'float'>, comments='#', delimiter=None, skip_header=0, skip_footer=0, converters=None, missing_values=None, filling_values=None, usecols=None, names=None, excludelist=None, deletechars=" !#$%&'()*+,-./:;<=>?@[\\]^{|}~", replace_space='_', autostrip=False, case_sensitive=True, defaultfmt='f%i', unpack=None, usemask=False, loose=True, invalid_raise=True, max_rows=None, encoding='bytes', *, like=None)>
 ```
 
 -----
+
 ```python
 # Contains the calibration values for this folder's rgb camera
 # Skip the last six lines in the file 
@@ -925,6 +1001,7 @@ array([[517.679,   0.   , 320.   ],
 ```
 
 -----
+
 ```python
 # Extract the 2D coordinates for the center of a head
 # Serves as the get_y function for a DataBlock
@@ -937,17 +1014,21 @@ def get_ctr(f):
 ```
 
 -----
+
 ```python
 np.genfromtxt(img2pose(img_files[0]), skip_header=3)
 ```
+
 ```text
 array([ 62.3638,  96.2159, 979.839 ])
 ```
 
 -----
+
 ```python
 get_ctr(img_files[0])
 ```
+
 ```text
 tensor([352.9487, 291.3338])
 ```
@@ -960,6 +1041,7 @@ tensor([352.9487, 291.3338])
 * Lets fastai know to perform the same data augmentation steps to the key point values as to the images
 
 -----
+
 ```python
 PointBlock
 ```
@@ -983,13 +1065,15 @@ biwi = DataBlock(
 ```
 
 -----
+
 ```python
 dls = biwi.dataloaders(path)
 dls.show_batch(max_n=9, figsize=(8,6))
 ```
-![png](./images/output_80_0.png)
+![](./images/output_80_0.png){fig-align="center"}
 
 -----
+
 ```python
 xb,yb = dls.one_batch()
 xb.shape,yb.shape
@@ -1003,6 +1087,7 @@ xb.shape,yb.shape
 ```python
 yb[0]
 ```
+
 ```text
 TensorPoint([[-0.1246,  0.0960]], device='cuda:0')
 ```
@@ -1015,55 +1100,69 @@ learn = cnn_learner(dls, resnet18, y_range=(-1,1))
 ```
 
 -----
+
 ```python
 def sigmoid_range(x, lo, hi): return torch.sigmoid(x) * (hi-lo) + lo
 ```
 
 -----
+
 ```python
 plot_function(partial(sigmoid_range,lo=-1,hi=1), min=-4, max=4)
 ```
-![png](./images/output_86_1.png)
+
+![](./images/output_86_1.png){fig-align="center"}
 
 -----
+
 ```python
 dls.loss_func
 ```
+
 ```text
 FlattenedLoss of MSELoss()
 ```
 
 -----
+
 ```python
 min_lr, steep_lr, valley = learn.lr_find(suggest_funcs=(minimum, steep, valley))
 ```
-![png](./images/output_88_2.png)
+
+![](./images/output_88_2.png){fig-align="center"}
 
 -----
+
 ```python
 min_lr
 ```
+
 ```text
 0.006918309628963471
 ```
 
 -----
+
 ```python
 steep_lr
 ```
+
 ```text
 2.0892961401841603e-05
 ```
 
 -----
+
 ```python
 valley
 ```
+
 ```text
 0.0010000000474974513
 ```
 
 -----
+
 ```python
 lr = 1e-2
 learn.fine_tune(3, lr)
@@ -1121,10 +1220,12 @@ learn.fine_tune(3, lr)
 
 
 -----
+
 ```python
 # Calculate the Root Mean Squared Error
 math.sqrt(0.000042)
 ```
+
 ```text
 0.00648074069840786
 ```
@@ -1134,7 +1235,8 @@ math.sqrt(0.000042)
 ```python
 learn.show_results(ds_idx=1, nrows=3, figsize=(6,8))
 ```
-![png](./images/output_94_2.png)
+
+![](./images/output_94_2.png){fig-align="center"}
 
 
 

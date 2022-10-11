@@ -356,7 +356,7 @@ pd.Series(counts).sort_values().plot.barh()
 plt.title("Frequency of Question Types")
 plt.show()
 ```
-![png](./images/output_31_0.png)
+![](./images/output_31_0.png){fig-align="center"}
 
 
 **Note:** Questions that begin with "How," "What," and "Is" are the most common.
@@ -839,7 +839,7 @@ ax2.set_ylabel("End Scores")
 plt.xticks(rotation="vertical")
 plt.show()
 ```
-![png](./images/output_76_0.png)
+![](./images/output_76_0.png){fig-align="center"}
 
 ------
 
@@ -957,7 +957,7 @@ plt.legend()
 plt.ylabel("Count")
 plt.show()
 ```
-![png](./images/output_91_0.png)
+![](./images/output_91_0.png){fig-align="center"}
 
 ------
 
@@ -1953,7 +1953,7 @@ def plot_retriever_eval(dfs, retriever_names):
     
 plot_retriever_eval([es_topk_df], ["BM25"])
 ```
-![png](./images/output_182_0.png)
+![](./images/output_182_0.png){fig-align="center"}
 
 **Note:** 
 
@@ -2023,7 +2023,7 @@ document_store.update_embeddings(retriever=dpr_retriever)
 dpr_topk_df = evaluate_retriever(dpr_retriever)
 plot_retriever_eval([es_topk_df, dpr_topk_df], ["BM25", "DPR"])
 ```
-![png](./images/output_192_0.png)
+![](./images/output_192_0.png){fig-align="center"}
 
 
 **Note:** 
@@ -2135,7 +2135,7 @@ def plot_reader_eval(reader_eval):
 
 plot_reader_eval(reader_eval)
 ```
-![png](./images/output_206_0.png)
+![](./images/output_206_0.png){fig-align="center"}
 
 
 **Note:**
@@ -2289,7 +2289,7 @@ reader.train(data_dir=".", use_gpu=True, n_epochs=1, batch_size=16,
 reader_eval["Fine-tune on SQuAD + SubjQA"] = evaluate_reader(reader)
 plot_reader_eval(reader_eval)
 ```
-![png](./images/output_219_0.png)
+![](./images/output_219_0.png){fig-align="center"}
 
 
 **Note:** Domain adaptation increased the EM score by 6x and the F1 score over 2x.
@@ -2348,7 +2348,7 @@ minilm_reader.train(data_dir=".", use_gpu=True, n_epochs=1, batch_size=16,
 reader_eval["Fine-tune on SubjQA"] = evaluate_reader(minilm_reader)
 plot_reader_eval(reader_eval)
 ```
-![png](./images/output_226_0.png)
+![](./images/output_226_0.png){fig-align="center"}
 
 **Note:**
 
@@ -2390,7 +2390,7 @@ reader_eval["QA Pipeline (top-1)"] = {
 plot_reader_eval({"Reader": reader_eval["Fine-tune on SQuAD + SubjQA"], 
                   "QA pipeline (top-1)": reader_eval["QA Pipeline (top-1)"]})
 ```
-![png](./images/output_232_0.png)
+![](./images/output_232_0.png){fig-align="center"}
 
 
 **Note:**
@@ -2531,6 +2531,10 @@ generate_answers("What is the main drawback?")
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
 
 
+
+**Previous:** [Notes on Transformers Book Ch. 6](../chapter-6/)
+
+**Next:** [Notes on Transformers Book Ch. 8](../chapter-8/)
 
 
 

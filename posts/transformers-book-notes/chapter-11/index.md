@@ -140,7 +140,7 @@ ax.grid(True)
 plt.subplots_adjust(top=1.2)
 plt.show()
 ```
-![png](./images/output_5_0.png)
+![](./images/output_5_0.png){fig-align="center"}
 
 ------
 
@@ -209,11 +209,14 @@ plt.show()
 * Linearized attention involves changing the order of operations for computing attention scores.
 * We compute the self-attention score of the queries and keys using a similarity function like the dot product.
 * For a general similarity function $sim \left( q_{i},k_{j} \right)$, we can express the attention outputs as the following equation:
+* 
 ### $$y_{i} = \sum_{j}{\frac{sim \left( Q_{i}, K_{j} \right)}{\sum_{k}{sim\left( Q_{i}, K_{k} \right)}}V_{j}}$$
 * The trick behind linearized attention mechanisms is to express the similarity function as a kernel function that decomposes the operation into two pieces:
+* 
 ### $$sim \left( Q_{j}, K_{j} \right) = \phi \left(Q_{i} \right)^{T} \phi \left( K_{j} \right)$$
 * where $\phi$ is typically a high-dimensional feature map.
 * $\phi \left( Q_{i} \right)$ is independent of $j$ and $k$, so we can pull it under the sums to write the attention output as follows:
+* 
 ### $$y_{i} = \frac{\phi \left(Q_{i} \right)^{T} \sum_{j}{\phi \left( K_{j} \right)} V_{j}^{T}}{\phi \left(Q_{i} \right)^{T} \sum_{k}{\phi \left( K_{k} \right)}}$$
 * By first computing $\sum_{j}{\phi \left( K_{j} \right)} V_{j}^{T}$ and $\sum_{k}{\phi \left( K_{k} \right)}$, we can effectively linearize the space and time complexity of self-attention.
 * Popular methods that implement linearized self-attention include Linear Transformer and Performer.
@@ -279,7 +282,7 @@ plt.imshow(image)
 plt.axis("off")
 plt.show()
 ```
-![png](./images/output_17_0.png)
+![](./images/output_17_0.png){fig-align="center"}
 
 ------
 
@@ -410,7 +413,7 @@ preds_df
 * Table Parser (TAPAS) applies the Transformer architecture to tables by combining the tabular information with the query.
 * [TAPAS: Weakly Supervised Table Parsing via Pre-training](https://arxiv.org/abs/2004.02349)
 
-<img alt="tapas-architecture" width="800" caption="Architecture of TAPAS (courtesy of Jonathan Herzig)" src="./images/chapter11_tapas-architecture.png" id="tapas-architecture"/>
+![](./images/chapter11_tapas-architecture.png){fig-align="center"}
 
 **Create some sample table data**
 
@@ -651,6 +654,7 @@ for query, pred in zip(queries, preds):
 ```
 
 **Note:**
+
 * The model predicted exactly one cell with no aggregation for the first query, and the answer is correct.
 * For the second query, the model correctly predicted that we need to sum the individual page counts for each chapter to determine the total number of pages.
 * The model correctly answered question three but included an unnecessary average aggregation.
@@ -929,7 +933,8 @@ print(pred)
     {'text': 'MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL'}
 ```
 
-**Note:** 
+**Note:**
+
 * The words in the transcription are correct, but the punctuation is missing.
 * It is hard to infer punctuation from audio alone, and we could add it in a post-processing step.
 * Building a model for a new language still requires a minimum amount of labeled data, which can be challenging to obtain.
@@ -939,7 +944,7 @@ print(pred)
 
 ------
 
-<img alt="wav2vec-u" width="800" caption="Training scheme for wav2vec-U (courtesy of Alexsei Baevski)" src="./images/chapter11_wav2vec-u.png" id="wav2vec-u"/>
+![](./images/chapter11_wav2vec-u.png){fig-align="center"}
 
 ### Vision and Text
 * There have been several developments in combining visual and textual information.
@@ -956,7 +961,7 @@ print(pred)
 * LayoutLM models pre-train on millions of scanned documents and can transfer to various downstream tasks, similar to BERT for NLP.
 * LayoutLM models are the current state of the art for analyzing scanned business documents like receipts, invoices, or reports.
 
-<img alt="layoutlm" width="500" caption="The model architecture and pretraining strategies for LayoutLMv2 (courtesy of Yang Xu)" src="./images/chapter11_layoutlm.png" id="layoutlm"/> 
+![](./images/chapter11_layoutlm.png){fig-align="center"}
 
 #### DALL·E
 * DALLE uses the GPT architecture and autoregressive modeling to generate images from text.
@@ -971,7 +976,7 @@ print(pred)
 * We need to instantiate a processor that contains a feature extractor and a tokenizer for image-to-text tasks.
 * The feature extractor converts the image into a form suitable for the model, while the tokenizer decodes the model predictions into text.
 
-<img alt="clip-arch" width="800" caption="Architecture of CLIP (courtesy of Alec Radford)" src="./images/chapter11_clip-arch.png" id="clip-arch"/>
+![](./images/chapter11_clip-arch.png){fig-align="center"}
 
 ------
 
@@ -1050,7 +1055,7 @@ plt.imshow(image)
 plt.axis("off")
 plt.show()
 ```
-![png](./images/output_86_0.png)
+![](./images/output_86_0.png){fig-align="center"}
 
 ------
 
@@ -1120,6 +1125,8 @@ pd.DataFrame(zip(texts, probs[0].numpy()), columns=['Text', "Probability"])
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
 
 
+
+**Previous:** [Notes on Transformers Book Ch. 10](../chapter-10/)
 
 
 

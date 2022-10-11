@@ -29,7 +29,7 @@ I followed up on the [results](../part-3/#using-a-smaller-model) in the last pos
 
 I was able to shrink the model from 13MB to less than 1MB by modifying two lines in the config file. This involved significantly reducing the number and size of layers in the model.
 
-![generator_combo](./images/generator_combo.png)
+![](./images/generator_combo.png){fig-align="center"}
 
 Fortunately, this didn't seem to have any significant impact on the quality of the output. The model did however need to be trained longer to achieve similar results.
 
@@ -39,9 +39,9 @@ The modified video stylization model has better performance than the original `f
 
 ### Resolution: 720 x 540
 
-![few_shot_mosaic](./images/few_shot_mosaic_720x540.png)
+![](./images/few_shot_mosaic_720x540.png){fig-align="center"}
 
-![few_shot_mosaic_peformance](./images/stats_720x540.gif)
+![](./images/stats_720x540.gif){fig-align="center"}
 
 ## Training vs Unity
 

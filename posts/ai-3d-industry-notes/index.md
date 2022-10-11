@@ -19,6 +19,7 @@ aliases:
 - /Notes-on-How-AI-Will-Change-The-3D-Industry/
 ---
 
+
 * [Overview](#overview)
 * [Assets are unreasonably expensive](#assets-are-unreasonably-expensive)
 * [Machine Creep](#machine-creep)
@@ -109,7 +110,7 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
 
 - BicycleGAN
   
-    ![https://github.com/junyanz/BicycleGAN/blob/master/imgs/day2night.gif?raw=true](https://github.com/junyanz/BicycleGAN/blob/master/imgs/day2night.gif?raw=true)
+    ![](https://github.com/junyanz/BicycleGAN/blob/master/imgs/day2night.gif?raw=true){fig-align="center"}
     
     - Model input: outline of an object in an image and the ground truth image
     - Model output: generate variations of image
@@ -171,7 +172,7 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
     
 - 3DStyleNet: Creating 3D Shapes with Geometric and Texture Style Variations
   
-    ![https://nv-tlabs.github.io/3DStyleNet/assets/teaser.jpg](https://nv-tlabs.github.io/3DStyleNet/assets/teaser.jpg)
+    ![](https://nv-tlabs.github.io/3DStyleNet/assets/teaser.jpg){fig-align="center"}
     
     
     
@@ -181,7 +182,7 @@ I went back and watched the [talk](https://www.youtube.com/watch?v=FlgLxSLsYWQ) 
     
 - DISN: Deep Implicit Surface Network for High-quality Single-view 3D Reconstruction
   
-    ![https://github.com/laughtervv/DISN/raw/master/result.png](https://github.com/laughtervv/DISN/raw/master/result.png)
+    ![](https://github.com/laughtervv/DISN/raw/master/result.png){fig-align="center"}
     
     - [GitHub Repository](https://github.com/laughtervv/DISN) (Tensorflow)
     - [GitHub Repository](https://github.com/cs674/pytorch-DISN) (PyTorch)

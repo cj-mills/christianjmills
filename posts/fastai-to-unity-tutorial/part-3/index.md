@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: Part 3 covers building a Unity project to run in a web browser and hosting
-  it using GitHub Pages.
+description: Build a Unity project as a WebGL application and host it using GitHub Pages.
 categories: [fastai, unity, barracuda]
 
 aliases:
@@ -37,31 +36,31 @@ WebGL builds use Barracuda's Pixel Shader backend, which is not nearly as perfor
 
 **Pixel Shader Backend: ResNet18**
 
-![unity-webcam-pixel-shader-fps-resnet18](./images/unity-webcam-pixel-shader-fps-resnet18.png)
+![](./images/unity-webcam-pixel-shader-fps-resnet18.png){fig-align="center"}
 
 **Pixel Shader Backend: ResNet34**
 
-![unity-webcam-pixel-shader-fps-resnet34](./images/unity-webcam-pixel-shader-fps-resnet34.png)
+![](./images/unity-webcam-pixel-shader-fps-resnet34.png){fig-align="center"}
 
 
 
 **Compute Shader Backend: ResNet18**
 
-![unity-webcam-compute-shader-fps-resnet18](./images/unity-webcam-compute-shader-fps-resnet18.png)
+![](./images/unity-webcam-compute-shader-fps-resnet18.png){fig-align="center"}
 
 **Compute Shader Backend: ResNet34**
 
-![unity-webcam-compute-shader-fps-resnet34](./images/unity-webcam-compute-shader-fps-resnet34.png)
+![](./images/unity-webcam-compute-shader-fps-resnet34.png){fig-align="center"}
 
 
 
 **Compute Shader Backend with asynchronous GPU readback: ResNet18**
 
-![unity-webcam-compute-shader-async-fps-resnet18](./images/unity-webcam-compute-shader-async-fps-resnet18.png)
+![](./images/unity-webcam-compute-shader-async-fps-resnet18.png){fig-align="center"}
 
 **Compute Shader Backend with asynchronous GPU readback: ResNet34**
 
-![unity-webcam-compute-shader-async-fps-resnet34](./images/unity-webcam-compute-shader-async-fps-resnet34.png)
+![](./images/unity-webcam-compute-shader-async-fps-resnet34.png){fig-align="center"}
 
 
 
@@ -76,7 +75,7 @@ We first need to create a [new GitHub repository](https://github.com/new) to sto
 
 
 
-![github-desktop-create-new-repository](./images/github-desktop-create-new-repository.png)
+![](./images/github-desktop-create-new-repository.png){fig-align="center"}
 
 
 
@@ -84,7 +83,7 @@ Open the Settings tab for the new repository on GitHub.
 
 
 
-![github-new-repository](./images/github-new-repository.png)
+![](./images/github-new-repository.png){fig-align="center"}
 
 
 
@@ -92,7 +91,7 @@ Open the Pages section and select the main branch as the source for GitHub Pages
 
 
 
-![github-pages-select-main-branch](./images/github-pages-select-main-branch.png)
+![](./images/github-pages-select-main-branch.png){fig-align="center"}
 
 
 
@@ -100,7 +99,7 @@ Click the Save button to start the automated build process.
 
 
 
-![github-pages-click-save](./images/github-pages-click-save.png)
+![](./images/github-pages-click-save.png){fig-align="center"}
 
 
 
@@ -108,7 +107,7 @@ GitHub will provide a URL for accessing the web demo once it finishes building.
 
 
 
-![github-pages-get-url](./images/github-pages-get-url.png)
+![](./images/github-pages-get-url.png){fig-align="center"}
 
 
 
@@ -116,7 +115,7 @@ We can check the GitHub Pages build progress under the Actions tab for the repos
 
 
 
-![github-pages-check-build-progress](./images/github-pages-check-build-progress.png)
+![](./images/github-pages-check-build-progress.png){fig-align="center"}
 
 
 
@@ -124,7 +123,7 @@ The web page will be accessible once the "pages build and deployment" workflow c
 
 
 
-![github-pages-build-complete](./images/github-pages-build-complete.png)
+![](./images/github-pages-build-complete.png){fig-align="center"}
 
 
 
@@ -136,7 +135,7 @@ The web page will be accessible once the "pages build and deployment" workflow c
 
 In the Unity project, select `File → Build Settings...` in the top menu bar to open the Build Settings window.
 
-![unity-open-build-settings](./images/unity-open-build-settings.png)
+![](./images/unity-open-build-settings.png){fig-align="center"}
 
 
 
@@ -144,7 +143,7 @@ Select `WebGL` from the list of platforms and click Switch Platform.
 
 
 
-![unity-build-settings-switch-to-webgl](./images/unity-build-settings-switch-to-webgl.png)
+![](./images/unity-build-settings-switch-to-webgl.png){fig-align="center"}
 
 
 
@@ -152,7 +151,7 @@ Unity enables compression by default for WebGL builds, which GitHub Pages does n
 
 
 
-![unity-build-settings-open-player-settings](./images/unity-build-settings-open-player-settings.png)
+![](./images/unity-build-settings-open-player-settings.png){fig-align="center"}
 
 
 
@@ -160,7 +159,7 @@ Select `Disabled` from the Compression Format dropdown menu and close the Projec
 
 
 
-![unity-player-settings-disable-webgl-compression](./images/unity-player-settings-disable-webgl-compression.png)
+![](./images/unity-player-settings-disable-webgl-compression.png){fig-align="center"}
 
 
 
@@ -168,7 +167,7 @@ We can test the WebGL build locally by clicking Build and Run in the Build Setti
 
 
 
-![unity-build-settings-build-and-run](./images/unity-build-settings-build-and-run.png)
+![](./images/unity-build-settings-build-and-run.png){fig-align="center"}
 
 
 
@@ -176,7 +175,7 @@ Unity will prompt us to select a folder to store the build files.
 
 
 
-![unity-select-build-folder](./images/unity-select-build-folder.png)
+![](./images/unity-select-build-folder.png){fig-align="center"}
 
 
 
@@ -184,7 +183,7 @@ Navigate to the local folder for the GitHub Pages repository and click Select Fo
 
 
 
-![unity-build-select-github-pages-repo-folder](./images/unity-build-select-github-pages-repo-folder.png)
+![](./images/unity-build-select-github-pages-repo-folder.png){fig-align="center"}
 
 
 
@@ -192,7 +191,7 @@ Once the build completes, Unity will launch the demo in the default web browser.
 
 
 
-![unity-webgl-build-local-test](./images/unity-webgl-build-local-test.png)
+![](./images/unity-webgl-build-local-test.png){fig-align="center"}
 
 
 
@@ -200,7 +199,7 @@ If we examine the repository folder, we can see a new `Build` folder, a `Streami
 
 
 
-![github-pages-repo-folder-after-webgl-build](./images/github-pages-repo-folder-after-webgl-build.png)
+![](./images/github-pages-repo-folder-after-webgl-build.png){fig-align="center"}
 
 
 
@@ -208,7 +207,7 @@ We can push the local changes to GitHub, which will automatically trigger the "p
 
 
 
-![github-pages-check-webgl-build-progress](./images/github-pages-check-webgl-build-progress.png)
+![](./images/github-pages-check-webgl-build-progress.png){fig-align="center"}
 
 
 
@@ -220,7 +219,7 @@ We can push the local changes to GitHub, which will automatically trigger the "p
 
 We can test the web demo at the URL provided by GitHub once the build workflow completes.
 
-![github-pages-webgl-demo](./images/github-pages-webgl-demo.png)
+![](./images/github-pages-webgl-demo.png){fig-align="center"}
 
 
 

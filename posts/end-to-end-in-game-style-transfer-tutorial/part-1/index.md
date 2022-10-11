@@ -43,7 +43,7 @@ In this first post, we'll download our Unity project and install the Barracuda l
 
 I'll be using the [Kinematica_Demo](https://github.com/Unity-Technologies/Kinematica_Demo/) project provided by Unity for this tutorial. I was planning on using the lightweight FPS Microgame that's available in Unity Hub. However, the environment ended up being so simple that there wasn't much to stylize. Feel free to follow along with that project though. The steps are identical and it takes much less time to open.
 
-![unity-hub-fps-microgame](./images/unity-hub-fps-microgame.png)
+![](./images/unity-hub-fps-microgame.png){fig-align="center"}
 
 ### Download Kinematica Demo
 
@@ -55,7 +55,7 @@ You can download the Kinematica project by clicking on the link below. The zippe
 
 Once downloaded, unzip the folder and add the project to Unity Hub using the `Add` button.
 
-![unity_hub_add_project](./images/unity_hub_add_project.png)
+![](./images/unity_hub_add_project.png){fig-align="center"}
 
 ### Set the Unity Version
 
@@ -63,27 +63,27 @@ Select a Unity version from the drop-down menu. The demo project was made using 
 
 * Unity 2019.4.20: ([download](unityhub://2019.4.20f1/6dd1c08eedfa))
 
-![set-unity-version](./images/set-unity-version.png)
+![](./images/set-unity-version.png){fig-align="center"}
 
 ### Open the Project
 
 Now we can open the project. We'll be prompted to upgrade the project to the selected Unity version. Click `Confirm` in the popup to upgrade the project. This project takes a while to load the first time.
 
-![upgrade-unity-version](./images/upgrade-unity-version.png)
+![](./images/upgrade-unity-version.png){fig-align="center"}
 
 ## Install Barracuda Package
 
 We'll install the Barracuda package once the project has finished loading. Open the Package Manager window in the Unity editor.
 
-![unity-open-package-manager](./images/unity-open-package-manager.png)
+![](./images/unity-open-package-manager.png){fig-align="center"}
 
  In the Unity Registry section, type `Barracuda` into the search box. We'll be using version `1.0.4`.
 
-![barracuda_search](./images/barracuda_search.png)
+![](./images/barracuda_search.png){fig-align="center"}
 
 Click the `Install` button to install the package.
 
-![barracuda_install](./images/barracuda_install.png)
+![](./images/barracuda_install.png){fig-align="center"}
 
 
 
@@ -95,21 +95,21 @@ Google Colab environments provide the option to mount our Google Drive as a dire
 
 We'll make a dedicated project folder to keep things organized. Open up your Google Drive and click the `New` button.
 
-![gdrive-click-new-button](./images/gdrive-click-new-button.png)
+![](./images/gdrive-click-new-button.png){fig-align="center"}
 
 Select the `Folder` option.
 
-![gdrive-click-new-folder](./images/gdrive-click-new-folder.png)
+![](./images/gdrive-click-new-folder.png){fig-align="center"}
 
 Name the folder `Style_Transfer_Project`.
 
-![gdrive-create-project-folder](./images/gdrive-create-project-folder.png)
+![](./images/gdrive-create-project-folder.png){fig-align="center"}
 
 ### Create Folder for Style Images
 
 Open the project folder and create a new folder for storing the style images you want to use.
 
-![gdrive-create-style-image-folder](./images/gdrive-create-style-image-folder.png)
+![](./images/gdrive-create-style-image-folder.png){fig-align="center"}
 
 #### Upload Style Images
 
@@ -119,7 +119,7 @@ You can pick whatever images you want, but some will work better than others. Up
 
 #### Sample Style Images: ([link](https://drive.google.com/drive/folders/1IJZk5vY0coY1qOlotkvtZpBHufAP9GFX?usp=sharing))
 
-![gdrive-upload-style-images](./images/gdrive-upload-style-images.png)
+![](./images/gdrive-upload-style-images.png){fig-align="center"}
 
 ### Create Folder for Test Images
 
@@ -131,7 +131,7 @@ You can use this screenshot from the Kinematica demo for your test image.
 
 Place your test images in a new folder called `test_images`.
 
-![gdrive-test-images](./images/gdrive-test-images.png)
+![](./images/gdrive-test-images.png){fig-align="center"}
 
 ## Conclusion
 

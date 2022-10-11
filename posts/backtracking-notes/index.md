@@ -111,7 +111,7 @@ def solve():
 
 **Possible Seating Arrangements**
 
-![simple-backtrack-tree.drawio](./images/simple-backtrack-tree-1.png)
+![](./images/simple-backtrack-tree-1.png){fig-align="center"}
 
 
 
@@ -237,7 +237,7 @@ backtracking from: ['B1']
 
 * The girl cannot sit in the middle (Seat 2)
 
-![simple-backtrack-tree-2](./images/simple-backtrack-tree-2.png)
+![](./images/simple-backtrack-tree-2.png){fig-align="center"}
 
 
 

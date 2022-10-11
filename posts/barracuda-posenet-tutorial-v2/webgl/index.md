@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This post covers how to modify the Barracuda PoseNet project to run in
-  the browser using WebGL.
+description: Modify the Barracuda PoseNet project to run in a browser using WebGL.
 categories: [unity, barracuda, webgl, tutorial]
 
 aliases:
@@ -62,11 +61,11 @@ First, we need to clone the existing PoseNet project from GitHub. Once downloade
 
 Open the package manager window and navigate to the Barracuda package. We can see there is a new `3.0.0` version available. At the time of writing, this was the most recent version of the package. Click the `Update to 3.0.0` button to start the update process. 
 
-![update-barracuda-library-1](./images/update-barracuda-library-1.png)
+![](./images/update-barracuda-library-1.png){fig-align="center"}
 
 A popup window will open stating we need to restart the editor. Click the OK button, then close and reopen the project.
 
-![burst-package-update-detected](./images/burst-package-update-detected.png)
+![](./images/burst-package-update-detected.png){fig-align="center"}
 
 
 
@@ -74,11 +73,11 @@ A popup window will open stating we need to restart the editor. Click the OK but
 
 WebGL builds do not support playing local video files. The video files would need to be hosted on a web server and accessed via URL. Since real-world applications would likely take input from a webcam, we will focus on that instead. Select the `VideoScreen` object in the Hierarchy tab.
 
-![select-videoscreen-hierarchy-tab](./images/select-videoscreen-hierarchy-tab.png)
+![](./images/select-videoscreen-hierarchy-tab.png){fig-align="center"}
 
 Right-click the Video Player component in the Inspector tab and select `Remove Component`.
 
-![remove-videoplayer-component](./images/remove-videoplayer-component.png)
+![](./images/remove-videoplayer-component.png){fig-align="center"}
 
 
 
@@ -92,11 +91,11 @@ The new version of Barracuda also added support for creating a Tensor from a `Re
 
 Open the Shaders folder in the Assets section. Right-click to open the context menu and select `Create → Shader → Image Effect Shader`. 
 
-![create-image-effect-shader](./images/create-image-effect-shader.png)
+![](./images/create-image-effect-shader.png){fig-align="center"}
 
 We will need to create two of these shaders for the MobileNet and ResNet models, respectively. Name the two shaders ProcessMobileNet and ProcessResNet.
 
-![image-effect-shaders](./images/image-effect-shaders.png)
+![](./images/image-effect-shaders.png){fig-align="center"}
 
 
 
@@ -147,19 +146,19 @@ float4 frag(v2f i) : SV_Target
 
 We need to attach the shaders to materials to apply them using the `Graphics.Blit()` function. Right-click to open the context menu and select `Create → Material`. 
 
-![create-material](./images/create-material.png)
+![](./images/create-material.png){fig-align="center"}
 
 We need materials for both the `MobileNet` and `ResNet` models. We can use the same names as the shaders.
 
-![name-materials](./images/name-materials.png)
+![](./images/name-materials.png){fig-align="center"}
 
 Select the `MobileNet` Material, then drag the `MobileNet` Shader into the Inspector Tab.
 
-![assign-mobilenet-shader](./images/assign-mobilenet-shader.png)
+![](./images/assign-mobilenet-shader.png){fig-align="center"}
 
 Do the same for the `ResNet `Material.
 
-![assign-resnet-shader](./images/assign-resnet-shader.png)
+![](./images/assign-resnet-shader.png){fig-align="center"}
 
 
 
@@ -171,7 +170,7 @@ It can be cumbersome to keep track of the individual requirements for the differ
 
 Open the `Assets → Scripts` folder and create a new C# script. Name it PoseNetModel and open it in the code editor.
 
-![create-posenetmodel-script](./images/create-posenetmodel-script.png)
+![](./images/create-posenetmodel-script.png){fig-align="center"}
 
 Replace the MonoBehaviour inheritance with ScriptableObject and delete the default methods. Add the Barracuda namespace as well.
 
@@ -248,20 +247,20 @@ public class PoseNetModel : ScriptableObject
 
 Back in the Assets section, right-click to open the context menu and select `Create → PoseNet Model` to create a new instance of the Scriptable Object. 
 
-![create-posenetmodel-asset](./images/create-posenetmodel-asset.png)
+![](./images/create-posenetmodel-asset.png){fig-align="center"}
 
 Name the `.asset` file `MobileNet`. With the asset selected, drag the `Assets/Models/mobilenet.onnx` file into the `Model Asset` field in the Inspector Tab.
 
-![mobilenet-assign-modelasset](./images/mobilenet-assign-modelasset.png)
+![](./images/mobilenet-assign-modelasset.png){fig-align="center"}
 
 Next, drag the associated processing material into the Preprocessing Material field. Enter `2` and `3` for the forward and backward displacement layer indices, respectively.
 
-![populate-mobilenet-asset-fields](./images/populate-mobilenet-asset-fields.png)
+![](./images/populate-mobilenet-asset-fields.png){fig-align="center"}
 
 
 Create a second instance called `ResNet` and assign the associated ONNX file and Material. This time, enter `3`  for the forward displacement layer and `2` for the backward displacement layer.
 
-![populate-resnet-asset-fields](./images/populate-resnet-asset-fields.png)
+![](./images/populate-resnet-asset-fields.png){fig-align="center"}
 
 
 
@@ -778,7 +777,7 @@ private void OnDisable()
 
 Before we test the modified project, we need to assign the `MobileNet` and `ResNet` assets to the Pose Estimator component. Select the `PoseEstimator` object in the Hierarchy tab. Then drag the `MobileNet` and `ResNet` assets onto the Models field in the Inspector tab. Make sure to place the model you want to test in the `Element 0` field. Lastly, open the `Worker Type` dropdown and select `Pixel Shader`.
 
-![poseestimator-select-pixel-shader](./images/configure-poseestimator-component.png)
+![](./images/configure-poseestimator-component.png){fig-align="center"}
 
 
 
@@ -788,23 +787,23 @@ Before we test the modified project, we need to assign the `MobileNet` and `ResN
 
 Press Ctrl+B to build and run the project. Select or create a Build folder in the popup window.
 
-![select-build-folder](./images/select-build-folder.png)
+![](./images/select-build-folder.png){fig-align="center"}
 
 The first build attempt will likely fail, with Unity displaying lots of errors and warnings in the console. The console error messages all say that Bitwise integer instructions are not supported on GLES 2.
 
-![webgl-barracuda-build-errors](./images/webgl-barracuda-build-errors.png)
+![](./images/webgl-barracuda-build-errors.png){fig-align="center"}
 
 However, if we press Ctrl+B again, the build will complete successfully.
 
-![webgl-barracuda-build-completed](./images/webgl-barracuda-build-completed.png)
+![](./images/webgl-barracuda-build-completed.png){fig-align="center"}
 
 Once the project build is complete, a new window will open, and the project will start. 
 
-![browser-window-default-scene](./images/browser-window-default-scene.png)
+![](./images/browser-window-default-scene.png){fig-align="center"}
 
 There should be a prompt asking for permission to access the webcam. If not, try refreshing the page. 
 
-![webcam-permission-prompt](./images/webcam-permission-prompt.png)
+![](./images/webcam-permission-prompt.png){fig-align="center"}
 
 The project should automatically perform the initialization steps once the browser accesses the webcam.
 

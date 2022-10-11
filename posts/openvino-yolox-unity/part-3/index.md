@@ -62,11 +62,11 @@ In this part, we will demonstrate how to create a Unity project to access the DL
 
 Open Unity Hub and click the New button. 
 
-![unity-hub-click-new](./images/unity-hub-click-new.png)
+![](./images/unity-hub-click-new.png){fig-align="center"}
 
  We can stick with the default 3D template and name the project OpenVINO_YOLOX_Demo. Take note of where the project will be generated and click Create.
 
-![unity-hub-create-project](./images/unity-hub-create-project.png)
+![](./images/unity-hub-create-project.png){fig-align="center"}
 
 
 
@@ -86,17 +86,17 @@ We will be using the free [Graphy](https://assetstore.unity.com/packages/tools/g
 
 Download the Canvas.prefab file from the above link and drop it into the assets folder in the Unity editor.
 
-![unity-editor-add-canvas-prefab](./images/unity-editor-add-canvas-prefab.png)
+![](./images/unity-editor-add-canvas-prefab.png){fig-align="center"}
 
  
 
 Drag and drop the prefab from the Assets folder into the Hierarchy tab. A TMP Importer popup window will appear. Click Import TMP Essentials. Close the popup window once the import is complete.
 
-![unity-editor-import-tmp-essentials](./images/unity-editor-import-tmp-essentials.png)
+![](./images/unity-editor-import-tmp-essentials.png){fig-align="center"}
 
 If we select the Game tab, we can see the interface we just added. Don't worry if it looks squished.
 
-![unity-editor-view-canvas](./images/unity-editor-view-canvas.png)
+![](./images/unity-editor-view-canvas.png){fig-align="center"}
 
  
 
@@ -106,7 +106,7 @@ This next step requires being signed into a Unity account. Open the link to the 
 
 * Graphy Asset Store Page: ([link](https://assetstore.unity.com/packages/tools/gui/graphy-ultimate-fps-counter-stats-monitor-debugger-105778))
 
-![unity-store-add-graphy](./images/unity-store-add-graphy.png)
+![](./images/unity-store-add-graphy.png){fig-align="center"}
 
  
 
@@ -114,13 +114,13 @@ The Add to My Assets button should change to Open In Unity. Click the button aga
 
 The Package Manager window should popup in the editor with the Graphy asset selected. Click the download button in the bottom right corner.
 
-![package-manager-download-graphy](./images/package-manager-download-graphy.png)
+![](./images/package-manager-download-graphy.png){fig-align="center"}
 
  
 
 Click Import once the package is finished downloading. An Import Unity Package popup window will appear.
 
-![package-manager-import-graphy](./images/package-manager-import-graphy.png)
+![](./images/package-manager-import-graphy.png){fig-align="center"}
 
 
 
@@ -128,19 +128,19 @@ Click Import once the package is finished downloading. An Import Unity Package p
 
 Click Import in the popup window. Close the Package Manager window once the import is complete. There should now be a new folder called Graphy - Ultimate Stats Monitor in the Assets folder.
 
-![import-unity-package-graphy](./images/import-unity-package-graphy.png)
+![](./images/import-unity-package-graphy.png){fig-align="center"}
 
  
 
 Inside the new folder, open the Prefab folder and drag the [Graphy] prefab into the Hierarchy tab. We will see that our game scene gets updated.
 
-![unity-assets-graphy-prefab](./images/unity-assets-graphy-prefab.png)
+![](./images/unity-assets-graphy-prefab.png){fig-align="center"}
 
  
 
 With the `[Graphy]` object still selected in the Hierarchy tab. Scroll down in the Inspector tab to the Graphy Manager (Script) section. Open the Graph modules position dropdown and select TOP_LEFT. Nothing will change in the game view, but the position will be updated when we build the project. 
 
-![graphy-set-module-position](./images/graphy-set-module-position.png)
+![](./images/graphy-set-module-position.png){fig-align="center"}
 
  
 
@@ -154,7 +154,7 @@ For this demo, we will obtain our input images from a video or webcam feed playi
 
 In the Assets window, right-click an empty space, select the Create option, and click Folder. Name the folder Videos.
 
-![unity-editor-create-folder](./images/unity-editor-create-folder.png)
+![](./images/unity-editor-create-folder.png){fig-align="center"}
 
  
 
@@ -164,7 +164,7 @@ Double-click the Videos folder to open it.
 
 Drag and drop any video files from the file explorer into the Videos folder. We will be using the file names to populate the dropdown menu in the UI, so rename the files according to their target object class.
 
-![unity-editor-add-video-files](./images/unity-editor-add-video-files.png)
+![](./images/unity-editor-add-video-files.png){fig-align="center"}
 
  
 
@@ -172,7 +172,7 @@ Drag and drop any video files from the file explorer into the Videos folder. We 
 
 We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right-click an empty space in the Hierarchy tab. Select the 3D Object section and click Quad. We can just name it VideoScreen.
 
-![unity-create-quad](./images/unity-create-quad.png)
+![](./images/unity-create-quad.png){fig-align="center"}
 
  
 
@@ -182,13 +182,13 @@ We will be updating the VideoScreen dimensions in code based on the resolution o
 
 Unity has a [Video Player component](https://docs.unity3d.com/Manual/class-VideoPlayer.html) that provides the functionality to attach video files to the VideoScreen. With the VideoScreen object selected in the Hierarchy tab, click the Add Component button in the Inspector tab.
 
-![videoScreen-add-component](./images/videoScreen-add-component.png)
+![](./images/videoScreen-add-component.png){fig-align="center"}
 
  
 
 Type video into the search box and select Video Player from the search results.
 
-![videoScreen-add-video-player-component](./images/videoScreen-add-video-player-component.png)
+![](./images/videoScreen-add-video-player-component.png){fig-align="center"}
 
  
 
@@ -198,7 +198,7 @@ We do not need to manually assign a video clip as this will be done in code.
 
 Tick the Loop checkbox in the Inspector tab to make the video repeat when the project is running.
 
-![unity-loop-video](./images/unity-loop-video.png)
+![](./images/unity-loop-video.png){fig-align="center"}
 
  
 
@@ -208,7 +208,7 @@ We will attach the labels for each bounding box to a separate Canvas rather than
 
 Right-click an empty space in the Hierarchy tab. Select the UI section and click Canvas. We can just name it Label Canvas.
 
-![unity-create-label-canvas](./images/unity-create-label-canvas.png)
+![](./images/unity-create-label-canvas.png){fig-align="center"}
 
  
 
@@ -216,19 +216,19 @@ Right-click an empty space in the Hierarchy tab. Select the UI section and click
 
 In order to pass references to Unity variables to the OpenVINO plugin we will need to enable [unsafe](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/unsafe) code. Open the Edit menu at the top of the Unity Editor and select Project Settings.
 
-![unity-open-project-settings](./images/unity-open-project-settings.png)
+![](./images/unity-open-project-settings.png){fig-align="center"}
 
 
 
 Select Player from the side menu and open the Other Settings dropdown menu.
 
-![unity-project-settings-player](./images/unity-project-settings-player.png)
+![](./images/unity-project-settings-player.png){fig-align="center"}
 
 
 
 Scroll down to the Allow 'unsafe' Code checkbox and enable it.
 
-![unity-player-settings-allow-unsafe-code](./images/unity-player-settings-allow-unsafe-code.png)
+![](./images/unity-player-settings-allow-unsafe-code.png){fig-align="center"}
 
 
 
@@ -240,25 +240,25 @@ We will be using Unlit shaders for both the video screen and the bounding boxes.
 
 While still in the Project Settings window, select the Graphics submenu and scroll down to the Always Included Shaders section. Update the Size value to add an extra Element spot.
 
-![project-settings-increase-included-shaders-size](./images/project-settings-increase-included-shaders-size.png)
+![](./images/project-settings-increase-included-shaders-size.png){fig-align="center"}
 
 
 
  Select the new bottom shader spot.
 
-![select-bottom-shader-spot](./images/select-bottom-shader-spot.png)
+![](./images/select-bottom-shader-spot.png){fig-align="center"}
 
 
 
 Type Unlit/Texture shader into the Select Shader window and select Unlit/Texture from the available options. We can then close the Select Shader window.
 
-![select-unlit-texture-shader](./images/select-unlit-texture-shader.png)
+![](./images/select-unlit-texture-shader.png){fig-align="center"}
 
  
 
 We will also need the Unlit/Color shader for the bounding boxes so repeat these steps to add it as well.
 
-![add-unlit-color-shader](./images/add-unlit-color-shader.png)
+![](./images/add-unlit-color-shader.png){fig-align="center"}
 
 
 
@@ -272,19 +272,19 @@ One last thing we can do to make things a bit cleaner is to set the background c
 
 Select the Main Camera object in the Hierarchy tab. Over in the Inspector tab, open the Clear Flags dropdown and select Solid Color.
 
-![unity-set-clear-flags](./images/unity-set-clear-flags.png)
+![](./images/unity-set-clear-flags.png){fig-align="center"}
 
  
 
 Click on the color bar next to Background to set the color. 
 
-![unity-select-background-color](./images/unity-select-background-color.png)
+![](./images/unity-select-background-color.png){fig-align="center"}
 
  
 
 We can make it pure black by setting the RGB color values to 0.
 
-![unity-set-background-to-black](./images/unity-set-background-to-black.png)
+![](./images/unity-set-background-to-black.png){fig-align="center"}
 
  
 
@@ -1949,31 +1949,31 @@ That takes care of the required code for this project.
 
 To use the ObjectDetector script, we need to attach it to a GameObject. Right-click an empty space in the Hierarchy tab and select Create Empty. Name the new object Object Detector.
 
-![unity-create-empty](./images/unity-create-empty.png)
+![](./images/unity-create-empty.png){fig-align="center"}
 
 
 
 With the object still selected, drag and drop the ObjectDetector script into the Hierarchy tab.
 
-![unity-attach-object-detector-script](./images/unity-attach-object-detector-script.png)
+![](./images/unity-attach-object-detector-script.png){fig-align="center"}
 
 
 
 Now we can drag and drop the objects in the Hierarchy tab into their associated spots in the Inspector tab.
 
-![unity-assign-hierarchy-objects](./images/unity-assign-hierarchy-objects.png)
+![](./images/unity-assign-hierarchy-objects.png){fig-align="center"}
 
 
 
 Next, we will need to click the small lock button at the top of the Inspector tab to keep the Object Detector selected.
 
-![unity-lock-object-detector-inspector](./images/unity-lock-object-detector-inspector.png)
+![](./images/unity-lock-object-detector-inspector.png){fig-align="center"}
 
 
 
 Now we can add the video files by selecting all of them in the Assets section and dragging them onto the Video Clips slot in the Inspector tab. We can unlock the Inspector tab after we have added the videos.
 
-![unity-add-video-clips-inspector](./images/unity-add-video-clips-inspector.png)
+![](./images/unity-add-video-clips-inspector.png){fig-align="center"}
 
  
 
@@ -1985,31 +1985,31 @@ The last step needed before we can build the project is to assign the UI events.
 
 Open the UpdateInputDims container inside the Canvas object and select Width. 
 
-![unity-select-width-object](./images/unity-select-width-object.png)
+![](./images/unity-select-width-object.png){fig-align="center"}
 
 
 
 In the Inspector tab, scroll down to On End Edit.
 
-![width-inspector-on-end-edit-empty](./images/width-inspector-on-end-edit-empty.png)
+![](./images/width-inspector-on-end-edit-empty.png){fig-align="center"}
 
 
 
 Drag and drop the Object Detector object from the Hierarchy tab onto the None (Object) slot.
 
-![width-inspector-on-end-edit-attach-object](./images/width-inspector-on-end-edit-attach-object.png)
+![](./images/width-inspector-on-end-edit-attach-object.png){fig-align="center"}
 
 
 
 Click on the No Function dropdown menu and open the ObjectDetector section. Select the UpdateInputDims() method from the list.
 
-![width-inspector-on-end-edit-select-function](./images/width-inspector-on-end-edit-select-function.png)
+![](./images/width-inspector-on-end-edit-select-function.png){fig-align="center"}
 
 
 
 Perform the same steps for the Height object.
 
-![height-inspector-on-end-edit-select-function](./images/height-inspector-on-end-edit-select-function.png)
+![](./images/height-inspector-on-end-edit-select-function.png){fig-align="center"}
 
 
 
@@ -2017,7 +2017,7 @@ Perform the same steps for the Height object.
 
 Open the UpdateNMSThreshold container inside the Canvas object and select Threshold.
 
-![unity-select-nms-thresh-object](./images/unity-select-nms-thresh-object.png)
+![](./images/unity-select-nms-thresh-object.png){fig-align="center"}
 
 
 
@@ -2031,7 +2031,7 @@ Open the UpdateConfidenceThreshold container inside the Canvas object and select
 
 Select the Device object inside the Canvas. In the Inspector tab, scroll down to On Value Changed (Int32). Drag and drop the Object Detector object from the Hierarchy tab onto the None (Object) slot. This time, select the InitializeOpenVINO() option from the function menu.
 
-![device-inspector-on-end-edit-select-function](./images/device-inspector-on-end-edit-select-function.png)
+![](./images/device-inspector-on-end-edit-select-function.png){fig-align="center"}
 
 
 
@@ -2061,25 +2061,25 @@ Select the Quit object inside the Canvas. In the Inspector tab, scroll down to O
 
 Now we can build the completed project. First, press Ctrl+s to save the project. Open the File menu and select Build Settings...
 
-![unity-open-build-settings](./images/unity-open-build-settings.png)
+![](./images/unity-open-build-settings.png){fig-align="center"}
 
 
 
 Click build in the popup window. You will be prompted to select a folder to store the files generated during the build.
 
-![build-settings-build-project](./images/build-settings-build-project.png)
+![](./images/build-settings-build-project.png){fig-align="center"}
 
 
 
 Create a new folder in the default location and name it Build. Click Select Folder. 
 
-![create-build-folder](./images/create-build-folder.png)
+![](./images/create-build-folder.png){fig-align="center"}
 
 
 
 Once the build is complete, a File Explorer window will open with the project executable selected.
 
-![unity-project-executable](./images/unity-project-executable.png)
+![](./images/unity-project-executable.png){fig-align="center"}
 
 
 
@@ -2087,7 +2087,7 @@ Once the build is complete, a File Explorer window will open with the project ex
 
 Copy and paste `models` folder from part 1 into the folder with the project executable.
 
-![build-folder-add-models](./images/build-folder-add-models.png)
+![](./images/build-folder-add-models.png){fig-align="center"}
 
 
 
@@ -2095,7 +2095,7 @@ Copy and paste `models` folder from part 1 into the folder with the project exec
 
 Open the OpenVINO_YOLOX_Demo_Data folder inside the Build directory. Copy and paste the Plugins folder from part 2.
 
-![build-folder-add-plugins](./images/build-folder-add-plugins.png)
+![](./images/build-folder-add-plugins.png){fig-align="center"}
 
 
 

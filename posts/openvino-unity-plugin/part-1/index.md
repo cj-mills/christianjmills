@@ -91,7 +91,7 @@ CMake is listed as a requirement for the OpenVINO™ Toolkit. However, it will n
 
 **Note:** Make sure to select one of the `Add CMake to the system PATH` options during the installation process.
 
-![cmake_install_add_to_path](./images/cmake_install_add_to_path.png)
+![](./images/cmake_install_add_to_path.png){fig-align="center"}
 
 
 
@@ -120,11 +120,11 @@ Before we write any code, we need to convert the trained model to OpenVINO's [In
 
 Open the File Explorer and Navigate to `C:\Program Files (x86)\Intel\openvino_2021\deployment_tools\model_optimizer`
 
-![file_explorer_mo_script](./images/file_explorer_mo_script.png)
+![](./images/file_explorer_mo_script.png){fig-align="center"}
 
 Type `cmd` into the address bar and press `Enter` to open a command line prompt.
 
-![file_explorer_cmd](./images/file_explorer_cmd.png)
+![](./images/file_explorer_cmd.png){fig-align="center"}
 
 The `mo.py` script requires a few additional python packages. You can install them via [pip](https://pypi.org/project/pip/) with the following commands.
 

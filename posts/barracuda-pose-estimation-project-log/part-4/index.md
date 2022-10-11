@@ -32,12 +32,12 @@ Annoyingly, now that I've finally fixed this issue the post processing bottlenec
 
 
 ### Before:
-![pose_estimation_swapped_offsets](./videos/pose_estimation_swapped_offsets.mp4)
+![](./videos/pose_estimation_swapped_offsets.mp4){fig-align="center"}
 
 
 ### After:
 
-![pose_estimation_corrected_offsets](./images/pose_estimation_corrected_offsets.gif)
+![](./images/pose_estimation_corrected_offsets.gif){fig-align="center"}
 
 
 

@@ -15,6 +15,7 @@ toc: false
 
 ---
 
+
 * [Overview](#overview)
 * [Characteristics of a Freelance Developer](#characteristics-of-a-freelance-developer)
 * [Standing Out From Other Freelance Developers](#standing-out-from-other-freelance-developers)

@@ -44,7 +44,7 @@ Here are some notes I took while watching Brian Bucklew's [talk](https://www.you
 - Easy training inputs (small (e.g. 16x16) training images that can be easily created in tools like mspaint)
 - Powerful outputs (arbitrarily large output textures that are locally similar to the input)
   
-    ![wfc-texture-mode-example_2.png](./images/wfc-texture-mode-example_2.png)
+    ![](./images/wfc-texture-mode-example_2.png){fig-align="center"}
     
 
 ### How it Works

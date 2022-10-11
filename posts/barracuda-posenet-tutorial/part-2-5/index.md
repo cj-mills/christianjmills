@@ -51,7 +51,7 @@ We'll set both the `X` and `Y` scale values to `360` to match our current input 
 
 We also need to set the `X` and `Y` position values to `180`. Set the `Z` position value to `-1` so that it's in front of the `VideoScreen`.
 
-![set_inputScreen_transform](./images/set_inputScreen_transform.PNG)
+![](./images/set_inputScreen_transform.PNG){fig-align="center"}
 
 ### Make a RenderTexture
 
@@ -61,7 +61,7 @@ Make another `RenderTexture` and name it `input_texture`.
 
 Set the `Size` to `360 x 360`.
 
-![set_input_texture_size](./images/set_input_texture_size.PNG)
+![](./images/set_input_texture_size.PNG){fig-align="center"}
 
 #### Apply the `input_texture`
 
@@ -87,25 +87,25 @@ Create a new public `GameObject` variable called `inputScreen`. We need to acces
 
 Create a new public `RenderTexture` variable called `inputTexture`. We'll assign the `input_texture` asset to this variable in the Unity Editor.
 
-![preview_preprocessed_input_variables](./images/preview_preprocessed_input_variables.png)
+![](./images/preview_preprocessed_input_variables.png)
 
 ### Modify the `Update()` Method
 
 We can use the `Graphics.Blit()` method to copy the `processedImage` data to the `inputTexture` variable. We'll use the `inputScreen.SetActive()` method to activate and deactivate the `InputScreen`.
 
-![update_method_with_displayInput](./images/update_method_with_displayInput.png)
+![](./images/update_method_with_displayInput.png)
 
 ## Assign Inspector Variables
 
 With the `PoseEstimator` selected in the `Hierarchy` tab, drag and drop the `InputScreen` and `input_texture` into their respective variables in the `Inspector` tab.
 
-![pose_estimator_displayInput](./images/pose_estimator_displayInput.PNG)
+![](./images/pose_estimator_displayInput.PNG){fig-align="center"}
 
 ## Test the New Screen
 
 Make sure the `Display Input` checkbox is ticked in the `Inspector` tab. It will be easier to see the changes to the preprocessed images if we use a full color video. We can set the `Video Clip` for the `Video Player` to the `pexels_woman_dancing` file that we downloaded in [Part 1](../part-1/).
 
-![](./videos/preprocessed_image_preview6.mp4)
+![](./videos/preprocessed_image_preview6.mp4){fig-align="center"}
 
 ## Rescale Pixel Values
 
@@ -115,7 +115,7 @@ The current result may not be the most accurate representation as pixel values a
 
 We'll create another function called `ScaleInputImage()` that divides the RGB channel values by `255.0`.
 
-![scaleInputImage_poseNetShader](./images/scaleInputImage_poseNetShader.png)
+![](./images/scaleInputImage_poseNetShader.png)
 
 **Note:** Rescaling the pixel values will have a small impact on performance. Make sure to untick the `Display Input` checkbox when you're not examining the input image.
 
@@ -123,17 +123,17 @@ We'll create another function called `ScaleInputImage()` that divides the RGB ch
 
 We need to create a new method in the `PoseNet` script to execute the function just like for the `PreprocessResNet` function.
 
-![scaleInputImage_poseNet_method](./images/scaleInputImage_poseNet_method.png)
+![](./images/scaleInputImage_poseNet_method.png)
 
 ### Call `ScaleInputImage` Method
 
 Finally, we'll call the new method in the `if (displayInput)` statement.
 
-![call_scaleInputImage_method](./images/call_scaleInputImage_method.png)
+![](./images/call_scaleInputImage_method.png)
 
 ### Result
 
-![rescaledInputImage_6](./images/rescaledInputImage_6.gif)
+![](./images/rescaledInputImage_6.gif){fig-align="center"}
 
 ## Summary
 

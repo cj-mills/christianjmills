@@ -31,7 +31,7 @@ aliases:
 
 ## Introduction
 
-Unity has finally released the in-game style transfer project they've been [teasing](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/images/BarracudaLanding.png) in the Barracuda [documentation](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html). Their implementation is slightly more polished than my early [attempts](../in-game-style-transfer/). And by slightly, I mean they seem to have addressed every major complaint I had with my implementation. Be sure to check out their sample [project](https://github.com/UnityLabs/barracuda-style-transfer) as well as the accompanying blog [post](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/).
+Unity has finally released the in-game style transfer project they've been [teasing](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/images/BarracudaLanding.png){fig-align="center"} in the Barracuda [documentation](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html). Their implementation is slightly more polished than my early [attempts](../in-game-style-transfer/). And by slightly, I mean they seem to have addressed every major complaint I had with my implementation. Be sure to check out their sample [project](https://github.com/UnityLabs/barracuda-style-transfer) as well as the accompanying blog [post](https://blogs.unity3d.com/2020/11/25/real-time-style-transfer-in-unity-using-deep-neural-networks/).
 
 It's exciting that Unity has started releasing projects that explore alternative uses for the Barracuda library. Hopefully, they'll explore other deep learning applications in future projects. I would love to see projects that use GANs for dynamically generating in-game content.
 
@@ -57,7 +57,7 @@ You can download the Unity project by clicking on the link below. The zipped fol
 
 Once downloaded, unzip the folder and add the project to Unity Hub using the `Add` button.
 
-![unity_hub_add_project](./images/unity_hub_add_project.png)
+![](./images/unity_hub_add_project.png){fig-align="center"}
 
 ### Set the Unity Version
 
@@ -65,29 +65,29 @@ Select a Unity version from the drop-down menu. The demo project was made using 
 
 * Unity 2019.4.13: ([download](unityhub://2019.4.13f1/518737b1de84))
 
-![set-unity-version-0-0](./images/set-unity-version.png)
+![](./images/set-unity-version.png){fig-align="center"}
 
 ### Open the Project
 
 Now we can open the project. We'll be prompted to upgrade the project to the selected Unity version. Click `Confirm` in the popup to upgrade the project. As mentioned earlier, this project takes a while to load the first time.
 
-![set-unity-version](./images/upgrade-unity-version.png)
+![](./images/upgrade-unity-version.png){fig-align="center"}
 
 ## Install Barracuda Package
 
 We'll install the Barracuda package once the project has finished loading. Select the Package Manager tab in the Unity editor and type Barracuda into the search box.
 
-![barracuda_search](./images/barracuda_search.PNG)
+![](./images/barracuda_search.PNG){fig-align="center"}
 
 Click the `Install` button to install the package.
 
-![barracuda_install](./images/barracuda_install.PNG)
+![](./images/barracuda_install.PNG){fig-align="center"}
 
 ## Create Style Transfer Folder
 
 We'll place all our additions to the project in a new asset folder called `Style_Transfer`. This will help keep things organized.
 
-![style_transfer_folder](./images/style_transfer_folder.png)
+![](./images/style_transfer_folder.png){fig-align="center"}
 
 ## Import Models
 
@@ -99,21 +99,21 @@ You can download some exported style transfer models from the links below.
 
 * Mosaic: ([download](https://drive.google.com/file/d/1gnWUCTkLmDyUFHzMl7fk9F64vSoZk5jK/view?usp=sharing))
 
-  ![mosaic](./images/mosaic.jpg)
+  ![](./images/mosaic.jpg){fig-align="center"}
 
 * Van Gogh Starry Night: ([download](https://drive.google.com/file/d/1vL5-NZo0Dn0ijkX5u94WoP_WWnxFIU3o/view?usp=sharing))
 
-![van-gogh-starry-night-google-art-project](./images/van-gogh-starry-night-google-art-project.jpg)
+![](./images/van-gogh-starry-night-google-art-project.jpg){fig-align="center"}
 
 ### Import ONNX Files to Assets
 
 Open the `Style_Transfer` folder and make a new folder called `Models`.
 
-![create-models-folder](./images/create-models-folder.png)
+![](./images/create-models-folder.png){fig-align="center"}
 
 Drag and drop the ONNX files into the `Models` folder.
 
-![imported_onnx_files](./images/imported_onnx_files.png)
+![](./images/imported_onnx_files.png){fig-align="center"}
 
 
 
@@ -125,23 +125,23 @@ Our basic process will involve taking the current frame from the in-game camera,
 
 Add a new folder called `Textures` in the `Style_Transfer` folder.
 
-![textures_folder](./images/textures_folder.png)
+![](./images/textures_folder.png){fig-align="center"}
 
 ### Create  Asset Files
 
 Open the `Textures` folder and create two new `Render Texture` assets. 
 
-![create_renderTexture](./images/create_renderTexture.png)
+![](./images/create_renderTexture.png){fig-align="center"}
 
 Name the new assets `CameraInput`, `ProcessedOutput`.
 
-![new_renderTexture_assets](./images/new_renderTexture_assets_2.png)
+![](./images/new_renderTexture_assets_2.png){fig-align="center"}
 
 ### Update Size Parameters
 
 We need to use a fairly low resolution to get playable frame rates. Click an empty space in the `Textures` folder and press `Ctrl-a` to select both render textures. Set the size the parameter to `720 x 540` in the `Inspector` tab. Feel free to try higher resolutions if you happen to have an RTX 30-series or equivalent GPU.
 
-![set_renderTexture_sizes](./images/set_renderTexture_sizes_2.png)
+![](./images/set_renderTexture_sizes_2.png){fig-align="center"}
 
 
 
@@ -153,29 +153,29 @@ We can perform both the preprocessing and postprocessing operations on the GPU s
 
 Open the `Style_Transfer` folder and create a new folder called `Shaders`. Enter the `Shaders` folder and right-click an empty space. Select `Shader` in the `Create` submenu and click `Compute Shader`. We’ll name it `StyleTransferShader`.
 
-![create-compute-shader](./images/create-compute-shader.png)
+![](./images/create-compute-shader.png){fig-align="center"}
 
 ### Remove the Default Code
 
 Open the `StyleTransferShader` in your code editor. By default, the `ComputeShader` will contain the following. 
 
-![default_compute_shader](./images/default_compute_shader.png)
+![](./images/default_compute_shader.png){fig-align="center"}
 
 Delete the `CSMain` function along with the `#pragma kernel CSMain`. Next, we need to add a `Texture2D` variable to store the input image. Name it `InputImage` and give it a data type of `<half4>`. Use the same data type for the `Result` variable as well.
 
-![styleTransfer_shader_part1](./images/styleTransfer_shader_part1.png)
+![](./images/styleTransfer_shader_part1.png){fig-align="center"}
 
 ### Create `ProcessInput` Function
 
 The style transfer models expect RGB channel values to be in the range `[0, 255]`. Color values in Unity are in the range `[0,1]`. Therefore, we need to scale the three channel values for the `InputImage` by `255`. We'll perform this step in a new function called `ProcessInput` as shown below.
 
-![processInput_compute_shader](./images/processInput_compute_shader.png)
+![](./images/processInput_compute_shader.png){fig-align="center"}
 
 ### Create `ProcessOutput` Function
 
 The models are supposed to output an image with RGB channel values in the range `[0, 255]`. However, it can sometimes return values a little outside that range. We can use the built-in [`clamp()`](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-clamp) method to make sure all values are in the correct range. We'll then scale the values back down to `[0, 1]` for Unity. We'll perform these steps in a new function called `ProcessOutput` as shown below.
 
-![processOutput_compute_shader](./images/processOutput_compute_shader.png)
+![](./images/processOutput_compute_shader.png){fig-align="center"}
 
 Now that we’ve created our `ComputeShader`, we need to execute it using a `C#` script.
 
@@ -189,29 +189,29 @@ We need to make a new `C#` script to perform inference with the style transfer m
 
 Open the `Style_Transfer` folder and create a new folder called `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` submenu.
 
-![create_c_sharp_script](./images/create_c_sharp_script.png)
+![](./images/create_c_sharp_script.png){fig-align="center"}
 
 Name the script `StyleTransfer`.
 
-![styleTransfer_script_new](./images/styleTransfer_script_new.png)
+![](./images/styleTransfer_script_new.png){fig-align="center"}
 
 ### Add `Unity.Barracuda` Namespace
 
 Open the `StyleTransfer` script and add the `Unity.Barracuda` namespace at the top of the script.
 
-![add_barracuda_namespace](./images/add_barracuda_namespace.png)
+![](./images/add_barracuda_namespace.png){fig-align="center"}
 
 ### Create `RenderTexture` Variables
 
 We need to create some public variables that we can use to access our two render texture assets in the script.
 
-![renderTexture_variables](./images/renderTexture_variables_2.png)
+![](./images/renderTexture_variables_2.png){fig-align="center"}
 
 ### Create `StyleTransferShader` Variable
 
 Next, we'll add a public variable to access our compute shader.
 
-![styleTransferShader_variable](./images/styleTransferShader_variable_2.png)
+![](./images/styleTransferShader_variable_2.png){fig-align="center"}
 
 ### Create Barracuda Variables
 
@@ -221,7 +221,7 @@ Now we need to add a few variables to perform inference with the style transfer 
 
 Make a new public `NNModel` variable called `modelAsset`. We’ll assign one of the ONNX files to this variable in the Unity Editor.
 
-![modelAsset_variable](./images/modelAsset_variable_2.png)
+![](./images/modelAsset_variable_2.png){fig-align="center"}
 
 #### Create `workerType` Variable
 
@@ -229,37 +229,37 @@ We’ll also add a variable that let’s us choose which [backend](https://docs.
 
 Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
-![workerType_variable](./images/workerType_variable.png)
+![](./images/workerType_variable.png){fig-align="center"}
 
 #### Create `m_RuntimeModel` Variable
 
 We need to compile the `modelAsset` into a run-time model to perform inference. We’ll store the compiled model in a new private `Model` variable called `m_RuntimeModel`.
 
-![m_RuntimeModel_variable](./images/m_RuntimeModel_variable.png)
+![](./images/m_RuntimeModel_variable.png){fig-align="center"}
 
 #### Create `engine` Variable
 
 Next, we’ll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
-![engine_variable](./images/engine_variable.png)
+![](./images/engine_variable.png){fig-align="center"}
 
 ### Compile the Model
 
 We need to get an object oriented representation of the model before we can work with it. We’ll do this in the `Start()` method and store it in the `m_RuntimeModel`.
 
-![compile_model](./images/compile_model.png)
+![](./images/compile_model.png){fig-align="center"}
 
 ### Initialize Inference Engine
 
 Now we can create a worker to execute the modified model using the selected backend. We’ll do this using the [`WorkerFactory.CreateWorker()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_) method.
 
-![initialize_inference_engine](./images/initialize_inference_engine.png)
+![](./images/initialize_inference_engine.png){fig-align="center"}
 
 ### Release Inference Engine Resources
 
 We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we’ll do it in the `OnDisable()` method. This method gets called when the Unity project exits.
 
-![onDisable_method](./images/onDisable_method.png)
+![](./images/onDisable_method.png){fig-align="center"}
 
 
 
@@ -267,45 +267,45 @@ We need to manually release the resources that get allocated for the inference `
 
 We'll make a new method to copy the data from a `RenderTexture` to a new `Texture2D`. We'll need to call this method before performing both the preprocessing and postprocessing steps. The method will take in the source `RenderTexture` and the format for the new `Texture2D`.
 
-![toTexture2D_method](./images/toTexture2D_method.png)
+![](./images/toTexture2D_method.png){fig-align="center"}
 
 ### Create `ProcessImage()` Method
 
 Next, we'll make a new method to execute the `ProcessInput()` and `ProcessOutput()` functions in our `ComputeShader`. This method will take in the image that needs to be processed as well as a function name to indicate which function we want to execute. We'll need to store the processed images in textures with HDR formats. This will allow us to use color values outside the default range of `[0, 1]`. As mentioned previously, the model expects values in the range of `[0, 255]`.
 
-![processImage_method](./images/processImage_method.png)
+![](./images/processImage_method.png){fig-align="center"}
 
 ### Process Input Image
 
 Now we can process the current camera frame. We'll call the `ToTexture2D()` method at the top of the `Update` method. The `cameraInput` is not an HDR texture so we'll use an SDR format for the new `Texture2D`. We'll then call the `ProcessImage()` method with new `Texture2D` as input.
 
-![process_input_image](./images/process_input_image.png)
+![](./images/process_input_image.png){fig-align="center"}
 
 ### Perform Inference
 
 Next, we'll feed the `processedImage` to the model and get the output. We first need to convert the `processedImage` to a `Tensor`.
 
-![perform_inference_pt1](./images/perform_inference_pt1.png)
+![](./images/perform_inference_pt1.png){fig-align="center"}
 
 We'll then use the `engine.Execute()` method to run the model with the current `input`. We can store the raw output from the model in a new `Tensor`.
 
-![perform_inference_pt2](./images/perform_inference_pt2.png)
+![](./images/perform_inference_pt2.png){fig-align="center"}
 
 ### Process the  Output
 
 We need to process the raw output from the model before we can display it to the user. We'll first copy the model output to a new HDR `RenderTexture`.
 
-![process_output_pt1](./images/process_output_pt1.png)
+![](./images/process_output_pt1.png){fig-align="center"}
 
 We'll then copy the data to a `Texture2D` and pass it to the `ProcessImage()` method. This time we'll be executing the `ProcessOutput()` function on the `ComputeShader`.
 
-![process_output_pt2](./images/process_output_pt2.png)
+![](./images/process_output_pt2.png){fig-align="center"}
 
 ### Display the Processed Output
 
 We can finally display the stylized image by using the `Graphics.Blit()` method to copy the final image to `processedOutput`.
 
-![display_output](./images/display_output.png)
+![](./images/display_output.png){fig-align="center"}
 
 Next, we'll need to modify the project scene to use the `StyleTransfer` script. 
 
@@ -315,7 +315,7 @@ Next, we'll need to modify the project scene to use the `StyleTransfer` script.
 
 In the `Assets` window, open the `Scenes` folder and double-click on the `Biped.unity` asset. You don't need to save the current scene if you get prompted to do so.
 
-![select_biped_scene](./images/select_biped_scene.png)
+![](./images/select_biped_scene.png){fig-align="center"}
 
 
 
@@ -327,25 +327,25 @@ To run the `StyleTransfer` script, we need to attach it to a `GameObject` in the
 
 In the Hierarchy tab, right-click an empty space and select `Create Empty` from the menu. Name the empty GameObject `StyleConverter`.
 
-![create_empyt_gameObject](./images/create_empyt_gameObject.png)
+![](./images/create_empyt_gameObject.png){fig-align="center"}
 
 ### Attach the `StyleTransfer` Script
 
 With the `StyleConverter` object selected, drag and drop the `StyleTransfer` script into the `Inspector` tab.
 
-![attach_styleTransfer_script](./images/attach_styleTransfer_script.png)
+![](./images/attach_styleTransfer_script.png){fig-align="center"}
 
 ### Assign the Assets
 
 We need to assign the render textures, compute shader and one of the ONNX files to their respective parameters in the `Inspector` tab. I'll start with the mosaic model. We'll also set the `Worker Type` to `Compute Precompiled`. 
 
-![attach_styleTransfer_script_full](./images/attach_styleTransfer_script_full.png)
+![](./images/attach_styleTransfer_script_full.png){fig-align="center"}
 
 ## Set Camera Target Texture
 
 Select the `_Scene` object in the `Hierarchy` tab. In the dropdown, select the `Main Camera` object.
 
-![assign_camera_target_texture](./images/assign_camera_target_texture.png)
+![](./images/assign_camera_target_texture.png){fig-align="center"}
 
 
 
@@ -353,7 +353,7 @@ Select the `_Scene` object in the `Hierarchy` tab. In the dropdown, select the `
 
 Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the `UI` submenu. Name it Screen.
 
-![create_raw_image](./images/create_raw_image.png)
+![](./images/create_raw_image.png){fig-align="center"}
 
 
 
@@ -361,21 +361,21 @@ Right-click an empty space in the `Hierarchy` tab and select `Raw Image` in the 
 
 With the `Screen` object selected, click on the anchor presets box in the `Inspector` tab outlined below.  
 
-![stretch_screen_pt1](./images/stretch_screen_pt1.png)
+![](./images/stretch_screen_pt1.png){fig-align="center"}
 
 Select the option in the bottom right corner that's outlined below.
 
-![stretch_screen_pt2](./images/stretch_screen_pt2.png)
+![](./images/stretch_screen_pt2.png){fig-align="center"}
 
 Next we need to set all the `Rect Transform` values to zero. This will cause the `Screen` to take up the entire display.
 
-![set_anchors_to_zero](./images/set_anchors_to_zero.png)
+![](./images/set_anchors_to_zero.png){fig-align="center"}
 
 ### Set the Screen Texture
 
 With the Screen object still selected, drag and drop the `ProcessedOutput` asset into the `Texture` parameter in the `Inspector` tab.
 
-![assign_screen_texture](./images/assign_screen_texture.png)
+![](./images/assign_screen_texture.png){fig-align="center"}
 
 ### Adjust the Game Tab
 
@@ -385,13 +385,13 @@ Our last step is to set up the game tab for our chosen resolution.
 
 My chosen resolution of `720 x 540` has a `4:3` aspect ratio. You can change the aspect ratio in the drop-down menu.
 
-![set_aspect_ratio](./images/set_aspect_ratio.png)
+![](./images/set_aspect_ratio.png){fig-align="center"}
 
 #### Disable Warning
 
 You might see a warning saying that there isn't a camera rendering. This would be because we set the camera to render to `CameraInput`. If you do, right-click the `Game` tab and uncheck the `Warn if No Cameras Rendering` option.
 
-![disable_no_camera_warning](./images/disable_no_camera_warning.png)
+![](./images/disable_no_camera_warning.png){fig-align="center"}
 
 
 

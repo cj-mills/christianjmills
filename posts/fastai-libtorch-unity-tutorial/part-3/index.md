@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: Part 3 covers modifying the Unity project from the fastai-to-unity tutorial
-  to classify images with a LibTorch DLL.
+description: Modify the Unity project from the [fastai-to-unity tutorial](../../fastai-to-unity-tutorial/part-1/) to classify images with [LibTorch](https://pytorch.org/cppdocs/installing.html).
 categories: [fastai, libtorch, unity]
 
 aliases:
@@ -54,7 +53,7 @@ First, we'll create a new folder to store the [DLL files](../part-2/#gather-depe
 
 
 
-![unity-create-plugins-folder](./images/unity-create-plugins-folder.png)
+![](./images/unity-create-plugins-folder.png){fig-align="center"}
 
 
 
@@ -66,7 +65,7 @@ Copy all the DLL files into the `Assets/Plugins/x86_64` folder. We then need to 
 
 
 
-![unity-add-dll-files](./images/unity-add-dll-files.png)
+![](./images/unity-add-dll-files.png){fig-align="center"}
 
 
 
@@ -76,7 +75,7 @@ Next, we'll create a folder to store the TorchScript modules. TorchScript module
 
 
 
-![unity-create-streaming-assets-folder](./images/unity-create-streaming-assets-folder.png)
+![](./images/unity-create-streaming-assets-folder.png){fig-align="center"}
 
 
 
@@ -88,7 +87,7 @@ Add any TorchScript files into the `Assets/StreamingAssets/TorchScriptModules` f
 
 
 
-![unity-add-torchscript-modules](./images/unity-add-torchscript-modules.png)
+![](./images/unity-add-torchscript-modules.png){fig-align="center"}
 
 
 
@@ -96,7 +95,7 @@ Lastly, we'll store the JSON files with the normalization stats in a new assets 
 
 
 
-![unity-create-normalization-stats-folder](./images/unity-create-normalization-stats-folder.png)
+![](./images/unity-create-normalization-stats-folder.png){fig-align="center"}
 
 
 
@@ -108,7 +107,7 @@ Lastly, we'll store the JSON files with the normalization stats in a new assets 
 
 Rather than copying the input image from Unity to the LibTorch plugin, we'll pass a pointer to the pixel data. First, we need to allow unsafe code for the Unity project. Select `Edit → Project Settings...` from the top menu.
 
-![unity-open-project-settings](./images/unity-open-project-settings.png)
+![](./images/unity-open-project-settings.png){fig-align="center"}
 
 
 
@@ -116,7 +115,7 @@ Open the `Player → Other Settings` dropdown and scroll down to the `Allow 'uns
 
 
 
-![unity-allow-unsafe-code](./images/unity-allow-unsafe-code.png)
+![](./images/unity-allow-unsafe-code.png){fig-align="center"}
 
 
 
@@ -183,7 +182,7 @@ Duplicate the `ImageClassifier` script and name the copy `ImageClassifierTorch`.
 
 
 
-![unity-create-image-classifier-torch-script](./images/unity-create-image-classifier-torch-script.png)
+![](./images/unity-create-image-classifier-torch-script.png){fig-align="center"}
 
 
 
@@ -676,7 +675,7 @@ As mentioned earlier, we'll add a new dropdown menu to the GUI so we can switch 
 
 
 
-![unity-add-torchscript-model-dropdown](./images/unity-add-torchscript-model-dropdown.png)
+![](./images/unity-add-torchscript-model-dropdown.png){fig-align="center"}
 
 
 
@@ -686,7 +685,7 @@ Select the `TorchScriptModelText` object and update the `Pos Y` value to `-145` 
 
 
 
-![unity-update-torchscript-model-text-position](./images/unity-update-torchscript-model-text-position-and-text.png)
+![](./images/unity-update-torchscript-model-text-position-and-text.png){fig-align="center"}
 
 
 
@@ -694,7 +693,7 @@ Then, select the `TorchScriptModelDropdown` object and update the `Pos Y` value 
 
 
 
-![unity-update-torchscript-model-dropdown-position](./images/unity-update-torchscript-model-dropdown-position.png)
+![](./images/unity-update-torchscript-model-dropdown-position.png){fig-align="center"}
 
 
 
@@ -702,7 +701,7 @@ The updated GUI should look like the image below.
 
 
 
-![unity-view-updated-gui](./images/unity-view-updated-gui.png)
+![](./images/unity-view-updated-gui.png){fig-align="center"}
 
 
 
@@ -714,7 +713,7 @@ The updated GUI should look like the image below.
 
 Now we can add the new `ImageClassifierTorch` script to the `InferenceManager` object. Make sure to disable the existing `ImageClassifier` component, as shown below.
 
-![unity-add-image-classifier-torch-component](./images/unity-add-image-classifier-torch-component.png)
+![](./images/unity-add-image-classifier-torch-component.png){fig-align="center"}
 
 
 
@@ -726,7 +725,7 @@ With the `ImageClassifierTorch` component added, we can update the On Value Chan
 
 **Update the `WebcamToggle` On Value Changed Event**
 
-![unity-webcam-toggle-update-on-value-changed](./images/unity-webcam-toggle-update-on-value-changed.png)
+![](./images/unity-webcam-toggle-update-on-value-changed.png){fig-align="center"}
 
 
 
@@ -734,7 +733,7 @@ With the `ImageClassifierTorch` component added, we can update the On Value Chan
 
 
 
-![unity-webcam-dropdown-update-on-value-changed](./images/unity-webcam-dropdown-update-on-value-changed.png)
+![](./images/unity-webcam-dropdown-update-on-value-changed.png){fig-align="center"}
 
 
 
@@ -742,7 +741,7 @@ With the `ImageClassifierTorch` component added, we can update the On Value Chan
 
 
 
-![unity-update-torchscript-model-dropdown-on-value-changed](./images/unity-update-torchscript-model-dropdown-on-value-changed.png)
+![](./images/unity-update-torchscript-model-dropdown-on-value-changed.png){fig-align="center"}
 
 
 

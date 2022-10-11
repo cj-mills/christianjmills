@@ -14,6 +14,8 @@ toc: false
 
 ---
 
+
+
 * [Overview](#overview)
 * [Notable StyleGANv1 Characteristics](#notable-styleganv1-characteristics)
 * [Notable StyleGANv2 Changes](#notable-styleganv2-changes)

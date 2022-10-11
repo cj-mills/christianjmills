@@ -38,13 +38,13 @@ In this post, we'll add some connecting lines between the key points to create a
 
 We'll complete our pose skeleton by drawing lines connecting the appropriate key points. Create a new `C#` script and name it `DrawSkeleton`.
 
-![create_drawSkeleton_script](./images/create_drawSkeleton_script.PNG)
+![](./images/create_drawSkeleton_script.PNG){fig-align="center"}
 
 ### Create `keypoints` Variable
 
 We need to access the key point objects so make another public `GameObject` array just like in the `PoseNet` script.
 
-![keypoints_variable_drawSkeleton](./images/keypoints_variable_drawSkeleton.png)
+![](./images/keypoints_variable_drawSkeleton.png)
 
 
 
@@ -52,7 +52,7 @@ We need to access the key point objects so make another public `GameObject` arra
 
 Next, create a private `GameObject` array to hold the lines themselves. Name the variable `lines`.
 
-![lines_variable](./images/lines_variable.png)
+![](./images/lines_variable.png)
 
 
 
@@ -60,7 +60,7 @@ Next, create a private `GameObject` array to hold the lines themselves. Name the
 
 We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.html) components to draw the skeleton.
 
-![lineRenderers_variable](./images/lineRenderers_variable.png)
+![](./images/lineRenderers_variable.png)
 
 
 
@@ -68,7 +68,7 @@ We'll use [`LineRenderer`](https://docs.unity3d.com/Manual/class-LineRenderer.ht
 
 The next variable will contain pairs of key point indices. The corresponding key points indicate the start and end points for the skeleton lines.
 
-![jointPairs_variable](./images/jointPairs_variable.png)
+![](./images/jointPairs_variable.png)
 
 #### Joint Pairs
 
@@ -99,7 +99,7 @@ The next variable will contain pairs of key point indices. The corresponding key
 
 The last variable we'll make defines the line width.
 
-![lineWidth_variable](./images/lineWidth_variable.png)
+![](./images/lineWidth_variable.png)
 
 
 
@@ -107,7 +107,7 @@ The last variable we'll make defines the line width.
 
 We need to initialize the `lines`, `lineRenderers`, and `jointPairs` variables in the `Start()` method.
 
-![initialize_drawSkeleton_variables](./images/initialize_drawSkeleton_variables.png)
+![](./images/initialize_drawSkeleton_variables.png)
 
 
 
@@ -115,7 +115,7 @@ We need to initialize the `lines`, `lineRenderers`, and `jointPairs` variables i
 
 We'll create a new method to set up each of the lines in the pose skeleton. The method will create an empty `GameObject` for a line and add a `LineRenderer` component to it. We won't set the start and end positions as none of the key points will have updated yet.
 
-![initializeLine_method](./images/initializeLine_method.png)
+![](./images/initializeLine_method.png)
 
 
 
@@ -123,13 +123,13 @@ We'll create a new method to set up each of the lines in the pose skeleton. The 
 
 Next, we need to call `InitializeLine()` in a new method for each line in the pose skeleton. We'll give each region of the skeleton a different color.
 
-![initializeSkeleton_method](./images/initializeSkeleton_method.png)
+![](./images/initializeSkeleton_method.png)
 
 #### Call the method
 
 We'll initialize the pose skeleton lines in the `Start()` method.
 
-![call_initializeSkeleton_method](./images/call_initializeSkeleton_method.png)
+![](./images/call_initializeSkeleton_method.png)
 
 
 
@@ -137,13 +137,13 @@ We'll initialize the pose skeleton lines in the `Start()` method.
 
 The last method we need to define will handle updating the position of the each of the lines in the pose skeleton. The method will iterate through each of the joint pairs and update the start and end positions for the associated `LineRenderer`. We'll only display a given line if both of the key point objects are currently active. 
 
-![renderSkeleton_method](./images/renderSkeleton_method.png)
+![](./images/renderSkeleton_method.png)
 
 #### Call the method
 
 We'll render the skeleton lines in the `LateUpdate()` method instead of `Update()`. This will ensure the PoseNet model has run for the latest frame before updating the pose skeleton.
 
-![call_renderSkeleton_method](./images/call_renderSkeleton_method_2.png)
+![](./images/call_renderSkeleton_method_2.png)
 
 
 
@@ -151,7 +151,7 @@ We'll render the skeleton lines in the `LateUpdate()` method instead of `Update(
 
 We'll attach the `DrawSkeleton` script to a new `GameObject`. Create an empty `GameObject` in the `Hierarchy` tab and name it `SkeletonRenderer`.
 
-![create_skeletonRenderer_object](./images/create_skeletonRenderer_object.PNG)
+![](./images/create_skeletonRenderer_object.PNG){fig-align="center"}
 
 
 
@@ -159,13 +159,13 @@ We'll attach the `DrawSkeleton` script to a new `GameObject`. Create an empty `G
 
 With `SkeletonRenderer` selected in the `Hierarchy`, drag and drop the `DrawSkeleton` script into the `Inspector` tab.
 
-![skeletonRenderer_inspector_empty](./images/skeletonRenderer_inspector_empty.PNG)
+![](./images/skeletonRenderer_inspector_empty.PNG){fig-align="center"}
 
 ### Assign Key Points
 
 Drag and drop the key point objects onto the `Keypoints` parameter just like with the `PoseNet` script.
 
-![skeletonRenderer_inspector_full](./images/skeletonRenderer_inspector_full.PNG)
+![](./images/skeletonRenderer_inspector_full.PNG){fig-align="center"}
 
 ## Try It Out
 
@@ -178,7 +178,7 @@ If you press the play button, you should see something like this.
 | `minConfidence` |  85   |
 
 
-![](./videos/pose_skeleton_480p_90c.mp4)
+![](./videos/pose_skeleton_480p_90c.mp4){fig-align="center"}
 
 
 ## Summary

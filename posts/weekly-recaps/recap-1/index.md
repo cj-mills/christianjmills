@@ -41,7 +41,7 @@ I was starting to burn a lot of time on this so I decided to take a break. I'll 
 
 I started developing a workflow for training models using the [fastai library](https://docs.fast.ai/) and implementing them in Unity. fastai is a highly modular deep learning library built on top of [PyTorch](https://pytorch.org/). It's main goals are to simplify the training of deep learning models and to be easily customizable. 
 
-<img src="https://docs.fast.ai/images/layered.png" style="zoom: 67%;" />
+![](https://docs.fast.ai/images/layered.png){fig-align="center"}
 
 It incorporates a lot of best practices as defaults and is often more convenient than raw PyTorch. The highly modular nature of the library is great when training models, but can be annoying when studying the source code. For example, it can take some digging to find the specific code for processing input and output for a model. Fortunately, the source code is easy to dig through.
 

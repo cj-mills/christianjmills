@@ -937,7 +937,7 @@ plt.show()
 # Reset the figure size
 plt.rcParams["figure.figsize"] = plt.rcParamsDefault["figure.figsize"]
 ```
-![png](./images/output_54_0.png)
+![](./images/output_54_0.png){fig-align="center"}
 
 
 **Note:** Messages expressing joy and sadness are about 5-10 times more common than messages expressing love and surprise.
@@ -973,7 +973,7 @@ plt.show()
 # Reset the figure size
 plt.rcParams["figure.figsize"] = plt.rcParamsDefault["figure.figsize"]
 ```
-![png](./images/output_58_0.png)
+![](./images/output_58_0.png){fig-align="center"}
 
 
 **Note:** Most tweets are between 15 and 20 words long, with a max length of around 50 words.
@@ -2017,7 +2017,7 @@ for i, (label, cmap) in enumerate(zip(labels, cmaps)):
 plt.tight_layout()
 plt.show()
 ```
-![png](./images/output_151_0.png)
+![](./images/output_151_0.png){fig-align="center"}
 
 
 **Note:**
@@ -2121,7 +2121,7 @@ def plot_confusion_matrix(y_preds, y_true, labels):
 y_preds = lr_clf.predict(X_valid)
 plot_confusion_matrix(y_preds, y_valid, labels)
 ```
-![png](./images/output_165_0.png)
+![](./images/output_165_0.png){fig-align="center"}
 
 
 **Note:**
@@ -2646,10 +2646,10 @@ y_preds = np.argmax(preds_output.predictions, axis=1)
 ```python
 plot_confusion_matrix(y_preds, y_valid, labels)
 ```
-![png](./images/output_207_0.png)
-
+![](./images/output_207_0.png){fig-align="center"}
 
 **Note:** 
+
 * This one is much closer to the ideal diagonal confusion matrix than the confusion matrix for the logistic regression model.
 * The love category is still often confused with joy.
 * Surprise is frequently confused for joy or fear.
@@ -2953,7 +2953,7 @@ plt.title(f'"{custom_tweet}"')
 plt.ylabel("Class probability (%)")
 plt.show()
 ```
-![png](./images/output_224_0.png)
+![](./images/output_224_0.png){fig-align="center"}
 
 
 
@@ -2970,7 +2970,7 @@ plt.title(f'"{custom_tweet}"')
 plt.ylabel("Class probability (%)")
 plt.show()
 ```
-![png](./images/output_226_0.png)
+![](./images/output_226_0.png){fig-align="center"}
 
 
 
@@ -2987,7 +2987,7 @@ plt.title(f'"{custom_tweet}"')
 plt.ylabel("Class probability (%)")
 plt.show()
 ```
-![png](./images/output_228_0.png)
+![](./images/output_228_0.png){fig-align="center"}
 
 
 
@@ -3017,6 +3017,16 @@ plt.show()
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
+
+
+
+**Previous:** [Notes on Transformers Book Ch. 1](../chapter-1/)
+
+**Next:** [Notes on Transformers Book Ch. 3](../chapter-3/)
+
+
+
+
 
 
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

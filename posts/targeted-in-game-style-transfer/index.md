@@ -27,9 +27,10 @@ aliases:
 * [Update StyleTransfer Script](#update-styleTransfer-script)
 * [Assign Depth Cameras](#assign-depth-cameras)
 * [Assign Stylize Layer With Code](#assign-stylize-layer-with-code)
-* [Conclusion](#conclusion)
 
-![mesh_shader_test_1](./images/mesh_shader_test_1.png)
+
+
+![](./images/mesh_shader_test_1.png){fig-align="center"}
 
 ## Overview
 
@@ -49,7 +50,7 @@ Once the download is complete, extract the project folder.
 
 Open Unity Hub and click the `Add` button.
 
-![unity-hub-select-add](./images/unity-hub-select-add.png)
+![](./images/unity-hub-select-add.png){fig-align="center"}
 
 Navigate to the extracted `End-to-End-In-Game-Style-Transfer-Tutorial-Intel-main` folder and select the `Kinematica_Demo_0.8.0-preview` folder.
 
@@ -63,21 +64,21 @@ You might get an error like the one below after opening the project in Unity.
 
 `AssetImporter is referencing an asset from the previous import. This should not happen.`
 
-![previous_import_error](./images/previous_import_error.png)
+![](./images/previous_import_error.png){fig-align="center"}
 
 You can fix this issue by rebuilding the Unit asset. Open the `Kinematica` folder in the Assets section and double-click on the `Unit` asset. This will open the `Kinematica Asset Builder` window. 
 
-![unit_asset](./images/unit_asset.png)
+![](./images/unit_asset.png){fig-align="center"}
 
 Click `Build` in the pop-up window. You can close the pop-up window once the build is complete.
 
-![kinematica_asset_builder](./images/kinematica_asset_builder.png)
+![](./images/kinematica_asset_builder.png){fig-align="center"}
 
 
 
 Back in the `Assets` section, open the `Biped` scene in the `Scenes` folder. The project should run normally now. However, there might be some stuttering the first time it is run.
 
-![biped_scene](./images/biped_scene.png)
+![](./images/biped_scene.png){fig-align="center"}
 
 
 
@@ -95,17 +96,17 @@ We'll need to capture depth data from the scene to determine what needs to be st
 
 #### Standard Scene
 
-![standard-scene-lighting](./images/standard-scene-lighting.png)
+![](./images/standard-scene-lighting.png){fig-align="center"}
 
 #### Character Only
 
-![style_camera_1](./images/style_camera_1.png)
+![](./images/style_camera_1.png){fig-align="center"}
 
 
 
 Here is an example of depth data captured from the camera that has been edited to be more easily viewable. Depth data is stored in the red color channel and can be difficult to see.
 
-![styleDepth-view-edited](./images/styleDepth-view-edited-2.png)
+![](./images/styleDepth-view-edited-2.png){fig-align="center"}
 
 
 
@@ -115,29 +116,29 @@ Here is an example of depth data captured from the camera that has been edited t
 
 In the `Hierarchy` tab, select the `Main Camera` object and press Ctrl-d twice to create two copies.
 
-![duplicate_main_camera](./images/duplicate_main_camera.png)
+![](./images/duplicate_main_camera.png){fig-align="center"}
 
 Hold Ctrl and select both of the camera copies. Drag them onto the original `Main Camera` object to make them child objects.
 
-![parent_camera_duplicates](./images/parent_camera_duplicates.png)
+![](./images/parent_camera_duplicates.png){fig-align="center"}
 
 
 
 With the duplicates still selected, we will remove every component except the `Camera` component. You can remove components by right-clicking on the component name and selecting `Remove Component`. 
 
-![remove_component](./images/remove_component.png)
+![](./images/remove_component.png){fig-align="center"}
 
 
 
-![removed_duplicate_camera_components](./images/removed_duplicate_camera_components.png)
+![](./images/removed_duplicate_camera_components.png){fig-align="center"}
 
 Also, make sure that the position and rotation values for the Transform component for each of the depth cameras are set to to zero. We need to make sure they are in exactly the same position as the Main Camera, or the depth values will be off.
 
-![verify-depth-camera-transform-values](./images/verify-depth-camera-transform-values.png)
+![](./images/verify-depth-camera-transform-values.png){fig-align="center"}
 
 One of the duplicate cameras will capture the depth data for the GameObjects we want to stylize. We'll call this one `Style Depth`. The second duplicate will capture the depth data for the standard scene, and be called `Source Depth`.
 
-![name-depth-cameras](./images/name-depth-cameras.png)
+![](./images/name-depth-cameras.png){fig-align="center"}
 
 
 
@@ -145,17 +146,17 @@ One of the duplicate cameras will capture the depth data for the GameObjects we 
 
 We'll identify the GameObjects we want to stylize by assigning a new Layer to these objects. Select the `Layers` drop-down menu and click `Edit Layers...`.
 
-![select_edit_layers](./images/select_edit_layers.png)
+![](./images/select_edit_layers.png){fig-align="center"}
 
 In the Inspector tab open the `Layers` drop-down and enter `Stylize` in the `User Layer 12` slot. 
 
-![add_stylize_layer](./images/add_stylize_layer.png)
+![](./images/add_stylize_layer.png){fig-align="center"}
 
 #### Set Style Depth Culling Mask
 
 Lastly, with the `Stylize Depth` camera selected, set the `Culling Mask` to `Stylize` only in the Inspector tab.
 
-![style_depth_set_culling_mask](./images/style_depth_set_culling_mask.png)
+![](./images/style_depth_set_culling_mask.png){fig-align="center"}
 
 
 
@@ -167,11 +168,11 @@ We can assign the Stylize layer to just about any GameObject we wish. To start, 
 
 **Note:** You might get a bunch of errors in the console when you select the Unit object. You can ignore these.
 
-![assign_stylize_layer](./images/assign_stylize_layer.png)
+![](./images/assign_stylize_layer.png){fig-align="center"}
 
 You will be prompted to chose whether to set the layer for the child objects as well. Select `Yes, change children`.
 
-![change_layer_popup](./images/change_layer_popup.png)
+![](./images/change_layer_popup.png){fig-align="center"}
 
 
 
@@ -181,7 +182,7 @@ You will be prompted to chose whether to set the layer for the child objects as 
 
 Next, we will add a new function to our compute shader that will select what parts of the stylize frame to keep. In the Assets section, open the `Shaders` subfolder located inside the `Style_Transfer` folder. Open the `StyleTransferShader` in your code editor.
 
-![open_styleTransferShader](./images/open_styleTransferShader.png)
+![](./images/open_styleTransferShader.png){fig-align="center"}
 
 First, we need to add three new Texture2D variables. Two of these will store the depth data from the `Style Depth` and `Source Depth` cameras. The third will store the original image for the current frame.
 
@@ -252,7 +253,7 @@ Now we just need to add the `#pragma kernel Merge` line at the top of the file.
 
 The next step is to modify the `StyleTransfer` script. The script is located in the Scripts subfolder inside the Style_Transfer folder.
 
-![open_styleTransfer_script](./images/open_styleTransfer_script.png)
+![](./images/open_styleTransfer_script.png){fig-align="center"}
 
 
 
@@ -454,7 +455,7 @@ void OnRenderImage(RenderTexture src, RenderTexture dest)
 
 The last step is to assign the depth cameras to the `StyleTransfer` script in the Inspector tab. Select the Main Camera object in the Hierarchy tab. Drag and drop each of the depth cameras into their respective spots in the Inspector tab.
 
-![assign_depth_cameras](./images/assign-depth-cameras.png)
+![](./images/assign-depth-cameras.png){fig-align="center"}
 
 ### Test it Out
 
@@ -476,15 +477,15 @@ This method will not work if the GameObject does not have a collider, so keep th
 
 The Kinematica Demo is not ideally structured for selecting individual GameObjects with the mouse. For example, the colliders for the level boundaries are not directly attached to the GameObjects like the one outlined below. That means we can't click on any of the four level boundaries without adding new collider components.
 
-![editor-wall-panel](./images/editor-wall-panel.png)
+![](./images/editor-wall-panel.png){fig-align="center"}
 
 The floor panels already have their own colliders attached and will work out of the box.
 
-![editor-floor-panel](./images/editor-floor-panel.png)
+![](./images/editor-floor-panel.png){fig-align="center"}
 
 The obstacles that we can climb over are actually children of GameObjects that have a collider. That means every child object will be stylized rather than the specific child object we click on.
 
-![editor-wall-obstacle](./images/editor-wall-obstacle.png)
+![](./images/editor-wall-obstacle.png){fig-align="center"}
 
 
 
@@ -547,11 +548,11 @@ If we run the game now, we can click on GameObjects with colliders to toggle the
 
 
 
-![targeted-stylization-test](./images/targeted-stylization-test.png)
+![](./images/targeted-stylization-test.png){fig-align="center"}
 
 
 
-## Conclusion
+
 
 
 

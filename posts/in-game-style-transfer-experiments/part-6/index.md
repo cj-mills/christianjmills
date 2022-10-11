@@ -15,6 +15,7 @@ aliases:
 - /In-Game-Style-Transfer-Experiments-6/
 ---
 
+
 * [Introduction](#introduction)
 * [Arbitrary Style Transfer](#arbitrary-style-transfer)
 * [Change in Plans](#change-in-plans)
@@ -28,7 +29,7 @@ Every time I think I'm ready to wrap up my style transfer project, I come across
 
 As I mentioned in the [weekly recap](../../weekly-recaps/recap-3/), I came across an [implementation](https://colab.research.google.com/github/tensorflow/hub/blob/master/examples/colab/tf2_arbitrary_image_stylization.ipynb) of the same style transfer model that Unity used for its style transfer project. However, this one hadn't been watered down to run on a PS4 Pro. I was impressed by the results, but it takes days instead of hours to train. Here are a couple examples using style images from Unity's sample project.
 
-![arbitrary-style-transfer-3](./images/arbitrary-style-transfer-3.jpg)
+![](./images/arbitrary-style-transfer-3.jpg){fig-align="center"}
 
 This method uses two deep learning models. One is based the same `fast_neural_style` model that I used in my first style transfer tutorial. It takes in an image and learns to generate a stylized output based on a target style image. The second model learns to predict values for part of the stylizing model that would enable the stylizing model to produce a stylized image based on a target style. The stylizing model would normally learn these values for a specific style image during training.
 

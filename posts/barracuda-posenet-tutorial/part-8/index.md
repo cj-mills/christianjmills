@@ -39,7 +39,7 @@ So far, we've only worked with video sources that have `16:9` aspect ratios. You
 
 Open the `PoseNet` script and add a new [`using directive`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-directive) at the top. We need the `UnityEngine.Video` namespace to work with the `Video Player` object.
 
-![import_unityengine_video](./images/import_unityengine_video.png)
+![](./images/import_unityengine_video.png){fig-align="center"}
 
 
 
@@ -51,19 +51,19 @@ Unity defaults to a resolution of `640 x 480` for webcams. There is no built-in 
 
 Add a new public `int` variable so we can adjust the camera height from the `Inspector` tab. Name the variable `webcamHeight`. My webcam supports 720p at 60fps, so I've set the default value to `720`.
 
-![webcamHeight_variable](./images/webcamHeight_variable.png)
+![](./images/webcamHeight_variable.png){fig-align="center"}
 
 ### Create `webcamWidth` Variable
 
 Next, create a variable for the camera's width and name it `webcamWidth`. I've set the default value to `1280`.
 
-![webcamWidth_variable](./images/webcamWidth_variable.png)
+![](./images/webcamWidth_variable.png){fig-align="center"}
 
 ### Create `webcamFPS` Variable
 
 We'll also add a variable to set the frame rate for the camera and name it `webcamFPS`. Set the default value to `60`.
 
-![webcam_fps_variable](./images/webcam_fps_variable.png)
+![](./images/webcam_fps_variable.png){fig-align="center"}
 
 
 
@@ -71,7 +71,7 @@ We'll also add a variable to set the frame rate for the camera and name it `webc
 
 Next, we need to create a couple of private `int` variables to store the dimensions of the video source. Name the variables `videoHeight` and `videoWidth`.
 
-![video_resolution_variables](./images/video_resolution_variables.png)
+![](./images/video_resolution_variables.png){fig-align="center"}
 
 
 
@@ -83,37 +83,37 @@ We'll make some modifications to the `Start()` method to prepare for input with 
 
 Create a new `GameObject` variable to access the `Video Player` object. Name the variable `videoPlayer` and place it at the top of the `Start()` method. We'll also move the `Transform videoScreen` variable outside of the `if (useWebcam)` statement.
 
-![find_video_player](./images/find_video_player.png)
+![](./images/find_video_player.png){fig-align="center"}
 
 ### Get Webcam Resolution
 
 We can't access the webcam resolution until after the webcam has started. Therefore, we'll update the values for `videoHeight` and `videoWidth` after `webcamTexture.Play()` has been called.
 
-![get_webcam_resolution](./images/get_webcam_resolution.png)
+![](./images/get_webcam_resolution.png){fig-align="center"}
 
 ### Get Video Clip Dimensions
 
 We need to get the video resolution from the `Video Player` object when we're not using a webcam. We can get the height and width by accessing the `VideoPlayer` component.
 
-![get_video_clip_dimensions](./images/get_video_clip_dimensions.png)
+![](./images/get_video_clip_dimensions.png){fig-align="center"}
 
 ### Replace `videoTexture`
 
 The dimensions for `videoTexture` can't be updated once it's been created. We'll need to replace it with a new `RenderTexture` that uses the new `videoHeight` and `videoWidth` values. We also need to set the new `videoTexture` as the `targetTexture` for the `Video Player` object.
 
-![replace_videoTexture](./images/replace_videoTexture.png)
+![](./images/replace_videoTexture.png){fig-align="center"}
 
 ### Update `VideoScreen`
 
 Next, we need to apply the new `videoTexture` to the `VideoScreen` object. We'll also resize and reposition the `VideoScreen` to account for any changes in the `videoTexture` dimensions. 
 
-![update_videoScreen](./images/update_videoScreen_2.png)
+![](./images/update_videoScreen_2.png){fig-align="center"}
 
 ### Adjust `Main Camera`
 
 We'll also resize and reposition the `Main Camera` object to account for changes to the `VideoScreen`.
 
-![adjust_main_camera](./images/adjust_main_camera.png)
+![](./images/adjust_main_camera.png){fig-align="center"}
 
 
 
@@ -125,17 +125,17 @@ Finally, we need to modify how we calculate the key point locations.
 
 We'll account for different aspect ratios by first determining whether the height or width of `videoTexture` is larger. We then use that information to calculate the `scale` and `unsqueezeScale` values.
 
-![update_scaling_calculations](./images/update_scaling_calculations.png)
+![](./images/update_scaling_calculations.png){fig-align="center"}
 
 ### Update Key Point Calculations
 
 We should only scale the `xPos` value by the `unsqueezeScale` if the width larger than the height. Remove that part from the initial `xPos` calculation. We also need to move the `if (useWebcam)` statement.
 
-![update_key_point_calculations_part1](./images/update_key_point_calculations_part1v2.png)
+![](./images/update_key_point_calculations_part1v2.png){fig-align="center"}
 
 We'll scale either `xPos` or `yPos` by `unsqueezeScale` depending on whether the width or height value for `videoTexture` is larger. Place the `if (useWebcam)` statement after this calculation.
 
-![update_key_point_calculations_part2](./images/update_key_point_calculations_part2.png)
+![](./images/update_key_point_calculations_part2.png){fig-align="center"}
 
 
 
@@ -147,7 +147,7 @@ Now we can test the modifications on some vertical videos from [Pexels](https://
 2. [Man Dancing Hip-Hop](https://www.pexels.com/video/man-dancing-hip-hop-2795742/)
 
 
-![](./videos/jump_rope_pose_estimation_4.mp4)
+![](./videos/jump_rope_pose_estimation_4.mp4){fig-align="center"}
 
 
 

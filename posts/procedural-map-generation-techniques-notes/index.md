@@ -18,6 +18,9 @@ aliases:
 
 ---
 
+
+
+
 * [Overview](#overview)
 * [Influential Games](#influential-games)
 * [Simple Room-Placement](#simple-room-placement)
@@ -67,7 +70,8 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Simple Room-Placement
 
-​          ![01-RoomCorridors.gif](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/01-RoomCorridors.gif?raw=true)      
+![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/01-RoomCorridors.gif?raw=true){fig-align="center"}
+
 
 1. Start with a solid map (random rectangle)
 2. Fill the map with walls.
@@ -80,7 +84,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Binary Space Partition Rooms
 
-​          ![02-Bsp.gif](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/02-Bsp.gif?raw=true)      
+![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/02-Bsp.gif?raw=true){fig-align="center"}
 
 - Similar results to random room placement, better spaced out.
     - Used in Nethack
@@ -92,7 +96,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Cellular Automata
 
-​          ![03-cellular.gif](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/03-cellular.gif?raw=true)      
+![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/03-cellular.gif?raw=true){fig-align="center"}
 
 - Evolve order from chaos.
 - Popularized in Conway's Game of Life.
@@ -111,7 +115,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Drunkard's Walk
 
-​          ![04-drunkard.gif](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/04-drunkard.gif?raw=true)      
+![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/04-drunkard.gif?raw=true){fig-align="center"}
 
 - Find Umber Hulk. Insert beer.
 - Place Hulk randomly on solid map. See what he smashes
@@ -128,7 +132,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Diffusion Limited Aggregation
 
-​          ![05-dla-inward.gif](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/05-dla-inward.gif?raw=true)      
+![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/05-dla-inward.gif?raw=true){fig-align="center"}
 
 - [Explanation](http://www.roguebasin.com/index.php/Diffusion-limited_aggregation) 
 - Start with a targeted seed.
@@ -146,7 +150,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## DLA with a Central Attractor
 
-​          ![06-dla-attractor.gif](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/06-dla-attractor.gif?raw=true)      
+![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/06-dla-attractor.gif?raw=true){fig-align="center"}
 
 - More likely to always hit the target
 - Randomly spawn your starting point and then shoot the particle directly at the middle of the map
@@ -157,7 +161,8 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
     - Use sparingly
 
 ## Voronoi Diagrams
-![Source: https://en.wikipedia.org/wiki/File:Euclidean_Voronoi_diagram.svg](./images/1024px-Euclidean_Voronoi_diagram.png)
+
+![](./images/1024px-Euclidean_Voronoi_diagram.png){fig-align="center"}
 
 - Randomly (or deliberately) placed seeds.
 
@@ -180,7 +185,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 - Can be used for effective city generation
     - Apocalypse Taxi
-        - ![https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg](https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg)
+        - ![](https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg){fig-align="center"}
         - Uses the edges of the generated cells to determine where the roads went
         - Randomly populated the content of each cell with something like "heavy industrial city", "light industrial city", etc.
     
@@ -191,7 +196,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Perlin and Simplex Noise
 
-​          ![11-noise-overworld.gif](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/11-noise-overworld.gif?raw=true)      
+![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/11-noise-overworld.gif?raw=true){fig-align="center"}
 
 - Basically a bunch of gradients combined together with a few variables
 - Can generate it in either two or three dimensions
@@ -220,7 +225,7 @@ My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYV
 
 ## Dijkstra Maps
 
-![Source: http://www.roguebasin.com/images/7/7c/Dijk_basic.png](./images/Dijk_basic.png)
+![](./images/Dijk_basic.png){fig-align="center"}
 
 1. [Explanation](http://www.roguebasin.com/index.php/The_Incredible_Power_of_Dijkstra_Maps)
 1. Start with 1 or more starting points.

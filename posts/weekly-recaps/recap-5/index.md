@@ -48,13 +48,13 @@ The latest version of PyTorch has been released and comes with a lot of new upda
 
 #### [PyTorch3D: A library for deep learning with 3D data](https://pytorch3d.org/)
 
-![](https://raw.githubusercontent.com/facebookresearch/pytorch3d/master/.github/dolphin_deform.gif)
+![](https://raw.githubusercontent.com/facebookresearch/pytorch3d/master/.github/dolphin_deform.gif){fig-align="center"}
 
 Last year, the FacebookAI research team introduced a deep learning library that aims to make working with 3D data a lot easier. I didn't learn about it until I decided to click on a video YouTube had been recommending for weeks. The library supports batching of inputs with different sizes. This is helpful since cropping a 3D mesh isn't as straight forward as cropping 2D images. The library also supports several common operations for 3D data as well as a differentiable rendering API. My mind instantly jumped to wondering what it would take to integrate this with Blender. I'll plan to make time soon so that I can work through the [available tutorials](https://github.com/facebookresearch/pytorch3d#tutorials).
 
 #### [Neural Body: Implicit Neural Representations with Structured Latent Codes for Novel View Synthesis of Dynamic Humans](https://github.com/zju3dv/neuralbody)
 
-![](https://camo.githubusercontent.com/b1b6429cb394905284abe3b365e6bec6233592e9fdfb46df61660b65b7f0a6b3/68747470733a2f2f7a6a753364762e6769746875622e696f2f6e657572616c626f64792f696d616765732f6d6f6e6f63756c61722e676966)
+![](./images/novel-view-synthesis.gif){fig-align="center"}
 
 #### [Training models on Multiple GPUs using fastai](https://jarvislabs.ai/blogs/multiGPUs)
 

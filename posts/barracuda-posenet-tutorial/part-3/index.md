@@ -39,19 +39,19 @@ We can now start using the Barracuda library. We'll first install the Barracuda 
 
 Select the `Package Manager` tab in the Unity editor.
 
-![select_package_manager_tab](./images/select_package_manager_tab.png)
+![](./images/select_package_manager_tab.png){fig-align="center"}
 
 Type `Barracuda` into the search box. The version of the package used in the tutorial is `1.0.4`.
 
-![barracuda_search](./images/barracuda_search.PNG)
+![](./images/barracuda_search.PNG){fig-align="center"}
 
 Click the `Install` button to install the package.
 
-![barracuda_install](./images/barracuda_install.PNG)
+![](./images/barracuda_install.PNG){fig-align="center"}
 
 Wait for Unity to install the dependencies.
 
-![barracuda_installation_progress](./images/barracuda_installation_progress.PNG)
+![](./images/barracuda_installation_progress.PNG){fig-align="center"}
 
 ## Import PoseNet Model
 
@@ -69,7 +69,7 @@ Create a new folder in the `Assets` window and name it `Models`. Drag and drop t
 
 If you select the `resnet50` asset, you should see the following in the `Inspector` tab.
 
-![resnet50_inspector_tab](./images/resnet50_inspector_tab.PNG)
+![](./images/resnet50_inspector_tab.PNG){fig-align="center"}
 
 ## Load the Model
 
@@ -79,13 +79,13 @@ Next, we need to implement the code for loading the model in the `PoseNet` [scri
 
 Open the `PoseNet` script and add the `Unity.Barracuda` namespace at the top of the script.
 
-![add_barracuda_namespace](./images/add_barracuda_namespace.png)
+![](./images/add_barracuda_namespace.png){fig-align="center"}
 
 ### Create `modelAsset` Variable
 
 Make a new public `NNModel` variable called `modelAsset`. We'll assign the `resnet50` asset to this variable in the Unity Editor.
 
-![create_modelAsset_variable](./images/create_modelAsset_variable.png)
+![](./images/create_modelAsset_variable.png){fig-align="center"}
 
 ### Create `workerType` Variable
 
@@ -93,7 +93,7 @@ We'll also add a variable that let's us choose which [backend](https://docs.unit
 
 Make a new public `WorkerFactory.Type` called `workerType`. Give it a default value of `WorkerFactory.Type.Auto`.
 
-![load_model_variables_1](./images/create_workerType_variable.png)
+![](./images/create_workerType_variable.png){fig-align="center"}
 
 ### Create `m_RuntimeModel` Variable
 
@@ -103,13 +103,13 @@ We need to compile the `modelAsset` into a run-time model to perform inference. 
 
 Next, we'll create a new private `IWorker` variable to store our inference engine. Name the variable `engine`.
 
-![load_model_variables_2](./images/load_model_variables_2.png)
+![](./images/load_model_variables_2.png){fig-align="center"}
 
 ### Create `heatmapLayer` Variable
 
 Add a new private `string` variable to store the  name of the heatmap layer in the `resnet50` model. We'll need the output of this layer to determine the location of key points (e.g. nose, elbows, knees, etc.) in the input image. We can find the name for the model's output layers in the `Inspector` tab. For our model, the heatmap layer is named `float_heamap`.
 
-![resnet50_output_layers](./images/resnet50_output_layers.PNG)
+![](./images/resnet50_output_layers.PNG){fig-align="center"}
 
 **Note:** The last two output layers, `resnet_v1_50/displacement_bwd_2/BiasAd` and `resnet_v1_50/displacement_fwd_2/BiasAd`, are used when estimating the pose of multiple people. We'll be sticking to single pose estimation for this series. 
 
@@ -117,13 +117,13 @@ Add a new private `string` variable to store the  name of the heatmap layer in t
 
 We'll go ahead and create a variable for the `float_short_offsets` layer as well since we'll need it later. The output from this layer is used to refine the estimated key point locations determined with the heatmap layer. 
 
-![layer_name_variables](./images/layer_name_variables.png)
+![](./images/layer_name_variables.png){fig-align="center"}
 
 ### Compile the Model
 
 We need to get an object oriented representation of the model before we can work with it. We'll do this in the `Start()` method and store it in the `m_RuntimeModel`.
 
-![compile_model](./images/compile_model.png)
+![](./images/compile_model.png){fig-align="center"}
 
 ### Modify the Model
 
@@ -131,23 +131,23 @@ We need to add a [`Sigmoid`](https://docs.unity3d.com/Packages/com.unity.barracu
 
 First, we need to make a new private `string` variable to store the name of this new layer. We'll name the variable `predictionLayer` and name the layer `heatmap_predictions`.
 
-![predictionLayer_name](./images/predictionLayer_name.png)
+![](./images/predictionLayer_name.png){fig-align="center"}
 
 We'll add the new layer using a [`ModelBuilder`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.ModelBuilder.html).
 
-![add_sigmoid_layer](./images/add_sigmoid_layer.png)
+![](./images/add_sigmoid_layer.png){fig-align="center"}
 
 ### Initialize the Inference Engine
 
 Now we can create a worker to execute the modified model using the selected backend. We'll do this using the [`WorkerFactory.CreateWorker()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.WorkerFactory.html#Unity_Barracuda_WorkerFactory_CreateWorker_Unity_Barracuda_WorkerFactory_Type_Unity_Barracuda_Model_System_Boolean_) method.
 
-![create_worker](./images/create_worker.png)
+![](./images/create_worker.png){fig-align="center"}
 
 ### Release Inference Engine Resources
 
 We need to manually release the resources that get allocated for the inference `engine`. This should be one of the last actions performed. Therefore, we'll do it in the `OnDisable()` method. This method gets called when the Unity project exits. We need to implement this method in the `PoseNet` script.
 
-![onDisable_method](./images/onDisable_method.png)
+![](./images/onDisable_method.png){fig-align="center"}
 
 ## Set Inspector Variables
 
@@ -161,7 +161,7 @@ With the `PoseEstimator` object selected, drag and drop the `resnet50` asset int
 
 Set the backend to the `Compute Precompiled` option in the `Worker Type` drop-down. This is the most efficient GPU backend.
 
-![assign_model_asset_and_backend](./images/assign_model_asset_and_backend.PNG)
+![](./images/assign_model_asset_and_backend.PNG){fig-align="center"}
 
 ## Perform Inference
 
@@ -171,23 +171,23 @@ Finally, we'll add the code to perform inference in the `Update()` method.
 
 We need to convert the `processedImage` to a `Tensor` before we can feed it to the model. The `Tensor` constructor requires us to specify the number of channels in the image. We don't need the alpha (transparency) channel so we'll specify `3` for the RGB color channels.
 
-![create_input_tensor](./images/create_input_tensor.png)
+![](./images/create_input_tensor.png){fig-align="center"}
 
 ### Execute the Model
 
 We'll use the [`engine.Execute()`](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.IWorker.html#Unity_Barracuda_IWorker_Execute_Unity_Barracuda_Tensor_) method to perform inference. This method takes in the input Tensor and schedules the network execution.
 
-![execute_model](./images/execute_model.png)
+![](./images/execute_model.png){fig-align="center"}
 
 ### Release Input Tensor Resources
 
 We'll need to manually release the allocated resources for the Tensor with the `input.Dispose()` method.
 
-![dispose_input_tensor](./images/dispose_input_tensor.png)
+![](./images/dispose_input_tensor.png){fig-align="center"}
 
 Here is the revised `Update()` method.
 
-![perform_inference_update_method](./images/perform_inference_update_method_3.png)
+![](./images/perform_inference_update_method_3.png){fig-align="center"}
 
 ## Summary
 

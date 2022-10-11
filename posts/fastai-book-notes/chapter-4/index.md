@@ -85,6 +85,7 @@ print(URLs.MNIST_SAMPLE)
 path = untar_data(URLs.MNIST_SAMPLE)
 print(path)
 ```
+
 ```text
 https://s3.amazonaws.com/fast-ai-sample/mnist_sample.tgz
 /home/innom-dt/.fastai/data/mnist_sample
@@ -117,17 +118,21 @@ path.ls()
 
 
 -----
+
 ```python
 type(path.ls())
 ```
+
 ```text
 fastcore.foundation.L
 ```
 
 -----
+
 ```python
 (path/'train').ls()
 ```
+
 ```text
 (#2) [Path('train/3'),Path('train/7')]
 ```
@@ -139,6 +144,7 @@ threes = (path/'train'/'3').ls().sorted()
 sevens = (path/'train'/'7').ls().sorted()
 threes
 ```
+
 ```text
 (#6131) [Path('train/3/10.png'),Path('train/3/10000.png'),Path('train/3/10011.png'),Path('train/3/10031.png'),Path('train/3/10034.png'),Path('train/3/10042.png'),Path('train/3/10052.png'),Path('train/3/1007.png'),Path('train/3/10074.png'),Path('train/3/10091.png')...]
 ```
@@ -155,7 +161,7 @@ im3
 /home/innom-dt/.fastai/data/mnist_sample/train/3/10000.png
 ```
 
-![png](./images/output_10_1.png)
+![](./images/output_10_1.png){fig-align="center"}
 
 
 
@@ -232,9 +238,11 @@ tns = tensor(data)
 ```
 
 -----
+
 ```python
 arr  # numpy
 ```
+
 ```text
 array([[1, 2, 3],
        [4, 5, 6]])
@@ -242,19 +250,23 @@ array([[1, 2, 3],
 
 
 -----
+
 ```python
 tns  # pytorch
 ```
+
 ```text
 tensor([[1, 2, 3],
         [4, 5, 6]])
 ```
 
 -----
+
 ```python
 # select a row
 tns[1]
 ```
+
 ```text
 tensor([4, 5, 6])
 ```
@@ -265,6 +277,7 @@ tensor([4, 5, 6])
 # select a column
 tns[:,1]
 ```
+
 ```text
 tensor([2, 5])
 ```
@@ -275,6 +288,7 @@ tensor([2, 5])
 # select a slice
 tns[1,1:3]
 ```
+
 ```text
 tensor([5, 6])
 ```
@@ -285,6 +299,7 @@ tensor([5, 6])
 # Perform element-wise addition
 tns+1
 ```
+
 ```text
 tensor([[2, 3, 4],
         [5, 6, 7]])
@@ -292,18 +307,22 @@ tensor([[2, 3, 4],
 
 
 -----
+
 ```python
 tns.type()
 ```
+
 ```text
 'torch.LongTensor'
 ```
 
 -----
+
 ```python
 # Perform element-wise multiplication
 tns*1.5
 ```
+
 ```text
 tensor([[1.5000, 3.0000, 4.5000],
         [6.0000, 7.5000, 9.0000]])
@@ -324,20 +343,24 @@ tensor([[1.5000, 3.0000, 4.5000],
 * creates an array
 
 -----
+
 ```python
 print(type(array(im3)[4:10,4:10]))
 array
 ```
+
 ```text
 <class 'numpy.ndarray'>
 <function numpy.array>
 ```
 
 -----
+
 ```python
 print(array(im3)[4:10,4:10][0].data)
 print(array(im3)[4:10,4:10][0].dtype)
 ```
+
 ```text
 <memory at 0x7f3c13a20dc0>
 uint8
@@ -354,20 +377,24 @@ uint8
 * Like [torch.as_tensor](https://pytorch.org/docs/stable/generated/torch.as_tensor.html#torch.as_tensor), but handle lists too, and can pass multiple vector elements directly.
 
 -----
+
 ```python
 print(type(tensor(im3)[4:10,4:10][0]))
 tensor
 ```
+
 ```text
 <class 'torch.Tensor'>
 <function fastai.torch_core.tensor(x, *rest, dtype=None, device=None, requires_grad=False, pin_memory=False)>
 ```
 
 -----
+
 ```python
 print(tensor(im3)[4:10,4:10][0].data)
 print(tensor(im3)[4:10,4:10][0].dtype)
 ```
+
 ```text
 tensor([0, 0, 0, 0, 0, 0], dtype=torch.uint8)
 torch.uint8
@@ -1297,6 +1324,7 @@ pd.DataFrame(tensor(im3))
 ```python
 tensor(im3).shape
 ```
+
 ```text
 torch.Size([28, 28])
 ```
@@ -1590,6 +1618,7 @@ df.style.set_properties(**{'font-size':'6pt'}).background_gradient('Greys')
 * Compare the values for each pixel location in a new image to the average
 
 -----
+
 ```python
 # Store all images of the digit 7 in a list of tensors
 seven_tensors = [tensor(Image.open(o)) for o in sevens]
@@ -1597,6 +1626,7 @@ seven_tensors = [tensor(Image.open(o)) for o in sevens]
 three_tensors = [tensor(Image.open(o)) for o in threes]
 len(three_tensors),len(seven_tensors)
 ```
+
 ```text
 (6131, 6265)
 ```
@@ -1607,10 +1637,12 @@ len(three_tensors),len(seven_tensors)
 * Display tensor as an image
 
 -----
+
 ```python
 show_image(three_tensors[1]);
 ```
-![png](./images/output_27_0.png)
+
+![](./images/output_27_0.png){fig-align="center"}
 
 
 #### PyTorch Stack Function
@@ -1618,6 +1650,7 @@ show_image(three_tensors[1]);
 * Concatenates a sequence of tensors along a new dimension
 
 -----
+
 ```python
 # Stack all images for each digit into a single tensor
 # and scale pixel values from the range [0,255] to [0,1]
@@ -1625,6 +1658,7 @@ stacked_sevens = torch.stack(seven_tensors).float()/255
 stacked_threes = torch.stack(three_tensors).float()/255
 stacked_threes.shape
 ```
+
 ```text
 torch.Size([6131, 28, 28])
 ```
@@ -1639,9 +1673,11 @@ len(stacked_threes.shape)
 
 
 -----
+
 ```python
 stacked_threes.ndim
 ```
+
 ```text
 3
 ```
@@ -1653,25 +1689,30 @@ stacked_threes.ndim
 mean3 = stacked_threes.mean(0)
 show_image(mean3);
 ```
-![png](./images/output_32_0.png)
+
+![](./images/output_32_0.png){fig-align="center"}
 
 
 -----
+
 ```python
 # Calculate the mean values for each pixel location across all images of the digit 7
 mean7 = stacked_sevens.mean(0)
 show_image(mean7);
 ```
-![png](./images/output_33_0.png)
+
+![](./images/output_33_0.png){fig-align="center"}
 
 
 -----
+
 ```python
 # Pick a single image to compare to the average
 a_3 = stacked_threes[1]
 show_image(a_3);
 ```
-![png](./images/output_34_0.png)
+
+![](./images/output_34_0.png){fig-align="center"}
 
 -----
 
@@ -1683,6 +1724,7 @@ dist_3_sqr = ((a_3 - mean3)**2).mean().sqrt()
 print(f"MAE: {dist_3_abs}")
 print(f"RMSE: {dist_3_sqr}")
 ```
+
 ```text
 MAE: 0.11143654584884644
 RMSE: 0.20208320021629333
@@ -1692,12 +1734,14 @@ RMSE: 0.20208320021629333
 Khan Academy: [Understanding Square Roots](https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals/x2f8bb11595b61c86:radicals/v/understanding-square-roots)
 
 -----
+
 ```python
 dist_7_abs = (a_3 - mean7).abs().mean()
 dist_7_sqr = ((a_3 - mean7)**2).mean().sqrt()
 print(f"MAE: {dist_7_abs}")
 print(f"RMSE: {dist_7_sqr}")
 ```
+
 ```text
 MAE: 0.15861910581588745
 RMSE: 0.30210891366004944
@@ -1711,9 +1755,11 @@ RMSE: 0.30210891366004944
 * Provides access to a variety of functions in PyTorch
 
 -----
+
 ```python
 F
 ```
+
 ```text
 <module 'torch.nn.functional' from '/home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/torch/nn/functional.py'>
 ```
@@ -1730,6 +1776,7 @@ F
 * Penalizes bigger mistakes more heavily
 
 -----
+
 ```python
 # Calculate the Mean Absolute Error aka L1 norm
 print(F.l1_loss(a_3.float(),mean7))
@@ -1757,6 +1804,7 @@ tensor(0.3021)
         - up to millions of times faster on GPU
 
 -----
+
 ```python
 # Create tensors for the validation set for the digit 3
 # and stack them into a single tensor
@@ -1774,6 +1822,7 @@ valid_7_tens = valid_7_tens.float()/255
 
 valid_3_tens.shape,valid_7_tens.shape
 ```
+
 ```text
 (torch.Size([1010, 28, 28]), torch.Size([1028, 28, 28]))
 ```
@@ -1789,6 +1838,7 @@ def mnist_distance(a,b): return (a-b).abs().mean((-1,-2))
 # Calculate MAE for two single images
 mnist_distance(a_3, mean3)
 ```
+
 ```text
 tensor(0.1114)
 ```
@@ -1807,31 +1857,38 @@ valid_3_dist, valid_3_dist.shape
 
 
 -----
+
 ```python
 tensor([1,2,3]) + tensor([1,1,1])
 ```
+
 ```text
 tensor([2, 3, 4])
 ```
 
 -----
+
 ```python
 (valid_3_tens-mean3).shape
 ```
+
 ```text
 torch.Size([1010, 28, 28])
 ```
 
 -----
+
 ```python
 # Compare the MAE value between the single and the mean values for the digits 3 and 7
 def is_3(x): return mnist_distance(x,mean3) < mnist_distance(x,mean7)
 ```
 
 -----
+
 ```python
 is_3(a_3), is_3(a_3).float()
 ```
+
 ```text
 (tensor(True), tensor(1.))
 ```
@@ -1841,6 +1898,7 @@ is_3(a_3), is_3(a_3).float()
 ```python
 is_3(valid_3_tens)
 ```
+
 ```text
 tensor([ True,  True,  True,  ..., False,  True,  True])
 ```
@@ -1853,16 +1911,19 @@ accuracy_7s = (1 - is_3(valid_7_tens).float()).mean()
 
 accuracy_3s,accuracy_7s,(accuracy_3s+accuracy_7s)/2
 ```
+
 ```text
 (tensor(0.9168), tensor(0.9854), tensor(0.9511))
 ```
 
 
 -----
+
 ```python
 print(f"Correct 3s: {accuracy_3s * valid_3_tens.shape[0]:.0f}")
 print(f"Incorrect 3s: {(1 - accuracy_3s) * valid_3_tens.shape[0]:.0f}")
 ```
+
 ```text
 Correct 3s: 926
 Incorrect 3s: 84
@@ -1874,6 +1935,7 @@ Incorrect 3s: 84
 print(f"Correct 7s: {accuracy_7s * valid_7_tens.shape[0]:.0f}")
 print(f"Incorrect 7s: {(1 - accuracy_7s) * valid_7_tens.shape[0]:.0f}")
 ```
+
 ```text
 Correct 7s: 1013
 Incorrect 7s: 15
@@ -1901,7 +1963,7 @@ def pr_eight(x,w) = (x*w).sum()
 
 -----
 
-![svg](./images/output_66_0.svg)
+![](./images/output_66_0.svg)
 
 -----
 
@@ -1917,7 +1979,8 @@ def f(x): return x**2
 ```python
 plot_function(f, 'x', 'x**2')
 ```
-![png](./images/output_69_1.png)
+
+![](./images/output_69_1.png){fig-align="center"}
 
 -----
 
@@ -1925,7 +1988,8 @@ plot_function(f, 'x', 'x**2')
 plot_function(f, 'x', 'x**2')
 plt.scatter(-1.5, f(-1.5), color='red');
 ```
-![png](./images/output_70_0.png)
+
+![](./images/output_70_0.png){fig-align="center"}
 
 
 ### Calculating Gradients
@@ -1957,10 +2021,12 @@ xt = tensor(3.).requires_grad_()
 ```
 
 -----
+
 ```python
 yt = f(xt)
 yt
 ```
+
 ```text
 tensor(9., grad_fn=<PowBackward0>)
 ```
@@ -1977,6 +2043,7 @@ tensor(9., grad_fn=<PowBackward0>)
 ```python
 yt.grad_fn
 ```
+
 ```text
 <PowBackward0 at 0x7f91e90a6670>
 ```
@@ -2002,6 +2069,7 @@ The derivative of `f(x) = x**2` is `2x`, so the derivative at `x=3` is `6`
 ```python
 xt.grad
 ```
+
 ```text
 tensor(6.)
 ```
@@ -2013,26 +2081,31 @@ Derivatives should be `6`, `8`, `20`
 xt = tensor([3.,4.,10.]).requires_grad_()
 xt
 ```
+
 ```text
 tensor([ 3.,  4., 10.], requires_grad=True)
 ```
 
 -----
+
 ```python
 def f(x): return (x**2).sum()
 
 yt = f(xt)
 yt
 ```
+
 ```text
 tensor(125., grad_fn=<SumBackward0>)
 ```
 
 -----
+
 ```python
 yt.backward()
 xt.grad
 ```
+
 ```text
 tensor([ 6.,  8., 20.])
 ```
@@ -2080,6 +2153,7 @@ tensor([ 6.,  8., 20.])
 time = torch.arange(0,20).float();
 print(time)
 ```
+
 ```text
 tensor([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.])
 ```
@@ -2095,22 +2169,27 @@ tensor([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11., 12., 13., 14
 * A scatter plot of y vs. x with varying marker size and/or color.
 
 -----
+
 ```python
 # Add some random noise to mimic manually measuring the speed
 speed = torch.randn(20)*3 + 0.75*(time-9.5)**2 + 1
 plt.scatter(time,speed);
 ```
-![png](./images/output_90_0.png)
+
+![](./images/output_90_0.png){fig-align="center"}
 
 
 -----
+
 ```python
 # A quadratic function with trainable parameters
 def f(t, params):
     a,b,c = params
     return a*(t**2) + (b*t) + c
 ```
+
 -----
+
 ```python
 def mse(preds, targets): return ((preds-targets)**2).mean().sqrt()
 ```
@@ -2122,11 +2201,13 @@ def mse(preds, targets): return ((preds-targets)**2).mean().sqrt()
 params = torch.randn(3).requires_grad_()
 params
 ```
+
 ```text
 tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
 ```
 
 -----
+
 ```python
 #hide
 orig_params = params.clone()
@@ -2138,6 +2219,7 @@ preds = f(time, params)
 print(preds.shape)
 preds
 ```
+
 ```text
 torch.Size([20])
 tensor([ 1.3525e+00, -1.6391e-01, -3.2121e+00, -7.7919e+00, -1.3903e+01, -2.1547e+01, -3.0721e+01, -4.1428e+01, -5.3666e+01, -6.7436e+01, -8.2738e+01, -9.9571e+01, -1.1794e+02, -1.3783e+02,
@@ -2146,6 +2228,7 @@ tensor([ 1.3525e+00, -1.6391e-01, -3.2121e+00, -7.7919e+00, -1.3903e+01, -2.1547
 
 
 -----
+
 ```python
 def show_preds(preds, ax=None):
     if ax is None: ax=plt.subplots()[1]
@@ -2155,10 +2238,12 @@ def show_preds(preds, ax=None):
 ```
 
 -----
+
 ```python
 show_preds(preds)
 ```
-![png](./images/output_99_0.png)
+
+![](./images/output_99_0.png){fig-align="center"}
 
 
 #### Step 3: Calculate the loss
@@ -2170,6 +2255,7 @@ show_preds(preds)
 loss = mse(preds, speed)
 loss
 ```
+
 ```text
 tensor(160.6979, grad_fn=<SqrtBackward0>)
 ```
@@ -2181,6 +2267,7 @@ tensor(160.6979, grad_fn=<SqrtBackward0>)
 loss.backward()
 params.grad
 ```
+
 ```text
 tensor([-165.5151,  -10.6402,   -0.7900])
 ```
@@ -2193,18 +2280,22 @@ lr = 1e-5
 ```
 
 -----
+
 ```python
 # Multiply the graients by the learning rate
 params.grad * lr
 ```
+
 ```text
 tensor([-1.6552e-03, -1.0640e-04, -7.8996e-06])
 ```
 
 -----
+
 ```python
 params
 ```
+
 ```text
 tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
 ```
@@ -2222,6 +2313,7 @@ params.grad = None
 ```
 
 -----
+
 ```python
 # Test the updated parameter values
 preds = f(time,params)
@@ -2236,7 +2328,8 @@ tensor(157.9476, grad_fn=<SqrtBackward0>)
 ```python
 show_preds(preds)
 ```
-![png](./images/output_110_0.png)
+
+![](./images/output_110_0.png){fig-align="center"}
 
 -----
 
@@ -2255,6 +2348,7 @@ def apply_step(params, prn=True):
 ```python
 for i in range(10): apply_step(params)
 ```
+
 ```text
 157.9476318359375
 155.1999969482422
@@ -2275,7 +2369,8 @@ _,axs = plt.subplots(1,4,figsize=(12,3))
 for ax in axs: show_preds(apply_step(params, False), ax)
 plt.tight_layout()
 ```
-![png](./images/output_114_0.png)
+
+![](./images/output_114_0.png){fig-align="center"}
 
 Many steps later...
 
@@ -2284,7 +2379,8 @@ _,axs = plt.subplots(1,4,figsize=(12,3))
 for ax in axs: show_preds(apply_step(params, False), ax)
 plt.tight_layout()
 ```
-![png](./images/output_116_0.png)
+
+![](./images/output_116_0.png){fig-align="center"}
 
 
 #### Step 7: Stop
@@ -2302,7 +2398,7 @@ plt.tight_layout()
 - Multiply the gradients by a learning rate to control how big of a change to make for each update
 - Iterate
 
-![svg](./images/output_119_0.svg)
+![](./images/output_119_0.svg)
 
 
 
@@ -2335,6 +2431,7 @@ train_x = torch.cat([stacked_threes, stacked_sevens]).view(-1, 28*28)
 ```
 
 -----
+
 ```python
 train_x.shape
 ```
@@ -2343,6 +2440,7 @@ torch.Size([12396, 784])
 ```
 
 -----
+
 ```python
 # Label 3s as `1` and label 7s as `0`
 train_y = tensor([1]*len(threes) + [0]*len(sevens)).unsqueeze(1)
@@ -2353,6 +2451,7 @@ torch.Size([12396, 1])
 ```
 
 -----
+
 ```python
 # Combine independent and dependent variables into a dataset
 dset = list(zip(train_x,train_y))
@@ -2364,6 +2463,7 @@ x.shape,y
 ```
 
 -----
+
 ```python
 valid_x = torch.cat([valid_3_tens, valid_7_tens]).view(-1, 28*28)
 valid_y = tensor([1]*len(valid_3_tens) + [0]*len(valid_7_tens)).unsqueeze(1)
@@ -2371,24 +2471,28 @@ valid_dset = list(zip(valid_x,valid_y))
 ```
 
 -----
+
 ```python
 # Randomly initialize parameters
 def init_params(size, std=1.0): return (torch.randn(size)*std).requires_grad_()
 ```
 
 -----
+
 ```python
 # Initialize weight values
 weights = init_params((28*28,1))
 ```
 
 -----
+
 ```python
 # Initialize bias values
 bias = init_params(1)
 ```
 
 -----
+
 ```python
 # Calculate a prediction for a single image
 (train_x[0]*weights.T).sum() + bias
@@ -2414,6 +2518,7 @@ def mat_mul(m1, m2):
 ```
 
 -----
+
 ```python
 # Create copies of the tensors that don't require gradients
 train_x_clone = train_x.clone().detach()
@@ -2421,11 +2526,13 @@ weights_clone = weights.clone().detach()
 ```
 
 -----
+
 ```python
 %%time
 # Matrix multiplication using @ operator
 (train_x_clone@weights_clone)[:5]
 ```
+
 ```text
 CPU times: user 2.35 ms, sys: 4.15 ms, total: 6.5 ms
 Wall time: 5.29 ms
@@ -2438,11 +2545,13 @@ tensor([[ -6.5802],
 ```
 
 -----
+
 ```python
 %%time
 # This is why you should avoid using loops
 mat_mul(train_x_clone, weights_clone)[:5]
 ```
+
 ```text
 CPU times: user 1min 37s, sys: 28 ms, total: 1min 37s
 Wall time: 1min 37s
@@ -2456,6 +2565,7 @@ Wall time: 1min 37s
 
 
 -----
+
 ```python
 # Move tensor copies to GPU
 train_x_clone = train_x_clone.to('cuda');
@@ -2463,10 +2573,12 @@ weights_clone = weights_clone.to('cuda');
 ```
 
 -----
+
 ```python
 %%time
 (train_x_clone@weights_clone)[:5]
 ```
+
 ```text
 CPU times: user 2.19 ms, sys: 131 µs, total: 2.32 ms
 Wall time: 7.78 ms
@@ -2479,15 +2591,18 @@ tensor([[ -6.5802],
 ```
 
 -----
+
 ```python
 # Over 86,000 times faster on GPU
 print(f"{(44.9 * 1e+6) / 522:,.2f}")
 ```
+
 ```text
 86,015.33
 ```
 
 -----
+
 ```python
 # Define a linear layer
 # Matrix-multiply xb and weights and add the bias
@@ -2495,6 +2610,7 @@ def linear1(xb): return xb@weights + bias
 preds = linear1(train_x)
 preds
 ```
+
 ```text
 tensor([[ -6.2330],
         [-10.6388],
@@ -2506,11 +2622,13 @@ tensor([[ -6.2330],
 ```
 
 -----
+
 ```python
 # Determine which predictions were correct
 corrects = (preds>0.0).float() == train_y
 corrects
 ```
+
 ```text
 tensor([[False],
         [False],
@@ -2522,15 +2640,18 @@ tensor([[False],
 ```
 
 -----
+
 ```python
 # Calculate the current model accuracy
 corrects.float().mean().item()
 ```
+
 ```text
 0.5379961133003235
 ```
 
 -----
+
 ```python
 # Test a small change in the weights
 with torch.no_grad():
@@ -2538,15 +2659,18 @@ with torch.no_grad():
 ```
 
 -----
+
 ```python
 preds = linear1(train_x)
 ((preds>0.0).float() == train_y).float().mean().item()
 ```
+
 ```text
 0.5379961133003235
 ```
 
 -----
+
 ```python
 trgts  = tensor([1,0,1])
 prds   = tensor([0.9, 0.4, 0.2])
@@ -2570,17 +2694,21 @@ def mnist_loss(predictions, targets):
 ```
 
 -----
+
 ```python
 torch.where(trgts==1, 1-prds, prds)
 ```
+
 ```text
 tensor([0.1000, 0.4000, 0.8000])
 ```
 
 -----
+
 ```python
 mnist_loss(prds,trgts)
 ```
+
 ```text
 tensor(0.4333)
 ```
@@ -2590,6 +2718,7 @@ tensor(0.4333)
 ```python
 mnist_loss(tensor([0.9, 0.4, 0.8]),trgts)
 ```
+
 ```text
 tensor(0.2333)
 ```
@@ -2609,26 +2738,31 @@ tensor(0.2333)
 * $e \approx 2.7183$
 
 -----
+
 ```python
 print(torch.exp(tensor(1)))
 print(torch.exp(tensor(2)))
 ```
+
 ```text
 tensor(2.7183)
 tensor(7.3891)
 ```
 
 -----
+
 ```python
 # Always returns a number between 0 and 1
 def sigmoid(x): return 1/(1+torch.exp(-x))
 ```
 
 -----
+
 ```python
 plot_function(torch.sigmoid, title='Sigmoid', min=-4, max=4);
 ```
-![png](./images/output_156_1.png)
+
+![](./images/output_156_1.png){fig-align="center"}
 
 -----
 
@@ -2696,26 +2830,31 @@ In-Place Operations:
 ```python
 DataLoader
 ```
+
 ```text
 fastai.data.load.DataLoader
 ```
 
 -----
+
 ```python
 # Sample collection 
 coll = range(15)
 ```
+
 ```text
 range(0, 15)
 ```
 
 -----
+
 ```python
 # Sample collection 
 coll = range(15)
 dl = DataLoader(coll, batch_size=5, shuffle=True)
 list(dl)
 ```
+
 ```text
 [tensor([ 0,  7,  4,  5, 11]),
  tensor([ 9,  3,  8, 14,  6]),
@@ -2723,20 +2862,24 @@ list(dl)
 ```
 
 -----
+
 ```python
 # Sample dataset of independent and dependent variables
 ds = L(enumerate(string.ascii_lowercase))
 ds
 ```
+
 ```text
 (#26) [(0, 'a'),(1, 'b'),(2, 'c'),(3, 'd'),(4, 'e'),(5, 'f'),(6, 'g'),(7, 'h'),(8, 'i'),(9, 'j')...]
 ```
 
 -----
+
 ```python
 dl = DataLoader(ds, batch_size=6, shuffle=True)
 list(dl)
 ```
+
 ```text
 [(tensor([20, 18, 21,  5,  6,  9]), ('u', 's', 'v', 'f', 'g', 'j')),
  (tensor([13, 19, 12, 16, 25,  3]), ('n', 't', 'm', 'q', 'z', 'd')),
@@ -2755,6 +2898,7 @@ bias = init_params(1)
 ```
 
 -----
+
 ```python
 # Create data loader for training dataset
 dl = DataLoader(dset, batch_size=256)
@@ -2765,14 +2909,17 @@ dl = DataLoader(dset, batch_size=256)
 * First element of x, optionally filtered by f, or None if missing
 
 -----
+
 ```python
 first
 ```
+
 ```text
 <function fastcore.basics.first(x, f=None, negate=False, **kwargs)>
 ```
 
 -----
+
 ```python
 # Get the first mini-batch from the data loader 
 xb,yb = first(dl)
@@ -2783,27 +2930,32 @@ xb.shape,yb.shape
 ```
 
 -----
+
 ```python
 # Create data loader for validation dataset
 valid_dl = DataLoader(valid_dset, batch_size=256)
 ```
 
 -----
+
 ```python
 # Smaller example mini-batch for testing
 batch = train_x[:4]
 batch.shape
 ```
+
 ```text
 torch.Size([4, 784])
 ```
 
 -----
+
 ```python
 # Test model smaller mini-batch
 preds = linear1(batch)
 preds
 ```
+
 ```text
 tensor([[ -9.2139],
         [-20.0299],
@@ -2812,11 +2964,13 @@ tensor([[ -9.2139],
 ```
 
 -----
+
 ```python
 # Calculate the loss
 loss = mnist_loss(preds, train_y[:4])
 loss
 ```
+
 ```text
 tensor(1.0000, grad_fn=<MeanBackward0>)
 ```
@@ -2828,11 +2982,13 @@ tensor(1.0000, grad_fn=<MeanBackward0>)
 loss.backward()
 weights.grad.shape,weights.grad.mean(),bias.grad
 ```
+
 ```text
 (torch.Size([784, 1]), tensor(-3.5910e-06), tensor([-2.5105e-05]))
 ```
 
 -----
+
 ```python
 def calc_grad(xb, yb, model):
     preds = model(xb)
@@ -2841,10 +2997,12 @@ def calc_grad(xb, yb, model):
 ```
 
 -----
+
 ```python
 calc_grad(batch, train_y[:4], linear1)
 weights.grad.mean(),bias.grad
 ```
+
 ```text
 (tensor(-7.1820e-06), tensor([-5.0209e-05]))
 ```
@@ -2852,21 +3010,25 @@ weights.grad.mean(),bias.grad
 > **Note:** loss.backward() adds the gradients of loss to any gradients that are currently stored. This means we need to zero the gradients first
 
 -----
+
 ```python
 calc_grad(batch, train_y[:4], linear1)
 weights.grad.mean(),bias.grad
 ```
+
 ```text
 (tensor(-1.0773e-05), tensor([-7.5314e-05]))
 ```
 
 -----
+
 ```python
 weights.grad.zero_()
 bias.grad.zero_();
 ```
 
 -----
+
 ```python
 def train_epoch(model, lr, params):
     for xb,yb in dl:
@@ -2879,10 +3041,12 @@ def train_epoch(model, lr, params):
 ```
 
 -----
+
 ```python
 # Calculate accuracy using broadcasting
 (preds>0.0).float() == train_y[:4]
 ```
+
 ```text
 tensor([[False],
         [False],
@@ -2891,6 +3055,7 @@ tensor([[False],
 ```
 
 -----
+
 ```python
 def batch_accuracy(xb, yb):
     preds = xb.sigmoid()
@@ -2899,9 +3064,11 @@ def batch_accuracy(xb, yb):
 ```
 
 -----
+
 ```python
 batch_accuracy(linear1(batch), train_y[:4])
 ```
+
 ```text
 tensor(0.)
 ```
@@ -2915,14 +3082,17 @@ def validate_epoch(model):
 ```
 
 -----
+
 ```python
 validate_epoch(linear1)
 ```
+
 ```text
 0.3407
 ```
 
 -----
+
 ```python
 lr = 1.
 params = weights,bias
@@ -2930,17 +3100,20 @@ params = weights,bias
 train_epoch(linear1, lr, params)
 validate_epoch(linear1)
 ```
+
 ```text
 0.6138
 ```
 
 -----
+
 ```python
 # Train for twenty epochs
 for i in range(20):
     train_epoch(linear1, lr, params)
     print(validate_epoch(linear1), end=' ')
 ```
+
 ```text
 0.7358 0.9052 0.9438 0.9575 0.9638 0.9692 0.9726 0.9741 0.975 0.976 0.9765 0.9765 0.9765 0.9779 0.9784 0.9784 0.9784 0.9784 0.9789 0.9784 
 ```
@@ -2977,18 +3150,22 @@ Why we need Non-Linear activation functions
 * submodules can be assigned as regular attributes
 
 -----
+
 ```python
 nn.Linear
 ```
+
 ```text
 torch.nn.modules.linear.Linear
 ```
 
 -----
+
 ```python
 linear_model = nn.Linear(28*28,1)
 linear_model
 ```
+
 ```text
 Linear(in_features=784, out_features=1, bias=True)
 ```
@@ -3000,34 +3177,41 @@ Linear(in_features=784, out_features=1, bias=True)
 * A kind of Tensor that is to be considered a module parameter.
 
 -----
+
 ```python
 w,b = linear_model.parameters()
 w.shape,b.shape
 ```
+
 ```text
 (torch.Size([1, 784]), torch.Size([1]))
 ```
 
 -----
+
 ```python
 print(type(w))
 print(type(b))
 ```
+
 ```text
 <class 'torch.nn.parameter.Parameter'>
 <class 'torch.nn.parameter.Parameter'>
 ```
 
 -----
+
 ```python
 b
 ```
+
 ```text
 Parameter containing:
 tensor([0.0062], requires_grad=True)
 ```
 
 -----
+
 ```python
 # Implements the basic optimization steps used earlier for use with a PyTorch Module
 class BasicOptim:
@@ -3041,12 +3225,14 @@ class BasicOptim:
 ```
 
 -----
+
 ```python
 # PyTorch optimizers need a reference to the target model parameters
 opt = BasicOptim(linear_model.parameters(), lr)
 ```
 
 -----
+
 ```python
 def train_epoch(model):
     for xb,yb in dl:
@@ -3056,9 +3242,11 @@ def train_epoch(model):
 ```
 
 -----
+
 ```python
 validate_epoch(linear_model)
 ```
+
 ```text
 0.4673
 ```
@@ -3073,9 +3261,11 @@ def train_model(model, epochs):
 ```
 
 -----
+
 ```python
 train_model(linear_model, 20)
 ```
+
 ```text
 0.4932 0.8193 0.8467 0.9155 0.935 0.9477 0.956 0.9629 0.9653 0.9682 0.9697 0.9731 0.9741 0.9751 0.9761 0.9765 0.9775 0.978 0.9785 0.9785 
 ```
@@ -3089,24 +3279,29 @@ train_model(linear_model, 20)
 * by default does the same thing as BasicOptim
 
 -----
+
 ```python
 SGD
 ```
+
 ```text
 <function fastai.optimizer.SGD(params, lr, mom=0.0, wd=0.0, decouple_wd=True)>
 ```
 
 -----
+
 ```python
 linear_model = nn.Linear(28*28,1)
 opt = SGD(linear_model.parameters(), lr)
 train_model(linear_model, 20)
 ```
+
 ```text
 0.4932 0.8135 0.8481 0.916 0.9341 0.9487 0.956 0.9634 0.9653 0.9673 0.9692 0.9717 0.9746 0.9751 0.9756 0.9765 0.9775 0.9775 0.978 0.978 
 ```
 
 -----
+
 ```python
 dls = DataLoaders(dl, valid_dl)
 ```
@@ -3117,14 +3312,17 @@ dls = DataLoaders(dl, valid_dl)
 * Group together a model, some data loaders, an optimizer and a loss function to handle training
 
 -----
+
 ```python
 Learner
 ```
+
 ```text
 fastai.learner.Learner
 ```
 
 -----
+
 ```python
 learn = Learner(dls, nn.Linear(28*28,1), opt_func=SGD,
                 loss_func=mnist_loss, metrics=batch_accuracy)
@@ -3136,14 +3334,17 @@ learn = Learner(dls, nn.Linear(28*28,1), opt_func=SGD,
 * fit a model for a specifed number of epochs using a specified learning rate
 
 -----
+
 ```python
 lr
 ```
+
 ```text
 1.0
 ```
 
 -----
+
 ```python
 learn.fit(10, lr=lr)
 ```
@@ -3263,9 +3464,11 @@ b2 = init_params(1)
 * $\text{ReLU}(x) = (x)^+ = \max(0, x)$
 
 -----
+
 ```python
 F.relu
 ```
+
 ```text
 <function torch.nn.functional.relu(input: torch.Tensor, inplace: bool = False) -> torch.Tensor>
 ```
@@ -3273,10 +3476,12 @@ F.relu
 
 
 -----
+
 ```python
 plot_function(F.relu)
 ```
-![png](./images/output_220_0.png)
+
+![](./images/output_220_0.png){fig-align="center"}
 
 #### nn.Sequential:
 
@@ -3286,6 +3491,7 @@ plot_function(F.relu)
 * ouputs from the previous layer are fed as input to the next layer in the list
 
 -----
+
 ```python
 simple_net = nn.Sequential(
     nn.Linear(28*28,30),
@@ -3294,6 +3500,7 @@ simple_net = nn.Sequential(
 )
 simple_net
 ```
+
 ```text
 Sequential(
   (0): Linear(in_features=784, out_features=30, bias=True)
@@ -3303,12 +3510,14 @@ Sequential(
 ```
 
 -----
+
 ```python
 learn = Learner(dls, simple_net, opt_func=SGD,
                 loss_func=mnist_loss, metrics=batch_accuracy)
 ```
 
 -----
+
 ```python
 learn.fit(40, 0.1)
 ```
@@ -3616,9 +3825,11 @@ learn.fit(40, 0.1)
 * Plot y versus x as lines and/or markers
 
 -----
+
 ```python
 plt.plot
 ```
+
 ```text
 <function matplotlib.pyplot.plot(*args, scalex=True, scaley=True, data=None, **kwargs)>
 ```
@@ -3631,17 +3842,21 @@ plt.plot
 * Callback that registers statistics (lr, loss and metrics) during training
 
 -----
+
 ```python
 learn.recorder
 ```
+
 ```text
 Recorder
 ```
 
 -----
+
 ```python
 Recorder
 ```
+
 ```text
 fastai.learner.Recorder
 ```
@@ -3652,24 +3867,30 @@ fastai.learner.Recorder
 * Create new L with item idx of all items
 
 -----
+
 ```python
 L.itemgot
 ```
+
 ```text
 <function fastcore.foundation.L.itemgot(self, *idxs)>
 ```
 
 -----
+
 ```python
 plt.plot(L(learn.recorder.values).itemgot(2));
 ```
-![png](./images/output_232_0.png)
+
+![](./images/output_232_0.png){fig-align="center"}
 
 
 -----
+
 ```python
 learn.recorder.values[-1][2]
 ```
+
 ```text
 0.98233562707901
 ```
@@ -3685,6 +3906,7 @@ learn.recorder.values[-1][2]
 - typically perform better
 
 -----
+
 ```python
 dls = ImageDataLoaders.from_folder(path)
 learn = cnn_learner(dls, resnet18, pretrained=False,
@@ -3721,6 +3943,7 @@ learn.fit_one_cycle(1, 0.1)
 ```python
 learn.model
 ```
+
 ```text
 Sequential(
   (0): Sequential(

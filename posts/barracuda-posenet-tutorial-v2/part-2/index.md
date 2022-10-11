@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This post covers how to set up a video player and webcam in Unity. We'll
-  be using the video player to check the accuracy of the PoseNet model.
+description: Set up a video player and webcam in Unity.
 categories: [unity, barracuda, tutorial]
 
 aliases:
@@ -45,15 +44,15 @@ To start, we will create a new `GameObject` to play and view a video feed.
 
 We will use a [Quad](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right-click an empty space in the `Hierarchy` tab. Select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
 
-![unity-create-quad](./images/unity-create-quad.png)
+![](./images/unity-create-quad.png){fig-align="center"}
 
 Since we are only working in 2D, we can switch the scene to 2D view by clicking the `2D` button in the scene tab.
 
-![unity-toggle-2D-scene-view](./images/unity-toggle-2D-scene-view.png)
+![](./images/unity-toggle-2D-scene-view.png){fig-align="center"}
 
 This will remove perspective from the scene view and align it with the `VideoScreen`.
 
-![unity-2D-scene-view](./images/unity-2D-scene-view.png)
+![](./images/unity-2D-scene-view.png){fig-align="center"}
 
 We will be updating the `VideoScreen` dimensions in code based on the resolution of the video or webcam feed.
 
@@ -61,11 +60,11 @@ We will be updating the `VideoScreen` dimensions in code based on the resolution
 
 Unity has a [Video Player component](https://docs.unity3d.com/Manual/class-VideoPlayer.html) that provides the functionality to attach video files to the `VideoScreen`. With the `VideoScreen` object selected in the Hierarchy tab, click the `Add Component` button in the Inspector tab.
 
-![videoScreen-add-component](./images/videoScreen-add-component.png)
+![](./images/videoScreen-add-component.png){fig-align="center"}
 
 Type `video` into the search box and select `Video Player` from the search results.
 
-![videoScreen-add-video-player-component](./images/videoScreen-add-video-player-component.png)
+![](./images/videoScreen-add-video-player-component.png){fig-align="center"}
 
 
 
@@ -75,13 +74,13 @@ Type `video` into the search box and select `Video Player` from the search resul
 
 Video files can be assigned by dragging them from the Assets section into the [`Video Clip`](https://docs.unity3d.com/ScriptReference/Video.VideoClip.html) spot in the Inspector tab. We will start with the `pexels_boardslides` file.
 
-![unity-assign-video-clip](./images/unity-assign-video-clip.png)
+![](./images/unity-assign-video-clip.png){fig-align="center"}
 
 ### Make the Video Loop
 
 Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when the project is running.
 
-![unity-loop-video](./images/unity-loop-video.png)
+![](./images/unity-loop-video.png){fig-align="center"}
 
 
 
@@ -91,11 +90,11 @@ We will be adjusting both the `VideoScreen` and `Main Camera` objects in the scr
 
 Create a new folder in the Assets section and name it `Scripts`. Enter the Scripts folder and right-click an empty space. Select `C# Script` in the `Create` submenu and name it `PoseEstimator`.
 
-![create-csharp-script](./images/create-csharp-script.png)
+![](./images/create-csharp-script.png){fig-align="center"}
 
 Double-click the new script to open it in the code editor.
 
-![create-pose-estimator-script](./images/create-pose-estimator-script.png)
+![](./images/create-pose-estimator-script.png){fig-align="center"}
 
 
 
@@ -179,19 +178,19 @@ The default [shader](https://docs.unity3d.com/ScriptReference/Shader.html) assig
 >
 > In the Project Settings window, select the `Graphics` submenu and scroll down to the `Always Included Shaders` section. Update the `Size` value to add an extra `Element` spot.
 >
-> ![project-settings-increase-included-shaders-size](./images/project-settings-increase-included-shaders-size.png)
+> ![](./images/project-settings-increase-included-shaders-size.png){fig-align="center"}
 >
 > Select the new bottom shader spot.
 >
-> ![select-bottom-shader-spot](./images/select-bottom-shader-spot.png)
+> ![](./images/select-bottom-shader-spot.png){fig-align="center"}
 >
 > Type `Unlit/Texture` shader into the `Select Shader` window and select `Unlit/Texture` from the available options. We can then close the `Select Shader` window.
 >
-> ![select-unlit-texture-shader](./images/select-unlit-texture-shader.png)
+> ![](./images/select-unlit-texture-shader.png){fig-align="center"}
 >
 > We will also need the `Unlit/Color` shader later in this series so repeat these steps to add it as well.
 >
-> ![add-unlit-color-shader](./images/add-unlit-color-shader.png)
+> ![](./images/add-unlit-color-shader.png){fig-align="center"}
 
 
 
@@ -342,7 +341,7 @@ void Update()
 
 With the required code completed, we just need to attach the script to a `GameObject`. Right-click an empty space in the Hierarchy tab and select `Create Empty`. Name the new object `PoseEstimator`.
 
-![create-empty-gameobject](./images/create-empty-gameobject.png)
+![](./images/create-empty-gameobject.png){fig-align="center"}
 
 
 
@@ -350,13 +349,13 @@ With the required code completed, we just need to attach the script to a `GameOb
 
 With the `PoseEstimator` object selected in the Hierarchy tab, drag and drop the `PoseEstimator` script into the Inspector tab.
 
-![attach-pose-estimator-script](./images/attach-pose-estimator-script.png)
+![](./images/attach-pose-estimator-script.png){fig-align="center"}
 
 #### Assign `VideoScreen` Object
 
 Drag and drop the VideoScreen object from the Hierarchy tab into the `Video Screen` spot in the Inspector tab.
 
-![populate-pose-estimator-component](./images/populate-pose-estimator-component.png)
+![](./images/populate-pose-estimator-component.png){fig-align="center"}
 
 ## Test it Out
 
@@ -364,7 +363,7 @@ Now we can press the play button to test out the video player.
 
 > **Note:** By default the `Aspect` for the [Game view](https://docs.unity3d.com/Manual/GameView.html) is set to `Free Aspect`, so the `VideoScreen` might not fill the entire view.
 
-![video-player-test-3](./images/video-player-test-3.gif)
+![](./images/video-player-test-3.gif)
 
 
 

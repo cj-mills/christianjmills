@@ -579,14 +579,34 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>BLEU is a precision-based metric where we count the number of words or n-grams in the generated text that occur in the reference text and divide it by the length of the reference.</li>
 <li>We only count a word as many times as it occurs in the reference text.</li>
 <li>BLEU is a popular metric for tasks like machine translation where precision takes priority.</li>
-<li>Given one generated sentence, <span class="math inline">\(snt\)</span>, that we to compare against a reference sentence, <span class="math inline">\(snt^{\prime}\)</span>, we extract all possible n-grams of degree <span class="math inline">\(n\)</span> and do the accounting to get the precision <span class="math inline">\(P_{n}\)</span>. ### <span class="math display">\[P_{n} = \frac{\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}\]</span></li>
+<li>Given one generated sentence, <span class="math inline">\(snt\)</span>, that we to compare against a reference sentence, <span class="math inline">\(snt^{\prime}\)</span>, we extract all possible n-grams of degree <span class="math inline">\(n\)</span> and do the accounting to get the precision <span class="math inline">\(P_{n}\)</span>.</li>
+</ul>
+</section>
+<section id="p_n-fracsum_n-gram-in-sntcount_clipn-gramsum_n-gram-in-sntprimecountn-gram" class="level3">
+<h3 class="anchored" data-anchor-id="p_n-fracsum_n-gram-in-sntcount_clipn-gramsum_n-gram-in-sntprimecountn-gram"><span class="math display">\[P_{n} = \frac{\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}\]</span></h3>
+<ul>
 <li>We clip the occurrence count of an n-gram at how many times it appears in the reference sentence to avoid repetitive generations.</li>
-<li>We sum over all the examples in the corpus <span class="math inline">\(C\)</span>. ### <span class="math display">\[P_{n} = \frac{\sum_{snt \ \in \ C}\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}\]</span></li>
+<li>We sum over all the examples in the corpus <span class="math inline">\(C\)</span>.</li>
+</ul>
+</section>
+<section id="p_n-fracsum_snt-in-csum_n-gram-in-sntcount_clipn-gramsum_sntprime-in-csum_n-gram-in-sntprimecountn-gram" class="level3">
+<h3 class="anchored" data-anchor-id="p_n-fracsum_snt-in-csum_n-gram-in-sntcount_clipn-gramsum_sntprime-in-csum_n-gram-in-sntprimecountn-gram"><span class="math display">\[P_{n} = \frac{\sum_{snt \ \in \ C}\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}\]</span></h3>
+<ul>
 <li>The precision score favors short sentences.</li>
-<li>The authors of BLEU introduce a brevity penalty to account for this. ### <span class="math display">\[BR = min \left(1,e^{\frac{1 - \ell_{ref}}{\ell_{gen}}} \right)\]</span></li>
+<li>The authors of BLEU introduce a brevity penalty to account for this.</li>
+</ul>
+</section>
+<section id="br-min-left1efrac1---ell_refell_gen-right" class="level3">
+<h3 class="anchored" data-anchor-id="br-min-left1efrac1---ell_refell_gen-right"><span class="math display">\[BR = min \left(1,e^{\frac{1 - \ell_{ref}}{\ell_{gen}}} \right)\]</span></h3>
+<ul>
 <li>By taking the minimum, we ensure that this penalty never exceeds <span class="math inline">\(1\)</span>, and the exponential term becomes exponentially small when the length of the generated text is smaller than the reference text.</li>
 <li>We don’t use recall because it would incentivize translations that used all the words from all reference texts.</li>
-<li>The equation for the BLEU score: ### <span class="math display">\[\text{BLEU-N} = BR \times \left( \prod^{N}_{n=1}{P_{n}} \right)^{\frac{1}{N}}\]</span></li>
+<li>The equation for the BLEU score:</li>
+</ul>
+</section>
+<section id="textbleu-n-br-times-left-prodn_n1p_n-rightfrac1n" class="level3">
+<h3 class="anchored" data-anchor-id="textbleu-n-br-times-left-prodn_n1p_n-rightfrac1n"><span class="math display">\[\text{BLEU-N} = BR \times \left( \prod^{N}_{n=1}{P_{n}} \right)^{\frac{1}{N}}\]</span></h3>
+<ul>
 <li>The last term is the geometric mean of the modified precision up to n-gram <span class="math inline">\(N\)</span>.</li>
 <li>The BLEU score does not account for synonyms and uses fragile heuristics.</li>
 <li><a href="https://towardsdatascience.com/evaluating-text-output-in-nlp-bleu-at-your-own-risk-e8609665a213">Evaluating Text Output in NLP: BLEU at your own risk</a>
@@ -834,10 +854,20 @@ ref_len
 <ul>
 <li><a href="https://aclanthology.org/W04-1013.pdf">ROUGE: A Package for Automatic Evaluation of Summaries</a></li>
 <li>The ROUGE score targets applications like summarization, where high recall is more important than precision alone.</li>
-<li>We check how many n-grams in the reference text also occur in the generated text. ### <span class="math display">\[\text{ROUGE-N} = \frac{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count_{match}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}\]</span></li>
+<li>We check how many n-grams in the reference text also occur in the generated text.</li>
+</ul>
+</section>
+<section id="textrouge-n-fracsum_sntprime-in-csum_n-gram-in-sntprimecount_matchn-gramsum_sntprime-in-csum_n-gram-in-sntprimecountn-gram" class="level3">
+<h3 class="anchored" data-anchor-id="textrouge-n-fracsum_sntprime-in-csum_n-gram-in-sntprimecount_matchn-gramsum_sntprime-in-csum_n-gram-in-sntprimecountn-gram"><span class="math display">\[\text{ROUGE-N} = \frac{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count_{match}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}\]</span></h3>
+<ul>
 <li>There is a separate score to measure the longest common substring (LCS) called ROUGE-L.</li>
 <li>We can calculate the LCS for any pair of strings.</li>
-<li>We need to normalize the LCS value when comparing two samples of different lengths. ### <span class="math display">\[F_{LCS} = \frac{\left( 1 + \beta^{2} \right)R_{LCS}P_{LCS}}{R_{LCS} + \beta P_{LCS}} \text{, where } \beta = \frac{P_{LCS}}{R_{LCS}}\]</span></li>
+<li>We need to normalize the LCS value when comparing two samples of different lengths.</li>
+</ul>
+</section>
+<section id="f_lcs-fracleft-1-beta2-rightr_lcsp_lcsr_lcs-beta-p_lcs-text-where-beta-fracp_lcsr_lcs" class="level3">
+<h3 class="anchored" data-anchor-id="f_lcs-fracleft-1-beta2-rightr_lcsp_lcsr_lcs-beta-p_lcs-text-where-beta-fracp_lcsr_lcs"><span class="math display">\[F_{LCS} = \frac{\left( 1 + \beta^{2} \right)R_{LCS}P_{LCS}}{R_{LCS} + \beta P_{LCS}} \text{, where } \beta = \frac{P_{LCS}}{R_{LCS}}\]</span></h3>
+<ul>
 <li>The Hugging Face Datasets implementation calculates two variants of ROUGE.</li>
 <li>ROUGE-L calculates the score per sentence and averages it for the summaries.</li>
 <li>ROUGE-Lsum calculates the score per sentence directly over the whole summary.</li>
@@ -1261,7 +1291,11 @@ pegasus
     Amanda: Ask Larry Amanda: He called her last time we were at the park together.
     Hannah: I'd rather you texted him.
     Amanda: Just text him .</code></pre>
-<p><strong>Note:</strong> * The model tries to summarize by extracting the key sentences from the dialogue. * The summaries in SAMSum are more abstract.</p>
+<p><strong>Note:</strong></p>
+<ul>
+<li>The model tries to summarize by extracting the key sentences from the dialogue.</li>
+<li>The summaries in SAMSum are more abstract.</li>
+</ul>
 <hr>
 <p><strong>Reset random seed</strong></p>
 <div class="sourceCode" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>set_seed(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1347,10 +1381,13 @@ pegasus
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_144_0.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">png</figcaption><p></p>
 </figure>
 </div>
-<p><strong>Note:</strong> * Most dialogues are shorter than the CNN/DailyMail articles, with 100-200 tokens per dialogue. * The summaries are also much short, with around 20-40 tokens.</p>
+<p><strong>Note:</strong></p>
+<ul>
+<li>Most dialogues are shorter than the CNN/DailyMail articles, with 100-200 tokens per dialogue.</li>
+<li>The summaries are also much short, with around 20-40 tokens.</li>
+</ul>
 <hr>
 <p><strong>Define a function to tokenize the SAMSum dataset</strong></p>
 <div class="sourceCode" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> convert_examples_to_features(example_batch):</span>
@@ -1811,6 +1848,8 @@ pegasus
 <li><a href="https://transformersbook.com/">Natural Language Processing with Transformers Book</a></li>
 <li><a href="https://github.com/nlp-with-transformers/notebooks">The Transformers book GitHub Repository</a></li>
 </ul>
+<p><strong>Previous:</strong> <a href="../chapter-5/">Notes on Transformers Book Ch. 5</a></p>
+<p><strong>Next:</strong> <a href="../chapter-7/">Notes on Transformers Book Ch. 7</a></p>
 <!-- Cloudflare Web Analytics -->
 <script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
 <!-- End Cloudflare Web Analytics -->

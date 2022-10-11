@@ -45,7 +45,7 @@ In this post, we'll cover how to create a square crop of an image in Unity. The 
 
 Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, but you should be fine using other versions.
 
-![unity-hub-create-new-project](./images/unity-hub-create-new-project.png)
+![](./images/unity-hub-create-new-project.png){fig-align="center"}
 
 
 
@@ -55,7 +55,7 @@ Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, b
 
 In Unity, right-click an empty space in the Assets folder and select `C# Script` in the `Create` submenu. Name the new script, `Crop` and open it in your code editor.
 
-![unity-create-crop-script](./images/unity-create-flip-script.png)
+![](./images/unity-create-flip-script.png){fig-align="center"}
 
 
 
@@ -63,7 +63,7 @@ In Unity, right-click an empty space in the Assets folder and select `C# Script`
 
 Create a public `GameObject` variable called `screen`. We'll be using this screen to confirm our script is correctly cropping the test images. Add a public `bool` variable called `cropImage` as well. This will let us toggle whether to crop the image during runtime. Lastly, we'll create a private `RenderTexture` called `image` to store a copy of the original  test image.
 
-![crop-script-public-variables](./images/crop-script-define-variables.png)
+![](./images/crop-script-define-variables.png){fig-align="center"}
 
 
 
@@ -71,7 +71,7 @@ Create a public `GameObject` variable called `screen`. We'll be using this scree
 
 In the `Start()` method, we'll store a copy the original test image in the `image` `RenderTexture`. We can do so by getting a reference to the `Texture` attached to the `screen` and using the [`Graphics.Blit()`](https://docs.unity3d.com/ScriptReference/Graphics.Blit.html) method. We'll also adjust the camera so that we can see the entire image. 
 
-![crop-script-start-method](./images/crop-script-start-method.png)
+![](./images/crop-script-start-method.png){fig-align="center"}
 
 
 
@@ -106,7 +106,7 @@ We can copy part of `rTex` to `tempTex` using the [`Graphics.CopyTexture()`](htt
 
 After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `screen` with the new square image and adjust the shape of the screen to fit the new image. 
 
-![crop-script-update-method](./images/crop-script-update-method.png)
+![](./images/crop-script-update-method.png){fig-align="center"}
 
 
 
@@ -114,21 +114,21 @@ After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `scree
 
 Back in Unity, right-click an empty space in the `Hierarchy` tab and select `Quad` from the `3D Object` submenu. Name the new object `Screen`. The size will be updated automatically by the `Crop.cs` script.
 
-![unity-create-screen-object](./images/unity-create-screen-object.png)
+![](./images/unity-create-screen-object.png){fig-align="center"}
 
 ## Create ImageCropper
 
 Right-click an empty space in the `Hierarchy` tab and select `Create Empty` from the pop-up menu. Name the empty object `ImageCropper`
 
-![unity-create-image-cropper-object](./images/unity-create-image-cropper-object.png)
+![](./images/unity-create-image-cropper-object.png){fig-align="center"}
 
 With the `ImageCropper` selected drag and drop the `Crop.cs` script into the `Inspector` tab.
 
-![unity-attach-crop-script](./images/unity-attach-crop-script.png)
+![](./images/unity-attach-crop-script.png){fig-align="center"}
 
 Drag and drop the `Screen` object from the `Hierarchy` tab onto the `Screen` parameter in the `Inspector` tab.
 
-![unity-inspector-tab-assign-screen](./images/unity-inspector-tab-assign-screen.png)
+![](./images/unity-inspector-tab-assign-screen.png){fig-align="center"}
 
 
 
@@ -143,7 +143,7 @@ We'll need some test images to try out the `ImageCropper`. You can use your own 
 
 
 
-![unity-import-images](./images/unity-import-images.png)
+![](./images/unity-import-images.png){fig-align="center"}
 
 
 
@@ -151,23 +151,23 @@ Next, we need to set our Screen to use an `Unlit` shader. Otherwise it will be a
 
 
 
-![unity-inspector-tab-shader-drop-down](./images/unity-inspector-tab-shader-drop-down.png)
+![](./images/unity-inspector-tab-shader-drop-down.png){fig-align="center"}
 
 
 
 Select `Texture` from the `Unlit` submenu.
 
-![unity-inspector-tab-unlit-texture](./images/unity-inspector-tab-unlit-texture.png)
+![](./images/unity-inspector-tab-unlit-texture.png){fig-align="center"}
 
 
 
 Now we can click the Play button and toggle the `Crop Image` checkbox to confirm our script is working properly. If you check the performance stats, you should see that there is basically no performance hit from cropping the image.
 
-![crop_image_on_gpu_unity_1](./images/crop_image_on_gpu_unity_1.gif)
+![](./images/crop_image_on_gpu_unity_1.gif){fig-align="center"}
 
 
 
-![crop_image_on_gpu_unity_2](./images/crop_image_on_gpu_unity_2.gif)
+![](./images/crop_image_on_gpu_unity_2.gif){fig-align="center"}
 
 
 

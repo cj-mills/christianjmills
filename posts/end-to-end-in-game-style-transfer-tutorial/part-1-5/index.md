@@ -37,7 +37,7 @@ In this post, we'll cover how to use the Unity Recorder tool to record in-game f
 
 The Unity Recorder tool is available through the Package Manger. In the Unity Registry section, type `unity recorder` in the search box and click `Install`.
 
-![unity-package-manager-unity-recorder](./images/unity-package-manager-unity-recorder.png)
+![](./images/unity-package-manager-unity-recorder.png){fig-align="center"}
 
 
 
@@ -45,7 +45,7 @@ The Unity Recorder tool is available through the Package Manger. In the Unity Re
 
 In the `Assets` section of the `Project` tab, navigate to the Scene you want to record. For the Kinematica demo, open the `Biped` scene in the `Scenes` folder.
 
-![kinematica-biped-scene](./images/kinematica-biped-scene.png)
+![](./images/kinematica-biped-scene.png){fig-align="center"}
 
 
 
@@ -53,7 +53,7 @@ In the `Assets` section of the `Project` tab, navigate to the Scene you want to 
 
 The Unity Recorder tool is accessible in the `General` sub-menu in the `Windows` section. The tool will open up in its own window.
 
-![unity-open-unity-recorder-window](./images/unity-open-unity-recorder-window.png)
+![](./images/unity-open-unity-recorder-window.png){fig-align="center"}
 
 
 
@@ -61,17 +61,17 @@ The Unity Recorder tool is accessible in the `General` sub-menu in the `Windows`
 
 In the Recorder window, click the `+ Add Recorder` button. 
 
-![unity-recorder-add-recorder](./images/unity-recorder-add-recorder.png)
+![](./images/unity-recorder-add-recorder.png){fig-align="center"}
 
 Select the `Movie` option from the drop down.
 
-![unity-recorder-add-movie-recorder](./images/unity-recorder-add-movie-recorder.png)
+![](./images/unity-recorder-add-movie-recorder.png){fig-align="center"}
 
 
 
 I recommend setting the `Output Resolution` to 1080p or higher to reduce the amount of compression artifacts.
 
-![unity-recorder-set-resolution](./images/unity-recorder-set-resolution.png)
+![](./images/unity-recorder-set-resolution.png){fig-align="center"}
 
 
 
@@ -79,11 +79,11 @@ I recommend setting the `Output Resolution` to 1080p or higher to reduce the amo
 
 Click `Start Recording` and the game will begin automatically. Once the game is running, move around and try to capture different parts of the environment. The amount of footage required depends on the size the scene. The only thing to keep in mind is that you'll need to upload the video file to Google Drive. The more footage you record, the longer it will take to upload.
 
-![unity-recorder-start-recording](./images/unity-recorder-start-recording.png)
+![](./images/unity-recorder-start-recording.png){fig-align="center"}
 
 Once you're finished recording, you can open the Recordings folder by clicking the button outlined in the image below.
 
-![unity-recorder-open-recordings-folder](./images/unity-recorder-open-recordings-folder.png)
+![](./images/unity-recorder-open-recordings-folder.png){fig-align="center"}
 
 
 
@@ -91,7 +91,7 @@ Once you're finished recording, you can open the Recordings folder by clicking t
 
 The last step is to drag and drop the video file into the project folder in Google Drive.
 
-![gdrive-upload-in-game-recording](./images/gdrive-upload-in-game-recording.png)
+![](./images/gdrive-upload-in-game-recording.png){fig-align="center"}
 
 
 

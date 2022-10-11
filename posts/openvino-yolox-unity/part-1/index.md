@@ -38,7 +38,7 @@ aliases:
 
 
 
-![yolox_example_1](./images/yolox_example_1.jpg)
+![](./images/yolox_example_1.jpg){fig-align="center"}
 
 # Overview
 
@@ -110,7 +110,7 @@ The official OpenVINO™ installation guide lists CMake as a requirement. Howeve
 
 **Note:** Make sure to select one of the Add CMake to the system PATH options during the installation process.
 
-![cmake_install_add_to_path](./images/cmake_install_add_to_path.png)
+![](./images/cmake_install_add_to_path.png){fig-align="center"}
 
 
 

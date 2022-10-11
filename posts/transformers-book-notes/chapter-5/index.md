@@ -95,8 +95,11 @@ def print_source(obj, exclude_doc=True):
 ### GPT-2 Pretraining Process
 * GPT-2 is pretrained to estimate the probability $P\left(y \vert x \right)$ of a sequence of tokens $y = y_{1},y_{2},\ldots,y_{t}$ occurring in the text $x = x_{1},x_{2},\ldots,x_{k}$, given some initial prompt or context sequence.
 * It is common to use the chain rule of probability to factorize it as a product of conditional probabilities.
+
 ### $$P\left(y_{1},\ldots,y_{t} \vert x \right) = \prod^{N}_{t=1}{P\left(y_{t} \vert y_{ \ < \ t},x \right)}$$
-    * where $y_{ \ < \ t}$ is the shorthand notation for the sequence $y_{1},\ldots,y_{t-1}$
+
+> * where $y_{ \ < \ t}$ is the shorthand notation for the sequence $y_{1},\ldots,y_{t-1}$
+
 * We can adapt this token prediction task to generate sequences of arbitrary length by feeding the model a prompt. 
 * We then iteratively add the next predicted token to the prompt and feed the new prompt to the model.
 * Some call this type of text generation conditional text generation since the output sequence depends on the choice of input prompt.
@@ -105,8 +108,10 @@ def print_source(obj, exclude_doc=True):
 * A decoding method determines which token to select at each timestep.
 * The language model produces a logit $z_{t,i}$ per token in the vocabulary at each time step.
 * We can get the probability distribution over the next possible token $w_{i}$ by taking the softmax.
+
 ### $$P\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = softmax \left( z_{t,i} \right)$$
 * Most decoder methods search for the most likely overall sequence by picking a $\hat{y}$ such that
+
 ### $$\hat{y} = \underset{y}{argmax} P\left(y \vert x \right)$$
 * We use approximations for $\hat{y}$ instead of finding it directly.
 
@@ -115,6 +120,7 @@ def print_source(obj, exclude_doc=True):
 ## Greedy Search Decoding
 
 * The simplest decoding method is to greedily select the token with the highest probability at each timestep.
+
 ### $$\hat{y}_{t} = \underset{y}{argmax} {P\left(y_{t} \vert y_{ \ < \ t},x \right)}$$
 * Greedy search decoding tends to produce repetitive output sequences.
 * Greedy search can miss sequences whose overall probability is higher when low probability words precede high-probability words.
@@ -122,11 +128,14 @@ def print_source(obj, exclude_doc=True):
 * Greedy search is better suited for producing short sequences like arithmetic that require deterministic and factually correct output.
 
 -----
+
 ```python
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 ```
+
 -----
+
 **Load the 1.5-billion-parameter version of GPT-2 with a language modeling head**
 
 **Note:** The model takes up around 8GB of VRAM.
@@ -147,6 +156,7 @@ pd.set_option('max_colwidth', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 ```
+
 -----
 
 **Prepare Input**
@@ -154,6 +164,7 @@ pd.set_option('display.max_columns', None)
 input_txt = "Transformers are the"
 input_ids = tokenizer(input_txt, return_tensors="pt")["input_ids"].to(device)
 ```
+
 -----
 
 ```python
@@ -162,6 +173,7 @@ tokenizer.convert_ids_to_tokens(input_ids[0])
 ```text
     ['Transform', 'ers', 'Ġare', 'Ġthe']
 ```
+
 -----
 
 **Perform Greedy Search Decoding**
@@ -193,8 +205,8 @@ with torch.no_grad():
         
 pd.DataFrame(iterations)
 ```
------
 
+-----
 
 
 <div style="overflow-x:auto;">
@@ -309,6 +321,7 @@ pd.DataFrame(iterations)
     * `constraints!=None` or `force_words_ids!=None`
 
 -----
+
 **Perform Greedy Search Decoding with the `generate()` function**
 ```python
 input_ids = tokenizer(input_txt, return_tensors="pt")["input_ids"].to(device)
@@ -320,6 +333,7 @@ print(tokenizer.decode(output[0]))
 ```
 
 -----
+
 **Try to perform arithmetic with Greedy Search Decoding**
 ```python
 max_length = 20
@@ -334,6 +348,7 @@ print(tokenizer.decode(output_greedy[0]))
      7 + 2 => 9 
      1 + 0 => 1 
 ```
+
 -----
 
 ```python
@@ -351,6 +366,7 @@ print(tokenizer.decode(output_greedy[0]))
 ```
 
 -----
+
 ```python
 max_length = 20
 input_txt = """5 + 8 => 13 \n 7 + 2 => 9 \n 2 * 13 =>"""
@@ -408,6 +424,8 @@ print(tokenizer.decode(output_greedy[0]))
 * We choose the next set of beams by considering all possible next-token extensions of the existing ones and selecting the $b$ most likely extensions.
 * We repeat this process until we reach the maximum length or an EOS token.
 * We select the most likely sequence by ranking the $b$ beams according to their log probabilities.
+
+
 ### $$\log{P\left(y_{1},\ldots,y_{t} \vert x \right)} = \sum^{N}_{t=1}{\log{P\left(y_{t} \vert y_{ \ < \ t},x \right)}}$$
 
 -----
@@ -447,6 +465,8 @@ import torch.nn.functional as F
 #### `log_softmax`
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.functional.log_softmax.html)
 * Mathematically equivalent to `log(softmax(x))`
+
+
 ### $$\text{LogSoftmax}(x_{i}) = \log\left(\frac{\exp(x_i)}{ \sum_j \exp(x_j)} \right)$$
 
 -----
@@ -564,9 +584,11 @@ print(f"\nlog-prob: {logp:.2f}")
 ## Sampling Methods
 
 * The simplest sampling method is to randomly sample from the probability distribution of the model's outputs over the entire vocabulary at each timestep.
+
 ### $$P\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\exp(z_{t,i})}{ \sum^{|V|}_{j=1} \exp(z_{t,j})}$$
 * where $\vert V \vert$ denotes the cardinality of the vocabulary
 * We can control the diversity of the output by adding a temperature parameter $T$ that rescales the logits before taking the softmax.
+
 ### $$\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\frac{\exp(z_{t,i})}{T}}{ \sum^{|V|}_{j=1} \frac{\exp(z_{t,j}}{T})}$$
 * We can tune the temperature parameter to control the shape of the probability distribution.
 * A $T$ value much less than $1$ suppresses the rare tokens.
@@ -602,7 +624,7 @@ plt.xlabel("Sorted token probabilities")
 plt.ylabel("Probability")
 plt.show()
 ```
-![png](./images/output_51_0.png)
+![](./images/output_51_0.png){fig-align="center"}
 
 -----
 
@@ -725,7 +747,7 @@ axes[1].hlines(y=0.95, xmin=0, xmax=10000, color='C1', label=top_p_label, linest
 axes[1].legend(loc='lower right')
 plt.tight_layout()
 ```
-![png](./images/output_69_0.png)
+![](./images/output_69_0.png){fig-align="center"}
 
 **Note:**
 * The histogram has a peak around 10^-8 and a second smaller peak around 10^-4, followed by a sharp drop.
@@ -748,6 +770,7 @@ plt.tight_layout()
 ```python
 torch.manual_seed(42);
 ```
+
 -----
 
 **Generate text using the 50 tokens with the highest probability** 
@@ -805,10 +828,12 @@ print(tokenizer.decode(output_topp[0]))
 **Note:** Top-p sampling also produces a coherent story.
 
 -----
+
 **Reset random seed**
 ```python
 torch.manual_seed(42);
 ```
+
 -----
 
 **Generate text using top-k and top-p sampling** 
@@ -832,6 +857,7 @@ print(tokenizer.decode(output_topp[0]))
 ​    
 ​    Since their migration, the animals have been adapting to
 ```
+
 -----
 
 
@@ -851,7 +877,9 @@ print(tokenizer.decode(output_topp[0]))
 
 
 
+**Previous:** [Notes on Transformers Book Ch. 4](../chapter-4/)
 
+**Next:** [Notes on Transformers Book Ch. 6](../chapter-6/)
 
 
 

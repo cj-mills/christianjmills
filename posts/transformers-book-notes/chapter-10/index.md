@@ -224,6 +224,9 @@ print("GPT-2 completions:\n" + enum_pipeline_ouputs(generation_gpt2, prompt, 3))
 ```
 
 **Note:**
+
+
+
 * The text generated with the original GPT model has a distinctive romance skew.
 * GPT-2 generates more neutral text containing blog-like or adventure-related elements.
 * A model reflects the language bias and over or underrepresentation of populations of the dataset used to train it.
@@ -252,6 +255,9 @@ print("GPT-2 completions:\n" + enum_pipeline_ouputs(generation_gpt2, prompt, 3))
 * [Unsupervised Translation of Programming Languages](https://arxiv.org/abs/2006.03511)
 
 **Steps to export Python files**
+
+
+
 1. Create a Google Cloud account.
 2. Create a Google BigQuery project under your account.
 3. Create a dataset inside the project.
@@ -290,6 +296,9 @@ Quota exceeded: Your project exceeded quota for free query bytes scanned. For mo
 * The query includes the licenses for the files so we can filter the training data later on.
 
 **Steps to download results from Google Cloud**
+
+
+
 1. Export results to Google Cloud
     a. Create a bucket and a folder in Google Cloud Storage (GCS).
     b. Export your table to this bucket by selecting Export > Export to GCS, with a JSON export format and gzip compression.
@@ -356,7 +365,10 @@ dataset = load_dataset("/mnt/980SSD/Datasets/codeparrot", cache_dir="/mnt/980SSD
     Dataset json downloaded and prepared to /mnt/980SSD/Datasets/codeparrot-cache/json/codeparrot-43fc192cc9f62326/0.0.0/ac0ca5f5289a6cf108e706efcf040422dbbfa8e658dee6a819f20d76bb84d26b. Subsequent calls will reuse this data.
 ```
 
-**Note:** 
+**Note:**
+
+
+
 * The `delete_extracted=True` argument deletes the extracted files to free up disk space.
 * The Hugging Face Datasets library extracted and read the compressed JSON files by loading them in a single optimized cache file.
 
@@ -387,6 +399,9 @@ print(f"RAM used: {psutil.Process(os.getpid()).memory_info().rss >> 20} MB")
 ```
 
 **Note:**
+
+
+
 * The dataset is much larger than the available RAM, but we can still load and access it.
 * NLP data is typically lightweight to load compared to the model processing computations.
 * The zero-copy/zero-overhead format uses Apache Arrow under the hood for efficiency.
@@ -1749,6 +1764,9 @@ for keyw in keyword.kwlist:
 ```
 
 **Note:**
+
+
+
 * The new tokenizer vocabulary is still missing a couple of rare Python keywords, neither of which are relevant for most Python code.
 * The `__peg_parser__` keyword is an easter egg for the new [PEG parser](https://peps.python.org/pep-0617/) and [will not be in Python 3.10](https://bugs.python.org/issue40939).
 * The `nonlocal` keyword causes listed identifiers to refer to previously bound variables in the nearest enclosing scope, excluding globals.
@@ -2320,6 +2338,9 @@ def setup_logging(project_name):
 ```
 
 **Note:**
+
+
+
 * Each worker gets a unique `accelerator.process_index`, which we use with the FileHandler to write the logs of each worker to an individual file.
 * We'll use the unique `run_name` to name our experiment branch on the Hub.
 
@@ -2412,6 +2433,9 @@ def evaluate():
 ```
 
 **Note:**
+
+
+
 * The perplexity measures how well the model's output probability distributions predict the targeted tokens.
 * A lower perplexity corresponds to better performance.
 * We compute the perplexity by exponentiating the cross-entropy loss from the model's output.
@@ -2499,6 +2523,9 @@ if accelerator.is_main_process:
 ```
 
 **Note:**
+
+
+
 * here are several approaches to distributed training depending on the model size and volume of data.
 * Hugging Face Accelerate uses [DataDistributedParalellism (DDP)](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html).
 * DDP allows you to train models faster with larger batch sizes that wouldn't fit into any single GPU.
@@ -2829,6 +2856,9 @@ complete_code(generation, prompt, max_length=96)
 ```
 
 **Note:**
+
+
+
 * The second attempt used an [extra-trees classifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html), but the other three generated what we asked.
 * The BLEU score is not well suited for measuring the quality of generated code as it would punish a generation that deviates from the reference naming.
 * The success of a program does not depend on the naming scheme as long as it is consistent.
@@ -2847,6 +2877,10 @@ complete_code(generation, prompt, max_length=96)
 * [The Transformers book GitHub Repository](https://github.com/nlp-with-transformers/notebooks)
 
 
+
+**Previous:** [Notes on Transformers Book Ch. 9](../chapter-9/)
+
+**Next:** [Notes on Transformers Book Ch. 11](../chapter-11/)
 
 
 

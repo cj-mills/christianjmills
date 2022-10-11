@@ -68,15 +68,18 @@ matplotlib.rc('image', cmap='Greys')
 * all images have an associated ground truth annotation of breed, head ROI, and pixel level trimap segmentation
 
 -----
+
 ```python
 path = untar_data(URLs.PETS)
 path
 ```
+
 ```text
 Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')
 ```
 
 -----
+
 ```python
 #hide
 Path.BASE_PATH = path
@@ -87,6 +90,7 @@ Path('.')
 ```
 
 -----
+
 ```python
 path.ls()
 ```
@@ -95,19 +99,23 @@ path.ls()
 ```
 
 -----
+
 ```python
 # associated ground truth annotation of breed, head ROI, and pixel level trimap segmentation
 # Not needed for classification
 (path/"annotations").ls()
 ```
+
 ```text
 (#7) [Path('annotations/trimaps'),Path('annotations/xmls'),Path('annotations/._trimaps'),Path('annotations/list.txt'),Path('annotations/test.txt'),Path('annotations/README'),Path('annotations/trainval.txt')]
 ```
 
 -----
+
 ```python
 (path/"images").ls()
 ```
+
 ```text
 (#7393) [Path('images/Birman_121.jpg'),Path('images/shiba_inu_131.jpg'),Path('images/Bombay_176.jpg'),Path('images/Bengal_199.jpg'),Path('images/beagle_41.jpg'),Path('images/beagle_27.jpg'),Path('images/great_pyrenees_181.jpg'),Path('images/Bengal_100.jpg'),Path('images/keeshond_124.jpg'),Path('images/havanese_115.jpg')...]
 ```
@@ -116,10 +124,12 @@ Pet breed and species is indicated in the file name for each image
 * Cat breeds have capitalized file names and dog breeds have lowercase file names
 
 -----
+
 ```python
 fname = (path/"images").ls()[0]
 fname
 ```
+
 ```text
 Path('images/Birman_121.jpg')
 ```
@@ -141,10 +151,12 @@ Path('images/Birman_121.jpg')
             - the pioneering work searching for the formal grammar underlying human language
 
 -----
+
 ```python
 # Matches all instances of any group of characters before a sequence of digits right before '.jpg'
 re.findall(r'(.+)_\d+.jpg$', fname.name)
 ```
+
 ```text
 ['Birman']
 ```
@@ -157,19 +169,23 @@ re.findall(r'(.+)_\d+.jpg$', fname.name)
 ```python
 RegexLabeller
 ```
+
 ```text
 fastai.data.transforms.RegexLabeller
 ```
 
 -----
+
 ```python
 get_image_files
 ```
+
 ```text
 <function fastai.data.transforms.get_image_files(path, recurse=True, folders=None)>
 ```
 
 -----
+
 ```python
 pets = DataBlock(blocks = (ImageBlock, CategoryBlock),
                  get_items=get_image_files, 
@@ -181,14 +197,17 @@ dls = pets.dataloaders(path/"images")
 ```
 
 -----
+
 ```python
 dls.c
 ```
+
 ```text
 37
 ```
 
 -----
+
 ```python
 import pandas as pd
 ```
@@ -396,6 +415,7 @@ dblock1 = DataBlock(blocks=(ImageBlock(), CategoryBlock()),
 ```
 
 -----
+
 ```python
 (Path.cwd()/'images'/'grizzly.jpg')
 ```
@@ -404,12 +424,14 @@ Path('/media/innom-dt/Samsung_T3/Projects/Current_Projects/fastbook/clean/images
 ```
 
 -----
+
 ```python
 # Create a test DataLoaders object with 100 copies of the same image
 dls1 = dblock1.dataloaders([(Path.cwd()/'images'/'grizzly.jpg')]*100, bs=8)
 print(len(dls1.items))
 print(dls1.categorize.vocab)
 ```
+
 ```text
 80
 ['images']
@@ -417,6 +439,7 @@ print(dls1.categorize.vocab)
 
 
 -----
+
 ```python
 # Return elements from the iterable until it is exhausted.
 dls1.train.get_idxs = lambda: Inf.ones
@@ -428,9 +451,11 @@ dls1.train.get_idxs = lambda: Inf.ones
 * Make an iterator returning elements from the iterable and saving a copy of each
 
 -----
+
 ```python
 type(Inf.ones)
 ```
+
 ```text
 itertools.cycle
 ```
@@ -445,17 +470,20 @@ itertools.cycle
 ```python
 DataLoader.one_batch
 ```
+
 ```text
 <function fastai.data.load.DataLoader.one_batch(self)>
 ```
 
 -----
+
 ```python
 x,y = dls1.one_batch()
 print(x.shape)
 print(y.shape)
 print(y)
 ```
+
 ```text
 torch.Size([8, 3, 460, 460])
 torch.Size([8])
@@ -467,6 +495,7 @@ TensorCategory([0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
 ```python
 print(TensorImage)
 ```
+
 ```text
 <class 'fastai.torch_core.TensorImage'>
 ```
@@ -497,6 +526,7 @@ print(TensorImage)
 * [https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L656](https://github.com/fastai/fastai/blob/d84b426e2afe17b3af09b33f49c77bd692625f0d/fastai/vision/augment.py#L656)
 
 -----
+
 ```python
 print(TensorImage)
 print(TensorImage.affine_coord)
@@ -504,6 +534,7 @@ print(TensorImage.rotate)
 print(TensorImage.zoom)
 print(TensorImage.warp)
 ```
+
 ```text
 <class 'fastai.torch_core.TensorImage'>
 <function TensorImage.affine_coord at 0x7fb370ba0940>
@@ -546,7 +577,8 @@ x = Pipeline(tfms)(x)
 TensorImage(x[0]).show(ctx=axs[0])
 TensorImage(x1[0]).show(ctx=axs[1]);
 ```
-![png](./images/output_37_0.png)
+
+![](./images/output_37_0.png){fig-align="center"}
 
 ### Checking and Debugging a DataBlock
 
@@ -560,7 +592,8 @@ TensorImage(x1[0]).show(ctx=axs[1]);
 ```python
 dls.show_batch(nrows=1, ncols=3)
 ```
-![png](./images/output_39_0.png)
+
+![](./images/output_39_0.png){fig-align="center"}
 
 -----
 
@@ -581,6 +614,7 @@ pets1 = DataBlock(blocks = (ImageBlock, CategoryBlock),
 ```python
 DataBlock.summary
 ```
+
 ```v
 <function fastai.data.block.DataBlock.summary(self: fastai.data.block.DataBlock, source, bs=4, show_batch=False, **kwargs)>
 ```
@@ -590,6 +624,7 @@ DataBlock.summary
 ```python
 pets1.summary(path/"images")
 ```
+
 ```text
 Setting-up type transforms pipelines
 Collecting items from /home/innom-dt/.fastai/data/oxford-iiit-pet/images
@@ -643,6 +678,7 @@ torch.Size([3, 500, 400]),torch.Size([3, 334, 500]),torch.Size([3, 375, 500]),to
 
 
 -----
+
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(2)
@@ -711,17 +747,21 @@ x,y = dls.one_batch()
 ```
 
 -----
+
 ```python
 y.shape
 ```
+
 ```text
 torch.Size([64])
 ```
 
 -----
+
 ```python
 y
 ```
+
 ```text
 TensorCategory([31, 30,  5, 17,  6,  7,  4, 22,  4, 27,  2, 19, 12, 14, 11,  8,  5, 26, 14, 11, 28, 25, 35,  4, 22, 36, 31,  9, 27, 20, 23, 33,  2, 27,  0, 18, 12, 22, 17, 21, 25, 13, 16, 15, 33, 14, 20, 15,
          8, 18, 36, 32,  7, 26,  4, 20, 36, 14, 25, 32,  4, 14, 25, 17], device='cuda:0')
@@ -733,18 +773,22 @@ TensorCategory([31, 30,  5, 17,  6,  7,  4, 22,  4, 27,  2, 19, 12, 14, 11,  8, 
 * Get the predictions and targets using a dataset index or an iterator of batches
 
 -----
+
 ```python
 Learner.get_preds
 ```
+
 ```v
 <function fastai.learner.Learner.get_preds(self, ds_idx=1, dl=None, with_input=False, with_decoded=False, with_loss=False, act=None, inner=False, reorder=True, cbs=None, save_preds=None, save_targs=None, concat_dim=0)>
 ```
 
 -----
+
 ```python
 preds,_ = learn.get_preds(dl=[(x,y)])
 preds[0]
 ```
+
 ```text
 TensorBase([2.8917e-05, 1.6130e-08, 3.2022e-04, 1.7541e-05, 1.5420e-05, 3.5346e-06, 7.1617e-06, 1.0242e-04, 4.3236e-05, 7.5608e-05, 3.9862e-05, 7.9690e-07, 7.0372e-07, 4.5139e-08, 2.7499e-06, 4.2070e-06,
         9.9794e-08, 1.6574e-06, 4.6330e-07, 5.7135e-06, 8.5598e-07, 8.1175e-02, 7.1706e-05, 1.1809e-05, 7.3426e-05, 9.2441e-06, 7.5984e-07, 2.6505e-06, 1.1533e-04, 4.2089e-07, 4.4916e-06, 9.1771e-01,
@@ -752,9 +796,11 @@ TensorBase([2.8917e-05, 1.6130e-08, 3.2022e-04, 1.7541e-05, 1.5420e-05, 3.5346e-
 ```
 
 -----
+
 ```python
 len(preds[0]),preds[0].sum()
 ```
+
 ```text
 (37, TensorBase(1.0000))
 ```
@@ -779,20 +825,24 @@ len(preds[0]),preds[0].sum()
 ```python
 plot_function(torch.sigmoid, min=-4,max=4)
 ```
-![png](./images/output_55_1.png)
+
+![](./images/output_55_1.png){fig-align="center"}
 
 -----
+
 ```python
 # set random seed to get same results across sessions
 torch.random.manual_seed(42);
 ```
 
 -----
+
 ```python
 # Create a random set of test activations for a binary classification problem
 acts = torch.randn((6,2))*2
 acts
 ```
+
 ```text
 tensor([[ 0.6734,  0.2576],
         [ 0.4689,  0.4607],
@@ -803,10 +853,12 @@ tensor([[ 0.6734,  0.2576],
 ```
 
 -----
+
 ```python
 acts.sigmoid()
 ```
-```v
+
+```text
 tensor([[0.6623, 0.5641],
         [0.6151, 0.6132],
         [0.0957, 0.4079],
@@ -816,9 +868,11 @@ tensor([[0.6623, 0.5641],
 ```
 
 -----
+
 ```python
 (acts[:,0]-acts[:,1]).sigmoid()
 ```
+
 ```text
 tensor([0.6025, 0.5021, 0.1332, 0.9966, 0.5959, 0.3661])
 ```
@@ -826,10 +880,12 @@ tensor([0.6025, 0.5021, 0.1332, 0.9966, 0.5959, 0.3661])
 $\text{Softmax}(x_{i}) = \frac{\exp(x_i)}{\sum_j \exp(x_j)}$
 
 -----
+
 ```python
 def softmax(x): return 2.718**x / (2.718**x).sum(dim=1, keepdim=True)
 softmax(acts)
 ```
+
 ```text
 tensor([[0.6025, 0.3975],
         [0.5021, 0.4979],
@@ -840,10 +896,12 @@ tensor([[0.6025, 0.3975],
 ```
 
 -----
+
 ```python
 print(softmax(acts)[0])
 softmax(acts)[0].sum()
 ```
+
 ```text
 tensor([0.6025, 0.3975])
 tensor(1.)
@@ -855,18 +913,22 @@ tensor(1.)
 * Applies the Softmax function to an n-dimensional input Tensor rescaling them so that the elements of the n-dimensional output Tensor lie in the range [0,1] and sum to 1.
 
 -----
+
 ```python
 torch.softmax
 ```
+
 ```text
 <function _VariableFunctionsClass.softmax>
 ```
 
 -----
+
 ```python
 sm_acts = torch.softmax(acts, dim=1)
 sm_acts
 ```
+
 ```text
 tensor([[0.6025, 0.3975],
         [0.5021, 0.4979],
@@ -901,9 +963,11 @@ targ = tensor([0,1,0,1,1,0])
 ```
 
 -----
+
 ```python
 sm_acts
 ```
+
 ```text
 tensor([[0.6025, 0.3975],
         [0.5021, 0.4979],
@@ -914,15 +978,18 @@ tensor([[0.6025, 0.3975],
 ```
 
 -----
+
 ```python
 idx = range(6)
 sm_acts[idx, targ]
 ```
+
 ```text
 tensor([0.6025, 0.4979, 0.1332, 0.0034, 0.4041, 0.3661])
 ```
 
 -----
+
 ```python
 df = pd.DataFrame(sm_acts, columns=["3","7"])
 df['targ'] = targ
@@ -997,9 +1064,11 @@ df
 
 
 -----
+
 ```python
 -sm_acts[idx, targ]
 ```
+
 ```text
 tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```
@@ -1019,14 +1088,17 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```python
 F.nll_loss
 ```
+
 ```text
 <function torch.nn.functional.nll_loss(input: torch.Tensor, target: torch.Tensor, weight: Optional[torch.Tensor] = None, size_average: Optional[bool] = None, ignore_index: int = -100, reduce: Optional[bool] = None, reduction: str = 'mean') -> torch.Tensor>
 ```
 
 -----
+
 ```python
 F.nll_loss(sm_acts, targ, reduction='none')
 ```
+
 ```text
 tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```
@@ -1043,18 +1115,22 @@ tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 * $e = 2.718$
 
 -----
+
 ```python
 torch.log
 ```
+
 ```text
 <function _VariableFunctionsClass.log>
 ```
 
 -----
+
 ```python
 plot_function(torch.log, min=0,max=4)
 ```
-![png](./images/output_78_0.png)
+
+![](./images/output_78_0.png){fig-align="center"}
 
 #### nn.CrossEntropyLoss
 
@@ -1064,39 +1140,48 @@ plot_function(torch.log, min=0,max=4)
     * can be disabled with `reduction='none'`
 
 -----
+
 ```python
 loss_func = nn.CrossEntropyLoss()
 ```
 
 -----
+
 ```python
 loss_func(acts, targ)
 ```
+
 ```text
 tensor(1.8045)
 ```
 
 -----
+
 ```python
 F.cross_entropy(acts, targ)
 ```
+
 ```text
 tensor(1.8045)
 ```
 
 -----
+
 ```python
 -torch.log(-F.nll_loss(sm_acts, targ, reduction='none'))
 ```
+
 ```text
 tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 ```
 
 -----
+
 ```python
 # Do not take the mean
 nn.CrossEntropyLoss(reduction='none')(acts, targ)
 ```
+
 ```text
 tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 ```
@@ -1115,24 +1200,30 @@ tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 * Construct interpretation object from a learner
 
 -----
+
 ```python
 ClassificationInterpretation
 ```
+
 ```text
 fastai.interpret.ClassificationInterpretation
 ```
 
 -----
+
 ```python
 interp = ClassificationInterpretation.from_learner(learn)
 interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
 ```
-![png](./images/output_88_2.png)
+
+![](./images/output_88_2.png){fig-align="center"}
 
 -----
+
 ```python
 interp.most_confused(min_val=4)
 ```
+
 ```text
 [('Birman', 'Ragdoll', 4),
  ('Ragdoll', 'Birman', 4),
@@ -1222,12 +1313,14 @@ Using a very high learning rate resulted in an increasing error rate
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 ```
-![png](./images/output_95_2.png)
+
+![](./images/output_95_2.png){fig-align="center"}
 
 
 **Note:** The plot has a logarithmic scale
 
 -----
+
 ```python
 print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
 ```
@@ -1245,6 +1338,7 @@ lr_steep
 ```
 
 -----
+
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fine_tune(2, base_lr=lr_steep)
@@ -1372,14 +1466,17 @@ learn.fine_tune(2, base_lr=3e-3)
 * Fine tune with Learner.freeze for freeze_epochs, then with Learner.unfreeze for epochs, using discriminative LR.
 
 -----
+
 ```python
 Learner.fine_tune
 ```
+
 ```text
 <function fastai.callback.schedule.Learner.fine_tune(self: fastai.learner.Learner, epochs, base_lr=0.002, freeze_epochs=1, lr_mult=100, pct_start=0.3, div=5.0, lr_max=None, div_final=100000.0, wd=None, moms=None, cbs=None, reset_opt=False)>
 ```
 
 -----
+
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 # Train new layers for 3 epochs
@@ -1430,17 +1527,21 @@ learn.fit_one_cycle(3, 3e-3)
 ```python
 learn.unfreeze()
 ```
+
 -----
+
 
 ```python
 lr_min, lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))
 ```
-![png](./images/output_108_2.png)
+![](./images/output_108_2.png){fig-align="center"}
 
 -----
+
 ```python
 lr_min
 ```
+
 ```text
 1.3182566908653825e-05
 ```
@@ -1450,11 +1551,13 @@ lr_min
 ```python
 lr_steep
 ```
+
 ```text
 6.918309736647643e-06
 ```
 
 -----
+
 ```python
 learn.fit_one_cycle(6, lr_max=1e-5)
 ```
@@ -1526,6 +1629,7 @@ learn.fit_one_cycle(6, lr_max=1e-5)
     - showed that with transfer learning, different layers of a neural network should train at different speeds
 
 -----
+
 ```python
 learn = cnn_learner(dls, resnet34, metrics=error_rate)
 learn.fit_one_cycle(3, 3e-3)
@@ -1674,7 +1778,8 @@ learn.fit_one_cycle(12, lr_max=slice(1e-6,1e-4))
 ```python
 learn.recorder.plot_loss()
 ```
-![png](./images/output_114_0.png)
+
+![](./images/output_114_0.png){fig-align="center"}
 
 
 **Note:** Accuracy may continue to improve, even when the validation loss starts to get worse
@@ -1705,6 +1810,7 @@ learn.recorder.plot_loss()
 * [Mixed Precision Training](https://on-demand.gputechconf.com/gtc/2019/video/_/S9143/)
 
 -----
+
 ```python
 from fastai.callback.fp16 import *
 learn = cnn_learner(dls, resnet50, metrics=error_rate).to_fp16()

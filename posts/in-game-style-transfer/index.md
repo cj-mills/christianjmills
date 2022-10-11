@@ -14,9 +14,11 @@ toc: false
 
 ---
 
+
+
 I've been fascinated with style transfer models ever since I first learned about them a few years ago. Most available style transfer applications are meant for single images. Interestingly, Unity seems to have another use case in mind. The home page for the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/manual/index.html) library has an image of what appears to be in-game style transfer.
 
-![](./images/barracuda_landing_half.jpg)
+![](./images/barracuda_landing_half.jpg){fig-align="center"}
 
 This was such an intriguing idea that I decided to give it a shot before getting started on my pose estimation project. One concern I had going in was performance. The style transfer models I'd used previously weren't exactly designed for real-time inference. This concern turned out to be well founded. The frame rates for my first attempt were so low it looked like a stop motion film.
 
@@ -28,7 +30,7 @@ Working on my pose estimation project taught me a lot about how to speed up the 
 
 For testing purposes, I started with one of the pretrained fast style transfer [models](https://github.com/pytorch/examples/tree/master/fast_neural_style#models) provided in the [ONNX model zoo](https://github.com/onnx/models). This particular model was trained to apply the style of the mosaic image below. I plan to use my own style transfer models in the future.
 
-![mosaic](./images/mosaic.jpg)
+![](./images/mosaic.jpg){fig-align="center"}
 
 Moving the processing steps from the CPU to the GPU allowed me to get "cinematic" frame rates. However, I needed to keep the resolution at or below 720p. Even at those resolutions, my GPU was pinned at 99-100% utilization the whole time. This might make a decent benchmark for the new RTX 3000 cards.
 
@@ -42,19 +44,19 @@ My current results might need a seizure warning, but they are still way better t
 
 ### My Results:
 
-![](./videos/style_transfer_mosaic_360_480p.mp4)
+![](./videos/style_transfer_mosaic_360_480p.mp4){fig-align="center"}
 
 
 ### Future Work:
 
 This recently released [project](https://github.com/OndrejTexler/Few-Shot-Patch-Based-Training) on GitHub is very promising. Not only does it perform way better with videos, but it's also possible to modify the style while your using it. I haven't tried exporting the model to ONNX yet but I plan to fairly soon. Even if it's fully supported by ONNX, I'll still need to see if the Barracuda library supports it. But, it should be worth the effort to get it working. You can see just how much smoother video from this new model is in this short sample I made with it.
 
-![](./videos/lynx_mosaic_small5.mp4)
+![](./videos/lynx_mosaic_small5.mp4){fig-align="center"}
 
 
 It's not 100% perfect. There's still a tiny bit of flickering in the background. However, this was made with just two sample frames. Also that mosaic image makes it more likely for such flickering to appear. If we use a different style image, the flickering is basically nonexistent. The noise is present because the Gif below was made from an mp4 rather than PNGs.
 
-![lynx_facets2](./images/lynx_facets3.gif)
+![](./images/lynx_facets3.gif){fig-align="center"}
 
 
 

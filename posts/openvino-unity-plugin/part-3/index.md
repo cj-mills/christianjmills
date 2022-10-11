@@ -47,13 +47,13 @@ In [Part 1](../part-1/) of the tutorial, we first installed Unity, OpenVINO, and
 
 Open Unity Hub and click the `New` button. 
 
-![unity-hub-click-new](./images/unity-hub-click-new.png)
+![](./images/unity-hub-click-new.png){fig-align="center"}
 
 Stick with the default `3D` template and name the project `OpenVINO_Plugin_Demo`.  There appears to be some compatibility issues with the Barracuda library and some of the packages included with the 2D template.
 
 Take note of where the project will be generated and click `Create`.
 
-![unity-hub-create-project](./images/unity-hub-create-project.png)
+![](./images/unity-hub-create-project.png){fig-align="center"}
 
 ## Install Barracuda Package
 
@@ -61,15 +61,15 @@ To benchmark our plugin's performance, we'll be comparing the Intel-focused Open
 
 Open the `Window` menu at the top of the Unity Editor and select `Package Manager`.
 
-![unity-select-package-manager](./images/unity-select-package-manager.png)
+![](./images/unity-select-package-manager.png){fig-align="center"}
 
 In the Package Manager window, open the small dropdown menu in the left corner and select `Add package from git URL...`.
 
-![package-manager-add-git-url](./images/package-manager-add-git-url.png)
+![](./images/package-manager-add-git-url.png){fig-align="center"}
 
 Type `com.unity.barracuda` into the text box and click `Add`. This will install Barracuda version `1.0.4`. Go ahead and close the Package manager window once Barracuda finishes installing.
 
-![package-manager-add-barracuda](./images/package-manager-add-barracuda.png)
+![](./images/package-manager-add-barracuda.png){fig-align="center"}
 
 
 
@@ -102,15 +102,15 @@ We will be using the free [Graphy](https://assetstore.unity.com/packages/tools/g
 
 Download the `Canvas.prefab` file from the above link and drop it into the assets folder in the Unity editor.
 
-![unity-editor-add-canvas-prefab](./images/unity-editor-add-canvas-prefab.png)
+![](./images/unity-editor-add-canvas-prefab.png){fig-align="center"}
 
 Drag and drop the prefab from the `Assets` folder into the `Hierarchy` tab. A `TMP Importer` popup window will appear. Click `Import TMP Essentials`. Close the popup window once the import is complete.
 
-![unity-editor-import-tmp-essentials](./images/unity-editor-import-tmp-essentials.png)
+![](./images/unity-editor-import-tmp-essentials.png){fig-align="center"}
 
 If we select the `Game` tab, we can see the interface we just added. Don't worry if it looks squished.
 
-![unity-editor-view-canvas](./images/unity-editor-view-canvas.png)
+![](./images/unity-editor-view-canvas.png){fig-align="center"}
 
 ### Add Graphy Package
 
@@ -118,31 +118,31 @@ Open the link to the Grapy Unity Store page below and click `Add to My Assets`. 
 
 * Graphy Asset Store Page: ([link](https://assetstore.unity.com/packages/tools/gui/graphy-ultimate-fps-counter-stats-monitor-debugger-105778))
 
-![unity-store-add-graphy](./images/unity-store-add-graphy.png)
+![](./images/unity-store-add-graphy.png){fig-align="center"}
 
 Back in Unity, open the Package Manager again and select the `Packages: In Project` dropdown. Switch the selection to `My Assets`. You will need to be signed in to view your assets.
 
-![package-manager-open-my-assets](./images/package-manager-open-my-assets.png)
+![](./images/package-manager-open-my-assets.png){fig-align="center"}
 
 Type `Graphy` into the search bar and click download.
 
-![package-manager-download-graphy](./images/package-manager-download-graphy.png)
+![](./images/package-manager-download-graphy.png){fig-align="center"}
 
 Click `Import` once the package finished downloading. An `Import Unity Package` popup window will appear.
 
-![package-manager-import-graphy](./images/package-manager-import-graphy.png)
+![](./images/package-manager-import-graphy.png){fig-align="center"}
 
 Click `Import` in the popup window. Close the Package Manager window once the import is complete. There should now be a new folder called `Graphy - Ultimate Stats Monitor` in the `Assets` folder.
 
-![import-unity-package-graphy](./images/import-unity-package-graphy.png)
+![](./images/import-unity-package-graphy.png){fig-align="center"}
 
 Inside the new folder, open the `Prefab` folder and drag the `[Graphy]` prefab into the Hierarchy tab. You will see that our game scene gets updated.
 
-![unity-assets-graphy-prefab](./images/unity-assets-graphy-prefab.png)
+![](./images/unity-assets-graphy-prefab.png){fig-align="center"}
 
 With the `[Graphy]` object still selected in the Hierarchy tab. Scroll down in the `Inspector` tab to `Graphy Manager (Script)` section. Open the `Graph modules position` dropdown and select `TOP_LEFT`. Nothing will change in the game view, but the position will be updated when we build the project. 
 
-![graphy-set-module-position](./images/graphy-set-module-position.png)
+![](./images/graphy-set-module-position.png){fig-align="center"}
 
 
 
@@ -150,7 +150,7 @@ With the `[Graphy]` object still selected in the Hierarchy tab. Scroll down in t
 
 We need to add an [`Event System`](https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/EventSystem.html) so that we can send events to [GameObjects](https://docs.unity3d.com/ScriptReference/GameObject.html) and their scripts based on user input. Right click an empty space in the Hierarchy tab. Open the `UI` submenu and select `Event System`.
 
-![add-event-system](./images/add-event-system.png)
+![](./images/add-event-system.png){fig-align="center"}
 
 ### Make a Test Build
 
@@ -158,23 +158,23 @@ Before continuing, let's make a test build to confirm our GUI looks correct. Fir
 
 Open the `File` menu  and select `Build Settings...`
 
-![unity-editor-open-build-settings](./images/unity-editor-open-build-settings.png)
+![](./images/unity-editor-open-build-settings.png){fig-align="center"}
 
 Click build in the popup window. You will be prompted to select a folder to store the files generated during the build.
 
-![build-settings-build-project](./images/build-settings-build-project.png)
+![](./images/build-settings-build-project.png){fig-align="center"}
 
 Create a new folder in the default location and name it `Build`. Click select folder. 
 
-![create-build-folder](./images/create-build-folder.png)
+![](./images/create-build-folder.png){fig-align="center"}
 
 Once the build is complete, a File Explorer window will open with the project executable selected. Double-click the executable to run it. 
 
-![run-project](./images/run-project.png)
+![](./images/run-project.png){fig-align="center"}
 
 You should get output similar to below. The buttons are not connected to any code just yet, so you will need to press `Alt+F4` to exit the application.
 
-![test-run-1](./images/test-run-1.png)
+![](./images/test-run-1.png){fig-align="center"}
 
 
 
@@ -198,7 +198,7 @@ We'll be using this video available on [Pexels](https://www.pexels.com/), a free
 
 In the `Assets` window, right-click an empty space, select the `Create` option, and click `Folder`. Name the folder `Videos`.
 
-![unity-editor-create-folder](./images/unity-editor-create-folder.png)
+![](./images/unity-editor-create-folder.png){fig-align="center"}
 
 Double-click the `Videos` folder to open it.
 
@@ -208,7 +208,7 @@ Double-click the `Videos` folder to open it.
 
 Drag and drop the video file from the file explorer into the `Videos` folder.
 
-![unity-editor-add-video-file](./images/unity-editor-add-video-file.png)
+![](./images/unity-editor-add-video-file.png){fig-align="center"}
 
 
 
@@ -216,7 +216,7 @@ Drag and drop the video file from the file explorer into the `Videos` folder.
 
 We need to make a "screen" in Unity to watch the video. We'll use a [`Quad`](https://docs.unity3d.com/Manual/PrimitiveObjects.html) object for the screen. Right click an empty space in the `Hierarchy` tab, select the `3D Object` section and click `Quad`. We can just name it `VideoScreen`.
 
-![unity-editor-create-quad](./images/unity-editor-create-quad.png)
+![](./images/unity-editor-create-quad.png){fig-align="center"}
 
 
 
@@ -224,7 +224,7 @@ We need to make a "screen" in Unity to watch the video. We'll use a [`Quad`](htt
 
 With the `VideoScreen` object selected, we need to adjust the `Scale` parameter in the `Inspector` tab. Set the `X` value to 16 and the `Y` value to 9. Leave the `Z` value at 1.
 
-![unity-editor-resize-screen](./images/unity-editor-resize-screen.png)
+![](./images/unity-editor-resize-screen.png){fig-align="center"}
 
 
 
@@ -232,19 +232,19 @@ With the `VideoScreen` object selected, we need to adjust the `Scale` parameter 
 
 Create a new folder in the `Assets` section named `Materials`. Inside the Materials folder, right-click an empty space and select `Material` from the popup menu. We'll name the new material `video`.
 
-![create-material](./images/create-material.png)
+![](./images/create-material.png){fig-align="center"}
 
 With the `VideoScreen` object selected in the Hierarchy tab, open the `Materials` dropdown in the `Inspector` tab. Drag and drop the `video` material into the `Element 0` slot.
 
-![videoscreen-open-material-dropdown](./images/videoscreen-open-material-dropdown.png)
+![](./images/videoscreen-open-material-dropdown.png){fig-align="center"}
 
 With the `VideoScreen` object still selected, scroll down to the bottom of the Inspector tab and open the `Shader` dropdown menu. Select the `Unlit` option.
 
-![videoscreen-shader-menu](./images/videoscreen-shader-menu.png)
+![](./images/videoscreen-shader-menu.png){fig-align="center"}
 
 Select `Texture` from the submenu. The video screen should now be white.
 
-![videoscreen-shader-menu-unlit-texture](./images/videoscreen-shader-menu-unlit-texture.png)
+![](./images/videoscreen-shader-menu-unlit-texture.png){fig-align="center"}
 
 
 
@@ -252,7 +252,7 @@ Select `Texture` from the submenu. The video screen should now be white.
 
 In the `Hierarchy` tab, right-click an empty area, select the `Video` section, and click `Video Player`. This will create a new `GameObject` called `Video Player`.
 
-![unity-editor-create-video-player](./images/unity-editor-create-video-player.png)
+![](./images/unity-editor-create-video-player.png){fig-align="center"}
 
 
 
@@ -260,7 +260,7 @@ In the `Hierarchy` tab, right-click an empty area, select the `Video` section, a
 
 Select the `Video Player` object in the `Hierarchy` tab. Then, drag and drop the `pexels_woman_dancing` file into the `Video Clip` parameter in the `Inspector` tab.
 
-![unity-editor-assign-video](./images/unity-editor-assign-video.png)
+![](./images/unity-editor-assign-video.png){fig-align="center"}
 
 
 
@@ -268,7 +268,7 @@ Select the `Video Player` object in the `Hierarchy` tab. Then, drag and drop the
 
 Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when the project is running.
 
-![unity-editor-loop-video](./images/unity-editor-loop-video.png)
+![](./images/unity-editor-loop-video.png){fig-align="center"}
 
 
 
@@ -276,7 +276,7 @@ Tick the `Loop` checkbox in the `Inspector` tab to make the video repeat when th
 
 Open the `Render Mode` dropdown and `Material Override`.
 
-![video-player-set-render-mode](./images/video-player-set-render-mode.png)
+![](./images/video-player-set-render-mode.png){fig-align="center"}
 
 
 
@@ -284,7 +284,7 @@ Open the `Render Mode` dropdown and `Material Override`.
 
 With the `Video Player` object still selected, drag and drop the `VideoScreen` object from the Hierarchy tab into the `Render` slot in the Inspector tab.
 
-![video-player-set-renderer](./images/video-player-set-renderer.png)
+![](./images/video-player-set-renderer.png){fig-align="center"}
 
 
 
@@ -296,7 +296,7 @@ Select the `Main Camera` object in the `Hierarchy` tab.  Set the `Y`  value for 
 
 Finally, we need to set the Projection setting to `Orthographic` and adjust the Size parameter to `4.5` in the `Inspector` tab.
 
-![unity-resize-camera](./images/unity-resize-camera.png)
+![](./images/unity-resize-camera.png){fig-align="center"}
 
 
 
@@ -316,7 +316,7 @@ Next, we need to import the original ONN file that we used earlier. This will be
 
 Drag and drop the ONNX file into the `Models` folder.
 
-![import-onnx-file-asset](./images/import-onnx-file-asset.png)
+![](./images/import-onnx-file-asset.png){fig-align="center"}
 
 
 
@@ -330,7 +330,7 @@ Open the `Style_Transfer` folder and create a new folder called `Shaders`. Enter
 
 `image here`
 
-![unity-create-compute-shader](./images/unity-create-compute-shader.png)
+![](./images/unity-create-compute-shader.png){fig-align="center"}
 
 
 
@@ -488,7 +488,7 @@ We need to make a new `C#` script to perform inference with the style transfer m
 
 Open the `Style_Transfer` folder and create a new folder called `Scripts`. In the `Scripts` folder, right-click an empty space and select `C# Script` in the `Create` submenu. Name the script `StyleTransfer`.
 
-![unity-create-csharp-script](./images/unity-create-csharp-script.png)
+![](./images/unity-create-csharp-script.png){fig-align="center"}
 
 
 
@@ -1347,11 +1347,11 @@ Open the `Edit` menu at the top of the Unity Editor and select Project Settings.
 
 Select `Player` from the side menu and open the `Other Settings` dropdown menu.
 
-![unity-project-settings-player](./images/unity-project-settings-player.png)
+![](./images/unity-project-settings-player.png){fig-align="center"}
 
 Scroll down until you see the `Allow 'unsafe' Code` checkbox. Enable the setting and close the Project Settings window.
 
-![unity-player-settings-allow-unsafe-code](./images/unity-player-settings-allow-unsafe-code.png)
+![](./images/unity-player-settings-allow-unsafe-code.png){fig-align="center"}
 
 
 
@@ -1361,23 +1361,23 @@ To run the `StyleTransfer` script, we need to attach it to the active `Camera` i
 
 Select the `Main Camera` object in the Hierarchy Tab and click the little lock icon at the top of the Inspector tab. This will keep the `Main Camera` in the Inspector tab.
 
-![unity-lock-camera-inspector](./images/unity-lock-camera-inspector.png)
+![](./images/unity-lock-camera-inspector.png){fig-align="center"}
 
 Drag and drop the `StyleTransfer.cs` into the bottom of the Inspector tab. Now can assign the UI elements inside the Canvas object as well as the compute shader and any ONNX models. We can do so by dragging dropping them into their associated variable spots in the Inspector tab.
 
 The actual text area for the `Console View` object is located at `Console View > Viewport > Content` in the Hierarchy tab.
 
-![unity-console-view-content](./images/unity-console-view-content.png)
+![](./images/unity-console-view-content.png){fig-align="center"}
 
 We also need to select the `Compute Precompiled` option from the `Worker Type` dropdown menu.
 
 `image here`
 
-![unity-select-compute-precompiled](./images/unity-select-compute-precompiled.png)
+![](./images/unity-select-compute-precompiled.png){fig-align="center"}
 
 The fully populated script should look like the image below.
 
-![unity-fully-populated-script-component](./images/unity-fully-populated-script-component.png)
+![](./images/unity-fully-populated-script-component.png){fig-align="center"}
 
 Click the lock icon again to unlock the Inspector tab.
 
@@ -1391,15 +1391,15 @@ Now we just need to assign the associated methods from the `StyleTransfer.cs` sc
 
 Select the `Update` object inside the `Canvas` object.
 
-![unity-update-button-object](./images/unity-update-button-object.png)
+![](./images/unity-update-button-object.png){fig-align="center"}
 
 Scroll down in the Inspector tab to the `On Click` section.
 
-![unity-update-button-on-click-empty](./images/unity-update-button-on-click-empty.png)
+![](./images/unity-update-button-on-click-empty.png){fig-align="center"}
 
 Drag and drop the `Main Camera` object into the `None (Object)` spot. Open the `No Function` dropdown menu. Open the `StyleTransfer` option and select `UpdateInputDims()`. 
 
-![unity-update-button-add-method](./images/unity-update-button-add-method.png)
+![](./images/unity-update-button-add-method.png){fig-align="center"}
 
 
 
@@ -1409,17 +1409,17 @@ Select the `Inference Engines` object inside the `Canvas` object.
 
 Scroll down in the Inspector tab to the `On Value Changed (Int32)` section and press the little plus sign.
 
-![unity-engine-dropdown-on-changed-empty](./images/unity-engine-dropdown-on-changed-empty.png)
+![](./images/unity-engine-dropdown-on-changed-empty.png){fig-align="center"}
 
 
 
 Drag and drop the `Main Camera` object into the `None (Object)` spot.
 
-![unity-engine-dropdown-on-changed-add-camera](./images/unity-engine-dropdown-on-changed-add-camera.png)
+![](./images/unity-engine-dropdown-on-changed-add-camera.png){fig-align="center"}
 
 This time, select the `StyleTransfer.SetInferenceEngine` method.
 
-![unity-engine-dropdown-on-changed-add-method](./images/unity-engine-dropdown-on-changed-add-method.png)
+![](./images/unity-engine-dropdown-on-changed-add-method.png){fig-align="center"}
 
 
 
@@ -1427,7 +1427,7 @@ This time, select the `StyleTransfer.SetInferenceEngine` method.
 
 Select the `Device` object inside the `Canvas` object and follow the same steps as the inference engine dropdown. This time, select the `StyleTransfer.SetDevice` method.
 
-![unity-device-add-method](./images/unity-device-add-method.png)
+![](./images/unity-device-add-method.png){fig-align="center"}
 
 
 
@@ -1435,13 +1435,13 @@ Select the `Device` object inside the `Canvas` object and follow the same steps 
 
 Select the `Model` object inside the `Canvas` object and follow the same steps as the device dropdown. This time, select the `StyleTransfer.UpdateModel` method.
 
-![unity-model-add-method](./images/unity-model-add-method.png)
+![](./images/unity-model-add-method.png){fig-align="center"}
 
 ### Quit Button
 
 Select the `Quit` object inside the `Canvas` object and follow the same steps as the `Update` button. This time select the `StyleTransfer.Quit` method.
 
-![unity-quit-button-add-method](./images/unity-quit-button-add-method.png)
+![](./images/unity-quit-button-add-method.png){fig-align="center"}
 
 
 
@@ -1455,11 +1455,11 @@ Now we can build the completed project. Open the `Build Settings` window like be
 
 Create a new folder in the same directory as the `OpenVINO_Plugin_Demo.exe` file and name it `models`. 
 
-![create-models-folder](./images/create-models-folder.png)
+![](./images/create-models-folder.png){fig-align="center"}
 
 We'll place the `.xml` and `.bin` files for any OpenVINO models in this folder.
 
-![add-model-files](./images/add-model-files.png)
+![](./images/add-model-files.png){fig-align="center"}
 
 
 
@@ -1467,11 +1467,11 @@ We'll place the `.xml` and `.bin` files for any OpenVINO models in this folder.
 
 Go back to the main build folder and open the `OpenVINO_Plugin_Demo_Data` folder.
 
-![open-build-data-folder](./images/open-build-data-folder.png)
+![](./images/open-build-data-folder.png){fig-align="center"}
 
 From there, open the `Plugins` folder.
 
-![open-build-data--plugins-folder](./images/open-build-data--plugins-folder.png)
+![](./images/open-build-data--plugins-folder.png){fig-align="center"}
 
 Copy and paste the `x86_64` from earlier that contains all the `.dll` files and dependencies in here.
 
@@ -1483,7 +1483,7 @@ Copy and paste the `x86_64` from earlier that contains all the `.dll` files and 
 
 Now we can finally test the application. Go back to the main build folder and double-click the `OpenVINO_Plugin_Demo.exe` file to run it. Remember that the first time the application launches will be slow as the cache files are generated.
 
-![application-test-run](./images/application-test-run.png)
+![](./images/application-test-run.png){fig-align="center"}
 
 
 

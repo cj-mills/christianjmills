@@ -1352,7 +1352,7 @@ draw_tree
 ```python
 draw_tree(m, xs, size=10, leaves_parallel=True, precision=2)
 ```
-![svg](./images/output_88_0.svg)
+![](./images/output_88_0.svg){fig-align="center"}
 
 -----
 
@@ -1376,7 +1376,7 @@ dtreeviz(m, xs.iloc[samp_idx], y.iloc[samp_idx], xs.columns, dep_var,
         fontname='DejaVu Sans', scale=1.6, label_fontsize=10,
         orientation='LR')
 ```
-![svg](./images/output_91_1.svg)
+![](./images/output_91_1.svg){fig-align="center"}
 
 **Note:** There is a clear problem with the year made data. There are bulldozers with YearMade values of 1000.
 * The value `1000` is likely a placeholder value for missing data.
@@ -1399,9 +1399,10 @@ dtreeviz(m, xs.iloc[samp_idx], y.iloc[samp_idx], xs.columns, dep_var,
         fontname='DejaVu Sans', scale=1.6, label_fontsize=10,
         orientation='LR')
 ```
-![svg](./images/output_94_1.svg)
+![](./images/output_94_1.svg){fig-align="center"}
 
 -----
+
 ```python
 # Don't limit the number of leaf nodes
 m = DecisionTreeRegressor()
@@ -1493,7 +1494,6 @@ m.get_n_leaves()
 -----
 
 ```python
-
 # pip install —pre -f https://sklearn-nightly.scdn8.secure.raxcdn.com scikit-learn —U
 ```
 
@@ -1565,7 +1565,7 @@ r_mse(preds.mean(0), valid_y)
 # See the impact of adding more trees on accuracy
 plt.plot([r_mse(preds[:i+1].mean(0), valid_y) for i in range(40)]);
 ```
-![png](./images/output_115_0.png)
+![](./images/output_115_0.png){fig-align="center"}
 
 **Note:** There is a significant diminishing returns after about 30 trees
 
@@ -1723,7 +1723,7 @@ def plot_fi(fi):
 
 plot_fi(fi[:30]);
 ```
-![png](./images/output_129_0.png)
+![](./images/output_129_0.png){fig-align="center"}
 
 ### Removing Low-Importance Variables
 * generally, the first step to improving a model is simplifying it
@@ -1778,7 +1778,7 @@ len(xs.columns), len(xs_imp.columns)
 ```python
 plot_fi(rf_feat_importance(m, xs_imp));
 ```
-![png](./images/output_137_0.png)
+![](./images/output_137_0.png){fig-align="center"}
 
 ### Removing Redundant Features
 
@@ -1791,7 +1791,7 @@ plot_fi(rf_feat_importance(m, xs_imp));
 ```python
 cluster_columns(xs_imp)
 ```
-![png](./images/output_139_0.png)
+![](./images/output_139_0.png){fig-align="center"}
 
 **Note:** The pairs of columns that are most similar are the ones that were merged together early in the chart.
 
@@ -1896,14 +1896,14 @@ p = valid_xs_final['ProductSize'].value_counts(sort=False).plot.barh()
 c = to.classes['ProductSize']
 plt.yticks(range(len(c)), c);
 ```
-![png](./images/output_155_0.png)
+![](./images/output_155_0.png){fig-align="center"}
 
 **Note:** A large amount of data points have missing values for `ProductSize`
 
 ```python
 ax = valid_xs_final['YearMade'].hist()
 ```
-![png](./images/output_157_0.png)
+![](./images/output_157_0.png){fig-align="center"}
 
 **Note:** Most of the data is from after 1990
 
@@ -1933,7 +1933,7 @@ fig,ax = plt.subplots(figsize=(12, 4))
 PartialDependenceDisplay.from_estimator(m, valid_xs_final, ['YearMade','ProductSize'],
                         grid_resolution=20, ax=ax);
 ```
-![png](./images/output_162_0.png)
+![](./images/output_162_0.png){fig-align="center"}
 
 **Note:** There is a nearly linear (log) relationship between sale price and year made. 
 
@@ -2092,7 +2092,7 @@ waterfall
 waterfall(valid_xs_final.columns, contributions[0], threshold=0.08, 
           rotation_value=45,formatting='{:,.3f}');
 ```
-![png](./images/output_177_0.png)
+![](./images/output_177_0.png){fig-align="center"}
 
 **Note:** This kind of information is most useful in production, rather than during model development.
 * Can provide useful information to users of your data product about the underlying reasoning behind the predictions
@@ -2115,7 +2115,7 @@ x_lin = torch.linspace(0,20, steps=40)
 y_lin = x_lin + torch.randn_like(x_lin)
 plt.scatter(x_lin, y_lin);
 ```
-![png](./images/output_182_0.png)
+![](./images/output_182_0.png){fig-align="center"}
 
 -----
 
@@ -2149,7 +2149,7 @@ m_lin = RandomForestRegressor().fit(xs_lin[:30],y_lin[:30])
 plt.scatter(x_lin, y_lin, 20)
 plt.scatter(x_lin, m_lin.predict(xs_lin), color='red', alpha=0.5);
 ```
-![png](./images/output_186_0.png)
+![](./images/output_186_0.png){fig-align="center"}
 
 **None:** The predictions outside the domain of the training data are all too low.
 * A tree and a random forest can never predict values outside the range of the training data
@@ -2263,7 +2263,7 @@ m_rmse(m, valid_xs_time, valid_y)
 ```python
 xs['saleYear'].hist();
 ```
-![png](./images/output_196_0.png)
+![](./images/output_196_0.png){fig-align="center"}
 
 -----
 
@@ -2558,7 +2558,7 @@ learn.lr_find()
 SuggestedLRs(valley=0.00015848931798245758)
 ```
 
-![png](./images/output_219_3.png)
+![](./images/output_219_3.png){fig-align="center"}
 
 -----
 

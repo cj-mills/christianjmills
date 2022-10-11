@@ -10,9 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This follow-up to the fastai-to-unity tutorial covers creating an OpenVINO
-  plugin for the Unity game engine. Part 1 covers the required modifications to the
-  original training code.
+description: Modify the training code from the [fastai-to-unity tutorial](../../fastai-to-unity-tutorial/part-1/) to export the model to [OpenVINO](https://docs.openvino.ai/latest/index.html).
 categories: [fastai, openvino, unity]
 
 aliases:
@@ -42,7 +40,7 @@ This tutorial is a follow-up to the [fastai-to-unity](../../fastai-to-unity-tuto
 
 We'll modify the [original tutorial code](https://github.com/cj-mills/fastai-to-unity-tutorial) and create a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to access the OpenVINO functionality in Unity.
 
-![openvino-plugin-demo](./videos/openvino-plugin-demo.mp4)
+![](./videos/openvino-plugin-demo.mp4){fig-align="center"}
 
 
 
@@ -52,7 +50,7 @@ This post covers the required modifications to the [original training code](http
 
 | GitHub Repository                                            | Colab                                                        | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kaggle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [Jupyter Notebook](https://github.com/cj-mills/fastai-to-openvino-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-OpenVINO-Tutorial.ipynb) | [Open in Colab](https://colab.research.google.com/github/cj-mills/fastai-to-openvino-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-OpenVINO-Tutorial.ipynb) | [<img src="https://kaggle.com/static/images/open-in-kaggle.svg" alt="Kaggle"  />](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-openvino-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-OpenVINO-Tutorial.ipynb) |
+| [Jupyter Notebook](https://github.com/cj-mills/fastai-to-openvino-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-OpenVINO-Tutorial.ipynb) | [Open in Colab](https://colab.research.google.com/github/cj-mills/fastai-to-openvino-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-OpenVINO-Tutorial.ipynb) | [Open in Kaggle](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-openvino-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-OpenVINO-Tutorial.ipynb) |
 
 
 

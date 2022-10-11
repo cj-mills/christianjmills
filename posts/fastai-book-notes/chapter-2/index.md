@@ -177,11 +177,13 @@ key = os.environ.get('AZURE_SEARCH_KEY', 'f4be28837a074dfa90a1b72900a971ef')
 ```python
 search_images_bing
 ```
+
 ```text
 <function fastbook.search_images_bing(key, term, min_sz=128, max_images=150)>
 ```
 
 -----
+
 ```python
 results = search_images_bing(key, 'grizzly bear')
 ```
@@ -398,7 +400,7 @@ im.to_thumb(256,256)
 ```
 
 
-![png](./images/output_13_0.png)
+![](./images/output_13_0.png){fig-align="center"}
 
 
 
@@ -548,7 +550,7 @@ dls.valid.show_batch(max_n=4, nrows=1)
 ```
 
 
-![png](./images/output_22_0.png)
+![](./images/output_22_0.png){fig-align="center"}
 
 -----
 
@@ -564,7 +566,7 @@ dls.valid.show_batch(max_n=4, nrows=1)
 ```
 
 
-![png](./images/output_24_0.png)
+![](./images/output_24_0.png){fig-align="center"}
 
 -----
 
@@ -576,7 +578,7 @@ dls.valid.show_batch(max_n=4, nrows=1)
 ```
 
 
-![png](./images/output_25_0.png)
+![](./images/output_25_0.png){fig-align="center"}
 
 -----
 
@@ -589,7 +591,7 @@ dls.train.show_batch(max_n=4, nrows=1, unique=True)
 ```
 
 
-![png](./images/output_26_0.png)
+![](./images/output_26_0.png){fig-align="center"}
 
 
 
@@ -624,7 +626,7 @@ X = torch.linalg.solve(A, B) (Triggered internally at  ../aten/src/ATen/native/B
   ret = func(*args, **kwargs)
 ```
 
-![png](./images/output_28_1.png)
+![](./images/output_28_1.png){fig-align="center"}
 
 
 
@@ -655,6 +657,7 @@ dls = bears.dataloaders(path)
 ```python
 learn = cnn_learner(dls, resnet18, metrics=error_rate)
 ```
+
 ```python
 learn.fine_tune(4)
 ```
@@ -730,14 +733,14 @@ interp = ClassificationInterpretation.from_learner(learn)
 # Plot the confusion matrix
 interp.plot_confusion_matrix()
 ```
-![png](./images/output_36_2.png)
+![](./images/output_36_2.png){fig-align="center"}
 
 -----
 
 ```python
 interp.plot_top_losses(5, nrows=1)
 ```
-![png](./images/output_37_0.png)
+![](./images/output_37_0.png){fig-align="center"}
 
 
 -----
@@ -747,6 +750,7 @@ interp.plot_top_losses(5, nrows=1)
 cleaner = ImageClassifierCleaner(learn)
 cleaner
 ```
+
 ```text
 VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), Dropdown(options=('Train', 'Val…
 ```

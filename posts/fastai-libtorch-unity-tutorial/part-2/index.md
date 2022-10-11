@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: Part 2 covers creating a dynamic link library (DLL) file in Visual Studio
-  to perform inference with TorchScript modules using LibTorch.
+description: Create a dynamic link library (DLL) file in Visual Studio to perform image classification using [LibTorch](https://pytorch.org/cppdocs/installing.html).
 categories: [fastai, libtorch, unity]
 
 aliases:
@@ -56,7 +55,7 @@ Our LibTorch DLL requires the [OpenCV](https://github.com/opencv/opencv) library
 
 Select the `opencv-4.6.0-vc14_vc15.exe` option from the Assets list.
 
-![opencv_github_download_executable](./images/opencv_github_download_executable.png)
+![](./images/opencv_github_download_executable.png){fig-align="center"}
 
 
 
@@ -64,7 +63,7 @@ Run the executable once it finishes downloading. You might get a warning from Wi
 
 
 
-![windows-defender-smartscreen-warning](./images/windows-defender-smartscreen-warning.png)
+![](./images/windows-defender-smartscreen-warning.png){fig-align="center"}
 
 
 
@@ -72,7 +71,7 @@ Then, click the `Run anyway` button.
 
 
 
-![windows-defender-smartscreen-warning-run-anyway](./images/windows-defender-smartscreen-warning-run-anyway.png)
+![](./images/windows-defender-smartscreen-warning-run-anyway.png){fig-align="center"}
 
 
 
@@ -82,7 +81,7 @@ The executable will prompt us to select a location to extract the opencv folder.
 
 
 
-![opencv-select-extraction-location](./images/opencv-select-extraction-location.png)
+![](./images/opencv-select-extraction-location.png){fig-align="center"}
 
 
 
@@ -90,7 +89,7 @@ If we open the opencv folder, we can see a build folder and a source folder. Eve
 
 
 
-![opencv-folder](./images/opencv-folder.png)
+![](./images/opencv-folder.png){fig-align="center"}
 
 
 
@@ -110,7 +109,7 @@ The LibTorch releases are available on the PyTorch install page linked below. Th
 
 
 
-![download-libtorch-cpu](./images/download-libtorch-cpu.png)
+![](./images/download-libtorch-cpu.png){fig-align="center"}
 
 
 
@@ -118,7 +117,7 @@ As with the OpenCV library, we must pick a location to extract the LibTorch libr
 
 
 
-![libtorch-folder](./images/libtorch-folder.png)
+![](./images/libtorch-folder.png){fig-align="center"}
 
 
 
@@ -130,7 +129,7 @@ Now we can create the Visual Studio DLL project.
 
 Open Visual Studio and select the `Create a new project` option.
 
-![visual-studio-create-new-project](./images/visual-studio-create-new-project.png)
+![](./images/visual-studio-create-new-project.png){fig-align="center"}
 
 
 
@@ -138,7 +137,7 @@ Type `DLL` into the text box and select the `Dynamic-Link Library (DLL)` option.
 
 
 
-![visual-studio-new-dll-project](./images/visual-studio-new-dll-project.png)
+![](./images/visual-studio-new-dll-project.png){fig-align="center"}
 
 
 
@@ -146,7 +145,7 @@ Choose a name and location for the project and click the `Create` button. By def
 
 
 
-![visual-studio-choose-project-name-and-location](./images/visual-studio-choose-project-name-and-location.png)
+![](./images/visual-studio-choose-project-name-and-location.png){fig-align="center"}
 
 
 
@@ -156,7 +155,7 @@ Choose a name and location for the project and click the `Create` button. By def
 
 At the top of the window, open the Solution Configurations dropdown menu, and select `Release`.
 
-![visual-studio-switch-to-release](./images/visual-studio-switch-to-release.png)
+![](./images/visual-studio-switch-to-release.png){fig-align="center"}
 
 
 
@@ -164,7 +163,7 @@ Then, open the Solution Platform dropdown menu and select `x64`.
 
 
 
-![visual-studio-switch-to-64-bit](./images/visual-studio-switch-to-64-bit.png)
+![](./images/visual-studio-switch-to-64-bit.png){fig-align="center"}
 
 
 
@@ -174,13 +173,13 @@ We need to tell Visual Studio where LibTorch and OpenCV are so we can access the
 
 
 
-![visual-studio-solution-explorer-select-project-name](./images/visual-studio-solution-explorer-select-project-name.png)
+![](./images/visual-studio-solution-explorer-select-project-name.png){fig-align="center"}
 
 
 
 Select the `Properties` option in the popup menu.
 
-![visual-studio-open-properties](./images/visual-studio-open-properties.png)
+![](./images/visual-studio-open-properties.png){fig-align="center"}
 
 
 
@@ -190,7 +189,7 @@ Select the `Properties` option in the popup menu.
 
 
 
-![visual-studio-properties-target-name](./images/visual-studio-properties-target-name.png)
+![](./images/visual-studio-properties-target-name.png){fig-align="center"}
 
 
 
@@ -198,7 +197,7 @@ In the Properties Window, open on the `C/C++` dropdown. Select the `Additional I
 
 
 
-![visual-studio-open-additional-include-directories](./images/visual-studio-open-additional-include-directories.png)
+![](./images/visual-studio-open-additional-include-directories.png){fig-align="center"}
 
 
 
@@ -210,7 +209,7 @@ Add the paths for the following folders and click `OK`.
 
 
 
-![visual-studio-add-additional-include-directories](./images/visual-studio-add-additional-include-directories.png)
+![](./images/visual-studio-add-additional-include-directories.png){fig-align="center"}
 
 
 
@@ -220,7 +219,7 @@ Add the paths for the following folders and click `OK`.
 
 Next, open the `Linker` dropdown in the Properties window and select `Input`. Select `Additional Dependencies` and click `<Edit..>`.
 
-![visual-studio-linker-additional-dependencies](./images/visual-studio-linker-additional-dependencies.png)
+![](./images/visual-studio-linker-additional-dependencies.png){fig-align="center"}
 
 
 
@@ -233,7 +232,7 @@ Add the paths to the following files and click `OK`.
 
 
 
-![visual-studio-linker-add-additional-dependencies](./images/visual-studio-linker-add-additional-dependencies.png)
+![](./images/visual-studio-linker-add-additional-dependencies.png){fig-align="center"}
 
 
 
@@ -245,13 +244,13 @@ Our DLL file will depend on the following DLL files included with the LibTorch a
 
 **OpenCV DLL file**
 
-![get-opencv-world-dll-file](./images/get-opencv-world-dll-file.png)
+![](./images/get-opencv-world-dll-file.png){fig-align="center"}
 
 
 
 **LibTorch DLL files**
 
-![get-libtorch-dll-files](./images/get-libtorch-dll-files.png)
+![](./images/get-libtorch-dll-files.png){fig-align="center"}
 
 
 
@@ -259,7 +258,7 @@ We can add a post-build event in Visual Studio to automatically copy these DLL f
 
 
 
-![visual-studio-post-build-event-edit-command-line-events](./images/visual-studio-post-build-event-edit-command-line-events.png)
+![](./images/visual-studio-post-build-event-edit-command-line-events.png){fig-align="center"}
 
 
 
@@ -272,7 +271,7 @@ Add the following commands, replacing `<parent-folder-path>` with the path to th
 
 
 
-![visual-studio-post-build-event-add-xcopy-commands](./images/visual-studio-post-build-event-add-xcopy-commands.png)
+![](./images/visual-studio-post-build-event-add-xcopy-commands.png){fig-align="center"}
 
 
 
@@ -280,7 +279,7 @@ Finally, click the `Apply` button and close the Properties window.
 
 
 
-![visual-studio-properties-apply-changes](./images/visual-studio-properties-apply-changes.png)
+![](./images/visual-studio-properties-apply-changes.png){fig-align="center"}
 
 
 
@@ -294,7 +293,7 @@ With the dependencies taken care of, we can start modifying the code.
 
 We need to make a small change to the `pch.h` [Precompiled Header file](https://docs.microsoft.com/en-us/cpp/build/creating-precompiled-header-files?view=msvc-160) to avoid some conflicts with LibTorch. Open the `pch.h` file by selecting it in the Solution Explorer window.
 
-![visual-studio-open-pch-header-file](./images/visual-studio-open-pch-header-file.png)
+![](./images/visual-studio-open-pch-header-file.png){fig-align="center"}
 
 
 
@@ -512,7 +511,7 @@ That is all the code needed for the plugin. We can now build the solution to gen
 
 Open the Build menu at the top of the Visual Studio window and click Build Solution. Visual Studio will generate a new x64 folder in the project directory containing the DLL file and its dependencies.
 
-![visual-studio-build-solution](./images/visual-studio-build-solution.png)
+![](./images/visual-studio-build-solution.png){fig-align="center"}
 
 
 
@@ -520,13 +519,13 @@ Open the Build menu at the top of the Visual Studio window and click Build Solut
 
 Right-click the project name in the Solution Explorer panel and select `Open Folder in File Explorer` from the popup menu.
 
-![visual-studio-open-folder-in-explorer](./images/visual-studio-open-folder-in-explorer.png)
+![](./images/visual-studio-open-folder-in-explorer.png){fig-align="center"}
 
 
 
 In the new File Explorer window, go to the parent folder.
 
-![visual-studio-project-folder](./images/visual-studio-project-folder.png)
+![](./images/visual-studio-project-folder.png){fig-align="center"}
 
 
 
@@ -534,7 +533,7 @@ Open the `x64 → Release` subfolder.
 
 
 
-![visual-studio-project-folder-x64-folder](./images/visual-studio-project-folder-x64-folder.png)
+![](./images/visual-studio-project-folder-x64-folder.png){fig-align="center"}
 
 
 
@@ -542,7 +541,7 @@ We'll need to copy all the DLL files in this folder to the Unity project.
 
 
 
-![file-explorer-select-dll-files](./images/file-explorer-select-dll-files.png)
+![](./images/file-explorer-select-dll-files.png){fig-align="center"}
 
 
 

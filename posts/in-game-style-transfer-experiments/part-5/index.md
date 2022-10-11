@@ -28,29 +28,29 @@ I'm starting to see a trend where a seemingly difficult problem is easily resolv
 
 I was able to get the video stylization model to correctly stylize in Unity by adding a lot more training examples. The creators of the model only needed a few training examples to get great results for a specific scene. I decided to try using around 80 examples to see if that would help it generalize. It did.
 
-![generator_mosaic_small_v6](./images/generator_mosaic_small_v6.jpg)
+![](./images/generator_mosaic_small_v6.jpg){fig-align="center"}
 
 This model did produce a bit more flickering than the models trained on fewer examples. It should be easy to reduce the flickering by tuning the quality and quantity of the training examples. Output from this model can even be used as training examples for another model. Although, I actually prefer the color palette from the less accurate model.
 
-![few_shot_mosaic_frame](./images/few_shot_mosaic_frame.jpg)
+![](./images/few_shot_mosaic_frame.jpg){fig-align="center"}
 
 ## Difficult to Learn Styles
 
 Having resolved the discrepancy between the training results and Unity results, I started training models on different styles. I wanted to try styles that were very different from the mosaic image. I started with this sample output from the video stylization model.
 
-![lynx_digital_painting](./images/lynx_digital_painting.jpg)
+![](./images/lynx_digital_painting.jpg){fig-align="center"}
 
 The `fast_neural_style` model wasn't able to do much more than transfer the color palette from this image. It failed to transfer texture or brush strokes. I tried a range of values for the training parameters but that didn't really help. I then tried modifying the model architecture to see if I could get it to capture more subtle details. None of these changes produced acceptable results with the above image. This was unexpected since the model does a decent job learning the style of physical paintings.
 
-### Starry Night by Vincent van Gogh ([link](https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg))
+### Starry Night by Vincent van Gogh ([link](https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg){fig-align="center"})
 
-![starry-night](./images/starry-night.jpg)
+![](./images/starry-night.jpg){fig-align="center"}
 
 It can also learn styles from some pieces of digital art.
 
 ### Totem by Justin Maller ([link](http://www.facets.la/2014/360/))
 
-![facets-dragon](./images/facets-dragon.jpg)
+![](./images/facets-dragon.jpg){fig-align="center"}
 
 The model might have difficulty capturing the style from the lynx image because of how the style is extracted during the training process. The style of an image is extracted using a model the was pretrained on a bunch of regular images. That model is used to determine whether the style transfer model is doing a good job. It's possible that the pretrained model being used isn't recognizing the style features I want. If that's the case, using a different pretrained model might provide better results.
 

@@ -1003,7 +1003,7 @@ x.std()
 ```
 ```text
     tensor(1.0150)
-``
+```
 
 
 **Note:** Even a slight variation from $0.1$ will dramatically change the values

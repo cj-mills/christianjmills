@@ -329,7 +329,7 @@ ax.imshow(cam_map[1].detach().cpu(), alpha=0.6, extent=(0,224,224,0),
               interpolation='bilinear', cmap='magma');
 ```
 
-![png](./images/output_23_0.png)
+![](./images/output_23_0.png){fig-align="center"}
 
 
 **Note:** The bright yellow spots correspond to high activations.
@@ -437,7 +437,7 @@ x_dec.show(ctx=ax)
 ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0,224,224,0),
               interpolation='bilinear', cmap='magma');
 ```
-![png](./images/output_34_0.png)
+![](./images/output_34_0.png){fig-align="center"}
 
 -----
 
@@ -468,7 +468,7 @@ x_dec.show(ctx=ax)
 ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0,224,224,0),
               interpolation='bilinear', cmap='magma');
 ```
-![png](./images/output_37_0.png)
+![](./images/output_37_0.png){fig-align="center"}
 
 -----
 

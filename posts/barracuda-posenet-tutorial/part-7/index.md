@@ -42,7 +42,7 @@ We can add the option to use a webcam feed by making some modifications to the `
 
 Open the `PoseNet` script and create a new public `bool` variable. Name the variable `useWebcam` and set the default value to `false`. This will create a checkbox in the `Inspector` tab that we can use to enable and disable the webcam.
 
-![useWebcam_variable](./images/useWebcam_variable.png)
+![](./images/useWebcam_variable.png){fig-align="center"}
 
 
 
@@ -50,7 +50,7 @@ Open the `PoseNet` script and create a new public `bool` variable. Name the vari
 
 We'll use a [`WebCamTexture`](https://docs.unity3d.com/ScriptReference/WebCamTexture.html) variable to store the live video input from our webcam. Name the variable `webcamTexture`.
 
-![webcamTexture_variable](./images/webcamTexture_variable.png)
+![](./images/webcamTexture_variable.png){fig-align="center"}
 
 
 
@@ -76,7 +76,7 @@ Finally, we'll deactivate the `Video Player` as it's not being used.
 
 #### Completed Code
 
-![initialize_webcam_start_method](./images/initialize_webcam_start_method.png)
+![](./images/initialize_webcam_start_method.png){fig-align="center"}
 
 
 
@@ -86,7 +86,7 @@ Finally, we'll deactivate the `Video Player` as it's not being used.
 
 We'll use the `Graphics.Blit()` method to update the `videoTexture` with the data from `webcamTexture`. Add the following code at the top of the `Update()` method. 
 
-![useWebcam_update_method](./images/useWebcam_update_method.png)
+![](./images/useWebcam_update_method.png){fig-align="center"}
 
 
 
@@ -94,7 +94,7 @@ We'll use the `Graphics.Blit()` method to update the `videoTexture` with the dat
 
 Flipping the `VideoScreen` does not flip the `videoTexture` itself. Therefore, the output of the model will not be flipped either. We can fix this by mirroring the `xPos` values for the calculated key point locations.
 
-![useWebcam_processOutput_method](./images/useWebcam_processOutput_method.png)
+![](./images/useWebcam_processOutput_method.png){fig-align="center"}
 
 
 
@@ -102,7 +102,7 @@ Flipping the `VideoScreen` does not flip the `videoTexture` itself. Therefore, t
 
 Now we can enable and disable the webcam from the `Inspector` tab.
 
-![enable_useWebcam_inspector](./images/enable_useWebcam_inspector.PNG)
+![](./images/enable_useWebcam_inspector.PNG){fig-align="center"}
 
 `Note:` Don't toggle the `useWebcam` parameter during runtime with the code as it is.
 

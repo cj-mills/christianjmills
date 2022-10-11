@@ -1170,19 +1170,29 @@ class Pad_Input(ItemTransform):
 
 ### DataLoader
 * fastai's DataLoader expands on the [PyTorch DataLoader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader) class
+
 * responsible for collating the items from a dataset into batches
 
+  
+
 **after_item:**
-* applied on each item after grabbing it inside the dataset
-* equivalent of `item_tfms` in DataBlock
+
+-  applied on each item after grabbing it inside the dataset
+-  equivalent of `item_tfms` in DataBlock
+
+
 
 **before_batch:**
-* applied on the list of items before they are collated.
-* ideal place to pad items ot the same size
+
+-  applied on the list of items before they are collated.
+-  ideal place to pad items ot the same size
+
+
 
 **after_batch:**
-* applied on the batch as a whole after its construction
-* equivalent of `batch_tfms` in DataBlock
+
+-  applied on the batch as a whole after its construction
+- equivalent of `batch_tfms` in DataBlock
 
 -----
 
@@ -1501,7 +1511,7 @@ img = PILImage.create(files[0])
 s = SiameseImage(img, img, True)
 s.show();
 ```
-![png](./images/output_90_0.png)
+![](./images/output_90_0.png){fig-align="center"}
 
 -----
 
@@ -1510,7 +1520,7 @@ img1 = PILImage.create(files[1])
 s1 = SiameseImage(img, img1, False)
 s1.show();
 ```
-![png](./images/output_91_0.png)
+![](./images/output_91_0.png){fig-align="center"}
 
 -----
 
@@ -1565,7 +1575,7 @@ class Resize(RandTransform):
 s2 = Resize(224)(s1)
 s2.show();
 ```
-![png](./images/output_94_0.png)
+![](./images/output_94_0.png){fig-align="center"}
 
 -----
 
@@ -1666,7 +1676,7 @@ splits = RandomSplitter()(files)
 tfm = SiameseTransform(files, label_func, splits)
 tfm(files[0]).show();
 ```
-![png](./images/output_99_0.png)
+![](./images/output_99_0.png){fig-align="center"}
 
 -----
 
@@ -1674,7 +1684,7 @@ tfm(files[0]).show();
 tls = TfmdLists(files, tfm, splits=splits)
 show_at(tls.valid, 0);
 ```
-![png](./images/output_100_0.png)
+![](./images/output_100_0.png){fig-align="center"}
 
 -----
 

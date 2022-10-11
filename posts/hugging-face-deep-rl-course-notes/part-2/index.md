@@ -20,6 +20,8 @@ aliases:
 - /Notes-on-HF-Deep-Reinforcement-Learning-Class-2/
 ---
 
+
+
 * [Types of Value-Based Methods](#types-of-value-based-methods)
 * [The Bellman Equation](#the-bellman-equation)
 * [Monte Carlo vs Temporal Difference Learning](#monte-carlo-vs-temporal-difference-learning)
@@ -33,7 +35,7 @@ aliases:
 - The value of a state is the expected discounted return from starting in that state and following the policy.
 - Value-based methods involve learning a value function that maps a state to the expected value of being in that state.
 - Finding an optimal value function leads to having an optimal policy.
-- $\pi^{\*}(s) = argmax_{a} Q^{\*}(s,a)$
+- $\pi^{*}(s) = argmax_{a} Q^{*}(s,a)$
 - Value-based methods require us to define how the agent acts (i.e., the policy) based on the predicted value map.
 - Greedy policies always take the action that leads to the biggest reward.
 - Epsilon-Greedy policies switch between exploring random actions and taking actions with the highest known reward.
@@ -865,7 +867,7 @@ Your model is pushed to the hub. You can view your model here: https://huggingfa
 * The taxi drives to the passengerâs location, picks up the passenger, drives to the passengerâs destination (another one of the four specified locations), and then drops off the passenger.
 * The episode ends once the taxi drops off the passenger.
 
-![taxi.gif](https://www.gymlibrary.ml/_images/taxi.gif)
+![](https://www.gymlibrary.dev/_images/taxi.gif){fig-align="center"}
 
 
 ```python

@@ -39,7 +39,7 @@ In this post, we'll cover how to use a [compute shader](https://docs.unity3d.com
 
 Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, but you should be fine using other versions.
 
-![unity-hub-create-project](./images/unity-hub-create-project.png)
+![](./images/unity-hub-create-project.png){fig-align="center"}
 
 
 
@@ -47,11 +47,11 @@ Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, b
 
 In Unity, right-click an empty space in the Assets folder and open the `Create` submenu. Select `ComputeShader` from the `Shader` submenu and name it `FlipShader`.
 
-![unity-create-compute-shader](./images/unity-create-compute-shader.png)
+![](./images/unity-create-compute-shader.png){fig-align="center"}
 
 Open the new compute shader in your code editor. By default, compute shaders contain the following code.
 
-![flipshader-default-code](./images/flipshader-default-code.png)
+![](./images/flipshader-default-code.png){fig-align="center"}
 
 We'll delete the `CSMain` function and create a new one for each of our three flip operations. 
 
@@ -64,7 +64,7 @@ Before we create our functions, we need to define some extra variables.
 * `int width`: the width of the input image
 * `int2 coords`: stores the new `(x,y)` coordinates for individual pixel values
 
-![flipshader-define-variables](./images/flipshader-define-variables.png)
+![](./images/flipshader-define-variables.png){fig-align="center"}
 
 ### Define Flip Functions
 
@@ -76,7 +76,7 @@ The individual flip operations quite simple. They determine the coordinates of t
 
 These operations are performed on each pixel in parallel on the GPU. We'll use the default `numthreads(8, 8, 1)` for each function.
 
-![flip-shader-define-functions](./images/flip-shader-define-functions-2.png)
+![](./images/flip-shader-define-functions-2.png){fig-align="center"}
 
 
 
@@ -88,7 +88,7 @@ These operations are performed on each pixel in parallel on the GPU. We'll use t
 
 Back in Unity, right-click an empty space in the Assets folder and select `C# Script` in the `Create` submenu. Name the new script, `Flip` and open it in your code editor.
 
-![unity-create-flip-script](./images/unity-create-flip-script.png)
+![](./images/unity-create-flip-script.png){fig-align="center"}
 
 
 
@@ -104,7 +104,7 @@ We'll define the following variables at the top of the script.
 * `private GameObject mainCamera`: Stores a reference to the Main Camera object
 * `private RenderTexture image`: A copy of the original test image
 
-![flip-script-define-variables](./images/flip-script-define-variables.png)
+![](./images/flip-script-define-variables.png){fig-align="center"}
 
 
 
@@ -112,7 +112,7 @@ We'll define the following variables at the top of the script.
 
 In the `Start()` method, we'll store a copy the original test image in the `image` `RenderTexture`. We can do so by getting a reference to the `Texture` attached to the `screen` and using the [`Graphics.Blit()`](https://docs.unity3d.com/ScriptReference/Graphics.Blit.html) method. We'll also get a reference to the camera so that we can adjust the view to fit the current image. 
 
-![flip-script-start-method](./images/flip-script-start-method.png)
+![](./images/flip-script-start-method.png){fig-align="center"}
 
 
 
@@ -122,7 +122,7 @@ Next, we'll define a new method called `FlipImage` to handle executing the compu
 
 To execute the compute shader, we need to first get the kernel index for the specified function and initialize the variables we defined in the compute shader. Once we execute the compute shader using the `computeShader.Dispatch()` method, we can copy the result to the empty `RenderTexture` we passed in. We could copy the result directly to the `RenderTexture` containing the original image. However, this would cause an error when flipping non-square images across the diagonal axis. This is because a `RenderTexture` can not dynamically change dimensions.
 
-![flip-script-flipImage-method](./images/flip-script-flipImage-method.png)
+![](./images/flip-script-flipImage-method.png){fig-align="center"}
 
 
 
@@ -134,7 +134,7 @@ The steps are basically the same for performing each of the three flip operation
 
 After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `screen` with the flipped image and adjust the shape of the screen to fit the new dimensions.
 
-![flip-script-update-method](./images/flip-script-update-method.png)
+![](./images/flip-script-update-method.png){fig-align="center"}
 
 
 
@@ -142,21 +142,21 @@ After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `scree
 
 Back in Unity, right-click an empty space in the `Hierarchy` tab and select `Quad` from the `3D Object` submenu. Name the new object `Screen`. The size will be updated automatically by the `Flip.cs` script.
 
-![unity-create-screen-object](./images/unity-create-screen-object.png)
+![](./images/unity-create-screen-object.png){fig-align="center"}
 
 ## Create ImageFlipper
 
 Right-click an empty space in the `Hierarchy` tab and select `Create Empty` from the pop-up menu. Name the empty object `ImageFlipper`
 
-![unity-create-image-cropper-object](./images/unity-create-image-cropper-object.png)
+![](./images/unity-create-image-cropper-object.png){fig-align="center"}
 
 With the `ImageFlipper` selected, drag and drop the `Flip.cs` script into the `Inspector` tab.
 
-![unity-inspector-attach-flip-script](./images/unity-inspector-attach-flip-script.png)
+![](./images/unity-inspector-attach-flip-script.png){fig-align="center"}
 
 Drag and drop the `Screen` object from the `Hierarchy` tab as well as the `FlipShader` from the `Assets` folder onto their respective spots in the `Inspector` tab.
 
-![unity-inspector-assign-parameters](./images/unity-inspector-assign-parameters.png)
+![](./images/unity-inspector-assign-parameters.png){fig-align="center"}
 
 
 
@@ -168,7 +168,7 @@ We'll need a test image to try out the `ImageFlipper`. You can use your own or d
 
  Drag and drop the test image into the `Assets` folder. Then drag it onto the `Screen` in the `Scene`. 
 
-![unity-import-image](./images/unity-import-image.png)
+![](./images/unity-import-image.png){fig-align="center"}
 
 
 
@@ -176,13 +176,13 @@ We'll need a test image to try out the `ImageFlipper`. You can use your own or d
 
 Next, we need to set our Screen to use an `Unlit` shader. Otherwise it will be a bit dim. With the Screen object selected, open the `Shader` drop-down menu in the `Inspector` tab and select `Unlit`. 
 
-![unity-inspector-tab-shader-drop-down](./images/unity-inspector-tab-shader-drop-down.png)
+![](./images/unity-inspector-tab-shader-drop-down.png){fig-align="center"}
 
 
 
 Select `Texture` from the `Unlit` submenu.
 
-![unity-inspector-tab-unlit-texture](./images/unity-inspector-tab-unlit-texture.png)
+![](./images/unity-inspector-tab-unlit-texture.png){fig-align="center"}
 
 
 
@@ -190,39 +190,39 @@ Now we can click the Play button and toggle the different flip checkboxes to con
 
 ### Default Image
 
-![default-image](./images/default-image.png)
+![](./images/default-image.png){fig-align="center"}
 
 ### Flip X-Axis
 
-![flip-x-axis](./images/flip-x-axis.png)
+![](./images/flip-x-axis.png){fig-align="center"}
 
 ### Flip Y-Axis
 
-![flip-y-axis](./images/flip-y-axis.png)
+![](./images/flip-y-axis.png){fig-align="center"}
 
 
 
 ### Flip Diagonal Axis
 
-![flip-diagonal-axis](./images/flip-diagonal-axis.png)
+![](./images/flip-diagonal-axis.png){fig-align="center"}
 
 
 
 ### Flip X-Axis and Y-Axis
 
-![flip-x-axis-and-y-axis](./images/flip-x-axis-and-y-axis.png)
+![](./images/flip-x-axis-and-y-axis.png){fig-align="center"}
 
 ### Flip X-Axis and Diagonal Axis
 
-![flip-x-axis-and-diagonal-axis](./images/flip-x-axis-and-diagonal-axis.png)
+![](./images/flip-x-axis-and-diagonal-axis.png){fig-align="center"}
 
 ### Flip Y-Axis and Diagonal Axis
 
-![flip-y-axis-and-diagonal-axis](./images/flip-y-axis-and-diagonal-axis.png)
+![](./images/flip-y-axis-and-diagonal-axis.png){fig-align="center"}
 
 ### Flip X-Axis, Y-Axis and Diagonal Axis
 
-![flip-x-axis-y-axis-and-diagonal-axis](./images/flip-x-axis-y-axis-and-diagonal-axis.png)
+![](./images/flip-x-axis-y-axis-and-diagonal-axis.png){fig-align="center"}
 
 
 

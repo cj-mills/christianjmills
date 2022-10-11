@@ -10,8 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This post covers how to implement the preprocessing steps for the PoseNet
-  models.
+description: Implement the preprocessing steps for the MobileNet and ResNet PoseNet models.
 categories: [unity, barracuda, tutorial]
 
 aliases:
@@ -41,7 +40,7 @@ The MobileNet and ResNet50 versions of the PoseNet model require different prepr
 
 We will start by implementing the preprocessing steps in a compute shader to execute them on a GPU. In the Assets section, create a new folder called `Shaders`. Enter the Shaders folder and right-click an empty space. Open the `Create` submenu and select `Shader`. Inside the Shader submenu, select `Compute Shader`. We can name the new shader `PoseNetShader`.
 
-![unity-create-compute-shader](./images/unity-create-compute-shader.png)
+![](./images/unity-create-compute-shader.png){fig-align="center"}
 
 Double-click the new shader to open it in the code editor. By default, Compute shaders contain the following code. Go ahead and delete all the default code.
 
@@ -601,7 +600,7 @@ void Update()
 
 The last step we need to take before pressing play is to assign the `PoseNetShader` asset. Select the `PoseEstimator` object in the Hierarchy tab. Then, drag and drop the `PoseNetShader` asset from the Assets section onto its spot in the Inspector tab. 
 
-![inspector-tab-assign-shader](./images/inspector-tab-assign-shader.png)
+![](./images/inspector-tab-assign-shader.png){fig-align="center"}
 
 
 
@@ -609,17 +608,17 @@ The last step we need to take before pressing play is to assign the `PoseNetShad
 
 Now when we press play, we can see that the values for `Image Dims` get updated in the Inspector tab to maintain the source aspect ratio. We can change either the `X` or `Y` values and the other dimension will be automatically adjusted.
 
-![inspector-tab-assign-shader](./images/inspector-tab-updated-image-dims.png)
+![](./images/inspector-tab-updated-image-dims.png){fig-align="center"}
 
 We can view the frame rate by pressing the `stats` button in the Game View. If we toggle `Use GPU` in the Inspector tab, we can see why it is preferrable to perform the preprocessing steps on the GPU. The frame rate drops significantly when using the CPU.
 
 ### GPU
 
-![preprocess-gpu-frame-rate](./images/preprocess-gpu-frame-rate.png)
+![](./images/preprocess-gpu-frame-rate.png){fig-align="center"}
 
 ### CPU
 
-![preprocess-cpu-frame-rate](./images/preprocess-cpu-frame-rate.png)
+![](./images/preprocess-cpu-frame-rate.png){fig-align="center"}
 
 
 

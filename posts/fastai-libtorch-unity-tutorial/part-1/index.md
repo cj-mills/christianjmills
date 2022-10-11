@@ -10,9 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This follow-up to the fastai-to-unity tutorial covers creating a LibTorch
-  plugin for the Unity game engine. Part 1 covers the required modifications to the
-  original training code.
+description: Modify the training code from the [fastai-to-unity tutorial](../../fastai-to-unity-tutorial/part-1/) to export the model to a [TorchScript](https://pytorch.org/docs/stable/jit.html) module.
 categories: [fastai, libtorch, unity]
 
 aliases:
@@ -43,7 +41,7 @@ This follow-up series covers using [LibTorch](https://pytorch.org/cppdocs/instal
 
 
 
-![libtorch-plugin-demo](./videos/libtorch-plugin-demo.mp4)
+![](./videos/libtorch-plugin-demo.mp4){fig-align="center"}
 
 
 
@@ -55,7 +53,7 @@ This post covers the required modifications to the [original training code](http
 
 | GitHub Repository                                            | Colab                                                        | Kaggle                                                       |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [Jupyter Notebook](https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [Open in Colab](https://colab.research.google.com/github/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) |
+| [Jupyter Notebook](https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [Open in Colab](https://colab.research.google.com/github/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) | [Open in Kaggle](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial/blob/main/notebooks/Fastai-timm-to-Torchscript-Tutorial.ipynb) |
 
 
 

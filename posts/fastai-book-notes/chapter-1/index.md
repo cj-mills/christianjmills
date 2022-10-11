@@ -140,9 +140,7 @@ aliases:
   * Difficult when you do not know the exact steps
 
 
-![a-traditional-program](./images/a-traditional-program.png)
-
-> A traditional program
+![A traditional program](./images/a-traditional-program.png){fig-align="center"}
 
 
 
@@ -174,20 +172,11 @@ aliases:
 
   
 
-![program-using-weight-assignments](./images/program-using-weight-assignments.png)
+![A program using weight assignments](./images/program-using-weight-assignments.png){fig-align="center"}
 
+![Training a machine learning model](./images/training-a-machine-learning-model.png){fig-align="center"}
 
-> A program using weight assignments
-
-![training-a-machine-learning-model](./images/training-a-machine-learning-model.png)
-
-
-> Training a machine learning model
-
-![using-a-trained-model](./images/using-a-trained-model.png)
-
-
-> Using a trained model as a program
+![Using a trained model as a program](./images/using-a-trained-model.png){fig-align="center"}
 
 
 
@@ -710,7 +699,7 @@ img
 Type: <class 'fastai.vision.core.PILImage'>
 ```
 
-![png](./images/output_32_1.png)
+![](./images/output_32_1.png){fig-align="center"}
 
 
 
@@ -746,7 +735,7 @@ img
 ```
 
 
-![png](./images/output_36_0.png)
+![](./images/output_36_0.png){fig-align="center"}
 
 
 
@@ -954,7 +943,7 @@ learn.show_results(max_n=6, figsize=(18,20))
 ```
 
 
-![png](./images/output_47_2.png)
+![](./images/output_47_2.png){fig-align="center"}
 
 
 

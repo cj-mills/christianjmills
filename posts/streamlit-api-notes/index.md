@@ -17,6 +17,8 @@ aliases:
 - /Notes-on-Streamlit-API/
 ---
 
+
+
 * [Overview](#overview)
 * [Streamlit](#streamlit)
 * [Magic Commands](#magic-commands)

@@ -41,7 +41,7 @@ First, you need to get your own copy of the Colab Notebook. You can open my copy
 
 You need to save the notebook to your Google Drive since you can't make changes to my copy. To do so, click the `Copy to Drive` button.
 
-![colab-save-to-gdrive](./images/colab-save-to-gdrive.png)
+![](./images/colab-save-to-gdrive.png){fig-align="center"}
 
 That will reopen the notebook in a new tab where any changes you make can be saved to you Google Drive. Go ahead and close the original tab. The notebook should autosave progress, but you can manually save by pressing `CTRL-s`.
 
@@ -49,13 +49,13 @@ That will reopen the notebook in a new tab where any changes you make can be sav
 
 If you open your Google Drive, you should see a new folder named `Colab Notebooks`. This is where any notebooks your work on in Google Colab will be saved.
 
-![gdrive-colab-notebooks-folder](./images/gdrive-colab-notebooks-folder-3.png)
+![](./images/gdrive-colab-notebooks-folder-3.png){fig-align="center"}
 
 #### Inside Colab Notebooks Folder
 
 You can open the new folder to see your copy of the notebook. If you double-click on the notebook file, you'll be presented with the option to open it in a Google Colab environment. You can use this method to reopen the notebook in the future.
 
-![gdrive-open-colab-notebook](./images/gdrive-open-colab-notebook.png)
+![](./images/gdrive-open-colab-notebook.png){fig-align="center"}
 
 
 
@@ -63,13 +63,13 @@ You can open the new folder to see your copy of the notebook. If you double-clic
 
 Colab Notebooks are primarily made up of code cells and text cells. Code cells can be executed in multiple ways. If you hover over or click on a code cell, a play button will appear on the left side of the cell. Clicking the play button will execute the code cell.
 
-![colab-execute-code-cell](./images/colab-execute-code-cell.png)
+![](./images/colab-execute-code-cell.png){fig-align="center"}
 
 The other main ways are to either press `CTRL-Enter` or `Shift-Enter`. `CTRL-Enter` executes the code cell in place while `Shift-Enter` executes the code cell and moves to the next cell.
 
 You can add more cells by hovering over either the top or bottom of an existing cell. You will be presented with the option to create either a code or text cell.
 
-![colab-add-new-cell](./images/colab-add-new-cell.png)
+![](./images/colab-add-new-cell.png){fig-align="center"}
 
 
 
@@ -77,19 +77,19 @@ You can add more cells by hovering over either the top or bottom of an existing 
 
 We need to connect to a runtime environment before we start using the notebook. Press the `Connect` button outlined below.
 
-![colab-connect-to-runtime](./images/colab-connect-to-runtime.png)
+![](./images/colab-connect-to-runtime.png){fig-align="center"}
 
 Once the notebook has connected to a runtime environment hover the RAM/Disk readout and make sure the notebook is using a `GPU` backend.
 
-![colab-confirm-gpu-backend](./images/colab-confirm-gpu-backend.png)
+![](./images/colab-confirm-gpu-backend.png){fig-align="center"}
 
 If it's not, you need to manually set it to use a GPU. You can do so by opening the `Notebook Settings` under the `Edit` section.
 
-![colab-open-notebook-settings](./images/colab-open-notebook-settings.png)
+![](./images/colab-open-notebook-settings.png){fig-align="center"}
 
 Select `GPU` from the `Hardware Accelerator` dropdown and click `Save`.
 
-![colab-select-hardware-accelerator](./images/colab-select-hardware-accelerator.png)
+![](./images/colab-select-hardware-accelerator.png){fig-align="center"}
 
 
 

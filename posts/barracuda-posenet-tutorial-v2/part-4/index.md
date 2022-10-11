@@ -10,7 +10,7 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: This post covers how to load, modify, and execute the PoseNet models.
+description: Load, modify, and execute the PoseNet models.
 categories: [unity, barracuda, tutorial]
 
 aliases:
@@ -356,7 +356,7 @@ private void OnDisable()
 
 Now we just need to assign the model assets in the Inspector tab. Open the `Models` folder in the Assets section. With the `PoseEstimator` object selected in the Hierarchy tab, drag the model assets onto their associated spots in the Inspector tab.
 
-![inspector-tab-assign-model-assets](./images/inspector-tab-assign-model-assets.png)
+![](./images/inspector-tab-assign-model-assets.png){fig-align="center"}
 
 
 
@@ -372,19 +372,19 @@ If we look at the Inspector tab, we can see that the `Compute Precompiled` backe
 
 For the best possible performance, both the preprocessing and inference should be performed on the GPU.
 
-![resnet-compute-usegpu](./images/resnet-compute-usegpu.png)
+![](./images/resnet-compute-usegpu.png){fig-align="center"}
 
 #### CPU Preprocessing and GPU Inference
 
 If we uncheck the `Use GPU` box, we can see that the frame rate drops significantly, even when using the same backend.
 
-![resnet-compute-usecpu](./images/resnet-compute-usecpu.png)
+![](./images/resnet-compute-usecpu.png){fig-align="center"}
 
 #### GPU Preprocessing and CPU Inference
 
 The ResNet50 model is not optimized for CPU inference and will not get playable frame rates on most CPUs.
 
-![resnet-burst](./images/resnet-burst.png)
+![](./images/resnet-burst.png){fig-align="center"}
 
 ### MobileNet
 
@@ -394,13 +394,13 @@ As it's name suggests, the MobileNet model is optimized to run on mobile hardwar
 
 As with the ResNet50 model, performing preprocessing and inference on the GPU yields the best performance.
 
-![mobilenet-compute-usegpu](./images/mobilenet-compute-usegpu.png)
+![](./images/mobilenet-compute-usegpu.png){fig-align="center"}
 
 #### GPU Preprocessing and CPU Inference
 
 Unlike the Resnet50 model, the MobileNet model gets playable framerates on the CPU.
 
-![mobilenet-burst-usegpu](./images/mobilenet-burst-usegpu.png)
+![](./images/mobilenet-burst-usegpu.png){fig-align="center"}
 
 
 

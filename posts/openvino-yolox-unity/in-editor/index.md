@@ -68,7 +68,7 @@ Once the download is complete, open the OpenVINO_YOLOX_DLL folder and double-cli
 
 We need to tell Visual Studio where the new version of OpenVINO is located. In the Solution Explorer panel, right-click the project name.
 
-![solutions_explorer_select_project_name](./images/solutions_explorer_select_project_name.png)
+![](./images/solutions_explorer_select_project_name.png){fig-align="center"}
 
  
 
@@ -76,7 +76,7 @@ We need to tell Visual Studio where the new version of OpenVINO is located. In t
 
 Select the Properties in the popup menu.
 
-![solutions_explorer_open_properties](./images/solutions_explorer_open_properties.png)
+![](./images/solutions_explorer_open_properties.png){fig-align="center"}
 
  
 
@@ -84,7 +84,7 @@ Select the Properties in the popup menu.
 
 In the Properties Window, open the C++ dropdown and click on All Options. Select the Additional Include Directories section and click on <Edit..> in the dropdown. 
 
-![properties_c++_all_options](./images/properties_c++_all_options.png)
+![](./images/properties_c++_all_options.png){fig-align="center"}
 
  
 
@@ -100,7 +100,7 @@ Replace the existing Include Directories with the ones below.
 
 Next, open the Linker dropdown in the Properties window and select All Options. Scroll up to the top of the All Options section and select Additional Dependencies.
 
-![linker_additional_dependencies](./images/linker_additional_dependencies.png)
+![](./images/linker_additional_dependencies.png){fig-align="center"}
 
  
 
@@ -511,7 +511,7 @@ We will call the `FreeResources()` method we created earlier in the `OnDisable()
 
 Those are all the changes we need to make. Now we can try out the project in the editor.
 
-![](./videos/yolox_in-editor.mp4)
+![](./videos/yolox_in-editor.mp4){fig-align="center"}
 
 
 

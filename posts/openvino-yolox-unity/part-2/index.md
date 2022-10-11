@@ -51,15 +51,15 @@ In this part, we will walk through the steps needed to create a [Dynamic link li
 
 Open Visual Studio and select `Create a new project`.
 
-![visual_stuido_create_new_project](./images/visual_studio_create_new_project.png)
+![](./images/visual_studio_create_new_project.png){fig-align="center"}
 
 Type `DLL` into the search bar. Select the `Dynamic-Link Library (DLL)` option and press `Next`. 
 
-![visual_studio_select_dll_template](./images/visual_studio_select_dll_template.png)
+![](./images/visual_studio_select_dll_template.png){fig-align="center"}
 
 In the next window, we'll name the new project `OpenVINO_YOLOX_DLL`. Take note of the `Location` the project will be saved to and click `Create`. The default location can be replaced, but we will need to access the project folder to get the generated DLL file.
 
-![visual_studio_create_OpenVINO_YOLOX_DLL](./images/visual_studio_create_OpenVINO_YOLOX_DLL.png)
+![](./images/visual_studio_create_OpenVINO_YOLOX_DLL.png){fig-align="center"}
 
 
 
@@ -71,11 +71,11 @@ We need to update the default project configuration to access the OpenVINO™ To
 
 The OpenVINO™ Toolkit does not support `x86` builds. We will need to set the project to build for `x64`. At the top of the window, open the Solution Configurations dropdown menu, and select `Release`. 
 
-![visual_studio_set_solution_configuration](./images/visual_studio_set_solution_configuration.png)
+![](./images/visual_studio_set_solution_configuration.png){fig-align="center"}
 
 Then, open the `Solution Platform` dropdown menu and select `x64`.
 
-![visual_studio_set_solution_platform](./images/visual_studio_set_solution_platform.png)
+![](./images/visual_studio_set_solution_platform.png){fig-align="center"}
 
 
 
@@ -83,19 +83,19 @@ Then, open the `Solution Platform` dropdown menu and select `x64`.
 
 Visual Studio needs to be told where the OpenVINO™ Toolkit is located, so we can access its APIs. In the Solution Explorer panel, right-click the project name.
 
-![solutions_explorer_select_project_name](./images/solutions_explorer_select_project_name.png)
+![](./images/solutions_explorer_select_project_name.png){fig-align="center"}
 
 
 
 Select `Properties` in the popup menu.
 
-![solutions_explorer_open_properties](./images/solutions_explorer_open_properties.png)
+![](./images/solutions_explorer_open_properties.png){fig-align="center"}
 
 
 
 In the Properties Window, open the `C++` dropdown and click on `All Options`. Select the `Additional Include Directories` section and click on `<Edit..>` in the dropdown.
 
-![properties_c++_all_options](./images/properties_c++_all_options.png)
+![](./images/properties_c++_all_options.png){fig-align="center"}
 
 
 
@@ -106,7 +106,7 @@ Add the following lines and then click `OK`. Feel free to open these folders in 
 * `C:\Program Files (x86)\Intel\openvino_2021.3.394\deployment_tools\inference_engine\include`
 * `C:\Program Files (x86)\Intel\openvino_2021.3.394\opencv\include`
 
-![add_additional_include_directories](./images/add_additional_include_directories.png)
+![](./images/add_additional_include_directories.png){fig-align="center"}
 
 
 
@@ -114,7 +114,7 @@ Add the following lines and then click `OK`. Feel free to open these folders in 
 
 Next, open the Linker dropdown in the Properties window and select All Options. Scroll up to the top of the All Options section and select `Additional Dependencies`. 
 
-![linker_additional_dependencies](./images/linker_additional_dependencies.png)
+![](./images/linker_additional_dependencies.png){fig-align="center"}
 
 
 
@@ -123,11 +123,11 @@ Add the following lines for the OpenVINO and OpenCV libraries, then click `OK`. 
 * `C:\Program Files (x86)\Intel\openvino_2021.3.394\deployment_tools\inference_engine\lib\intel64\Release\*`
 * `C:\Program Files (x86)\Intel\openvino_2021.3.394\opencv\lib\*`
 
-![linker_additional_dependencies_paths](./images/linker_additional_dependencies_paths.png)
+![](./images/linker_additional_dependencies_paths.png){fig-align="center"}
 
 Finally, click the `Apply` button and close the Properties window.
 
-![properties_apply](./images/properties_apply.png)
+![](./images/properties_apply.png){fig-align="center"}
 
 
 
@@ -445,19 +445,19 @@ The YOLOX model examines the input image using different stride values (i.e. dif
 
 **Stride: 8**
 
-![stride_8_demo](./images/stride_8_demo.jpg)
+![](./images/stride_8_demo.jpg){fig-align="center"}
 
  
 
 **Stride: 16**
 
-![stride_16_demo](./images/stride_16_demo.jpg)
+![](./images/stride_16_demo.jpg){fig-align="center"}
 
  
 
 **Stride: 32**
 
-![stride_32_demo](./images/stride_32_demo.jpg)
+![](./images/stride_32_demo.jpg){fig-align="center"}
 
 
 
@@ -624,7 +624,7 @@ We can do so by creating a new cv::Mat with the padded input dimensions and copy
 
 For example, this is how much padding is added at the default target input resolution of 640x360 (actual dimensions are 640x352).
 
-![padded_img](./images/padded_img.jpg)
+![](./images/padded_img.jpg){fig-align="center"}
 
  
 
@@ -966,13 +966,13 @@ Now that the code is complete, we just need to build the solution to generate th
 
 Open the Build menu at the top of the Visual Studio window and click Build Solution. This will generate a new x64 folder in the project's directory.
 
-![visual_studio_build_solution](./images/visual_studio_build_solution.png)
+![](./images/visual_studio_build_solution.png){fig-align="center"}
 
  
 
 Navigate to that folder in the File Explorer and open the Release child folder. Inside, we can see the .dll file along with a few other files that will not be needed.
 
-![visual_studio_dll_file_location](./images/visual_studio_dll_file_location.png)
+![](./images/visual_studio_dll_file_location.png){fig-align="center"}
 
  
 

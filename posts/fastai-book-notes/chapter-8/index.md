@@ -1418,7 +1418,7 @@ for a,y in zip(a_s,ys): ax.plot(x,y, label=f'a={a}')
 ax.set_ylim([0,5])
 ax.legend();
 ```
-![png](./images/output_63_0.png)
+![](./images/output_63_0.png){fig-align="center"}
 
 
 ```python
@@ -1700,7 +1700,7 @@ for i, x, y in zip(top_movies[idxs], X, Y):
     plt.text(x,y,i, color=np.random.rand(3)*0.7, fontsize=11)
 plt.show()
 ```
-![png](./images/output_83_0.png)
+![](./images/output_83_0.png){fig-align="center"}
 
 
 ### Using fastai.collab
