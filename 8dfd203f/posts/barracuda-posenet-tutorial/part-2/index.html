@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2020-11-04">
+<meta name="description" content="This post covers how to implement the preprocessing steps for the PoseNet model.">
+
+<title>Christian Mills - Barracuda PoseNet Tutorial Pt. 2 (Outdated)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Barracuda PoseNet Tutorial Pt. 2 (Outdated)">
+<meta property="og:description" content="This post covers how to implement the preprocessing steps for the PoseNet model.">
+<meta property="og:image" content="christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Barracuda PoseNet Tutorial Pt. 2 (Outdated)">
+<meta name="twitter:description" content="This post covers how to implement the preprocessing steps for the PoseNet model.">
+<meta name="twitter:image" content="christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"><i class="bi bi-envelope-fill" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Barracuda PoseNet Tutorial Pt. 2 (Outdated)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">unity</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to implement the preprocessing steps for the PoseNet model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 4, 2020</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<p><strong>Version 2:</strong> <a href="../../barracuda-posenet-tutorial-v2/part-1/">Part 1</a></p>
+<p><strong>Last Updated:</strong> Nov 25, 2020</p>
+<section id="previous-part-1" class="level3">
+<h3 class="anchored" data-anchor-id="previous-part-1">Previous: <a href="../part-1/">Part 1</a></h3>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#create-a-compute-shader">Create a Compute Shader</a></li>
+<li><a href="#create-the-posenet-script">Create the PoseNet Script</a></li>
+<li><a href="#create-the-pose-estimator">Create the Pose Estimator</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The PoseNet model we’ll be using has a ResNet-50 architecture and was created using TensorFlow. It takes a single RGB image as input. We need to perform some preprocessing operations on the RGB channel values before feeding an image to the model. We’ll first scale the values so that they are in the same range that the model was trained on. We then subtract the mean RGB values for the ImageNet dataset.</p>
+</section>
+<section id="create-a-compute-shader" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-compute-shader">Create a Compute Shader</h2>
+<p>We can perform the preprocessing steps more quickly on the GPU. In Unity, we accomplish this with <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">compute shaders</a>. Compute shaders are pieces of code that can run parallel tasks on the graphics card. This is beneficial since we need to perform the same operations on every pixel in an image. It also frees up the CPU.</p>
+<section id="create-the-asset-file" class="level3">
+<h3 class="anchored" data-anchor-id="create-the-asset-file">Create the Asset File</h3>
+<p>Create a new folder in the <code>Assets</code> window and name it <code>Shaders</code>. Open the <code>Shaders</code> folder and right-click an empty space. Select <code>Shader</code> in the <code>Create</code> submenu and click <code>Compute Shader</code>. We’ll name it <code>PoseNetShader</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_compute_shader.PNG" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="remove-the-default-code" class="level3">
+<h3 class="anchored" data-anchor-id="remove-the-default-code">Remove the Default Code</h3>
+<p>Open the <code>PoseNetShader</code> in your code editor. By default, the <code>ComputeShader</code> will contain the following.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/default_compute_shader.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Delete the <code>CSMain</code> function along with the <code>#pragma kernel CSMain</code>. Next, we need to add a <code>Texture2D</code> variable to store the input image. Name it <code>InputImage</code> and give it a data type of <code>&lt;half4&gt;</code>. Use the same data type for the <code>Result</code> variable as well.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/posenet_shader_part1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="create-preprocessresnet-function" class="level3">
+<h3 class="anchored" data-anchor-id="create-preprocessresnet-function">Create <code>PreprocessResNet</code> Function</h3>
+<p>We need to make a new function to apply the ResNet preprocessing. Name the new function <code>PreprocessResNet()</code>. We’ll use the default <code>[numthreads(8,8,1)]</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/posenet_shader_part2v3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>The <code>PreprocessResNet</code> function scales the RGB channel values of every pixel in the <code>InputImage</code> by <code>255</code>. By default, color values in Unity are in the range of <code>[0,1]</code>. The function then substracts the ImageNet mean specific to the RGB channels. The processed image is returned in the <code>Result</code> variable.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Channel</th>
+<th style="text-align: center;">ImageNet Mean</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Red</td>
+<td style="text-align: center;">123.15</td>
+</tr>
+<tr class="even">
+<td>Green</td>
+<td style="text-align: center;">115.90</td>
+</tr>
+<tr class="odd">
+<td>Blue</td>
+<td style="text-align: center;">103.06</td>
+</tr>
+</tbody>
+</table>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/posenet_shader_part3v5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Now that we’ve created our <code>ComputeShader</code>, we need to execute it using a <code>C#</code> script.</p>
+</section>
+</section>
+<section id="create-the-posenet-script" class="level2">
+<h2 class="anchored" data-anchor-id="create-the-posenet-script">Create the PoseNet Script</h2>
+<p>We need to make a new <code>C#</code> script to perform inference with the PoseNet model. When finished, this script will load the model, prepare the input, run the model, and process the output. For this post, we’ll implement the preprocessing functionality.</p>
+<section id="create-the-asset-file-1" class="level3">
+<h3 class="anchored" data-anchor-id="create-the-asset-file-1">Create the Asset File</h3>
+<p>Create a new folder in the <code>Assets</code> window and name it <code>Scripts</code>. In the <code>Scripts</code> folder, right-click an empty space and select <code>C# Script</code> in the <code>Create</code> submenu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_new_script.PNG" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Name the script <code>PoseNet</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/new_posenet_script.PNG" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Open the script in your code editor.</p>
+</section>
+<section id="create-videotexture-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-videotexture-variable">Create <code>videoTexture</code> Variable</h3>
+<p>Above the start method, create a new public <code>RenderTexture</code> named <code>videoTexture</code>. This is the variable to which we’ll assign the <code>video_texture</code> that we made in part 1.</p>
+</section>
+<section id="create-posenetshader-variable" class="level3">
+<h3 class="anchored" data-anchor-id="create-posenetshader-variable">Create <code>posenetShader</code> Variable</h3>
+<p>We’ll also create a new public <code>ComputeShader</code> variable and name it <code>posenetShader</code>. We’ll assign the <code>PoseNetShader</code> to this variable in the Unity Editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_posenetShader_variable.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="create-preprocessimage-method" class="level3">
+<h3 class="anchored" data-anchor-id="create-preprocessimage-method">Create <code>PreprocessImage()</code> Method</h3>
+<p>Next, we need to make a new method to handle the preprocessing steps for the <code>videoTexture</code>. We’ll name this method <code>PreprocessImage</code> and define it below the <code>Update</code> method. The method will return a <code>Texture2D</code> that contains the preprocessed image.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/preprocessImage_method_new.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<section id="create-a-new-texture2d" class="level4">
+<h4 class="anchored" data-anchor-id="create-a-new-texture2d">Create a New Texture2D</h4>
+<p>We don’t want to alter the <code>videoTexture</code> directly, so we’ll make a copy of the current frame. Create a new <code>Texture2D</code> called <code>imageTexture</code> and give it the same dimensions as the <code>videoTexture</code>. We can use the <code>Graphics.CopyTexture()</code> method to copy the data from the <code>RenderTexture</code> directly on the GPU.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/preprocessImage_method_create_imageTexture_2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="resize-the-image" class="level4">
+<h4 class="anchored" data-anchor-id="resize-the-image">Resize the Image</h4>
+<p>Now that we have our <code>imageTexture</code>, we need to resize it to a more practical resolution. Lowering the resolution does decrease the model’s accuracy. Unfortunately, using a higher resolution can significantly impact inference speed. We’ll examine this trade-off in a later post.</p>
+<p>For now, we’ll use a resolution of <code>360 x 360</code>. Create two new public <code>int</code> variables for the image height and width respectively. This will make it easier to experiment with different resolutions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/image_height_and_width_variables.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>We’ll make a new method to handle the resizing process. The method will take in a <code>Texture2D</code> as well as the new height and width. It will return a <code>Texture2D</code> with the new resolution.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/resize_method.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>The <code>Graphics.CopyTexture()</code> method requires that the source and destination textures be the same size. That means we need to destroy the current <code>imageTexture</code> and make a temporary one with the smaller dimensions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/preprocessImage_method_resize_image_3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Note:</strong> Resizing the image to <code>360 x 360</code> will squish our input image from a 16:9 aspect ratio to a square aspect ratio. We’ll need to account for this when we get to the postprocessing section.</p>
+</section>
+<section id="apply-model-specific-preprocessing" class="level4">
+<h4 class="anchored" data-anchor-id="apply-model-specific-preprocessing">Apply Model-Specific Preprocessing</h4>
+<p>This is where we’ll make use of the <code>PoseNetShader</code> we made earlier. We’ll create a new method to handle the execution process. Name the new method <code>PreprocessResNet</code> to match the function in the <code>PoseNetShader</code>. They don’t need to have the same name. It’s just personal preference.</p>
+<p>For this method, we need to use HDR texture formats for the <code>RenderTexture</code> and <code>Texture2D</code>. This allows us to feed images into the model with color values outside of the standard range of <code>[0,1]</code>. The Barracuda library <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@1.0/api/Unity.Barracuda.Tensor.html#Unity_Barracuda_Tensor__ctor_UnityEngine_Texture_System_Int32_System_String_">remaps</a> non-HDR color values to <code>[0,1]</code>. Given that we’re scaling the values by <code>255</code>, this is undesirable.</p>
+<p>You can view the full <code>PreprocessResNet</code> method below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/preprocessResNet_method_9.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>The <code>PreprocessResNet</code> method returns a Texture2D with an HDR texture format. The switch to HDR texture formats means the <code>tempTex</code> variable is no longer compatible. Fortunately, we can reuse the <code>imageTexture</code> variable that we emptied.</p>
+<p>The finished <code>PreprocessImage</code> method looks like this.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/preprocessImage_method_complete_3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="call-the-method" class="level4">
+<h4 class="anchored" data-anchor-id="call-the-method">Call the Method</h4>
+<p>We’ll call <code>PreprocessImage()</code> in the <code>Update()</code> method so that it runs every frame.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/call_preprocessImage_method.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="create-the-pose-estimator" class="level2">
+<h2 class="anchored" data-anchor-id="create-the-pose-estimator">Create the Pose Estimator</h2>
+<p>To run the <code>PoseNet</code> script, we need to attach it to a <code>GameObject</code> in the Unity Editor.</p>
+<section id="create-an-empty-gameobject" class="level3">
+<h3 class="anchored" data-anchor-id="create-an-empty-gameobject">Create an Empty <code>GameObject</code></h3>
+<p>In the Hierarchy tab, right-click an empty space and select <code>Create Empty</code> from the menu. Name the empty GameObject <code>PoseEstimator</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/create_poseEstimator_gameobject.PNG" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="attach-the-posenet-script" class="level3">
+<h3 class="anchored" data-anchor-id="attach-the-posenet-script">Attach the <code>PoseNet</code> Script</h3>
+<p>With the <code>PoseEstimator</code> object selected, drag and drop the <code>PoseNet</code> script into the <code>Inspector</code> tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/posenet_script_inspector_empty.PNG" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="assign-the-video_texture" class="level3">
+<h3 class="anchored" data-anchor-id="assign-the-video_texture">Assign the <code>video_texture</code></h3>
+<p>Next, we need to assign the <code>video_texture</code> asset to the <code>Video Texture</code> parameter. With the <code>PoseEstimator</code> object selected, drag and drop the <code>video_texture</code> asset into the <code>Video Texture</code> spot in the <code>Inspector</code> tab.</p>
+</section>
+<section id="assign-the-posenetshader" class="level3">
+<h3 class="anchored" data-anchor-id="assign-the-posenetshader">Assign the <code>PoseNetShader</code></h3>
+<p>We also need to drag and drop the <code>PoseNetShader</code> asset into the <code>Posenet Shader</code> spot in the the Inspector tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/posenet_script_inspector_full_1.PNG" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>We’re now ready to feed video frames to our PoseNet model. In part 3, we’ll cover how to install the Barracuda library and perform inference with our model.</p>
+<section id="github-repository---version-1" class="level3">
+<h3 class="anchored" data-anchor-id="github-repository---version-1"><a href="https://github.com/cj-mills/Barracuda-PoseNet-Tutorial/tree/Version-1">GitHub Repository - Version 1</a></h3>
+</section>
+<section id="next-part-2.5optional-part-3" class="level3">
+<h3 class="anchored" data-anchor-id="next-part-2.5optional-part-3">Next: <a href="../part-2-5/">Part 2.5(Optional)</a> <a href="../part-3/">Part 3</a></h3>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+      <div class="nav-footer-center">
+        <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2022, Christian J. Mills
+  </li>  
+</ul>
+      </div>
+  </div>
+</footer>
+
+
+
+</body></html>
