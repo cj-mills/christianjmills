@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-03-20">
+<meta name="description" content="This post covers how to efficiently crop images in Unity with a GPU.">
+
+<title>Christian Mills - How to Crop Images With a GPU in Unity</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/favicon.ico" rel="icon">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Christian Mills - How to Crop Images With a GPU in Unity">
+<meta property="og:description" content="This post covers how to efficiently crop images in Unity with a GPU.">
+<meta property="og:image" content="christianjmills.com/posts/crop-images-on-gpu-tutorial/images/crop_image_on_gpu_unity_1.gif">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - How to Crop Images With a GPU in Unity">
+<meta name="twitter:description" content="This post covers how to efficiently crop images in Unity with a GPU.">
+<meta name="twitter:image" content="christianjmills.com/posts/crop-images-on-gpu-tutorial/images/crop_image_on_gpu_unity_1.gif">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"><i class="bi bi-envelope-fill" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">How to Crop Images With a GPU in Unity</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">unity</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This post covers how to efficiently crop images in Unity with a GPU.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 20, 2021</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#create-a-2d-unity-project">Create a 2D Unity Project</a></li>
+<li><a href="#create-crop-script">Create <code>Crop</code> Script</a></li>
+<li><a href="#create-screen-gameobject">Create Screen GameObject</a></li>
+<li><a href="#create-imagecropper">Create ImageCropper</a></li>
+<li><a href="#test-it-out">Test it Out</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this post, we’ll cover how to create a square crop of an image in Unity. The approach used in this tutorial can be adapted to crop other sections of an image as well.</p>
+</section>
+<section id="create-a-2d-unity-project" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-2d-unity-project">Create a 2D Unity Project</h2>
+<p>Open the Unity Hub and create a new 2D project. I’m using <code>Unity 2019.4.20f1</code>, but you should be fine using other versions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-hub-create-new-project.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="create-crop-script" class="level2">
+<h2 class="anchored" data-anchor-id="create-crop-script">Create <code>Crop</code> Script</h2>
+<p>In Unity, right-click an empty space in the Assets folder and select <code>C# Script</code> in the <code>Create</code> submenu. Name the new script, <code>Crop</code> and open it in your code editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-flip-script.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<section id="define-variables" class="level3">
+<h3 class="anchored" data-anchor-id="define-variables">Define Variables</h3>
+<p>Create a public <code>GameObject</code> variable called <code>screen</code>. We’ll be using this screen to confirm our script is correctly cropping the test images. Add a public <code>bool</code> variable called <code>cropImage</code> as well. This will let us toggle whether to crop the image during runtime. Lastly, we’ll create a private <code>RenderTexture</code> called <code>image</code> to store a copy of the original test image.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/crop-script-define-variables.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="define-start-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-start-method">Define <code>Start()</code> Method</h3>
+<p>In the <code>Start()</code> method, we’ll store a copy the original test image in the <code>image</code> <code>RenderTexture</code>. We can do so by getting a reference to the <code>Texture</code> attached to the <code>screen</code> and using the <a href="https://docs.unity3d.com/ScriptReference/Graphics.Blit.html"><code>Graphics.Blit()</code></a> method. We’ll also adjust the camera so that we can see the entire image.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/crop-script-start-method.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="define-update-method" class="level3">
+<h3 class="anchored" data-anchor-id="define-update-method">Define <code>Update()</code> Method</h3>
+<p>First, we need to make another copy of the original image so that we can edit it. We’ll store this copy in a <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.GetTemporary.html">temporary</a> <code>RenderTexture</code> called <code>rTex</code> that will get released at the end of the method.</p>
+<p>We can’t change the dimensions of a <code>RenderTexture</code> after it’s been created. Instead, we’ll create a cropped image by copying part of <code>rTex</code> to another temporary <code>RenderTexture</code> called <code>tempTex</code> that will be square. We can copy the square image to <code>rTex</code> after we release the current <code>RenderTexture</code> assigned to <code>rTex</code> and make a new square one.</p>
+<p>The size of <code>tempTex</code> will depend on whether the original image is wider or taller. We want to use the smallest side of the original image.</p>
+<p>We’ll determine what part of <code>rTex</code> we need to copy by calculating either <code>(image.width - image.height) / 2f</code> or <code>(image.height - image.width) / 2f</code> depending on whether the image is wider or taller.</p>
+<p>We can copy part of <code>rTex</code> to <code>tempTex</code> using the <a href="https://docs.unity3d.com/ScriptReference/Graphics.CopyTexture.html"><code>Graphics.CopyTexture()</code></a> method. We need to specify several parameters in order to use this method to crop images.</p>
+<ol type="1">
+<li><code>src</code>: The original image</li>
+<li><code>srcElement</code>: The source texture element, set to <code>0</code>
+<ul>
+<li>Not relevant for our use case</li>
+</ul></li>
+<li><code>srcMip</code>: The mipmap level for the image <code>RenderTexture</code>, set to <code>0</code>
+<ul>
+<li>Not relevant for our use case</li>
+</ul></li>
+<li><code>srcX</code>: The X coordinate of the top left corner of the center square of the original image</li>
+<li><code>srcY</code>: The Y coordinate of the top left corner of the center square of the original image</li>
+<li><code>srcWidth</code>: Width of the new square image</li>
+<li><code>srcHeight</code>: Height of the new square image</li>
+<li><code>dst</code>: An empty square <code>RenderTexture</code></li>
+<li><code>dstElement</code>: The destination texture element, set to <code>0</code>
+<ul>
+<li>Not relevant for our use case</li>
+</ul></li>
+<li><code>dstMip</code>: The mipmap level for destination texture, set to <code>0</code>
+<ul>
+<li>Not relevant for our use case</li>
+</ul></li>
+<li><code>dstX</code>: The X coordinate of the top left corner of the new square image</li>
+<li><code>dstY</code>: The Y coordinate of the top left corner of the new square image</li>
+</ol>
+<p>After we copy <code>tempTex</code> back to <code>rTex</code> we’ll update the <code>Texture</code> for the <code>screen</code> with the new square image and adjust the shape of the screen to fit the new image.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/crop-script-update-method.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="create-screen-gameobject" class="level2">
+<h2 class="anchored" data-anchor-id="create-screen-gameobject">Create Screen GameObject</h2>
+<p>Back in Unity, right-click an empty space in the <code>Hierarchy</code> tab and select <code>Quad</code> from the <code>3D Object</code> submenu. Name the new object <code>Screen</code>. The size will be updated automatically by the <code>Crop.cs</code> script.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-screen-object.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="create-imagecropper" class="level2">
+<h2 class="anchored" data-anchor-id="create-imagecropper">Create ImageCropper</h2>
+<p>Right-click an empty space in the <code>Hierarchy</code> tab and select <code>Create Empty</code> from the pop-up menu. Name the empty object <code>ImageCropper</code></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-create-image-cropper-object.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>With the <code>ImageCropper</code> selected drag and drop the <code>Crop.cs</code> script into the <code>Inspector</code> tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-attach-crop-script.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Drag and drop the <code>Screen</code> object from the <code>Hierarchy</code> tab onto the <code>Screen</code> parameter in the <code>Inspector</code> tab.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-inspector-tab-assign-screen.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="test-it-out" class="level2">
+<h2 class="anchored" data-anchor-id="test-it-out">Test it Out</h2>
+<p>We’ll need some test images to try out the <code>ImageCropper</code>. You can use your own or download the ones I used for this tutorial.</p>
+<ul>
+<li><a href="https://drive.google.com/file/d/1abd1RJTu5GvyRqrRfrNjePNX7WPq8mBQ/view?usp=sharing">Wide Image</a></li>
+<li><a href="https://drive.google.com/file/d/1gQZr0vlPYFbvccRSryv0Zou1mPKd5wHj/view?usp=sharing">Tall Image</a></li>
+</ul>
+<p>Drag and drop the test images into the <code>Assets</code> folder. Select one of the images and drag it onto the <code>Screen</code> in the <code>Scene</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-import-images.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Next, we need to set our Screen to use an <code>Unlit</code> shader. Otherwise it will be a bit dim. With the Screen object selected, open the <code>Shader</code> drop-down menu in the <code>Inspector</code> tab and select <code>Unlit</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-inspector-tab-shader-drop-down.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Select <code>Texture</code> from the <code>Unlit</code> submenu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-inspector-tab-unlit-texture.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Now we can click the Play button and toggle the <code>Crop Image</code> checkbox to confirm our script is working properly. If you check the performance stats, you should see that there is basically no performance hit from cropping the image.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/crop_image_on_gpu_unity_1.gif" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/crop_image_on_gpu_unity_2.gif" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>That is one method to efficiently crop images on the GPU in Unity. As mentioned earlier, this method can be adapted to crop different parts of the image. You can do so by changing the values for the <code>Graphics.CopyTexture()</code> method to adjust what part of the source image gets copied and where in the target image it gets copied to.</p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/Crop-Image-on-GPU-Unity">GitHub Repository</a></p>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+      <div class="nav-footer-center">
+        <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2022, Christian J. Mills
+  </li>  
+</ul>
+      </div>
+  </div>
+</footer>
+
+
+
+</body></html>

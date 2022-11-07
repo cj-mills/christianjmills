@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-03-29">
+<meta name="description" content="Chapter 11 covers data munging with fast.ai’s mid-level data API.">
+
+<title>Christian Mills - Notes on fastai Book Ch. 11</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Notes on fastai Book Ch. 11">
+<meta property="og:description" content="Chapter 11 covers data munging with fast.ai’s mid-level data API.">
+<meta property="og:image" content="christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Notes on fastai Book Ch. 11">
+<meta name="twitter:description" content="Chapter 11 covers data munging with fast.ai’s mid-level data API.">
+<meta name="twitter:image" content="christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"><i class="bi bi-envelope-fill" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Notes on fastai Book Ch. 11</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">ai</div>
+    <div class="quarto-category">fastai</div>
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">pytorch</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Chapter 11 covers data munging with fast.ai’s mid-level data API.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 29, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#going-deeper-into-fastai's-layered-api">Going Deeper into fastai’s Layered API</a></li>
+<li><a href="#tfmdlists-and-datasets-transformed-collections">TfmdLists and Datasets: Transformed Collections</a></li>
+<li><a href="#applying-the-mid-level-data-api-siamesepair">Applying the Mid-Level Data API: SiamesePair</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> fastbook</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>fastbook.setup_book()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastbook <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> display,HTML</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> inspect</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> print_source(obj):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> inspect.getsource(obj).split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>):</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(line)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="going-deeper-into-fastais-layered-api" class="level2">
+<h2 class="anchored" data-anchor-id="going-deeper-into-fastais-layered-api">Going Deeper into fastai’s Layered API</h2>
+<ul>
+<li>fastai is built on a layered API</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.text.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>print_source(TextDataLoaders.from_folder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    @classmethod
+    @delegates(DataLoaders.from_dblock)
+    def from_folder(cls, path, train='train', valid='valid', valid_pct=None, seed=None, vocab=None, text_vocab=None, is_lm=False,
+                    tok_tfm=None, seq_len=72, backwards=False, **kwargs):
+        "Create from imagenet style dataset in `path` with `train` and `valid` subfolders (or provide `valid_pct`)"
+        splitter = GrandparentSplitter(train_name=train, valid_name=valid) if valid_pct is None else RandomSplitter(valid_pct, seed=seed)
+        blocks = [TextBlock.from_folder(path, text_vocab, is_lm, seq_len, backwards, tok=tok_tfm)]
+        if not is_lm: blocks.append(CategoryBlock(vocab=vocab))
+        get_items = partial(get_text_files, folders=[train,valid]) if valid_pct is None else get_text_files
+        dblock = DataBlock(blocks=blocks,
+                           get_items=get_items,
+                           splitter=splitter,
+                           get_y=None if is_lm else parent_label)
+        return cls.from_dblock(dblock, path, path=path, seq_len=seq_len, **kwargs)</code></pre>
+<hr>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> TextDataLoaders.from_folder(untar_data(URLs.IMDB), valid<span class="op">=</span><span class="st">'test'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Note:</strong> The above <code>from_folder</code> method expects the dataset to be arranged in a certain way.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> untar_data(URLs.IMDB)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Path('/home/innom-dt/.fastai/data/imdb')</code></pre>
+<section id="mide-level-api" class="level3">
+<h3 class="anchored" data-anchor-id="mide-level-api">Mide-Level API</h3>
+<ul>
+<li>contains functionality for creating DataLoaders</li>
+<li>Has a <em>callback</em> system which allows us to customize the training loop, along with the general optimizer</li>
+</ul>
+<section id="data-block-api" class="level4">
+<h4 class="anchored" data-anchor-id="data-block-api">Data Block API</h4>
+<ul>
+<li>Allows us to define custom approaches for loading data from datasets</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>print_source(DataBlock)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>@docs
+@funcs_kwargs
+class DataBlock():
+    "Generic container to quickly build `Datasets` and `DataLoaders`"
+    get_x=get_items=splitter=get_y = None
+    blocks,dl_type = (TransformBlock,TransformBlock),TfmdDL
+    _methods = 'get_items splitter get_y get_x'.split()
+    _msg = "If you wanted to compose several transforms in your getter don't forget to wrap them in a `Pipeline`."
+    def __init__(self, blocks=None, dl_type=None, getters=None, n_inp=None, item_tfms=None, batch_tfms=None, **kwargs):
+        blocks = L(self.blocks if blocks is None else blocks)
+        blocks = L(b() if callable(b) else b for b in blocks)
+        self.type_tfms = blocks.attrgot('type_tfms', L())
+        self.default_item_tfms  = _merge_tfms(*blocks.attrgot('item_tfms',  L()))
+        self.default_batch_tfms = _merge_tfms(*blocks.attrgot('batch_tfms', L()))
+        for b in blocks:
+            if getattr(b, 'dl_type', None) is not None: self.dl_type = b.dl_type
+        if dl_type is not None: self.dl_type = dl_type
+        self.dataloaders = delegates(self.dl_type.__init__)(self.dataloaders)
+        self.dls_kwargs = merge(*blocks.attrgot('dls_kwargs', {}))
+
+        self.n_inp = ifnone(n_inp, max(1, len(blocks)-1))
+        self.getters = ifnone(getters, [noop]*len(self.type_tfms))
+        if self.get_x:
+            if len(L(self.get_x)) != self.n_inp:
+                raise ValueError(f'get_x contains {len(L(self.get_x))} functions, but must contain {self.n_inp} (one for each input)\n{self._msg}')
+            self.getters[:self.n_inp] = L(self.get_x)
+        if self.get_y:
+            n_targs = len(self.getters) - self.n_inp
+            if len(L(self.get_y)) != n_targs:
+                raise ValueError(f'get_y contains {len(L(self.get_y))} functions, but must contain {n_targs} (one for each target)\n{self._msg}')
+            self.getters[self.n_inp:] = L(self.get_y)
+
+        if kwargs: raise TypeError(f'invalid keyword arguments: {", ".join(kwargs.keys())}')
+        self.new(item_tfms, batch_tfms)
+
+    def _combine_type_tfms(self): return L([self.getters, self.type_tfms]).map_zip(
+        lambda g,tt: (g.fs if isinstance(g, Pipeline) else L(g)) + tt)
+
+    def new(self, item_tfms=None, batch_tfms=None):
+        self.item_tfms  = _merge_tfms(self.default_item_tfms,  item_tfms)
+        self.batch_tfms = _merge_tfms(self.default_batch_tfms, batch_tfms)
+        return self
+
+    @classmethod
+    def from_columns(cls, blocks=None, getters=None, get_items=None, **kwargs):
+        if getters is None: getters = L(ItemGetter(i) for i in range(2 if blocks is None else len(L(blocks))))
+        get_items = _zip if get_items is None else compose(get_items, _zip)
+        return cls(blocks=blocks, getters=getters, get_items=get_items, **kwargs)
+
+    def datasets(self, source, verbose=False):
+        self.source = source                     ; pv(f"Collecting items from {source}", verbose)
+        items = (self.get_items or noop)(source) ; pv(f"Found {len(items)} items", verbose)
+        splits = (self.splitter or RandomSplitter())(items)
+        pv(f"{len(splits)} datasets of sizes {','.join([str(len(s)) for s in splits])}", verbose)
+        return Datasets(items, tfms=self._combine_type_tfms(), splits=splits, dl_type=self.dl_type, n_inp=self.n_inp, verbose=verbose)
+
+    def dataloaders(self, source, path='.', verbose=False, **kwargs):
+        dsets = self.datasets(source, verbose=verbose)
+        kwargs = {**self.dls_kwargs, **kwargs, 'verbose': verbose}
+        return dsets.dataloaders(path=path, after_item=self.item_tfms, after_batch=self.batch_tfms, **kwargs)
+
+    _docs = dict(new="Create a new `DataBlock` with other `item_tfms` and `batch_tfms`",
+                 datasets="Create a `Datasets` object from `source`",
+                 dataloaders="Create a `DataLoaders` object from `source`")</code></pre>
+<hr>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>print_source(TextBlock.from_folder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    @classmethod
+    @delegates(Tokenizer.from_folder, keep=True)
+    def from_folder(cls, path, vocab=None, is_lm=False, seq_len=72, backwards=False, min_freq=3, max_vocab=60000, **kwargs):
+        "Build a `TextBlock` from a `path`"
+        return cls(Tokenizer.from_folder(path, **kwargs), vocab=vocab, is_lm=is_lm, seq_len=seq_len,
+                   backwards=backwards, min_freq=min_freq, max_vocab=max_vocab)</code></pre>
+<hr>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>print_source(CategoryBlock)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>def CategoryBlock(vocab=None, sort=True, add_na=False):
+    "`TransformBlock` for single-label categorical targets"
+    return TransformBlock(type_tfms=Categorize(vocab=vocab, sort=sort, add_na=add_na))</code></pre>
+<hr>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> DataBlock(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    blocks<span class="op">=</span>(TextBlock.from_folder(path),CategoryBlock),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    get_y <span class="op">=</span> parent_label,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    get_items<span class="op">=</span>partial(get_text_files, folders<span class="op">=</span>[<span class="st">'train'</span>, <span class="st">'test'</span>]),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    splitter<span class="op">=</span>GrandparentSplitter(valid_name<span class="op">=</span><span class="st">'test'</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>).dataloaders(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="transforms" class="level3">
+<h3 class="anchored" data-anchor-id="transforms">Transforms</h3>
+<ul>
+<li>A Transform object implements any encoding, setup steps for an inner state, and decoding steps required for a type of data</li>
+<li>Not every type of Transform needs to implement setup steps</li>
+<li>Data augmentation transforms do not need a decode method</li>
+<li>Transforms always get applied over tuples
+<ul>
+<li>data is almost always in a tuple of (input, target)</li>
+</ul></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>Transform</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastcore.transform.Transform</code></pre>
+<hr>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>print_source(Transform)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class Transform(metaclass=_TfmMeta):
+    "Delegates (`__call__`,`decode`,`setup`) to (&lt;code&gt;encodes&lt;/code&gt;,&lt;code&gt;decodes&lt;/code&gt;,&lt;code&gt;setups&lt;/code&gt;) if `split_idx` matches"
+    split_idx,init_enc,order,train_setup = None,None,0,None
+    def __init__(self, enc=None, dec=None, split_idx=None, order=None):
+        self.split_idx = ifnone(split_idx, self.split_idx)
+        if order is not None: self.order=order
+        self.init_enc = enc or dec
+        if not self.init_enc: return
+
+        self.encodes,self.decodes,self.setups = TypeDispatch(),TypeDispatch(),TypeDispatch()
+        if enc:
+            self.encodes.add(enc)
+            self.order = getattr(enc,'order',self.order)
+            if len(type_hints(enc)) &gt; 0: self.input_types = first(type_hints(enc).values())
+            self._name = _get_name(enc)
+        if dec: self.decodes.add(dec)
+
+    @property
+    def name(self): return getattr(self, '_name', _get_name(self))
+    def __call__(self, x, **kwargs): return self._call('encodes', x, **kwargs)
+    def decode  (self, x, **kwargs): return self._call('decodes', x, **kwargs)
+    def __repr__(self): return f'{self.name}:\nencodes: {self.encodes}decodes: {self.decodes}'
+
+    def setup(self, items=None, train_setup=False):
+        train_setup = train_setup if self.train_setup is None else self.train_setup
+        return self.setups(getattr(items, 'train', items) if train_setup else items)
+
+    def _call(self, fn, x, split_idx=None, **kwargs):
+        if split_idx!=self.split_idx and self.split_idx is not None: return x
+        return self._do_call(getattr(self, fn), x, **kwargs)
+
+    def _do_call(self, f, x, **kwargs):
+        if not _is_tuple(x):
+            if f is None: return x
+            ret = f.returns(x) if hasattr(f,'returns') else None
+            return retain_type(f(x, **kwargs), x, ret)
+        res = tuple(self._do_call(f, x_, **kwargs) for x_ in x)
+        return retain_type(res, x)</code></pre>
+<hr>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>TypeDispatch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastcore.dispatch.TypeDispatch</code></pre>
+<hr>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>print_source(TypeDispatch)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class TypeDispatch:
+    "Dictionary-like object; `__getitem__` matches keys of types using `issubclass`"
+    def __init__(self, funcs=(), bases=()):
+        self.funcs,self.bases = _TypeDict(),L(bases).filter(is_not(None))
+        for o in L(funcs): self.add(o)
+        self.inst = None
+        self.owner = None
+
+    def add(self, f):
+        "Add type `t` and function `f`"
+        if isinstance(f, staticmethod): a0,a1 = _p2_anno(f.__func__)
+        else: a0,a1 = _p2_anno(f)
+        t = self.funcs.d.get(a0)
+        if t is None:
+            t = _TypeDict()
+            self.funcs.add(a0, t)
+        t.add(a1, f)
+
+    def first(self):
+        "Get first function in ordered dict of type:func."
+        return self.funcs.first().first()
+
+    def returns(self, x):
+        "Get the return type of annotation of `x`."
+        return anno_ret(self[type(x)])
+
+    def _attname(self,k): return getattr(k,'__name__',str(k))
+    def __repr__(self):
+        r = [f'({self._attname(k)},{self._attname(l)}) -&gt; {getattr(v, "__name__", type(v).__name__)}'
+             for k in self.funcs.d for l,v in self.funcs[k].d.items()]
+        r = r + [o.__repr__() for o in self.bases]
+        return '\n'.join(r)
+
+    def __call__(self, *args, **kwargs):
+        ts = L(args).map(type)[:2]
+        f = self[tuple(ts)]
+        if not f: return args[0]
+        if isinstance(f, staticmethod): f = f.__func__
+        elif self.inst is not None: f = MethodType(f, self.inst)
+        elif self.owner is not None: f = MethodType(f, self.owner)
+        return f(*args, **kwargs)
+
+    def __get__(self, inst, owner):
+        self.inst = inst
+        self.owner = owner
+        return self
+
+    def __getitem__(self, k):
+        "Find first matching type that is a super-class of `k`"
+        k = L(k)
+        while len(k)&lt;2: k.append(object)
+        r = self.funcs.all_matches(k[0])
+        for t in r:
+            o = t[k[1]]
+            if o is not None: return o
+        for base in self.bases:
+            res = base[k]
+            if res is not None: return res
+        return None</code></pre>
+<hr>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get list of individual text files</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> get_text_files(path, folders <span class="op">=</span> [<span class="st">'train'</span>, <span class="st">'test'</span>])</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract contents of text files</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>txts <span class="op">=</span> L(o.<span class="bu">open</span>().read() <span class="cf">for</span> o <span class="kw">in</span> files[:<span class="dv">2000</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>print_source(Tokenizer.from_folder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    @classmethod
+    @delegates(tokenize_folder, keep=True)
+    def from_folder(cls, path, tok=None, rules=None, **kwargs):
+        path = Path(path)
+        if tok is None: tok = WordTokenizer()
+        output_dir = tokenize_folder(path, tok=tok, rules=rules, **kwargs)
+        res = cls(tok, counter=load_pickle(output_dir/fn_counter_pkl),
+                  lengths=load_pickle(output_dir/fn_lengths_pkl), rules=rules, mode='folder')
+        res.path,res.output_dir = path,output_dir
+        return res</code></pre>
+<hr>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>print_source(tokenize_folder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>@delegates(_tokenize_files)
+def tokenize_folder(path, extensions=None, folders=None, output_dir=None, skip_if_exists=True, **kwargs):
+    "Tokenize text files in `path` in parallel using `n_workers`"
+    path,extensions = Path(path),ifnone(extensions, ['.txt'])
+    files = get_files(path, extensions=extensions, recurse=True, folders=folders)
+    def _f(i,output_dir): return output_dir/files[i].relative_to(path)
+    return _tokenize_files(_f, files, path, skip_if_exists=skip_if_exists, **kwargs)</code></pre>
+<hr>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>tok <span class="op">=</span> Tokenizer.from_folder(path)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>tok.setup(txts)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>toks <span class="op">=</span> txts.<span class="bu">map</span>(tok)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>toks[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level'...]</code></pre>
+<hr>
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the numericalizer</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>num <span class="op">=</span> Numericalize()</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up vocab</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>num.setup(toks)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Get number for tokens</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>nums <span class="op">=</span> toks.<span class="bu">map</span>(num)</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>nums[<span class="dv">0</span>][:<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>TensorText([   2,    8,   20,    0,  615,   49, 1689,   35,  195,  599])</code></pre>
+<hr>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Decode numbers to tokens</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>nums_dec <span class="op">=</span> num.decode(nums[<span class="dv">0</span>][:<span class="dv">10</span>])<span class="op">;</span> nums_dec</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(#10) ['xxbos','xxmaj','this','xxunk','fails','so','miserably','on','every','level']</code></pre>
+<hr>
+<div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Decode numericalized list of tokens to a single string of words</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>tok.decode(nums_dec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'xxbos xxmaj this xxunk fails so miserably on every level'</code></pre>
+<p><strong>Note:</strong> The default WordTokenizer cannot decode special tokens back to the original text.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Tokenize a single tuple of (input, target)</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>tok((txts[<span class="dv">0</span>], txts[<span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>((#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level'...],
+ (#562) ['xxbos','xxmaj','jacqueline','xxmaj','susann','wrote','several','novels','all','involving'...])</code></pre>
+</section>
+<section id="writing-your-own-transform" class="level3">
+<h3 class="anchored" data-anchor-id="writing-your-own-transform">Writing Your Own Transform</h3>
+<ul>
+<li>easiest way is to write a function
+<ul>
+<li>specify a type in the function signature so the transform is only applied to the target data types</li>
+</ul></li>
+<li>Transforms that require either setup or decode, need to be implemented as a subclass of Transform</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple transform function that adds 1 to an int</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f(x:<span class="bu">int</span>): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a Transform object with the transform function</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>tfm <span class="op">=</span> Transform(f)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Try to apply the transform to an in and a float</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>tfm(<span class="dv">2</span>),tfm(<span class="fl">2.0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(3, 2.0)</code></pre>
+<section id="python-decorators" class="level4">
+<h4 class="anchored" data-anchor-id="python-decorators">Python Decorators</h4>
+<ul>
+<li>special syntax for passing a function to another function (or something like a function)</li>
+<li>used by prepending a callable with a <code>@</code> and placing it before a function definition</li>
+<li><a href="https://peps.python.org/pep-0318/">PEP 318 – Decorators for Functions and Methods</a></li>
+<li><a href="https://realpython.com/primer-on-python-decorators/">Primer on Python Decorators</a></li>
+</ul>
+</section>
+<section id="python-typing.callable" class="level4">
+<h4 class="anchored" data-anchor-id="python-typing.callable">Python typing.Callable</h4>
+<ul>
+<li><a href="https://docs.python.org/3/library/typing.html#typing.Callable">Documentation</a></li>
+<li>Something that can be called</li>
+<li>a function or something like a function</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="at">@Transform</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f(x:<span class="bu">int</span>): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>f(<span class="dv">2</span>),f(<span class="fl">2.0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(3, 2.0)</code></pre>
+<hr>
+<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> NormalizeMean(Transform):</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the mean for the dataset and maintain it as inner state</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> setups(<span class="va">self</span>, items): <span class="va">self</span>.mean <span class="op">=</span> <span class="bu">sum</span>(items)<span class="op">/</span><span class="bu">len</span>(items)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Encode items by substracting the mean</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> encodes(<span class="va">self</span>, x): <span class="cf">return</span> x<span class="op">-</span><span class="va">self</span>.mean</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Decode items by adding the mean</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> decodes(<span class="va">self</span>, x): <span class="cf">return</span> x<span class="op">+</span><span class="va">self</span>.mean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Instantiate the custom transform</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>tfm <span class="op">=</span> NormalizeMean()</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the inner state for the transform</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co"># (i.e. calculate the mean for the dataset)</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>tfm.setup([<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>])</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply transform to the value 2</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> tfm(start)</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>z <span class="op">=</span> tfm.decode(y)</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>tfm.mean,y,z</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(3.0, -1.0, 2.0)</code></pre>
+</section>
+</section>
+<section id="pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="pipeline">Pipeline</h3>
+<ul>
+<li>compose several transforms together</li>
+<li>pass in a list of Transforms</li>
+<li>calls the Transforms in sequential order</li>
+<li>Need to use a <a href="https://docs.fast.ai/data.core.html#TfmdLists">TfmdLists</a> to properly setup a pipeline of transforms on some data.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>Pipeline</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastcore.transform.Pipeline</code></pre>
+<hr>
+<div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>print_source(Pipeline)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class Pipeline:
+    "A pipeline of composed (for encode/decode) transforms, setup with types"
+    def __init__(self, funcs=None, split_idx=None):
+        self.split_idx,self.default = split_idx,None
+        if funcs is None: funcs = []
+        if isinstance(funcs, Pipeline): self.fs = funcs.fs
+        else:
+            if isinstance(funcs, Transform): funcs = [funcs]
+            self.fs = L(ifnone(funcs,[noop])).map(mk_transform).sorted(key='order')
+        for f in self.fs:
+            name = camel2snake(type(f).__name__)
+            a = getattr(self,name,None)
+            if a is not None: f = L(a)+f
+            setattr(self, name, f)
+
+    def setup(self, items=None, train_setup=False):
+        tfms = self.fs[:]
+        self.fs.clear()
+        for t in tfms: self.add(t,items, train_setup)
+
+    def add(self,ts, items=None, train_setup=False):
+        if not is_listy(ts): ts=[ts]
+        for t in ts: t.setup(items, train_setup)
+        self.fs+=ts
+        self.fs = self.fs.sorted(key='order')
+
+    def __call__(self, o): return compose_tfms(o, tfms=self.fs, split_idx=self.split_idx)
+    def __repr__(self): return f"Pipeline: {' -&gt; '.join([f.name for f in self.fs if f.name != 'noop'])}"
+    def __getitem__(self,i): return self.fs[i]
+    def __setstate__(self,data): self.__dict__.update(data)
+    def __getattr__(self,k): return gather_attrs(self, k, 'fs')
+    def __dir__(self): return super().__dir__() + gather_attr_names(self, 'fs')
+
+    def decode  (self, o, full=True):
+        if full: return compose_tfms(o, tfms=self.fs, is_enc=False, reverse=True, split_idx=self.split_idx)
+        #Not full means we decode up to the point the item knows how to show itself.
+        for f in reversed(self.fs):
+            if self._is_showable(o): return o
+            o = f.decode(o, split_idx=self.split_idx)
+        return o
+
+    def show(self, o, ctx=None, **kwargs):
+        o = self.decode(o, full=False)
+        o1 = (o,) if not _is_tuple(o) else o
+        if hasattr(o, 'show'): ctx = o.show(ctx=ctx, **kwargs)
+        else:
+            for o_ in o1:
+                if hasattr(o_, 'show'): ctx = o_.show(ctx=ctx, **kwargs)
+        return ctx
+
+    def _is_showable(self, o):
+        if hasattr(o, 'show'): return True
+        if _is_tuple(o): return all(hasattr(o_, 'show') for o_ in o)
+        return False</code></pre>
+<hr>
+<div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>camel2snake</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;function fastcore.basics.camel2snake(name)&gt;</code></pre>
+<hr>
+<div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>print_source(camel2snake)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>def camel2snake(name):
+    "Convert CamelCase to snake_case"
+    s1   = re.sub(_camel_re1, r'\1_\2', name)
+    return re.sub(_camel_re2, r'\1_\2', s1).lower()</code></pre>
+<hr>
+<div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a pipeline that first tokenizes and then numericalizes a text dataset</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>tfms <span class="op">=</span> Pipeline([tok, num])</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> tfms(txts[<span class="dv">0</span>])<span class="op">;</span> t[:<span class="dv">20</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>TensorText([   2,    8,   20,    0,  615,   49, 1689,   35,  195,  599,   21,   17,   16, 1088,   15, 1177,   65,   15,  145,   10])</code></pre>
+<hr>
+<div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>tfms.decode(t)[:<span class="dv">100</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'xxbos xxmaj this xxunk fails so miserably on every level that it is difficult to decide what to say '</code></pre>
+</section>
+</section>
+<section id="tfmdlists-and-datasets-transformed-collections" class="level2">
+<h2 class="anchored" data-anchor-id="tfmdlists-and-datasets-transformed-collections">TfmdLists and Datasets: Transformed Collections</h2>
+<ul>
+<li>your data is usually a set of raw items to which you want to apply a succession of transformations</li>
+</ul>
+<section id="tfmdlists" class="level3">
+<h3 class="anchored" data-anchor-id="tfmdlists"><a href="https://docs.fast.ai/data.core.html#TfmdLists">TfmdLists</a></h3>
+<ul>
+<li>groups your pipeline with your raw items</li>
+<li>use when you have manually written a Transform that performs all your preprocessing at once, which turns raw items into a tuple with inputs and targets</li>
+<li>pass in items and a list of Transforms</li>
+<li>automatically calls the setup method of each Transform in order when initialized</li>
+<li>can index into the TfmdLists to get the result of the Pipeline on any raw element</li>
+<li>knows how to properly decode transformed items</li>
+<li>can handle a training and validation set</li>
+<li>can directly convert a TfmdLists to a DataLoaders object with the dataloaders method (inherited from <a href="https://docs.fast.ai/data.core.html#FilteredBase">FilteredBase</a>)</li>
+</ul>
+<p><br></p>
+<p><strong>Note:</strong> You will typically have two or more parallel pipelines of transforms: * one for processing your raw items into inputs * one to process your raw items into targets</p>
+<hr>
+<div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>TfmdLists</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.data.core.TfmdLists</code></pre>
+<hr>
+<div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>print_source(TfmdLists)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class TfmdLists(FilteredBase, L, GetAttr):
+    "A `Pipeline` of `tfms` applied to a collection of `items`"
+    _default='tfms'
+    def __init__(self, items, tfms, use_list=None, do_setup=True, split_idx=None, train_setup=True,
+                 splits=None, types=None, verbose=False, dl_type=None):
+        super().__init__(items, use_list=use_list)
+        if dl_type is not None: self._dl_type = dl_type
+        self.splits = L([slice(None),[]] if splits is None else splits).map(mask2idxs)
+        if isinstance(tfms,TfmdLists): tfms = tfms.tfms
+        if isinstance(tfms,Pipeline): do_setup=False
+        self.tfms = Pipeline(tfms, split_idx=split_idx)
+        store_attr('types,split_idx')
+        if do_setup:
+            pv(f"Setting up {self.tfms}", verbose)
+            self.setup(train_setup=train_setup)
+
+    def _new(self, items, split_idx=None, **kwargs):
+        split_idx = ifnone(split_idx,self.split_idx)
+        return super()._new(items, tfms=self.tfms, do_setup=False, types=self.types, split_idx=split_idx, **kwargs)
+    def subset(self, i): return self._new(self._get(self.splits[i]), split_idx=i)
+    def _after_item(self, o): return self.tfms(o)
+    def __repr__(self): return f"{self.__class__.__name__}: {self.items}\ntfms - {self.tfms.fs}"
+    def __iter__(self): return (self[i] for i in range(len(self)))
+    def show(self, o, **kwargs): return self.tfms.show(o, **kwargs)
+    def decode(self, o, **kwargs): return self.tfms.decode(o, **kwargs)
+    def __call__(self, o, **kwargs): return self.tfms.__call__(o, **kwargs)
+    def overlapping_splits(self): return L(Counter(self.splits.concat()).values()).filter(gt(1))
+    def new_empty(self): return self._new([])
+
+    def setup(self, train_setup=True):
+        self.tfms.setup(self, train_setup)
+        if len(self) != 0:
+            x = super().__getitem__(0) if self.splits is None else super().__getitem__(self.splits[0])[0]
+            self.types = []
+            for f in self.tfms.fs:
+                self.types.append(getattr(f, 'input_types', type(x)))
+                x = f(x)
+            self.types.append(type(x))
+        types = L(t if is_listy(t) else [t] for t in self.types).concat().unique()
+        self.pretty_types = '\n'.join([f'  - {t}' for t in types])
+
+    def infer_idx(self, x):
+        # TODO: check if we really need this, or can simplify
+        idx = 0
+        for t in self.types:
+            if isinstance(x, t): break
+            idx += 1
+        types = L(t if is_listy(t) else [t] for t in self.types).concat().unique()
+        pretty_types = '\n'.join([f'  - {t}' for t in types])
+        assert idx &lt; len(self.types), f"Expected an input of type in \n{pretty_types}\n but got {type(x)}"
+        return idx
+
+    def infer(self, x):
+        return compose_tfms(x, tfms=self.tfms.fs[self.infer_idx(x):], split_idx=self.split_idx)
+
+    def __getitem__(self, idx):
+        res = super().__getitem__(idx)
+        if self._after_item is None: return res
+        return self._after_item(res) if is_indexer(idx) else res.map(self._after_item)</code></pre>
+<hr>
+<div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>print_source(FilteredBase)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class FilteredBase:
+    "Base class for lists with subsets"
+    _dl_type,_dbunch_type = TfmdDL,DataLoaders
+    def __init__(self, *args, dl_type=None, **kwargs):
+        if dl_type is not None: self._dl_type = dl_type
+        self.dataloaders = delegates(self._dl_type.__init__)(self.dataloaders)
+        super().__init__(*args, **kwargs)
+
+    @property
+    def n_subsets(self): return len(self.splits)
+    def _new(self, items, **kwargs): return super()._new(items, splits=self.splits, **kwargs)
+    def subset(self): raise NotImplemented
+
+    def dataloaders(self, bs=64, shuffle_train=None, shuffle=True, val_shuffle=False,n=None, path='.', dl_type=None, dl_kwargs=None,
+                    device=None,drop_last=None,val_bs=None, **kwargs):
+        if shuffle_train is not None:
+            shuffle=shuffle_train
+            warnings.warn('`shuffle_train` is deprecated. Use `shuffle` instead.',DeprecationWarning)
+        if device is None: device=default_device()
+        if dl_kwargs is None: dl_kwargs = [{}] * self.n_subsets
+        if dl_type is None: dl_type = self._dl_type
+        if drop_last is None: drop_last = shuffle
+        val_kwargs={k[4:]:v for k,v in kwargs.items() if k.startswith('val_')}
+        def_kwargs = {'bs':bs,'shuffle':shuffle,'drop_last':drop_last,'n':n,'device':device}
+        dl = dl_type(self.subset(0), **merge(kwargs,def_kwargs, dl_kwargs[0]))
+        def_kwargs = {'bs':bs if val_bs is None else val_bs,'shuffle':val_shuffle,'n':None,'drop_last':False}
+        dls = [dl] + [dl.new(self.subset(i), **merge(kwargs,def_kwargs,val_kwargs,dl_kwargs[i]))
+                      for i in range(1, self.n_subsets)]
+        return self._dbunch_type(*dls, path=path, device=device)</code></pre>
+<hr>
+<div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>tls <span class="op">=</span> TfmdLists(files, [Tokenizer.from_folder(path), Numericalize])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> tls[<span class="dv">0</span>]<span class="op">;</span> t[:<span class="dv">20</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>TensorText([    2,     8,    20, 33649,  1033,    52,  3265,    35,   193,   649,    21,    17,    16,   890,    15,  1156,    65,    15,   159,    10])</code></pre>
+<hr>
+<div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>tls.decode(t)[:<span class="dv">100</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'xxbos xxmaj this conglomeration fails so miserably on every level that it is difficult to decide wha'</code></pre>
+<p><strong>Note:</strong> The sentence is properly decoded including the word “conglomeration”.</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>tls.show(t)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>xxbos xxmaj this conglomeration fails so miserably on every level that it is difficult to decide what to say . xxmaj it does n't merit one line , much less ten , but to adhere to the rules of imdb , here goes and i probably wo n't succeed the first time around and have to type some more to make up for this submission to be accepted . xxup lol 
+
+ xxmaj if i had seen this schlock during the ' 70s while i was going through my mushroom phase , i would have still considered it unimaginative and shallow . xxmaj the most exciting shot for me was the long shot when the elevator door opened and xxunk was on the edge of my seat . 
+
+ xxmaj one person on here wrote that he had met the creator of this mess , as if that were a red letter day in his life . xxmaj one can only pray that something far more exciting occurs in that posters xxunk a grip , amigo .</code></pre>
+<hr>
+<div class="sourceCode" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define how many files to keep in the training set</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>cut <span class="op">=</span> <span class="bu">int</span>(<span class="bu">len</span>(files)<span class="op">*</span><span class="fl">0.8</span>)</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>cut</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>40000</code></pre>
+<hr>
+<div class="sourceCode" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split the files into a training and validation set</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>splits <span class="op">=</span> [<span class="bu">list</span>(<span class="bu">range</span>(cut)), <span class="bu">list</span>(<span class="bu">range</span>(cut,<span class="bu">len</span>(files)))]</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(splits[<span class="dv">0</span>]), <span class="bu">len</span>(splits[<span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(40000, 10000)</code></pre>
+<hr>
+<div class="sourceCode" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a TfmdLists with indices for a training and validation set</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>tls <span class="op">=</span> TfmdLists(files, [Tokenizer.from_folder(path), Numericalize], </span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>                splits<span class="op">=</span>splits)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>tls.valid[<span class="dv">0</span>][:<span class="dv">20</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>TensorText([   2,    8,    9,  107,   77,   19,   87,    9, 1836,   14, 1438,   15,   86,   20,   45,   31, 1524,  393,   25,  164])</code></pre>
+<hr>
+<div class="sourceCode" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>parent_label</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;function fastai.data.transforms.parent_label(o)&gt;</code></pre>
+<hr>
+<div class="sourceCode" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>print_source(parent_label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>def parent_label(o):
+    "Label `item` with the parent folder name."
+    return Path(o).parent.name</code></pre>
+<hr>
+<div class="sourceCode" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Label files based on the parent folder name</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>lbls <span class="op">=</span> files.<span class="bu">map</span>(parent_label)</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>lbls</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(#50000) ['neg','neg','neg','neg','neg','neg','neg','neg','neg','neg'...]</code></pre>
+<hr>
+<div class="sourceCode" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>Categorize</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.data.transforms.Categorize</code></pre>
+<hr>
+<div class="sourceCode" id="cb87"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>print_source(Categorize)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class Categorize(DisplayedTransform):
+    "Reversible transform of category string to `vocab` id"
+    loss_func,order=CrossEntropyLossFlat(),1
+    def __init__(self, vocab=None, sort=True, add_na=False):
+        if vocab is not None: vocab = CategoryMap(vocab, sort=sort, add_na=add_na)
+        store_attr()
+
+    def setups(self, dsets):
+        if self.vocab is None and dsets is not None: self.vocab = CategoryMap(dsets, sort=self.sort, add_na=self.add_na)
+        self.c = len(self.vocab)
+
+    def encodes(self, o):
+        try:
+            return TensorCategory(self.vocab.o2i[o])
+        except KeyError as e:
+            raise KeyError(f"Label '{o}' was not included in the training dataset") from e
+    def decodes(self, o): return Category      (self.vocab    [o])</code></pre>
+<hr>
+<div class="sourceCode" id="cb89"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Grab all unique items and build a vocab</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>cat <span class="op">=</span> Categorize()</span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>cat.setup(lbls)</span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>cat.vocab, cat(lbls[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a TfmdLists that labels items using the parent folder name and build a vocab</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>tls_y <span class="op">=</span> TfmdLists(files, [parent_label, Categorize()])</span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a>tls_y[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>TensorCategory(0)</code></pre>
+</section>
+<section id="datasets" class="level3">
+<h3 class="anchored" data-anchor-id="datasets">Datasets</h3>
+<ul>
+<li>applies two (or more) pipelines in parallel to the same raw object and build a tuple with the result</li>
+<li>automatically performs the setup steps</li>
+<li>can index into a Datasets to get a tuple with the results of each pipeline</li>
+<li>can pass along a splits value for a training and validation split</li>
+<li>can decode any processed tuple</li>
+<li>can directly convert a Datasets to a DataLoaders object with the dataloaders method (inherited from <a href="https://docs.fast.ai/data.core.html#FilteredBase">FilteredBase</a>)</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb92"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>Datasets</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.data.core.Datasets</code></pre>
+<hr>
+<div class="sourceCode" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>print_source(Datasets)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>@docs
+@delegates(TfmdLists)
+class Datasets(FilteredBase):
+    "A dataset that creates a tuple from each `tfms`"
+    def __init__(self, items=None, tfms=None, tls=None, n_inp=None, dl_type=None, **kwargs):
+        super().__init__(dl_type=dl_type)
+        self.tls = L(tls if tls else [TfmdLists(items, t, **kwargs) for t in L(ifnone(tfms,[None]))])
+        self.n_inp = ifnone(n_inp, max(1, len(self.tls)-1))
+
+    def __getitem__(self, it):
+        res = tuple([tl[it] for tl in self.tls])
+        return res if is_indexer(it) else list(zip(*res))
+
+    def __getattr__(self,k): return gather_attrs(self, k, 'tls')
+    def __dir__(self): return super().__dir__() + gather_attr_names(self, 'tls')
+    def __len__(self): return len(self.tls[0])
+    def __iter__(self): return (self[i] for i in range(len(self)))
+    def __repr__(self): return coll_repr(self)
+    def decode(self, o, full=True): return tuple(tl.decode(o_, full=full) for o_,tl in zip(o,tuplify(self.tls, match=o)))
+    def subset(self, i): return type(self)(tls=L(tl.subset(i) for tl in self.tls), n_inp=self.n_inp)
+    def _new(self, items, *args, **kwargs): return super()._new(items, tfms=self.tfms, do_setup=False, **kwargs)
+    def overlapping_splits(self): return self.tls[0].overlapping_splits()
+    def new_empty(self): return type(self)(tls=[tl.new_empty() for tl in self.tls], n_inp=self.n_inp)
+    @property
+    def splits(self): return self.tls[0].splits
+    @property
+    def split_idx(self): return self.tls[0].tfms.split_idx
+    @property
+    def items(self): return self.tls[0].items
+    @items.setter
+    def items(self, v):
+        for tl in self.tls: tl.items = v
+
+    def show(self, o, ctx=None, **kwargs):
+        for o_,tl in zip(o,self.tls): ctx = tl.show(o_, ctx=ctx, **kwargs)
+        return ctx
+
+    @contextmanager
+    def set_split_idx(self, i):
+        old_split_idx = self.split_idx
+        for tl in self.tls: tl.tfms.split_idx = i
+        try: yield self
+        finally:
+            for tl in self.tls: tl.tfms.split_idx = old_split_idx
+
+    _docs=dict(
+        decode="Compose `decode` of all `tuple_tfms` then all `tfms` on `i`",
+        show="Show item `o` in `ctx`",
+        dataloaders="Get a `DataLoaders`",
+        overlapping_splits="All splits that are in more than one split",
+        subset="New `Datasets` that only includes subset `i`",
+        new_empty="Create a new empty version of the `self`, keeping only the transforms",
+        set_split_idx="Contextmanager to use the same `Datasets` with another `split_idx`"
+    )</code></pre>
+<hr>
+<div class="sourceCode" id="cb96"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Tokenize and numericalize inputs</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>x_tfms <span class="op">=</span> [Tokenizer.from_folder(path), Numericalize]</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Label and categorize targets</span></span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>y_tfms <span class="op">=</span> [parent_label, Categorize()]</span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a Datasets</span></span>
+<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>dsets <span class="op">=</span> Datasets(files, [x_tfms, y_tfms])</span>
+<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>x,y <span class="op">=</span> dsets[<span class="dv">0</span>]</span>
+<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a>x[:<span class="dv">20</span>],y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(TensorText([    2,     8,    20, 33649,  1033,    52,  3265,    35,   193,   649,    21,    17,    16,   890,    15,  1156,    65,    15,   159,    10]),
+ TensorCategory(0))</code></pre>
+<hr>
+<div class="sourceCode" id="cb98"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Tokenize and numericalize inputs</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>x_tfms <span class="op">=</span> [Tokenizer.from_folder(path), Numericalize]</span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Label and categorize targets</span></span>
+<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>y_tfms <span class="op">=</span> [parent_label, Categorize()]</span>
+<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a Datasets with a splits</span></span>
+<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a>dsets <span class="op">=</span> Datasets(files, [x_tfms, y_tfms], splits<span class="op">=</span>splits)</span>
+<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a>x,y <span class="op">=</span> dsets.valid[<span class="dv">0</span>]</span>
+<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>x[:<span class="dv">20</span>],y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(TensorText([   2,    8,    9,  107,   77,   19,   87,    9, 1836,   14, 1438,   15,   86,   20,   45,   31, 1524,  393,   25,  164]),
+ TensorCategory(1))</code></pre>
+<hr>
+<div class="sourceCode" id="cb100"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> dsets.valid[<span class="dv">0</span>]</span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>dsets.decode(t)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>('xxbos xxmaj the first time i had the window of opportunity to see this all but forgotten classic was back in the early xxunk , at one of our art houses as a revival . xxmaj as i watched this fever dream of an exercise in 1930 \'s sexuality , i thought xxup yowza ! xxmaj they got away with murder in xxmaj europe back in the day . xxmaj unfortunately , this film was heavily cut in it \'s original xxup u.s . release by the blue nosed xxmaj hayes xxmaj office ( the staunch government censorship board , started by the " holier than thou " xxmaj bible thumper , xxmaj will xxmaj hayes … a former xxmaj post xxmaj office official , if you can believe xxunk to it \'s overall theme of human sexuality ( heaven \'s forbid humans actually had sex in the 1930 \'s ) . xxmaj the plot of xxmaj ecstasy concerns a young woman ( played by xxmaj hedy xxmaj xxunk marries a much older man , and later regrets it . xxmaj she ( xxunk a handsome younger man &amp; has an affair with him , resulting in a divorce from previous husband ( another no no in xxmaj hollywood movies back then xxrep 3 - xxmaj divorce ! ) . xxmaj despite the fact that the film was produced in 1933 , it was probably the director \'s first time working in the sound format ( i.e. the film seems to possess techniques that were used mostly in silent films xxrep 3 - i.e. 1920 \'s expressionism \'s ) . xxmaj it \'s still worth searching out for a window into early xxmaj european talking pictures , along with xxmaj luis xxmaj bunuels l\'age xxmaj dor ( xxunk xxmaj karl xxmaj gustav xxmaj dryer \'s \' vampyre \' ( 1931 ) . xxmaj not rated , but contains that infamous nude swimming scene &amp; some thinly veiled sexual references , which would fare little more than a xxup pg-13 by today \'s standards ( but would have easily landed the dreaded \' xxunk in the xxunk , if it existed then )',
+ 'pos')</code></pre>
+<hr>
+<div class="sourceCode" id="cb102"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">type</span>(pad_input))</span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>pad_input</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;class 'fastai.text.data.Pad_Input'&gt;</code></pre>
+<pre class="text"><code>Pad_Input:
+encodes: (object,object) -&gt; encodes
+decodes: (TensorText,object) -&gt; decodes</code></pre>
+<hr>
+<div class="sourceCode" id="cb105"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>print_source(Pad_Input)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class Pad_Input(ItemTransform):
+    def encodes(self,samples, pad_idx=1, pad_fields=0, pad_first=False, backwards=False):
+        "Function that collect `samples` and adds padding"
+        self.pad_idx = pad_idx
+        pad_fields = L(pad_fields)
+        max_len_l = pad_fields.map(lambda f: max([len(s[f]) for s in samples]))
+        if backwards: pad_first = not pad_first
+        def _f(field_idx, x):
+            if field_idx not in pad_fields: return x
+            idx = pad_fields.items.index(field_idx) #TODO: remove items if L.index is fixed
+            sl = slice(-len(x), sys.maxsize) if pad_first else slice(0, len(x))
+            pad =  x.new_zeros(max_len_l[idx]-x.shape[0])+pad_idx
+            x1 = torch.cat([pad, x] if pad_first else [x, pad])
+            if backwards: x1 = x1.flip(0)
+            return retain_type(x1, x)
+        return [tuple(map(lambda idxx: _f(*idxx), enumerate(s))) for s in samples]
+    def decodes(self, o:TensorText):
+        pad_idx = self.pad_idx if hasattr(self,'pad_idx') else 1
+        return o[o != pad_idx]</code></pre>
+</section>
+<section id="dataloader" class="level3">
+<h3 class="anchored" data-anchor-id="dataloader">DataLoader</h3>
+<ul>
+<li><p>fastai’s DataLoader expands on the <a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">PyTorch DataLoader</a> class</p></li>
+<li><p>responsible for collating the items from a dataset into batches</p></li>
+</ul>
+<p><strong>after_item:</strong></p>
+<ul>
+<li>applied on each item after grabbing it inside the dataset</li>
+<li>equivalent of <code>item_tfms</code> in DataBlock</li>
+</ul>
+<p><strong>before_batch:</strong></p>
+<ul>
+<li>applied on the list of items before they are collated.</li>
+<li>ideal place to pad items ot the same size</li>
+</ul>
+<p><strong>after_batch:</strong></p>
+<ul>
+<li>applied on the batch as a whole after its construction</li>
+<li>equivalent of <code>batch_tfms</code> in DataBlock</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb107"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.data.load.DataLoader</code></pre>
+<hr>
+<div class="sourceCode" id="cb109"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>print_source(DataLoader)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>@funcs_kwargs
+class DataLoader(GetAttr):
+    _noop_methods = 'wif before_iter after_item before_batch after_batch after_iter'.split()
+    for o in _noop_methods: exec(f"def {o}(self, x=None, *args, **kwargs): return x")
+    _methods = _noop_methods + 'create_batches create_item create_batch retain \
+        get_idxs sample shuffle_fn do_batch create_batch'.split()
+    _default = 'dataset'
+    def __init__(self, dataset=None, bs=None, num_workers=0, pin_memory=False, timeout=0, batch_size=None,
+                 shuffle=False, drop_last=False, indexed=None, n=None, device=None, persistent_workers=False, **kwargs):
+        if batch_size is not None: bs = batch_size # PyTorch compatibility
+        assert not (bs is None and drop_last)
+        if indexed is None: indexed = (hasattr(dataset,'__getitem__')
+                                       and not isinstance(dataset, IterableDataset))
+        if not indexed and shuffle: raise ValueError("Can only shuffle an indexed dataset (not an iterable one).")
+        if n is None:
+            try: n = len(dataset)
+            except TypeError: pass
+        store_attr('dataset,bs,shuffle,drop_last,indexed,n,pin_memory,timeout,device')
+        self.rng,self.num_workers,self.offs = random.Random(random.randint(0,2**32-1)),1,0
+        if sys.platform == "win32" and IN_NOTEBOOK and num_workers &gt; 0:
+            print("Due to IPython and Windows limitation, python multiprocessing isn't available now.")
+            print("So `number_workers` is changed to 0 to avoid getting stuck")
+            num_workers = 0
+        self.fake_l = _FakeLoader(self, pin_memory, num_workers, timeout, persistent_workers=persistent_workers)
+
+    def __len__(self):
+        if self.n is None: raise TypeError
+        if self.bs is None: return self.n
+        return self.n//self.bs + (0 if self.drop_last or self.n%self.bs==0 else 1)
+
+    def get_idxs(self):
+        idxs = Inf.count if self.indexed else Inf.nones
+        if self.n is not None: idxs = list(itertools.islice(idxs, self.n))
+        if self.shuffle: idxs = self.shuffle_fn(idxs)
+        return idxs
+
+    def sample(self):
+        return (b for i,b in enumerate(self.__idxs) if i//(self.bs or 1)%self.num_workers==self.offs)
+
+    def __iter__(self):
+        self.randomize()
+        self.before_iter()
+        self.__idxs=self.get_idxs() # called in context of main process (not workers/subprocesses)
+        for b in _loaders[self.fake_l.num_workers==0](self.fake_l):
+            if self.device is not None: b = to_device(b, self.device)
+            yield self.after_batch(b)
+        self.after_iter()
+        if hasattr(self, 'it'): del(self.it)
+
+    def create_batches(self, samps):
+        if self.dataset is not None: self.it = iter(self.dataset)
+        res = filter(lambda o:o is not None, map(self.do_item, samps))
+        yield from map(self.do_batch, self.chunkify(res))
+
+    def new(self, dataset=None, cls=None, **kwargs):
+        if dataset is None: dataset = self.dataset
+        if cls is None: cls = type(self)
+        cur_kwargs = dict(dataset=dataset, num_workers=self.fake_l.num_workers, pin_memory=self.pin_memory, timeout=self.timeout,
+                          bs=self.bs, shuffle=self.shuffle, drop_last=self.drop_last, indexed=self.indexed, device=self.device)
+        for n in self._methods:
+            o = getattr(self, n)
+            if not isinstance(o, MethodType): cur_kwargs[n] = o
+        return cls(**merge(cur_kwargs, kwargs))
+
+    @property
+    def prebatched(self): return self.bs is None
+    def do_item(self, s):
+        try: return self.after_item(self.create_item(s))
+        except SkipItemException: return None
+    def chunkify(self, b): return b if self.prebatched else chunked(b, self.bs, self.drop_last)
+    def shuffle_fn(self, idxs): return self.rng.sample(idxs, len(idxs))
+    def randomize(self): self.rng = random.Random(self.rng.randint(0,2**32-1))
+    def retain(self, res, b):  return retain_types(res, b[0] if is_listy(b) else b)
+    def create_item(self, s):
+        if self.indexed: return self.dataset[s or 0]
+        elif s is None:  return next(self.it)
+        else: raise IndexError("Cannot index an iterable dataset numerically - must use `None`.")
+    def create_batch(self, b): return (fa_collate,fa_convert)[self.prebatched](b)
+    def do_batch(self, b): return self.retain(self.create_batch(self.before_batch(b)), b)
+    def to(self, device): self.device = device
+    def one_batch(self):
+        if self.n is not None and len(self)==0: raise ValueError(f'This DataLoader does not contain any batches')
+        with self.fake_l.no_multiproc(): res = first(self)
+        if hasattr(self, 'it'): delattr(self, 'it')
+        return res</code></pre>
+<hr>
+<div class="sourceCode" id="cb111"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>GetAttr</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastcore.basics.GetAttr</code></pre>
+<hr>
+<div class="sourceCode" id="cb113"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>print_source(GetAttr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class GetAttr:
+    "Inherit from this to have all attr accesses in `self._xtra` passed down to `self.default`"
+    _default='default'
+    def _component_attr_filter(self,k):
+        if k.startswith('__') or k in ('_xtra',self._default): return False
+        xtra = getattr(self,'_xtra',None)
+        return xtra is None or k in xtra
+    def _dir(self): return [k for k in dir(getattr(self,self._default)) if self._component_attr_filter(k)]
+    def __getattr__(self,k):
+        if self._component_attr_filter(k):
+            attr = getattr(self,self._default,None)
+            if attr is not None: return getattr(attr,k)
+        raise AttributeError(k)
+    def __dir__(self): return custom_dir(self,self._dir())
+#     def __getstate__(self): return self.__dict__
+    def __setstate__(self,data): self.__dict__.update(data)</code></pre>
+<hr>
+<div class="sourceCode" id="cb115"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a DataLoaders object from the Datasets object</span></span>
+<span id="cb115-2"><a href="#cb115-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Add padding to input before batch</span></span>
+<span id="cb115-3"><a href="#cb115-3" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> dsets.dataloaders(bs<span class="op">=</span><span class="dv">64</span>, before_batch<span class="op">=</span>pad_input)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="sorteddl" class="level4">
+<h4 class="anchored" data-anchor-id="sorteddl">SortedDL</h4>
+<ul>
+<li>constructs batches by putting samples of roughly the same lengths into batches</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb116"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>print_source(SortedDL)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>@delegates(TfmdDL)
+class SortedDL(TfmdDL):
+    "A `DataLoader` that goes throught the item in the order given by `sort_func`"
+    def __init__(self, dataset, sort_func=None, res=None, **kwargs):
+        super().__init__(dataset, **kwargs)
+        self.sort_func = _default_sort if sort_func is None else sort_func
+        if res is None and self.sort_func == _default_sort: res = _get_lengths(dataset)
+        self.res = [self.sort_func(self.do_item(i)) for i in range_of(self.dataset)] if res is None else res
+        if len(self.res) &gt; 0: self.idx_max = np.argmax(self.res)
+
+    def get_idxs(self):
+        idxs = super().get_idxs()
+        if self.shuffle: return idxs
+        return sorted(idxs, key=lambda i: self.res[i], reverse=True)
+
+    def shuffle_fn(self,idxs):
+        idxs = np.random.permutation(len(self.dataset))
+        idx_max = np.where(idxs==self.idx_max)[0][0]
+        idxs[0],idxs[idx_max] = idxs[idx_max],idxs[0]
+        sz = self.bs*50
+        chunks = [idxs[i:i+sz] for i in range(0, len(idxs), sz)]
+        chunks = [sorted(s, key=lambda i: self.res[i], reverse=True) for s in chunks]
+        sort_idx = np.concatenate(chunks)
+
+        sz = self.bs
+        batches = [sort_idx[i:i+sz] for i in range(0, len(sort_idx), sz)]
+        sort_idx = np.concatenate(np.random.permutation(batches[1:-1])) if len(batches) &gt; 2 else np.array([],dtype=np.int)
+        sort_idx = np.concatenate((batches[0], sort_idx) if len(batches)==1 else (batches[0], sort_idx, batches[-1]))
+        return iter(sort_idx)
+
+    @delegates(TfmdDL.new)
+    def new(self, dataset=None, **kwargs):
+        if 'val_res' in kwargs and kwargs['val_res'] is not None: res = kwargs['val_res']
+        else: res = self.res if dataset is None else None
+        return super().new(dataset=dataset, res=res, **kwargs)</code></pre>
+<hr>
+<div class="sourceCode" id="cb118"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Full code necessary to prepare the data for text classification</span></span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a>tfms <span class="op">=</span> [[Tokenizer.from_folder(path), Numericalize], [parent_label, Categorize]]</span>
+<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> get_text_files(path, folders <span class="op">=</span> [<span class="st">'train'</span>, <span class="st">'test'</span>])</span>
+<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a>splits <span class="op">=</span> GrandparentSplitter(valid_name<span class="op">=</span><span class="st">'test'</span>)(files)</span>
+<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a>dsets <span class="op">=</span> Datasets(files, tfms, splits<span class="op">=</span>splits)</span>
+<span id="cb118-6"><a href="#cb118-6" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> dsets.dataloaders(dl_type<span class="op">=</span>SortedDL, before_batch<span class="op">=</span>pad_input)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="applying-the-mid-level-data-api-siamesepair" class="level2">
+<h2 class="anchored" data-anchor-id="applying-the-mid-level-data-api-siamesepair">Applying the Mid-Level Data API: SiamesePair</h2>
+<section id="siamese-model" class="level3">
+<h3 class="anchored" data-anchor-id="siamese-model">Siamese Model</h3>
+<ul>
+<li>takes two images and has to determine whether they are of the same class</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb119"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.vision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb120"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> untar_data(URLs.PETS)</span>
+<span id="cb120-2"><a href="#cb120-2" aria-hidden="true" tabindex="-1"></a>path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Path('/home/innom-dt/.fastai/data/oxford-iiit-pet')</code></pre>
+<hr>
+<div class="sourceCode" id="cb122"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> get_image_files(path<span class="op">/</span><span class="st">"images"</span>)</span>
+<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a>files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>(#7390) [Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Birman_121.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/shiba_inu_131.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bombay_176.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bengal_199.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/beagle_41.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/beagle_27.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/great_pyrenees_181.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/Bengal_100.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/keeshond_124.jpg'),Path('/home/innom-dt/.fastai/data/oxford-iiit-pet/images/havanese_115.jpg')...]</code></pre>
+<hr>
+<div class="sourceCode" id="cb124"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>fastuple</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastcore.basics.fastuple</code></pre>
+<hr>
+<div class="sourceCode" id="cb126"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>print_source(fastuple)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class fastuple(tuple):
+    "A `tuple` with elementwise ops and more friendly __init__ behavior"
+    def __new__(cls, x=None, *rest):
+        if x is None: x = ()
+        if not isinstance(x,tuple):
+            if len(rest): x = (x,)
+            else:
+                try: x = tuple(iter(x))
+                except TypeError: x = (x,)
+        return super().__new__(cls, x+rest if rest else x)
+
+    def _op(self,op,*args):
+        if not isinstance(self,fastuple): self = fastuple(self)
+        return type(self)(map(op,self,*map(cycle, args)))
+
+    def mul(self,*args):
+        "`*` is already defined in `tuple` for replicating, so use `mul` instead"
+        return fastuple._op(self, operator.mul,*args)
+
+    def add(self,*args):
+        "`+` is already defined in `tuple` for concat, so use `add` instead"
+        return fastuple._op(self, operator.add,*args)</code></pre>
+<hr>
+<div class="sourceCode" id="cb128"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Custom type to allow us to show siamese image pairs</span></span>
+<span id="cb128-2"><a href="#cb128-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Tracks whether the two images belong to the same class</span></span>
+<span id="cb128-3"><a href="#cb128-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SiameseImage(fastuple):</span>
+<span id="cb128-4"><a href="#cb128-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Implement a custom show method to display the image pair</span></span>
+<span id="cb128-5"><a href="#cb128-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> show(<span class="va">self</span>, ctx<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs): </span>
+<span id="cb128-6"><a href="#cb128-6" aria-hidden="true" tabindex="-1"></a>        img1,img2,same_breed <span class="op">=</span> <span class="va">self</span></span>
+<span id="cb128-7"><a href="#cb128-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert to Tensors</span></span>
+<span id="cb128-8"><a href="#cb128-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> <span class="bu">isinstance</span>(img1, Tensor):</span>
+<span id="cb128-9"><a href="#cb128-9" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Resize images to the same size</span></span>
+<span id="cb128-10"><a href="#cb128-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> img2.size <span class="op">!=</span> img1.size: img2 <span class="op">=</span> img2.resize(img1.size)</span>
+<span id="cb128-11"><a href="#cb128-11" aria-hidden="true" tabindex="-1"></a>            t1,t2 <span class="op">=</span> tensor(img1),tensor(img2)</span>
+<span id="cb128-12"><a href="#cb128-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Reorder color channels</span></span>
+<span id="cb128-13"><a href="#cb128-13" aria-hidden="true" tabindex="-1"></a>            t1,t2 <span class="op">=</span> t1.permute(<span class="dv">2</span>,<span class="dv">0</span>,<span class="dv">1</span>),t2.permute(<span class="dv">2</span>,<span class="dv">0</span>,<span class="dv">1</span>)</span>
+<span id="cb128-14"><a href="#cb128-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>: t1,t2 <span class="op">=</span> img1,img2</span>
+<span id="cb128-15"><a href="#cb128-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a separating line between the two images</span></span>
+<span id="cb128-16"><a href="#cb128-16" aria-hidden="true" tabindex="-1"></a>        line <span class="op">=</span> t1.new_zeros(t1.shape[<span class="dv">0</span>], t1.shape[<span class="dv">1</span>], <span class="dv">10</span>)</span>
+<span id="cb128-17"><a href="#cb128-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> show_image(torch.cat([t1,line,t2], dim<span class="op">=</span><span class="dv">2</span>), </span>
+<span id="cb128-18"><a href="#cb128-18" aria-hidden="true" tabindex="-1"></a>                          title<span class="op">=</span>same_breed, ctx<span class="op">=</span>ctx)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb129"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>img <span class="op">=</span> PILImage.create(files[<span class="dv">0</span>])</span>
+<span id="cb129-2"><a href="#cb129-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a siamese pair of the same image</span></span>
+<span id="cb129-3"><a href="#cb129-3" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> SiameseImage(img, img, <span class="va">True</span>)</span>
+<span id="cb129-4"><a href="#cb129-4" aria-hidden="true" tabindex="-1"></a>s.show()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_90_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb130"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a>img1 <span class="op">=</span> PILImage.create(files[<span class="dv">1</span>])</span>
+<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>s1 <span class="op">=</span> SiameseImage(img, img1, <span class="va">False</span>)</span>
+<span id="cb130-3"><a href="#cb130-3" aria-hidden="true" tabindex="-1"></a>s1.show()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_91_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb131"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a>Resize</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.vision.augment.Resize</code></pre>
+<hr>
+<div class="sourceCode" id="cb133"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>print_source(Resize)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>@delegates()
+class Resize(RandTransform):
+    split_idx,mode,mode_mask,order = None,Image.BILINEAR,Image.NEAREST,1
+    "Resize image to `size` using `method`"
+    def __init__(self, size, method=ResizeMethod.Crop, pad_mode=PadMode.Reflection,
+                 resamples=(Image.BILINEAR, Image.NEAREST), **kwargs):
+        size = _process_sz(size)
+        store_attr()
+        super().__init__(**kwargs)
+        self.mode,self.mode_mask = resamples
+
+    def before_call(self, b, split_idx):
+        if self.method==ResizeMethod.Squish: return
+        self.pcts = (0.5,0.5) if split_idx else (random.random(),random.random())
+
+    def encodes(self, x:(Image.Image,TensorBBox,TensorPoint)):
+        orig_sz = _get_sz(x)
+        if self.method==ResizeMethod.Squish:
+            return x.crop_pad(orig_sz, fastuple(0,0), orig_sz=orig_sz, pad_mode=self.pad_mode,
+                   resize_mode=self.mode_mask if isinstance(x,PILMask) else self.mode, resize_to=self.size)
+
+        w,h = orig_sz
+        op = (operator.lt,operator.gt)[self.method==ResizeMethod.Pad]
+        m = w/self.size[0] if op(w/self.size[0],h/self.size[1]) else h/self.size[1]
+        cp_sz = (int(m*self.size[0]),int(m*self.size[1]))
+        tl = fastuple(int(self.pcts[0]*(w-cp_sz[0])), int(self.pcts[1]*(h-cp_sz[1])))
+        return x.crop_pad(cp_sz, tl, orig_sz=orig_sz, pad_mode=self.pad_mode,
+                   resize_mode=self.mode_mask if isinstance(x,PILMask) else self.mode, resize_to=self.size)</code></pre>
+<hr>
+<div class="sourceCode" id="cb135"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a>s2 <span class="op">=</span> Resize(<span class="dv">224</span>)(s1)</span>
+<span id="cb135-2"><a href="#cb135-2" aria-hidden="true" tabindex="-1"></a>s2.show()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_94_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb136"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb136-1"><a href="#cb136-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Label images by filename</span></span>
+<span id="cb136-2"><a href="#cb136-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> label_func(fname):</span>
+<span id="cb136-3"><a href="#cb136-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> re.match(<span class="vs">r'^(.*)_\d+.jpg$'</span>, fname.name).groups()[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb137"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SiameseTransform(Transform):</span>
+<span id="cb137-2"><a href="#cb137-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, files, label_func, splits):</span>
+<span id="cb137-3"><a href="#cb137-3" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Generate list of unique labels</span></span>
+<span id="cb137-4"><a href="#cb137-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.labels <span class="op">=</span> files.<span class="bu">map</span>(label_func).unique()</span>
+<span id="cb137-5"><a href="#cb137-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a dictionary to match labels to filenames</span></span>
+<span id="cb137-6"><a href="#cb137-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lbl2files <span class="op">=</span> {l: L(f <span class="cf">for</span> f <span class="kw">in</span> files <span class="cf">if</span> label_func(f) <span class="op">==</span> l) </span>
+<span id="cb137-7"><a href="#cb137-7" aria-hidden="true" tabindex="-1"></a>                          <span class="cf">for</span> l <span class="kw">in</span> <span class="va">self</span>.labels}</span>
+<span id="cb137-8"><a href="#cb137-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.label_func <span class="op">=</span> label_func</span>
+<span id="cb137-9"><a href="#cb137-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.valid <span class="op">=</span> {f: <span class="va">self</span>._draw(f) <span class="cf">for</span> f <span class="kw">in</span> files[splits[<span class="dv">1</span>]]}</span>
+<span id="cb137-10"><a href="#cb137-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb137-11"><a href="#cb137-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> encodes(<span class="va">self</span>, f):</span>
+<span id="cb137-12"><a href="#cb137-12" aria-hidden="true" tabindex="-1"></a>        f2,t <span class="op">=</span> <span class="va">self</span>.valid.get(f, <span class="va">self</span>._draw(f))</span>
+<span id="cb137-13"><a href="#cb137-13" aria-hidden="true" tabindex="-1"></a>        img1,img2 <span class="op">=</span> PILImage.create(f),PILImage.create(f2)</span>
+<span id="cb137-14"><a href="#cb137-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create siamese image pair</span></span>
+<span id="cb137-15"><a href="#cb137-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> SiameseImage(img1, img2, t)</span>
+<span id="cb137-16"><a href="#cb137-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb137-17"><a href="#cb137-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _draw(<span class="va">self</span>, f):</span>
+<span id="cb137-18"><a href="#cb137-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 50/50 chance of generating a pair of the same class</span></span>
+<span id="cb137-19"><a href="#cb137-19" aria-hidden="true" tabindex="-1"></a>        same <span class="op">=</span> random.random() <span class="op">&lt;</span> <span class="fl">0.5</span></span>
+<span id="cb137-20"><a href="#cb137-20" aria-hidden="true" tabindex="-1"></a>        cls <span class="op">=</span> <span class="va">self</span>.label_func(f)</span>
+<span id="cb137-21"><a href="#cb137-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> same: </span>
+<span id="cb137-22"><a href="#cb137-22" aria-hidden="true" tabindex="-1"></a>            cls <span class="op">=</span> random.choice(L(l <span class="cf">for</span> l <span class="kw">in</span> <span class="va">self</span>.labels <span class="cf">if</span> l <span class="op">!=</span> cls)) </span>
+<span id="cb137-23"><a href="#cb137-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> random.choice(<span class="va">self</span>.lbl2files[cls]),same</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb138"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a>print_source(RandomSplitter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>def RandomSplitter(valid_pct=0.2, seed=None):
+    "Create function that splits `items` between train/val with `valid_pct` randomly."
+    def _inner(o):
+        if seed is not None: torch.manual_seed(seed)
+        rand_idx = L(list(torch.randperm(len(o)).numpy()))
+        cut = int(valid_pct * len(o))
+        return rand_idx[cut:],rand_idx[:cut]
+    return _inner</code></pre>
+<hr>
+<div class="sourceCode" id="cb140"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a><span class="bu">help</span>(torch.randperm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Help on built-in function randperm:
+
+randperm(...)
+    randperm(n, *, generator=None, out=None, dtype=torch.int64,layout=torch.strided, device=None, requires_grad=False, pin_memory=False) -&gt; Tensor
+    
+    Returns a random permutation of integers from ``0`` to ``n - 1``.
+    
+    Args:
+        n (int): the upper bound (exclusive)
+    
+    Keyword args:
+        generator (:class:`torch.Generator`, optional): a pseudorandom number generator for sampling
+        out (Tensor, optional): the output tensor.
+        dtype (:class:`torch.dtype`, optional): the desired data type of returned tensor.
+            Default: ``torch.int64``.
+        layout (:class:`torch.layout`, optional): the desired layout of returned Tensor.
+            Default: ``torch.strided``.
+        device (:class:`torch.device`, optional): the desired device of returned tensor.
+            Default: if ``None``, uses the current device for the default tensor type
+            (see :func:`torch.set_default_tensor_type`). :attr:`device` will be the CPU
+            for CPU tensor types and the current CUDA device for CUDA tensor types.
+        requires_grad (bool, optional): If autograd should record operations on the
+            returned tensor. Default: ``False``.
+        pin_memory (bool, optional): If set, returned tensor would be allocated in
+            the pinned memory. Works only for CPU tensors. Default: ``False``.
+    
+    Example::
+    
+        &gt;&gt;&gt; torch.randperm(4)
+        tensor([2, 1, 0, 3])</code></pre>
+<hr>
+<div class="sourceCode" id="cb142"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a>splits <span class="op">=</span> RandomSplitter()(files)</span>
+<span id="cb142-2"><a href="#cb142-2" aria-hidden="true" tabindex="-1"></a>tfm <span class="op">=</span> SiameseTransform(files, label_func, splits)</span>
+<span id="cb142-3"><a href="#cb142-3" aria-hidden="true" tabindex="-1"></a>tfm(files[<span class="dv">0</span>]).show()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_99_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb143"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb143-1"><a href="#cb143-1" aria-hidden="true" tabindex="-1"></a>tls <span class="op">=</span> TfmdLists(files, tfm, splits<span class="op">=</span>splits)</span>
+<span id="cb143-2"><a href="#cb143-2" aria-hidden="true" tabindex="-1"></a>show_at(tls.valid, <span class="dv">0</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_100_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb144"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb144-1"><a href="#cb144-1" aria-hidden="true" tabindex="-1"></a>ToTensor</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.data.transforms.ToTensor</code></pre>
+<hr>
+<div class="sourceCode" id="cb146"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb146-1"><a href="#cb146-1" aria-hidden="true" tabindex="-1"></a>print_source(ToTensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class ToTensor(Transform):
+    "Convert item to appropriate tensor class"
+    order = 5</code></pre>
+<hr>
+<div class="sourceCode" id="cb148"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb148-1"><a href="#cb148-1" aria-hidden="true" tabindex="-1"></a>IntToFloatTensor</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>fastai.data.transforms.IntToFloatTensor</code></pre>
+<hr>
+<div class="sourceCode" id="cb150"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb150-1"><a href="#cb150-1" aria-hidden="true" tabindex="-1"></a>print_source(IntToFloatTensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>class IntToFloatTensor(DisplayedTransform):
+    "Transform image to float tensor, optionally dividing by 255 (e.g. for images)."
+    order = 10 #Need to run after PIL transforms on the GPU
+    def __init__(self, div=255., div_mask=1): store_attr()
+    def encodes(self, o:TensorImage): return o.float().div_(self.div)
+    def encodes(self, o:TensorMask ): return o.long() // self.div_mask
+    def decodes(self, o:TensorImage): return ((o.clamp(0., 1.) * self.div).long()) if self.div else o</code></pre>
+<hr>
+<div class="sourceCode" id="cb152"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb152-1"><a href="#cb152-1" aria-hidden="true" tabindex="-1"></a>Normalize.from_stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;bound method Normalize.from_stats of &lt;class 'fastai.data.transforms.Normalize'&gt;&gt;</code></pre>
+<hr>
+<div class="sourceCode" id="cb154"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb154-1"><a href="#cb154-1" aria-hidden="true" tabindex="-1"></a>print_source(Normalize.from_stats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    @classmethod
+    def from_stats(cls, mean, std, dim=1, ndim=4, cuda=True): return cls(*broadcast_vec(dim, ndim, mean, std, cuda=cuda))</code></pre>
+<hr>
+<div class="sourceCode" id="cb156"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb156-1"><a href="#cb156-1" aria-hidden="true" tabindex="-1"></a>broadcast_vec</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;function fastai.data.transforms.broadcast_vec(dim, ndim, *t, cuda=True)&gt;</code></pre>
+<hr>
+<div class="sourceCode" id="cb158"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb158-1"><a href="#cb158-1" aria-hidden="true" tabindex="-1"></a>print_source(broadcast_vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>def broadcast_vec(dim, ndim, *t, cuda=True):
+    "Make a vector broadcastable over `dim` (out of `ndim` total) by prepending and appending unit axes"
+    v = [1]*ndim
+    v[dim] = -1
+    f = to_device if cuda else noop
+    return [f(tensor(o).view(*v)) for o in t]</code></pre>
+<hr>
+<div class="sourceCode" id="cb160"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb160-1"><a href="#cb160-1" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> tls.dataloaders(after_item<span class="op">=</span>[Resize(<span class="dv">224</span>), ToTensor], </span>
+<span id="cb160-2"><a href="#cb160-2" aria-hidden="true" tabindex="-1"></a>    after_batch<span class="op">=</span>[IntToFloatTensor, Normalize.from_stats(<span class="op">*</span>imagenet_stats)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li><a href="https://www.oreilly.com/library/view/deep-learning-for/9781492045519/">Deep Learning for Coders with fastai &amp; PyTorch</a></li>
+<li><a href="https://github.com/fastai/fastbook">The fastai book GitHub Repository</a></li>
+</ul>
+<p><strong>Previous:</strong> <a href="../chapter-10/">Notes on fastai Book Ch. 10</a></p>
+<p><strong>Next:</strong> <a href="../chapter-12/">Notes on fastai Book Ch. 12</a></p>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+      <div class="nav-footer-center">
+        <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2022, Christian J. Mills
+  </li>  
+</ul>
+      </div>
+  </div>
+</footer>
+
+
+
+</body></html>

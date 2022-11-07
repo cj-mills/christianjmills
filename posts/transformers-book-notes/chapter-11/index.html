@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2022-04-26">
+<meta name="description" content="Chapter 11 explores scaling up transformers, methods to make self-attention more efficient, and multimodel transformers.">
+
+<title>Christian Mills - Notes on Transformers Book Ch. 11</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Notes on Transformers Book Ch. 11">
+<meta property="og:description" content="Chapter 11 explores scaling up transformers, methods to make self-attention more efficient, and multimodel transformers.">
+<meta property="og:image" content="christianjmills.com/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta property="og:image:height" content="295">
+<meta property="og:image:width" content="300">
+<meta name="twitter:title" content="Christian Mills - Notes on Transformers Book Ch. 11">
+<meta name="twitter:description" content="Chapter 11 explores scaling up transformers, methods to make self-attention more efficient, and multimodel transformers.">
+<meta name="twitter:image" content="christianjmills.com/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="295">
+<meta name="twitter:image-width" content="300">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">About</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"><i class="bi bi-envelope-fill" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"><i class="bi bi-github" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"><i class="bi bi-twitter" role="img">
+</i> 
+ </a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../index.xml"><i class="bi bi-rss" role="img">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Notes on Transformers Book Ch. 11</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">ai</div>
+    <div class="quarto-category">huggingface</div>
+    <div class="quarto-category">nlp</div>
+    <div class="quarto-category">notes</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Chapter 11 explores scaling up transformers, methods to make self-attention more efficient, and multimodel transformers.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 26, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#scaling-transformers">Scaling Transformers</a></li>
+<li><a href="#going-beyond-text">Going Beyond Text</a></li>
+<li><a href="#multimodal-transformers">Multimodal Transformers</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> transformers</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datasets</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> accelerate</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Only print error messages</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>transformers.logging.set_verbosity_error()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>datasets.logging.set_verbosity_error()</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>transformers.__version__, datasets.__version__, accelerate.__version__</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    ('4.18.0', '2.1.0', '0.5.1')</code></pre>
+<hr>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ast</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://astor.readthedocs.io/en/latest/</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> astor</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> inspect</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> textwrap</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> print_source(obj, exclude_doc<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get source code</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    source <span class="op">=</span> inspect.getsource(obj)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove any common leading whitespace from every line</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    cleaned_source <span class="op">=</span> textwrap.dedent(source)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Parse the source into an AST node.</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    parsed <span class="op">=</span> ast.parse(cleaned_source)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> ast.walk(parsed):</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Skip any nodes that are not class or function definitions</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> <span class="bu">isinstance</span>(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)):</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> exclude_doc <span class="kw">and</span> <span class="bu">len</span>(node.body) <span class="op">&gt;</span> <span class="dv">1</span>: node.body <span class="op">=</span> node.body[<span class="dv">1</span>:]</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(astor.to_source(parsed))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<section id="scaling-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="scaling-transformers">Scaling Transformers</h2>
+<ul>
+<li><strong><a href="http://incompleteideas.net/IncIdeas/BitterLesson.html">The Bitter Lesson</a></strong>
+<ul>
+<li><a href="http://www.incompleteideas.net/">Richard Sutton</a> argued that general methods that leverage computation are far more effective in AI than methods that leverage domain knowledge.</li>
+<li>The human knowledge approach tends to complicate things, making them less suited to taking advantage of general methods leveraging computation.</li>
+<li>Search methods and learning methods seem to scale arbitrarily with computation power.</li>
+</ul></li>
+<li>Large language models perform better on downstream tasks.</li>
+<li>Interesting capabilities like zero-shot and few-shot learning emerge in the 10 to 100-billion parameter range.</li>
+<li>Computing power and training data must also scale with parameter count.</li>
+<li>Large language models like GPT-3 are estimated to cost <a href="https://lambdalabs.com/blog/demystifying-gpt-3/">$4.6 million</a> to train.</li>
+<li>The high cost of training large models means we need a way to estimate the model’s performance in advance.</li>
+<li><a href="https://arxiv.org/abs/2001.08361">Scaling Laws for Neural Language Models</a>
+<ul>
+<li>The performance of language models appears to obey a power-law relationship with model size and other factors.</li>
+</ul></li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Plot parameter counts over time for prominent Transformer architectures</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model_data <span class="op">=</span> [</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'12-06-2017'</span>, <span class="st">'name'</span>: <span class="st">'Transformer'</span>, <span class="st">'size'</span>: <span class="dv">213</span><span class="op">*</span><span class="fl">1e6</span>},</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'11-06-2018'</span>, <span class="st">'name'</span>: <span class="st">'GPT'</span>, <span class="st">'size'</span>: <span class="dv">110</span><span class="op">*</span><span class="fl">1e6</span>},</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'11-10-2018'</span>, <span class="st">'name'</span>: <span class="st">'BERT'</span>, <span class="st">'size'</span>: <span class="dv">340</span><span class="op">*</span><span class="fl">1e6</span>},</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'14-02-2019'</span>, <span class="st">'name'</span>: <span class="st">'GPT-2'</span>, <span class="st">'size'</span>: <span class="fl">1.5</span><span class="op">*</span><span class="fl">1e9</span>},</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'23-10-2019'</span>, <span class="st">'name'</span>: <span class="st">'T5'</span>, <span class="st">'size'</span>: <span class="dv">11</span><span class="op">*</span><span class="fl">1e9</span>},</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'17-09-2019'</span>, <span class="st">'name'</span>: <span class="st">'Megatron'</span>, <span class="st">'size'</span>: <span class="fl">8.3</span><span class="op">*</span><span class="fl">1e9</span>},</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'13-02-2020'</span>, <span class="st">'name'</span>: <span class="st">'Turing-NLG'</span>, <span class="st">'size'</span>: <span class="dv">17</span><span class="op">*</span><span class="fl">1e9</span>},</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'30-06-2020'</span>, <span class="st">'name'</span>: <span class="st">'GShard'</span>, <span class="st">'size'</span>: <span class="dv">600</span><span class="op">*</span><span class="fl">1e9</span>},</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'28-05-2020'</span>, <span class="st">'name'</span>: <span class="st">'GPT-3'</span>, <span class="st">'size'</span>: <span class="dv">175</span><span class="op">*</span><span class="fl">1e9</span>},</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'date'</span>: <span class="st">'11-01-2021'</span>, <span class="st">'name'</span>: <span class="st">'Switch-C'</span>, <span class="st">'size'</span>: <span class="fl">1.571</span><span class="op">*</span><span class="fl">10e12</span>},</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> label_point(x, y, val, ax):</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> pd.concat({<span class="st">"x"</span>: x, <span class="st">"y"</span>: y, <span class="st">"val"</span>: val}, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, point <span class="kw">in</span> a.iterrows():</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        ax.text(</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            point[<span class="st">"x"</span>],</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>            point[<span class="st">"y"</span>],</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            <span class="bu">str</span>(point[<span class="st">"val"</span>]),</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>            horizontalalignment<span class="op">=</span><span class="st">"center"</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>            verticalalignment<span class="op">=</span><span class="st">"bottom"</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>df_lm <span class="op">=</span> pd.DataFrame.from_records(model_data)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>df_lm[<span class="st">"date"</span>] <span class="op">=</span> pd.to_datetime(df_lm[<span class="st">"date"</span>], dayfirst<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>df_lm.plot(x<span class="op">=</span><span class="st">"date"</span>, y<span class="op">=</span><span class="st">"size"</span>, kind<span class="op">=</span><span class="st">"scatter"</span>, s<span class="op">=</span><span class="dv">15</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>ax.set_yscale(<span class="st">"log"</span>)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>label_point(df_lm[<span class="st">"date"</span>], df_lm[<span class="st">"size"</span>], df_lm[<span class="st">"name"</span>], ax)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Release date"</span>)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Number of parameters"</span>)</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>plt.subplots_adjust(top<span class="op">=</span><span class="fl">1.2</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_5_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<section id="scaling-laws" class="level3">
+<h3 class="anchored" data-anchor-id="scaling-laws">Scaling Laws</h3>
+<ul>
+<li>Scaling laws allow us to empirically quantify the “bigger is better” paradigm for language models by studying their behavior with varying compute budgets <span class="math inline">\(C\)</span>, dataset sizes <span class="math inline">\(D\)</span>, and model sizes <span class="math inline">\(N\)</span>.</li>
+<li>We measure dataset size in the number of tokens.</li>
+<li>The model size excludes parameters from the embedding layers.</li>
+<li>We chart the dependence of the cross-entropy loss on these three factors to determine if a relationship emerges.</li>
+<li>Scaling laws imply that increasing compute budget, dataset size, and model size in tandem is more productive than architectural tweaks or hyperparameter optimization to improve performance.</li>
+<li>The test loss has a power-law relationship with computation budget, dataset size, and model size across several orders of magnitude.</li>
+<li>We can express <span class="math inline">\(L\left( X \right) \sim 1/X^{\alpha}\)</span> for <span class="math inline">\(X = N, C, D\)</span> where <span class="math inline">\(\alpha\)</span> is a scaling exponent determined by a fit to the loss curve.
+<ul>
+<li>Typical values for <span class="math inline">\(\alpha\)</span> lie in the range <span class="math inline">\(\left[0.05,0.095 \right]\)</span>.</li>
+<li><a href="https://arxiv.org/abs/2010.14701">Scaling Laws for Autoregressive Generative Modeling</a></li>
+</ul></li>
+<li>These power laws mean we can extrapolate the early part of a loss curve to predict the approximate loss from training longer.</li>
+<li>Larger models can achieve the same performance as smaller models with fewer training steps.</li>
+<li>Scaling laws are also present for other modalities like images, videos, and mathematical problem-solving.</li>
+</ul>
+</section>
+<section id="challenges-with-scaling" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-with-scaling">Challenges with Scaling</h3>
+<ul>
+<li>Provisioning and managing hundreds or thousands of GPU nodes typically requires specialized engineers familiar with running large-scale, distributed experiments.</li>
+<li>Most companies cannot afford the teams and resources to train models at the largest scales.<br>
+</li>
+<li>A recently proposed distributed deep learning framework enables smaller groups to pool their computational resources and pre-train models.
+<ul>
+<li><a href="https://arxiv.org/abs/2106.10207">Distributed Deep Learning in Open Collaborations</a></li>
+</ul></li>
+<li>Large models require large, high-quality datasets.
+<ul>
+<li>It is hard to curate only high-quality training examples when the dataset contains terabytes of text.</li>
+<li>We need a way to control common biases in the dataset to prevent the model from inheriting them.</li>
+<li>There are potential licensing issues when using large-scale web-text corpora.</li>
+<li>Large-scale text datasets might contain personal information.</li>
+</ul></li>
+<li>Evaluating trained models on downstream tasks requires additional time and resources.
+<ul>
+<li>We need to probe the model for biased and toxic output, even when using a cleaned dataset.</li>
+</ul></li>
+<li>Optimization approaches like distillation, pruning, and quantization might not be enough when starting with a model that is hundreds of gigabytes in size.</li>
+<li><a href="https://openai.com/api/">OpenAI API</a></li>
+<li><a href="https://huggingface.co/docs/api-inference/index">Hugging Face Accelerated Inference API</a></li>
+<li><a href="https://bigscience.huggingface.co/">BigScience</a> is a one-year-long research workshop meant to foster discussions and reflections on the research questions surrounding large language models, the challenges of creating and sharing them, and datasets used for research.
+<ul>
+<li>The collaborative tasks involve creating, sharing, and evaluating a massive multilingual dataset and language model.</li>
+</ul></li>
+<li><a href="https://www.eleuther.ai/">EleutherAI</a> is a decentralized collective of volunteers focused on AI alignment, scaling, and open-source AI research.
+<ul>
+<li>EleutherAI wants to train and open-source a GPT-3-sized model.</li>
+<li><a href="https://huggingface.co/EleutherAI/gpt-neo-2.7B">GPT-Neo 2.7B</a></li>
+<li><a href="https://huggingface.co/EleutherAI/gpt-j-6B">GPT-J 6B</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="attention-please" class="level3">
+<h3 class="anchored" data-anchor-id="attention-please">Attention Please!</h3>
+<ul>
+<li>Self-attention involves performing pairwise comparisons of all the tokens in a sequence, which becomes a computational bottleneck.</li>
+<li>The self-attention layer of the Transformer architecture naively scales like <span class="math inline">\(O(n^{2})\)</span>, where n is the length of the sequence.</li>
+<li>A recent paper from Google shows we can reduce the memory complexity to <span class="math inline">\(O \left( \log{n} \right)\)</span> via a simple reordering of the operations.
+<ul>
+<li><a href="https://arxiv.org/abs/2112.05682">Self-attention Does Not Need <span class="math inline">\(O(n^{2})\)</span> Memory</a></li>
+</ul></li>
+<li>Much of the recent research on transformers focuses on making self-attention more efficient.
+<ul>
+<li><a href="https://arxiv.org/abs/2009.06732">Efficient Transformers: A Survey</a></li>
+</ul></li>
+<li>Common approaches to making attention more efficient involve introducing sparsity into the attention mechanism or applying kernels to the attention matrix.</li>
+</ul>
+</section>
+<section id="sparse-attention" class="level3">
+<h3 class="anchored" data-anchor-id="sparse-attention">Sparse Attention</h3>
+<ul>
+<li>We can reduce the number of computations performed in the self-attention layer by limiting the number of query-key pairs it generates according to a predefined pattern.</li>
+<li>There are a handful of popular “atomic” sparsity patterns.
+<ul>
+<li><a href="https://arxiv.org/abs/2106.04554">A Survey of Transformers</a></li>
+</ul></li>
+<li><strong>Global attention</strong> defines a few tokens in the sequence that are allowed to attend to all others.</li>
+<li><strong>Band attention</strong> computes attention over a diagonal band.</li>
+<li><strong>Dilated attention</strong> skips some query-key pairs using a dilated window with gaps.</li>
+<li><strong>Random attention</strong> samples a few keys for each query to compute attention scores.</li>
+<li><strong>Block local attention</strong> divides the sequence into blocks and restricts attention to within these blocks.</li>
+<li>Most transformer models with sparse attention use a mix of atomic sparsity patterns to generate the final attention matrix.</li>
+<li>Models like <a href="https://huggingface.co/allenai/longformer-base-4096">Longformer</a> use a mix of global and band attention, while <a href="https://huggingface.co/google/bigbird-roberta-base">Bigbird</a> adds random attention.</li>
+<li>Introducing sparsity into the attention matrix enables models to process much longer sequences.</li>
+<li>It is also possible to learn the sparsity pattern by clustering the tokens into chunks.
+<ul>
+<li><a href="https://huggingface.co/google/reformer-crime-and-punishment">Reformer</a> uses a hash function to cluster similar tokens.</li>
+</ul></li>
+</ul>
+</section>
+<section id="linearized-attention" class="level3">
+<h3 class="anchored" data-anchor-id="linearized-attention">Linearized Attention</h3>
+<ul>
+<li>Linearized attention involves changing the order of operations for computing attention scores.</li>
+<li>We compute the self-attention score of the queries and keys using a similarity function like the dot product.</li>
+<li>For a general similarity function <span class="math inline">\(sim \left( q_{i},k_{j} \right)\)</span>, we can express the attention outputs as the following equation:</li>
+<li><h3 id="y_i-sum_jfracsim-left-q_i-k_j-rightsum_ksimleft-q_i-k_k-rightv_j" class="anchored"><span class="math display">\[y_{i} = \sum_{j}{\frac{sim \left( Q_{i}, K_{j} \right)}{\sum_{k}{sim\left( Q_{i}, K_{k} \right)}}V_{j}}\]</span></h3></li>
+<li>The trick behind linearized attention mechanisms is to express the similarity function as a kernel function that decomposes the operation into two pieces:</li>
+<li><h3 id="sim-left-q_j-k_j-right-phi-leftq_i-rightt-phi-left-k_j-right" class="anchored"><span class="math display">\[sim \left( Q_{j}, K_{j} \right) = \phi \left(Q_{i} \right)^{T} \phi \left( K_{j} \right)\]</span></h3></li>
+<li>where <span class="math inline">\(\phi\)</span> is typically a high-dimensional feature map.</li>
+<li><span class="math inline">\(\phi \left( Q_{i} \right)\)</span> is independent of <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span>, so we can pull it under the sums to write the attention output as follows:</li>
+<li><h3 id="y_i-fracphi-leftq_i-rightt-sum_jphi-left-k_j-right-v_jtphi-leftq_i-rightt-sum_kphi-left-k_k-right" class="anchored"><span class="math display">\[y_{i} = \frac{\phi \left(Q_{i} \right)^{T} \sum_{j}{\phi \left( K_{j} \right)} V_{j}^{T}}{\phi \left(Q_{i} \right)^{T} \sum_{k}{\phi \left( K_{k} \right)}}\]</span></h3></li>
+<li>By first computing <span class="math inline">\(\sum_{j}{\phi \left( K_{j} \right)} V_{j}^{T}\)</span> and <span class="math inline">\(\sum_{k}{\phi \left( K_{k} \right)}\)</span>, we can effectively linearize the space and time complexity of self-attention.</li>
+<li>Popular methods that implement linearized self-attention include Linear Transformer and Performer.
+<ul>
+<li><a href="https://arxiv.org/abs/2006.16236">Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention</a></li>
+<li><a href="https://arxiv.org/abs/2009.14794">Rethinking Attention with Performers</a></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="going-beyond-text" class="level2">
+<h2 class="anchored" data-anchor-id="going-beyond-text">Going Beyond Text</h2>
+<ul>
+<li>Developing effective strategies for common textual tasks like classification and question answering allows us to address many types of real-world problems.</li>
+</ul>
+<section id="limitations-to-using-text" class="level3">
+<h3 class="anchored" data-anchor-id="limitations-to-using-text">Limitations to using text</h3>
+<section id="human-reporting-bias" class="level4">
+<h4 class="anchored" data-anchor-id="human-reporting-bias">Human reporting bias</h4>
+<ul>
+<li>The frequencies of events in the training text my not represent their actual frequencies.
+<ul>
+<li><a href="https://openreview.net/pdf?id=AzxEzvpdE3Wcy">Reporting Bias and Knowledge Acquisition</a></li>
+</ul></li>
+<li>A model trained exclusively on text from the internet might have a distorted image of the world.</li>
+</ul>
+</section>
+<section id="common-sense" class="level4">
+<h4 class="anchored" data-anchor-id="common-sense">Common Sense</h4>
+<ul>
+<li>Most do not document their reasoning based on common sense.</li>
+<li>Language models trained on text might know many facts about the world but lack basic common-sense reasoning.</li>
+</ul>
+</section>
+<section id="facts" class="level4">
+<h4 class="anchored" data-anchor-id="facts">Facts</h4>
+<ul>
+<li>A probabilistic language model cannot reliably store facts and can produce factually incorrect text.</li>
+<li>Such models can detect named entities but have no direct way to access information about them.</li>
+</ul>
+</section>
+<section id="modality" class="level4">
+<h4 class="anchored" data-anchor-id="modality">Modality</h4>
+<ul>
+<li>Language models can’t connect to other modalities, such as audio, visual signals, or tabular data, that might address some of these limitations.</li>
+</ul>
+</section>
+</section>
+<section id="vision" class="level3">
+<h3 class="anchored" data-anchor-id="vision">Vision</h3>
+<ul>
+<li>Transformers are now achieving efficiency similar to or better than Convolutional Neural Networks (CNNs).</li>
+</ul>
+<section id="igpt" class="level4">
+<h4 class="anchored" data-anchor-id="igpt">iGPT</h4>
+<ul>
+<li>iGPT (short for image GPT) uses the GPT architecture and autoregressive pretraining objective to predict future pixel values by viewing images as sequences of pixels.</li>
+<li><a href="https://proceedings.mlr.press/v119/chen20s.html">Generative Pretraining From Pixels</a></li>
+<li>Pretraining on large image datasets enables iGPT to “autocomplete” partial images.</li>
+<li>iGPT achieves performant results on classification tasks when using a classification head.</li>
+</ul>
+</section>
+<section id="vit" class="level4">
+<h4 class="anchored" data-anchor-id="vit">ViT</h4>
+<ul>
+<li>Vision Transformer (Vit) is a BERT-style take on transformers for vision.</li>
+<li>We split the image into smaller patches and then embed each of these patches with a linear projection.</li>
+<li>We combine the patch embeddings with position embeddings and feed them through an ordinary transformer encoder.</li>
+<li>We mask or distort some of the patches during training, and the objective is to predict the average color of the masked patch.</li>
+<li>This approach did not produce better results when pretrained on the standard ImageNet dataset, but it scaled significantly better than Convolutional Neural Networks on larger datasets.</li>
+<li><a href="https://arxiv.org/abs/2010.11929">An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</a></li>
+<li>The Hugging Face Transformers library includes Vision Transformer.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Load an image of a dog</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> Image.<span class="bu">open</span>(<span class="st">"dog.jpg"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>plt.imshow(image)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_17_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'max_colwidth'</span>, <span class="va">None</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'display.max_rows'</span>, <span class="va">None</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'display.max_columns'</span>, <span class="va">None</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> pipeline</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+<section id="imageclassificationpipeline" class="level4">
+<h4 class="anchored" data-anchor-id="imageclassificationpipeline"><code>ImageClassificationPipeline</code></h4>
+<ul>
+<li><a href="https://huggingface.co/docs/transformers/main/en/main_classes/pipelines#transformers.ImageClassificationPipeline">Documentation</a></li>
+<li>Create an image classification pipeline</li>
+</ul>
+<p><strong>Create an image classification pipeline</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>image_classifier <span class="op">=</span> pipeline(<span class="st">"image-classification"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Get the model architecture</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>image_classifier.model.config.architectures</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    ['ViTForImageClassification']</code></pre>
+<hr>
+</section>
+<section id="vitforimageclassification" class="level4">
+<h4 class="anchored" data-anchor-id="vitforimageclassification"><code>ViTForImageClassification</code></h4>
+<ul>
+<li><a href="https://huggingface.co/docs/transformers/main/en/model_doc/vit#transformers.ViTForImageClassification">Documentation</a></li>
+<li>Create a ViT Model transformer with an image classification head for ImageNet.</li>
+</ul>
+<p><strong>Get the link to the Hugging Face model card</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"https://huggingface.co/</span><span class="sc">{</span>image_classifier<span class="sc">.</span>model<span class="sc">.</span>config<span class="sc">.</span>_name_or_path<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>https://huggingface.co/google/vit-base-patch16-224</code></pre>
+<hr>
+<p><strong>View potential Image classes</strong></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(<span class="bu">list</span>(image_classifier.model.config.id2label.values())).T</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Perform image classification</strong></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> image_classifier(image)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>preds_df <span class="op">=</span> pd.DataFrame(preds)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>preds_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+score
+</th>
+<th>
+label
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+0.989680
+</td>
+<td>
+golden retriever
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+0.002968
+</td>
+<td>
+Labrador retriever
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+0.000502
+</td>
+<td>
+kuvasz
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+0.000402
+</td>
+<td>
+Irish setter, red setter
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+0.000345
+</td>
+<td>
+tennis ball
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Note:</strong></p>
+<ul>
+<li>The model correctly classifies the dog as a Golden Retriever.</li>
+<li>Video models are a natural extension of image models and add a temporal dimension on top of the spatial dimension.</li>
+<li>Video tasks are more challenging as the volume of data gets much larger, and we need to deal with an extra dimension.</li>
+<li>Models such as TimeSformer introduce a spatial and temporal attention mechanism.
+<ul>
+<li><a href="https://arxiv.org/abs/2102.05095">Is Space-Time Attention All You Need for Video Understanding?</a></li>
+<li>Such models can help build tools for many tasks such as video classification or annotation.</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="tables" class="level3">
+<h3 class="anchored" data-anchor-id="tables">Tables</h3>
+<ul>
+<li>Lots of data is in structured databases instead of raw text.</li>
+<li>Table Parser (TAPAS) applies the Transformer architecture to tables by combining the tabular information with the query.</li>
+<li><a href="https://arxiv.org/abs/2004.02349">TAPAS: Weakly Supervised Table Parsing via Pre-training</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/chapter11_tapas-architecture.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Create some sample table data</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>book_data <span class="op">=</span> [</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"chapter"</span>: <span class="dv">0</span>, <span class="st">"name"</span>: <span class="st">"Introduction"</span>, <span class="st">"start_page"</span>: <span class="dv">1</span>, <span class="st">"end_page"</span>: <span class="dv">11</span>},</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"chapter"</span>: <span class="dv">1</span>, <span class="st">"name"</span>: <span class="st">"Text classification"</span>, <span class="st">"start_page"</span>: <span class="dv">12</span>, </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>     <span class="st">"end_page"</span>: <span class="dv">48</span>},</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"chapter"</span>: <span class="dv">2</span>, <span class="st">"name"</span>: <span class="st">"Named Entity Recognition"</span>, <span class="st">"start_page"</span>: <span class="dv">49</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>     <span class="st">"end_page"</span>: <span class="dv">73</span>},</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"chapter"</span>: <span class="dv">3</span>, <span class="st">"name"</span>: <span class="st">"Question Answering"</span>, <span class="st">"start_page"</span>: <span class="dv">74</span>, </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>     <span class="st">"end_page"</span>: <span class="dv">120</span>},</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"chapter"</span>: <span class="dv">4</span>, <span class="st">"name"</span>: <span class="st">"Summarization"</span>, <span class="st">"start_page"</span>: <span class="dv">121</span>, </span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>     <span class="st">"end_page"</span>: <span class="dv">140</span>},</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"chapter"</span>: <span class="dv">5</span>, <span class="st">"name"</span>: <span class="st">"Conclusion"</span>, <span class="st">"start_page"</span>: <span class="dv">141</span>, </span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>     <span class="st">"end_page"</span>: <span class="dv">144</span>}</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>table <span class="op">=</span> pd.DataFrame(book_data)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>table[<span class="st">'number_of_pages'</span>] <span class="op">=</span> table[<span class="st">'end_page'</span>]<span class="op">-</span>table[<span class="st">'start_page'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Note:</strong> We need to make all columns of type <code>str</code> to play nicely with TAPAS.</p>
+<hr>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>table <span class="op">=</span> table.astype(<span class="bu">str</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+chapter
+</th>
+<th>
+name
+</th>
+<th>
+start_page
+</th>
+<th>
+end_page
+</th>
+<th>
+number_of_pages
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+0
+</td>
+<td>
+Introduction
+</td>
+<td>
+1
+</td>
+<td>
+11
+</td>
+<td>
+10
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+1
+</td>
+<td>
+Text classification
+</td>
+<td>
+12
+</td>
+<td>
+48
+</td>
+<td>
+36
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+2
+</td>
+<td>
+Named Entity Recognition
+</td>
+<td>
+49
+</td>
+<td>
+73
+</td>
+<td>
+24
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+3
+</td>
+<td>
+Question Answering
+</td>
+<td>
+74
+</td>
+<td>
+120
+</td>
+<td>
+46
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+4
+</td>
+<td>
+Summarization
+</td>
+<td>
+121
+</td>
+<td>
+140
+</td>
+<td>
+19
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+5
+</td>
+<td>
+Conclusion
+</td>
+<td>
+141
+</td>
+<td>
+144
+</td>
+<td>
+3
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<hr>
+<p><strong>Create a table question answering pipeline</strong></p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>table_qa <span class="op">=</span> pipeline(<span class="st">"table-question-answering"</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>table_qa.model.config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    TapasConfig {
+      "_name_or_path": "google/tapas-base-finetuned-wtq",
+      "aggregation_labels": {
+        "0": "NONE",
+        "1": "SUM",
+        "2": "AVERAGE",
+        "3": "COUNT"
+      },
+      "aggregation_loss_weight": 1.0,
+      "aggregation_temperature": 1.0,
+      "allow_empty_column_selection": false,
+      "answer_loss_cutoff": 0.664694,
+      "answer_loss_importance": 1.0,
+      "architectures": [
+        "TapasForQuestionAnswering"
+      ],
+      "attention_probs_dropout_prob": 0.1,
+      "average_approximation_function": "ratio",
+      "average_logits_per_cell": false,
+      "cell_selection_preference": 0.207951,
+      "disable_per_token_loss": false,
+      "gradient_checkpointing": false,
+      "hidden_act": "gelu",
+      "hidden_dropout_prob": 0.1,
+      "hidden_size": 768,
+      "huber_loss_delta": 0.121194,
+      "init_cell_selection_weights_to_zero": true,
+      "initializer_range": 0.02,
+      "intermediate_size": 3072,
+      "layer_norm_eps": 1e-12,
+      "max_num_columns": 32,
+      "max_num_rows": 64,
+      "max_position_embeddings": 1024,
+      "model_type": "tapas",
+      "no_aggregation_label_index": 0,
+      "num_aggregation_labels": 4,
+      "num_attention_heads": 12,
+      "num_hidden_layers": 12,
+      "pad_token_id": 0,
+      "positive_label_weight": 10.0,
+      "reset_position_index_per_cell": true,
+      "select_one_column": true,
+      "softmax_temperature": 1.0,
+      "temperature": 0.0352513,
+      "transformers_version": "4.18.0",
+      "type_vocab_size": [
+        3,
+        256,
+        256,
+        2,
+        256,
+        256,
+        10
+      ],
+      "type_vocab_sizes": [
+        3,
+        256,
+        256,
+        2,
+        256,
+        256,
+        10
+      ],
+      "use_answer_as_supervision": true,
+      "use_gumbel_for_aggregation": false,
+      "use_gumbel_for_cells": false,
+      "use_normalized_answer_loss": false,
+      "vocab_size": 30522
+    }</code></pre>
+<hr>
+<p><strong>Get the link to the Hugging Face model card</strong></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"https://huggingface.co/</span><span class="sc">{</span>table_qa<span class="sc">.</span>model<span class="sc">.</span>config<span class="sc">.</span>_name_or_path<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    https://huggingface.co/google/tapas-base-finetuned-wtq</code></pre>
+<hr>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(table_qa.tokenizer.vocab.keys()).head(<span class="dv">1500</span>).T</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<section id="tapasforquestionanswering" class="level4">
+<h4 class="anchored" data-anchor-id="tapasforquestionanswering"><code>TapasForQuestionAnswering</code></h4>
+<ul>
+<li><a href="https://huggingface.co/docs/transformers/main/en/model_doc/tapas#transformers.TapasForQuestionAnswering">Documentation</a></li>
+<li>Create a Tapas Model with a cell selection head and optional aggregation head for question answering tasks.</li>
+</ul>
+<p><strong>Pass some queries to the model</strong></p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>queries <span class="op">=</span> [<span class="st">"What's the topic in chapter 4?"</span>,</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">"What is the total number of pages?"</span>,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>           <span class="st">"On which page does the chapter about question-answering start?"</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>           <span class="st">"How many chapters have more than 20 pages?"</span>]</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> table_qa(table, queries)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> query, pred <span class="kw">in</span> <span class="bu">zip</span>(queries, preds):</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(query)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pred[<span class="st">"aggregator"</span>] <span class="op">==</span> <span class="st">"NONE"</span>: </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"Predicted answer: "</span> <span class="op">+</span> pred[<span class="st">"answer"</span>])</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"Predicted answer: "</span> <span class="op">+</span> pred[<span class="st">"answer"</span>])</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">'='</span><span class="op">*</span><span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    What's the topic in chapter 4?
+    Predicted answer: Summarization
+    ==================================================
+    What is the total number of pages?
+    Predicted answer: SUM &gt; 10, 36, 24, 46, 19, 3
+    ==================================================
+    On which page does the chapter about question-answering start?
+    Predicted answer: AVERAGE &gt; 74
+    ==================================================
+    How many chapters have more than 20 pages?
+    Predicted answer: COUNT &gt; 1, 2, 3
+    ==================================================</code></pre>
+<p><strong>Note:</strong></p>
+<ul>
+<li>The model predicted exactly one cell with no aggregation for the first query, and the answer is correct.</li>
+<li>For the second query, the model correctly predicted that we need to sum the individual page counts for each chapter to determine the total number of pages.</li>
+<li>The model correctly answered question three but included an unnecessary average aggregation.</li>
+<li>The model correctly determined that chapters 1, 2, and 3 have more than 20 pages.</li>
+<li>The ability to ask questions in natural language instead of Python code allows a much wider audience to query the data to answer specific questions.</li>
+</ul>
+<hr>
+</section>
+</section>
+</section>
+<section id="multimodal-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="multimodal-transformers">Multimodal Transformers</h2>
+<section id="speech-to-text" class="level3">
+<h3 class="anchored" data-anchor-id="speech-to-text">Speech-to-Text</h3>
+<ul>
+<li>Speaking is more convenient than reading and writing for a significant portion of the population.</li>
+<li>Automatic speech recognition (ASR) involves converting spoken words to text and enables voice technologies like Siri to answer questions like “What is the weather like today?”.</li>
+<li>The <a href="https://huggingface.co/models?search=wav2vec2+facebook">wave2vec 2.0</a> family of models is one of the most recent developments in ASR and uses a transformer layer in combination with a CNN.
+<ul>
+<li><a href="https://arxiv.org/abs/2006.11477">wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations</a></li>
+</ul></li>
+<li>These models leverage unlabeled data to achieve competitive results with only a few minutes of labeled data.</li>
+<li>The Hugging Face Transformers library includes wave2vec 2.0 models.</li>
+</ul>
+<p><strong>Create an automatic speech recognition pipeline</strong></p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>asr <span class="op">=</span> pipeline(<span class="st">"automatic-speech-recognition"</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>asr.model.config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    Wav2Vec2Config {
+      "_name_or_path": "facebook/wav2vec2-base-960h",
+      "activation_dropout": 0.1,
+      "adapter_kernel_size": 3,
+      "adapter_stride": 2,
+      "add_adapter": false,
+      "apply_spec_augment": true,
+      "architectures": [
+        "Wav2Vec2ForCTC"
+      ],
+      "attention_dropout": 0.1,
+      "bos_token_id": 1,
+      "classifier_proj_size": 256,
+      "codevector_dim": 256,
+      "contrastive_logits_temperature": 0.1,
+      "conv_bias": false,
+      "conv_dim": [
+        512,
+        512,
+        512,
+        512,
+        512,
+        512,
+        512
+      ],
+      "conv_kernel": [
+        10,
+        3,
+        3,
+        3,
+        3,
+        2,
+        2
+      ],
+      "conv_stride": [
+        5,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "ctc_loss_reduction": "sum",
+      "ctc_zero_infinity": false,
+      "diversity_loss_weight": 0.1,
+      "do_stable_layer_norm": false,
+      "eos_token_id": 2,
+      "feat_extract_activation": "gelu",
+      "feat_extract_dropout": 0.0,
+      "feat_extract_norm": "group",
+      "feat_proj_dropout": 0.1,
+      "feat_quantizer_dropout": 0.0,
+      "final_dropout": 0.1,
+      "gradient_checkpointing": false,
+      "hidden_act": "gelu",
+      "hidden_dropout": 0.1,
+      "hidden_dropout_prob": 0.1,
+      "hidden_size": 768,
+      "initializer_range": 0.02,
+      "intermediate_size": 3072,
+      "layer_norm_eps": 1e-05,
+      "layerdrop": 0.1,
+      "mask_feature_length": 10,
+      "mask_feature_min_masks": 0,
+      "mask_feature_prob": 0.0,
+      "mask_time_length": 10,
+      "mask_time_min_masks": 2,
+      "mask_time_prob": 0.05,
+      "model_type": "wav2vec2",
+      "num_adapter_layers": 3,
+      "num_attention_heads": 12,
+      "num_codevector_groups": 2,
+      "num_codevectors_per_group": 320,
+      "num_conv_pos_embedding_groups": 16,
+      "num_conv_pos_embeddings": 128,
+      "num_feat_extract_layers": 7,
+      "num_hidden_layers": 12,
+      "num_negatives": 100,
+      "output_hidden_size": 768,
+      "pad_token_id": 0,
+      "proj_codevector_dim": 256,
+      "tdnn_dilation": [
+        1,
+        2,
+        3,
+        1,
+        1
+      ],
+      "tdnn_dim": [
+        512,
+        512,
+        512,
+        512,
+        1500
+      ],
+      "tdnn_kernel": [
+        5,
+        3,
+        3,
+        1,
+        1
+      ],
+      "transformers_version": "4.18.0",
+      "use_weighted_layer_sum": false,
+      "vocab_size": 32,
+      "xvector_output_dim": 512
+    }</code></pre>
+<hr>
+<p><strong>Get the link to the Hugging Face model card</strong></p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"https://huggingface.co/</span><span class="sc">{</span>asr<span class="sc">.</span>model<span class="sc">.</span>config<span class="sc">.</span>_name_or_path<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    https://huggingface.co/facebook/wav2vec2-base-960h</code></pre>
+<p><strong>Note:</strong> The model trained on 960 hours of speech audio.</p>
+<hr>
+<section id="wav2vec2forctc" class="level4">
+<h4 class="anchored" data-anchor-id="wav2vec2forctc"><code>Wav2Vec2ForCTC</code></h4>
+<ul>
+<li><a href="https://huggingface.co/docs/transformers/main/en/model_doc/wav2vec2#transformers.Wav2Vec2ForCTC">Documentation</a></li>
+<li>Create a Wav2Vec2 model with a language modeling head for Connectionist Temporal Classification (CTC).</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+<section id="the-superb-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="the-superb-dataset">The SUPERB Dataset</h4>
+<ul>
+<li><a href="https://huggingface.co/datasets/superb">Hugging Face Dataset Card</a></li>
+<li>SUPERB is a leaderboard to benchmark the performance of a shared model across a wide range of speech processing tasks with minimal architecture changes and labeled data.</li>
+</ul>
+<p><strong>Load the ASR subset of the SUPERB dataset</strong></p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> load_dataset(<span class="st">"superb"</span>, <span class="st">"asr"</span>, split<span class="op">=</span><span class="st">"validation[:1]"</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(ds[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+file
+</th>
+<th>
+audio
+</th>
+<th>
+text
+</th>
+<th>
+speaker_id
+</th>
+<th>
+chapter_id
+</th>
+<th>
+id
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+array
+</th>
+<td>
+/home/innom-dt/.cache/huggingface/datasets/downloads/extracted/aa91addd71e85ab524e5b5b56fa3d0de777838850cb76ec55ad066e969fd5144/LibriSpeech/dev-clean/1272/128104/1272-128104-0000.flac
+</td>
+<td>
+[0.002380371, 0.0020751953, 0.0019836426, 0.002105713, 0.0016174316, 0.00030517578, 9.1552734e-05, 0.00033569336, 0.0009765625, 0.0018310547, 0.0020141602, 0.002105713, 0.001739502, 0.00045776367, -0.00039672852, 0.00045776367, 0.0010070801, 9.1552734e-05, 0.00048828125, 0.001159668, 0.0007324219, 0.0009460449, 0.0018005371, 0.0018310547, 0.00088500977, 0.0004272461, 0.00048828125, 0.0007324219, 0.0010986328, 0.002105713, 0.0025634766, 0.002532959, 0.0025634766, 0.0022888184, 0.0018005371, 0.0010681152, 0.00064086914, 0.00012207031, 0.0002746582, 0.001159668, 0.0015258789, 0.0015563965, 0.0019226074, 0.0012207031, -3.0517578e-05, -0.00036621094, -0.00039672852, -0.00039672852, -0.00015258789, 0.0006713867, 0.0012817383, 0.0018615723, 0.0015869141, 0.0012817383, 0.0007324219, 9.1552734e-05, -0.000579834, -0.00045776367, 9.1552734e-05, 0.00033569336, 0.00024414062, 0.0011291504, 0.001373291, 0.0012817383, 0.00088500977, 0.00030517578, -0.00088500977, -0.0014648438, -0.0008239746, 0.00012207031, 0.0011901855, 0.0019226074, 0.0016479492, 0.00088500977, 0.00076293945, 0.0004272461, -0.0005187988, -0.0005493164, -0.00036621094, -0.0004272461, -0.00018310547, 0.000579834, 0.0009460449, 0.0007324219, 0.0010070801, 0.0007019043, 0.00024414062, -0.00018310547, -0.00064086914, -0.00088500977, -0.00048828125, 0.0002746582, 0.0007324219, 0.0018310547, 0.0018005371, 0.0012512207, 0.00061035156, -0.00036621094, -0.0012817383, -0.00091552734, …]
+</td>
+<td>
+MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL
+</td>
+<td>
+1272
+</td>
+<td>
+128104
+</td>
+<td>
+1272-128104-0000
+</td>
+</tr>
+<tr>
+<th>
+path
+</th>
+<td>
+/home/innom-dt/.cache/huggingface/datasets/downloads/extracted/aa91addd71e85ab524e5b5b56fa3d0de777838850cb76ec55ad066e969fd5144/LibriSpeech/dev-clean/1272/128104/1272-128104-0000.flac
+</td>
+<td>
+/home/innom-dt/.cache/huggingface/datasets/downloads/extracted/aa91addd71e85ab524e5b5b56fa3d0de777838850cb76ec55ad066e969fd5144/LibriSpeech/dev-clean/1272/128104/1272-128104-0000.flac
+</td>
+<td>
+MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL
+</td>
+<td>
+1272
+</td>
+<td>
+128104
+</td>
+<td>
+1272-128104-0000
+</td>
+</tr>
+<tr>
+<th>
+sampling_rate
+</th>
+<td>
+/home/innom-dt/.cache/huggingface/datasets/downloads/extracted/aa91addd71e85ab524e5b5b56fa3d0de777838850cb76ec55ad066e969fd5144/LibriSpeech/dev-clean/1272/128104/1272-128104-0000.flac
+</td>
+<td>
+16000
+</td>
+<td>
+MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL
+</td>
+<td>
+1272
+</td>
+<td>
+128104
+</td>
+<td>
+1272-128104-0000
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Note:</strong></p>
+<ul>
+<li>The file column contains the path to the audio sample, and the text column contains the expected transcription.</li>
+<li>We can use the <a href="https://pysoundfile.readthedocs.io/en/latest/">SoundFile library</a> to read each audio file and convert the audio to an array of floats.</li>
+</ul>
+<hr>
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> soundfile <span class="im">as</span> sf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Add a new column storing each audio sample as an array of floats</strong></p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> map_to_array(batch):</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    speech, _ <span class="op">=</span> sf.read(batch[<span class="st">"file"</span>])</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    batch[<span class="st">"speech"</span>] <span class="op">=</span> speech</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> batch</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> ds.<span class="bu">map</span>(map_to_array)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Play a sample from the dataset</strong></p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> Audio</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>display(Audio(ds[<span class="dv">0</span>][<span class="st">'speech'</span>], rate<span class="op">=</span><span class="dv">16000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>ds.set_format(<span class="st">"numpy"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Pass the audio sample the pipeline</strong></p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> asr(ds[<span class="dv">0</span>][<span class="st">"speech"</span>])</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pred)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    {'text': 'MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL'}</code></pre>
+<p><strong>Note:</strong></p>
+<ul>
+<li>The words in the transcription are correct, but the punctuation is missing.</li>
+<li>It is hard to infer punctuation from audio alone, and we could add it in a post-processing step.</li>
+<li>Building a model for a new language still requires a minimum amount of labeled data, which can be challenging to obtain.</li>
+<li>A new method named wav2vec-U combines clever clustering and GAN training to build a speech-to-text model using only independent unlabeled speech and unlabeled text data.
+<ul>
+<li>This method requires not aligned speech and text data, enabling the training of highly performant speech-to-text models for a much larger spectrum of languages.</li>
+<li><a href="https://arxiv.org/abs/2105.11084">Unsupervised Speech Recognition</a></li>
+</ul></li>
+</ul>
+<hr>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/chapter11_wav2vec-u.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="vision-and-text" class="level3">
+<h3 class="anchored" data-anchor-id="vision-and-text">Vision and Text</h3>
+<ul>
+<li>There have been several developments in combining visual and textual information.</li>
+</ul>
+<section id="vqa" class="level4">
+<h4 class="anchored" data-anchor-id="vqa">VQA</h4>
+<ul>
+<li><a href="https://arxiv.org/abs/1612.00837">Making the V in VQA Matter: Elevating the Role of Image Understanding in Visual Question Answering</a></li>
+<li>Models such as LXMERT and VisualBERT use vision models like ResNets to extract features from images and then use transformer encoders to combine them with the natural questions and predict and answer.
+<ul>
+<li><a href="https://arxiv.org/abs/1908.07490">LXMERT: Learning Cross-Modality Encoder Representations from Transformers</a></li>
+<li><a href="https://arxiv.org/abs/1908.03557">VisualBERT: A Simple and Performant Baseline for Vision and Language</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="layoutlm" class="level4">
+<h4 class="anchored" data-anchor-id="layoutlm">LayoutLM</h4>
+<ul>
+<li>The <a href="https://huggingface.co/models?search=microsoft+layoutlm">LayoutLM</a> family of models uses an enhanced Transformer architecture that receives a text sequence, an image, and a layout as input.</li>
+<li>There are embedding layers associated with each modality, a spatially-aware self-attention mechanism, and a mix of image and text/image pretraining objectives to align the different modalities.</li>
+<li>LayoutLM models pre-train on millions of scanned documents and can transfer to various downstream tasks, similar to BERT for NLP.</li>
+<li>LayoutLM models are the current state of the art for analyzing scanned business documents like receipts, invoices, or reports.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/chapter11_layoutlm.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="dalle" class="level4">
+<h4 class="anchored" data-anchor-id="dalle">DALL·E</h4>
+<ul>
+<li>DALLE uses the GPT architecture and autoregressive modeling to generate images from text.</li>
+<li>It regards the words and pixels as one sequence of tokens and can, therefore, continue generating an image from a text prompt.</li>
+<li><a href="https://arxiv.org/abs/2102.12092">Zero-Shot Text-to-Image Generation</a></li>
+</ul>
+</section>
+<section id="clip" class="level4">
+<h4 class="anchored" data-anchor-id="clip">CLIP</h4>
+<ul>
+<li><a href="https://arxiv.org/abs/2103.00020">Learning Transferable Visual Models From Natural Language Supervision</a></li>
+<li>We can use the pretrained model for classification by embedding the possible classes with the text encoder and comparing the class embeddings to the image embedding that we want to classify.</li>
+<li>We select the class with the highest similarity.</li>
+<li>CLIP has remarkable zero-shot image classification performance and is competitive with fully supervised-trained vision models while being more flexible.</li>
+<li>We need to instantiate a processor that contains a feature extractor and a tokenizer for image-to-text tasks.</li>
+<li>The feature extractor converts the image into a form suitable for the model, while the tokenizer decodes the model predictions into text.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/chapter11_clip-arch.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> CLIPProcessor, CLIPModel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+<section id="clipprocessor" class="level4">
+<h4 class="anchored" data-anchor-id="clipprocessor"><code>CLIPProcessor</code></h4>
+<ul>
+<li><a href="https://huggingface.co/docs/transformers/main/en/model_doc/clip#transformers.CLIPProcessor">Documentation</a></li>
+<li>Create a CLIP processor which wraps a CLIP feaure extractor and a CLIP tokenizer into a single processor.</li>
+</ul>
+</section>
+<section id="clipmodel" class="level4">
+<h4 class="anchored" data-anchor-id="clipmodel"><code>CLIPModel</code></h4>
+<ul>
+<li><a href="https://huggingface.co/docs/transformers/main/en/model_doc/clip#transformers.CLIPModel">Documentation</a></li>
+</ul>
+<p><strong>Instantiate a CLIPModel and processor</strong></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>clip_ckpt <span class="op">=</span> <span class="st">"openai/clip-vit-base-patch32"</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> CLIPModel.from_pretrained(clip_ckpt)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>processor <span class="op">=</span> CLIPProcessor.from_pretrained(clip_ckpt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"https://huggingface.co/</span><span class="sc">{</span>clip_ckpt<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    https://huggingface.co/openai/clip-vit-base-patch32</code></pre>
+<hr>
+<div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>processor</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    CLIPProcessor:
+    - feature_extractor: CLIPFeatureExtractor {
+      "crop_size": 224,
+      "do_center_crop": true,
+      "do_normalize": true,
+      "do_resize": true,
+      "feature_extractor_type": "CLIPFeatureExtractor",
+      "image_mean": [
+        0.48145466,
+        0.4578275,
+        0.40821073
+      ],
+      "image_std": [
+        0.26862954,
+        0.26130258,
+        0.27577711
+      ],
+      "resample": 3,
+      "size": 224
+    }
+    
+    - tokenizer: PreTrainedTokenizerFast(name_or_path='openai/clip-vit-base-patch32', vocab_size=49408, model_max_len=77, is_fast=True, padding_side='right', truncation_side='right', special_tokens={'bos_token': AddedToken("&lt;|startoftext|&gt;", rstrip=False, lstrip=False, single_word=False, normalized=True), 'eos_token': AddedToken("&lt;|endoftext|&gt;", rstrip=False, lstrip=False, single_word=False, normalized=True), 'unk_token': AddedToken("&lt;|endoftext|&gt;", rstrip=False, lstrip=False, single_word=False, normalized=True), 'pad_token': '&lt;|endoftext|&gt;'})</code></pre>
+<hr>
+<p><strong>Load a test image</strong></p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> Image.<span class="bu">open</span>(<span class="st">"dog.jpg"</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>plt.imshow(image)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_86_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<hr>
+<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Create some sample image captions</strong></p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>texts <span class="op">=</span> [<span class="st">"a photo of a golden retriever"</span>, <span class="st">"a photo of a dog"</span>, <span class="st">"a photo of agi"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<p><strong>Compare the image to the captions</strong></p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>inputs <span class="op">=</span> processor(text<span class="op">=</span>texts, images<span class="op">=</span>image, return_tensors<span class="op">=</span><span class="st">"pt"</span>, padding<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> model(<span class="op">**</span>inputs)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>logits_per_image <span class="op">=</span> outputs.logits_per_image</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> logits_per_image.softmax(dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(<span class="bu">zip</span>(texts, probs[<span class="dv">0</span>].numpy()), columns<span class="op">=</span>[<span class="st">'Text'</span>, <span class="st">"Probability"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+Text
+</th>
+<th>
+Probability
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+a photo of a golden retriever
+</td>
+<td>
+0.868025
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+a photo of a dog
+</td>
+<td>
+0.131801
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+a photo of agi
+</td>
+<td>
+0.000174
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<hr>
+</section>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li><a href="https://transformersbook.com/">Natural Language Processing with Transformers Book</a></li>
+<li><a href="https://github.com/nlp-with-transformers/notebooks">The Transformers book GitHub Repository</a></li>
+</ul>
+<p><strong>Previous:</strong> <a href="../chapter-10/">Notes on Transformers Book Ch. 10</a></p>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+      <div class="nav-footer-center">
+        <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2022, Christian J. Mills
+  </li>  
+</ul>
+      </div>
+  </div>
+</footer>
+
+
+
+</body></html>
