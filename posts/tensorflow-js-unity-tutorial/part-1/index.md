@@ -34,6 +34,13 @@ categories: [fastai, unity, tensorflow, webgl]
 
 
 
+## Tutorial Links
+
+- [Part 1](../part-1/): Train a hand gesture classifier using fastai and export it to TensorFlow.js.
+- [Part 2](../part-2/): Create a TensorFlow.js plugin for the Unity game engine.
+- [Part 3](../part-3/): Build a Unity project as a WebGL application and host it using GitHub Pages.
+- [GitHub Repository](https://github.com/cj-mills/tensorflow-js-unity-tutorial)
+
 
 
 ## Introduction
@@ -133,19 +140,6 @@ The tutorial uses a downscaled version of [HaGRID](https://github.com/hukenovs/h
 </details>
 </div>
 We can use a model trained on this dataset to map hand gestures to user input via a webcam in Unity.
-
-
-
-**Tutorial Links**
-
-- [Part 1](../part-1/): Train a hand gesture classifier using fastai and export it to TensorFlow.js.
-- [Part 2](../part-2/): Create a TensorFlow.js plugin for the Unity game engine.
-- [Part 3](../part-3/): Build a Unity project as a WebGL application and host it using GitHub Pages.
-
-
-
-**Project Resources:** [GitHub Repository](https://github.com/cj-mills/tensorflow-js-unity-tutorial)
-
 
 
 

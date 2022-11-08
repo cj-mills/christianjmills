@@ -41,6 +41,17 @@ open-graph:
 
 
 
+
+
+## Tutorial Links
+
+- [Training Tutorial](../../icevision-openvino-unity-tutorial/part-1/): Train a hand gesture classifier using fastai and export it to TensorFlow.js.
+- [Part 1](../part-1/): Create a dynamic link library (DLL) file in Visual Studio to perform object detection with a YOLOX model using ONNX Runtime and DirectML. 
+- [Part 2](../part-2/): Perform object detection in a Unity project with ONNX Runtime and DirectML.
+- [GitHub Repository](https://github.com/cj-mills/onnx-directml-unity-tutorial)
+
+
+
 ## Introduction
 
 A [previous tutorial series](../../icevision-openvino-unity-tutorial/part-1/) covered training an object detection model using [IceVision](https://airctic.com/0.12.0/) and creating an [OpenVINO](https://docs.openvino.ai/latest/index.html) plugin for the [Unity](https://unity.com/) game engine to perform inference with the trained model. OpenVINO can provide fast inference speeds but only targets Intel hardware. Not everyone has an Intel CPU, and discrete Intel GPUs are not yet widely available.

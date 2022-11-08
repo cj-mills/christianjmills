@@ -25,6 +25,15 @@ categories: [fastai, unity, tensorflow, webgl]
 
 
 
+## Tutorial Links
+
+- [Part 1](../part-1/): Train a hand gesture classifier using fastai and export it to TensorFlow.js.
+- [Part 2](../part-2/): Create a TensorFlow.js plugin for the Unity game engine.
+- [Part 3](../part-3/): Build a Unity project as a WebGL application and host it using GitHub Pages.
+- [GitHub Repository](https://github.com/cj-mills/tensorflow-js-unity-tutorial)
+
+
+
 ## Overview
 
 [Part 2](../part-2/) covered implementing a hand gesture classifier in a Unity project as a [jslib plugin](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). In this post, we'll host the Unity project as a shareable web demo using [GitHub Pages](https://pages.github.com/). The demo will run locally in the user's web browser.

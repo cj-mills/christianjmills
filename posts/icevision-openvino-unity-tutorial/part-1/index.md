@@ -45,13 +45,24 @@ open-graph:
 
 
 
+## Tutorial Links
+
+- [Part 1](../part-1/): Train a YOLOX model using IceVision and export it to OpenVINO.
+- [Part 2](../part-2/): Create a dynamic link library (DLL) file in Visual Studio to perform object detection with a YOLOX model using OpenVINO.
+- [Part 3](../part-3/): Perform object detection in a Unity project with OpenVINO.
+- [GitHub Repository](https://github.com/cj-mills/icevision-openvino-unity-tutorial)
+
+
 ## Introduction
 
 In this tutorial series, we will walk through training an object detector using the [IceVision](https://airctic.com/0.12.0/) library. We will then implement the trained model in a [Unity](https://unity.com/) game engine project using [OpenVINO](https://docs.openvino.ai/latest/index.html), an open-source toolkit for optimizing model inference.
 
+**Unity Demo**
+<center>
+	<iframe src="./videos/HaGRID-demo.mp4" width=100% max-width=100% height=480></iframe>
+</center>
+
 The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset). The dataset contains annotated sample images for 18 distinct hand gestures and an additional `no_gesture` class to account for idle hands.
-
-
 
 
 <div>
@@ -143,15 +154,7 @@ The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs
 </details>
 </div>
 
-
 One could use a model trained on this dataset to map hand gestures and locations to user input in Unity.
-
-
-
-#### Unity Demo
-<center>
-	<iframe src="./videos/HaGRID-demo.mp4" width=100% max-width=100% height=480></iframe>
-</center>
 
 
 ## Overview
