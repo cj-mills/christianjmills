@@ -17,7 +17,2438 @@
 <width>144</width>
 </image>
 <generator>quarto-1.1.251</generator>
-<lastBuildDate>Tue, 18 Oct 2022 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 02 Dec 2022 08:00:00 GMT</lastBuildDate>
+<item>
+  <title>Train a Mask R-CNN Model on a Custom Dataset With IceVision</title>
+  <link>christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/index.html</link>
+  <description><![CDATA[ 
+
+
+
+<ul>
+<li>Overview</li>
+<li>Setup Conda Environment</li>
+<li>Import Dependencies</li>
+<li>Download the Dataset</li>
+<li>Inspect the Dataset</li>
+<li>Create Dataset Parser</li>
+<li>Define DataLoader Objects</li>
+<li>Finetune the Model</li>
+<li>Inspect Raw Model Output</li>
+<li>Export Model to ONNX</li>
+<li>Verify ONNX Inference</li>
+<li>Define Post-processing Steps</li>
+<li>Summary</li>
+</ul>
+<section id="tutorial-links" class="level2">
+<h2 class="anchored" data-anchor-id="tutorial-links">Tutorial Links</h2>
+<ul>
+<li><a href="../part-1/">Part 1</a>: Train a <a href="https://arxiv.org/abs/1703.06870">Mask R-CNN</a> model on a custom dataset using the <a href="https://airctic.com/0.11.0/">IceVision</a> library and export it to <a href="https://onnx.ai/">ONNX</a>.</li>
+<li><a href="https://github.com/cj-mills/icevision-mask-rcnn-tutorial">GitHub Repository</a></li>
+</ul>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>In this tutorial, we train a Mask R-CNN model on a custom dataset using the IceVision library, export it to ONNX, and perform inference with <a href="https://onnxruntime.ai/">ONNX Runtime</a>.</p>
+<p>I plan to cover building a custom dataset in a future post. For now, we’ll use a dataset from an existing repository. The dataset contains annotated sample images of student ID cards.</p>
+<ul>
+<li><strong>Dataset Source:</strong> <a href="https://github.com/MbassiJaphet/pytorch-for-information-extraction">pytorch-for-information-extraction</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/student-id-sample-annotation.jpg" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Links for viewing the training code and running it on <a href="https://colab.research.google.com/?utm_source=scs-index">Google Colab</a> and <a href="https://www.kaggle.com/docs/notebooks">Kaggle</a> are available below.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Jupyter Notebook</th>
+<th>Colab</th>
+<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kaggle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/cj-mills/icevision-mask-rcnn-tutorial/blob/main/notebooks/Icevision_Mask_RCNN_Student_ID.ipynb">GitHub Repository</a></td>
+<td><a href="https://colab.research.google.com/github/cj-mills/icevision-mask-rcnn-tutorial/blob/main/notebooks/Icevision_Mask_RCNN_Student_ID_Colab.ipynb">Open In Colab</a></td>
+<td><a href="https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/icevision-mask-rcnn-tutorial/blob/main/notebooks/Icevision_Mask_RCNN_Student_ID_Kaggle.ipynb">Kaggle</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="setup-conda-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setup-conda-environment">Setup Conda Environment</h2>
+<p>The IceVision library builds upon specific versions of libraries like <a href="https://docs.fast.ai/">fastai</a> and <a href="https://mmdetection.readthedocs.io/en/latest/">mmdetection</a>, and the cumulative dependency requirements mean it is best to use a dedicated <a href="https://docs.python.org/3/tutorial/venv.html">virtual environment</a>. Below are the steps to create a virtual environment using <a href="https://docs.conda.io/en/latest/">Conda</a>. Be sure to execute each command in the provided order.</p>
+<blockquote class="blockquote">
+<p><strong>Important:</strong> IceVision currently only supports Linux/macOS. Try using <a href="https://docs.microsoft.com/en-us/windows/wsl/install">WSL</a> (Windows Subsystem for Linux) if training locally on Windows.</p>
+</blockquote>
+<p><strong>Install CUDA Toolkit</strong></p>
+<p>You might need to install the CUDA Toolkit on your system if you plan to run the training code locally. CUDA requires an Nvidia GPU. Version 11.1.0 of the toolkit is available at the link below. Both Google Colab and Kaggle Notebooks already have CUDA installed.</p>
+<ul>
+<li><a href="https://developer.nvidia.com/cuda-11.1.0-download-archive">CUDA Toolkit 11.1.0</a></li>
+<li><a href="https://developer.nvidia.com/cuda-toolkit-archive">CUDA Toolkit Archive</a></li>
+</ul>
+<p><strong>Conda environment setup steps</strong></p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="ex" style="color: null;">conda</span> create <span class="at" style="color: #657422;">--name</span> icevision python==3.8</span>
+<span id="cb1-2"><span class="ex" style="color: null;">conda</span> activate icevision</span>
+<span id="cb1-3"><span class="ex" style="color: null;">pip</span> install torch==1.10.0+cu111 torchvision==0.11.1+cu111 <span class="at" style="color: #657422;">-f</span> https://download.pytorch.org/whl/torch_stable.html</span>
+<span id="cb1-4"><span class="ex" style="color: null;">pip</span> install mmcv-full==1.3.17 <span class="at" style="color: #657422;">-f</span> https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html</span>
+<span id="cb1-5"><span class="ex" style="color: null;">pip</span> install mmdet==2.17.0</span>
+<span id="cb1-6"><span class="ex" style="color: null;">pip</span> install icevision==0.11.0</span>
+<span id="cb1-7"><span class="ex" style="color: null;">pip</span> install icedata==0.5.1</span>
+<span id="cb1-8"><span class="ex" style="color: null;">pip</span> install setuptools==59.5.0</span>
+<span id="cb1-9"><span class="ex" style="color: null;">pip</span> install jupyter</span>
+<span id="cb1-10"><span class="ex" style="color: null;">pip</span> install onnxruntime</span></code></pre></div>
+<p>The <a href="https://pypi.org/project/icevision/"><code>icevision</code></a> package provides the functionality for data curation, data transforms, and training loops we’ll use to train the model. The <a href="https://airctic.github.io/icedata/"><code>icedata</code></a> package provides the functionality we’ll use to create a custom parser to read the dataset.</p>
+<p><strong>Colab and Kaggle Setup Requirements</strong></p>
+<p>When running the training code on Google Colab and Kaggle Notebooks, we need to uninstall several packages before installing IceVision and its dependencies to avoid conflicts. The platform-specific setup steps are at the top of the notebooks linked above.</p>
+</section>
+<section id="import-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="import-dependencies">Import Dependencies</h2>
+<p>IceVision will download some additional resources the first time we import the library.</p>
+<p><strong>Import IceVision library</strong></p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;">from</span> icevision.<span class="bu" style="color: null;">all</span> <span class="im" style="color: #00769E;">import</span> <span class="op" style="color: #5E5E5E;">*</span></span></code></pre></div>
+<p><strong>Import and configure Pandas</strong></p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;">import</span> pandas <span class="im" style="color: #00769E;">as</span> pd</span>
+<span id="cb3-2">pd.set_option(<span class="st" style="color: #20794D;">'max_colwidth'</span>, <span class="va" style="color: #111111;">None</span>)</span>
+<span id="cb3-3">pd.set_option(<span class="st" style="color: #20794D;">'display.max_rows'</span>, <span class="va" style="color: #111111;">None</span>)</span>
+<span id="cb3-4">pd.set_option(<span class="st" style="color: #20794D;">'display.max_columns'</span>, <span class="va" style="color: #111111;">None</span>)</span></code></pre></div>
+</section>
+<section id="download-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="download-the-dataset">Download the Dataset</h2>
+<p>The sample dataset is available on GitHub, so we only need to clone the repository.</p>
+<p><strong>Clone dataset repository</strong></p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="op" style="color: #5E5E5E;">!</span>git clone https:<span class="op" style="color: #5E5E5E;">//</span>github.com<span class="op" style="color: #5E5E5E;">/</span>MbassiJaphet<span class="op" style="color: #5E5E5E;">/</span>pytorch<span class="op" style="color: #5E5E5E;">-</span><span class="cf" style="color: #003B4F;">for</span><span class="op" style="color: #5E5E5E;">-</span>information<span class="op" style="color: #5E5E5E;">-</span>extraction.git</span></code></pre></div>
+</section>
+<section id="inspect-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="inspect-the-dataset">Inspect the Dataset</h2>
+<p>We can inspect the dataset once it finishes downloading. The image and annotation files are in the <code>code/datasets/detection/student-id/</code> subfolder.</p>
+<p><strong>Define path to dataset</strong></p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">data_dir <span class="op" style="color: #5E5E5E;">=</span> Path(<span class="st" style="color: #20794D;">'./pytorch-for-information-extraction/code/datasets/detection/student-id'</span>)</span>
+<span id="cb5-2">dataset_name <span class="op" style="color: #5E5E5E;">=</span> data_dir.name</span></code></pre></div>
+<p>Each image file has a corresponding JSON file that contains its annotation data.</p>
+<p><strong>Inspect dataset contents</strong></p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1">pd.DataFrame(<span class="bu" style="color: null;">list</span>(data_dir.ls())).head()</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10001.jpg
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10001.json
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10002.jpg
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10002.json
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10003.jpg
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Get image file paths</strong></p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">files <span class="op" style="color: #5E5E5E;">=</span> get_image_files(data_dir)</span>
+<span id="cb7-2"><span class="bu" style="color: null;">len</span>(files)</span></code></pre></div>
+<pre class="text"><code>150</code></pre>
+<p><strong>Inspect one of the training images</strong></p>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="im" style="color: #00769E;">import</span> PIL</span>
+<span id="cb9-2">img <span class="op" style="color: #5E5E5E;">=</span> PIL.Image.<span class="bu" style="color: null;">open</span>(files[<span class="dv" style="color: #AD0000;">0</span>]).convert(<span class="st" style="color: #20794D;">'RGB'</span>)</span>
+<span id="cb9-3"><span class="bu" style="color: null;">print</span>(<span class="ss" style="color: #20794D;">f"Image Dims: </span><span class="sc" style="color: #5E5E5E;">{</span>img<span class="sc" style="color: #5E5E5E;">.</span>size<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">"</span>)</span>
+<span id="cb9-4">img</span></code></pre></div>
+<pre class="text"><code>    Image Dims: (480, 640)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_16_1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Create a dictionary that maps image names to file paths</strong></p>
+<p>Let’s create a dictionary to quickly obtain full image file paths, given a file name. We’ll need this later</p>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1">img_dict <span class="op" style="color: #5E5E5E;">=</span> {<span class="bu" style="color: null;">file</span>.name.split(<span class="st" style="color: #20794D;">'.'</span>)[<span class="dv" style="color: #AD0000;">0</span>] : <span class="bu" style="color: null;">file</span> <span class="cf" style="color: #003B4F;">for</span> <span class="bu" style="color: null;">file</span> <span class="kw" style="color: #003B4F;">in</span> files}</span>
+<span id="cb11-2">pd.DataFrame(<span class="bu" style="color: null;">list</span>(img_dict.items())[<span class="dv" style="color: #AD0000;">0</span>]).transpose()</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+<th>
+1
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+10001
+</td>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10001.jpg
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Get list of annotation file paths</strong></p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="im" style="color: #00769E;">import</span> os</span>
+<span id="cb12-2"><span class="im" style="color: #00769E;">from</span> glob <span class="im" style="color: #00769E;">import</span> glob</span></code></pre></div>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1">annotation_paths <span class="op" style="color: #5E5E5E;">=</span> glob(os.path.join(data_dir, <span class="st" style="color: #20794D;">"*.json"</span>))</span>
+<span id="cb13-2">pd.DataFrame(annotation_paths).head()</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10001.json
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10002.json
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10003.json
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10004.json
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+pytorch-for-information-extraction/code/datasets/detection/student-id/10005.json
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Create annotation dataframe</strong></p>
+<p>Next, we’ll read all the image annotations into a single Pandas DataFrame.</p>
+<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1">cls_dataframes <span class="op" style="color: #5E5E5E;">=</span> (pd.read_json(f, orient<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'index'</span>).transpose() <span class="cf" style="color: #003B4F;">for</span> f <span class="kw" style="color: #003B4F;">in</span> annotation_paths)</span>
+<span id="cb14-2">annotation_df <span class="op" style="color: #5E5E5E;">=</span> pd.concat(cls_dataframes, ignore_index<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">False</span>)</span>
+<span id="cb14-3">annotation_df[<span class="st" style="color: #20794D;">'index'</span>] <span class="op" style="color: #5E5E5E;">=</span> annotation_df.<span class="bu" style="color: null;">apply</span>(<span class="kw" style="color: #003B4F;">lambda</span> row: row[<span class="st" style="color: #20794D;">'imagePath'</span>].split(<span class="st" style="color: #20794D;">'.'</span>)[<span class="dv" style="color: #AD0000;">0</span>], axis<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">1</span>)</span>
+<span id="cb14-4">annotation_df <span class="op" style="color: #5E5E5E;">=</span> annotation_df.set_index(<span class="st" style="color: #20794D;">'index'</span>)</span>
+<span id="cb14-5">annotation_df <span class="op" style="color: #5E5E5E;">=</span> annotation_df.loc[<span class="bu" style="color: null;">list</span>(img_dict.keys())]</span>
+<span id="cb14-6">annotation_df.head()</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+version
+</th>
+<th>
+flags
+</th>
+<th>
+shapes
+</th>
+<th>
+lineColor
+</th>
+<th>
+fillColor
+</th>
+<th>
+imagePath
+</th>
+<th>
+imageData
+</th>
+<th>
+imageHeight
+</th>
+<th>
+imageWidth
+</th>
+</tr>
+<tr>
+<th>
+index
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+10001
+</th>
+<td>
+3.21.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[19.190476190476204, 244.76190476190476], [23.0, 233.33333333333331], [385.8571428571428, 132.38095238095238], [400.1428571428571, 135.23809523809524], [468.71428571428567, 353.3333333333333], [466.80952380952374, 362.85714285714283], [97.28571428571428, 478.0952380952381], [81.09523809523807, 474.2857142857143]], ‘shape_type’: ‘polygon’, ‘flags’: {}}]
+</td>
+<td>
+[0, 255, 0, 128]
+</td>
+<td>
+[255, 0, 0, 128]
+</td>
+<td>
+10001.jpg
+</td>
+<td>
+</td>
+<td>
+640
+</td>
+<td>
+480
+</td>
+</tr>
+<tr>
+<th>
+10002
+</th>
+<td>
+3.21.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[21.095238095238102, 183.33333333333334], [231.41269841269843, 88.09523809523809], [450.46031746031747, 347.6190476190476], [475.06349206349205, 376.1904761904762], [478.2380952380952, 388.8888888888889], [301.25396825396825, 532.5396825396825], [271.0952380952381, 556.3492063492064], [255.22222222222223, 541.2698412698413], [242.52380952380952, 534.9206349206349], [25.85714285714286, 199.20634920634922]], ‘shape_type’: ‘polygon’, ‘flags’: {}}]
+</td>
+<td>
+[0, 255, 0, 128]
+</td>
+<td>
+[255, 0, 0, 128]
+</td>
+<td>
+10002.jpg
+</td>
+<td>
+</td>
+<td>
+640
+</td>
+<td>
+480
+</td>
+</tr>
+<tr>
+<th>
+10003
+</th>
+<td>
+3.21.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[138.23809523809524, 71.42857142857143], [407.7619047619047, 31.428571428571427], [418.2380952380952, 39.047619047619044], [422.04761904761904, 539.047619047619], [407.7619047619047, 552.3809523809524], [112.52380952380952, 519.047619047619], [98.23809523809524, 505.71428571428567]], ‘shape_type’: ‘polygon’, ‘flags’: {}}]
+</td>
+<td>
+[0, 255, 0, 128]
+</td>
+<td>
+[255, 0, 0, 128]
+</td>
+<td>
+10003.jpg
+</td>
+<td>
+</td>
+<td>
+640
+</td>
+<td>
+480
+</td>
+</tr>
+<tr>
+<th>
+10004
+</th>
+<td>
+3.21.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[119.20529801324503, 218.54304635761588], [440.3973509933775, 184.7682119205298], [445.0331125827814, 190.72847682119206], [391.3907284768212, 366.2251655629139], [384.7682119205298, 372.18543046357615], [250.33112582781456, 401.3245033112583], [82.11920529801324, 446.3576158940397], [76.82119205298014, 441.72185430463577], [49.66887417218544, 239.73509933774835], [107.28476821192052, 228.47682119205297]], ‘shape_type’: ‘polygon’, ‘flags’: {}}]
+</td>
+<td>
+[0, 255, 0, 128]
+</td>
+<td>
+[255, 0, 0, 128]
+</td>
+<td>
+10004.jpg
+</td>
+<td>
+</td>
+<td>
+640
+</td>
+<td>
+480
+</td>
+</tr>
+<tr>
+<th>
+10005
+</th>
+<td>
+3.21.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[41.18840579710144, 218.8405797101449], [41.18840579710144, 209.42028985507244], [52.78260869565216, 201.44927536231882], [224.52173913043475, 142.75362318840578], [359.30434782608694, 89.85507246376811], [367.99999999999994, 92.02898550724638], [462.2028985507246, 275.3623188405797], [369.4492753623188, 348.5507246376811], [199.88405797101444, 472.463768115942], [191.91304347826082, 471.01449275362313]], ‘shape_type’: ‘polygon’, ‘flags’: {}}]
+</td>
+<td>
+[0, 255, 0, 128]
+</td>
+<td>
+[255, 0, 0, 128]
+</td>
+<td>
+10005.jpg
+</td>
+<td>
+</td>
+<td>
+640
+</td>
+<td>
+480
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<hr>
+<p><strong>Inspect annotation data for sample image</strong></p>
+<p>We can retrieve the annotation data for a specific image file using its name.</p>
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1">file_id <span class="op" style="color: #5E5E5E;">=</span> files[<span class="dv" style="color: #AD0000;">56</span>].name.split(<span class="st" style="color: #20794D;">'.'</span>)[<span class="dv" style="color: #AD0000;">0</span>]</span>
+<span id="cb15-2">file_id</span></code></pre></div>
+<pre class="text"><code>'10057'</code></pre>
+<p>The image file names are the index values for the annotation DataFrame.</p>
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1">annotation_df.loc[file_id].to_frame()</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+10057
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+version
+</th>
+<td>
+3.21.1
+</td>
+</tr>
+<tr>
+<th>
+flags
+</th>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+shapes
+</th>
+<td>
+[{‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[4.703296703296701, 186.8131868131868], [172.28571428571428, 91.20879120879121], [177.23076923076923, 89.56043956043956], [183.82417582417582, 92.85714285714285], [260.19780219780216, 161.53846153846152], [248.65934065934067, 173.07692307692307], [99.75824175824175, 273.6263736263736], [88.2197802197802, 280.7692307692308], [83.27472527472527, 280.7692307692308], [35.472527472527474, 225.82417582417582]], ‘shape_type’: ‘polygon’, ‘flags’: {}}, {‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[245.36263736263737, 134.06593406593407], [346.46153846153845, 100.0], [352.5054945054945, 101.64835164835165], [465.1428571428571, 248.9010989010989], [461.8461538461538, 252.1978021978022], [356.35164835164835, 300.5494505494505], [350.3076923076923, 297.8021978021978]], ‘shape_type’: ‘polygon’, ‘flags’: {}}, {‘label’: ‘student_id’, ‘line_color’: None, ‘fill_color’: None, ‘points’: [[33.27472527472527, 489.010989010989], [159.64835164835165, 281.3186813186813], [166.7912087912088, 271.97802197802196], [172.28571428571428, 270.3296703296703], [297.010989010989, 330.2197802197802], [300.3076923076923, 335.16483516483515], [299.2087912087912, 340.65934065934067], [223.38461538461536, 506.5934065934066], [192.6153846153846, 571.4285714285714], [184.9230769230769, 574.1758241758241], [172.28571428571428, 569.2307692307692], [47.56043956043956, 501.0989010989011], [36.021978021978015, 496.15384615384613]], ‘shape_type’: ‘polygon’, ‘flags’: {}}]
+</td>
+</tr>
+<tr>
+<th>
+lineColor
+</th>
+<td>
+[0, 255, 0, 128]
+</td>
+</tr>
+<tr>
+<th>
+fillColor
+</th>
+<td>
+[255, 0, 0, 128]
+</td>
+</tr>
+<tr>
+<th>
+imagePath
+</th>
+<td>
+10057.jpg
+</td>
+</tr>
+<tr>
+<th>
+imageData
+</th>
+<td>
+</td>
+</tr>
+<tr>
+<th>
+imageHeight
+</th>
+<td>
+640
+</td>
+</tr>
+<tr>
+<th>
+imageWidth
+</th>
+<td>
+480
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<hr>
+<p>The <code>shapes</code> entry contains the point coordinates to draw the image masks. We will also use this information to construct the associated bounding boxes. This particular entry has point coordinates for two image masks.</p>
+<p><strong>Download font file</strong></p>
+<p>We need a font file to annotate the images with class labels. We can download one from <a href="https://fonts.google.com/">Google Fonts</a>.</p>
+<div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">font_file <span class="op" style="color: #5E5E5E;">=</span> <span class="st" style="color: #20794D;">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
+<span id="cb18-2"><span class="cf" style="color: #003B4F;">if</span> <span class="kw" style="color: #003B4F;">not</span> os.path.exists(font_file): </span>
+<span id="cb18-3">    <span class="op" style="color: #5E5E5E;">!</span>wget https:<span class="op" style="color: #5E5E5E;">//</span>fonts.gstatic.com<span class="op" style="color: #5E5E5E;">/</span>s<span class="op" style="color: #5E5E5E;">/</span>roboto<span class="op" style="color: #5E5E5E;">/</span>v30<span class="op" style="color: #5E5E5E;">/</span>$font_file</span></code></pre></div>
+<p><strong>Annotate sample image</strong></p>
+<div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="im" style="color: #00769E;">from</span> PIL <span class="im" style="color: #00769E;">import</span> ImageDraw</span></code></pre></div>
+<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1">img <span class="op" style="color: #5E5E5E;">=</span> PIL.Image.<span class="bu" style="color: null;">open</span>(img_dict[file_id]).convert(<span class="st" style="color: #20794D;">'RGB'</span>)</span>
+<span id="cb20-2">width, height <span class="op" style="color: #5E5E5E;">=</span> img.size</span>
+<span id="cb20-3">annotated_img <span class="op" style="color: #5E5E5E;">=</span> img.copy()</span>
+<span id="cb20-4">mask_img <span class="op" style="color: #5E5E5E;">=</span> PIL.Image.new(<span class="st" style="color: #20794D;">'L'</span>, img.size, <span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb20-5">draw <span class="op" style="color: #5E5E5E;">=</span> ImageDraw.Draw(annotated_img)</span>
+<span id="cb20-6">fnt_size <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">25</span></span>
+<span id="cb20-7">annotation <span class="op" style="color: #5E5E5E;">=</span> annotation_df.loc[file_id]</span>
+<span id="cb20-8"></span>
+<span id="cb20-9"><span class="co" style="color: #5E5E5E;"># Iterate through annotations for sample image</span></span>
+<span id="cb20-10"><span class="cf" style="color: #003B4F;">for</span> i <span class="kw" style="color: #003B4F;">in</span> <span class="bu" style="color: null;">range</span>(<span class="bu" style="color: null;">len</span>(annotation[<span class="st" style="color: #20794D;">'shapes'</span>])):</span>
+<span id="cb20-11">    </span>
+<span id="cb20-12">    <span class="co" style="color: #5E5E5E;"># Extract mask polygon coords</span></span>
+<span id="cb20-13">    points <span class="op" style="color: #5E5E5E;">=</span> np.array(annotation[<span class="st" style="color: #20794D;">'shapes'</span>][i][<span class="st" style="color: #20794D;">'points'</span>])</span>
+<span id="cb20-14">    </span>
+<span id="cb20-15">    <span class="co" style="color: #5E5E5E;"># Extract bounding box coords</span></span>
+<span id="cb20-16">    x_min, y_min <span class="op" style="color: #5E5E5E;">=</span> points.<span class="bu" style="color: null;">min</span>(axis<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb20-17">    x_max, y_max <span class="op" style="color: #5E5E5E;">=</span> points.<span class="bu" style="color: null;">max</span>(axis<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb20-18">    </span>
+<span id="cb20-19">    <span class="co" style="color: #5E5E5E;"># Draw bounding box on sample image</span></span>
+<span id="cb20-20">    shape <span class="op" style="color: #5E5E5E;">=</span> (x_min, y_min, x_max, y_max)</span>
+<span id="cb20-21">    draw.rectangle(shape, outline<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'red'</span>)</span>
+<span id="cb20-22"></span>
+<span id="cb20-23">    <span class="co" style="color: #5E5E5E;"># Draw segmentation mask on sample image</span></span>
+<span id="cb20-24">    xy <span class="op" style="color: #5E5E5E;">=</span> [(p[<span class="dv" style="color: #AD0000;">0</span>],p[<span class="dv" style="color: #AD0000;">1</span>]) <span class="cf" style="color: #003B4F;">for</span> p <span class="kw" style="color: #003B4F;">in</span> points]</span>
+<span id="cb20-25">    ImageDraw.Draw(annotated_img, <span class="st" style="color: #20794D;">'RGBA'</span>).polygon(xy, fill<span class="op" style="color: #5E5E5E;">=</span>(<span class="dv" style="color: #AD0000;">255</span>, <span class="dv" style="color: #AD0000;">0</span>, <span class="dv" style="color: #AD0000;">0</span>, <span class="dv" style="color: #AD0000;">125</span>), outline <span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">"red"</span>)</span>
+<span id="cb20-26">    </span>
+<span id="cb20-27">    <span class="co" style="color: #5E5E5E;"># Draw segmentation mask on blank image</span></span>
+<span id="cb20-28">    ImageDraw.Draw(mask_img, <span class="st" style="color: #20794D;">'L'</span>).polygon(xy, fill<span class="op" style="color: #5E5E5E;">=</span>(<span class="dv" style="color: #AD0000;">255</span>))</span>
+<span id="cb20-29">    </span>
+<span id="cb20-30">    <span class="co" style="color: #5E5E5E;"># Draw object label on sample image</span></span>
+<span id="cb20-31">    fnt <span class="op" style="color: #5E5E5E;">=</span> PIL.ImageFont.truetype(font_file, fnt_size)</span>
+<span id="cb20-32">    label <span class="op" style="color: #5E5E5E;">=</span> annotation[<span class="st" style="color: #20794D;">'shapes'</span>][i][<span class="st" style="color: #20794D;">'label'</span>]</span>
+<span id="cb20-33">    draw.multiline_text((x_min, y_min<span class="op" style="color: #5E5E5E;">-</span>fnt_size<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">5</span>), <span class="ss" style="color: #20794D;">f"</span><span class="sc" style="color: #5E5E5E;">{</span>label<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">"</span>, font<span class="op" style="color: #5E5E5E;">=</span>fnt, fill<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'red'</span>)</span>
+<span id="cb20-34">    </span>
+<span id="cb20-35"><span class="bu" style="color: null;">print</span>(annotated_img.size) </span>
+<span id="cb20-36">annotated_img</span></code></pre></div>
+<pre class="text"><code>    (480, 640)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_30_1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Display segmentation mask</strong></p>
+<div class="sourceCode" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1">mask_img</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_32_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Create a class map</strong></p>
+<p>We need to provide IceVision with a class map that maps index values to unique class names.</p>
+<div class="sourceCode" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">shapes_df <span class="op" style="color: #5E5E5E;">=</span> annotation_df[<span class="st" style="color: #20794D;">'shapes'</span>].explode().to_frame().shapes.<span class="bu" style="color: null;">apply</span>(pd.Series)</span>
+<span id="cb23-2">shapes_df.head()</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+label
+</th>
+<th>
+line_color
+</th>
+<th>
+fill_color
+</th>
+<th>
+points
+</th>
+<th>
+shape_type
+</th>
+<th>
+flags
+</th>
+</tr>
+<tr>
+<th>
+index
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+10001
+</th>
+<td>
+student_id
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+[[19.190476190476204, 244.76190476190476], [23.0, 233.33333333333331], [385.8571428571428, 132.38095238095238], [400.1428571428571, 135.23809523809524], [468.71428571428567, 353.3333333333333], [466.80952380952374, 362.85714285714283], [97.28571428571428, 478.0952380952381], [81.09523809523807, 474.2857142857143]]
+</td>
+<td>
+polygon
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+10002
+</th>
+<td>
+student_id
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+[[21.095238095238102, 183.33333333333334], [231.41269841269843, 88.09523809523809], [450.46031746031747, 347.6190476190476], [475.06349206349205, 376.1904761904762], [478.2380952380952, 388.8888888888889], [301.25396825396825, 532.5396825396825], [271.0952380952381, 556.3492063492064], [255.22222222222223, 541.2698412698413], [242.52380952380952, 534.9206349206349], [25.85714285714286, 199.20634920634922]]
+</td>
+<td>
+polygon
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+10003
+</th>
+<td>
+student_id
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+[[138.23809523809524, 71.42857142857143], [407.7619047619047, 31.428571428571427], [418.2380952380952, 39.047619047619044], [422.04761904761904, 539.047619047619], [407.7619047619047, 552.3809523809524], [112.52380952380952, 519.047619047619], [98.23809523809524, 505.71428571428567]]
+</td>
+<td>
+polygon
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+10004
+</th>
+<td>
+student_id
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+[[119.20529801324503, 218.54304635761588], [440.3973509933775, 184.7682119205298], [445.0331125827814, 190.72847682119206], [391.3907284768212, 366.2251655629139], [384.7682119205298, 372.18543046357615], [250.33112582781456, 401.3245033112583], [82.11920529801324, 446.3576158940397], [76.82119205298014, 441.72185430463577], [49.66887417218544, 239.73509933774835], [107.28476821192052, 228.47682119205297]]
+</td>
+<td>
+polygon
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+10005
+</th>
+<td>
+student_id
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+[[41.18840579710144, 218.8405797101449], [41.18840579710144, 209.42028985507244], [52.78260869565216, 201.44927536231882], [224.52173913043475, 142.75362318840578], [359.30434782608694, 89.85507246376811], [367.99999999999994, 92.02898550724638], [462.2028985507246, 275.3623188405797], [369.4492753623188, 348.5507246376811], [199.88405797101444, 472.463768115942], [191.91304347826082, 471.01449275362313]]
+</td>
+<td>
+polygon
+</td>
+<td>
+{}
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<div class="sourceCode" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">labels <span class="op" style="color: #5E5E5E;">=</span> shapes_df[<span class="st" style="color: #20794D;">'label'</span>].unique().tolist()</span>
+<span id="cb24-2">labels</span></code></pre></div>
+<pre class="text"><code>['student_id']</code></pre>
+<div class="sourceCode" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1">class_map <span class="op" style="color: #5E5E5E;">=</span> ClassMap(labels)</span>
+<span id="cb26-2">class_map</span></code></pre></div>
+<pre class="text"><code>&lt;ClassMap: {'background': 0, 'student_id': 1}&gt;</code></pre>
+</section>
+<section id="create-dataset-parser" class="level2">
+<h2 class="anchored" data-anchor-id="create-dataset-parser">Create Dataset Parser</h2>
+<p>Now we can create a custom <code>Parser</code> class that tells IceVision how to read the dataset.</p>
+<p><strong>View template for an instance segmentation record</strong></p>
+<div class="sourceCode" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1">template_record <span class="op" style="color: #5E5E5E;">=</span> InstanceSegmentationRecord()</span>
+<span id="cb28-2">template_record</span></code></pre></div>
+<pre class="text"><code>BaseRecord
+
+common: 
+    - Image size None
+    - Filepath: None
+    - Img: None
+    - Record ID: None
+detection: 
+    - Class Map: None
+    - Labels: []
+    - BBoxes: []
+    - masks: []
+    - mask_array: None</code></pre>
+<p><strong>View template for an instance segmentation parser</strong></p>
+<div class="sourceCode" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1">Parser.generate_template(template_record)</span></code></pre></div>
+<pre class="text"><code>class MyParser(Parser):
+    def __init__(self, template_record):
+        super().__init__(template_record=template_record)
+    def __iter__(self) -&gt; Any:
+    def __len__(self) -&gt; int:
+    def record_id(self, o: Any) -&gt; Hashable:
+    def parse_fields(self, o: Any, record: BaseRecord, is_new: bool):
+        record.set_img_size(&lt;ImgSize&gt;)
+        record.set_filepath(&lt;Union[str, Path]&gt;)
+        record.detection.set_class_map(&lt;ClassMap&gt;)
+        record.detection.add_labels(&lt;Sequence[Hashable]&gt;)
+        record.detection.add_bboxes(&lt;Sequence[BBox]&gt;)
+        record.detection.add_masks(&lt;Sequence[Mask]&gt;)</code></pre>
+<p><strong>Define custom parser class</strong></p>
+<div class="sourceCode" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><span class="kw" style="color: #003B4F;">class</span> StudentIDParser(Parser):</span>
+<span id="cb32-2">    <span class="kw" style="color: #003B4F;">def</span> <span class="fu" style="color: #4758AB;">__init__</span>(<span class="va" style="color: #111111;">self</span>, template_record, annotations_df, img_dict, class_map):</span>
+<span id="cb32-3">        <span class="bu" style="color: null;">super</span>().<span class="fu" style="color: #4758AB;">__init__</span>(template_record<span class="op" style="color: #5E5E5E;">=</span>template_record)</span>
+<span id="cb32-4">        <span class="va" style="color: #111111;">self</span>.img_dict <span class="op" style="color: #5E5E5E;">=</span> img_dict</span>
+<span id="cb32-5">        <span class="va" style="color: #111111;">self</span>.df <span class="op" style="color: #5E5E5E;">=</span> annotations_df</span>
+<span id="cb32-6">        <span class="va" style="color: #111111;">self</span>.class_map <span class="op" style="color: #5E5E5E;">=</span> class_map</span>
+<span id="cb32-7"></span>
+<span id="cb32-8">    <span class="kw" style="color: #003B4F;">def</span> <span class="fu" style="color: #4758AB;">__iter__</span>(<span class="va" style="color: #111111;">self</span>):</span>
+<span id="cb32-9">        <span class="cf" style="color: #003B4F;">for</span> o <span class="kw" style="color: #003B4F;">in</span> <span class="va" style="color: #111111;">self</span>.df.itertuples(): <span class="cf" style="color: #003B4F;">yield</span> o</span>
+<span id="cb32-10"></span>
+<span id="cb32-11">    <span class="kw" style="color: #003B4F;">def</span> <span class="fu" style="color: #4758AB;">__len__</span>(<span class="va" style="color: #111111;">self</span>):</span>
+<span id="cb32-12">        <span class="cf" style="color: #003B4F;">return</span> <span class="bu" style="color: null;">len</span>(<span class="va" style="color: #111111;">self</span>.df)</span>
+<span id="cb32-13"></span>
+<span id="cb32-14">    <span class="kw" style="color: #003B4F;">def</span> record_id(<span class="va" style="color: #111111;">self</span>, o: Any) <span class="op" style="color: #5E5E5E;">-&gt;</span> Hashable:</span>
+<span id="cb32-15">        <span class="cf" style="color: #003B4F;">return</span> o.Index</span>
+<span id="cb32-16"></span>
+<span id="cb32-17">    <span class="kw" style="color: #003B4F;">def</span> image_width_height(<span class="va" style="color: #111111;">self</span>, o) <span class="op" style="color: #5E5E5E;">-&gt;</span> Tuple[<span class="bu" style="color: null;">int</span>, <span class="bu" style="color: null;">int</span>]:</span>
+<span id="cb32-18">        <span class="cf" style="color: #003B4F;">return</span> <span class="va" style="color: #111111;">self</span>._size[:<span class="dv" style="color: #AD0000;">2</span>]</span>
+<span id="cb32-19"></span>
+<span id="cb32-20">    <span class="kw" style="color: #003B4F;">def</span> parse_fields(<span class="va" style="color: #111111;">self</span>, o, record, is_new):</span>
+<span id="cb32-21">        </span>
+<span id="cb32-22">        filepath <span class="op" style="color: #5E5E5E;">=</span> <span class="va" style="color: #111111;">self</span>.img_dict[o.Index]</span>
+<span id="cb32-23">        </span>
+<span id="cb32-24">        width, height <span class="op" style="color: #5E5E5E;">=</span> PIL.Image.<span class="bu" style="color: null;">open</span>(filepath).convert(<span class="st" style="color: #20794D;">'RGB'</span>).size</span>
+<span id="cb32-25">        </span>
+<span id="cb32-26">        record.set_img_size([width, height])</span>
+<span id="cb32-27">        record.set_filepath(Path(filepath))</span>
+<span id="cb32-28">        record.detection.set_class_map(<span class="va" style="color: #111111;">self</span>.class_map)</span>
+<span id="cb32-29">                </span>
+<span id="cb32-30">        labels <span class="op" style="color: #5E5E5E;">=</span> []</span>
+<span id="cb32-31">        bbox_list <span class="op" style="color: #5E5E5E;">=</span> []</span>
+<span id="cb32-32">        mask_list <span class="op" style="color: #5E5E5E;">=</span> []</span>
+<span id="cb32-33">        </span>
+<span id="cb32-34">        <span class="cf" style="color: #003B4F;">for</span> i <span class="kw" style="color: #003B4F;">in</span> <span class="bu" style="color: null;">range</span>(<span class="bu" style="color: null;">len</span>(o.shapes)):</span>
+<span id="cb32-35">            points <span class="op" style="color: #5E5E5E;">=</span> np.array(o.shapes[i][<span class="st" style="color: #20794D;">'points'</span>])</span>
+<span id="cb32-36"></span>
+<span id="cb32-37">            x_min, y_min <span class="op" style="color: #5E5E5E;">=</span> points.<span class="bu" style="color: null;">min</span>(axis<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb32-38">            x_max, y_max <span class="op" style="color: #5E5E5E;">=</span> points.<span class="bu" style="color: null;">max</span>(axis<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb32-39">            </span>
+<span id="cb32-40">            labels.append(o.shapes[i][<span class="st" style="color: #20794D;">'label'</span>])</span>
+<span id="cb32-41">            bbox_list.append(BBox.from_xyxy(x_min, y_min, x_max, y_max))</span>
+<span id="cb32-42">            </span>
+<span id="cb32-43">            mask_img <span class="op" style="color: #5E5E5E;">=</span> PIL.Image.new(<span class="st" style="color: #20794D;">'L'</span>, (width, height), <span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb32-44">            xy <span class="op" style="color: #5E5E5E;">=</span> [(p[<span class="dv" style="color: #AD0000;">0</span>],p[<span class="dv" style="color: #AD0000;">1</span>]) <span class="cf" style="color: #003B4F;">for</span> p <span class="kw" style="color: #003B4F;">in</span> points]</span>
+<span id="cb32-45">            ImageDraw.Draw(mask_img, <span class="st" style="color: #20794D;">'L'</span>).polygon(xy, fill<span class="op" style="color: #5E5E5E;">=</span>(<span class="dv" style="color: #AD0000;">1</span>))</span>
+<span id="cb32-46">            mask_array <span class="op" style="color: #5E5E5E;">=</span> np.array(mask_img).clip(<span class="dv" style="color: #AD0000;">0</span>,<span class="dv" style="color: #AD0000;">1</span>)</span>
+<span id="cb32-47">            mask_list.append(MaskArray(mask_array))</span>
+<span id="cb32-48">        </span>
+<span id="cb32-49">        record.detection.add_labels(labels)</span>
+<span id="cb32-50">        record.detection.add_bboxes(bbox_list)</span>
+<span id="cb32-51">        record.detection.add_masks(mask_list)</span></code></pre></div>
+<p><strong>Create a custom parser object</strong></p>
+<div class="sourceCode" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1">parser <span class="op" style="color: #5E5E5E;">=</span> StudentIDParser(template_record, annotation_df, img_dict, class_map)</span>
+<span id="cb33-2"><span class="bu" style="color: null;">len</span>(parser)</span></code></pre></div>
+<pre class="text"><code>150</code></pre>
+<p><strong>Parse annotations to create records</strong></p>
+<p>We’ll randomly split the samples into training and validation sets.</p>
+<div class="sourceCode" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><span class="co" style="color: #5E5E5E;"># Randomly split our data into train/valid</span></span>
+<span id="cb35-2">data_splitter <span class="op" style="color: #5E5E5E;">=</span> RandomSplitter([<span class="fl" style="color: #AD0000;">0.8</span>, <span class="fl" style="color: #AD0000;">0.2</span>])</span>
+<span id="cb35-3"></span>
+<span id="cb35-4">train_records, valid_records <span class="op" style="color: #5E5E5E;">=</span> parser.parse(data_splitter)</span>
+<span id="cb35-5"><span class="co" style="color: #5E5E5E;"># train_records, valid_records = parser.parse(data_splitter, cache_filepath=f'{dataset_name}-cache.pkl')</span></span></code></pre></div>
+<p><strong>Export class labels</strong></p>
+<div class="sourceCode" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><span class="im" style="color: #00769E;">import</span> json</span>
+<span id="cb36-2"></span>
+<span id="cb36-3">class_labels <span class="op" style="color: #5E5E5E;">=</span> {<span class="st" style="color: #20794D;">"classes"</span>: parser.class_map.get_classes()}</span>
+<span id="cb36-4">class_labels_file_name <span class="op" style="color: #5E5E5E;">=</span> <span class="ss" style="color: #20794D;">f"</span><span class="sc" style="color: #5E5E5E;">{</span>data_dir<span class="sc" style="color: #5E5E5E;">.</span>name<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">-classes.json"</span></span>
+<span id="cb36-5"></span>
+<span id="cb36-6"><span class="cf" style="color: #003B4F;">with</span> <span class="bu" style="color: null;">open</span>(class_labels_file_name, <span class="st" style="color: #20794D;">"w"</span>) <span class="im" style="color: #00769E;">as</span> write_file:</span>
+<span id="cb36-7">    json.dump(class_labels, write_file)</span>
+<span id="cb36-8">    </span>
+<span id="cb36-9">class_labels, class_labels_file_name</span></code></pre></div>
+<pre class="text"><code>({'classes': ['background', 'student_id']}, 'student-id-classes.json')</code></pre>
+<p><strong>Inspect training records</strong></p>
+<div class="sourceCode" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1">train_records[<span class="dv" style="color: #AD0000;">0</span>]</span></code></pre></div>
+<pre class="text"><code>BaseRecord
+
+common: 
+    - Image size [640, 480]
+    - Filepath: pytorch-for-information-extraction/code/datasets/detection/student-id/10115.jpg
+    - Img: None
+    - Record ID: 10115
+detection: 
+    - Class Map: &lt;ClassMap: {'background': 0, 'student_id': 1}&gt;
+    - Labels: [1, 1]
+    - BBoxes: [&lt;BBox (xmin:281.57142857142856, ymin:1.428571428571428, xmax:504.42857142857133, ymax:326.4285714285714)&gt;, &lt;BBox (xmin:185.1428571428571, ymin:124.28571428571428, xmax:382.99999999999994, ymax:448.57142857142856)&gt;]
+    - masks: [&lt;icevision.core.mask.MaskArray object at 0x7f521f95df10&gt;, &lt;icevision.core.mask.MaskArray object at 0x7f521f95da90&gt;]
+    - mask_array: None</code></pre>
+<div class="sourceCode" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1">show_record(train_records[<span class="dv" style="color: #AD0000;">0</span>], figsize <span class="op" style="color: #5E5E5E;">=</span> (<span class="dv" style="color: #AD0000;">10</span>,<span class="dv" style="color: #AD0000;">10</span>), display_label<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span> )</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_51_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<div class="sourceCode" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1">show_records(train_records[<span class="dv" style="color: #AD0000;">1</span>:<span class="dv" style="color: #AD0000;">4</span>], ncols<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">3</span>,display_label<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_52_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="define-dataloader-objects" class="level2">
+<h2 class="anchored" data-anchor-id="define-dataloader-objects">Define DataLoader Objects</h2>
+<p><strong>Define input resolution</strong></p>
+<div class="sourceCode" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1">image_size <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">512</span></span>
+<span id="cb42-2">presize <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">1024</span></span></code></pre></div>
+<p><strong>Define Transforms</strong></p>
+<div class="sourceCode" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1">train_tfms <span class="op" style="color: #5E5E5E;">=</span> tfms.A.Adapter([<span class="op" style="color: #5E5E5E;">*</span>tfms.A.aug_tfms(size<span class="op" style="color: #5E5E5E;">=</span>image_size, presize<span class="op" style="color: #5E5E5E;">=</span>presize), tfms.A.Normalize()])</span>
+<span id="cb43-2">valid_tfms <span class="op" style="color: #5E5E5E;">=</span> tfms.A.Adapter([<span class="op" style="color: #5E5E5E;">*</span>tfms.A.resize_and_pad(image_size), tfms.A.Normalize()])</span></code></pre></div>
+<p><strong>Get normalization stats</strong></p>
+<div class="sourceCode" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1">mean <span class="op" style="color: #5E5E5E;">=</span> tfms.A.Normalize().mean</span>
+<span id="cb44-2">std <span class="op" style="color: #5E5E5E;">=</span> tfms.A.Normalize().std</span>
+<span id="cb44-3">mean, std</span></code></pre></div>
+<pre class="text"><code>((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))</code></pre>
+<p><strong>Define Datasets</strong></p>
+<div class="sourceCode" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1">train_ds <span class="op" style="color: #5E5E5E;">=</span> Dataset(train_records, train_tfms)</span>
+<span id="cb46-2">valid_ds <span class="op" style="color: #5E5E5E;">=</span> Dataset(valid_records, valid_tfms)</span>
+<span id="cb46-3">train_ds, valid_ds</span></code></pre></div>
+<pre class="text"><code>(&lt;Dataset with 120 items&gt;, &lt;Dataset with 30 items&gt;)</code></pre>
+<p><strong>Apply augmentations to a training sample</strong></p>
+<div class="sourceCode" id="cb48" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1">samples <span class="op" style="color: #5E5E5E;">=</span> [train_ds[<span class="dv" style="color: #AD0000;">0</span>] <span class="cf" style="color: #003B4F;">for</span> _ <span class="kw" style="color: #003B4F;">in</span> <span class="bu" style="color: null;">range</span>(<span class="dv" style="color: #AD0000;">3</span>)]</span>
+<span id="cb48-2">show_samples(samples, ncols<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">3</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_62_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Define model type</strong></p>
+<div class="sourceCode" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1">model_type <span class="op" style="color: #5E5E5E;">=</span> models.torchvision.mask_rcnn</span></code></pre></div>
+<p><strong>Define backbone</strong></p>
+<p>We will finetune a pretrained model rather than train a new one from scratch.</p>
+<div class="sourceCode" id="cb50" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1">backbone <span class="op" style="color: #5E5E5E;">=</span> model_type.backbones.resnet50_fpn()</span></code></pre></div>
+<p><strong>Define batch size</strong></p>
+<div class="sourceCode" id="cb51" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1">bs <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">4</span></span></code></pre></div>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> Adjust the batch size based on the available GPU memory.</p>
+</blockquote>
+<p><strong>Define DataLoaders</strong></p>
+<div class="sourceCode" id="cb52" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1">train_dl <span class="op" style="color: #5E5E5E;">=</span> model_type.train_dl(train_ds, batch_size<span class="op" style="color: #5E5E5E;">=</span>bs, num_workers<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">2</span>, shuffle<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>)</span>
+<span id="cb52-2">valid_dl <span class="op" style="color: #5E5E5E;">=</span> model_type.valid_dl(valid_ds, batch_size<span class="op" style="color: #5E5E5E;">=</span>bs, num_workers<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">2</span>, shuffle<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">False</span>)</span></code></pre></div>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> Be careful when increasing the number of workers. There is a bug that significantly increases system memory usage with more workers.</p>
+</blockquote>
+<div class="sourceCode" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1">infer_dl <span class="op" style="color: #5E5E5E;">=</span> model_type.infer_dl(valid_ds, batch_size<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">8</span>, shuffle<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">False</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb54" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1">valid_batch <span class="op" style="color: #5E5E5E;">=</span> first(valid_dl)</span>
+<span id="cb54-2">infer_batch <span class="op" style="color: #5E5E5E;">=</span> first(infer_dl)</span></code></pre></div>
+<div class="sourceCode" id="cb55" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1">(valid_images, valid_labels), valid_records <span class="op" style="color: #5E5E5E;">=</span> valid_batch</span></code></pre></div>
+<div class="sourceCode" id="cb56" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1">model_type.show_batch(first(valid_dl), ncols<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">4</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_74_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="finetune-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="finetune-the-model">Finetune the Model</h2>
+<p>Now, we can move on to training the model.</p>
+<p><strong>Instantiate the model</strong></p>
+<div class="sourceCode" id="cb57" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1">model <span class="op" style="color: #5E5E5E;">=</span> model_type.model(backbone<span class="op" style="color: #5E5E5E;">=</span>backbone, num_classes<span class="op" style="color: #5E5E5E;">=</span>parser.class_map.num_classes) </span></code></pre></div>
+<p><strong>Define metrics</strong></p>
+<div class="sourceCode" id="cb58" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1">metrics <span class="op" style="color: #5E5E5E;">=</span> [COCOMetric(metric_type<span class="op" style="color: #5E5E5E;">=</span>COCOMetricType.mask)]</span></code></pre></div>
+<p><strong>Define Learner object</strong></p>
+<div class="sourceCode" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1">learn <span class="op" style="color: #5E5E5E;">=</span> model_type.fastai.learner(dls<span class="op" style="color: #5E5E5E;">=</span>[train_dl, valid_dl], model<span class="op" style="color: #5E5E5E;">=</span>model, metrics<span class="op" style="color: #5E5E5E;">=</span>metrics)</span></code></pre></div>
+<p><strong>Find learning rate</strong></p>
+<div class="sourceCode" id="cb60" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1">suggested_lrs <span class="op" style="color: #5E5E5E;">=</span> learn.lr_find()</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_82_3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Define learning rate</strong></p>
+<div class="sourceCode" id="cb61" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1">lr <span class="op" style="color: #5E5E5E;">=</span> suggested_lrs.valley<span class="op" style="color: #5E5E5E;">*</span><span class="dv" style="color: #AD0000;">3</span></span>
+<span id="cb61-2">lr</span></code></pre></div>
+<pre class="text"><code>    0.00039547700725961477</code></pre>
+<p><strong>Define number of epochs</strong></p>
+<div class="sourceCode" id="cb63" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1">epochs <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">60</span></span></code></pre></div>
+<p><strong>Finetune model</strong></p>
+<div class="sourceCode" id="cb64" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1">learn.fine_tune(epochs, lr, freeze_epochs<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">1</span>)</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+epoch
+</th>
+<th>
+train_loss
+</th>
+<th>
+valid_loss
+</th>
+<th>
+COCOMetric
+</th>
+<th>
+time
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+0
+</td>
+<td>
+1.526101
+</td>
+<td>
+1.136230
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:05
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped">
+<thead>
+<tr>
+<th>
+epoch
+</th>
+<th>
+train_loss
+</th>
+<th>
+valid_loss
+</th>
+<th>
+COCOMetric
+</th>
+<th>
+time
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+0
+</td>
+<td>
+1.113099
+</td>
+<td>
+0.948657
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:10
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+0.879729
+</td>
+<td>
+0.561887
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td>
+0.661906
+</td>
+<td>
+0.404916
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td>
+0.528782
+</td>
+<td>
+0.345191
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+4
+</td>
+<td>
+0.464688
+</td>
+<td>
+0.352018
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+5
+</td>
+<td>
+0.418978
+</td>
+<td>
+0.320372
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+6
+</td>
+<td>
+0.376626
+</td>
+<td>
+0.295002
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+7
+</td>
+<td>
+0.340059
+</td>
+<td>
+0.309611
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+8
+</td>
+<td>
+0.316866
+</td>
+<td>
+0.267806
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+9
+</td>
+<td>
+0.295634
+</td>
+<td>
+0.275406
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+10
+</td>
+<td>
+0.282974
+</td>
+<td>
+0.263774
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+11
+</td>
+<td>
+0.275979
+</td>
+<td>
+0.254877
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+12
+</td>
+<td>
+0.266656
+</td>
+<td>
+0.237095
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+13
+</td>
+<td>
+0.260437
+</td>
+<td>
+0.239515
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+14
+</td>
+<td>
+0.245464
+</td>
+<td>
+0.222481
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+15
+</td>
+<td>
+0.237604
+</td>
+<td>
+0.221115
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+16
+</td>
+<td>
+0.233022
+</td>
+<td>
+0.245855
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+17
+</td>
+<td>
+0.224769
+</td>
+<td>
+0.277205
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+18
+</td>
+<td>
+0.214686
+</td>
+<td>
+0.242116
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+19
+</td>
+<td>
+0.207307
+</td>
+<td>
+0.229408
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+20
+</td>
+<td>
+0.202318
+</td>
+<td>
+0.217142
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+21
+</td>
+<td>
+0.190885
+</td>
+<td>
+0.209915
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+22
+</td>
+<td>
+0.190565
+</td>
+<td>
+0.202563
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+23
+</td>
+<td>
+0.189903
+</td>
+<td>
+0.199876
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:09
+</td>
+</tr>
+<tr>
+<td>
+24
+</td>
+<td>
+0.186624
+</td>
+<td>
+0.213171
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+25
+</td>
+<td>
+0.178527
+</td>
+<td>
+0.207296
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+26
+</td>
+<td>
+0.179156
+</td>
+<td>
+0.246541
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+27
+</td>
+<td>
+0.174455
+</td>
+<td>
+0.186960
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+28
+</td>
+<td>
+0.162381
+</td>
+<td>
+0.183744
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+29
+</td>
+<td>
+0.157665
+</td>
+<td>
+0.181943
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+30
+</td>
+<td>
+0.152987
+</td>
+<td>
+0.181777
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+31
+</td>
+<td>
+0.149362
+</td>
+<td>
+0.163883
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+32
+</td>
+<td>
+0.143986
+</td>
+<td>
+0.185762
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+33
+</td>
+<td>
+0.147537
+</td>
+<td>
+0.170019
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+34
+</td>
+<td>
+0.139731
+</td>
+<td>
+0.165259
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+35
+</td>
+<td>
+0.136252
+</td>
+<td>
+0.166419
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+36
+</td>
+<td>
+0.134750
+</td>
+<td>
+0.165301
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+37
+</td>
+<td>
+0.131968
+</td>
+<td>
+0.157560
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+38
+</td>
+<td>
+0.129044
+</td>
+<td>
+0.162093
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+39
+</td>
+<td>
+0.121755
+</td>
+<td>
+0.159642
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+40
+</td>
+<td>
+0.118404
+</td>
+<td>
+0.154801
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+41
+</td>
+<td>
+0.118744
+</td>
+<td>
+0.157296
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+42
+</td>
+<td>
+0.113328
+</td>
+<td>
+0.156315
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+43
+</td>
+<td>
+0.114840
+</td>
+<td>
+0.153378
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+44
+</td>
+<td>
+0.113884
+</td>
+<td>
+0.146661
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+45
+</td>
+<td>
+0.112758
+</td>
+<td>
+0.162629
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+46
+</td>
+<td>
+0.110688
+</td>
+<td>
+0.157740
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+47
+</td>
+<td>
+0.107804
+</td>
+<td>
+0.156558
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+48
+</td>
+<td>
+0.104166
+</td>
+<td>
+0.155466
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+49
+</td>
+<td>
+0.102735
+</td>
+<td>
+0.159387
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+50
+</td>
+<td>
+0.100563
+</td>
+<td>
+0.157396
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+51
+</td>
+<td>
+0.101158
+</td>
+<td>
+0.151178
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+52
+</td>
+<td>
+0.100735
+</td>
+<td>
+0.148203
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:08
+</td>
+</tr>
+<tr>
+<td>
+53
+</td>
+<td>
+0.098154
+</td>
+<td>
+0.165008
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:07
+</td>
+</tr>
+<tr>
+<td>
+54
+</td>
+<td>
+0.098391
+</td>
+<td>
+0.163613
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:07
+</td>
+</tr>
+<tr>
+<td>
+55
+</td>
+<td>
+0.100913
+</td>
+<td>
+0.161389
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:07
+</td>
+</tr>
+<tr>
+<td>
+56
+</td>
+<td>
+0.098609
+</td>
+<td>
+0.155590
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:07
+</td>
+</tr>
+<tr>
+<td>
+57
+</td>
+<td>
+0.098285
+</td>
+<td>
+0.154783
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:07
+</td>
+</tr>
+<tr>
+<td>
+58
+</td>
+<td>
+0.097906
+</td>
+<td>
+0.156959
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:07
+</td>
+</tr>
+<tr>
+<td>
+59
+</td>
+<td>
+0.097475
+</td>
+<td>
+0.160197
+</td>
+<td>
+0.000000
+</td>
+<td>
+00:07
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p><strong>Show results on validation set</strong></p>
+<div class="sourceCode" id="cb65" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1">model_type.show_results(model, valid_ds, detection_threshold<span class="op" style="color: #5E5E5E;">=</span><span class="fl" style="color: #AD0000;">.5</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_90_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="save-model-checkpoint" class="level2">
+<h2 class="anchored" data-anchor-id="save-model-checkpoint">Save Model Checkpoint</h2>
+<p>We can save the trained PyTorch model and further finetune it in the future or perform inference with IceVision.</p>
+<p><strong>Define model checkpoint file path</strong></p>
+<div class="sourceCode" id="cb66" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1">checkpoint_path <span class="op" style="color: #5E5E5E;">=</span> <span class="ss" style="color: #20794D;">f"</span><span class="sc" style="color: #5E5E5E;">{</span>data_dir<span class="sc" style="color: #5E5E5E;">.</span>name<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">-</span><span class="sc" style="color: #5E5E5E;">{</span><span class="bu" style="color: null;">type</span>(model)<span class="sc" style="color: #5E5E5E;">.</span><span class="va" style="color: #111111;">__name__</span><span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">.pth"</span></span>
+<span id="cb66-2">checkpoint_path</span></code></pre></div>
+<pre class="text"><code>    'student-id-MaskRCNN.pth'</code></pre>
+<p><strong>Save model checkpoint</strong></p>
+<div class="sourceCode" id="cb68" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1">torch.save(model.state_dict(), checkpoint_path)</span></code></pre></div>
+</section>
+<section id="perform-inference-with-checkpoint" class="level2">
+<h2 class="anchored" data-anchor-id="perform-inference-with-checkpoint">Perform Inference with Checkpoint</h2>
+<p>Below are the steps to load the saved PyTorch model and perform inference with IceVision.</p>
+<p><strong>Load class labels</strong></p>
+<div class="sourceCode" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><span class="cf" style="color: #003B4F;">with</span> <span class="bu" style="color: null;">open</span>(class_labels_file_name, <span class="st" style="color: #20794D;">"r"</span>) <span class="im" style="color: #00769E;">as</span> read_file:</span>
+<span id="cb69-2">    classes <span class="op" style="color: #5E5E5E;">=</span> json.loads(read_file.read())</span>
+<span id="cb69-3">classes[<span class="st" style="color: #20794D;">'classes'</span>]</span></code></pre></div>
+<pre class="text"><code>    ['background', 'student_id']</code></pre>
+<p><strong>Load model checkpoint</strong></p>
+<div class="sourceCode" id="cb71" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1">checkpoint_and_model <span class="op" style="color: #5E5E5E;">=</span> models.model_from_checkpoint(checkpoint_path, </span>
+<span id="cb71-2">                                                    model_name<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'torchvision.mask_rcnn'</span>, </span>
+<span id="cb71-3">                                                    backbone_name<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'resnet50_fpn'</span>,</span>
+<span id="cb71-4">                                                    img_size<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">512</span>, </span>
+<span id="cb71-5">                                                    classes<span class="op" style="color: #5E5E5E;">=</span>classes[<span class="st" style="color: #20794D;">'classes'</span>],</span>
+<span id="cb71-6">                                                   )</span></code></pre></div>
+<pre class="text"><code>    Use load_from_local loader</code></pre>
+<p><strong>Verify class map</strong></p>
+<div class="sourceCode" id="cb73" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1">checkpoint_and_model[<span class="st" style="color: #20794D;">"class_map"</span>]</span></code></pre></div>
+<pre class="text"><code>    &lt;ClassMap: {'background': 0, 'student_id': 1}&gt;</code></pre>
+<p><strong>Get model and device</strong></p>
+<div class="sourceCode" id="cb75" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1">model <span class="op" style="color: #5E5E5E;">=</span> checkpoint_and_model[<span class="st" style="color: #20794D;">"model"</span>]</span>
+<span id="cb75-2"></span>
+<span id="cb75-3">device<span class="op" style="color: #5E5E5E;">=</span><span class="bu" style="color: null;">next</span>(model.parameters()).device</span>
+<span id="cb75-4">device</span></code></pre></div>
+<pre class="text"><code>    device(type='cpu')</code></pre>
+<p><strong>Define inference preprocessing steps</strong></p>
+<div class="sourceCode" id="cb77" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1">img_size <span class="op" style="color: #5E5E5E;">=</span> checkpoint_and_model[<span class="st" style="color: #20794D;">"img_size"</span>]</span>
+<span id="cb77-2">valid_tfms <span class="op" style="color: #5E5E5E;">=</span> tfms.A.Adapter([<span class="op" style="color: #5E5E5E;">*</span>tfms.A.resize_and_pad(img_size), tfms.A.Normalize()])</span></code></pre></div>
+<p><strong>Select a test image</strong></p>
+<div class="sourceCode" id="cb78" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1">test_img <span class="op" style="color: #5E5E5E;">=</span> open_img(files[<span class="dv" style="color: #AD0000;">9</span>])</span>
+<span id="cb78-2">test_img</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_106_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p><strong>Define inference dataloader</strong></p>
+<div class="sourceCode" id="cb79" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1">infer_tfms <span class="op" style="color: #5E5E5E;">=</span> tfms.A.Adapter([tfms.A.Normalize()])</span>
+<span id="cb79-2">infer_ds <span class="op" style="color: #5E5E5E;">=</span> Dataset.from_images([test_img], infer_tfms)</span>
+<span id="cb79-3">infer_dl <span class="op" style="color: #5E5E5E;">=</span> model_type.infer_dl(infer_ds, batch_size<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">1</span>, shuffle<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">False</span>)</span></code></pre></div>
+<p><strong>Perform inference</strong></p>
+<div class="sourceCode" id="cb80" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1">preds <span class="op" style="color: #5E5E5E;">=</span> model_type.predict_from_dl(model, infer_dl, keep_images<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>)</span></code></pre></div>
+<pre class="text"><code>      0%|          | 0/1 [00:00&lt;?, ?it/s]</code></pre>
+<p><strong>Inspect source image</strong></p>
+<div class="sourceCode" id="cb82" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1">preds[<span class="dv" style="color: #AD0000;">0</span>].ground_truth</span></code></pre></div>
+<pre class="text"><code>    BaseRecord
+    
+    common: 
+        - Record ID: 0
+        - Img: 480x640x3 &lt;np.ndarray&gt; Image
+        - Image size ImgSize(width=480, height=640)
+    detection: 
+        - Class Map: None</code></pre>
+<p><strong>Inspect model prediction</strong></p>
+<div class="sourceCode" id="cb84" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1">preds[<span class="dv" style="color: #AD0000;">0</span>].pred</span></code></pre></div>
+<pre class="text"><code>    BaseRecord
+    
+    common: 
+        - Record ID: 0
+        - Img: 480x640x3 &lt;np.ndarray&gt; Image
+        - Image size ImgSize(width=480, height=640)
+    detection: 
+        - Scores: [0.9997528 0.9996158]
+        - BBoxes: [&lt;BBox (xmin:34.445037841796875, ymin:300.6217041015625, xmax:468.1103210449219, ymax:625.0744018554688)&gt;, &lt;BBox (xmin:13.5184326171875, ymin:21.899276733398438, xmax:405.33990478515625, ymax:296.6339111328125)&gt;]
+        - masks: []
+        - mask_array: &lt;icevision.core.mask.MaskArray object at 0x7f5115cc7280&gt;
+        - Class Map: None
+        - Labels: [1, 1]</code></pre>
+<p><strong>Annotate image with model prediction</strong></p>
+<div class="sourceCode" id="cb86" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1">show_preds(preds<span class="op" style="color: #5E5E5E;">=</span>preds)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_116_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="inspect-raw-model-output" class="level2">
+<h2 class="anchored" data-anchor-id="inspect-raw-model-output">Inspect Raw Model Output</h2>
+<p>Next, we’ll inspect the raw model output to determine the required post-processing steps when using ONNX Runtime.</p>
+<p><strong>Define method to convert a PIL Image to a Pytorch Tensor</strong></p>
+<div class="sourceCode" id="cb87" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb87-1"><span class="kw" style="color: #003B4F;">def</span> img_to_tensor(img:PIL.Image, mean<span class="op" style="color: #5E5E5E;">=</span>[<span class="fl" style="color: #AD0000;">0.485</span>, <span class="fl" style="color: #AD0000;">0.456</span>, <span class="fl" style="color: #AD0000;">0.406</span>], std<span class="op" style="color: #5E5E5E;">=</span>[<span class="fl" style="color: #AD0000;">0.229</span>, <span class="fl" style="color: #AD0000;">0.224</span>, <span class="fl" style="color: #AD0000;">0.225</span>]):</span>
+<span id="cb87-2">    <span class="co" style="color: #5E5E5E;"># Convert image to tensor</span></span>
+<span id="cb87-3">    img_tensor <span class="op" style="color: #5E5E5E;">=</span> torch.Tensor(np.array(img)).permute(<span class="dv" style="color: #AD0000;">2</span>, <span class="dv" style="color: #AD0000;">0</span>, <span class="dv" style="color: #AD0000;">1</span>)</span>
+<span id="cb87-4">    <span class="co" style="color: #5E5E5E;"># Scale pixels values from [0,255] to [0,1]</span></span>
+<span id="cb87-5">    scaled_tensor <span class="op" style="color: #5E5E5E;">=</span> img_tensor.<span class="bu" style="color: null;">float</span>().div_(<span class="dv" style="color: #AD0000;">255</span>)</span>
+<span id="cb87-6">    <span class="co" style="color: #5E5E5E;"># Prepare normalization tensors</span></span>
+<span id="cb87-7">    mean_tensor <span class="op" style="color: #5E5E5E;">=</span> tensor(mean).view(<span class="dv" style="color: #AD0000;">1</span>,<span class="dv" style="color: #AD0000;">1</span>,<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">1</span>).permute(<span class="dv" style="color: #AD0000;">2</span>, <span class="dv" style="color: #AD0000;">0</span>, <span class="dv" style="color: #AD0000;">1</span>)</span>
+<span id="cb87-8">    std_tensor <span class="op" style="color: #5E5E5E;">=</span> tensor(std).view(<span class="dv" style="color: #AD0000;">1</span>,<span class="dv" style="color: #AD0000;">1</span>,<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">1</span>).permute(<span class="dv" style="color: #AD0000;">2</span>, <span class="dv" style="color: #AD0000;">0</span>, <span class="dv" style="color: #AD0000;">1</span>)</span>
+<span id="cb87-9">    <span class="co" style="color: #5E5E5E;"># Normalize tensor    </span></span>
+<span id="cb87-10">    normalized_tensor <span class="op" style="color: #5E5E5E;">=</span> (scaled_tensor <span class="op" style="color: #5E5E5E;">-</span> mean_tensor) <span class="op" style="color: #5E5E5E;">/</span> std_tensor</span>
+<span id="cb87-11">    <span class="co" style="color: #5E5E5E;"># Batch tensor</span></span>
+<span id="cb87-12">    <span class="cf" style="color: #003B4F;">return</span> normalized_tensor.unsqueeze(dim<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">0</span>)</span></code></pre></div>
+<p><strong>Convert image to a normalized tensor</strong></p>
+<div class="sourceCode" id="cb88" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb88-1">input_tensor <span class="op" style="color: #5E5E5E;">=</span> img_to_tensor(test_img)</span>
+<span id="cb88-2">input_tensor.shape</span></code></pre></div>
+<pre class="text"><code>    torch.Size([1, 3, 640, 480])</code></pre>
+<p><strong>Inspect raw model output</strong></p>
+<div class="sourceCode" id="cb90" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><span class="cf" style="color: #003B4F;">with</span> torch.no_grad():</span>
+<span id="cb90-2">    preds <span class="op" style="color: #5E5E5E;">=</span> model(input_tensor)</span>
+<span id="cb90-3">preds</span></code></pre></div>
+<pre class="text"><code>    [{'boxes': tensor([[ 34.4450, 300.6217, 468.1104, 625.0743],
+              [ 13.5184,  21.8993, 405.3399, 296.6339]]),
+      'labels': tensor([1, 1]),
+      'scores': tensor([0.9998, 0.9996]),
+      'masks': tensor([[[[0., 0., 0.,  ..., 0., 0., 0.],
+                [0., 0., 0.,  ..., 0., 0., 0.],
+                [0., 0., 0.,  ..., 0., 0., 0.],
+                ...,
+                [0., 0., 0.,  ..., 0., 0., 0.],
+                [0., 0., 0.,  ..., 0., 0., 0.],
+                [0., 0., 0.,  ..., 0., 0., 0.]]],
+
+
+​      
+​              [[[0., 0., 0.,  ..., 0., 0., 0.],
+​                [0., 0., 0.,  ..., 0., 0., 0.],
+​                [0., 0., 0.,  ..., 0., 0., 0.],
+​                ...,
+​                [0., 0., 0.,  ..., 0., 0., 0.],
+​                [0., 0., 0.,  ..., 0., 0., 0.],
+​                [0., 0., 0.,  ..., 0., 0., 0.]]]])}]</code></pre>
+<p>The model output stores predictions for bounding boxes, labels, confidence scores, and image masks in separate tensors.</p>
+<p><strong>Benckmark PyTorch CPU inference</strong></p>
+<div class="sourceCode" id="cb92" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb92-1"><span class="op" style="color: #5E5E5E;">%%</span>timeit</span>
+<span id="cb92-2"><span class="cf" style="color: #003B4F;">with</span> torch.no_grad(): model(input_tensor)</span></code></pre></div>
+<pre class="text"><code>    432 ms ± 845 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)</code></pre>
+</section>
+<section id="export-model-to-onnx" class="level2">
+<h2 class="anchored" data-anchor-id="export-model-to-onnx">Export Model to ONNX</h2>
+<p>Now we can export the PyTorch model to ONNX format using PyTorch’s built-in conversion method.</p>
+<p><strong>Define ONNX file name</strong></p>
+<div class="sourceCode" id="cb94" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1">onnx_file_name <span class="op" style="color: #5E5E5E;">=</span> <span class="ss" style="color: #20794D;">f"</span><span class="sc" style="color: #5E5E5E;">{</span>dataset_name<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">-</span><span class="sc" style="color: #5E5E5E;">{</span><span class="bu" style="color: null;">type</span>(model)<span class="sc" style="color: #5E5E5E;">.</span><span class="va" style="color: #111111;">__name__</span><span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">.onnx"</span></span>
+<span id="cb94-2">onnx_file_name</span></code></pre></div>
+<pre class="text"><code>    'student-id-MaskRCNN.onnx'</code></pre>
+<p><strong>Export trained model to ONNX</strong></p>
+<div class="sourceCode" id="cb96" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1">torch.onnx.export(model,</span>
+<span id="cb96-2">                  input_tensor,</span>
+<span id="cb96-3">                  onnx_file_name,</span>
+<span id="cb96-4">                  export_params<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>,</span>
+<span id="cb96-5">                  opset_version<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">12</span>,</span>
+<span id="cb96-6">                  do_constant_folding<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>,</span>
+<span id="cb96-7">                  input_names <span class="op" style="color: #5E5E5E;">=</span> [<span class="st" style="color: #20794D;">'input'</span>],</span>
+<span id="cb96-8">                  output_names <span class="op" style="color: #5E5E5E;">=</span> [<span class="st" style="color: #20794D;">'boxes'</span>, <span class="st" style="color: #20794D;">'labels'</span>, <span class="st" style="color: #20794D;">'scores'</span>, <span class="st" style="color: #20794D;">'masks'</span>],</span>
+<span id="cb96-9">                  dynamic_axes<span class="op" style="color: #5E5E5E;">=</span>{<span class="st" style="color: #20794D;">'input'</span>: {<span class="dv" style="color: #AD0000;">2</span> : <span class="st" style="color: #20794D;">'height'</span>, <span class="dv" style="color: #AD0000;">3</span> : <span class="st" style="color: #20794D;">'width'</span>}}</span>
+<span id="cb96-10">                 )</span></code></pre></div>
+</section>
+<section id="verify-onnx-inference" class="level2">
+<h2 class="anchored" data-anchor-id="verify-onnx-inference">Verify ONNX Inference</h2>
+<p>We can verify the ONNX model performs the same as the PyTorch version using the ONNX Runtime.</p>
+<p><strong>Import ONNX Runtime</strong></p>
+<div class="sourceCode" id="cb97" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb97-1"><span class="im" style="color: #00769E;">import</span> onnxruntime <span class="im" style="color: #00769E;">as</span> ort</span></code></pre></div>
+<p><strong>Get available ONNX Runtime execution providers</strong></p>
+<p>We did not install any additional <a href="https://onnxruntime.ai/docs/execution-providers/">execution providers</a>, so only the default CPU provider is available.</p>
+<div class="sourceCode" id="cb98" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb98-1">available_providers <span class="op" style="color: #5E5E5E;">=</span> ort.get_available_providers()</span>
+<span id="cb98-2">available_providers</span></code></pre></div>
+<pre class="text"><code>    ['CPUExecutionProvider']</code></pre>
+<p><strong>Select execution provider</strong></p>
+<div class="sourceCode" id="cb100" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb100-1">providers <span class="op" style="color: #5E5E5E;">=</span> [available_providers[<span class="dv" style="color: #AD0000;">0</span>]]</span>
+<span id="cb100-2">providers</span></code></pre></div>
+<pre class="text"><code>    ['CPUExecutionProvider']</code></pre>
+<p><strong>Initialize inference session with selected execution provider</strong></p>
+<div class="sourceCode" id="cb102" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb102-1">ort_sess <span class="op" style="color: #5E5E5E;">=</span> ort.InferenceSession(onnx_file_name, providers<span class="op" style="color: #5E5E5E;">=</span>providers)</span></code></pre></div>
+<p><strong>Perform inference using ONNX model</strong></p>
+<div class="sourceCode" id="cb103" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb103-1">outputs <span class="op" style="color: #5E5E5E;">=</span> ort_sess.run(output_names<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">None</span>, input_feed<span class="op" style="color: #5E5E5E;">=</span>{<span class="st" style="color: #20794D;">"input"</span>:input_tensor.numpy()})</span>
+<span id="cb103-2">outputs</span></code></pre></div>
+<pre class="text"><code>    [array([[ 34.445053, 300.62167 , 468.11035 , 625.07434 ],
+            [ 13.518433,  21.899261, 405.33997 , 296.6339  ]], dtype=float32),
+     array([1, 1], dtype=int64),
+     array([0.9997528, 0.9996158], dtype=float32),
+     array([[[[0., 0., 0., ..., 0., 0., 0.],
+              [0., 0., 0., ..., 0., 0., 0.],
+              [0., 0., 0., ..., 0., 0., 0.],
+              ...,
+              [0., 0., 0., ..., 0., 0., 0.],
+              [0., 0., 0., ..., 0., 0., 0.],
+              [0., 0., 0., ..., 0., 0., 0.]]],
+
+
+​     
+​            [[[0., 0., 0., ..., 0., 0., 0.],
+​              [0., 0., 0., ..., 0., 0., 0.],
+​              [0., 0., 0., ..., 0., 0., 0.],
+​              ...,
+​              [0., 0., 0., ..., 0., 0., 0.],
+​              [0., 0., 0., ..., 0., 0., 0.],
+​              [0., 0., 0., ..., 0., 0., 0.]]]], dtype=float32)]</code></pre>
+<p><strong>Benchmark ONNX Runtime CPU inference speed</strong></p>
+<div class="sourceCode" id="cb105" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb105-1"><span class="op" style="color: #5E5E5E;">%%</span>timeit</span>
+<span id="cb105-2">ort_sess.run(<span class="va" style="color: #111111;">None</span>, {<span class="st" style="color: #20794D;">'input'</span>: input_tensor.numpy()})</span></code></pre></div>
+<pre class="text"><code>    320 ms ± 1.25 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)</code></pre>
+</section>
+<section id="define-post-processing-steps" class="level2">
+<h2 class="anchored" data-anchor-id="define-post-processing-steps">Define Post-processing Steps</h2>
+<p>The Mask R-CNN model performs the object detection post-processing steps internally However, there are still a few steps to annotate the input image with the model predictions.</p>
+<p>The predicted image masks contain values in the range [0,1] (i.e., pure black to pure white). We need to binarize them to either 0 or 1 using a threshold value.</p>
+<p>We can then convert the 2D image masks to RGBA images and paste them on top of the input image.</p>
+<p><strong>Define annotation values</strong></p>
+<div class="sourceCode" id="cb107" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb107-1">mask_threshold <span class="op" style="color: #5E5E5E;">=</span> <span class="fl" style="color: #AD0000;">0.5</span></span>
+<span id="cb107-2">mask_rgba <span class="op" style="color: #5E5E5E;">=</span> [<span class="dv" style="color: #AD0000;">255</span>, <span class="dv" style="color: #AD0000;">0</span>, <span class="dv" style="color: #AD0000;">0</span>, <span class="dv" style="color: #AD0000;">100</span>]</span></code></pre></div>
+<p><strong>Annotate sample image</strong></p>
+<div class="sourceCode" id="cb108" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb108-1">width, height <span class="op" style="color: #5E5E5E;">=</span> test_img.size</span>
+<span id="cb108-2">annotated_img <span class="op" style="color: #5E5E5E;">=</span> test_img.copy()</span>
+<span id="cb108-3">annotated_img.convert(<span class="st" style="color: #20794D;">'RGBA'</span>)</span>
+<span id="cb108-4">draw <span class="op" style="color: #5E5E5E;">=</span> ImageDraw.Draw(annotated_img)</span>
+<span id="cb108-5">fnt_size <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">25</span></span>
+<span id="cb108-6"></span>
+<span id="cb108-7"><span class="co" style="color: #5E5E5E;"># Iterate through annotations for sample image</span></span>
+<span id="cb108-8"><span class="cf" style="color: #003B4F;">for</span> i <span class="kw" style="color: #003B4F;">in</span> <span class="bu" style="color: null;">range</span>(<span class="bu" style="color: null;">len</span>(outputs[<span class="dv" style="color: #AD0000;">0</span>])):</span>
+<span id="cb108-9">    </span>
+<span id="cb108-10">    <span class="co" style="color: #5E5E5E;"># Extract mask array</span></span>
+<span id="cb108-11">    mask_array <span class="op" style="color: #5E5E5E;">=</span> outputs[<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">1</span>][i][<span class="dv" style="color: #AD0000;">0</span>]</span>
+<span id="cb108-12">    <span class="co" style="color: #5E5E5E;"># Binarize mask values</span></span>
+<span id="cb108-13">    mask_array[mask_array <span class="op" style="color: #5E5E5E;">&gt;</span> mask_threshold] <span class="op" style="color: #5E5E5E;">=</span> <span class="fl" style="color: #AD0000;">1.0</span></span>
+<span id="cb108-14">    mask_array[mask_array <span class="op" style="color: #5E5E5E;">&lt;=</span> mask_threshold] <span class="op" style="color: #5E5E5E;">=</span> <span class="fl" style="color: #AD0000;">0.0</span></span>
+<span id="cb108-15">    <span class="co" style="color: #5E5E5E;"># Scale mask values</span></span>
+<span id="cb108-16">    mask_array <span class="op" style="color: #5E5E5E;">*=</span> <span class="dv" style="color: #AD0000;">255</span></span>
+<span id="cb108-17">    <span class="co" style="color: #5E5E5E;"># Convert mask from 1-channel to 4-channel</span></span>
+<span id="cb108-18">    mask_array <span class="op" style="color: #5E5E5E;">=</span> np.tile(mask_array[:, :, <span class="va" style="color: #111111;">None</span>], [<span class="dv" style="color: #AD0000;">1</span>, <span class="dv" style="color: #AD0000;">1</span>, <span class="dv" style="color: #AD0000;">4</span>])</span>
+<span id="cb108-19">    <span class="co" style="color: #5E5E5E;"># Update mask color</span></span>
+<span id="cb108-20">    mask_array[:,:,<span class="dv" style="color: #AD0000;">0</span>][mask_array[:,:,<span class="dv" style="color: #AD0000;">0</span>] <span class="op" style="color: #5E5E5E;">==</span> <span class="dv" style="color: #AD0000;">255</span>] <span class="op" style="color: #5E5E5E;">=</span> mask_rgba[<span class="dv" style="color: #AD0000;">0</span>]</span>
+<span id="cb108-21">    mask_array[:,:,<span class="dv" style="color: #AD0000;">1</span>][mask_array[:,:,<span class="dv" style="color: #AD0000;">1</span>] <span class="op" style="color: #5E5E5E;">==</span> <span class="dv" style="color: #AD0000;">255</span>] <span class="op" style="color: #5E5E5E;">=</span> mask_rgba[<span class="dv" style="color: #AD0000;">1</span>]</span>
+<span id="cb108-22">    mask_array[:,:,<span class="dv" style="color: #AD0000;">2</span>][mask_array[:,:,<span class="dv" style="color: #AD0000;">2</span>] <span class="op" style="color: #5E5E5E;">==</span> <span class="dv" style="color: #AD0000;">255</span>] <span class="op" style="color: #5E5E5E;">=</span> mask_rgba[<span class="dv" style="color: #AD0000;">2</span>]</span>
+<span id="cb108-23">    <span class="co" style="color: #5E5E5E;"># Update mask transparency</span></span>
+<span id="cb108-24">    mask_array[:,:,<span class="dv" style="color: #AD0000;">3</span>][mask_array[:,:,<span class="dv" style="color: #AD0000;">0</span>] <span class="op" style="color: #5E5E5E;">==</span> <span class="dv" style="color: #AD0000;">255</span>] <span class="op" style="color: #5E5E5E;">=</span> mask_rgba[<span class="dv" style="color: #AD0000;">3</span>]</span>
+<span id="cb108-25">    mask_array[:,:,<span class="dv" style="color: #AD0000;">3</span>][mask_array[:,:,<span class="dv" style="color: #AD0000;">1</span>] <span class="op" style="color: #5E5E5E;">==</span> <span class="dv" style="color: #AD0000;">255</span>] <span class="op" style="color: #5E5E5E;">=</span> mask_rgba[<span class="dv" style="color: #AD0000;">3</span>]</span>
+<span id="cb108-26">    mask_array[:,:,<span class="dv" style="color: #AD0000;">3</span>][mask_array[:,:,<span class="dv" style="color: #AD0000;">2</span>] <span class="op" style="color: #5E5E5E;">==</span> <span class="dv" style="color: #AD0000;">255</span>] <span class="op" style="color: #5E5E5E;">=</span> mask_rgba[<span class="dv" style="color: #AD0000;">3</span>]</span>
+<span id="cb108-27">    mask_array[:,:,<span class="dv" style="color: #AD0000;">3</span>][mask_array[:,:,<span class="dv" style="color: #AD0000;">0</span>] <span class="op" style="color: #5E5E5E;">!=</span> <span class="dv" style="color: #AD0000;">255</span>] <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">0</span></span>
+<span id="cb108-28">    <span class="co" style="color: #5E5E5E;"># Convert mask array to PIL image</span></span>
+<span id="cb108-29">    mask_img <span class="op" style="color: #5E5E5E;">=</span> PIL.Image.fromarray(mask_array.astype(np.uint8)).convert(<span class="st" style="color: #20794D;">'RGBA'</span>)</span>
+<span id="cb108-30">    </span>
+<span id="cb108-31">    <span class="co" style="color: #5E5E5E;"># Draw segmentation mask on sample image</span></span>
+<span id="cb108-32">    annotated_img.paste(mask_img, (<span class="dv" style="color: #AD0000;">0</span>,<span class="dv" style="color: #AD0000;">0</span>), mask<span class="op" style="color: #5E5E5E;">=</span>mask_img)</span>
+<span id="cb108-33">    </span>
+<span id="cb108-34">    <span class="co" style="color: #5E5E5E;"># Draw bounding box on sample image</span></span>
+<span id="cb108-35">    shape <span class="op" style="color: #5E5E5E;">=</span> <span class="bu" style="color: null;">list</span>(outputs[<span class="dv" style="color: #AD0000;">0</span>][i])</span>
+<span id="cb108-36">    draw.rectangle(shape, outline<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'red'</span>)</span>
+<span id="cb108-37">    </span>
+<span id="cb108-38">    <span class="co" style="color: #5E5E5E;"># Draw object label on sample image</span></span>
+<span id="cb108-39">    fnt <span class="op" style="color: #5E5E5E;">=</span> PIL.ImageFont.truetype(font_file, fnt_size)</span>
+<span id="cb108-40">    label <span class="op" style="color: #5E5E5E;">=</span> class_map.get_classes()[outputs[<span class="dv" style="color: #AD0000;">1</span>][i]]</span>
+<span id="cb108-41">    draw.multiline_text((shape[<span class="dv" style="color: #AD0000;">0</span>], shape[<span class="dv" style="color: #AD0000;">1</span>]<span class="op" style="color: #5E5E5E;">-</span>fnt_size<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">5</span>), <span class="ss" style="color: #20794D;">f"</span><span class="sc" style="color: #5E5E5E;">{</span>label<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">"</span>, font<span class="op" style="color: #5E5E5E;">=</span>fnt, fill<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'red'</span>)</span>
+<span id="cb108-42">    </span>
+<span id="cb108-43"><span class="bu" style="color: null;">print</span>(annotated_img.size) </span>
+<span id="cb108-44">annotated_img</span></code></pre></div>
+<pre class="text"><code>    (480, 640)</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/images/output_144_1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>We now have a template to finetune a Mask R-CNN model on new datasets using the IceVision library and use the ONNX Runtime for inference. A future post will cover how to collect and annotate samples for a custom dataset.</p>
+<p><strong>Project Resources:</strong> <a href="https://github.com/cj-mills/icevision-mask-rcnn-tutorial">GitHub Repository</a></p>
+<!-- Cloudflare Web Analytics -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
+<!-- End Cloudflare Web Analytics -->
+
+
+</section>
+
+ ]]></description>
+  <category>icevision</category>
+  <category>mask-rcnn</category>
+  <category>object-detection</category>
+  <category>instance-segmentation</category>
+  <category>tutorial</category>
+  <guid>christianjmills.com/posts/icevision-mask-rcnn-tutorial/part-1/index.html</guid>
+  <pubDate>Fri, 02 Dec 2022 08:00:00 GMT</pubDate>
+  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Testing Intel’s Arc A770 GPU for Deep Learning Pt. 1</title>
   <link>christianjmills.com/posts/arc-a770-testing/part-1/index.html</link>
@@ -22714,254 +25145,6 @@ time
   <category>barracuda</category>
   <guid>christianjmills.com/posts/fastai-to-unity-tutorial/part-1/index.html</guid>
   <pubDate>Mon, 06 Jun 2022 07:00:00 GMT</pubDate>
-  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Getting Started With Deep Learning in Unity</title>
-  <link>christianjmills.com/posts/deep-learning-unity-intro/index.html</link>
-  <description><![CDATA[ 
-
-
-
-<ul>
-<li>Introduction</li>
-<li>The Barracuda Library</li>
-<li>Exporting Models to ONNX</li>
-<li>Loading Models</li>
-<li>Executing Models</li>
-<li>Working with Data</li>
-<li>Summary</li>
-</ul>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Most deep learning models get deployed to servers instead of user devices. Server-side inference comes with many advantages, like complete control over the runtime environment and the option to scale computing resources up and down as needed. It can also be the only feasible way to run extremely-large models like <a href="https://openai.com/api/">GPT-3</a>.</p>
-<p>However, running models on user devices can provide compelling cost, latency, and privacy benefits. There are no servers to maintain, no lag from poor internet connections, and no user data to protect. The latency benefits can be particularly significant for interactive real-time applications.</p>
-<p><a href="https://unity.com/">Unity</a> is one of the best platforms for developing real-time 2D, 3D, VR, and AR applications. Its core competency is game development, but it also works well for other immersive and interactive applications.</p>
-<p>There are many potential ways to leverage deep learning in Unity applications, including mapping user movement to virtual avatars, generating character dialogue, and powering enemy AI to name a few. Below are some examples from personal projects.</p>
-<section id="in-game-style-transfer" class="level4">
-<h4 class="anchored" data-anchor-id="in-game-style-transfer">In-Game Style Transfer</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><video src="./videos/in-game-style-transfer.mp4" class="img-fluid" controls=""><a href="./videos/in-game-style-transfer.mp4">Video</a></video></p>
-</figure>
-</div>
-</section>
-<section id="pose-estimation" class="level4">
-<h4 class="anchored" data-anchor-id="pose-estimation">Pose Estimation</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><video src="./videos/multipose-demo-1.mp4" class="img-fluid" controls=""><a href="./videos/multipose-demo-1.mp4">Video</a></video></p>
-</figure>
-</div>
-</section>
-<section id="object-detection" class="level4">
-<h4 class="anchored" data-anchor-id="object-detection">Object Detection</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><video src="./videos/HaGRID-demo.mp4" class="img-fluid" controls=""><a href="./videos/HaGRID-demo.mp4">Video</a></video></p>
-</figure>
-</div>
-<p>These examples only scratch the surface of what’s possible by combining deep learning models with powerful real-time creation tools like Unity and <a href="https://www.unrealengine.com/en-US">Unreal Engine</a>. The Barracuda library makes it easy to start exploring these possibilities.</p>
-</section>
-</section>
-<section id="the-barracuda-library" class="level2">
-<h2 class="anchored" data-anchor-id="the-barracuda-library">The Barracuda Library</h2>
-<p><a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html">Barracuda</a> is a neural network inference library for the Unity game engine. It initially focused on models trained with Unity’s Deep Reinforcement Learning toolkit, <a href="https://github.com/Unity-Technologies/ml-agents">ML-Agents</a>, but has expanded support over time.</p>
-<p>Barracuda provides <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.WorkerFactory.Type.html">multiple</a> backends for both CPU and GPU inference. The fastest CPU backend uses the <a href="https://docs.unity3d.com/Packages/com.unity.burst@1.7/manual/index.html">Burst compiler</a>, which translates IL/.NET bytecode into highly-optimized native code using <a href="https://llvm.org/">LLVM</a>. The most performant GPU backend uses <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">Compute shaders</a>. Compute shaders are programs written in <a href="https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl?redirectedfrom=MSDN">High-level shader language (HLSL)</a> that run on the GPU, outside the standard <a href="https://docs.unity3d.com/Manual/Glossary.html#Renderpipeline">rendering pipeline</a>.</p>
-<p>Some platforms don’t support Compute shaders, so Unity recently added a Pixel Shader backend to enable GPU inference on platforms where Compute shaders are not supported. While faster than CPU inference, it is significantly slower than the Compute shader backend in my testing.</p>
-<p>One of Barracuda’s greatest strengths is its cross-platform support. As of writing, Barracuda does not support specialized inference hardware, quantization, or even FP16 precision. However, it runs wherever Unity does, which is <a href="https://support.unity.com/hc/en-us/articles/206336795-What-platforms-are-supported-by-Unity-">nearly everywhere</a>.</p>
-</section>
-<section id="exporting-models-to-onnx" class="level2">
-<h2 class="anchored" data-anchor-id="exporting-models-to-onnx">Exporting Models to ONNX</h2>
-<p>Barracuda works with models in the <a href="https://onnx.ai/">ONNX</a> file format. PyTorch provides <a href="https://pytorch.org/docs/stable/onnx.html">built-in support</a> to export models to ONNX.</p>
-<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1">torch.onnx.export(learn.model.cpu(),</span>
-<span id="cb1-2">                  batched_tensor,</span>
-<span id="cb1-3">                  onnx_file_name,</span>
-<span id="cb1-4">                  export_params<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>,</span>
-<span id="cb1-5">                  opset_version<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">9</span>,</span>
-<span id="cb1-6">                  do_constant_folding<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>,</span>
-<span id="cb1-7">                  input_names <span class="op" style="color: #5E5E5E;">=</span> [<span class="st" style="color: #20794D;">'input'</span>],</span>
-<span id="cb1-8">                  output_names <span class="op" style="color: #5E5E5E;">=</span> [<span class="st" style="color: #20794D;">'output'</span>],</span>
-<span id="cb1-9">                 )</span></code></pre></div>
-<p>We can use the <a href="https://github.com/onnx/tensorflow-onnx">tf2onnx</a> python package to convert TensorFlow models.</p>
-<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><span class="ex" style="color: null;">python</span> <span class="at" style="color: #657422;">-m</span> tf2onnx.convert <span class="at" style="color: #657422;">--saved-model</span> ./savedmodel <span class="at" style="color: #657422;">--opset</span> 10 <span class="at" style="color: #657422;">--output</span> model.onnx</span></code></pre></div>
-<p>Barracuda maps <a href="https://github.com/onnx/onnx/blob/main/docs/Operators.md">ONNX operators</a> to backend-specific implementations, so model support depends on what operators Unity <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/SupportedOperators.html">implements</a> for a given inference backend. One could theoretically implement missing operations themselves, but it would probably make more sense to explore other inference options at that point. Another option is to tweak the model architecture to ensure it only uses supported operations.</p>
-</section>
-<section id="loading-models" class="level2">
-<h2 class="anchored" data-anchor-id="loading-models">Loading Models</h2>
-<p>Unity imports ONNX models as an <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.NNModel.html">NNModel</a> asset.</p>
-<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb3-1"><span class="op" style="color: #5E5E5E;">[</span><span class="fu" style="color: #4758AB;">Tooltip</span><span class="op" style="color: #5E5E5E;">(</span><span class="st" style="color: #20794D;">"The Barracuda/ONNX asset file"</span><span class="op" style="color: #5E5E5E;">)]</span></span>
-<span id="cb3-2"><span class="kw" style="color: #003B4F;">public</span> NNModel modelAsset<span class="op" style="color: #5E5E5E;">;</span></span></code></pre></div>
-<p>These then compile into a <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.Model.html#methods">Model</a> object at runtime.</p>
-<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><span class="co" style="color: #5E5E5E;">// Get an object oriented representation of the model</span></span>
-<span id="cb4-2">m_RunTimeModel <span class="op" style="color: #5E5E5E;">=</span> ModelLoader<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Load</span><span class="op" style="color: #5E5E5E;">(</span>modelAsset<span class="op" style="color: #5E5E5E;">);</span></span></code></pre></div>
-</section>
-<section id="executing-models" class="level2">
-<h2 class="anchored" data-anchor-id="executing-models">Executing Models</h2>
-<p>Barracuda has an <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.IWorker.html">IWorker</a> interface that abstracts implementation details for different inference backends. It is responsible for translating the <code>Model</code> object into a set of operations and executing them.</p>
-<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><span class="co" style="color: #5E5E5E;">// Create a worker to execute the model using the selected backend</span></span>
-<span id="cb5-2">IWorker engine <span class="op" style="color: #5E5E5E;">=</span> WorkerFactory<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">CreateWorker</span><span class="op" style="color: #5E5E5E;">(</span>workerType<span class="op" style="color: #5E5E5E;">,</span> m_RunTimeModel<span class="op" style="color: #5E5E5E;">);</span></span></code></pre></div>
-<p>Barracuda can run models in a single frame or across multiple using <a href="https://docs.unity3d.com/Manual/Coroutines.html">Coroutines</a>. The latter option can help maintain smooth frame rates when using more demanding models.</p>
-<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><span class="co" style="color: #5E5E5E;">// Execute the model with the input Tensor</span></span>
-<span id="cb6-2">engine<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Execute</span><span class="op" style="color: #5E5E5E;">(</span>input<span class="op" style="color: #5E5E5E;">);</span></span></code></pre></div>
-</section>
-<section id="working-with-data" class="level2">
-<h2 class="anchored" data-anchor-id="working-with-data">Working with Data</h2>
-<p>Barracuda stores data in multi-dimensional array-like objects called <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.Tensor.html">Tensors</a>.</p>
-<section id="initializing-tensors" class="level3">
-<h3 class="anchored" data-anchor-id="initializing-tensors">Initializing Tensors</h3>
-<p>We can initialize an input Tensor from an array for CPU data, a <a href="https://docs.unity3d.com/ScriptReference/ComputeBuffer.html">ComputeBuffer</a> for general GPU data, or a <a href="https://docs.unity3d.com/ScriptReference/Texture2D.html">Texture2D</a> or <a href="https://docs.unity3d.com/ScriptReference/RenderTexture.html">RenderTexture</a> for image data.</p>
-<p><strong>Initialize from an array</strong></p>
-<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><span class="co" style="color: #5E5E5E;">// Normal single-dimensional array</span></span>
-<span id="cb7-2"><span class="dt" style="color: #AD0000;">float</span><span class="op" style="color: #5E5E5E;">[]</span> tensorData <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="dt" style="color: #AD0000;">float</span><span class="op" style="color: #5E5E5E;">[]</span></span>
-<span id="cb7-3"><span class="op" style="color: #5E5E5E;">{</span></span>
-<span id="cb7-4">    0f<span class="op" style="color: #5E5E5E;">,</span> 1f<span class="op" style="color: #5E5E5E;">,</span> 2f<span class="op" style="color: #5E5E5E;">,</span> </span>
-<span id="cb7-5">    3f<span class="op" style="color: #5E5E5E;">,</span> 4f<span class="op" style="color: #5E5E5E;">,</span> 5f<span class="op" style="color: #5E5E5E;">,</span></span>
-<span id="cb7-6">    6f<span class="op" style="color: #5E5E5E;">,</span> 7f<span class="op" style="color: #5E5E5E;">,</span> 8f </span>
-<span id="cb7-7"><span class="op" style="color: #5E5E5E;">};</span></span>
-<span id="cb7-8"></span>
-<span id="cb7-9">Tensor tensor <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="fu" style="color: #4758AB;">Tensor</span><span class="op" style="color: #5E5E5E;">(</span>n<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">,</span> h<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">3</span><span class="op" style="color: #5E5E5E;">,</span> w<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">3</span><span class="op" style="color: #5E5E5E;">,</span> c<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">,</span> tensorData<span class="op" style="color: #5E5E5E;">);</span></span></code></pre></div>
-<p><strong>Initialize from image data</strong></p>
-<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb8-1"><span class="co" style="color: #5E5E5E;">// Initialize a Tensor using the inputTexture</span></span>
-<span id="cb8-2">Tensor input <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="fu" style="color: #4758AB;">Tensor</span><span class="op" style="color: #5E5E5E;">(</span>inputTexture<span class="op" style="color: #5E5E5E;">,</span> channels<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">3</span><span class="op" style="color: #5E5E5E;">);</span></span></code></pre></div>
-</section>
-<section id="accessing-tensor-elements" class="level3">
-<h3 class="anchored" data-anchor-id="accessing-tensor-elements">Accessing Tensor Elements</h3>
-<p>We can <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/TensorHandling.html#data-access">access</a> Tensor elements using multi-dimensional array operators.</p>
-<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb9-1"><span class="co" style="color: #5E5E5E;">// Normal single-dimensional array</span></span>
-<span id="cb9-2"><span class="dt" style="color: #AD0000;">float</span><span class="op" style="color: #5E5E5E;">[]</span> tensorData <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="dt" style="color: #AD0000;">float</span><span class="op" style="color: #5E5E5E;">[]</span></span>
-<span id="cb9-3"><span class="op" style="color: #5E5E5E;">{</span></span>
-<span id="cb9-4">    0f<span class="op" style="color: #5E5E5E;">,</span> 1f<span class="op" style="color: #5E5E5E;">,</span> 2f<span class="op" style="color: #5E5E5E;">,</span> </span>
-<span id="cb9-5">    3f<span class="op" style="color: #5E5E5E;">,</span> 4f<span class="op" style="color: #5E5E5E;">,</span> 5f<span class="op" style="color: #5E5E5E;">,</span></span>
-<span id="cb9-6">    6f<span class="op" style="color: #5E5E5E;">,</span> 7f<span class="op" style="color: #5E5E5E;">,</span> 8f </span>
-<span id="cb9-7"><span class="op" style="color: #5E5E5E;">};</span></span>
-<span id="cb9-8"></span>
-<span id="cb9-9"><span class="co" style="color: #5E5E5E;">// Batch size: 1, Height: 3, Width: 3, Channels: 1</span></span>
-<span id="cb9-10">Tensor tensor <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="fu" style="color: #4758AB;">Tensor</span><span class="op" style="color: #5E5E5E;">(</span>n<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">,</span> h<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">3</span><span class="op" style="color: #5E5E5E;">,</span> w<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">3</span><span class="op" style="color: #5E5E5E;">,</span> c<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">,</span> tensorData<span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-11"></span>
-<span id="cb9-12">Debug<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Log</span><span class="op" style="color: #5E5E5E;">(</span>$<span class="st" style="color: #20794D;">"Tensor shape: {tensor.shape}"</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-13">Debug<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Log</span><span class="op" style="color: #5E5E5E;">(</span>$<span class="st" style="color: #20794D;">"First element in flat array: {tensor[0]}"</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-14">Debug<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Log</span><span class="op" style="color: #5E5E5E;">(</span>$<span class="st" style="color: #20794D;">"Second row, third column: {tensor[0, 1, 2, 0]}"</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-15"></span>
-<span id="cb9-16">tensor<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Dispose</span><span class="op" style="color: #5E5E5E;">();</span></span>
-<span id="cb9-17"></span>
-<span id="cb9-18"><span class="co" style="color: #5E5E5E;">// Batch size: 1, Height: 1, Width: 3, Channels: 3</span></span>
-<span id="cb9-19">tensor <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="fu" style="color: #4758AB;">Tensor</span><span class="op" style="color: #5E5E5E;">(</span>n<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">,</span> h<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">,</span> w<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">3</span><span class="op" style="color: #5E5E5E;">,</span> c<span class="op" style="color: #5E5E5E;">:</span> <span class="dv" style="color: #AD0000;">3</span><span class="op" style="color: #5E5E5E;">,</span> tensorData<span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-20"></span>
-<span id="cb9-21">Debug<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Log</span><span class="op" style="color: #5E5E5E;">(</span>$<span class="st" style="color: #20794D;">"Tensor shape: {tensor.shape}"</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-22">Debug<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Log</span><span class="op" style="color: #5E5E5E;">(</span>$<span class="st" style="color: #20794D;">"First element in flat array: {tensor[0]}"</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-23">Debug<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Log</span><span class="op" style="color: #5E5E5E;">(</span>$<span class="st" style="color: #20794D;">"First row, first column, second channel: {tensor[0, 0, 0, 1]}"</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-24">Debug<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Log</span><span class="op" style="color: #5E5E5E;">(</span>$<span class="st" style="color: #20794D;">"First row, second column, third channel: {tensor[0, 0, 1, 2]}"</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb9-25"></span>
-<span id="cb9-26">tensor<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Dispose</span><span class="op" style="color: #5E5E5E;">();</span></span></code></pre></div>
-<p><strong>Output</strong></p>
-<pre class="text"><code>Tensor shape: (n:1, h:3, w:3, c:1)
-First element in flat array: 0
-Second row, third column: 5
-
-Tensor shape: (n:1, h:1, w:3, c:3)
-First element in flat array: 0
-First row, first column, second channel: 1
-First row, second column, third channel: 5</code></pre>
-</section>
-<section id="retrieving-model-output" class="level3">
-<h3 class="anchored" data-anchor-id="retrieving-model-output">Retrieving Model Output</h3>
-<p>We can download model output to the CPU or copy it to a RenderTexture to keep the data on the GPU, as shown below.</p>
-<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb11-1"><span class="co" style="color: #5E5E5E;">// Get raw model output</span></span>
-<span id="cb11-2">Tensor output <span class="op" style="color: #5E5E5E;">=</span> engine<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">PeekOutput</span><span class="op" style="color: #5E5E5E;">(</span>outputLayer<span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb11-3"></span>
-<span id="cb11-4"><span class="co" style="color: #5E5E5E;">// Copy model output to a RenderTexture</span></span>
-<span id="cb11-5">output<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">ToRenderTexture</span><span class="op" style="color: #5E5E5E;">(</span>outputTextureGPU<span class="op" style="color: #5E5E5E;">);</span></span></code></pre></div>
-<p>Reading model output from the GPU to the CPU causes a <a href="https://en.wikipedia.org/wiki/Pipeline_stall">pipeline stall</a> as Unity prevents any execution on the main thread to prevent the data from changing before it has finished downloading to the CPU. The pipeline stall can cause a noticeable performance bottleneck that increases with the amount of data we need to download.</p>
-<p>This performance bottleneck is not an issue when the model output can stay on the GPU like when performing artistic style transfer. However, reading the prediction of a simple image classifier to the CPU can cap GPU utilization from approximately 100% to around 60%.</p>
-<section id="standard-gpu-readback" class="level4">
-<h4 class="anchored" data-anchor-id="standard-gpu-readback">Standard GPU Readback</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/deep-learning-unity-intro/images/image-classifier-without-async.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-<p>Fortunately, Unity provides a method to read data from the GPU asynchronously called <a href="https://docs.unity3d.com/ScriptReference/Rendering.AsyncGPUReadback.Request.html">AsyncGPUReadback.Request()</a>. The one drawback to this method is that it adds a few frames of latency. That should not be noticeable as long as the frame rate is high enough.</p>
-</section>
-<section id="asynchronous-gpu-readback" class="level4">
-<h4 class="anchored" data-anchor-id="asynchronous-gpu-readback">Asynchronous GPU Readback</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/deep-learning-unity-intro/images/image-classifier-with-async.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</section>
-</section>
-<section id="processing-data" class="level3">
-<h3 class="anchored" data-anchor-id="processing-data">Processing Data</h3>
-<p>We typically need to manually implement preprocessing steps like applying ImageNet normalization to input images. We can implement these preprocessing steps on the CPU using C# scripts or on the GPU using Compute shaders (when supported) or <a href="https://docs.unity3d.com/Manual/SL-VertexFragmentShaderExamples.html">Fragment Shaders</a>. Naturally, we want to perform image preprocessing on the GPU when possible.</p>
-<section id="imagenet-normalization-compute-shader" class="level4">
-<h4 class="anchored" data-anchor-id="imagenet-normalization-compute-shader">ImageNet Normalization Compute shader</h4>
-<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb12-1"><span class="co" style="color: #5E5E5E;">// Each #kernel tells which function to compile; you can have many kernels</span></span>
-<span id="cb12-2">#pragma kernel NormalizeImageNet</span>
-<span id="cb12-3"></span>
-<span id="cb12-4"><span class="co" style="color: #5E5E5E;">// The pixel data for the input image</span></span>
-<span id="cb12-5">Texture2D<span class="op" style="color: #5E5E5E;">&lt;</span>float4<span class="op" style="color: #5E5E5E;">&gt;</span> InputImage<span class="op" style="color: #5E5E5E;">;</span></span>
-<span id="cb12-6"><span class="co" style="color: #5E5E5E;">// The pixel data for the processed image</span></span>
-<span id="cb12-7">RWTexture2D<span class="op" style="color: #5E5E5E;">&lt;</span>float4<span class="op" style="color: #5E5E5E;">&gt;</span> Result<span class="op" style="color: #5E5E5E;">;</span></span>
-<span id="cb12-8"></span>
-<span id="cb12-9"><span class="co" style="color: #5E5E5E;">// Apply the ImageNet normalization stats from PyTorch to an image</span></span>
-<span id="cb12-10"><span class="op" style="color: #5E5E5E;">[</span><span class="fu" style="color: #4758AB;">numthreads</span><span class="op" style="color: #5E5E5E;">(</span><span class="dv" style="color: #AD0000;">8</span><span class="op" style="color: #5E5E5E;">,</span> <span class="dv" style="color: #AD0000;">8</span><span class="op" style="color: #5E5E5E;">,</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">)]</span></span>
-<span id="cb12-11"><span class="dt" style="color: #AD0000;">void</span> <span class="fu" style="color: #4758AB;">NormalizeImageNet</span><span class="op" style="color: #5E5E5E;">(</span>uint3 id <span class="op" style="color: #5E5E5E;">:</span> SV_DispatchThreadID<span class="op" style="color: #5E5E5E;">)</span></span>
-<span id="cb12-12"><span class="op" style="color: #5E5E5E;">{</span></span>
-<span id="cb12-13">    <span class="co" style="color: #5E5E5E;">// Set the pixel color values for the processed image</span></span>
-<span id="cb12-14">    Result<span class="op" style="color: #5E5E5E;">[</span>id<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">xy</span><span class="op" style="color: #5E5E5E;">]</span> <span class="op" style="color: #5E5E5E;">=</span> <span class="fu" style="color: #4758AB;">float4</span><span class="op" style="color: #5E5E5E;">(</span></span>
-<span id="cb12-15">        <span class="co" style="color: #5E5E5E;">// Normalize the red color channel values</span></span>
-<span id="cb12-16">        <span class="op" style="color: #5E5E5E;">(</span>InputImage<span class="op" style="color: #5E5E5E;">[</span>id<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">xy</span><span class="op" style="color: #5E5E5E;">].</span><span class="fu" style="color: #4758AB;">r</span> <span class="op" style="color: #5E5E5E;">-</span> <span class="fl" style="color: #AD0000;">0.4850f</span><span class="op" style="color: #5E5E5E;">)</span> <span class="op" style="color: #5E5E5E;">/</span> <span class="fl" style="color: #AD0000;">0.2290f</span><span class="op" style="color: #5E5E5E;">,</span></span>
-<span id="cb12-17">        <span class="co" style="color: #5E5E5E;">// Normalize the green color channel values</span></span>
-<span id="cb12-18">        <span class="op" style="color: #5E5E5E;">(</span>InputImage<span class="op" style="color: #5E5E5E;">[</span>id<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">xy</span><span class="op" style="color: #5E5E5E;">].</span><span class="fu" style="color: #4758AB;">g</span> <span class="op" style="color: #5E5E5E;">-</span> <span class="fl" style="color: #AD0000;">0.4560f</span><span class="op" style="color: #5E5E5E;">)</span> <span class="op" style="color: #5E5E5E;">/</span> <span class="fl" style="color: #AD0000;">0.2240f</span><span class="op" style="color: #5E5E5E;">,</span></span>
-<span id="cb12-19">        <span class="co" style="color: #5E5E5E;">// Normalize the blue color channel values</span></span>
-<span id="cb12-20">        <span class="op" style="color: #5E5E5E;">(</span>InputImage<span class="op" style="color: #5E5E5E;">[</span>id<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">xy</span><span class="op" style="color: #5E5E5E;">].</span><span class="fu" style="color: #4758AB;">b</span> <span class="op" style="color: #5E5E5E;">-</span> <span class="fl" style="color: #AD0000;">0.4060f</span><span class="op" style="color: #5E5E5E;">)</span> <span class="op" style="color: #5E5E5E;">/</span> <span class="fl" style="color: #AD0000;">0.2250f</span><span class="op" style="color: #5E5E5E;">,</span></span>
-<span id="cb12-21">        <span class="co" style="color: #5E5E5E;">// Ignore the alpha/transparency channel</span></span>
-<span id="cb12-22">        InputImage<span class="op" style="color: #5E5E5E;">[</span>id<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">xy</span><span class="op" style="color: #5E5E5E;">].</span><span class="fu" style="color: #4758AB;">a</span><span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb12-23"><span class="op" style="color: #5E5E5E;">}</span></span></code></pre></div>
-<p>We can sometimes use Barracuda to handle postprocessing by adding additional layers to the end of models, like Sigmoid, Softmax, and Argmax, <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/api/Unity.Barracuda.ModelBuilder.html#Unity_Barracuda_ModelBuilder_Upsample2D_System_String_System_Object_Int32___System_Boolean_">at runtime</a>.</p>
-<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb13-1"><span class="co" style="color: #5E5E5E;">// Create a model builder to modify the m_RunTimeModel</span></span>
-<span id="cb13-2">ModelBuilder modelBuilder <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="fu" style="color: #4758AB;">ModelBuilder</span><span class="op" style="color: #5E5E5E;">(</span>m_RunTimeModel<span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb13-3"></span>
-<span id="cb13-4"><span class="co" style="color: #5E5E5E;">// Add a new Softmax layer</span></span>
-<span id="cb13-5">modelBuilder<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Softmax</span><span class="op" style="color: #5E5E5E;">(</span>softmaxLayer<span class="op" style="color: #5E5E5E;">,</span> outputLayer<span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb13-6"><span class="co" style="color: #5E5E5E;">// Add a new Argmax layer</span></span>
-<span id="cb13-7">modelBuilder<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Reduce</span><span class="op" style="color: #5E5E5E;">(</span>Layer<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">Type</span><span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">ArgMax</span><span class="op" style="color: #5E5E5E;">,</span> argmaxLayer<span class="op" style="color: #5E5E5E;">,</span> softmaxLayer<span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb13-8"></span>
-<span id="cb13-9"><span class="co" style="color: #5E5E5E;">// Create a worker to execute the model using the selected backend</span></span>
-<span id="cb13-10">IWorker engine <span class="op" style="color: #5E5E5E;">=</span> WorkerFactory<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">CreateWorker</span><span class="op" style="color: #5E5E5E;">(</span>workerType<span class="op" style="color: #5E5E5E;">,</span> modelBuilder<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">model</span><span class="op" style="color: #5E5E5E;">);</span></span></code></pre></div>
-<p>Otherwise, we need to implement those manually as well.</p>
-<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb14-1"><span class="co" style="color: #5E5E5E;">// Get raw model output</span></span>
-<span id="cb14-2">Tensor output <span class="op" style="color: #5E5E5E;">=</span> engine<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">PeekOutput</span><span class="op" style="color: #5E5E5E;">(</span>outputLayer<span class="op" style="color: #5E5E5E;">);</span></span>
-<span id="cb14-3"></span>
-<span id="cb14-4"><span class="co" style="color: #5E5E5E;">// Initialize vector for coordinates</span></span>
-<span id="cb14-5">Vector2 coords <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">new</span> <span class="fu" style="color: #4758AB;">Vector2</span><span class="op" style="color: #5E5E5E;">();</span></span>
-<span id="cb14-6"></span>
-<span id="cb14-7"><span class="co" style="color: #5E5E5E;">// Process estimated point coordinates</span></span>
-<span id="cb14-8"><span class="kw" style="color: #003B4F;">for</span> <span class="op" style="color: #5E5E5E;">(</span><span class="dt" style="color: #AD0000;">int</span> i <span class="op" style="color: #5E5E5E;">=</span> <span class="dv" style="color: #AD0000;">0</span><span class="op" style="color: #5E5E5E;">;</span> i <span class="op" style="color: #5E5E5E;">&lt;</span> output<span class="op" style="color: #5E5E5E;">.</span><span class="fu" style="color: #4758AB;">length</span><span class="op" style="color: #5E5E5E;">;</span> i<span class="op" style="color: #5E5E5E;">++)</span></span>
-<span id="cb14-9"><span class="op" style="color: #5E5E5E;">{</span></span>
-<span id="cb14-10">    coords<span class="op" style="color: #5E5E5E;">[</span>i<span class="op" style="color: #5E5E5E;">]</span> <span class="op" style="color: #5E5E5E;">=</span> <span class="op" style="color: #5E5E5E;">((</span>output<span class="op" style="color: #5E5E5E;">[</span>i<span class="op" style="color: #5E5E5E;">]</span> <span class="op" style="color: #5E5E5E;">+</span> <span class="dv" style="color: #AD0000;">1</span><span class="op" style="color: #5E5E5E;">)</span> <span class="op" style="color: #5E5E5E;">/</span> <span class="dv" style="color: #AD0000;">2</span><span class="op" style="color: #5E5E5E;">)</span> <span class="op" style="color: #5E5E5E;">*</span> inputDims<span class="op" style="color: #5E5E5E;">[</span>i<span class="op" style="color: #5E5E5E;">]</span> <span class="op" style="color: #5E5E5E;">*</span> <span class="op" style="color: #5E5E5E;">(</span>imageDims<span class="op" style="color: #5E5E5E;">[</span>i<span class="op" style="color: #5E5E5E;">]</span> <span class="op" style="color: #5E5E5E;">/</span> inputDims<span class="op" style="color: #5E5E5E;">[</span>i<span class="op" style="color: #5E5E5E;">]);</span></span>
-<span id="cb14-11"><span class="op" style="color: #5E5E5E;">}</span></span></code></pre></div>
-</section>
-</section>
-</section>
-<section id="summary" class="level2">
-<h2 class="anchored" data-anchor-id="summary">Summary</h2>
-<p>This post introduced the Barracuda inference library for the Unity game engine. Barracuda is not the only option to perform inference in Unity, but it provides a good starting point. A follow-up tutorial series will walk through training a model using the <a href="https://docs.fast.ai/">fastai library</a>, exporting it to ONNX format, and performing inference with it in a Unity project using the Barracuda library.</p>
-<p><strong>Next:</strong> <a href="../fastai-to-unity-tutorial/part-1/">Fastai to Unity Tutorial Pt. 1</a></p>
-<!-- Cloudflare Web Analytics -->
-<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script>
-<!-- End Cloudflare Web Analytics -->
-
-
-</section>
-
- ]]></description>
-  <category>unity</category>
-  <category>barracuda</category>
-  <guid>christianjmills.com/posts/deep-learning-unity-intro/index.html</guid>
-  <pubDate>Sat, 28 May 2022 07:00:00 GMT</pubDate>
   <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
