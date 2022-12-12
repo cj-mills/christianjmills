@@ -263,13 +263,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this tutorial series, we will walk through training an object detector using the <a href="https://airctic.com/0.12.0/">IceVision</a> library. We will then implement the trained model in a <a href="https://unity.com/">Unity</a> game engine project using <a href="https://docs.openvino.ai/latest/index.html">OpenVINO</a>, an open-source toolkit for optimizing model inference.</p>
-<strong>Unity Demo</strong>
+<p>In this three-part tutorial series, we will learn how to use <a href="https://airctic.com/0.11.0/">IceVision</a> and <a href="https://docs.openvino.ai/latest/">OpenVINO</a> to perform end-to-end object detection in <a href="https://unity.com/">Unity</a>. In the first part, we will train a <a href="https://github.com/Megvii-BaseDetection/YOLOX">YOLOX</a> model using IceVision and export it to OpenVINO. In the second part, we will create a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file in Visual Studio to perform object detection with a YOLOX model using OpenVINO. Finally, in the third part, we will perform object detection in a Unity project with OpenVINO. By the end of this tutorial series, you will have a working object detection system that you can use in your Unity projects.</p>
+<p><strong>Unity Demo</strong></p>
 <center>
 <iframe src="./videos/HaGRID-demo.mp4" width="100%" max-width="100%" height="480">
 </iframe>
 </center>
-<p>The tutorial uses a downscaled subsample of <a href="https://github.com/hukenovs/hagrid">HaGRID</a> (HAnd Gesture Recognition Image Dataset). The dataset contains annotated sample images for 18 distinct hand gestures and an additional <code>no_gesture</code> class to account for idle hands.</p>
+<p>The tutorial uses a downscaled subsample of the <a href="https://github.com/hukenovs/hagrid">HaGRID</a> (HAnd Gesture Recognition Image Dataset), which contains annotated sample images for 18 distinct hand gestures and an additional <code>no_gesture</code> class to account for idle hands.</p>
 <div>
 <details>
 <summary>
@@ -440,11 +440,12 @@ two_up_inverted
 </div>
 </details>
 </div>
-<p>One could use a model trained on this dataset to map hand gestures and locations to user input in Unity.</p>
+<p>One could use a model trained on this dataset to allow users to control a Unity application using hand gestures.</p>
 </section>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>Part 1 covers finetuning a <a href="https://github.com/Megvii-BaseDetection/YOLOX">YOLOX</a> Tiny model using the IceVision library and exporting it to OpenVINO’s <a href="https://docs.openvino.ai/latest/openvino_docs_MO_DG_IR_and_opsets.html">Intermediate Representation</a> (IR) format. The training code is available in the Jupyter notebook linked below, and links for training on <a href="https://colab.research.google.com/?utm_source=scs-index">Google Colab</a> and <a href="https://www.kaggle.com/docs/notebooks">Kaggle</a> are also available below.</p>
+<p>In part 1 of this tutorial series, we will learn how to train a YOLOX Tiny model using IceVision and export it to OpenVINO’s Intermediate Representation (<a href="https://docs.openvino.ai/latest/openvino_docs_MO_DG_IR_and_opsets.html">IR</a>) format. We will start by setting up a <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html">Conda environment</a> and importing the necessary dependencies. Then, we will configure the <a href="https://github.com/Kaggle/kaggle-api">Kaggle API</a> to download the dataset we will use to train our model. After inspecting the dataset, we will create a parser to process the training samples and define DataLoader objects. Then, we will fine-tune the model and export it. Finally, we will perform inference with the exported model and define post-processing steps for the model output. We will then generate a colormap to visualize model predictions. By the end of this post, you will have a trained YOLOX model that you can deploy in your applications.</p>
+<p>You can find links to view the training code and run it on <a href="https://colab.research.google.com/?utm_source=scs-index">Google Colab</a> and <a href="https://www.kaggle.com/docs/notebooks">Kaggle</a> below.</p>
 <table class="table">
 <thead>
 <tr class="header">
@@ -478,20 +479,30 @@ two_up_inverted
 <li><a href="https://developer.nvidia.com/cuda-toolkit-archive">CUDA Toolkit Archive</a></li>
 </ul>
 <p><strong>Conda environment setup steps</strong></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">--name</span> icevision python==3.8</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate icevision</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch==1.10.0+cu111 torchvision==0.11.1+cu111 <span class="at">-f</span> https://download.pytorch.org/whl/torch_stable.html</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install mmcv-full==1.3.17 <span class="at">-f</span> https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install mmdet==2.17.0</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install icevision==0.11.0</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install icedata==0.5.1</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install setuptools==59.5.0</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install openvino-dev</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install distinctipy</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install jupyter</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnxruntime</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnx-simplifier</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install kaggle</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a new conda environment</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">--name</span> icevision python==3.8</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># activate the environment</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate icevision</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># install PyTorch and torchvision</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch==1.10.0+cu111 torchvision==0.11.1+cu111 <span class="at">-f</span> https://download.pytorch.org/whl/torch_stable.html</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># install mmcv-full</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install mmcv-full==1.3.17 <span class="at">-f</span> https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># install mmdet</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install mmdet==2.17.0</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># install icevision</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install icevision==0.11.0</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># install icedata</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install icedata==0.5.1</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># install setuptools</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install setuptools==59.5.0</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># install jupyter</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install jupyter</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"># install onnxruntime</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnxruntime</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># install onnx-simplifier</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnx-simplifier</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># install the kaggle api</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install kaggle</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The <a href="https://pypi.org/project/mmdet/"><code>mmdet</code></a> package contains the pretrained YOLOX Tiny model we will finetune with IceVision. The package depends on the <a href="https://mmcv.readthedocs.io/en/latest/"><code>mmcv-full</code></a> library, which is picky about the CUDA version used by <a href="https://pytorch.org/">PyTorch</a>. We need to install the PyTorch version with the exact CUDA version expected by <code>mmcv-full</code>.</p>
 <p>The <a href="https://pypi.org/project/icevision/"><code>icevision</code></a> package provides the functionality for data curation, data transforms, and training loops we’ll use to train the model. The <a href="https://airctic.github.io/icedata/"><code>icedata</code></a> package provides the functionality we’ll use to create a custom parser to read the dataset.</p>
 <p>The <a href="https://pypi.org/project/openvino-dev/"><code>openvino-dev</code></a> pip package contains the model-conversion script to convert trained models from <a href="https://onnx.ai/">ONNX</a> to OpenVINO’s IR format.</p>
@@ -514,7 +525,7 @@ two_up_inverted
 </section>
 <section id="import-dependencies" class="level2">
 <h2 class="anchored" data-anchor-id="import-dependencies">Import Dependencies</h2>
-<p>IceVision will download some additional resources the first time we import the library.</p>
+<p>We will start by importing the IceVision library and configuring Pandas. When you import the IceVision library for the first time, it will automatically download some additional resources that it needs to function correctly.</p>
 <p><strong>Import IceVision library</strong></p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import all the necessary modules from the icevision package</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> icevision.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -566,8 +577,8 @@ two_up_inverted
 <li><a href="https://www.kaggle.com/datasets/innominate817/hagrid-sample-30k-384p">HaGRID Sample 30k 384p</a></li>
 <li><a href="https://www.kaggle.com/datasets/innominate817/hagrid-sample-120k-384p">HaGRID Sample 120k 384p</a></li>
 </ul>
-<p><strong>Define path to dataset</strong></p>
 <p>We’ll use the default archive and data folders for the fastai library (installed with IceVision) to store the compressed and uncompressed datasets.</p>
+<p><strong>Define path to dataset</strong></p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the URLs object from the fastai.data.external module</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.data.external <span class="im">import</span> URLs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the dataset</span></span>
@@ -616,8 +627,8 @@ two_up_inverted
 <span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        zipfile.ZipFile(fname).extractall(dest)</span>
 <span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
 <span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">Exception</span>(<span class="ss">f'Unrecognized archive: </span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Download the dataset if it is not present</strong></p>
 <p>The archive file for the 30K dataset is 4GB, so we don’t want to download it more than necessary.</p>
+<p><strong>Download the dataset if it is not present</strong></p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if the dataset zip file already exists</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> archive_path.exists():</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Download the dataset from Kaggle</span></span>
@@ -628,7 +639,8 @@ two_up_inverted
 </section>
 <section id="inspect-the-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="inspect-the-dataset">Inspect the Dataset</h2>
-<p>We can start inspecting the dataset once it finishes downloading.</p>
+<p>We can start inspecting the dataset once it finishes downloading. In this step, we will get the file paths for the images and annotations and examine one of the training images. That will give us a better understanding of the dataset and its structure.</p>
+<p><strong>Define paths to image and annotation folders</strong></p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of the items in the 'dataset_path' directory</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>dir_content <span class="op">=</span> <span class="bu">list</span>(dataset_path.ls())</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -645,8 +657,8 @@ two_up_inverted
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>annotation_dir, img_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>(Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val'),
  Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k'))</code></pre>
-<p><strong>Inspect the annotation folder</strong></p>
 <p>The bounding box annotations for each image are stored in JSON files organized by object class. The files contain annotations for all 552,992 images from the full HaGRID dataset.</p>
+<p><strong>Inspect the annotation folder</strong></p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of files in the 'annotation_dir' directory</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>file_list <span class="op">=</span> <span class="bu">list</span>(annotation_dir.ls())</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -814,8 +826,8 @@ two_up_inverted.json
 </table>
 </div>
 <hr>
-<p><strong>Inspect the image folder</strong></p>
 <p>The sample images are stored in folders separated by object class.</p>
+<p><strong>Inspect the image folder</strong></p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of folders in the 'img_dir' directory</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>folder_list <span class="op">=</span> <span class="bu">list</span>(img_dir.ls())</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -984,7 +996,6 @@ train_val_two_up_inverted
 </div>
 <hr>
 <p><strong>Get image file paths</strong></p>
-<p>We can use the <code>get_image_file</code> method to get the full paths for every image file in the image directory.</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of image files in the 'img_dir' directory</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> get_image_files(img_dir)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1030,8 +1041,8 @@ train_val_two_up_inverted
 
 </table>
 </div>
-<p><strong>Inspect one of the training images</strong></p>
 <p>The sample images are all downscaled to 384p.</p>
+<p><strong>Inspect one of the training images</strong></p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the PIL library</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> PIL</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1049,8 +1060,8 @@ train_val_two_up_inverted
 <p><img src="./images/output_28_1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
+<p>To make it easier to work with the dataset, we will create a dictionary that maps image names to file paths. The dictionary will allow us to retrieve the file path for a given image efficiently.</p>
 <p><strong>Create a dictionary that maps image names to file paths</strong></p>
-<p>Let’s create a dictionary to quickly obtain full image file paths, given a file name. We’ll need this later.</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a dictionary where the keys are the filenames without the file extensions of the files in the 'files' list,</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and the values are the file paths</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>img_dict <span class="op">=</span> {<span class="bu">file</span>.stem : <span class="bu">file</span> <span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> files}</span>
@@ -1286,8 +1297,8 @@ train_val_two_up_inverted
 </table>
 </div>
 <hr>
+<p>After getting the list of annotation file paths, we will create an annotation DataFrame that contains all of the annotation data for the dataset. This DataFrame will allow us to manipulate and query the annotations more easily. We’ll then filter out annotations for images not present in the current subsample.</p>
 <p><strong>Create annotations dataframe</strong></p>
-<p>Next, we’ll read all the image annotations into a single Pandas DataFrame and filter out annotations for images not present in the current subsample.</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a generator that yields Pandas DataFrames containing the data from each JSON file</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>cls_dataframes <span class="op">=</span> (pd.read_json(f).transpose() <span class="cf">for</span> f <span class="kw">in</span> annotation_paths)</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1430,8 +1441,8 @@ right
 </div>
 <hr>
 <p>Notice that one of the samples contains a <code>no_gesture</code> label to identify an idle hand in the image.</p>
-<p><strong>Inspect annotation data for sample image</strong></p>
 <p>We can retrieve the annotation data for a specific image file using its name.</p>
+<p><strong>Inspect annotation data for sample image</strong></p>
 <div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the filename without the file extension of the first file in the 'files' list</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>file_id <span class="op">=</span> files[<span class="dv">0</span>].stem</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1499,8 +1510,8 @@ user_id
 </table>
 </div>
 <p>The <code>bboxes</code> entry contains the <code>[top-left-X-position, top-left-Y-position, width, height]</code> information for any bounding boxes. The values are scaled based on the image dimensions. We multiply <code>top-left-X-position</code> and <code>width</code> values by the image width and multiply <code>top-left-Y-position</code> and <code>height</code> values by the image height to obtain the actual values.</p>
-<p><strong>Download font file</strong></p>
 <p>We need a font file to annotate the images with class labels. We can download one from <a href="https://fonts.google.com/">Google Fonts</a>.</p>
+<p><strong>Download font file</strong></p>
 <div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the filename of the font file</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>font_file <span class="op">=</span> <span class="st">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1559,8 +1570,8 @@ user_id
 <p><img src="./images/output_43_1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
-<p><strong>Create a class map</strong></p>
 <p>We need to provide IceVision with a class map that maps index values to unique class names.</p>
+<p><strong>Create a class map</strong></p>
 <div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of unique labels in the 'annotation_df' DataFrame</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> annotation_df[<span class="st">'labels'</span>].explode().unique().tolist()</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1749,7 +1760,7 @@ two_up_inverted
 </section>
 <section id="create-dataset-parser" class="level2">
 <h2 class="anchored" data-anchor-id="create-dataset-parser">Create Dataset Parser</h2>
-<p>Now we can create a custom <code>Parser</code> class that tells IceVision how to read the dataset.</p>
+<p>To create a custom dataset parser for object detection, we can use the template for an object detection record and the template for an object detection parser.</p>
 <p><strong>View template for an object detection record</strong></p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an ObjectDetectionRecord object</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>template_record <span class="op">=</span> ObjectDetectionRecord()</span>
@@ -1782,8 +1793,8 @@ detection:
         record.detection.set_class_map(&lt;ClassMap&gt;)
         record.detection.add_labels(&lt;Sequence[Hashable]&gt;)
         record.detection.add_bboxes(&lt;Sequence[BBox]&gt;)</code></pre>
-<p><strong>Define custom parser class</strong></p>
 <p>As mentioned earlier, we need the dimensions for an image to scale the corresponding bounding box information. The dataset contains images with different resolutions, so we need to check for each image.</p>
+<p><strong>Define custom parser class</strong></p>
 <div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a subclass of the 'Parser' class</span></span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> HagridParser(Parser):</span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define the constructor</span></span>
@@ -1848,6 +1859,7 @@ detection:
 <span id="cb38-62"><a href="#cb38-62" aria-hidden="true" tabindex="-1"></a>            bbox_list.append(BBox.from_xywh(x, y, w, h))</span>
 <span id="cb38-63"><a href="#cb38-63" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Add the bounding boxes to the 'record' object</span></span>
 <span id="cb38-64"><a href="#cb38-64" aria-hidden="true" tabindex="-1"></a>        record.detection.add_bboxes(bbox_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can then create a parser object using the custom parser class.</p>
 <p><strong>Create a custom parser object</strong></p>
 <div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a HagridParser object</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>parser <span class="op">=</span> HagridParser(template_record, annotation_df, img_dict, class_map)</span>
@@ -1858,13 +1870,14 @@ detection:
 <span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the number of rows</span></span>
 <span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(num_rows)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>31833</code></pre>
+<p>We use the parser object to parse annotations and create records.</p>
 <p><strong>Parse annotations to create records</strong></p>
-<p>We’ll randomly split the samples into training and validation sets.</p>
 <div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 'RandomSplitter' object</span></span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>data_splitter <span class="op">=</span> RandomSplitter([<span class="fl">0.8</span>, <span class="fl">0.2</span>])</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the 'parse' method to split the data into training and validation sets</span></span>
 <span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>train_records, valid_records <span class="op">=</span> parser.parse(data_splitter, cache_filepath<span class="op">=</span><span class="ss">f'</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">-cache.pkl'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally, we can inspect the training records to ensure the parser works correctly.</p>
 <p><strong>Inspect training records</strong></p>
 <div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the first element of the 'train_records'</span></span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(train_records[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1923,8 +1936,8 @@ detection:
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the maximum value in the 'strides' list</span></span>
 <span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>max_stride <span class="op">=</span> <span class="bu">max</span>(strides)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Select a multiple of the max stride value as the input resolution</strong></p>
 <p>We need to set the input height and width to multiples of the highest stride value (i.e., 32).</p>
+<p><strong>Select a multiple of the max stride value as the input resolution</strong></p>
 <div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show a list of input resolutions by multiplying the maximum stride by numbers in the range 7-20</span></span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>[max_stride<span class="op">*</span>i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">7</span>,<span class="dv">21</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>[224, 256, 288, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640] </code></pre>
@@ -1937,8 +1950,8 @@ detection:
 <blockquote class="blockquote">
 <p><strong>Note:</strong> You can lower the image_size to reduce training time at the cost of a potential decrease in accuracy.</p>
 </blockquote>
-<p><strong>Define Transforms</strong></p>
 <p>IceVision provides several default methods for data augmentation to help the model generalize. It automatically updates the bounding box information for an image based on the applied augmentations.</p>
+<p><strong>Define Transforms</strong></p>
 <div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the default augmentations included with the 'aug_tfms' function using a Pandas DataFrame</span></span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(tfms.A.aug_tfms(size<span class="op">=</span>image_size, presize<span class="op">=</span>presize))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto; max-height:500px">
@@ -2063,8 +2076,8 @@ PadIfNeeded(always_apply=False, p=1.0, min_height=384, min_width=384, pad_height
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the 'valid_tfms' adapter using the 'Adapter' method and the 'resize_and_pad' function</span></span>
 <span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>valid_tfms <span class="op">=</span> tfms.A.Adapter([<span class="op">*</span>tfms.A.resize_and_pad(image_size), tfms.A.Normalize()])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Get normalization stats</strong></p>
 <p>We can extract the normalization stats from the <code>tfms.A.Normalize()</code> method for future use. We’ll use these same stats when performing inference with the trained model.</p>
+<p><strong>Get normalization stats</strong></p>
 <div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the mean of the Normalize() transformation</span></span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>mean <span class="op">=</span> tfms.A.Normalize().mean</span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2074,6 +2087,7 @@ PadIfNeeded(always_apply=False, p=1.0, min_height=384, min_width=384, pad_height
 <span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the mean and standard deviation</span></span>
 <span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>mean, std</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))</code></pre>
+<p>Next, we create dataset objects for the training and validation datasets using the defined transforms and normalization stats.</p>
 <p><strong>Define Datasets</strong></p>
 <div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a Dataset object using the 'train_records' and 'train_tfms' variables</span></span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>train_ds <span class="op">=</span> Dataset(train_records, train_tfms)</span>
@@ -2084,6 +2098,7 @@ PadIfNeeded(always_apply=False, p=1.0, min_height=384, min_width=384, pad_height
 <span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the 'train_ds' and 'valid_ds' objects</span></span>
 <span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>train_ds, valid_ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>(&lt;Dataset with 25466 items&gt;, &lt;Dataset with 6367 items&gt;)</code></pre>
+<p>We can apply the image augmentations to a sample training image to demonstrate the effects of data augmentation.</p>
 <p><strong>Apply augmentations to a training sample</strong></p>
 <div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of three samples from the 'train_ds' dataset object</span></span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> [train_ds[<span class="dv">0</span>] <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)]</span>
@@ -2095,11 +2110,12 @@ PadIfNeeded(always_apply=False, p=1.0, min_height=384, min_width=384, pad_height
 <p><img src="./images/output_76_0.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
+<p>Once the datasets are defined, we can specify YOLOX as the model type for training.</p>
 <p><strong>Define model type</strong></p>
 <div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the model type to YOLOX</span></span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>model_type <span class="op">=</span> models.mmdet.yolox</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Define backbone</strong></p>
 <p>We’ll use a model pretrained on the COCO dataset rather than train a new model from scratch.</p>
+<p><strong>Define backbone</strong></p>
 <div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a YOLOX Tiny backbone for the model</span></span>
 <span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>backbone <span class="op">=</span> model_type.backbones.yolox_tiny_8x8(pretrained<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2172,32 +2188,34 @@ True
 </section>
 <section id="finetune-the-model" class="level2">
 <h2 class="anchored" data-anchor-id="finetune-the-model">Finetune the Model</h2>
-<p>Now, we can move on to training the model.</p>
+<p>To finetune the YOLOX model, we must first instantiate the model and define metrics to track during training.</p>
 <p><strong>Instantiate the model</strong></p>
 <div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a YOLOX Tiny model</span></span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> model_type.model(backbone<span class="op">=</span>backbone(pretrained<span class="op">=</span><span class="va">True</span>), num_classes<span class="op">=</span>parser.class_map.num_classes) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Define metrics</strong></p>
 <div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a list of metrics to evaluate the model</span></span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>metrics <span class="op">=</span> [COCOMetric(metric_type<span class="op">=</span>COCOMetricType.bbox)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can then create a Learner object to find the learning rate and handle the training loop.</p>
 <p><strong>Define Learner object</strong></p>
 <div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a fastai learner object to train and evaluate the YOLOX Tiny model</span></span>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> model_type.fastai.learner(dls<span class="op">=</span>[train_dl, valid_dl], model<span class="op">=</span>model, metrics<span class="op">=</span>metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Find learning rate</strong></p>
 <div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the learning rate finder to find a good learning rate for the YOLOX Tiny model</span></span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>suggested_lrs <span class="op">=</span> learn.lr_find()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre class="text"><code>SuggestedLRs(valley=0.0012022644514217973)</code></pre>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/output_92_3.png" class="img-fluid figure-img"></p>
+<p><img src="./images/output_94_2.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 <p><strong>Define learning rate</strong></p>
-<div class="sourceCode" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the suggested learning rate identified by the learning rate finder</span></span>
-<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> suggested_lrs.valley</span>
-<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>lr</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the suggested learning rate identified by the learning rate finder</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> suggested_lrs.valley</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>lr</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>0.0008317637839354575</code></pre>
 <p><strong>Define number of epochs</strong></p>
 <div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the number of epochs to train the YOLOX Tiny model</span></span>
 <span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">20</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>After defining the training parameters, we can finetune the model by training it on the training dataset.</p>
 <p><strong>Finetune model</strong></p>
 <div class="sourceCode" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the YOLOX Tiny model</span></span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>learn.fine_tune(epochs, lr, freeze_epochs<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -2741,8 +2759,8 @@ user_id
 <span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the shape of the resulting tensor</span></span>
 <span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(test_tensor.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>torch.Size([1, 3, 512, 384])</code></pre>
-<p><strong>Inspect raw model output</strong></p>
 <p>Before making any changes, let’s inspect the current model output.</p>
+<p><strong>Inspect raw model output</strong></p>
 <div class="sourceCode" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the raw model output using the test tensor</span></span>
 <span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>model_output <span class="op">=</span> model.cpu().forward_dummy(test_tensor.cpu())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The model currently organizes the output into three tuples. The first tuple contains three tensors storing the object class predictions using the three stride values. Recall that there are 19 object classes, excluding the background class added by IceVision.</p>
@@ -2817,15 +2835,14 @@ torch.Size([1, 1, 16, 12])</code></pre>
 <p><strong>Add custom forward function to model</strong></p>
 <div class="sourceCode" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bind the forward_export method to the model object</span></span>
 <span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>model.forward_export <span class="op">=</span> forward_export.<span class="fu">__get__</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Verify output shape</strong></p>
 <p>Let’s verify the new forward function works as intended. The output should have a batch size of 1 and contain 4032 elements, given the input dimensions (calculated earlier), each with 24 values (19 classes + 1 objectness score + 4 bounding box values).</p>
+<p><strong>Verify output shape</strong></p>
 <div class="sourceCode" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Call the forward_export method on the model object, passing in the test_tensor as an argument</span></span>
 <span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and get the shape of the output tensor</span></span>
 <span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>model.forward_export(test_tensor).shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>torch.Size([1, 4032, 24])</code></pre>
-<p>We need to replace the current forward function before exporting the model.</p>
+<p>We need to replace the current forward function before exporting the model. We can create a backup of the original forward function just in case.</p>
 <p><strong>Create a backup of the default model forward function</strong></p>
-<p>We can create a backup of the original forward function just in case.</p>
 <div class="sourceCode" id="cb87"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the original forward method of the model</span></span>
 <span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>origin_forward <span class="op">=</span> model.forward</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Replace model forward function with custom function</strong></p>
@@ -2860,7 +2877,6 @@ torch.Size([1, 1, 16, 12])</code></pre>
 <span id="cb93-10"><a href="#cb93-10" aria-hidden="true" tabindex="-1"></a>                  dynamic_axes<span class="op">=</span>{<span class="st">'input'</span>: {<span class="dv">2</span> : <span class="st">'height'</span>, <span class="dv">3</span> : <span class="st">'width'</span>}}</span>
 <span id="cb93-11"><a href="#cb93-11" aria-hidden="true" tabindex="-1"></a>                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Simplify ONNX model</strong></p>
-<p>As mentioned earlier, this step is entirely optional.</p>
 <div class="sourceCode" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the onnx module</span></span>
 <span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnx</span>
 <span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2874,6 +2890,9 @@ torch.Size([1, 1, 16, 12])</code></pre>
 <span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the simplified model to the onnx_file_name</span></span>
 <span id="cb95-8"><a href="#cb95-8" aria-hidden="true" tabindex="-1"></a>onnx.save(model_simp, onnx_file_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> As mentioned earlier, this step is entirely optional.</p>
+</blockquote>
 <p>Now we can export the ONNX model to OpenVINO’s IR format.</p>
 <p><strong>Import OpenVINO Dependencies</strong></p>
 <div class="sourceCode" id="cb96"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the Core class from the openvino.runtime module</span></span>
@@ -2887,16 +2906,16 @@ torch.Size([1, 1, 16, 12])</code></pre>
 <span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the output_dir object</span></span>
 <span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>output_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>Path('.')</code></pre>
-<p><strong>Define path for OpenVINO IR xml model file</strong></p>
 <p>The conversion script generates an XML file containing information about the model architecture and a BIN file that stores the trained weights. We need both files to perform inference. OpenVINO uses the same name for the BIN file as provided for the XML file.</p>
+<p><strong>Define path for OpenVINO IR xml model file</strong></p>
 <div class="sourceCode" id="cb100"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a Path object representing the IR xml file using the ONNX model file name without the file extension</span></span>
 <span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>ir_path <span class="op">=</span> Path(<span class="ss">f"</span><span class="sc">{</span>onnx_file_name<span class="sc">.</span>split(<span class="st">'.'</span>)[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">.xml"</span>)</span>
 <span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the ir_path object</span></span>
 <span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>ir_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>Path('hagrid-sample-30k-384p-YOLOX.xml')</code></pre>
-<p><strong>Define arguments for model conversion script</strong></p>
 <p>OpenVINO provides the option to include the normalization stats in the IR model. That way, we don’t need to account for different normalization stats when performing inference with multiple models. We can also convert the model to FP16 precision to reduce file size and improve inference speed.</p>
+<p><strong>Define arguments for model conversion script</strong></p>
 <div class="sourceCode" id="cb102"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the Model Optimizer command to convert the ONNX model to OpenVINO</span></span>
 <span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>mo_command <span class="op">=</span> <span class="ss">f"""mo</span></span>
 <span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a><span class="ss">                 --input_model "</span><span class="sc">{</span>onnx_file_name<span class="sc">}</span><span class="ss">"</span></span>
@@ -3025,8 +3044,8 @@ Find more information about API v2.0 and IR v11 at https://docs.openvino.ai</cod
 <section id="define-post-processing-steps" class="level2">
 <h2 class="anchored" data-anchor-id="define-post-processing-steps">Define Post-processing Steps</h2>
 <p>To process the model output, we need to iterate through each of the 4032 object proposals and save the ones that meet a user-defined confidence threshold (e.g., 50%). We then filter out the redundant proposals (i.e., detecting the same object multiple times) from that subset using <a href="https://learnopencv.com/non-maximum-suppression-theory-and-implementation-in-pytorch/">Non-Maximum Suppression (NMS)</a>.</p>
-<p><strong>Define method to generate offset values to navigate the raw model output</strong></p>
 <p>We’ll first define a method that generates offset values based on the input dimensions and stride values, which we can use to traverse the output array.</p>
+<p><strong>Define method to generate offset values to navigate the raw model output</strong></p>
 <div class="sourceCode" id="cb115"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_grid_strides(height, width, strides<span class="op">=</span>[<span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>]):</span>
 <span id="cb115-2"><a href="#cb115-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb115-3"><a href="#cb115-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate a list of dictionaries containing grid coordinates and strides for a given height and width.</span></span>
@@ -3159,8 +3178,8 @@ stride
 
 </table>
 </div>
-<p><strong>Define method to generate object detection proposals from the raw model output</strong></p>
 <p>Next, we’ll define a method to iterate through the output array and decode the bounding box information for each object proposal. As mentioned earlier, we’ll only keep the ones with a high enough confidence score. The model predicts the center coordinates of a bounding box, but we’ll store the coordinates for the top-left corner as that is what the <code>ImageDraw.Draw.rectangle()</code> method expects as input.</p>
+<p><strong>Define method to generate object detection proposals from the raw model output</strong></p>
 <div class="sourceCode" id="cb119"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_yolox_proposals(model_output, proposal_length, grid_strides, bbox_conf_thresh<span class="op">=</span><span class="fl">0.3</span>):</span>
 <span id="cb119-2"><a href="#cb119-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb119-3"><a href="#cb119-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate a list of bounding box proposals from the model output.</span></span>
@@ -4170,8 +4189,8 @@ call
 <span id="cb136-3"><a href="#cb136-3" aria-hidden="true" tabindex="-1"></a><span class="co"># and extract the output from the specified layer</span></span>
 <span id="cb136-4"><a href="#cb136-4" aria-hidden="true" tabindex="-1"></a>compiled_model_ir([input_image])[output_layer_ir]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>    12 ms ± 42.7 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</code></pre>
-<p><strong>Create JSON colormap</strong></p>
 <p>We can export the colormap to a JSON file and import it into the Unity project. That way, we can easily swap colormaps for models trained on different datasets without changing any code.</p>
+<p><strong>Create JSON colormap</strong></p>
 <div class="sourceCode" id="cb138"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the color map with an empty list of items</span></span>
 <span id="cb138-2"><a href="#cb138-2" aria-hidden="true" tabindex="-1"></a>color_map <span class="op">=</span> {<span class="st">'items'</span>: <span class="bu">list</span>()}</span>
 <span id="cb138-3"><a href="#cb138-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4217,7 +4236,7 @@ call
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>
-<p>In this post, we finetuned an object detection model using the IceVision library and exported it as an OpenVINO IR model. Part 2 will cover creating a dynamic link library (<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library">DLL</a>) file in Visual Studio to perform inference with this model using OpenVINO.</p>
+<p>We now have a template to train a YOLOX model using IceVision and export it to OpenVINO. We started by setting up a Conda environment and importing the necessary dependencies. Then, we configured the Kaggle API to download the dataset and created a parser to process the data. We defined DataLoader objects and fine-tuned the model before preparing it for export. We implemented post-processing steps for the model output and generated a colormap to visualize model predictions. In part 2, we will learn how to create a dynamic link library (DLL) file in Visual Studio to perform object detection with our YOLOX model using OpenVINO.</p>
 <p><strong>Beginner Tutorial:</strong> <a href="../../fastai-to-unity-tutorial/part-1/">Fastai to Unity Beginner Tutorial Pt. 1</a></p>
 <p><strong>Next:</strong> <a href="../part-2/">End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2</a></p>
 <p><strong>Alternative Next:</strong> <a href="../../onnx-directml-unity-tutorial/part-1/">Object Detection for Unity With ONNX Runtime and DirectML Pt. 1</a></p>
