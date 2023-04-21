@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Christian Mills">
 <meta name="dcterms.date" content="2022-04-25">
 <meta name="description" content="Chapter 10 covers how to train a GPT-like model to generate Python source code from scratch.">
 
@@ -146,7 +147,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -199,7 +200,47 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#training-transformers-from-scratch" id="toc-training-transformers-from-scratch" class="nav-link active" data-scroll-target="#training-transformers-from-scratch">Training Transformers from Scratch</a></li>
+  <li><a href="#project-python-source-code-generator" id="toc-project-python-source-code-generator" class="nav-link" data-scroll-target="#project-python-source-code-generator">Project: Python Source Code Generator</a>
+  <ul class="collapse">
+  <li><a href="#existing-ai-code-completion-products" id="toc-existing-ai-code-completion-products" class="nav-link" data-scroll-target="#existing-ai-code-completion-products">Existing AI Code Completion Products</a></li>
+  <li><a href="#codeparrot" id="toc-codeparrot" class="nav-link" data-scroll-target="#codeparrot">CodeParrot</a></li>
+  </ul></li>
+  <li><a href="#large-datasets-and-where-to-find-them" id="toc-large-datasets-and-where-to-find-them" class="nav-link" data-scroll-target="#large-datasets-and-where-to-find-them">Large Datasets and Where to Find Them</a>
+  <ul class="collapse">
+  <li><a href="#challenges-of-building-a-large-scale-corpus" id="toc-challenges-of-building-a-large-scale-corpus" class="nav-link" data-scroll-target="#challenges-of-building-a-large-scale-corpus">Challenges of Building a Large-Scale Corpus</a></li>
+  <li><a href="#compare-text-generations-from-gpt-and-gpt-2" id="toc-compare-text-generations-from-gpt-and-gpt-2" class="nav-link" data-scroll-target="#compare-text-generations-from-gpt-and-gpt-2">Compare text generations from GPT and GPT-2</a></li>
+  <li><a href="#building-a-custom-code-dataset" id="toc-building-a-custom-code-dataset" class="nav-link" data-scroll-target="#building-a-custom-code-dataset">Building a Custom Code Dataset</a></li>
+  <li><a href="#to-filter-the-noise-or-not" id="toc-to-filter-the-noise-or-not" class="nav-link" data-scroll-target="#to-filter-the-noise-or-not">To Filter the Noise or Not?</a></li>
+  <li><a href="#working-with-large-datasets" id="toc-working-with-large-datasets" class="nav-link" data-scroll-target="#working-with-large-datasets">Working with Large Datasets</a></li>
+  <li><a href="#adding-datasets-to-the-hugging-face-hub" id="toc-adding-datasets-to-the-hugging-face-hub" class="nav-link" data-scroll-target="#adding-datasets-to-the-hugging-face-hub">Adding Datasets to the Hugging Face Hub</a></li>
+  </ul></li>
+  <li><a href="#building-a-tokenizer" id="toc-building-a-tokenizer" class="nav-link" data-scroll-target="#building-a-tokenizer">Building a Tokenizer</a>
+  <ul class="collapse">
+  <li><a href="#the-tokenizer-model" id="toc-the-tokenizer-model" class="nav-link" data-scroll-target="#the-tokenizer-model">The Tokenizer Model</a></li>
+  <li><a href="#measuring-tokenizer-performance" id="toc-measuring-tokenizer-performance" class="nav-link" data-scroll-target="#measuring-tokenizer-performance">Measuring Tokenizer Performance</a></li>
+  <li><a href="#a-tokenizer-for-python" id="toc-a-tokenizer-for-python" class="nav-link" data-scroll-target="#a-tokenizer-for-python">A Tokenizer for Python</a></li>
+  <li><a href="#training-a-tokenizer" id="toc-training-a-tokenizer" class="nav-link" data-scroll-target="#training-a-tokenizer">Training a Tokenizer</a></li>
+  <li><a href="#saving-a-custom-tokenizer-on-the-hub" id="toc-saving-a-custom-tokenizer-on-the-hub" class="nav-link" data-scroll-target="#saving-a-custom-tokenizer-on-the-hub">Saving a Custom Tokenizer on the Hub</a></li>
+  </ul></li>
+  <li><a href="#training-a-model-from-scratch" id="toc-training-a-model-from-scratch" class="nav-link" data-scroll-target="#training-a-model-from-scratch">Training a Model from Scratch</a>
+  <ul class="collapse">
+  <li><a href="#a-tale-of-pretraining-objectives" id="toc-a-tale-of-pretraining-objectives" class="nav-link" data-scroll-target="#a-tale-of-pretraining-objectives">A Tale of Pretraining Objectives</a></li>
+  <li><a href="#initializing-the-model" id="toc-initializing-the-model" class="nav-link" data-scroll-target="#initializing-the-model">Initializing the Model</a></li>
+  <li><a href="#implementing-the-dataloader" id="toc-implementing-the-dataloader" class="nav-link" data-scroll-target="#implementing-the-dataloader">Implementing the Dataloader</a></li>
+  <li><a href="#defining-the-training-loop" id="toc-defining-the-training-loop" class="nav-link" data-scroll-target="#defining-the-training-loop">Defining the Training Loop</a></li>
+  <li><a href="#the-training-run" id="toc-the-training-run" class="nav-link" data-scroll-target="#the-training-run">The Training Run</a></li>
+  </ul></li>
+  <li><a href="#results-and-analysis" id="toc-results-and-analysis" class="nav-link" data-scroll-target="#results-and-analysis">Results and Analysis</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -223,6 +264,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
@@ -4051,7 +4098,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       <div class="nav-footer-center">
         <ul class="footer-items list-unstyled">
     <li class="nav-item">
- Copyright 2022, Christian J. Mills
+ Copyright 2023, Christian J. Mills
   </li>  
 </ul>
       </div>

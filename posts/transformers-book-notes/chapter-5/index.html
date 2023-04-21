@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Christian Mills">
 <meta name="dcterms.date" content="2022-04-08">
 <meta name="description" content="Chapter 5 covers different methods for generating text with GPT-2.">
 
@@ -146,7 +147,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -199,7 +200,43 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#the-challenge-with-generating-coherent-text" id="toc-the-challenge-with-generating-coherent-text" class="nav-link" data-scroll-target="#the-challenge-with-generating-coherent-text">The Challenge with Generating Coherent Text</a>
+  <ul class="collapse">
+  <li><a href="#gpt-2-pretraining-process" id="toc-gpt-2-pretraining-process" class="nav-link" data-scroll-target="#gpt-2-pretraining-process">GPT-2 Pretraining Process</a></li>
+  <li><a href="#plefty_1ldotsy_t-vert-x-right-prodn_t1plefty_t-vert-y_-tx-right" id="toc-plefty_1ldotsy_t-vert-x-right-prodn_t1plefty_t-vert-y_-tx-right" class="nav-link" data-scroll-target="#plefty_1ldotsy_t-vert-x-right-prodn_t1plefty_t-vert-y_-tx-right"><span class="math display">\[P\left(y_{1},\ldots,y_{t} \vert x \right) = \prod^{N}_{t=1}{P\left(y_{t} \vert y_{ \ &lt; \ t},x \right)}\]</span></a></li>
+  <li><a href="#decoding" id="toc-decoding" class="nav-link" data-scroll-target="#decoding">Decoding</a></li>
+  <li><a href="#plefty_t-w_i-vert-y_-tx-right-softmax-left-z_ti-right" id="toc-plefty_t-w_i-vert-y_-tx-right-softmax-left-z_ti-right" class="nav-link" data-scroll-target="#plefty_t-w_i-vert-y_-tx-right-softmax-left-z_ti-right"><span class="math display">\[P\left(y_{t} = w_{i} \vert y_{ \ &lt; \ t},x \right) = softmax \left( z_{t,i} \right)\]</span></a></li>
+  <li><a href="#haty-undersetyargmax-plefty-vert-x-right" id="toc-haty-undersetyargmax-plefty-vert-x-right" class="nav-link" data-scroll-target="#haty-undersetyargmax-plefty-vert-x-right"><span class="math display">\[\hat{y} = \underset{y}{argmax} P\left(y \vert x \right)\]</span></a></li>
+  </ul></li>
+  <li><a href="#greedy-search-decoding" id="toc-greedy-search-decoding" class="nav-link" data-scroll-target="#greedy-search-decoding">Greedy Search Decoding</a>
+  <ul class="collapse">
+  <li><a href="#haty_t-undersetyargmax-plefty_t-vert-y_-tx-right" id="toc-haty_t-undersetyargmax-plefty_t-vert-y_-tx-right" class="nav-link" data-scroll-target="#haty_t-undersetyargmax-plefty_t-vert-y_-tx-right"><span class="math display">\[\hat{y}_{t} = \underset{y}{argmax} {P\left(y_{t} \vert y_{ \ &lt; \ t},x \right)}\]</span></a></li>
+  </ul></li>
+  <li><a href="#beam-search-decoding" id="toc-beam-search-decoding" class="nav-link" data-scroll-target="#beam-search-decoding">Beam Search Decoding</a>
+  <ul class="collapse">
+  <li><a href="#logplefty_1ldotsy_t-vert-x-right-sumn_t1logplefty_t-vert-y_-tx-right" id="toc-logplefty_1ldotsy_t-vert-x-right-sumn_t1logplefty_t-vert-y_-tx-right" class="nav-link" data-scroll-target="#logplefty_1ldotsy_t-vert-x-right-sumn_t1logplefty_t-vert-y_-tx-right"><span class="math display">\[\log{P\left(y_{1},\ldots,y_{t} \vert x \right)} = \sum^{N}_{t=1}{\log{P\left(y_{t} \vert y_{ \ &lt; \ t},x \right)}}\]</span></a></li>
+  <li><a href="#textlogsoftmaxx_i-logleftfracexpx_i-sum_j-expx_j-right" id="toc-textlogsoftmaxx_i-logleftfracexpx_i-sum_j-expx_j-right" class="nav-link" data-scroll-target="#textlogsoftmaxx_i-logleftfracexpx_i-sum_j-expx_j-right"><span class="math display">\[\text{LogSoftmax}(x_{i}) = \log\left(\frac{\exp(x_i)}{ \sum_j \exp(x_j)} \right)\]</span></a></li>
+  </ul></li>
+  <li><a href="#sampling-methods" id="toc-sampling-methods" class="nav-link" data-scroll-target="#sampling-methods">Sampling Methods</a>
+  <ul class="collapse">
+  <li><a href="#plefty_t-w_i-vert-y_-tx-right-textsoftmax-left-z_ti-right-fracexpz_ti-sumv_j1-expz_tj" id="toc-plefty_t-w_i-vert-y_-tx-right-textsoftmax-left-z_ti-right-fracexpz_ti-sumv_j1-expz_tj" class="nav-link" data-scroll-target="#plefty_t-w_i-vert-y_-tx-right-textsoftmax-left-z_ti-right-fracexpz_ti-sumv_j1-expz_tj"><span class="math display">\[P\left(y_{t} = w_{i} \vert y_{ \ &lt; \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\exp(z_{t,i})}{ \sum^{|V|}_{j=1} \exp(z_{t,j})}\]</span></a></li>
+  <li><a href="#lefty_t-w_i-vert-y_-tx-right-textsoftmax-left-z_ti-right-fracfracexpz_tit-sumv_j1-fracexpz_tjt" id="toc-lefty_t-w_i-vert-y_-tx-right-textsoftmax-left-z_ti-right-fracfracexpz_tit-sumv_j1-fracexpz_tjt" class="nav-link" data-scroll-target="#lefty_t-w_i-vert-y_-tx-right-textsoftmax-left-z_ti-right-fracfracexpz_tit-sumv_j1-fracexpz_tjt"><span class="math display">\[\left(y_{t} = w_{i} \vert y_{ \ &lt; \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\frac{\exp(z_{t,i})}{T}}{ \sum^{|V|}_{j=1} \frac{\exp(z_{t,j}}{T})}\]</span></a></li>
+  </ul></li>
+  <li><a href="#top-k-and-nucleus-sampling" id="toc-top-k-and-nucleus-sampling" class="nav-link" data-scroll-target="#top-k-and-nucleus-sampling">Top-k and Nucleus Sampling</a>
+  <ul class="collapse">
+  <li><a href="#top-k-sampling" id="toc-top-k-sampling" class="nav-link" data-scroll-target="#top-k-sampling">Top-k Sampling</a></li>
+  </ul></li>
+  <li><a href="#which-decoding-method-is-best" id="toc-which-decoding-method-is-best" class="nav-link" data-scroll-target="#which-decoding-method-is-best">Which Decoding Method Is Best?</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -223,6 +260,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
@@ -1314,7 +1357,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       <div class="nav-footer-center">
         <ul class="footer-items list-unstyled">
     <li class="nav-item">
- Copyright 2022, Christian J. Mills
+ Copyright 2023, Christian J. Mills
   </li>  
 </ul>
       </div>

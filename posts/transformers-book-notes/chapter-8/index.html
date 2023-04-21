@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Christian Mills">
 <meta name="dcterms.date" content="2022-04-14">
 <meta name="description" content="Chapter 8 covers different methods to make transformer models more efficient in production.">
 
@@ -146,7 +147,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -199,7 +200,59 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#making-transformers-efficient-in-production" id="toc-making-transformers-efficient-in-production" class="nav-link active" data-scroll-target="#making-transformers-efficient-in-production">Making Transformers Efficient in Production</a></li>
+  <li><a href="#project-optimize-an-intent-detection-model" id="toc-project-optimize-an-intent-detection-model" class="nav-link" data-scroll-target="#project-optimize-an-intent-detection-model">Project: Optimize an Intent Detection Model</a>
+  <ul class="collapse">
+  <li><a href="#the-model" id="toc-the-model" class="nav-link" data-scroll-target="#the-model">The Model</a></li>
+  <li><a href="#clinc150-dataset" id="toc-clinc150-dataset" class="nav-link" data-scroll-target="#clinc150-dataset">CLINC150 Dataset</a></li>
+  </ul></li>
+  <li><a href="#creating-a-performance-benchmark" id="toc-creating-a-performance-benchmark" class="nav-link" data-scroll-target="#creating-a-performance-benchmark">Creating a Performance Benchmark</a></li>
+  <li><a href="#making-models-smaller-via-knowledge-distillation" id="toc-making-models-smaller-via-knowledge-distillation" class="nav-link" data-scroll-target="#making-models-smaller-via-knowledge-distillation">Making Models Smaller via Knowledge Distillation</a>
+  <ul class="collapse">
+  <li><a href="#knowledge-distillation-for-fine-tuning" id="toc-knowledge-distillation-for-fine-tuning" class="nav-link" data-scroll-target="#knowledge-distillation-for-fine-tuning">Knowledge Distillation for Fine-Tuning</a></li>
+  <li><a href="#fracexp-left-z_ix-rightsum_jexp-left-z_ix-right" id="toc-fracexp-left-z_ix-rightsum_jexp-left-z_ix-right" class="nav-link" data-scroll-target="#fracexp-left-z_ix-rightsum_jexp-left-z_ix-right"><span class="math display">\[\frac{exp \left( z_{i}(x) \right)}{\sum_{j}{exp \left( z_{i}(x) \right)}}\]</span></a></li>
+  <li><a href="#p_ix-fracexp-left-frac-z_ix-t-rightsum_jexp-left-frac-z_ix-t-right" id="toc-p_ix-fracexp-left-frac-z_ix-t-rightsum_jexp-left-frac-z_ix-t-right" class="nav-link" data-scroll-target="#p_ix-fracexp-left-frac-z_ix-t-rightsum_jexp-left-frac-z_ix-t-right"><span class="math display">\[p_{i}(x) = \frac{exp \left( \frac{ z_{i}(x) }{T} \right)}{\sum_{j}{exp \left( \frac{ z_{i}(x) }{T} \right)}}\]</span></a></li>
+  <li><a href="#d_klpq-sum_ip_ixlogfracp_ixq_ix" id="toc-d_klpq-sum_ip_ixlogfracp_ixq_ix" class="nav-link" data-scroll-target="#d_klpq-sum_ip_ixlogfracp_ixq_ix"><span class="math display">\[D_{KL}(p,q) = \sum_{i}{p_{i}(x)\log{\frac{p_{i}(x)}{q_{i}(x)}}}\]</span></a></li>
+  <li><a href="#l_kd-t2d_kl" id="toc-l_kd-t2d_kl" class="nav-link" data-scroll-target="#l_kd-t2d_kl"><span class="math display">\[L_{KD} = T^{2}D_{KL}\]</span></a></li>
+  <li><a href="#l_student-alpha-l_ce-left-1---alpha-rightl_kd" id="toc-l_student-alpha-l_ce-left-1---alpha-rightl_kd" class="nav-link" data-scroll-target="#l_student-alpha-l_ce-left-1---alpha-rightl_kd"><span class="math display">\[L_{student} = \alpha L_{CE} \ + \left( 1 - \alpha \right)L_{KD}\]</span></a></li>
+  <li><a href="#knowledge-distillation-for-pretraining" id="toc-knowledge-distillation-for-pretraining" class="nav-link" data-scroll-target="#knowledge-distillation-for-pretraining">Knowledge Distillation for Pretraining</a></li>
+  <li><a href="#l_distilbert-alpha-l_mlm-beta-l_kd-y-loss_cos" id="toc-l_distilbert-alpha-l_mlm-beta-l_kd-y-loss_cos" class="nav-link" data-scroll-target="#l_distilbert-alpha-l_mlm-beta-l_kd-y-loss_cos"><span class="math display">\[L_{DistilBERT} = \alpha L_{mlm} \ + \ \beta L_{KD} \ + \ y \ Loss_{cos}\]</span></a></li>
+  <li><a href="#creating-a-knowledge-distillation-trainer" id="toc-creating-a-knowledge-distillation-trainer" class="nav-link" data-scroll-target="#creating-a-knowledge-distillation-trainer">Creating a Knowledge Distillation Trainer</a></li>
+  <li><a href="#ly_textpred-y_texttrue-y_texttrue-cdot-log-fracy_texttruey_textpred-y_texttrue-cdot-log-y_texttrue---log-y_textpred" id="toc-ly_textpred-y_texttrue-y_texttrue-cdot-log-fracy_texttruey_textpred-y_texttrue-cdot-log-y_texttrue---log-y_textpred" class="nav-link" data-scroll-target="#ly_textpred-y_texttrue-y_texttrue-cdot-log-fracy_texttruey_textpred-y_texttrue-cdot-log-y_texttrue---log-y_textpred"><span class="math display">\[L(y_{\text{pred}},\ y_{\text{true}}) = y_{\text{true}} \cdot \log \frac{y_{\text{true}}}{y_{\text{pred}}} = y_{\text{true}} \cdot (\log y_{\text{true}} - \log y_{\text{pred}})\]</span></a></li>
+  <li><a href="#choosing-a-good-student-initialization" id="toc-choosing-a-good-student-initialization" class="nav-link" data-scroll-target="#choosing-a-good-student-initialization">Choosing a Good Student Initialization</a></li>
+  <li><a href="#finding-good-hyperparameters-with-optuna" id="toc-finding-good-hyperparameters-with-optuna" class="nav-link" data-scroll-target="#finding-good-hyperparameters-with-optuna">Finding Good Hyperparameters with Optuna</a></li>
+  <li><a href="#benchmarking-our-distilled-model" id="toc-benchmarking-our-distilled-model" class="nav-link" data-scroll-target="#benchmarking-our-distilled-model">Benchmarking Our Distilled Model</a></li>
+  </ul></li>
+  <li><a href="#a-primer-on-floating-point-and-fixed-point-numbers" id="toc-a-primer-on-floating-point-and-fixed-point-numbers" class="nav-link" data-scroll-target="#a-primer-on-floating-point-and-fixed-point-numbers">A Primer on Floating-Point and Fixed-Point Numbers</a></li>
+  <li><a href="#making-models-faster-with-quantization" id="toc-making-models-faster-with-quantization" class="nav-link" data-scroll-target="#making-models-faster-with-quantization">Making Models Faster with Quantization</a>
+  <ul class="collapse">
+  <li><a href="#f-left-fracf_max---f_minq_max---q_min-rightq-z-sq-z" id="toc-f-left-fracf_max---f_minq_max---q_min-rightq-z-sq-z" class="nav-link" data-scroll-target="#f-left-fracf_max---f_minq_max---q_min-rightq-z-sq-z"><span class="math display">\[f = \left( \frac{f_{max} - f_{min}}{q_{max} - q_{min}} \right)(q-Z) = S(q-Z)\]</span></a></li>
+  <li><a href="#approaches-to-quantization" id="toc-approaches-to-quantization" class="nav-link" data-scroll-target="#approaches-to-quantization">Approaches to Quantization</a></li>
+  </ul></li>
+  <li><a href="#optimizing-inference-with-onnx-and-the-onnx-runtime" id="toc-optimizing-inference-with-onnx-and-the-onnx-runtime" class="nav-link" data-scroll-target="#optimizing-inference-with-onnx-and-the-onnx-runtime">Optimizing Inference with ONNX and the ONNX Runtime</a>
+  <ul class="collapse">
+  <li><a href="#other-accelerators" id="toc-other-accelerators" class="nav-link" data-scroll-target="#other-accelerators">Other Accelerators</a></li>
+  <li><a href="#convert-model-to-onnx-format" id="toc-convert-model-to-onnx-format" class="nav-link" data-scroll-target="#convert-model-to-onnx-format">Convert model to ONNX format</a></li>
+  <li><a href="#create-custom-pipeline" id="toc-create-custom-pipeline" class="nav-link" data-scroll-target="#create-custom-pipeline">Create Custom Pipeline</a></li>
+  </ul></li>
+  <li><a href="#making-models-sparser-with-weight-pruning" id="toc-making-models-sparser-with-weight-pruning" class="nav-link" data-scroll-target="#making-models-sparser-with-weight-pruning">Making Models Sparser with Weight Pruning</a>
+  <ul class="collapse">
+  <li><a href="#sparsity-in-deep-neural-networks" id="toc-sparsity-in-deep-neural-networks" class="nav-link" data-scroll-target="#sparsity-in-deep-neural-networks">Sparsity in Deep Neural Networks</a></li>
+  <li><a href="#weight-pruning-methods" id="toc-weight-pruning-methods" class="nav-link" data-scroll-target="#weight-pruning-methods">Weight Pruning Methods</a></li>
+  <li><a href="#top_ks_ij-1-text-if-s_ij-text-in-top-k-percent-else-0" id="toc-top_ks_ij-1-text-if-s_ij-text-in-top-k-percent-else-0" class="nav-link" data-scroll-target="#top_ks_ij-1-text-if-s_ij-text-in-top-k-percent-else-0"><span class="math display">\[Top_{k}(S)_{ij} = 1 \text{ if } S_{ij} \text{ in top k percent else } 0\]</span></a></li>
+  <li><a href="#a_i-sum_kw_ikm_ikx_k" id="toc-a_i-sum_kw_ikm_ikx_k" class="nav-link" data-scroll-target="#a_i-sum_kw_ikm_ikx_k"><span class="math display">\[a_{i} = \sum_{k}{W_{ik}M_{ik}x_{k}}\]</span></a></li>
+  <li><a href="#s_t-s_f-left-s_i---s_f-right-left-1---fract---t_0ndelta-t-right3-for-t-in-left-t_0t_0-delta-t-ldots-t_0-ndelta-t-right" id="toc-s_t-s_f-left-s_i---s_f-right-left-1---fract---t_0ndelta-t-right3-for-t-in-left-t_0t_0-delta-t-ldots-t_0-ndelta-t-right" class="nav-link" data-scroll-target="#s_t-s_f-left-s_i---s_f-right-left-1---fract---t_0ndelta-t-right3-for-t-in-left-t_0t_0-delta-t-ldots-t_0-ndelta-t-right"><span class="math display">\[s_{t} = s_{f} + \left( s_{i} - s_{f} \right) \left( 1 - \frac{t - t_{0}}{N\Delta t} \right)^{3} for t \in \left\{ t_{0},t_{0} + \Delta t, \ldots, t_{0} + N\Delta t \right\}\]</span></a></li>
+  <li><a href="#m-top_ks" id="toc-m-top_ks" class="nav-link" data-scroll-target="#m-top_ks"><span class="math display">\[M = Top_{k}(S)\]</span></a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -223,6 +276,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
@@ -3331,7 +3390,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       <div class="nav-footer-center">
         <ul class="footer-items list-unstyled">
     <li class="nav-item">
- Copyright 2022, Christian J. Mills
+ Copyright 2023, Christian J. Mills
   </li>  
 </ul>
       </div>

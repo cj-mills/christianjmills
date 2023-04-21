@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Christian Mills">
 <meta name="dcterms.date" content="2022-04-22">
 <meta name="description" content="Chapter 9 covers how to deal with few to no labels by training a model that automatically tags GitHub issues for the Hugging Face Transformers library.">
 
@@ -146,7 +147,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -199,7 +200,44 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#dealing-with-few-to-no-labels" id="toc-dealing-with-few-to-no-labels" class="nav-link active" data-scroll-target="#dealing-with-few-to-no-labels">Dealing with Few to No Labels</a></li>
+  <li><a href="#project-build-a-github-issues-tagger" id="toc-project-build-a-github-issues-tagger" class="nav-link" data-scroll-target="#project-build-a-github-issues-tagger">Project: Build a GitHub Issues Tagger</a>
+  <ul class="collapse">
+  <li><a href="#getting-the-data" id="toc-getting-the-data" class="nav-link" data-scroll-target="#getting-the-data">Getting the Data</a></li>
+  <li><a href="#preparing-the-data" id="toc-preparing-the-data" class="nav-link" data-scroll-target="#preparing-the-data">Preparing the Data</a></li>
+  <li><a href="#creating-training-sets" id="toc-creating-training-sets" class="nav-link" data-scroll-target="#creating-training-sets">Creating Training Sets</a></li>
+  <li><a href="#creating-training-slices" id="toc-creating-training-slices" class="nav-link" data-scroll-target="#creating-training-slices">Creating Training Slices</a></li>
+  </ul></li>
+  <li><a href="#implementing-a-naive-bayesline" id="toc-implementing-a-naive-bayesline" class="nav-link" data-scroll-target="#implementing-a-naive-bayesline">Implementing a Naive Bayesline</a></li>
+  <li><a href="#working-with-no-labeled-data" id="toc-working-with-no-labeled-data" class="nav-link" data-scroll-target="#working-with-no-labeled-data">Working with No Labeled Data</a>
+  <ul class="collapse">
+  <li><a href="#zero-shot-fill-mask-prediction" id="toc-zero-shot-fill-mask-prediction" class="nav-link" data-scroll-target="#zero-shot-fill-mask-prediction">Zero-shot Fill-Mask Prediction</a></li>
+  <li><a href="#text-entailment" id="toc-text-entailment" class="nav-link" data-scroll-target="#text-entailment">Text Entailment</a></li>
+  </ul></li>
+  <li><a href="#working-with-a-few-labels" id="toc-working-with-a-few-labels" class="nav-link" data-scroll-target="#working-with-a-few-labels">Working with a Few Labels</a>
+  <ul class="collapse">
+  <li><a href="#data-augmentation" id="toc-data-augmentation" class="nav-link" data-scroll-target="#data-augmentation">Data Augmentation</a></li>
+  <li><a href="#using-embeddings-as-a-lookup-table" id="toc-using-embeddings-as-a-lookup-table" class="nav-link" data-scroll-target="#using-embeddings-as-a-lookup-table">Using Embeddings as a Lookup Table</a></li>
+  <li><a href="#efficient-similarity-search-with-faiss" id="toc-efficient-similarity-search-with-faiss" class="nav-link" data-scroll-target="#efficient-similarity-search-with-faiss">Efficient Similarity Search with FAISS</a></li>
+  <li><a href="#fine-tuning-a-vanilla-transformer" id="toc-fine-tuning-a-vanilla-transformer" class="nav-link" data-scroll-target="#fine-tuning-a-vanilla-transformer">Fine-Tuning a Vanilla Transformer</a></li>
+  <li><a href="#in-context-and-few-shot-learning-with-prompts" id="toc-in-context-and-few-shot-learning-with-prompts" class="nav-link" data-scroll-target="#in-context-and-few-shot-learning-with-prompts">In-Context and Few-Shot Learning with Prompts</a></li>
+  </ul></li>
+  <li><a href="#leveraging-unlabeled-data" id="toc-leveraging-unlabeled-data" class="nav-link" data-scroll-target="#leveraging-unlabeled-data">Leveraging Unlabeled Data</a>
+  <ul class="collapse">
+  <li><a href="#fine-tuning-a-language-model" id="toc-fine-tuning-a-language-model" class="nav-link" data-scroll-target="#fine-tuning-a-language-model">Fine-Tuning a Language Model</a></li>
+  <li><a href="#fine-tuning-a-classifier" id="toc-fine-tuning-a-classifier" class="nav-link" data-scroll-target="#fine-tuning-a-classifier">Fine-Tuning a Classifier</a></li>
+  <li><a href="#advanced-methods" id="toc-advanced-methods" class="nav-link" data-scroll-target="#advanced-methods">Advanced Methods</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -223,6 +261,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
@@ -4650,7 +4694,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       <div class="nav-footer-center">
         <ul class="footer-items list-unstyled">
     <li class="nav-item">
- Copyright 2022, Christian J. Mills
+ Copyright 2023, Christian J. Mills
   </li>  
 </ul>
       </div>
