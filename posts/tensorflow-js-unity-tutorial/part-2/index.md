@@ -1,5 +1,5 @@
 ---
-title: In-Browser Hand Gesture Recognition for Unity with Fastai and TensorFlow.js Pt. 2
+title: Using Fastai and TensorFlow.js for Hand Gesture Recognition in Unity Pt. 2
 date: 2022-10-5
 image: /images/empty.gif
 title-block-categories: true
@@ -42,7 +42,7 @@ categories: [fastai, unity, tensorflow, webgl]
 
 ## Overview
 
-[Part 1](../part-1) covered training a hand gesture classifier using the [fastai library](https://docs.fast.ai/) and exporting it to [TensorFlow.js](https://www.tensorflow.org/js/). This post covers implementing a [jslib plugin](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html) in a Unity project to perform inference with the trained model.
+In Part 2 of this tutorial series, we first install Unity Hub, download a Unity Editor, and create a new Unity project. Next, we will import any required assets and add a JavaScript utility file and [jslib plugin](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). We will then create an image classifier script to use our trained model in Unity and set up the Unity scene to use it. Finally, we will test our project in a browser. By the end of this post, you will have a working TensorFlow.js plugin for Unity that you can use to recognize hand gestures in your projects.
 
 
 
@@ -1611,7 +1611,7 @@ The smaller ResNet18 model reaches the display's 60fps max refresh rate but like
 
 ## Summary
 
-This post covered implementing a TensorFlow.js plugin in a Unity project to perform inference in a web browser. The performance was well below native inference options but still useable with lightweight models. The last part of this tutorial series covers hosting the WebGL application for free using [GitHub Pages](https://pages.github.com/).
+In this post, we installed Unity Hub, downloaded a Unity Editor, and created a new Unity project. We then imported the required assets and added a JavaScript utility file and jslib plugin. Next, we created an image classifier script to use our trained model in Unity and set up the Unity scene to use it. Finally, we tested our project in a browser. With this completed, we are ready to move on to Part 3 of this tutorial series, where we will host our Unity project as a live demo on [GitHub Pages](https://pages.github.com/).
 
 
 

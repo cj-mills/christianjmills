@@ -1,5 +1,5 @@
 ---
-title: Object Detection for Unity With ONNX Runtime and DirectML Pt. 1
+title: Real-Time Object Detection in Unity With ONNX and DirectML Pt. 1
 date: 8-18-2022
 image: ../social-media/cover.jpg
 title-block-categories: true
@@ -54,11 +54,11 @@ open-graph:
 
 ## Introduction
 
-A [previous tutorial series](../../icevision-openvino-unity-tutorial/part-1/) covered training an object detection model using [IceVision](https://airctic.com/0.12.0/) and creating an [OpenVINO](https://docs.openvino.ai/latest/index.html) plugin for the [Unity](https://unity.com/) game engine to perform inference with the trained model. OpenVINO can provide fast inference speeds but only targets Intel hardware. Not everyone has an Intel CPU, and discrete Intel GPUs are not yet widely available.
+In this two-part tutorial series, I will show you how to implement real-time object detection in [Unity](https://unity.com/) using [ONNX Runtime](https://onnxruntime.ai/docs/) and [DirectML](https://docs.microsoft.com/en-us/windows/ai/directml/dml). ONNX Runtime is a cross-platform model accelerator that works with several hardware acceleration libraries. DirectML is a hardware-accelerated DirectX 12 library for machine learning on Windows.
 
-This follow-up tutorial covers building a plugin using [ONNX Runtime](https://onnxruntime.ai/docs/) and [DirectML](https://docs.microsoft.com/en-us/windows/ai/directml/dml) to enable inference on non-Intel CPUs and GPUs. ONNX Runtime is a cross-platform model accelerator that works with several hardware acceleration libraries. DirectML is a hardware-accelerated DirectX 12 library for machine learning on Windows.
+In Part 1, we will create a dynamic link library (DLL) file in Visual Studio to perform object detection with ONNX Runtime and DirectML. In Part 2, we will integrate this DLL file into a Unity project and perform real-time object detection. By the end of this tutorial series, you will have the skills and knowledge to leverage ONNX Runtime and DirectML in your Unity projects.
 
-We'll use the ONNX model [exported](../../icevision-openvino-unity-tutorial/part-1/#export-the-model) in the original tutorial, so no modifications to the training code are required.
+This tutorial uses an ONNX model exported in a [previous tutorial series](../../icevision-openvino-unity-tutorial/part-1/), so no modifications to the training code are required.
 
 - **Model Training Tutorial:** [End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1](../../icevision-openvino-unity-tutorial/part-1/)
 
@@ -71,7 +71,7 @@ We'll use the ONNX model [exported](../../icevision-openvino-unity-tutorial/part
 
 ## Overview
 
-Part 1 covers creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform inference with the object detection model.
+In Part 1 of this tutorial series, we will create a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform object detection using ONNX Runtime and DirectML. We will first download OpenCV, then create a DLL project and configure it. Next, we will include dependency directories and link libraries and set up post-build events. After that, we will install ONNX Runtime and update the precompiled header and dllmain files. Finally, we will build the project to generate the DLL file. By the end of this post, you will have a DLL file ready to be integrated into a Unity project.
 
 > **Important:** This post assumes [Visual Studio](https://visualstudio.microsoft.com/downloads/) is present on your system.
 
@@ -1100,7 +1100,7 @@ We'll need to copy all the DLL files in this folder to the Unity project.
 
 ## Summary
 
-This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference with a YOLOX model using [ONNX Runtime](https://onnxruntime.ai/docs/) and [DirectML](https://docs.microsoft.com/en-us/windows/ai/directml/dml). In part 2, we'll build a project in [Unity](https://unity.com/) that uses this DLL.
+In this post, we created a dynamic link library (DLL) file in Visual Studio to perform object detection using ONNX Runtime and DirectML. We started by downloading OpenCV and creating a DLL project. Then, we configured the project by adding include directories, linking libraries, and setting up post-build events. After, we installed ONNX Runtime and updated the precompiled header and dllmain files. Finally, we built the project to generate the DLL file. In Part 2, we will cover how to integrate this DLL file into a Unity project and perform real-time object detection.
 
 
 

@@ -1,5 +1,5 @@
 ---
-title: End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 1
+title: A Step-by-Step Guide to Object Detection in Unity with IceVision and OpenVINO Pt. 1
 date: 2022-8-8
 image: ../social-media/cover.jpg
 title-block-categories: true
@@ -55,14 +55,15 @@ open-graph:
 
 ## Introduction
 
-In this tutorial series, we will walk through training an object detector using the [IceVision](https://airctic.com/0.12.0/) library. We will then implement the trained model in a [Unity](https://unity.com/) game engine project using [OpenVINO](https://docs.openvino.ai/latest/index.html), an open-source toolkit for optimizing model inference.
+In this three-part tutorial series, we will explore how to use [IceVision](https://airctic.com/0.11.0/) and [OpenVINO](https://docs.openvino.ai/latest/) to perform end-to-end object detection in [Unity](https://unity.com/). In part 1, we will train a [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) model using IceVision and export it to OpenVINO. In part 2, we will create a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform object detection with a YOLOX model using OpenVINO. Finally, in part 3, we will integrate the trained model into a Unity project to perform real-time object detection. By the end of this series, you will have a working object detection system that you can use in your Unity projects.
 
 **Unity Demo**
-<center>
-	<iframe src="./videos/HaGRID-demo.mp4" width=100% max-width=100% height=480></iframe>
-</center>
 
-The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset). The dataset contains annotated sample images for 18 distinct hand gestures and an additional `no_gesture` class to account for idle hands.
+![](./videos/HaGRID-demo-1.mp4){fig-align="center"}
+
+
+
+The tutorial uses a downscaled subsample of the [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset), which contains annotated sample images for 18 distinct hand gestures and an additional `no_gesture` class to account for idle hands.
 
 
 <div>
@@ -154,12 +155,14 @@ The tutorial uses a downscaled subsample of [HaGRID](https://github.com/hukenovs
 </details>
 </div>
 
-One could use a model trained on this dataset to map hand gestures and locations to user input in Unity.
+One could use a model trained on this dataset to allow users to control a Unity application using hand gestures.
 
 
 ## Overview
 
-Part 1 covers finetuning a [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) Tiny model using the IceVision library and exporting it to OpenVINO's [Intermediate Representation](https://docs.openvino.ai/latest/openvino_docs_MO_DG_IR_and_opsets.html) (IR) format. The training code is available in the Jupyter notebook linked below, and links for training on [Google Colab](https://colab.research.google.com/?utm_source=scs-index) and [Kaggle](https://www.kaggle.com/docs/notebooks) are also available below.
+In part 1 of this tutorial series, we will learn how to train a YOLOX Tiny model using IceVision and export it to OpenVINO's Intermediate Representation ([IR](https://docs.openvino.ai/latest/openvino_docs_MO_DG_IR_and_opsets.html)) format. We will start by setting up a [Conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) and importing the necessary dependencies. Then, we will configure the [Kaggle API](https://github.com/Kaggle/kaggle-api) to download the dataset we will use to train our model. After inspecting the dataset, we will create a parser to process the training samples and define DataLoader objects. Then, we will fine-tune the model and export it. Finally, we will perform inference with the exported model and define post-processing steps for the model output. We will then generate a colormap to visualize model predictions. By the end of this post, you will have a trained YOLOX model that you can deploy in your applications.
+
+You can find links to view the training code and run it on [Google Colab](https://colab.research.google.com/?utm_source=scs-index) and [Kaggle](https://www.kaggle.com/docs/notebooks) below.
 
 | Jupyter Notebook             | Colab                                                        | Kaggle                                                       |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -190,19 +193,33 @@ You might need to install the CUDA Toolkit on your system if you plan to run the
 **Conda environment setup steps**
 
 ```bash
+# create a new conda environment
 conda create --name icevision python==3.8
+# activate the environment
 conda activate icevision
+# install PyTorch and torchvision
 pip install torch==1.10.0+cu111 torchvision==0.11.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
+# install mmcv-full
 pip install mmcv-full==1.3.17 -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.10.0/index.html
+# install mmdet
 pip install mmdet==2.17.0
+# install icevision
 pip install icevision==0.11.0
+# install icedata
 pip install icedata==0.5.1
+# install setuptools
 pip install setuptools==59.5.0
+# install OpenVINO developer tools
 pip install openvino-dev
+# install package for generating visually distinct colours
 pip install distinctipy
+# install jupyter
 pip install jupyter
+# install onnxruntime
 pip install onnxruntime
+# install onnx-simplifier
 pip install onnx-simplifier
+# install the kaggle api
 pip install kaggle
 ```
 
@@ -234,20 +251,26 @@ When running the training code on Google Colab and Kaggle Notebooks, we need to 
 
 ## Import Dependencies
 
-IceVision will download some additional resources the first time we import the library.
+We will start by importing the IceVision library and configuring Pandas. When you import the IceVision library for the first time, it will  automatically download some additional resources that it needs to function correctly.
 
 **Import IceVision library**
 
 
 ```python
+# Import all the necessary modules from the icevision package
 from icevision.all import *
 ```
 
 **Import and configure Pandas**
 
 ```python
+# Import the pandas package
 import pandas as pd
+
+# Set the max column width to None
 pd.set_option('max_colwidth', None)
+
+# Set the max number of rows and columns to None
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 ```
@@ -272,17 +295,25 @@ creds = '{"username":"","key":""}'
 ```
 
 **Save Kaggle credentials if none are present**
+
+
+
 * **Source:** [https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb](https://github.com/fastai/fastbook/blob/master/09_tabular.ipynb)
 
 ------
 
 
 ```python
+# Set the path to the kaggle.json file
 cred_path = Path('~/.kaggle/kaggle.json').expanduser()
-# Save API key to a json file if it does not already exist
+
+# Check if the file already exists
 if not cred_path.exists():
+    # Create the directory if it does not exist
     cred_path.parent.mkdir(exist_ok=True)
+    # Save the API key to the file
     cred_path.write_text(creds)
+    # Set the file permissions to be readable and writable by the current user
     cred_path.chmod(0o600)
 ```
 
@@ -290,6 +321,7 @@ if not cred_path.exists():
 
 
 ```python
+# Import the API module from the kaggle package
 from kaggle import api
 ```
 
@@ -302,23 +334,35 @@ Now that we have our Kaggle credentials set, we need to define the dataset and w
 * [HaGRID Sample 30k 384p](https://www.kaggle.com/datasets/innominate817/hagrid-sample-30k-384p)
 * [HaGRID Sample 120k 384p](https://www.kaggle.com/datasets/innominate817/hagrid-sample-120k-384p)
 
-**Define path to dataset**
-
 We'll use the default archive and data folders for the fastai library (installed with IceVision) to store the compressed and uncompressed datasets.
+
+**Define path to dataset**
 
 
 ```python
+# Import the URLs object from the fastai.data.external module
 from fastai.data.external import URLs
 ```
 
 
 ```python
+# Set the name of the dataset
 dataset_name = 'hagrid-sample-30k-384p'
 # dataset_name = 'hagrid-sample-120k-384p'
+
+# Construct the Kaggle dataset name by combining the username and dataset name
 kaggle_dataset = f'innominate817/{dataset_name}'
+
+# Get the path to the directory where datasets are stored
 archive_dir = URLs.path()
+
+# Create the path to the data directory
 dataset_dir = archive_dir/'../data'
+
+# Create the path to the zip file that contains the dataset
 archive_path = Path(f'{archive_dir}/{dataset_name}.zip')
+
+# Create the path to the directory where the dataset will be extracted
 dataset_path = Path(f'{dataset_dir}/{dataset_name}')
 ```
 
@@ -327,22 +371,46 @@ dataset_path = Path(f'{dataset_dir}/{dataset_name}')
 
 ```python
 def file_extract(fname, dest=None):
-    "Extract `fname` to `dest` using `tarfile` or `zipfile`."
+    """
+    Extract the specified file to the destination directory using `tarfile` or `zipfile`.
+    
+    Args:
+        fname (str): The path to the file to be extracted.
+        dest (str): The path to the directory where the file will be extracted. If not specified, the file will be extracted to the same directory as the source file.
+        
+    Returns:
+        None
+        
+    Raises:
+        Exception: If the file has an unrecognized file extension.
+    """
+    # Set the destination directory to the parent directory of the file if not specified
     if dest is None: dest = Path(fname).parent
+    
+    # Convert the file path to a string
     fname = str(fname)
-    if   fname.endswith('gz'):  tarfile.open(fname, 'r:gz').extractall(dest)
-    elif fname.endswith('zip'): zipfile.ZipFile(fname     ).extractall(dest)
-    else: raise Exception(f'Unrecognized archive: {fname}')
+    
+    # Check the file extension and extract the file using the appropriate module
+    if fname.endswith('gz'):
+        tarfile.open(fname, 'r:gz').extractall(dest)
+    elif fname.endswith('zip'):
+        zipfile.ZipFile(fname).extractall(dest)
+    else:
+        raise Exception(f'Unrecognized archive: {fname}')
 ```
-
-**Download the dataset if it is not present**
 
 The archive file for the 30K dataset is 4GB, so we don't want to download it more than necessary.
 
+**Download the dataset if it is not present**
+
 
 ```python
+# Check if the dataset zip file already exists
 if not archive_path.exists():
+    # Download the dataset from Kaggle
     api.dataset_download_cli(kaggle_dataset, path=archive_dir)
+    
+    # Extract the dataset zip file to the data directory
     file_extract(fname=archive_path, dest=dataset_dir)
 ```
 
@@ -352,14 +420,25 @@ if not archive_path.exists():
 
 ## Inspect the Dataset
 
-We can start inspecting the dataset once it finishes downloading.
+We can start inspecting the dataset once it finishes downloading. In this step, we will get the file paths for the images and annotations and examine one of the training images. That will give us a better understanding of the dataset and its structure.
+
+**Define paths to image and annotation folders**
 
 
 ```python
+# Create a list of the items in the 'dataset_path' directory
 dir_content = list(dataset_path.ls())
+
+# Get the path of the 'ann_train_val' directory
 annotation_dir = dataset_path/'ann_train_val'
+
+# Remove the 'ann_train_val' directory from the list of items
 dir_content.remove(annotation_dir)
+
+# Get the path of the remaining directory, which is assumed to be the image directory
 img_dir = dir_content[0]
+
+# Print the paths of the annotation and image directories
 annotation_dir, img_dir
 ```
 ```text
@@ -369,13 +448,17 @@ annotation_dir, img_dir
 
 
 
-**Inspect the annotation folder**
-
 The bounding box annotations for each image are stored in JSON files organized by object class. The files contain annotations for all 552,992 images from the full HaGRID dataset.
+
+**Inspect the annotation folder**
 
 
 ```python
-pd.DataFrame([file.name for file in list(annotation_dir.ls())])
+# Get a list of files in the 'annotation_dir' directory
+file_list = list(annotation_dir.ls())
+
+# Display the names of the files using a Pandas DataFrame
+pd.DataFrame([file.name for file in file_list])
 ```
 
 
@@ -463,15 +546,21 @@ pd.DataFrame([file.name for file in list(annotation_dir.ls())])
   </tbody>
 </table>
 </div>
+----
 
 
-**Inspect the image folder**
 
 The sample images are stored in folders separated by object class.
 
+**Inspect the image folder**
+
 
 ```python
-pd.DataFrame([folder.name for folder in list(img_dir.ls())])
+# Get a list of folders in the 'img_dir' directory
+folder_list = list(img_dir.ls())
+
+# Display the names of the folders using a Pandas DataFrame
+pd.DataFrame([folder.name for folder in folder_list])
 ```
 
 
@@ -559,15 +648,18 @@ pd.DataFrame([folder.name for folder in list(img_dir.ls())])
   </tbody>
 </table>
 </div>
+----
+
 
 
 **Get image file paths**
 
-We can use the `get_image_file` method to get the full paths for every image file in the image directory.
-
 
 ```python
+# Get a list of image files in the 'img_dir' directory
 files = get_image_files(img_dir)
+
+# Print the number of image files in the list
 len(files)
 ```
 
@@ -582,7 +674,11 @@ len(files)
 
 
 ```python
-pd.DataFrame([files[0], files[-1]])
+# Get the first and last file in the 'files' list
+file1, file2 = files[0], files[-1]
+
+# Display the first and last files using a Pandas DataFrame
+pd.DataFrame([file1, file2])
 ```
 
 <div style="overflow-x:auto; max-height:500px">
@@ -607,15 +703,22 @@ pd.DataFrame([files[0], files[-1]])
 </div>
 
 
-**Inspect one of the training images**
-
 The sample images are all downscaled to 384p.
+
+**Inspect one of the training images**
 
 
 ```python
+# Import the PIL library
 import PIL
+
+# Open the first file in the 'files' list as a RGB image
 img = PIL.Image.open(files[0]).convert('RGB')
+
+# Print the dimensions of the image
 print(f"Image Dims: {img.shape}")
+
+# Show the image
 img
 ```
 ```text
@@ -628,21 +731,53 @@ Image Dims: (512, 384)
 
 
 
-**Create a dictionary that maps image names to file paths**
+To make it easier to work with the dataset, we will create a dictionary  that maps image names to file paths. The dictionary will allow us to  retrieve the file path for a given image efficiently.
 
-Let's create a dictionary to quickly obtain full image file paths, given a file name. We'll need this later.
+**Create a dictionary that maps image names to file paths**
 
 
 ```python
-img_dict = {file.name.split('.')[0] : file for file in files}
-list(img_dict.items())[0]
+# Create a dictionary where the keys are the filenames without the file extensions of the files in the 'files' list,
+# and the values are the file paths
+img_dict = {file.stem : file for file in files}
+
+# Display the first five entries from the dictionary using a Pandas DataFrame
+pd.DataFrame.from_dict(img_dict, orient='index').head()
 ```
 
-
-```text
-('00005c9c-3548-4a8f-9d0b-2dd4aff37fc9',
- Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00005c9c-3548-4a8f-9d0b-2dd4aff37fc9.jpg'))
-```
+<div style="overflow-x:auto; max-height:500px">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>00005c9c-3548-4a8f-9d0b-2dd4aff37fc9</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00005c9c-3548-4a8f-9d0b-2dd4aff37fc9.jpg</td>
+    </tr>
+    <tr>
+      <th>0020a3db-82d8-47aa-8642-2715d4744db5</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/0020a3db-82d8-47aa-8642-2715d4744db5.jpg</td>
+    </tr>
+    <tr>
+      <th>004ac93f-0f7c-49a4-aadc-737e0ad4273c</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/004ac93f-0f7c-49a4-aadc-737e0ad4273c.jpg</td>
+    </tr>
+    <tr>
+      <th>006cac69-d3f0-47f9-aac9-38702d038ef1</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/006cac69-d3f0-47f9-aac9-38702d038ef1.jpg</td>
+    </tr>
+    <tr>
+      <th>00973fac-440e-4a56-b60c-2a06d5fb155d</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00973fac-440e-4a56-b60c-2a06d5fb155d.jpg</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+----
 
 
 
@@ -650,49 +785,124 @@ list(img_dict.items())[0]
 
 
 ```python
+# Import the 'os' and 'glob' modules
 import os
 from glob import glob
 ```
 
 
 ```python
+# Get a list of paths to JSON files in the 'annotation_dir' directory
 annotation_paths = glob(os.path.join(annotation_dir, "*.json"))
-annotation_paths
+
+# Display the JSON file paths using a Pandas DataFrame
+pd.DataFrame(annotation_paths)
 ```
 
+<div style="overflow-x:auto; max-height:500px">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/call.json</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/palm.json</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/rock.json</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/stop_inverted.json</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/two_up.json</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/four.json</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/three.json</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/stop.json</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/one.json</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/three2.json</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/peace_inverted.json</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/ok.json</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/like.json</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/fist.json</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/mute.json</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/peace.json</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/two_up_inverted.json</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/dislike.json</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+----
 
-```text
-['/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/fist.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/one.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/rock.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/stop_inverted.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/like.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/two_up.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/two_up_inverted.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/peace.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/stop.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/four.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/dislike.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/palm.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/call.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/three2.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/ok.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/mute.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/three.json',
- '/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/ann_train_val/peace_inverted.json']
-```
 
 
+After getting the list of annotation file paths, we will create an annotation DataFrame that contains all of the annotation data for the dataset. This DataFrame will allow us to manipulate and query the annotations more easily. We'll then filter out annotations for images not present in the current subsample.
 
 **Create annotations dataframe**
 
-Next, we'll read all the image annotations into a single Pandas DataFrame and filter out annotations for images not present in the current subsample.
-
 
 ```python
+# Create a generator that yields Pandas DataFrames containing the data from each JSON file
 cls_dataframes = (pd.read_json(f).transpose() for f in annotation_paths)
+
+# Concatenate the DataFrames into a single DataFrame
 annotation_df = pd.concat(cls_dataframes, ignore_index=False)
+
+# Keep only the rows that correspond to the filenames in the 'img_dict' dictionary
 annotation_df = annotation_df.loc[list(img_dict.keys())]
+
+# Print the first 5 rows of the DataFrame
 annotation_df.head()
 ```
 
@@ -752,17 +962,22 @@ annotation_df.head()
   </tbody>
 </table>
 </div>
+----
+
 Notice that one of the samples contains a `no_gesture` label to identify an idle hand in the image.
 
 
 
-**Inspect annotation data for sample image**
-
 We can retrieve the annotation data for a specific image file using its name.
+
+**Inspect annotation data for sample image**
 
 
 ```python
-file_id = files[0].name.split('.')[0]
+# Get the filename without the file extension of the first file in the 'files' list
+file_id = files[0].stem
+
+# Print the filename
 file_id
 ```
 
@@ -775,6 +990,7 @@ The image file names are the index values for the annotation DataFrame.
 
 
 ```python
+# Get the row from the 'annotation_df' DataFrame corresponding to the 'file_id'
 annotation_df.loc[file_id].to_frame()
 ```
 
@@ -815,13 +1031,16 @@ The `bboxes` entry contains the  `[top-left-X-position, top-left-Y-position, wid
 
 
 
-**Download font file**
-
 We need a font file to annotate the images with class labels. We can download one from [Google Fonts](https://fonts.google.com/).
+
+**Download font file**
 
 
 ```python
+# Define the filename of the font file
 font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
+
+# If the font file does not exist, download it
 if not os.path.exists(font_file): 
     !wget https://fonts.gstatic.com/s/roboto/v30/$font_file
 ```
@@ -832,28 +1051,54 @@ if not os.path.exists(font_file):
 
 
 ```python
+# Import the ImageDraw class from the PIL package
 from PIL import ImageDraw
 ```
 
 
 ```python
+# Get the width and height of the image
 width, height = img.size
+
+# Create a copy of the image
 annotated_img = img.copy()
+
+# Create an ImageDraw object for drawing on the image
 draw = ImageDraw.Draw(annotated_img)
+
+# Set the font size
 fnt_size = 25
+
+# Get the row from the 'annotation_df' DataFrame corresponding to the 'file_id'
 annotation = annotation_df.loc[file_id]
 
+# Loop through the bounding boxes and labels in the 'annotation' DataFrame
 for i in range(len(annotation['labels'])):
+    # Get the bounding box coordinates
     x, y, w, h = annotation['bboxes'][i]
+    
+    # Scale the coordinates to the size of the image
     x *= width
     y *= height
     w *= width
     h *= height
+    
+    # Create a tuple of coordinates for the bounding box
     shape = (x, y, x+w, y+h)
+    
+    # Draw the bounding box on the image
     draw.rectangle(shape, outline='red')
+    
+    # Load the font file
     fnt = PIL.ImageFont.truetype(font_file, fnt_size)
+    
+    # Draw the label on the image
     draw.multiline_text((x, y-fnt_size-5), f"{annotation['labels'][i]}", font=fnt, fill='red')
+
+# Print the dimensions of the image
 print(annotated_img.size) 
+
+# Show the image
 annotated_img
 ```
 
@@ -864,38 +1109,109 @@ annotated_img
 
 
 
-**Create a class map**
-
 We need to provide IceVision with a class map that maps index values to unique class names.
+
+**Create a class map**
 
 
 ```python
+# Get a list of unique labels in the 'annotation_df' DataFrame
 labels = annotation_df['labels'].explode().unique().tolist()
-labels
+
+# Display labels using a Pandas DataFrame
+pd.DataFrame(labels)
 ```
 
 
-```text
-['call',
- 'no_gesture',
- 'dislike',
- 'fist',
- 'four',
- 'like',
- 'mute',
- 'ok',
- 'one',
- 'palm',
- 'peace',
- 'peace_inverted',
- 'rock',
- 'stop',
- 'stop_inverted',
- 'three',
- 'three2',
- 'two_up',
- 'two_up_inverted']
-```
+<div style="overflow-x:auto; max-height:500px">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>call</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>no_gesture</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>dislike</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>fist</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>four</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>like</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>mute</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>ok</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>one</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>palm</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>peace</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>peace_inverted</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>rock</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>stop</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>stop_inverted</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>three</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>three2</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>two_up</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>two_up_inverted</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+----
 
 
 
@@ -903,7 +1219,10 @@ IceVision adds an additional `background` class at index `0`.
 
 
 ```python
+# Create a ClassMap object using the list of labels
 class_map = ClassMap(labels)
+
+# Print the ClassMap object
 class_map
 ```
 
@@ -918,13 +1237,16 @@ class_map
 
 ## Create Dataset Parser
 
-Now we can create a custom `Parser` class that tells IceVision how to read the dataset.
+To create a custom dataset parser for object detection, we can use the template for an object detection record and the template for an object detection parser.
 
 **View template for an object detection record**
 
 
 ```python
+# Create an ObjectDetectionRecord object
 template_record = ObjectDetectionRecord()
+
+# Print the ObjectDetectionRecord object
 template_record
 ```
 
@@ -949,6 +1271,7 @@ detection:
 
 
 ```python
+# Generate a template parser for an object detection dataset using the ObjectDetectionRecord object
 Parser.generate_template(template_record)
 ```
 
@@ -969,58 +1292,92 @@ class MyParser(Parser):
 
 
 
-**Define custom parser class**
-
 As mentioned earlier, we need the dimensions for an image to scale the corresponding bounding box information. The dataset contains images with different resolutions, so we need to check for each image.
+
+**Define custom parser class**
 
 
 ```python
+# Define a subclass of the 'Parser' class
 class HagridParser(Parser):
+    # Define the constructor
     def __init__(self, template_record, annotations_df, img_dict, class_map):
+        # Call the parent class constructor
         super().__init__(template_record=template_record)
+        
+        # Store the 'img_dict' and 'annotations_df' objects as instance variables
         self.img_dict = img_dict
         self.df = annotations_df
+        
+        # Store the 'class_map' object as an instance variable
         self.class_map = class_map
+        
+    # Define the '__iter__' method
     def __iter__(self) -> Any:
+        # Yield the rows of the 'annotations_df' DataFrame
         for o in self.df.itertuples(): yield o
-    
+        
+    # Define the '__len__' method
     def __len__(self) -> int: 
+        # Return the number of rows in the 'annotations_df' DataFrame
         return len(self.df)
     
+    # Define the 'record_id' method
     def record_id(self, o: Any) -> Hashable:
+        # Return the index of the row
         return o.Index
     
+    # Define the 'parse_fields' method
     def parse_fields(self, o: Any, record: BaseRecord, is_new: bool):
-        
+        # Get the file path for the corresponding image
         filepath = self.img_dict[o.Index]
+        print(filepath)
         
+        # Open the image and get its width and height
         width, height = PIL.Image.open(filepath).convert('RGB').size
         
+         # Set the size of the image in the 'record' object
         record.set_img_size(ImgSize(width=width, height=height))
+
+        # Set the file path of the image in the 'record' object
         record.set_filepath(filepath)
+
+        # Set the 'class_map' in the 'record' object
         record.detection.set_class_map(self.class_map)
-        
+
+        # Add the labels to the 'record' object
         record.detection.add_labels(o.labels)
+
+        # Create an empty list for the bounding boxes
         bbox_list = []
-        
+
+        # Loop through the labels
         for i, label in enumerate(o.labels):
+            # Get the bounding box coordinates
             x = o.bboxes[i][0]*width
             y = o.bboxes[i][1]*height
             w = o.bboxes[i][2]*width
             h = o.bboxes[i][3]*height
-            bbox_list.append( BBox.from_xywh(x, y, w, h))
+            # Create a BBox object and add it to the 'bbox_list'
+            bbox_list.append(BBox.from_xywh(x, y, w, h))
+        # Add the bounding boxes to the 'record' object
         record.detection.add_bboxes(bbox_list)
-            
 ```
 
-
+We can then create a parser object using the custom parser class.
 
 **Create a custom parser object**
 
 
 ```python
+# Create a HagridParser object
 parser = HagridParser(template_record, annotation_df, img_dict, class_map)
-len(parser)
+
+# Get the number of rows in the 'annotation_df' DataFrame
+num_rows = len(parser)
+
+# Print the number of rows
+print(num_rows)
 ```
 
 
@@ -1028,27 +1385,27 @@ len(parser)
 31833
 ```
 
-
+We use the parser object to parse annotations and create records.
 
 **Parse annotations to create records**
 
-We'll randomly split the samples into training and validation sets.
-
 
 ```python
-# Randomly split our data into train/valid
+# Create a 'RandomSplitter' object
 data_splitter = RandomSplitter([0.8, 0.2])
 
+# Use the 'parse' method to split the data into training and validation sets
 train_records, valid_records = parser.parse(data_splitter, cache_filepath=f'{dataset_name}-cache.pkl')
 ```
 
-
+Finally, we can inspect the training records to ensure the parser works correctly.
 
 **Inspect training records**
 
 
 ```python
-train_records[0]
+# Print the first element of the 'train_records'
+print(train_records[0])
 ```
 
 
@@ -1070,7 +1427,8 @@ detection:
 
 
 ```python
-show_record(train_records[0], figsize = (10,10), display_label=True )
+# Use the 'show_record' function to display the first element of the 'train_records' object with annotations
+show_record(train_records[0], figsize = (10,10), display_label=True)
 ```
 ![](./images/output_59_0.png){fig-align="center"}
 
@@ -1078,6 +1436,7 @@ show_record(train_records[0], figsize = (10,10), display_label=True )
 
 
 ```python
+# Use the 'show_records' function to display the second, third, and fourth elements of the 'train_records' list  with annotations
 show_records(train_records[1:4], ncols=3,display_label=True)
 ```
 ![](./images/output_60_0.png){fig-align="center"}
@@ -1112,16 +1471,20 @@ Here, we can see the difference in results when using a single stride value in i
 
 
 ```python
+# Define a list of 'strides'
 strides = [8, 16, 32]
+
+# Get the maximum value in the 'strides' list
 max_stride = max(strides)
 ```
 
-**Select a multiple of the max stride value as the input resolution**
-
 We need to set the input height and width to multiples of the highest stride value (i.e., 32).
+
+**Select a multiple of the max stride value as the input resolution**
 
 
 ```python
+# Show a list of input resolutions by multiplying the maximum stride by numbers in the range 7-20
 [max_stride*i for i in range(7,21)]
 ```
 
@@ -1136,7 +1499,10 @@ We need to set the input height and width to multiples of the highest stride val
 
 
 ```python
+# Define the size of the image
 image_size = 384
+
+# Define the presize of the image
 presize = 512
 ```
 
@@ -1144,12 +1510,13 @@ presize = 512
 
 
 
-**Define Transforms**
-
 IceVision provides several default methods for data augmentation to help the model generalize. It automatically updates the bounding box information for an image based on the applied augmentations.
+
+**Define Transforms**
 
 
 ```python
+# Show the default augmentations included with the 'aug_tfms' function using a Pandas DataFrame
 pd.DataFrame(tfms.A.aug_tfms(size=image_size, presize=presize))
 ```
 
@@ -1198,9 +1565,10 @@ pd.DataFrame(tfms.A.aug_tfms(size=image_size, presize=presize))
   </tbody>
 </table>
 </div>
-
+----
 
 ```python
+# Show the transforms included with the 'resize_and_pad' function using a Pandas DataFrame
 pd.DataFrame(tfms.A.resize_and_pad(size=image_size))
 ```
 
@@ -1228,20 +1596,28 @@ pd.DataFrame(tfms.A.resize_and_pad(size=image_size))
 
 
 ```python
+# Define the 'train_tfms' adapter using the 'Adapter' method and the 'aug_tfms' function
 train_tfms = tfms.A.Adapter([*tfms.A.aug_tfms(size=image_size, presize=presize), tfms.A.Normalize()])
+
+# Define the 'valid_tfms' adapter using the 'Adapter' method and the 'resize_and_pad' function
 valid_tfms = tfms.A.Adapter([*tfms.A.resize_and_pad(image_size), tfms.A.Normalize()])
 ```
 
 
 
-**Get normalization stats**
-
 We can extract the normalization stats from the `tfms.A.Normalize()` method for future use. We'll use these same stats when performing inference with the trained model.
+
+**Get normalization stats**
 
 
 ```python
+# Get the mean of the Normalize() transformation
 mean = tfms.A.Normalize().mean
+
+# Get the standard deviation of the Normalize() transformation
 std = tfms.A.Normalize().std
+
+# Print the mean and standard deviation
 mean, std
 ```
 
@@ -1250,14 +1626,19 @@ mean, std
 ((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 ```
 
-
+Next, we create dataset objects for the training and validation datasets using the defined transforms and normalization stats.
 
 **Define Datasets**
 
 
 ```python
+# Create a Dataset object using the 'train_records' and 'train_tfms' variables
 train_ds = Dataset(train_records, train_tfms)
+
+# Create a Dataset object using the 'valid_records' and 'valid_tfms' variables
 valid_ds = Dataset(valid_records, valid_tfms)
+
+# Print the 'train_ds' and 'valid_ds' objects
 train_ds, valid_ds
 ```
 
@@ -1266,35 +1647,42 @@ train_ds, valid_ds
 (<Dataset with 25466 items>, <Dataset with 6367 items>)
 ```
 
-
+We can apply the image augmentations to a sample training image to demonstrate the effects of data augmentation.
 
 **Apply augmentations to a training sample**
 
 
 ```python
+# Create a list of three samples from the 'train_ds' dataset object
 samples = [train_ds[0] for _ in range(3)]
+
+# Show the samples using the 'show_samples' function
 show_samples(samples, ncols=3)
 ```
 ![](./images/output_76_0.png){fig-align="center"}
 
 
 
+Once the datasets are defined, we can specify YOLOX as the model type for training.
+
 **Define model type**
 
 
 ```python
+# Set the model type to YOLOX
 model_type = models.mmdet.yolox
 ```
 
-
+We'll use a model pretrained on the COCO dataset rather than train a new model from scratch.
 
 **Define backbone**
 
-We'll use a model pretrained on the COCO dataset rather than train a new model from scratch.
-
 
 ```python
+# Create a YOLOX Tiny backbone for the model
 backbone = model_type.backbones.yolox_tiny_8x8(pretrained=True)
+
+# Show the backbone information using a Pandas Dataframe
 pd.DataFrame.from_dict(backbone.__dict__, orient='index')
 ```
 
@@ -1333,6 +1721,7 @@ pd.DataFrame.from_dict(backbone.__dict__, orient='index')
 
 
 ```python
+# Set the batch size
 bs = 32
 ```
 
@@ -1344,7 +1733,10 @@ bs = 32
 
 
 ```python
+# Create a DataLoader for the training set
 train_dl = model_type.train_dl(train_ds, batch_size=bs, num_workers=2, shuffle=True)
+
+# Create a DataLoader for the validation set
 valid_dl = model_type.valid_dl(valid_ds, batch_size=bs, num_workers=2, shuffle=False)
 ```
 
@@ -1354,26 +1746,31 @@ valid_dl = model_type.valid_dl(valid_ds, batch_size=bs, num_workers=2, shuffle=F
 
 ## Finetune the Model
 
-Now, we can move on to training the model.
+To finetune the YOLOX model, we must first instantiate the model and define metrics to track during training.
 
 **Instantiate the model**
 
 
 ```python
-model = model_type.model(backbone=backbone(pretrained=True), num_classes=len(parser.class_map)) 
+# Create a YOLOX Tiny model
+model = model_type.model(backbone=backbone(pretrained=True), num_classes=parser.class_map.num_classes) 
 ```
 
 **Define metrics**
 
 
 ```python
+# Define a list of metrics to evaluate the model
 metrics = [COCOMetric(metric_type=COCOMetricType.bbox)]
 ```
+
+We can then create a Learner object to find the learning rate and handle the training loop.
 
 **Define Learner object**
 
 
 ```python
+# Create a fastai learner object to train and evaluate the YOLOX Tiny model
 learn = model_type.fastai.learner(dls=[train_dl, valid_dl], model=model, metrics=metrics)
 ```
 
@@ -1381,35 +1778,41 @@ learn = model_type.fastai.learner(dls=[train_dl, valid_dl], model=model, metrics
 
 
 ```python
-learn.lr_find()
+# Use the learning rate finder to find a good learning rate for the YOLOX Tiny model
+suggested_lrs = learn.lr_find()
 ```
 
 
-```text
-SuggestedLRs(valley=0.0012022644514217973)
-```
-
-
-![](./images/output_92_3.png){fig-align="center"}
+![](./images/output_94_2.png){fig-align="center"}
 
 **Define learning rate**
 
 
 ```python
-lr = 1e-3
+# Use the suggested learning rate identified by the learning rate finder
+lr = suggested_lrs.valley
+lr
+```
+
+```text
+0.0008317637839354575
 ```
 
 **Define number of epochs**
 
 
 ```python
+# Set the number of epochs to train the YOLOX Tiny model
 epochs = 20
 ```
+
+After defining the training parameters, we can finetune the model by  training it on the training dataset.
 
 **Finetune model**
 
 
 ```python
+# Train the YOLOX Tiny model
 learn.fine_tune(epochs, lr, freeze_epochs=1)
 ```
 
@@ -1426,10 +1829,10 @@ learn.fine_tune(epochs, lr, freeze_epochs=1)
   <tbody>
     <tr>
       <td>0</td>
-      <td>5.965206</td>
-      <td>5.449240</td>
-      <td>0.343486</td>
-      <td>03:31</td>
+      <td>6.054967</td>
+      <td>5.384349</td>
+      <td>0.357238</td>
+      <td>03:24</td>
     </tr>
   </tbody>
 </table>
@@ -1447,147 +1850,148 @@ learn.fine_tune(epochs, lr, freeze_epochs=1)
   <tbody>
     <tr>
       <td>0</td>
-      <td>3.767774</td>
-      <td>3.712888</td>
-      <td>0.572857</td>
-      <td>03:53</td>
+      <td>3.794365</td>
+      <td>3.506713</td>
+      <td>0.605573</td>
+      <td>03:40</td>
     </tr>
     <tr>
       <td>1</td>
-      <td>3.241024</td>
-      <td>3.204471</td>
-      <td>0.615708</td>
-      <td>03:50</td>
+      <td>3.312004</td>
+      <td>2.977496</td>
+      <td>0.654320</td>
+      <td>03:40</td>
     </tr>
     <tr>
       <td>2</td>
-      <td>2.993548</td>
-      <td>3.306303</td>
-      <td>0.578024</td>
-      <td>03:48</td>
+      <td>3.017060</td>
+      <td>3.090266</td>
+      <td>0.606374</td>
+      <td>03:42</td>
     </tr>
     <tr>
       <td>3</td>
-      <td>2.837985</td>
-      <td>3.157353</td>
-      <td>0.607766</td>
-      <td>03:51</td>
+      <td>2.881786</td>
+      <td>2.837017</td>
+      <td>0.655119</td>
+      <td>03:48</td>
     </tr>
     <tr>
       <td>4</td>
-      <td>2.714989</td>
-      <td>2.684248</td>
-      <td>0.687850</td>
-      <td>03:52</td>
+      <td>2.760416</td>
+      <td>2.978580</td>
+      <td>0.616788</td>
+      <td>03:50</td>
     </tr>
     <tr>
       <td>5</td>
-      <td>2.614549</td>
-      <td>2.545124</td>
-      <td>0.708479</td>
-      <td>03:49</td>
+      <td>2.658237</td>
+      <td>2.742451</td>
+      <td>0.660538</td>
+      <td>03:31</td>
     </tr>
     <tr>
       <td>6</td>
-      <td>2.466678</td>
-      <td>2.597708</td>
-      <td>0.677954</td>
-      <td>03:54</td>
+      <td>2.595560</td>
+      <td>2.547496</td>
+      <td>0.683073</td>
+      <td>03:34</td>
     </tr>
     <tr>
       <td>7</td>
-      <td>2.395620</td>
-      <td>2.459959</td>
-      <td>0.707709</td>
-      <td>03:53</td>
+      <td>2.440215</td>
+      <td>2.707062</td>
+      <td>0.640533</td>
+      <td>03:35</td>
     </tr>
     <tr>
       <td>8</td>
-      <td>2.295367</td>
-      <td>2.621239</td>
-      <td>0.679657</td>
-      <td>03:48</td>
+      <td>2.332424</td>
+      <td>2.616575</td>
+      <td>0.658988</td>
+      <td>03:34</td>
     </tr>
     <tr>
       <td>9</td>
-      <td>2.201542</td>
-      <td>2.636252</td>
-      <td>0.681469</td>
-      <td>03:47</td>
+      <td>2.292744</td>
+      <td>2.278664</td>
+      <td>0.727411</td>
+      <td>03:33</td>
     </tr>
     <tr>
       <td>10</td>
-      <td>2.177531</td>
-      <td>2.352600</td>
-      <td>0.723354</td>
-      <td>03:48</td>
+      <td>2.165260</td>
+      <td>2.263503</td>
+      <td>0.714858</td>
+      <td>03:32</td>
     </tr>
     <tr>
       <td>11</td>
-      <td>2.086292</td>
-      <td>2.376842</td>
-      <td>0.726306</td>
-      <td>03:47</td>
+      <td>2.114893</td>
+      <td>2.221797</td>
+      <td>0.724567</td>
+      <td>03:34</td>
     </tr>
     <tr>
       <td>12</td>
-      <td>2.009476</td>
-      <td>2.424167</td>
-      <td>0.712507</td>
-      <td>03:46</td>
+      <td>2.048447</td>
+      <td>2.226138</td>
+      <td>0.723726</td>
+      <td>03:33</td>
     </tr>
     <tr>
       <td>13</td>
-      <td>1.951761</td>
-      <td>2.324901</td>
-      <td>0.730893</td>
-      <td>03:49</td>
+      <td>1.927701</td>
+      <td>2.126613</td>
+      <td>0.737985</td>
+      <td>03:30</td>
     </tr>
     <tr>
       <td>14</td>
-      <td>1.916571</td>
-      <td>2.243153</td>
-      <td>0.739224</td>
-      <td>03:45</td>
+      <td>1.895885</td>
+      <td>2.154254</td>
+      <td>0.733679</td>
+      <td>03:32</td>
     </tr>
     <tr>
       <td>15</td>
-      <td>1.834777</td>
-      <td>2.208674</td>
-      <td>0.747359</td>
-      <td>03:52</td>
+      <td>1.869765</td>
+      <td>1.983894</td>
+      <td>0.762880</td>
+      <td>03:33</td>
     </tr>
     <tr>
       <td>16</td>
-      <td>1.802138</td>
-      <td>2.120061</td>
-      <td>0.757734</td>
-      <td>04:00</td>
+      <td>1.798780</td>
+      <td>2.019078</td>
+      <td>0.753732</td>
+      <td>03:32</td>
     </tr>
     <tr>
       <td>17</td>
-      <td>1.764611</td>
-      <td>2.187056</td>
-      <td>0.746236</td>
-      <td>03:53</td>
+      <td>1.778396</td>
+      <td>2.028802</td>
+      <td>0.751977</td>
+      <td>03:33</td>
     </tr>
     <tr>
       <td>18</td>
-      <td>1.753366</td>
-      <td>2.143199</td>
-      <td>0.754093</td>
-      <td>04:03</td>
+      <td>1.748940</td>
+      <td>1.990781</td>
+      <td>0.759491</td>
+      <td>03:36</td>
     </tr>
     <tr>
       <td>19</td>
-      <td>1.735740</td>
-      <td>2.154315</td>
-      <td>0.751422</td>
-      <td>03:55</td>
+      <td>1.735546</td>
+      <td>1.973754</td>
+      <td>0.761532</td>
+      <td>03:33</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 
@@ -1600,6 +2004,17 @@ Once the model finishes training, we need to modify it before exporting it. Firs
 
 ```python
 def img_to_tensor(img:PIL.Image, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
+    """
+    Converts a PIL image to a PyTorch tensor.
+    
+    Args:
+        img: The input PIL image.
+        mean: The mean values for normalization.
+        std: The standard deviation values for normalization.
+    
+    Returns:
+        The normalized tensor.
+    """
     # Convert image to tensor
     img_tensor = torch.Tensor(np.array(img)).permute(2, 0, 1)
     # Scale pixels values from [0,255] to [0,1]
@@ -1656,7 +2071,10 @@ annotation_df.iloc[4].to_frame()
 **Get the test image file path**
 
 ```python
+# Retrieve the image file path associated with the fifth entry in the 'annotation_df' DataFrame object
 test_file = img_dict[annotation_df.iloc[4].name]
+
+# Print the test file path
 test_file
 ```
 
@@ -1669,7 +2087,10 @@ Path('/home/innom-dt/.fastai/archive/../data/hagrid-sample-30k-384p/hagrid_30k/t
 
 
 ```python
+# Open the test file
 test_img = PIL.Image.open(test_file).convert('RGB')
+
+# Display the test image
 test_img
 ```
 ![](./images/output_108_0.png){fig-align="center"}
@@ -1680,8 +2101,11 @@ test_img
 
 
 ```python
+# Calculate the input height and width for the test image
 input_h = test_img.height - (test_img.height % max_stride)
 input_w = test_img.width - (test_img.width % max_stride)
+
+# Print the input height and width
 input_h, input_w
 ```
 
@@ -1696,7 +2120,10 @@ input_h, input_w
 
 
 ```python
+# Crop and pad the test image to match the input height and width
 test_img = test_img.crop_pad((input_w, input_h))
+
+# Print the resulting test image
 test_img
 ```
 ![](./images/output_112_0.png){fig-align="center"}
@@ -1706,8 +2133,11 @@ test_img
 
 
 ```python
+# Convert the test image to a tensor
 test_tensor = img_to_tensor(test_img, mean=mean, std=std)
-test_tensor.shape
+
+# Print the shape of the resulting tensor
+print(test_tensor.shape)
 ```
 
 
@@ -1717,12 +2147,13 @@ torch.Size([1, 3, 512, 384])
 
 
 
-**Inspect raw model output**
-
 Before making any changes, let's inspect the current model output.
+
+**Inspect raw model output**
 
 
 ```python
+# Get the raw model output using the test tensor
 model_output = model.cpu().forward_dummy(test_tensor.cpu())
 ```
 
@@ -1734,6 +2165,7 @@ The third tuple contains three tensors with the confidence score for whether an 
 
 
 ```python
+# Print the shape for each tensor in the model output
 for raw_out in model_output:
     for out in raw_out:
         print(out.shape)
@@ -1769,35 +2201,44 @@ We can apply these same steps to our model by adding a new forward function usin
 
 ```python
 def forward_export(self, input_tensor):
+    
     # Get raw model output
     model_output = self.forward_dummy(input_tensor.cpu())
-    # Extract class scores
+    
+    # Get the classification scores from the model output
     cls_scores = model_output[0]
-    # Extract bounding box predictions
+    
+    # Get the bounding box predictions from the model output
     bbox_preds = model_output[1]
-    # Extract objectness scores
+    
+    # Get the objectness scores from the model output
     objectness = model_output[2]
     
+    # Process the stride 8 output
     stride_8_cls = torch.sigmoid(cls_scores[0])
     stride_8_bbox = bbox_preds[0]
     stride_8_objectness = torch.sigmoid(objectness[0])
     stride_8_cat = torch.cat((stride_8_bbox, stride_8_objectness, stride_8_cls), dim=1)
     stride_8_flat = torch.flatten(stride_8_cat, start_dim=2)
 
+    # Process the stride 16 output
     stride_16_cls = torch.sigmoid(cls_scores[1])
     stride_16_bbox = bbox_preds[1]
     stride_16_objectness = torch.sigmoid(objectness[1])
     stride_16_cat = torch.cat((stride_16_bbox, stride_16_objectness, stride_16_cls), dim=1)
     stride_16_flat = torch.flatten(stride_16_cat, start_dim=2)
 
+    # Process the stride 32 output
     stride_32_cls = torch.sigmoid(cls_scores[2])
     stride_32_bbox = bbox_preds[2]
     stride_32_objectness = torch.sigmoid(objectness[2])
     stride_32_cat = torch.cat((stride_32_bbox, stride_32_objectness, stride_32_cls), dim=1)
     stride_32_flat = torch.flatten(stride_32_cat, start_dim=2)
 
+    # Concatenate all of the processed outputs
     full_cat = torch.cat((stride_8_flat, stride_16_flat, stride_32_flat), dim=2)
 
+    # Return the concatenated outputs in a permuted form
     return full_cat.permute(0, 2, 1)
 ```
 
@@ -1807,17 +2248,20 @@ def forward_export(self, input_tensor):
 
 
 ```python
+# Bind the forward_export method to the model object
 model.forward_export = forward_export.__get__(model)
 ```
 
 
 
-**Verify output shape**
-
 Let's verify the new forward function works as intended. The output should have a batch size of 1 and contain 4032 elements, given the input dimensions (calculated earlier), each with 24 values (19 classes + 1 objectness score + 4 bounding box values).
+
+**Verify output shape**
 
 
 ```python
+# Call the forward_export method on the model object, passing in the test_tensor as an argument
+# and get the shape of the output tensor
 model.forward_export(test_tensor).shape
 ```
 
@@ -1826,16 +2270,13 @@ model.forward_export(test_tensor).shape
 torch.Size([1, 4032, 24])
 ```
 
-We need to replace the current forward function before exporting the model.
-
-
+We need to replace the current forward function before exporting the model. We can create a backup of the original forward function just in case.
 
 **Create a backup of the default model forward function**
 
-We can create a backup of the original forward function just in case.
-
 
 ```python
+# Save the original forward method of the model
 origin_forward = model.forward
 ```
 
@@ -1845,6 +2286,7 @@ origin_forward = model.forward
 
 
 ```python
+# Replace the original forward method of the model with the forward_export method
 model.forward = model.forward_export
 ```
 
@@ -1854,6 +2296,8 @@ model.forward = model.forward_export
 
 
 ```python
+# Call the forward_export method on the model object, passing in the test_tensor as an argument
+# and get the shape of the output tensor
 model(test_tensor).shape
 ```
 
@@ -1872,7 +2316,10 @@ The OpenVINO model conversion script does not support PyTorch models, so we need
 
 
 ```python
-onnx_file_name = f"{dataset_path.name}-{type(model).__name__}.onnx"
+# Create a filename for the ONNX model
+onnx_file_name = f"{dataset_name}-{type(model).__name__}.onnx"
+
+# Display the filename
 onnx_file_name
 ```
 
@@ -1887,6 +2334,7 @@ onnx_file_name
 
 
 ```python
+# Export the PyTorch model to ONNX format
 torch.onnx.export(model,
                   test_tensor,
                   onnx_file_name,
@@ -1903,25 +2351,28 @@ torch.onnx.export(model,
 
 **Simplify ONNX model**
 
-As mentioned earlier, this step is entirely optional.
-
 
 ```python
+# Import the onnx module
 import onnx
+
+# Import the simplify method from the onnxsim module
 from onnxsim import simplify
 ```
 
 
 ```python
-# load model
+# Load the ONNX model from the onnx_file_name
 onnx_model = onnx.load(onnx_file_name)
 
-# convert model
+# Simplify the model
 model_simp, check = simplify(onnx_model)
 
-# save model
+# Save the simplified model to the onnx_file_name
 onnx.save(model_simp, onnx_file_name)
 ```
+
+> **Note:** As mentioned earlier, this step is entirely optional.
 
 
 
@@ -1933,11 +2384,13 @@ Now we can export the ONNX model to OpenVINO's IR format.
 
 
 ```python
+# Import the Core class from the openvino.runtime module
 from openvino.runtime import Core
 ```
 
 
 ```python
+# Import the Markdown and display classes from the IPython.display module
 from IPython.display import Markdown, display
 ```
 
@@ -1947,7 +2400,10 @@ from IPython.display import Markdown, display
 
 
 ```python
+# Create a Path object representing the current directory
 output_dir = Path('./')
+
+# Print the output_dir object
 output_dir
 ```
 
@@ -1958,13 +2414,16 @@ Path('.')
 
 
 
-**Define path for OpenVINO IR xml model file**
-
 The conversion script generates an XML file containing information about the model architecture and a BIN file that stores the trained weights. We need both files to perform inference. OpenVINO uses the same name for the BIN file as provided for the XML file.
+
+**Define path for OpenVINO IR xml model file**
 
 
 ```python
+# Create a Path object representing the IR xml file using the ONNX model file name without the file extension
 ir_path = Path(f"{onnx_file_name.split('.')[0]}.xml")
+
+# Print the ir_path object
 ir_path
 ```
 
@@ -1975,13 +2434,13 @@ Path('hagrid-sample-30k-384p-YOLOX.xml')
 
 
 
-**Define arguments for model conversion script**
-
 OpenVINO provides the option to include the normalization stats in the IR model. That way, we don't need to account for different normalization stats when performing inference with multiple models. We can also convert the model to FP16 precision to reduce file size and improve inference speed.
+
+**Define arguments for model conversion script**
 
 
 ```python
-# Construct the command for Model Optimizer
+# Create the Model Optimizer command to convert the ONNX model to OpenVINO
 mo_command = f"""mo
                  --input_model "{onnx_file_name}"
                  --input_shape "[1,3, {image_size}, {image_size}]"
@@ -1990,9 +2449,13 @@ mo_command = f"""mo
                  --data_type FP16
                  --output_dir "{output_dir}"
                  """
+
+# Remove extra whitespace from the command string
 mo_command = " ".join(mo_command.split())
+
+# Print the command and format it as a Bash code block
 print("Model Optimizer command to convert the ONNX model to OpenVINO:")
-display(Markdown(f"`{mo_command}`"))
+display(Markdown(f"```bash\n{mo_command}\n```"))
 ```
 
 ```text
@@ -2009,11 +2472,14 @@ mo --input_model "hagrid-sample-30k-384p-YOLOX.onnx" --input_shape "[1,3, 384, 3
 
 
 ```python
+# Check if the IR model file exists
 if not ir_path.exists():
+    # If the IR model file does not exist, export the ONNX model to IR
     print("Exporting ONNX model to IR... This may take a few minutes.")
     mo_result = %sx $mo_command
     print("\n".join(mo_result))
 else:
+    # If the IR model file already exists, print a message
     print(f"IR model {ir_path} already exists.")
 ```
 
@@ -2075,10 +2541,18 @@ Now, we can verify the OpenVINO model works as desired using the test image.
 
 
 ```python
+# Create an instance of the Core class
 ie = Core()
+
+# Get the list of available devices
 devices = ie.available_devices
+
+# Iterate over the available devices
 for device in devices:
+    # Get the device name
     device_name = ie.get_property(device_name=device, name="FULL_DEVICE_NAME")
+    
+    # Print the device and its name
     print(f"{device}: {device_name}")
 ```
 
@@ -2100,7 +2574,10 @@ scaled_tensor = img_tensor.float().div_(255)
 
 
 ```python
+# Add an extra dimension to the Tensor
 input_image = scaled_tensor.unsqueeze(dim=0)
+
+# Print the shape of the input image
 input_image.shape
 ```
 
@@ -2115,22 +2592,29 @@ torch.Size([1, 3, 512, 384])
 
 
 ```python
-# Load the network in Inference Engine
+# Create an instance of the Core class
 ie = Core()
+
+# Read the IR model file
 model_ir = ie.read_model(model=ir_path)
+
+# Reshape the model to match the shape of the input image
 model_ir.reshape(input_image.shape)
+
+# Compile the model for the CPU device
 compiled_model_ir = ie.compile_model(model=model_ir, device_name="CPU")
 
-# Get input and output layers
+# Get the input and output layers of the compiled model
 input_layer_ir = next(iter(compiled_model_ir.inputs))
 output_layer_ir = next(iter(compiled_model_ir.outputs))
 
-# Run inference on the input image
+# Run the model on the input image and get the output
 res_ir = compiled_model_ir([input_image])[output_layer_ir]
 ```
 
 
 ```python
+# Print the shape of the model output
 res_ir.shape
 ```
 
@@ -2149,28 +2633,41 @@ To process the model output, we need to iterate through each of the 4032 object 
 
 
 
-**Define method to generate offset values to navigate the raw model output**
-
 We'll first define a method that generates offset values based on the input dimensions and stride values, which we can use to traverse the output array.
+
+**Define method to generate offset values to navigate the raw model output**
 
 
 ```python
 def generate_grid_strides(height, width, strides=[8, 16, 32]):
+    """
+    Generate a list of dictionaries containing grid coordinates and strides for a given height and width.
     
+    Args:
+        height (int): The height of the image.
+        width (int): The width of the image.
+        strides (list): A list of strides to use for generating grid coordinates.
+        
+    Returns:
+        list: A list of dictionaries containing grid coordinates and strides.
+    """
+    
+    # Create an empty list to store the grid coordinates and strides
     grid_strides = []
 
-    # Iterate through each stride value
+    # Iterate over the strides
     for stride in strides:
-        # Calculate the grid dimensions
+        # Calculate the grid height and width
         grid_height = height // stride
         grid_width = width // stride
 
-        # Store each combination of grid coordinates
+        # Iterate over the grid coordinates
         for g1 in range(grid_height):
-            
             for g0 in range(grid_width):
+                # Append a dictionary containing the grid coordinates and stride to the list
                 grid_strides.append({'grid0':g0, 'grid1':g1, 'stride':stride })
     
+    # Return the list of dictionaries
     return grid_strides
 ```
 
@@ -2178,7 +2675,10 @@ def generate_grid_strides(height, width, strides=[8, 16, 32]):
 
 
 ```python
+# Generate the grid coordinates and strides
 grid_strides = generate_grid_strides(test_img.height, test_img.width, strides)
+
+# Print the length of the list of grid coordinates and strides
 len(grid_strides)
 ```
 
@@ -2191,6 +2691,7 @@ len(grid_strides)
 
 
 ```python
+# Print the first few rows of the list using a DataFrame
 pd.DataFrame(grid_strides).head()
 ```
 
@@ -2241,27 +2742,41 @@ pd.DataFrame(grid_strides).head()
 </div>
 
 
-**Define method to generate object detection proposals from the raw model output**
-
 Next, we'll define a method to iterate through the output array and decode the bounding box information for each object proposal. As mentioned earlier, we'll only keep the ones with a high enough confidence score. The model predicts the center coordinates of a bounding box, but we'll store the coordinates for the top-left corner as that is what the `ImageDraw.Draw.rectangle()` method expects as input.
+
+**Define method to generate object detection proposals from the raw model output**
 
 
 ```python
 def generate_yolox_proposals(model_output, proposal_length, grid_strides, bbox_conf_thresh=0.3):
+    """
+    Generate a list of bounding box proposals from the model output.
     
+    Args:
+        model_output (numpy array): The output of the YOLOX model.
+        proposal_length (int): The length of each proposal in the model output.
+        grid_strides (list): A list of dictionaries containing grid coordinates and strides.
+        bbox_conf_thresh (float): The confidence threshold for bounding box proposals.
+        
+    Returns:
+        list: A list of bounding box proposals.
+    """
+    
+    # Create an empty list to store the bounding box proposals
     proposals = []
     
-    # Obtain the number of classes the model was trained to detect
+    # Calculate the number of classes
     num_classes = proposal_length - 5
 
+    # Iterate over the grid coordinates and strides
     for anchor_idx in range(len(grid_strides)):
         
-        # Get the current grid and stride values
+        # Get the grid coordinates and stride for the current anchor
         grid0 = grid_strides[anchor_idx]['grid0']
         grid1 = grid_strides[anchor_idx]['grid1']
         stride = grid_strides[anchor_idx]['stride']
 
-        # Get the starting index for the current proposal
+        # Calculate the starting index for the current anchor in the model output
         start_idx = anchor_idx * proposal_length
 
         # Get the coordinates for the center of the predicted bounding box
@@ -2276,29 +2791,28 @@ def generate_yolox_proposals(model_output, proposal_length, grid_strides, bbox_c
         x0 = x_center - w * 0.5
         y0 = y_center - h * 0.5
 
-        # Get the confidence score that an object is present
+        # Get the objectness score for the current anchor
         box_objectness = model_output[start_idx + 4]
-
-        # Initialize object struct with bounding box information
+        
+        # Create an empty dictionary to store the bounding box proposal
         obj = { 'x0':x0, 'y0':y0, 'width':w, 'height':h, 'label':0, 'prob':0 }
 
-        # Find the object class with the highest confidence score
+        # Iterate over the classes
         for class_idx in range(num_classes):
-            
-            # Get the confidence score for the current object class
+
+            # Calculate the probability of the current class
             box_cls_score = model_output[start_idx + 5 + class_idx]
-            # Calculate the final confidence score for the object proposal
             box_prob = box_objectness * box_cls_score
-            
-            # Check for the highest confidence score
+
+            # If the probability is greater than the current maximum, update the proposal dictionary
             if (box_prob > obj['prob']):
                 obj['label'] = class_idx
                 obj['prob'] = box_prob
 
-        # Only add object proposals with high enough confidence scores
+        # If the bounding box proposal has a probability greater than the specified threshold, add it to the list of proposals
         if obj['prob'] > bbox_conf_thresh: proposals.append(obj)
-    
-    # Sort the proposals based on the confidence score in descending order
+        
+    # Sort the list of bounding box proposals by probability in descending order
     proposals.sort(key=lambda x:x['prob'], reverse=True)
     return proposals
 ```
@@ -2307,6 +2821,7 @@ def generate_yolox_proposals(model_output, proposal_length, grid_strides, bbox_c
 
 
 ```python
+# Set the bounding box confidence threshold
 bbox_conf_thresh = 0.5
 ```
 
@@ -2314,9 +2829,16 @@ bbox_conf_thresh = 0.5
 
 
 ```python
+# Generate proposals from the model output
 proposals = generate_yolox_proposals(res_ir.flatten(), res_ir.shape[2], grid_strides, bbox_conf_thresh)
+
+# Convert the proposals to a Pandas DataFrame
 proposals_df = pd.DataFrame(proposals)
+
+# Add the label names to the DataFrame
 proposals_df['label'] = proposals_df['label'].apply(lambda x: labels[x])
+
+# Print the proposals Dataframe
 proposals_df
 ```
 
@@ -2337,175 +2859,156 @@ proposals_df
   <tbody>
     <tr>
       <th>0</th>
-      <td>233.453819</td>
-      <td>345.319857</td>
-      <td>20.237036</td>
-      <td>39.237568</td>
+      <td>234.084399</td>
+      <td>345.059397</td>
+      <td>19.638884</td>
+      <td>40.022980</td>
       <td>no_gesture</td>
-      <td>0.892190</td>
+      <td>0.887864</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>233.411983</td>
-      <td>345.079270</td>
-      <td>20.298084</td>
-      <td>39.369030</td>
+      <td>234.122849</td>
+      <td>344.858476</td>
+      <td>19.512623</td>
+      <td>40.319473</td>
       <td>no_gesture</td>
-      <td>0.883036</td>
+      <td>0.887479</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>233.482836</td>
-      <td>345.070212</td>
-      <td>20.273870</td>
-      <td>39.556046</td>
+      <td>233.998906</td>
+      <td>344.849410</td>
+      <td>19.742203</td>
+      <td>39.664391</td>
       <td>no_gesture</td>
-      <td>0.881625</td>
+      <td>0.879032</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>233.226050</td>
-      <td>345.559044</td>
-      <td>20.653538</td>
-      <td>38.985397</td>
-      <td>no_gesture</td>
-      <td>0.876668</td>
+      <td>154.565092</td>
+      <td>193.542165</td>
+      <td>35.063389</td>
+      <td>34.609722</td>
+      <td>call</td>
+      <td>0.876051</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>233.354270</td>
-      <td>345.466457</td>
-      <td>20.351070</td>
-      <td>38.968014</td>
-      <td>no_gesture</td>
-      <td>0.872296</td>
+      <td>154.257556</td>
+      <td>193.482616</td>
+      <td>35.451900</td>
+      <td>34.860138</td>
+      <td>call</td>
+      <td>0.867827</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>153.331284</td>
-      <td>193.410838</td>
-      <td>38.274513</td>
-      <td>35.176327</td>
+      <td>154.484365</td>
+      <td>193.435712</td>
+      <td>34.926231</td>
+      <td>35.332264</td>
       <td>call</td>
-      <td>0.870502</td>
+      <td>0.866654</td>
     </tr>
     <tr>
       <th>6</th>
-      <td>233.583658</td>
-      <td>345.261926</td>
-      <td>20.347435</td>
-      <td>39.517403</td>
+      <td>234.141719</td>
+      <td>344.954988</td>
+      <td>19.724554</td>
+      <td>40.226116</td>
       <td>no_gesture</td>
-      <td>0.868382</td>
+      <td>0.865423</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>153.666840</td>
-      <td>193.238544</td>
-      <td>38.145180</td>
-      <td>35.976635</td>
-      <td>call</td>
-      <td>0.866106</td>
+      <td>233.691895</td>
+      <td>344.861304</td>
+      <td>20.142962</td>
+      <td>40.653099</td>
+      <td>no_gesture</td>
+      <td>0.857602</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>154.866353</td>
-      <td>194.021563</td>
-      <td>35.857136</td>
-      <td>34.749817</td>
+      <td>154.580361</td>
+      <td>193.261580</td>
+      <td>34.681351</td>
+      <td>35.288120</td>
       <td>call</td>
-      <td>0.862080</td>
+      <td>0.847856</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>155.096351</td>
-      <td>193.696654</td>
-      <td>35.662899</td>
-      <td>35.185398</td>
-      <td>call</td>
-      <td>0.861144</td>
+      <td>233.792754</td>
+      <td>344.441489</td>
+      <td>20.184782</td>
+      <td>40.635910</td>
+      <td>no_gesture</td>
+      <td>0.829289</td>
     </tr>
     <tr>
       <th>10</th>
-      <td>154.931746</td>
-      <td>193.533106</td>
-      <td>35.849140</td>
-      <td>35.373035</td>
+      <td>154.467418</td>
+      <td>193.468482</td>
+      <td>35.273167</td>
+      <td>34.796146</td>
       <td>call</td>
-      <td>0.859096</td>
+      <td>0.829163</td>
     </tr>
     <tr>
       <th>11</th>
-      <td>154.988088</td>
-      <td>193.921200</td>
-      <td>35.850899</td>
-      <td>34.878162</td>
+      <td>154.234487</td>
+      <td>193.324329</td>
+      <td>35.518040</td>
+      <td>34.588329</td>
       <td>call</td>
-      <td>0.856778</td>
+      <td>0.816633</td>
     </tr>
     <tr>
       <th>12</th>
-      <td>153.371142</td>
-      <td>193.670131</td>
-      <td>37.459030</td>
-      <td>35.085506</td>
+      <td>155.282080</td>
+      <td>193.360302</td>
+      <td>34.524830</td>
+      <td>35.269939</td>
       <td>call</td>
-      <td>0.832275</td>
+      <td>0.804335</td>
     </tr>
     <tr>
       <th>13</th>
-      <td>154.885031</td>
-      <td>193.393148</td>
-      <td>37.161541</td>
-      <td>35.756050</td>
-      <td>call</td>
-      <td>0.814937</td>
+      <td>233.925717</td>
+      <td>344.809189</td>
+      <td>19.701090</td>
+      <td>40.598907</td>
+      <td>no_gesture</td>
+      <td>0.779452</td>
     </tr>
     <tr>
       <th>14</th>
-      <td>154.807318</td>
-      <td>193.586627</td>
-      <td>37.247711</td>
-      <td>34.852604</td>
-      <td>call</td>
-      <td>0.803999</td>
+      <td>233.717521</td>
+      <td>344.739007</td>
+      <td>20.083487</td>
+      <td>40.492405</td>
+      <td>no_gesture</td>
+      <td>0.736652</td>
     </tr>
     <tr>
       <th>15</th>
-      <td>233.458529</td>
-      <td>345.055026</td>
-      <td>20.226809</td>
-      <td>39.549839</td>
-      <td>no_gesture</td>
-      <td>0.797995</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>233.216641</td>
-      <td>346.149529</td>
-      <td>20.414558</td>
-      <td>38.401203</td>
-      <td>no_gesture</td>
-      <td>0.794114</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>233.675367</td>
-      <td>345.060542</td>
-      <td>20.194427</td>
-      <td>39.166901</td>
-      <td>no_gesture</td>
-      <td>0.612079</td>
+      <td>154.407403</td>
+      <td>193.529026</td>
+      <td>34.728149</td>
+      <td>33.798748</td>
+      <td>call</td>
+      <td>0.687202</td>
     </tr>
   </tbody>
 </table>
 </div>
-
+----
 
 We know the test image contains one call gesture and one idle hand. The model seems pretty confident about the locations of those two hands as the bounding box values are nearly identical across the `no_gesture` predictions and among the `call` predictions.
 
 We can filter out the redundant predictions by checking how much the bounding boxes overlap. When two bounding boxes overlap beyond a user-defined threshold, we keep the one with a higher confidence score.
-
 
 
 
@@ -2514,10 +3017,19 @@ We can filter out the redundant predictions by checking how much the bounding bo
 
 ```python
 def calc_union_area(a, b):
+    # Find the minimum x-coordinate of the two rectangles
     x = min(a['x0'], b['x0'])
+    
+    # Find the minimum y-coordinate of the two rectangles
     y = min(a['y0'], b['y0'])
+    
+    # Find the maximum x-coordinate of the two rectangles
     w = max(a['x0']+a['width'], b['x0']+b['width']) - x
+    
+    # Find the maximum y-coordinate of the two rectangles
     h = max(a['y0']+a['height'], b['y0']+b['height']) - y
+    
+    # Return the area of the combined rectangle
     return w*h
 ```
 
@@ -2526,10 +3038,19 @@ def calc_union_area(a, b):
 
 ```python
 def calc_inter_area(a, b):
+    # Find the maximum x-coordinate of the two rectangles
     x = max(a['x0'], b['x0'])
+    
+    # Find the maximum y-coordinate of the two rectangles
     y = max(a['y0'], b['y0'])
+    
+    # Find the minimum x-coordinate of the two rectangles
     w = min(a['x0']+a['width'], b['x0']+b['width']) - x
+    
+    # Find the minimum y-coordinate of the two rectangles
     h = min(a['y0']+a['height'], b['y0']+b['height']) - y
+    
+    # Return the area of the intersecting rectangle
     return w*h
 ```
 
@@ -2538,32 +3059,38 @@ def calc_inter_area(a, b):
 
 ```python
 def nms_sorted_boxes(nms_thresh=0.45):
-    
+    # Initialize a list to store the indices of the proposals to keep
     proposal_indices = []
-    
-    # Iterate through the object proposals
+
+    # Loop over all proposals in the input list
     for i in range(len(proposals)):
-        
+        # Get the ith proposal
         a = proposals[i]
+
+        # Assume that we want to keep this proposal by default
         keep = True
 
-        # Check if the current object proposal overlaps any selected objects too much
+        # Loop over the indices of the proposals that we want to keep
         for j in proposal_indices:
-            
+            # Get the jth proposal
             b = proposals[j]
 
-            # Calculate the area where the two object bounding boxes overlap
+            # Compute the area of the intersection of the ith and jth proposals
             inter_area = calc_inter_area(a, b)
 
-            # Calculate the union area of both bounding boxes
+            # Compute the area of the union of the ith and jth proposals
             union_area = calc_union_area(a, b)
-            
-            # Ignore object proposals that overlap selected objects too much
-            if inter_area / union_area > nms_thresh: keep = False
 
-        # Keep object proposals that do not overlap selected objects too much
-        if keep: proposal_indices.append(i)
-    
+            # If the intersection of the ith and jth proposals is more than the specified non-max suppression
+            # threshold, we don't want to keep the ith proposal
+            if inter_area / union_area > nms_thresh:
+                keep = False
+
+        # If we want to keep the ith proposal, append its index to the list of proposal indices
+        if keep:
+            proposal_indices.append(i)
+
+    # Return the list of proposal indices
     return proposal_indices
 ```
 
@@ -2571,6 +3098,7 @@ def nms_sorted_boxes(nms_thresh=0.45):
 
 
 ```python
+# Set the non-max suppression threshold
 nms_thresh = 0.45
 ```
 
@@ -2578,13 +3106,16 @@ nms_thresh = 0.45
 
 
 ```python
+# Apply non-max suppression to the list of proposals with the specified non-max suppression threshold
 proposal_indices = nms_sorted_boxes(nms_thresh)
-proposal_indices
+
+# Print the list of proposal indices
+print(proposal_indices)
 ```
 
 
 ```text
-[0, 5]
+[0, 3]
 ```
 
 
@@ -2593,6 +3124,8 @@ proposal_indices
 
 
 ```python
+# Print the rows from the proposals DataFrame that correspond to the indices
+# returned by the non-max suppression algorithm
 proposals_df.iloc[proposal_indices]
 ```
 
@@ -2613,21 +3146,21 @@ proposals_df.iloc[proposal_indices]
   <tbody>
     <tr>
       <th>0</th>
-      <td>233.453819</td>
-      <td>345.319857</td>
-      <td>20.237036</td>
-      <td>39.237568</td>
+      <td>234.084399</td>
+      <td>345.059397</td>
+      <td>19.638884</td>
+      <td>40.022980</td>
       <td>no_gesture</td>
-      <td>0.892190</td>
+      <td>0.887864</td>
     </tr>
     <tr>
-      <th>5</th>
-      <td>153.331284</td>
-      <td>193.410838</td>
-      <td>38.274513</td>
-      <td>35.176327</td>
+      <th>3</th>
+      <td>154.565092</td>
+      <td>193.542165</td>
+      <td>35.063389</td>
+      <td>34.609722</td>
       <td>call</td>
-      <td>0.870502</td>
+      <td>0.876051</td>
     </tr>
   </tbody>
 </table>
@@ -2647,6 +3180,7 @@ Before we annotate the input image with the predicted bounding boxes, let's gene
 
 
 ```python
+# Import the distinctipy module
 from distinctipy import distinctipy
 ```
 
@@ -2654,6 +3188,7 @@ from distinctipy import distinctipy
 
 
 ```python
+# Use the distinctipy module to generate a list of colors with a length equal to the number of labels
 colors = distinctipy.get_colors(len(labels))
 ```
 
@@ -2661,6 +3196,7 @@ colors = distinctipy.get_colors(len(labels))
 
 
 ```python
+# Use the distinctipy module to generate a color swatch using the list of colors
 distinctipy.color_swatch(colors)
 ```
 ![](./images/output_184_0.png){fig-align="center"}
@@ -2669,6 +3205,7 @@ distinctipy.color_swatch(colors)
 
 
 ```python
+# Set the precision to 5 decimal places
 precision = 5
 ```
 
@@ -2676,50 +3213,181 @@ precision = 5
 
 
 ```python
+# Round the values in the list of colors to the specified precision
 colors = [[np.round(ch, precision) for ch in color] for color in colors]
-colors
+
+# Display the rounded list of colors using a Pandas Dataframe
+pd.DataFrame(colors)
 ```
 
 
-```text
-[[0.0, 1.0, 0.0],
- [1.0, 0.0, 1.0],
- [0.0, 0.5, 1.0],
- [1.0, 0.5, 0.0],
- [0.5, 0.75, 0.5],
- [0.30555, 0.01317, 0.67298],
- [0.87746, 0.03327, 0.29524],
- [0.05583, 0.48618, 0.15823],
- [0.95094, 0.48649, 0.83322],
- [0.0884, 0.99616, 0.95391],
- [1.0, 1.0, 0.0],
- [0.52176, 0.27352, 0.0506],
- [0.55398, 0.36059, 0.57915],
- [0.08094, 0.99247, 0.4813],
- [0.49779, 0.8861, 0.03131],
- [0.49106, 0.6118, 0.97323],
- [0.98122, 0.81784, 0.51752],
- [0.02143, 0.61905, 0.59307],
- [0.0, 0.0, 1.0]]
-```
-
-
+<div style="overflow-x:auto; max-height:500px">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.00000</td>
+      <td>1.00000</td>
+      <td>0.00000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.00000</td>
+      <td>0.00000</td>
+      <td>1.00000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.00000</td>
+      <td>0.50000</td>
+      <td>1.00000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.00000</td>
+      <td>0.50000</td>
+      <td>0.00000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.50000</td>
+      <td>0.75000</td>
+      <td>0.50000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0.32114</td>
+      <td>0.03531</td>
+      <td>0.64056</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0.80830</td>
+      <td>0.00115</td>
+      <td>0.02081</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>0.02177</td>
+      <td>0.42475</td>
+      <td>0.33483</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>0.72261</td>
+      <td>0.47583</td>
+      <td>0.99531</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>0.99715</td>
+      <td>0.97599</td>
+      <td>0.25699</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>0.00000</td>
+      <td>1.00000</td>
+      <td>1.00000</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>0.00000</td>
+      <td>1.00000</td>
+      <td>0.50000</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>0.65521</td>
+      <td>0.34251</td>
+      <td>0.38036</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>0.96712</td>
+      <td>0.62955</td>
+      <td>0.52852</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>0.48445</td>
+      <td>0.84111</td>
+      <td>0.01565</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>1.00000</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>0.54362</td>
+      <td>0.96123</td>
+      <td>0.90460</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>0.36779</td>
+      <td>0.44128</td>
+      <td>0.00059</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>0.97231</td>
+      <td>0.10181</td>
+      <td>0.49080</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+----
 
 **Annotate image using bounding box proposals**
 
 
 ```python
+# Create a copy of the test image
 annotated_img = test_img.copy()
+
+# Create a drawing context for the annotated image
 draw = ImageDraw.Draw(annotated_img)
+
+# Set the font size for the labels
 fnt_size = 25
+
+# Loop over the indices of the proposals that were selected by the non-max suppression algorithm
 for i in proposal_indices:
+    # Get the bounding box coordinates, label, and confidence score of the ith proposal
     x, y, w, h, l, p = proposals[i].values()
+
+    # Compute the shape of the bounding box
     shape = (x, y, x+w, y+h)
+
+    # Get the color for the ith proposal's label
     color = tuple([int(ch*255) for ch in colors[proposals[i]['label']]])
+
+    # Draw the bounding box on the annotated image using the computed shape and color
     draw.rectangle(shape, outline=color)
+
+    # Create a font object using the selected font and font size
     fnt = PIL.ImageFont.truetype("KFOlCnqEu92Fr1MmEU9vAw.ttf", fnt_size)
+
+    # Draw the label and confidence score on the annotated image using the font, color, and bounding box coordinates
     draw.multiline_text((x, y-fnt_size*2-5), f"{labels[l]}\n{p*100:.2f}%", font=fnt, fill=color)
+
+# Print the size of the annotated image
 print(annotated_img.size) 
+
+# Display the annotated image
 annotated_img
 ```
 
@@ -2731,14 +3399,36 @@ annotated_img
 
 
 
-**Create JSON colormap**
 
-We can export the colormap to a JSON file and import it into the Unity project. That way, we can easily swap colormaps for models trained on different datasets without changing any code.
+
+**Benchmark OpenVINO IR CPU inference speed**
 
 
 ```python
+%%timeit
+# Time how long it takes to run the compiled model on the input image
+# and extract the output from the specified layer
+compiled_model_ir([input_image])[output_layer_ir]
+```
+```text
+    12 ms ± 42.7 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+```
+
+
+
+We can export the colormap to a JSON file and import it into the Unity project. That way, we can easily swap colormaps for models trained on different datasets without changing any code.
+
+**Create JSON colormap**
+
+
+```python
+# Initialize the color map with an empty list of items
 color_map = {'items': list()}
+
+# Populate the color map with the labels and colors
 color_map['items'] = [{'label': label, 'color': color} for label, color in zip(labels, colors)]
+
+# Print the color map
 color_map
 ```
 
@@ -2749,20 +3439,20 @@ color_map
   {'label': 'dislike', 'color': [0.0, 0.5, 1.0]},
   {'label': 'fist', 'color': [1.0, 0.5, 0.0]},
   {'label': 'four', 'color': [0.5, 0.75, 0.5]},
-  {'label': 'like', 'color': [0.30555, 0.01317, 0.67298]},
-  {'label': 'mute', 'color': [0.87746, 0.03327, 0.29524]},
-  {'label': 'ok', 'color': [0.05583, 0.48618, 0.15823]},
-  {'label': 'one', 'color': [0.95094, 0.48649, 0.83322]},
-  {'label': 'palm', 'color': [0.0884, 0.99616, 0.95391]},
-  {'label': 'peace', 'color': [1.0, 1.0, 0.0]},
-  {'label': 'peace_inverted', 'color': [0.52176, 0.27352, 0.0506]},
-  {'label': 'rock', 'color': [0.55398, 0.36059, 0.57915]},
-  {'label': 'stop', 'color': [0.08094, 0.99247, 0.4813]},
-  {'label': 'stop_inverted', 'color': [0.49779, 0.8861, 0.03131]},
-  {'label': 'three', 'color': [0.49106, 0.6118, 0.97323]},
-  {'label': 'three2', 'color': [0.98122, 0.81784, 0.51752]},
-  {'label': 'two_up', 'color': [0.02143, 0.61905, 0.59307]},
-  {'label': 'two_up_inverted', 'color': [0.0, 0.0, 1.0]}]}
+  {'label': 'like', 'color': [0.32114, 0.03531, 0.64056]},
+  {'label': 'mute', 'color': [0.8083, 0.00115, 0.02081]},
+  {'label': 'ok', 'color': [0.02177, 0.42475, 0.33483]},
+  {'label': 'one', 'color': [0.72261, 0.47583, 0.99531]},
+  {'label': 'palm', 'color': [0.99715, 0.97599, 0.25699]},
+  {'label': 'peace', 'color': [0.0, 1.0, 1.0]},
+  {'label': 'peace_inverted', 'color': [0.0, 1.0, 0.5]},
+  {'label': 'rock', 'color': [0.65521, 0.34251, 0.38036]},
+  {'label': 'stop', 'color': [0.96712, 0.62955, 0.52852]},
+  {'label': 'stop_inverted', 'color': [0.48445, 0.84111, 0.01565]},
+  {'label': 'three', 'color': [0.0, 0.0, 1.0]},
+  {'label': 'three2', 'color': [0.54362, 0.96123, 0.9046]},
+  {'label': 'two_up', 'color': [0.36779, 0.44128, 0.00059]},
+  {'label': 'two_up_inverted', 'color': [0.97231, 0.10181, 0.4908]}]}
 ```
 
 
@@ -2771,14 +3461,19 @@ color_map
 
 
 ```python
+# Import the json module
 import json
 
+# Set the name of the file to which the color map will be written
 color_map_file_name = f"{dataset_path.name}-colormap.json"
 
+# Open the file in write mode
 with open(color_map_file_name, "w") as write_file:
+    # Write the color map to the file as JSON
     json.dump(color_map, write_file)
     
-color_map_file_name
+# Print the name of the file that the color map was written to
+print(color_map_file_name)
 ```
 
 
@@ -2795,7 +3490,7 @@ color_map_file_name
 
 ## Summary
 
-In this post, we finetuned an object detection model using the IceVision library and exported it as an OpenVINO IR model. Part 2 will cover creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform inference with this model using OpenVINO.
+We now have a template to train a YOLOX model using IceVision and export it to OpenVINO. We started by setting up a Conda environment and importing the necessary dependencies. Then, we configured the Kaggle API to download the dataset and created a parser to process the data. We defined DataLoader objects and fine-tuned the model before preparing it for export. We implemented post-processing steps for the model output and generated a colormap to visualize model predictions. In part 2, we will learn how to create a dynamic link library (DLL) file in Visual Studio to perform object detection with our YOLOX model using OpenVINO.
 
 
 

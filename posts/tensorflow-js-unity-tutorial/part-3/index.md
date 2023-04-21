@@ -1,5 +1,5 @@
 ---
-title: In-Browser Hand Gesture Recognition for Unity with Fastai and TensorFlow.js Pt. 3
+title: Using Fastai and TensorFlow.js for Hand Gesture Recognition in Unity Pt. 3
 date: 2022-10-6
 image: /images/empty.gif
 title-block-categories: true
@@ -36,7 +36,7 @@ categories: [fastai, unity, tensorflow, webgl]
 
 ## Overview
 
-[Part 2](../part-2/) covered implementing a hand gesture classifier in a Unity project as a [jslib plugin](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html). In this post, we'll host the Unity project as a shareable web demo using [GitHub Pages](https://pages.github.com/). The demo will run locally in the user's web browser.
+In Part 3 of this tutorial series, we will create a [GitHub Pages](https://pages.github.com/) repository to host our Unity project as a live demo. We will start by creating a repository and adding the Unity build files. Then, we will test the live demo to verify it works properly. By the end of this post, you will have a live demo of your hand gesture recognition system that you can share with others.
 
 
 
@@ -142,9 +142,7 @@ We can test the web demo at the URL provided by GitHub once the build workflow c
 
 ## Summary
 
-In this tutorial series, we trained a hand gesture classifier with the fastai library, created a TensorFlow.js plugin for Unity to perform inference in a web browser, built the Unity project as a shareable web demo, and hosted it for free using GitHub Pages. 
-
-Now that we have a general approach for using TensorFlow.js in Unity applications, we could extend the work in this tutorial by instead using one of the several [pretrained models](https://www.tensorflow.org/js/models) TensorFlow.js provides.
+In this tutorial series, we demonstrated how to use fastai and TensorFlow.js to create a hand gesture recognition system in Unity. In Part 1, we trained a hand gesture classifier using fastai and exported it to TensorFlow.js. In Part 2, we created a TensorFlow.js plugin for the Unity game engine. Finally, in this post, we hosted the Unity project as a live demo on GitHub Pages. With this tutorial series, you now have the tools and knowledge to use TensorFlow.js models in Unity applications.
 
 
 

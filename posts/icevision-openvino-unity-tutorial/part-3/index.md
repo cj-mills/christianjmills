@@ -1,5 +1,5 @@
 ---
-title: End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 3
+title: A Step-by-Step Guide to Object Detection in Unity with IceVision and OpenVINO Pt. 3
 date: 2022-8-10
 image: ../social-media/cover.jpg
 title-block-categories: true
@@ -49,7 +49,7 @@ open-graph:
 
 ## Overview
 
-[Part 2](../part-2/) covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform object detection using [OpenVINO](https://docs.openvino.ai/latest/index.html). This post covers building a project in Unity that leverages this DLL.
+In part 3 of this tutorial series, we will integrate the trained YOLOX model into a Unity project to perform real-time object detection. We will begin by creating a new Unity project and importing the necessary assets. Then, we will allow unsafe code in our project to share input data with the DLL file. Next, we will create a processing shader and an object detector script to handle object detection in our Unity project. Lastly, we will set up the Unity scene and test our object detection model in the editor. By the end of this post, you will know how to add object detection functionality to a Unity project.
 
 
 
@@ -1669,7 +1669,7 @@ There should be a bounding box for the call sign and one for the idle hand.
 
 ## Summary
 
-In this tutorial series, we covered how to train a YOLOX model with the IceVision library, created a DLL to perform inference with the model using OpenVINO, and built a simple Unity project that leveraged this DLL.
+In this three-part tutorial series, we learned how to perform end-to-end object detection in Unity using IceVision and OpenVINO. In part 1, we trained a YOLOX model using IceVision and exported it to OpenVINO. In part 2, we created a dynamic link library (DLL) file in Visual Studio to perform object detection with the YOLOX model using OpenVINO. Finally, in this post, we integrated the trained model into a Unity project to perform real-time object detection. You now have a template to perform object detection in Unity that you can adapt to other projects.
 
 
 

@@ -1,6 +1,4 @@
 ---
-aliases:
-- /log/project/unity/2020/10/19/Barracuda-Pose-Estimation-Project-Log-5
 categories:
 - unity
 - log
@@ -14,6 +12,7 @@ toc: false
 
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-5/
+- /log/project/unity/2020/10/19/Barracuda-Pose-Estimation-Project-Log-5
 ---
 
 ### Update 7/31/2021: [Barracuda PoseNet Tutorial 2nd Edition](../../barracuda-posenet-tutorial-v2/part-1/)

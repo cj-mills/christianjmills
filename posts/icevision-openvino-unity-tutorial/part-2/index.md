@@ -1,5 +1,5 @@
 ---
-title: End-to-End Object Detection for Unity With IceVision and OpenVINO Pt. 2
+title: A Step-by-Step Guide to Object Detection in Unity with IceVision and OpenVINO Pt. 2
 date: 2022-8-9
 image: ../social-media/cover.jpg
 layout: post
@@ -50,7 +50,11 @@ open-graph:
 
 ## Overview
 
-[Part 1](../part-1/) covered finetuning an object detection model using the IceVision library and exporting it as an OpenVINO IR model. This post covers creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform inference with this model using [OpenVINO](https://docs.openvino.ai/latest/index.html).
+In part 2 of this tutorial series, we will create a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file in Visual Studio to perform object detection with a YOLOX model using [OpenVINO](https://docs.openvino.ai/latest/). 
+
+We will begin by installing OpenVINO and creating a DLL project in Visual Studio. Then, we will configure the project by adding the necessary include directories and linking the required libraries. We will also set up post-build events to automatically gather the DLL's dependencies. Next, we will update the precompiled header and dllmain files to include the necessary code for object detection. Finally, we will build the project to generate the DLL file. 
+
+By the end of this post, you will have a DLL file that you can use for object detection in Unity.
 
 > **Important:** This post assumes [Visual Studio](https://visualstudio.microsoft.com/downloads/) is present on your system.
 
@@ -969,7 +973,7 @@ We'll need to copy all the DLL files in this folder and the plugins.xml file to 
 
 ## Summary
 
-This post covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform inference with a YOLOX model using [OpenVINO](https://docs.openvino.ai/latest/index.html). In part 3, we build a project in [Unity](https://unity.com/) that uses this DLL.
+In this post, we learned how to create a dynamic link library (DLL) file in Visual Studio to perform object detection with a YOLOX model using OpenVINO. We installed OpenVINO, created a DLL project in Visual Studio, and configured the project by adding include directories and linking libraries. We also set up post-build events to gather the required dependencies for our DLL file and updated the precompiled header and dllmain files to include the necessary code for object detection. Finally, we built the project to generate the DLL file. In part 3, we will integrate this DLL into a Unity project to perform real-time object detection with a YOLOX model.
 
 
 

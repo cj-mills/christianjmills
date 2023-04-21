@@ -1,5 +1,5 @@
 ---
-title: In-Browser Object Detection for Unity with TensorFlow.js
+title: Using TensorFlow.js for In-Browser Object Detection in Unity
 date: 2022-10-16
 image: /images/empty.gif
 title-block-categories: true
@@ -13,6 +13,8 @@ comments:
 description: Create a [TensorFlow.js](https://www.tensorflow.org/js) plugin for the [Unity](https://unity.com/) game engine to perform object detection with a [YOLOX](https://arxiv.org/abs/2107.08430) model.
 categories: [unity, tensorflow, webgl, yolox, object-detection]
 ---
+
+
 
 * [Overview](#overview)
 * [Convert Model to TFJS](#convert-model-to-tfjs)
@@ -31,7 +33,7 @@ categories: [unity, tensorflow, webgl, yolox, object-detection]
 
 ## Overview
 
-This follow-up post covers modifying the Unity project from the [In-Browser Hand Gesture Recognition for Unity with Fastai and TensorFlow.js ](../tensorflow-js-unity-tutorial/part-1/) tutorial to perform object detection with a [YOLOX](https://arxiv.org/abs/2107.08430) model.
+This follow-up post shows you how to modify an existing Unity project from a [previous tutorial](http://../tensorflow-js-unity-tutorial/part-1/) to use TensorFlow.js for in-browser object detection. We will begin by converting a pre-existing model to the TensorFlow.js format and importing it into Unity. Next, we will update the JavaScript utility file and the jslib plugin from the original project. After setting up the plugin, we will create a script to implement the object detector in Unity and update our scene to use it. Finally, we will test the project in-browser to ensure it works properly.
 
 
 
@@ -44,6 +46,7 @@ This follow-up post covers modifying the Unity project from the [In-Browser Hand
 * [GitHub Repository](https://github.com/cj-mills/tfjs-yolox-unity-tutorial): The final Unity project for this tutorial.
 * [Colormaps](https://drive.google.com/drive/folders/1sTU5fiG6mmq19fWzpmptBNJNN4qhN_yi?usp=sharing): A JSON colormap file that maps each object class to a distinct color.
 * [TFJSModels](https://drive.google.com/drive/folders/1kuSyQcW032Is1o1a3n8w9LGzdL_d44aC?usp=sharing): A YOLOX model in TensorFlow.js format.
+* [In-Browser Hand Gesture Recognition for Unity with Fastai and TensorFlow.js ](../tensorflow-js-unity-tutorial/part-1/): The previous tutorial.
 
 
 
@@ -1730,7 +1733,7 @@ Performance seems slightly better when in full-screen mode.
 
 ## Summary
 
-This post covered implementing a TensorFlow.js plugin in a Unity project to perform to perform object detection with a [YOLOX](https://arxiv.org/abs/2107.08430) model.
+In this follow-up tutorial, we showed you how to use TensorFlow.js for in-browser object detection in Unity. We began by converting our model to TFJS and importing the necessary assets. Next, we updated our JavaScript and jslib plugin files. We then created an object detector script and updated our Unity scene to use it. Finally, we tested everything in the browser to ensure that our project worked as expected. With this tutorial, you should now be able to use TensorFlow.js for in-browser object detection in your Unity projects.
 
 
 

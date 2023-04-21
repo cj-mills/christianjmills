@@ -1,5 +1,5 @@
 ---
-title: In-Browser Hand Gesture Recognition for Unity with Fastai and TensorFlow.js Pt. 1
+title: Using Fastai and TensorFlow.js for Hand Gesture Recognition in Unity Pt. 1
 date: 2022-10-4
 image: /images/empty.gif
 title-block-categories: true
@@ -45,7 +45,7 @@ categories: [fastai, unity, tensorflow, webgl]
 
 ## Introduction
 
-In this tutorial series, we will walk through training a hand gesture classifier using the [fastai library](https://docs.fast.ai/). We'll then create a [TensorFlow.js](https://www.tensorflow.org/js/) plugin for the [Unity](https://unity.com/) game engine to perform inference in [WebGL](https://www.khronos.org/webgl/wiki/Getting_Started) applications.
+In this three-part tutorial series, we will use [fastai](https://docs.fast.ai/) and [TensorFlow.js](https://www.tensorflow.org/js/) to create an in-browser hand gesture recognition system in [Unity](https://unity.com/). In Part 1, we will train a hand gesture classifier using fastai and export it to TensorFlow.js. In Part 2, we will create a TensorFlow.js plugin for the Unity game engine. Finally, in Part 3, we will host the Unity project as a live demo on GitHub Pages. By the end of this tutorial series, you will have a hand gesture recognition system that you can use in your Unity projects.
 
 **In-Browser Demo:** [Hand Gesture Classifier](https://cj-mills.github.io/fastai-hand-gesture-classifier-webgl-demo/)
 
@@ -145,7 +145,11 @@ We can use a model trained on this dataset to map hand gestures to user input vi
 
 ## Overview
 
-This post covers finetuning an image classifier from the [timm library](https://github.com/rwightman/pytorch-image-models) and exporting the model to TensorFlow.js format. A link to the training notebook is below, along with links for training on [Google Colab](https://colab.research.google.com/?utm_source=scs-index) and [Kaggle](https://www.kaggle.com/docs/notebooks).
+In Part 1 of this tutorial series, we finetune an image classifier from the [timm library](https://github.com/rwightman/pytorch-image-models) using fastai and export it to TensorFlow.js. We will start by installing and importing the necessary dependencies. Then, we will select a model to use and download a dataset to train it. After inspecting the dataset, we will define data loaders to use for training. Finally, we will finetune and export the model. We also demonstrate how to clean the dataset to improve training. By the end of this post, you will have a trained hand gesture classifier that you can use in web applications.
+
+
+
+You can find links to view the training code and run it on [Google Colab](https://colab.research.google.com/?utm_source=scs-index) and [Kaggle](https://www.kaggle.com/docs/notebooks) below.
 
 | Jupyter Notebook             | Colab                                                        | Kaggle                                                       |
 | --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -2146,7 +2150,7 @@ with open(class_labels_file_name, "w") as write_file:
 
 ## Summary
 
-This post covered finetuning an image classifier using the fastai library and exporting it to TensorFlow.js web format. Part 2 covers implementing a [jslib plugin](https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html) in a Unity project to perform inference with the trained model.
+In this post, we finetuned an image classifier from the timm library using fastai and exported it to TensorFlow.js. We started by installing and importing the necessary dependencies, then selected a model to use and downloaded a dataset to train it. After inspecting the dataset, we defined data loaders to use for training. Finally, we finetuned and exported the model. We also demonstrated how to clean the dataset to improve training. With this completed, we are ready to move on to Part 2 of this tutorial series, where we will create a TensorFlow.js plugin for the Unity game engine.
 
 
 

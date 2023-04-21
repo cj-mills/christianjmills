@@ -1,5 +1,5 @@
 ---
-title: Object Detection for Unity With ONNX Runtime and DirectML Pt. 2
+title: Real-Time Object Detection in Unity With ONNX and DirectML Pt. 2
 date: 8-19-2022
 image: ../social-media/cover.jpg
 title-block-categories: true
@@ -46,7 +46,7 @@ open-graph:
 
 ## Overview
 
-[Part 1](../part-1/) covered creating a dynamic link library ([DLL](https://docs.microsoft.com/en-us/troubleshoot/windows-client/deployment/dynamic-link-library)) file to perform object detection using ONNX Runtime and DirectML. This post covers building a project in Unity that leverages the DLL.
+In Part 2 of this tutorial series, we will integrate our DLL file into a Unity project to perform real-time object detection. We will start by creating a new Unity project and importing the necessary assets. Then, we will allow unsafe code in the project to share input data with the DLL. Next, we will create a processing shader and an object detector script to handle object detection in our Unity project. Finally, we will set up the Unity scene and test the object detection model in the Unity editor. By the end of this post, you will have a working real-time object detection system in Unity for Windows.
 
 
 
@@ -1689,7 +1689,7 @@ There should be a bounding box for the call sign and one for the idle hand.
 
 ## Summary
 
-In this tutorial series, we created a DLL to perform object detection using ONNX Runtime and DirectML, and built a simple Unity project that leveraged this DLL.
+In this two-part tutorial series, you learned how to implement real-time object detection in Unity using ONNX Runtime and DirectML. In Part 1, we created a dynamic link library (DLL) file in Visual Studio to perform object detection with ONNX Runtime and DirectML. In this post, we integrated this DLL file into a Unity project and performed real-time object detection. You should now have the skills and knowledge to leverage ONNX Runtime and DirectML in your Unity projects.
 
 
 
