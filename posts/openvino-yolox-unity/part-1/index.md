@@ -9,13 +9,11 @@ date: 2021-10-6
 description: This post covers the prerequisite software, pretrained object detection
   models, and test videos used in the tutorial.
 hide: false
-layout: post
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
 title: OpenVINO Object Detection for Unity Tutorial Pt.1 (Outdated)
-toc: false
 
 aliases:
 - /OpenVINO-Object-Detection-for-Unity-Tutorial-1/

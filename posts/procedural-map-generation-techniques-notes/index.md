@@ -2,8 +2,6 @@
 title: Notes on Procedural Map Generation Techniques
 date: 2021-12-9
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

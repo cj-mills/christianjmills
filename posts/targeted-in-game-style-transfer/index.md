@@ -7,13 +7,11 @@ date: 2021-7-4
 description: This post covers how to select which game objects get stylized in the
   Unity scene.
 hide: false
-layout: post
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
 title: Targeted In-Game Style Transfer Tutorial
-toc: false
 
 aliases:
 - /Targeted-In-Game-Style-Transfer-Tutorial/

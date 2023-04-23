@@ -3,14 +3,12 @@ title: Using Fastai and TensorFlow.js for Hand Gesture Recognition in Unity Pt. 
 date: 2022-10-6
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: Build a Unity project as a [WebGL](https://www.khronos.org/webgl/wiki/Getting_Started) application and host it using [GitHub Pages](https://pages.github.com/).
+description: Build a Unity project as a WebGL application and host it using GitHub Pages.
 categories: [fastai, unity, tensorflow, webgl]
 
 ---

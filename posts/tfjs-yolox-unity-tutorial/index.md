@@ -3,14 +3,12 @@ title: Using TensorFlow.js for In-Browser Object Detection in Unity
 date: 2022-10-16
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: Create a [TensorFlow.js](https://www.tensorflow.org/js) plugin for the [Unity](https://unity.com/) game engine to perform object detection with a [YOLOX](https://arxiv.org/abs/2107.08430) model.
+description: Create a TensorFlow.js plugin for the Unity game engine to perform object detection with a YOLOX model.
 categories: [unity, tensorflow, webgl, yolox, object-detection]
 ---
 
@@ -33,7 +31,7 @@ categories: [unity, tensorflow, webgl, yolox, object-detection]
 
 ## Overview
 
-This follow-up post shows you how to modify an existing Unity project from a [previous tutorial](http://../tensorflow-js-unity-tutorial/part-1/) to use TensorFlow.js for in-browser object detection. We will begin by converting a pre-existing model to the TensorFlow.js format and importing it into Unity. Next, we will update the JavaScript utility file and the jslib plugin from the original project. After setting up the plugin, we will create a script to implement the object detector in Unity and update our scene to use it. Finally, we will test the project in-browser to ensure it works properly.
+This follow-up post shows you how to modify an existing Unity project from a [previous tutorial](http://../tensorflow-js-unity-tutorial/part-1/) to use [TensorFlow.js](https://www.tensorflow.org/js) for in-browser object detection. We will begin by converting a pre-existing model to the TensorFlow.js format and importing it into [Unity](https://unity.com/). Next, we will update the JavaScript utility file and the jslib plugin from the original project. After setting up the plugin, we will create a script to implement the object detector in Unity and update our scene to use it. Finally, we will test the project in-browser to ensure it works properly.
 
 
 

@@ -2,8 +2,6 @@
 title: Create a Triangle Motion Graphic with the Blender Python API
 date: 3-27-2021
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

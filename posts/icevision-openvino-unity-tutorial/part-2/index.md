@@ -2,8 +2,6 @@
 title: A Step-by-Step Guide to Object Detection in Unity with IceVision and OpenVINO Pt. 2
 date: 2022-8-9
 image: ../social-media/cover.jpg
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

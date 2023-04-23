@@ -8,10 +8,8 @@ date: '2021-12-29'
 description: My notes from Tobias Gunther's video covering tools and concepts for
   version control with git.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on Version Control
-toc: false
 
 ---
 

@@ -6,10 +6,8 @@ categories:
 date: 2021-12-9
 description: My notes from Ben Berman's 2017 talk on machine learning and level generation.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on Machine Learning and Level Generation
-toc: false
 
 aliases:
 - /Notes-on-Machine-Learning-and-Level-Generation/

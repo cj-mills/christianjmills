@@ -3,8 +3,6 @@ title: How to Create an OpenVINO Plugin for Unity on Windows Pt. 1
 date: 2022-7-17
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

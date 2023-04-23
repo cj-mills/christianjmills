@@ -6,10 +6,8 @@ date: '2020-09-24'
 description: I'm an idiot.
 hide: false
 image: ./images/pose_estimation_corrected_offsets.gif
-layout: post
 search_exclude: false
 title: Barracuda Pose Estimation Project Log Pt. 4
-toc: false
 
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-4/

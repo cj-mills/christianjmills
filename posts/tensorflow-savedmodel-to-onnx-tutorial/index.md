@@ -3,8 +3,6 @@ title: How to Convert TensorFlow Models to ONNX with tf2onnx
 date: '2020-10-21'
 
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

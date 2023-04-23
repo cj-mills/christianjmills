@@ -2,14 +2,8 @@
 title: Exploring the Impact of Different Image Augmentations on Hand Gesture Recognition
 date: 2023-3-9
 image: ./images/img-aug-visualization-preview.png
-title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 categories: [miniai]
 description: Explore how data augmentation can improve a computer vision model's ability to generalize to new input using a hand gesture dataset.
 
@@ -2500,4 +2494,6 @@ The models run locally in your browser using the [Barracuda](https://docs.unity3
 
 
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
+
+
 

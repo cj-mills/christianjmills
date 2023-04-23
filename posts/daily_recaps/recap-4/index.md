@@ -4,10 +4,8 @@ categories:
 date: 2021-4-28
 description: A summary of what I worked on today.
 hide: false
-layout: post
 search_exclude: false
 title: Daily Recap
-toc: false
 
 aliases:
 - /Daily-Recap-4/

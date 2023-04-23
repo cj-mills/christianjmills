@@ -2,8 +2,6 @@
 title: Create a Shape Key Motion Graphic with the Blender Python API
 date: 2021-3-24
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

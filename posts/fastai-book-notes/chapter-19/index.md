@@ -3,8 +3,6 @@ title: Notes on fastai Book Ch. 19
 date: 2022-3-29
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

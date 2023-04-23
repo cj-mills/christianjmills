@@ -3,8 +3,6 @@ title: How to Crop Images With a GPU in Unity
 date: '3-20-2021'
 image: ./images/crop_image_on_gpu_unity_1.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

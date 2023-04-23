@@ -6,10 +6,8 @@ date: 2022-5-27
 description: My notes on Emil Wallner's guide on how to land your first machine learning
   job without a degree.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on No ML Degree Book
-toc: false
 
 aliases:
 - /Notes-on-No-ML-Degree-Book/

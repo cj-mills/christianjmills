@@ -8,10 +8,8 @@ categories:
 date: 2022-1-2
 description: My notes and reference examples for working with the Streamlit API.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on the Streamlit API
-toc: false
 
 aliases:
 - /Notes-on-Streamlit-API/

@@ -3,8 +3,6 @@ title: Notes on Transformers Book Ch. 3
 date: 2022-4-6
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

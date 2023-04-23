@@ -4,8 +4,6 @@ date: '2020-10-25'
 image: /images/empty.gif
 title-block-categories: true
 layout: post
-toc: false
-hide: false
 search_exclude: false
 comments:
   utterances:

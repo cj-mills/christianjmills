@@ -3,8 +3,6 @@ title: Fastai to Unity Beginner Tutorial Pt. 1
 date: 2022-6-6
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

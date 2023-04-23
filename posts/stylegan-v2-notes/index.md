@@ -7,10 +7,8 @@ categories:
 date: '2021-12-16'
 description: My notes on the overview of StyleGANv2 by Henry AI Labs.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on StyleGANv2
-toc: false
 
 ---
 

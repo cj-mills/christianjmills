@@ -6,11 +6,9 @@ date: '2020-12-20'
 description: Examining results from longer training sessions and Unity's implementation
   in Kinematica demo.
 hide: false
-layout: post
 permalink: /:title/
 search_exclude: false
 title: In-Game Style Transfer Experiments Pt.2
-toc: false
 
 aliases:
 - /In-Game-Style-Transfer-Experiments-2/

@@ -3,8 +3,6 @@ title: Barracuda PoseNet Tutorial Pt. 4 (Outdated)
 date: '2020-11-12'
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

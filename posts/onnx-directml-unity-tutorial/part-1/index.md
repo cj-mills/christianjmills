@@ -3,8 +3,6 @@ title: Real-Time Object Detection in Unity With ONNX and DirectML Pt. 1
 date: 8-18-2022
 image: ../social-media/cover.jpg
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

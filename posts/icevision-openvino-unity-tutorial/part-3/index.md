@@ -3,8 +3,6 @@ title: A Step-by-Step Guide to Object Detection in Unity with IceVision and Open
 date: 2022-8-10
 image: ../social-media/cover.jpg
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:
@@ -1683,5 +1681,5 @@ In this three-part tutorial series, we learned how to perform end-to-end object 
 
 
 
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
+{{< include ../../../_cloudflare-analytics.qmd >}}
 

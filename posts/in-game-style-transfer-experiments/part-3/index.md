@@ -3,8 +3,6 @@ title: In-Game Style Transfer Experiments Pt.3
 date: 2021-1-6
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 description: Examining results from my initial attempts to optimize the fast neural

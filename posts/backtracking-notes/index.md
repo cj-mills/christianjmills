@@ -2,8 +2,6 @@
 title: Notes on Backtracking Problems in Python
 date: '2021-12-31'
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

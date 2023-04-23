@@ -9,10 +9,8 @@ date: '2021-12-29'
 description: My notes from Jason Wiser's talk on how he teaches a class that covers
   5 semesters worth of game design in a single semester.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on How to Teach 5 Semesters of Game Design in 1 Class
-toc: false
 
 ---
 

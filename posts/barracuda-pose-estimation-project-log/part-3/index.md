@@ -5,10 +5,8 @@ categories:
 date: '2020-09-22'
 description: I might be doing something wrong.
 hide: false
-layout: post
 search_exclude: false
 title: Barracuda Pose Estimation Project Log Pt. 3
-toc: true
 
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-3/

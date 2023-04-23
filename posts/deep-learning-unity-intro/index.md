@@ -3,8 +3,6 @@ title: Getting Started With Deep Learning in Unity
 date: 2022-5-28
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

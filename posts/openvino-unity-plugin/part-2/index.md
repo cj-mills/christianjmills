@@ -3,8 +3,6 @@ title: OpenVINO Plugin for Unity Tutorial Pt. 2
 date: 2021-7-6
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

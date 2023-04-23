@@ -8,13 +8,11 @@ date: 2022-5-5
 description: Unit 1 introduces the basic concepts for reinforcement learning and covers
   how to train an agent for the classic lunar lander environment.
 hide: false
-layout: post
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
 title: Notes on The Hugging Face Deep RL Class Pt.1
-toc: false
 
 aliases:
 - /Notes-on-HF-Deep-Reinforcement-Learning-Class-1/

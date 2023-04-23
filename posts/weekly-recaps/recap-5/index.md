@@ -4,10 +4,8 @@ categories:
 date: 2021-3-12
 description: A summary of what I've been working on for the past few weeks.
 hide: false
-layout: post
 search_exclude: false
 title: Weekly Recap
-toc: false
 
 aliases:
 - /Weekly-Recap-5/

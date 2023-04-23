@@ -3,8 +3,6 @@ title: End-to-End In-Game Style Transfer Tutorial Addendum
 date: 2021-3-20
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

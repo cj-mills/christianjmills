@@ -5,10 +5,8 @@ categories:
 date: '2020-09-21'
 description: Trying to remove bottlenecks.
 hide: false
-layout: post
 search_exclude: false
 title: Barracuda Pose Estimation Project Log Pt. 2
-toc: false
 
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-2/

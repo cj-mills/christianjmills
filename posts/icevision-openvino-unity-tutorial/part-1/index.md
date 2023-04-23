@@ -3,8 +3,6 @@ title: A Step-by-Step Guide to Object Detection in Unity with IceVision and Open
 date: 2022-8-8
 image: ../social-media/cover.jpg
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

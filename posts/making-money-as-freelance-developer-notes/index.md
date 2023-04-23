@@ -8,10 +8,8 @@ date: '2021-12-16'
 description: My notes on some tips for making money as a freelance developer by Luke
   Ciciliano on freeCodeCamp.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on Making Money as a Freelance Developer
-toc: false
 
 ---
 

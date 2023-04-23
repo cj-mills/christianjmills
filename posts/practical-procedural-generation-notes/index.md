@@ -8,10 +8,8 @@ date: '2021-12-29'
 description: My notes from Kate Compton's talk on practical techniques for procedural
   generation.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on Practical Procedural Generation
-toc: false
 
 ---
 

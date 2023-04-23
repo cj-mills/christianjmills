@@ -3,8 +3,6 @@ title: Using Fastai and TensorFlow.js for Hand Gesture Recognition in Unity Pt. 
 date: 2022-10-5
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

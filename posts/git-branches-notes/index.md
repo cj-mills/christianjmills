@@ -7,10 +7,8 @@ categories:
 date: '2021-12-29'
 description: My notes from Tobias Gunther's video covering git branches.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on Git Branches
-toc: false
 
 ---
 

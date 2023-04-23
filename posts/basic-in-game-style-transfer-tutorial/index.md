@@ -3,8 +3,6 @@ title: Basic In-Game Style Transfer Tutorial (Outdated)
 date: 2020-12-8
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

@@ -3,8 +3,6 @@ title: How to Flip an Image With a Compute Shader
 date: 2021-3-21
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

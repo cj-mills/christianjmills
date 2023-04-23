@@ -8,13 +8,11 @@ date: 2022-3-29
 description: Chapter 15 provides a deep dive into different application architectures
   in the fast.ai library.
 hide: false
-layout: post
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
 title: Notes on fastai Book Ch. 15
-toc: false
 
 aliases:
 - /Notes-on-Fastai-Book-15/

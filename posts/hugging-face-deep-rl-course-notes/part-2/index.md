@@ -8,13 +8,11 @@ date: 2022-5-26
 description: Unit 2 introduces monte carlo, temporal difference learning, and Q-learning.
 image: ./images/frozen_lake.gif
 hide: false
-layout: post
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
 title: Notes on The Hugging Face Deep RL Class Pt.2
-toc: false
 
 aliases:
 - /Notes-on-HF-Deep-Reinforcement-Learning-Class-2/

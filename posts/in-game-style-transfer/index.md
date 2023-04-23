@@ -7,10 +7,8 @@ categories:
 date: '2020-10-19'
 description: Some optimization is still required.
 hide: false
-layout: post
 search_exclude: false
 title: In-Game Style Transfer
-toc: false
 
 ---
 

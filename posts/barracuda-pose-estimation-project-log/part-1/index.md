@@ -5,10 +5,8 @@ categories:
 date: '2020-09-16'
 description: The journey so far.
 hide: false
-layout: post
 search_exclude: false
 title: Barracuda Pose Estimation Project Log Pt. 1
-toc: false
 
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-1/

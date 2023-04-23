@@ -8,11 +8,8 @@ date: '2021-12-28'
 description: My notes from Martin Donald's video on using the WaveFunctionCollapse
   algorithm for 3D modules.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on WaveFunctionCollapse for 3D
-toc: false
-
 ---
 
 * [Overview](#overview)

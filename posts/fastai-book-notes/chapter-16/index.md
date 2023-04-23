@@ -8,13 +8,11 @@ date: 2022-3-29
 description: Chapter 16 covers momentum, RMSProp, Adam, decoupled weight decay, and
   fast.ai callbacks.
 hide: false
-layout: post
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
 title: Notes on fastai Book Ch. 16
-toc: false
 
 aliases:
 - /Notes-on-Fastai-Book-16/

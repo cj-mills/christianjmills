@@ -14,7 +14,6 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 title: End-to-End In-Game Style Transfer Tutorial Pt.3
-toc: false
 
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-3/

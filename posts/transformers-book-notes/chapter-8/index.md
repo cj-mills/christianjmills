@@ -3,8 +3,6 @@ title: Notes on Transformers Book Ch. 8
 date: 2022-4-14
 image: /images/empty.gif
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:

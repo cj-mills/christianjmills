@@ -6,10 +6,8 @@ date: 2021-1-12
 description: I got the video stylization model to work properly in Unity and found
   some weaknesses in the fast neural style model.
 hide: false
-layout: post
 search_exclude: false
 title: In-Game Style Transfer Experiments Pt.5
-toc: false
 
 aliases:
 - /In-Game-Style-Transfer-Experiments-5/

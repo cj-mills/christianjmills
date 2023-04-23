@@ -5,10 +5,8 @@ categories:
 date: '2020-10-19'
 description: Back to it.
 hide: false
-layout: post
 search_exclude: false
 title: Barracuda Pose Estimation Project Log Pt. 5
-toc: false
 
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-5/

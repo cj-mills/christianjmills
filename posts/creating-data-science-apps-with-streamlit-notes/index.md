@@ -9,10 +9,8 @@ date: 2022-1-2
 description: My notes from Chanin Nantasenamat's video on creating data science web
   apps with Streamlit.
 hide: false
-layout: post
 search_exclude: false
 title: Notes on Creating Data Science Apps With Streamlit
-toc: false
 
 aliases:
 - /Notes-on-Creating-Data-Science-Apps-With-Streamlit/

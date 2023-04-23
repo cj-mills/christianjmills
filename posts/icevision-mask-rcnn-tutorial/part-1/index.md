@@ -3,15 +3,13 @@ title: Training a Mask R-CNN Model on a Custom Dataset With IceVision
 date: 2022-12-2
 image: ./images/student-id-sample-annotation.jpg
 title-block-categories: true
-layout: post
-toc: false
 hide: false
 search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
 categories: [icevision, mask-rcnn, object-detection, instance-segmentation, tutorial]
-description: Train a [Mask R-CNN](https://arxiv.org/abs/1703.06870) model on a custom dataset using the [IceVision](https://airctic.com/0.11.0/) library and perform inference with [ONNX Runtime](https://onnxruntime.ai/).
+description: Train a Mask R-CNN model on a custom dataset using the IceVision library and perform inference with ONNX Runtime.
 
 twitter-card:
   creator: "@cdotjdotmills"
@@ -50,7 +48,7 @@ open-graph:
 
 ## Overview
 
-This tutorial shows how to train a Mask R-CNN model on a custom dataset using the IceVision library. It also demonstrates how to export the trained model to the [ONNX](https://onnx.ai/) format and perform inference using [ONNX Runtime](https://onnxruntime.ai/).
+This tutorial shows how to train a [Mask R-CNN](https://arxiv.org/abs/1703.06870) model on a custom dataset using the [IceVision](https://airctic.com/0.11.0/) library. It also demonstrates how to export the trained model to the [ONNX](https://onnx.ai/) format and perform inference using [ONNX Runtime](https://onnxruntime.ai/).
 
 We will use a pre-existing dataset of annotated student ID card images for training. I plan to show how to create a custom dataset from scratch in a future post, including how to annotate the images and prepare them for training.
 
