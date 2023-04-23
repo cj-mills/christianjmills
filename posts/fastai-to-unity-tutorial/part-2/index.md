@@ -9,7 +9,7 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 description: Classify images in a Unity project with the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html) inference library.
-categories: [fastai, unity, barracuda]
+categories: [fastai, unity, barracuda, tutorial]
 
 aliases:
 - /Fastai-to-Unity-Tutorial-2/

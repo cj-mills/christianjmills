@@ -9,7 +9,7 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 description: Train an image classifier using the fastai library and export it to [ONNX](https://onnx.ai/).
-categories: [fastai, unity, barracuda]
+categories: [fastai, unity, barracuda, tutorial]
 
 aliases:
 - /Fastai-to-Unity-Tutorial-1/

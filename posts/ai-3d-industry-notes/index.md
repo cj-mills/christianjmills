@@ -2,6 +2,7 @@
 categories:
 - ai
 - 3d
+- procedural-generation
 - notes
 date: 2021-12-9
 description: My notes from Andrew Price's talk at Blender Conference 2018 on how A.I.

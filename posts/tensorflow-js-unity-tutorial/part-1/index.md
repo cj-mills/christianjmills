@@ -9,7 +9,7 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 description: Train a hand gesture classifier using [fastai](https://docs.fast.ai/) and export it to [TensorFlow.js](https://www.tensorflow.org/js/).
-categories: [fastai, unity, tensorflow, webgl]
+categories: [fastai, unity, tensorflow, webgl, tutorial]
 
 ---
 

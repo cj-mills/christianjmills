@@ -9,7 +9,7 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 description: Modify the training code from the [fastai-to-unity tutorial](../../fastai-to-unity-tutorial/part-1/) to export the model to a [TorchScript](https://pytorch.org/docs/stable/jit.html) module.
-categories: [fastai, libtorch, unity]
+categories: [fastai, libtorch, unity, tutorial]
 
 aliases:
 - /Fastai-to-LibTorch-to-Unity-Tutorial-Windows-1/

@@ -9,7 +9,7 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 description: Modify the training code from the [fastai-to-unity tutorial](../../fastai-to-unity-tutorial/part-1/) to export the model to [OpenVINO](https://docs.openvino.ai/latest/index.html).
-categories: [fastai, openvino, unity]
+categories: [fastai, openvino, unity, tutorial]
 
 aliases:
 - /Fastai-to-OpenVINO-to-Unity-Tutorial-Windows-1/

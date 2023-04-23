@@ -9,7 +9,7 @@ comments:
   utterances:
     repo: cj-mills/christianjmills
 description: Build a Unity project as a WebGL application and host it using GitHub Pages.
-categories: [fastai, unity, barracuda]
+categories: [fastai, unity, barracuda, tutorial]
 
 aliases:
 - /Fastai-to-Unity-Tutorial-3/

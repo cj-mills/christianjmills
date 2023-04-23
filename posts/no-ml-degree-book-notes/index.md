@@ -1,6 +1,6 @@
 ---
 categories:
-- career
+- professional-growth
 - notes
 date: 2022-5-27
 description: My notes on Emil Wallner's guide on how to land your first machine learning

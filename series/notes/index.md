@@ -1,19 +1,20 @@
 ---
-title: "Tutorials"
+title: "Notes"
 listing:
   contents: ./
   sort: 
     - "date desc"
   type: default
-  categories: numbered
   fields: [
     title, 
     date,  
-    categories, 
+    categories,
     description
     ]
 page-layout: full
 title-block-banner: false
 ---
+
+
 
 {{< include ../../_cloudflare-analytics.qmd >}}

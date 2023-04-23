@@ -3,7 +3,7 @@ aliases:
 - /Notes on How to Speak/
 - /Notes-on-How-to-Speak/
 categories:
-- career
+- professional-growth
 - notes
 date: '2021-12-16'
 description: My notes for Patrick Winston's course on how to speak.
