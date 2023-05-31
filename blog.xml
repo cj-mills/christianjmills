@@ -16,7 +16,7 @@
 <height>142</height>
 <width>144</width>
 </image>
-<generator>quarto-1.3.353</generator>
+<generator>quarto-1.3.361</generator>
 <lastBuildDate>Tue, 30 May 2023 07:00:00 GMT</lastBuildDate>
 <item>
   <title>Testing Intel’s Arc A770 GPU for Deep Learning Pt. 2</title>
@@ -77,9 +77,41 @@ font-style: inherit;">snd_hda_intel</span> 0000:04:00.0 hsw/bdw hd-audio hdmi/dp
 <p>I used the training notebook from my recent <a href="../../pytorch-train-image-classifier-timm-hf-tutorial/">beginner PyTorch tutorial</a> for testing. That tutorial covers fine-tuning image classification models with PyTorch and the timm library by creating a hand gesture recognizer. Using the training notebook simplifies directly comparing the Arc A770 and my Titan RTX, which I used to create the tutorial. Nearly everything is identical for the testing environment down to the dataset location.</p>
 <p>The one additional variable is that the tutorial uses PyTorch 2.0, while Intel’s PyTorch extension currently requires a <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/latest/tutorials/installation.html#pytorch-intel-extension-for-pytorch-version-mapping">patched version</a> of PyTorch 1.13. However, I don’t use model compilation in the tutorial, so this should not be a significant factor.</p>
 <p>The training notebook only required a few tweaks to use Intel’s PyTorch extension, with most of the code remaining unchanged. The extension even supports PyTorch’s <code>autocast()</code> context manager for mixed-precision training.</p>
-<p>The first training session was alarmingly slow, with the first epoch taking nearly twice as long as the free GPU tier on Google Colab. However, the loss and accuracy values were comparable to those with the Titan RTX, so I let it run for a while. After the first epoch, the training time fell to around the same as the free GPU tier on Google Colab. Strangely, the inference speed on the validation set was nearly identical to the Titan RTX.</p>
+<p>The first training session was alarmingly slow, with the first pass through the training set taking around 42 minutes and 30 seconds. However, the loss and accuracy values were comparable to those with the Titan RTX, so I let it run for a while. After the first epoch, passes through the training set fell to approximately 16 minutes and 50 seconds. The total training time was only a few minutes less than the free GPU tier on Google Colab. Strangely, the inference speed on the validation set was nearly identical to the Titan RTX.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/arc-a770-testing/part-2/images/arc-a770-pytorch-training-session-ubuntu-bad-memory-layout.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>We can get more insight into using the <code>intel-gpu-top</code> command-line tool. Below are the readouts from the first and third passes through the training set:</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true">First Pass</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false">Third Pass</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/arc-a770-testing/part-2/images/intel-gpu-top-arc-a770-usage-training-bad-memory-layout.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/arc-a770-testing/part-2/images/intel-gpu-top-arc-a770-usage-training-bad-memory-layout-third-epoch.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Note that the memory throughput for the first training pass is particularly slow. Although, the third pass is not great, either.</p>
 <p>After some investigation on the <a href="https://github.com/intel/intel-extension-for-pytorch/issues/296#issuecomment-1426537682">extension’s GitHub repository</a>, it appears the slow training time is due to the backward pass for some operations. Fortunately, the fix involved setting a <a href="https://github.com/intel/intel-extension-for-pytorch/issues/296#issuecomment-1461118993">single environment variable</a>.</p>
 <p>After setting <code>IPEX_XPU_ONEDNN_LAYOUT=1</code>, the total training time is within 10% of my Titan RTX on the same system. The gap would be slightly wider if I compiled the model on the Titan with PyTorch 2.0.</p>
+<p>We can see the difference with <code>intel-gpu-top</code>, which shows much higher memory throughput.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/arc-a770-testing/part-2/images/intel-gpu-top-arc-a770-usage-training.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
 <p>The final loss and accuracy values fluctuate slightly, even when using fixed seed values for PyTorch, NumPy, and Python. However, they stay pretty close to the results on my Nvidia GPU.</p>
 <p>Here is a screenshot of the training session with the Arc A770:</p>
 <div class="quarto-figure quarto-figure-center">
