@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Christian Mills">
-<meta name="dcterms.date" content="2022-10-18">
-<meta name="description" content="I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML.">
+<meta name="dcterms.date" content="2023-06-12">
+<meta name="description" content="This post covers my findings from training style transfer models and running Stable Diffusion with the 🤗 Diffusers library on the Arc A770 with Intel’s PyTorch extension.">
 
-<title>Christian Mills - Testing Intel’s Arc A770 GPU for Deep Learning Pt. 1</title>
+<title>Christian Mills - Testing Intel’s Arc A770 GPU for Deep Learning Pt. 3</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -68,13 +102,13 @@ ul.task-list li input[type="checkbox"] {
 
 
 <link rel="stylesheet" href="../../../styles.css">
-<meta property="og:title" content="Christian Mills - Testing Intel’s Arc A770 GPU for Deep Learning Pt. 1">
-<meta property="og:description" content="I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML.">
-<meta property="og:image" content="christianjmills.com/posts/arc-a770-testing/part-1/images/logo.png">
+<meta property="og:title" content="Christian Mills - Testing Intel’s Arc A770 GPU for Deep Learning Pt. 3">
+<meta property="og:description" content="This post covers my findings from training style transfer models and running Stable Diffusion with the 🤗 Diffusers library on the Arc A770 with Intel’s PyTorch extension.">
+<meta property="og:image" content="christianjmills.com/posts/arc-a770-testing/social-media/cover.jpg">
 <meta property="og:site-name" content="Christian Mills">
-<meta name="twitter:title" content="Christian Mills - Testing Intel’s Arc A770 GPU for Deep Learning Pt. 1">
-<meta name="twitter:description" content="I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML.">
-<meta name="twitter:image" content="christianjmills.com/posts/arc-a770-testing/part-1/images/logo.png">
+<meta name="twitter:title" content="Christian Mills - Testing Intel’s Arc A770 GPU for Deep Learning Pt. 3">
+<meta name="twitter:description" content="This post covers my findings from training style transfer models and running Stable Diffusion with the 🤗 Diffusers library on the Arc A770 with Intel’s PyTorch extension.">
+<meta name="twitter:image" content="christianjmills.com/posts/arc-a770-testing/social-media/cover.jpg">
 <meta name="twitter:creator" content="@cdotjdotmills">
 <meta name="twitter:site" content="@cdotjdotmills">
 <meta name="twitter:card" content="summary_large_image">
@@ -155,10 +189,11 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#series-links" id="toc-series-links" class="nav-link active" data-scroll-target="#series-links">Series Links</a></li>
-  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#openvino-inference" id="toc-openvino-inference" class="nav-link" data-scroll-target="#openvino-inference">OpenVINO Inference</a></li>
-  <li><a href="#onnx-directml-inference" id="toc-onnx-directml-inference" class="nav-link" data-scroll-target="#onnx-directml-inference">ONNX-DirectML Inference</a></li>
-  <li><a href="#pytorch-directml-training" id="toc-pytorch-directml-training" class="nav-link" data-scroll-target="#pytorch-directml-training">PyTorch-DirectML Training</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#training-style-transfer-models" id="toc-training-style-transfer-models" class="nav-link" data-scroll-target="#training-style-transfer-models">Training Style Transfer Models</a></li>
+  <li><a href="#generating-images-with-diffusers" id="toc-generating-images-with-diffusers" class="nav-link" data-scroll-target="#generating-images-with-diffusers">Generating Images with 🤗 Diffusers</a></li>
+  <li><a href="#no-luck-fine-tuning-llms" id="toc-no-luck-fine-tuning-llms" class="nav-link" data-scroll-target="#no-luck-fine-tuning-llms">No Luck Fine-tuning LLMs</a></li>
+  <li><a href="#closing-thoughts" id="toc-closing-thoughts" class="nav-link" data-scroll-target="#closing-thoughts">Closing Thoughts</a></li>
   </ul>
 </nav>
     </div>
@@ -167,19 +202,17 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Testing Intel’s Arc A770 GPU for Deep Learning Pt. 1</h1>
+<h1 class="title">Testing Intel’s Arc A770 GPU for Deep Learning Pt. 3</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">directml</div>
-    <div class="quarto-category">openvino</div>
     <div class="quarto-category">pytorch</div>
-    <div class="quarto-category">unity</div>
+    <div class="quarto-category">ubuntu</div>
     <div class="quarto-category">arc-gpu</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML.
+    This post covers my findings from training style transfer models and running Stable Diffusion with the 🤗 Diffusers library on the Arc A770 with Intel’s PyTorch extension.
   </div>
 </div>
 
@@ -196,7 +229,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 18, 2022</p>
+      <p class="date">June 12, 2023</p>
     </div>
   </div>
   
@@ -207,10 +240,11 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 <ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#openvino-inference">OpenVINO Inference</a></li>
-<li><a href="#onnx-directml-inference">ONNX-DirectML Inference</a></li>
-<li><a href="#pytorch-directml-training">PyTorch-DirectML Training</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#training-style-transfer-models">Training Style Transfer Models</a></li>
+<li><a href="#generating-images-with-diffusers">Generating Images with 🤗 Diffusers</a></li>
+<li><a href="#no-luck-fine-tuning-llms">No Luck Fine-tuning LLMs</a></li>
+<li><a href="#closing-thoughts">Closing Thoughts</a></li>
 </ul>
 <section id="series-links" class="level2">
 <h2 class="anchored" data-anchor-id="series-links">Series Links</h2>
@@ -221,114 +255,120 @@ ul.task-list li input[type="checkbox"] {
 <li><a href="../../intel-pytorch-extension-tutorial/native-ubuntu/">Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu</a>: This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs</li>
 </ul>
 </section>
-<section id="overview" class="level2">
-<h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>Last week, I received an Arc A770 GPU from Intel as part of their Graphics Innovator program. I am primarily interested in the card for its deep-learning performance, so I tested it with some of my tutorial projects and attempted to train some models using the <a href="https://pypi.org/project/pytorch-directml/">pytorch-directml</a> package.</p>
-<p><strong>Desktop Specs:</strong></p>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In <a href="../part-2/">Part 2</a> of this series, I successfully fine-tuned an image classification model with Intel’s PyTorch extension on the Arc A770 GPU. Total training time was within <code>10%</code> of the Titan RTX using mixed precision.</p>
+<p>I started with an image classification task to give the A770 and Intel’s extension the best chance of success. Image classification is a common task in deep learning, and the ResNet family of models is a popular choice for such tasks.</p>
+<p>Once I knew that this baseline scenario worked, I wanted to try something slightly more complex. I decided to start with one of my style transfer training notebooks. I also tested running Stable Diffusion 2.1 using the 🤗 Diffusers library.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The results in this post are with version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/1.13.120+xpu/"><code>1.13.120+xpu</code></a> of Intel’s PyTorch extension.</p>
+</div>
+</div>
+</section>
+<section id="training-style-transfer-models" class="level2">
+<h2 class="anchored" data-anchor-id="training-style-transfer-models">Training Style Transfer Models</h2>
+<p>My style transfer training notebook uses a custom style transfer model and a custom class for perceptual style loss to extract features from a pre-trained computer vision model. There is nothing exotic about the training code, but it is slightly non-standard compared to the image classification task. You can find the original training notebook on GitHub at the link below:</p>
+<ul>
+<li><a href="https://github.com/cj-mills/fastai-2022p2-notes/blob/main/notebooks/fast_neural_style-baseline.ipynb">fast_neural_style-baseline.ipynb</a></li>
+</ul>
+<p>Once I swapped the <code>cuda</code> backend references for Intel’s <code>xpu</code> backend, the notebook mostly worked as intended. I only needed to make one change to the style transfer model. The current version (<a href="https://github.com/intel/intel-extension-for-pytorch/releases/tag/v1.13.120%2Bxpu">1.13.120+xpu</a>) of Intel’s extension does not fully implement the <a href="https://pytorch.org/docs/stable/generated/torch.nn.ReflectionPad2d.html">ReflectionPad2D</a> layer in <code>bloat16</code> precision.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">RuntimeError:</span> <span class="st">"reflection_pad2d_out_template"</span> not implemented for <span class="st">'BFloat16'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>It does for <code>float32</code> precision, but training without mixed precision takes much longer. Fortunately, the <a href="https://pytorch.org/docs/stable/generated/torch.nn.ZeroPad2d.html">ZeroPad2D</a> layer works just fine in mixed precision. The <a href="https://pytorch.org/docs/stable/generated/torch.nn.ReplicationPad2d.html">ReplicationPad2D</a> layer also works but is slower.</p>
+<p>Here is a sample output from a model trained on the A770 using <a href="https://www.vangoghgallery.com/painting/starry-night.html">Van Gogh’s Starry Night</a> painting as the style image:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-arc-style-transfer-notebook-sample-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>The output images are similar in quality to those generated with the original notebook on the Titan RTX. However, using a ZeroPad2D layer might require slightly more training as the borders are noticeable on some of the images. Below is a comparison of the total training time for the Arc A770 and the Titan RTX:</p>
 <table class="table">
 <thead>
 <tr class="header">
-<th>OS</th>
-<th>CPU</th>
-<th>Memory</th>
-<th>GPU Driver</th>
+<th>Device</th>
+<th>Training Time</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Windows 10 Pro 21H2</td>
-<td>i7-11700K</td>
-<td>32 GB DDR4 3000MHz</td>
-<td><a href="https://www.intel.com/content/www/us/en/download/726609/intel-arc-graphics-windows-dch-driver.html">31.0.101.3490</a></td>
+<td>Arc A770</td>
+<td>1 hour 55 minutes</td>
+</tr>
+<tr class="even">
+<td>Titan RTX</td>
+<td>1 hour 37 minutes</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Library Versions:</strong></p>
+<p>There is a more significant percentage gap in total training time than with the image classification notebook at approximately <code>18.6%</code>. I’ll need to conduct further testing to see if that difference is due to calculating the perceptual loss or some other part of the training process.</p>
+</section>
+<section id="generating-images-with-diffusers" class="level2">
+<h2 class="anchored" data-anchor-id="generating-images-with-diffusers">Generating Images with 🤗 Diffusers</h2>
+<p>Next, I modified one of my <a href="https://github.com/cj-mills/fastai-2022p2-notes/blob/main/notebooks/inference-sd-text2img.ipynb">text-to-image notebooks</a> to try running Stable Diffusion 2.1 with Intel’s PyTorch extension.</p>
+<p>I only encountered one issue with the original notebook code. I use PyTorch’s <a href="https://pytorch.org/docs/stable/generated/torch.Generator.html">Generator</a> class to save and load the state of the random number generation algorithms when generating images in the original notebook. The Generator class does not appear to support <code>xpu</code> devices in the current version of Intel’s extension, so I had to remove those sections from the notebook. Other than that, everything worked without issue.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-arc-hf-diffusers-sd-2-1-sample.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<blockquote class="blockquote">
+<p><strong>Prompt:</strong> “monet oil painting, a puppy”</p>
+</blockquote>
+<p>I compared the performance of the A770 and Titan RTX by generating <code>512x512</code> images at <code>float16</code> precision. Since the <a href="https://github.com/facebookresearch/xformers"><code>xformers</code></a> library does not support Arc GPUs, I did not enable it when benchmarking the inference speed on the Titan RTX for this comparison. Although, I did use PyTorch <code>2.0</code> for the Titan RTX runs.</p>
 <table class="table">
 <thead>
 <tr class="header">
-<th>OpenVINO</th>
-<th>ONNX-DirectML</th>
-<th>pytorch-directml</th>
+<th>Device</th>
+<th>Model Compilation</th>
+<th>Iterations/second</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/download.html">2022.1 and 2022.2</a></td>
-<td><a href="https://www.nuget.org/packages/Microsoft.ML.OnnxRuntime.DirectML/1.12.1">1.12.1</a></td>
-<td><a href="https://pypi.org/project/pytorch-directml/">1.8.0a0.dev220506</a></td>
+<td>Arc A770</td>
+<td>N/A</td>
+<td>5.97it/s</td>
+</tr>
+<tr class="even">
+<td>Titan RTX</td>
+<td>None</td>
+<td>15.76it/s</td>
+</tr>
+<tr class="odd">
+<td>Titan RTX</td>
+<td><code>default</code></td>
+<td>18.88it/s</td>
+</tr>
+<tr class="even">
+<td>Titan RTX</td>
+<td><code>reduce-overhead</code></td>
+<td>19.37it/s</td>
+</tr>
+<tr class="odd">
+<td>Titan RTX</td>
+<td><code>max-autotune</code></td>
+<td>19.68it/s</td>
 </tr>
 </tbody>
 </table>
+<p>Even without model compilation, the Titan RTX is over twice as fast as the A770. With model compilation, it’s over <code>3x</code> faster. Still, the A770’s performance is far from unusable. I’ll rerun the comparison once Intel’s extension supports PyTorch <code>&gt;=2.0</code>.</p>
 </section>
-<section id="openvino-inference" class="level2">
-<h2 class="anchored" data-anchor-id="openvino-inference">OpenVINO Inference</h2>
-<p>I first tested the card’s performance in the Unity project from my <a href="../../icevision-openvino-unity-tutorial/part-1/">End-to-End Object Detection for Unity With IceVision and OpenVINO</a> tutorial. The project uses OpenVINO 2022.1, and I noticed an odd sensitivity to input resolution when using FP16 precision.</p>
-<p>I use a default resolution of 398x224 (for a 16:9 aspect ratio), which translates to a 384x224 (divisible by 32) input resolution for the YOLOX tiny model. At this resolution, the model detects the same hand gestures with the Arc card as the CPU. However, the confidence scores are much lower, and the bounding box dimensions are slightly different (but still usable).</p>
-<section id="cpu-fp16" class="level5">
-<h5 class="anchored" data-anchor-id="cpu-fp16"><strong>CPU (FP16)</strong></h5>
-<ul>
-<li><strong>Objects Detected:</strong> Call 78.54%, No Gesture 83.2%</li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/cpu_unity-openvino-yolox_384x224.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<section id="no-luck-fine-tuning-llms" class="level2">
+<h2 class="anchored" data-anchor-id="no-luck-fine-tuning-llms">No Luck Fine-tuning LLMs</h2>
+<p>I’ve been excited about the recent developments for fine-tuning LLMs on local machines, and I think the relatively affordable A770 16GB card has a lot of potential for that use case. Unfortunately, projects like <a href="https://github.com/tloen/alpaca-lora">Alpaca-LoRA</a> and <a href="https://github.com/artidoro/qlora">QLoRA</a> have dependencies, such as the <a href="https://github.com/TimDettmers/bitsandbytes"><code>bitsandbytes</code></a> package, that require CUDA devices. The <code>bitsandbytes</code> package provides the quantization capability that lowers the memory requirements to run LLMs. It provides this functionality using custom CUDA functions. I don’t know of any plans to add support for Intel GPUs to the <code>bitsandbytes</code> package, so perhaps Intel will provide an alternative.</p>
 </section>
-<section id="a770-fp16" class="level5">
-<h5 class="anchored" data-anchor-id="a770-fp16"><strong>A770 (FP16)</strong></h5>
-<ul>
-<li><strong>Objects Detected:</strong> Call 23.25%, No Gesture 40.86%</li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/arc_a770_unity-openvino-yolox_384x224.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-<p>Moving to a higher resolution brought inconsistent improvements in accuracy and occasional crashes. The below sample is with an input resolution of <code>896x512</code> at FP16 precision.</p>
-<p><strong>Objects Detected:</strong> Call 78.06%</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/arc_a770_unity-openvino-yolox_896x512.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-<p>I later updated OpenVINO to the recent 2022.2 release, which resolved this issue.</p>
-<p><strong>Objects Detected:</strong> Call 78.55%, No Gesture 83.23%</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/arc_a770_unity-openvino-2022-2-yolox_384x224.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</section>
-</section>
-<section id="onnx-directml-inference" class="level2">
-<h2 class="anchored" data-anchor-id="onnx-directml-inference">ONNX-DirectML Inference</h2>
-<p>I used the project from my <a href="../../onnx-directml-unity-tutorial/part-1/">Object Detection for Unity With ONNX Runtime and DirectML</a> tutorial to compare the inference speeds between the A770 and my Titan RTX. This project uses the same YOLOX tiny model and input resolution as the OpenVINO one but in FP32 precision.</p>
-<p>The Titan RTX, essentially a 2080 Ti, hit around 145fps, while the A770 hovered around 120fps.</p>
-<section id="a770" class="level5">
-<h5 class="anchored" data-anchor-id="a770"><strong>A770</strong></h5>
-<p><strong>Objects Detected:</strong> Call 78.64%, No Gesture 83.35%</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/arc_a770_unity-onnx-directml-yolox_384x224.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</section>
-</section>
-<section id="pytorch-directml-training" class="level2">
-<h2 class="anchored" data-anchor-id="pytorch-directml-training">PyTorch-DirectML Training</h2>
-<p>As far as I know, the only way to train models at the time of writing on an Arc card is with the <a href="https://pypi.org/project/pytorch-directml/">pytorch-directml</a> package (or <a href="https://pypi.org/project/tensorflow-directml/">tensorflow-directml</a> package).</p>
-<p>To test this, I set up a conda environment in <a href="https://learn.microsoft.com/en-us/windows/wsl/about">WSL</a> with the pytorch-directml package and downloaded the <a href="https://github.com/microsoft/DirectML/tree/master/PyTorch">sample repo</a> provided by Microsoft. The pytorch-directml package requires python 3.8, and the sample repo uses torchvision 0.9.0.</p>
-<p>I successfully trained a ResNet50 model on <a href="https://www.cs.toronto.edu/~kriz/cifar.html">CIFAR-10</a> with the sample training script. GPU memory usage was volatile when using a batch size higher than 4. The ResNet50 training script used less than 3.6 GB of GPU memory at a batch size of 4.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/arc_a770_pytorch-dml-resnet50-resource-usage-bs-4.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-<p>However, it spikes to using all 16 GB at a batch size of 8 and crashes the script. I was able to train at a batch size of 6, but barely.</p>
-<p>I then attempted to train the style transfer model included with the <a href="https://github.com/pytorch/examples">pytorch examples repo</a> and hit the wall of unimplemented operators. Here is the <a href="https://github.com/microsoft/DirectML/wiki/PyTorch-DirectML-Operator-Roadmap">PyTorch DirectML Operator Roadmap</a>. Some of the missing operators are on the current roadmap, but not all of them.</p>
-<p>The tensorflow-directml package recently received its first update since May, so hopefully, the PyTorch version will receive an update soon. I have no idea when the main PyTorch and TensorFlow libraries will gain support for Intel GPUs, but hopefully, that is not too far off either.</p>
+<section id="closing-thoughts" class="level2">
+<h2 class="anchored" data-anchor-id="closing-thoughts">Closing Thoughts</h2>
+<p>At the end of Part 2, I stated that I believe Arc GPUs are now credible options for deep learning. My experience testing the A770 on some more complicated use cases mostly reaffirms that. Running the style transfer and Diffusers notebooks with Intel’s PyTorch extension only took a couple of changes.</p>
+<p>However, Nvidia GPUs were the only realistic option for a long time, and they will likely continue to get priority for cutting-edge developments like the quantization methods used in QLoRA. Anyone considering an Arc GPU for deep learning should keep that in mind and verify the dependencies needed for their target use case support Arc GPUs.</p>
 
 
 </section>
