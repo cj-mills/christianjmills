@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2023-08-22">
+<meta name="description" content="Learn how to export YOLOX models from PyTorch to ONNX and perform inference using ONNX Runtime.">
+
+<title>Christian Mills - Exporting YOLOX Models from PyTorch to ONNX</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Exporting YOLOX Models from PyTorch to ONNX">
+<meta property="og:description" content="Learn how to export YOLOX models from PyTorch to ONNX and perform inference using ONNX Runtime.">
+<meta property="og:image" content="christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/social-media/cover.jpg">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Exporting YOLOX Models from PyTorch to ONNX">
+<meta name="twitter:description" content="Learn how to export YOLOX models from PyTorch to ONNX and perform inference using ONNX Runtime.">
+<meta name="twitter:image" content="christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html" rel="" target="">
+ <span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html" rel="" target="">
+ <span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html" rel="" target="">
+ <span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../services.html" rel="" target="">
+ <span class="menu-text">Services</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com" rel="" target=""><i class="bi bi-envelope-fill" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml" rel="" target=""><i class="bi bi-rss" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#tutorial-links" id="toc-tutorial-links" class="nav-link active" data-scroll-target="#tutorial-links">Tutorial Links</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#getting-started-with-the-code" id="toc-getting-started-with-the-code" class="nav-link" data-scroll-target="#getting-started-with-the-code">Getting Started with the Code</a></li>
+  <li><a href="#setting-up-your-python-environment" id="toc-setting-up-your-python-environment" class="nav-link" data-scroll-target="#setting-up-your-python-environment">Setting Up Your Python Environment</a></li>
+  <li><a href="#importing-the-required-dependencies" id="toc-importing-the-required-dependencies" class="nav-link" data-scroll-target="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+  <li><a href="#setting-up-the-project" id="toc-setting-up-the-project" class="nav-link" data-scroll-target="#setting-up-the-project">Setting Up the Project</a>
+  <ul>
+  <li><a href="#set-the-directory-paths" id="toc-set-the-directory-paths" class="nav-link" data-scroll-target="#set-the-directory-paths">Set the Directory Paths</a></li>
+  <li><a href="#download-a-font-file" id="toc-download-a-font-file" class="nav-link" data-scroll-target="#download-a-font-file">Download a Font File</a></li>
+  </ul></li>
+  <li><a href="#loading-the-checkpoint-data" id="toc-loading-the-checkpoint-data" class="nav-link" data-scroll-target="#loading-the-checkpoint-data">Loading the Checkpoint Data</a>
+  <ul>
+  <li><a href="#load-the-colormap" id="toc-load-the-colormap" class="nav-link" data-scroll-target="#load-the-colormap">Load the Colormap</a></li>
+  <li><a href="#load-the-normalization-statistics" id="toc-load-the-normalization-statistics" class="nav-link" data-scroll-target="#load-the-normalization-statistics">Load the Normalization Statistics</a></li>
+  <li><a href="#load-the-model-checkpoint" id="toc-load-the-model-checkpoint" class="nav-link" data-scroll-target="#load-the-model-checkpoint">Load the Model Checkpoint</a></li>
+  <li><a href="#load-the-trained-yolox-model" id="toc-load-the-trained-yolox-model" class="nav-link" data-scroll-target="#load-the-trained-yolox-model">Load the Trained YOLOX Model</a></li>
+  </ul></li>
+  <li><a href="#exporting-the-model-to-onnx" id="toc-exporting-the-model-to-onnx" class="nav-link" data-scroll-target="#exporting-the-model-to-onnx">Exporting the Model to ONNX</a>
+  <ul>
+  <li><a href="#prepare-the-model-for-inference" id="toc-prepare-the-model-for-inference" class="nav-link" data-scroll-target="#prepare-the-model-for-inference">Prepare the Model for Inference</a></li>
+  <li><a href="#prepare-the-input-tensor" id="toc-prepare-the-input-tensor" class="nav-link" data-scroll-target="#prepare-the-input-tensor">Prepare the Input Tensor</a></li>
+  <li><a href="#export-the-model-to-onnx" id="toc-export-the-model-to-onnx" class="nav-link" data-scroll-target="#export-the-model-to-onnx">Export the Model to ONNX</a></li>
+  <li><a href="#simplify-the-onnx-model" id="toc-simplify-the-onnx-model" class="nav-link" data-scroll-target="#simplify-the-onnx-model">Simplify the ONNX model</a></li>
+  </ul></li>
+  <li><a href="#performing-inference-with-onnx-runtime" id="toc-performing-inference-with-onnx-runtime" class="nav-link" data-scroll-target="#performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</a>
+  <ul>
+  <li><a href="#create-an-inference-session" id="toc-create-an-inference-session" class="nav-link" data-scroll-target="#create-an-inference-session">Create an Inference Session</a></li>
+  <li><a href="#define-utility-functions" id="toc-define-utility-functions" class="nav-link" data-scroll-target="#define-utility-functions">Define Utility Functions</a>
+  <ul class="collapse">
+  <li><a href="#define-a-function-to-generate-the-output-grids" id="toc-define-a-function-to-generate-the-output-grids" class="nav-link" data-scroll-target="#define-a-function-to-generate-the-output-grids">Define a function to generate the output grids</a></li>
+  <li><a href="#define-a-function-to-calculate-bounding-boxes-and-probabilities" id="toc-define-a-function-to-calculate-bounding-boxes-and-probabilities" class="nav-link" data-scroll-target="#define-a-function-to-calculate-bounding-boxes-and-probabilities">Define a function to calculate bounding boxes and probabilities</a></li>
+  <li><a href="#define-a-function-to-calculate-the-intersection-over-union" id="toc-define-a-function-to-calculate-the-intersection-over-union" class="nav-link" data-scroll-target="#define-a-function-to-calculate-the-intersection-over-union">Define a function to calculate the intersection-over-union</a></li>
+  <li><a href="#define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression" id="toc-define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression" class="nav-link" data-scroll-target="#define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression">Define a function to filter bounding box proposals using Non-Maximum Suppression</a></li>
+  <li><a href="#define-a-function-to-annotate-an-image-with-bounding-boxes" id="toc-define-a-function-to-annotate-an-image-with-bounding-boxes" class="nav-link" data-scroll-target="#define-a-function-to-annotate-an-image-with-bounding-boxes">Define a function to annotate an image with bounding boxes</a></li>
+  </ul></li>
+  <li><a href="#select-a-test-image" id="toc-select-a-test-image" class="nav-link" data-scroll-target="#select-a-test-image">Select a Test Image</a></li>
+  <li><a href="#prepare-the-test-image" id="toc-prepare-the-test-image" class="nav-link" data-scroll-target="#prepare-the-test-image">Prepare the Test Image</a></li>
+  <li><a href="#prepare-the-input-tensor-1" id="toc-prepare-the-input-tensor-1" class="nav-link" data-scroll-target="#prepare-the-input-tensor-1">Prepare the Input Tensor</a></li>
+  <li><a href="#compute-the-predictions" id="toc-compute-the-predictions" class="nav-link" data-scroll-target="#compute-the-predictions">Compute the Predictions</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Exporting YOLOX Models from PyTorch to ONNX</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">pytorch</div>
+    <div class="quarto-category">onnx</div>
+    <div class="quarto-category">object-detection</div>
+    <div class="quarto-category">yolox</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Learn how to export YOLOX models from PyTorch to ONNX and perform inference using ONNX Runtime.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 22, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#getting-started-with-the-code">Getting Started with the Code</a></li>
+<li><a href="#setting-up-your-python-environment">Setting Up Your Python Environment</a></li>
+<li><a href="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+<li><a href="#setting-up-the-project">Setting Up the Project</a></li>
+<li><a href="#loading-the-checkpoint-data">Loading the Checkpoint Data</a></li>
+<li><a href="#exporting-the-model-to-onnx">Exporting the Model to ONNX</a></li>
+<li><a href="#performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="tutorial-links" class="level2">
+<h2 class="anchored" data-anchor-id="tutorial-links">Tutorial Links</h2>
+<ul>
+<li><a href="../"><strong>Training YOLOX Models for Real-Time Object Detection in Pytorch</strong></a>: Learn how to train YOLOX models for real-time object detection in PyTorch by creating a hand gesture detection model.</li>
+<li><a href="./"><strong>Exporting YOLOX Models from PyTorch to ONNX</strong></a><strong>:</strong> Learn how to export YOLOX models from PyTorch to ONNX and perform inference using ONNX Runtime.</li>
+</ul>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome back to this series on training YOLOX models for real-time applications! Previously, we demonstrated how to fine-tune a YOLOX model in PyTorch by creating a hand gesture detector. This tutorial builds on that by showing how to export the model to <a href="https://onnx.ai/">ONNX</a> and perform inference using <a href="https://onnxruntime.ai/docs/">ONNX Runtime</a>.</p>
+<p>ONNX (Open Neural Network Exchange) is an open format to represent machine learning models and make them portable across various platforms. ONNX Runtime is a cross-platform inference accelerator that provides interfaces to hardware-specific libraries. By exporting our model to ONNX, we can deploy it to multiple devices and leverage hardware acceleration for faster inference. When it comes to real-time applications, even minor speedups have a noticeable impact.</p>
+<p>Additionally, we’ll implement the functionality to handle post-processing and draw bounding boxes without relying on PyTorch as a dependency. By the end of this tutorial, you will have an ONNX version of our YOLOX model that you can deploy to servers and edge devices using ONNX Runtime.</p>
+<div class="callout callout-style-default callout-important callout-titled" title="This post assumes the reader has completed the previous tutorial linked below:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post assumes the reader has completed the previous tutorial linked below:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../">Training YOLOX Models for Real-Time Object Detection in Pytorch</a></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="getting-started-with-the-code" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started-with-the-code">Getting Started with the Code</h2>
+<p>As with the previous tutorial, the code is available as a Jupyter Notebook.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Jupyter Notebook</th>
+<th>Google Colab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-detector-onnx-export.ipynb">GitHub Repository</a></td>
+<td><a href="https://colab.research.google.com/github/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-detector-onnx-export-colab.ipynb">Open In Colab</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="setting-up-your-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-your-python-environment">Setting Up Your Python Environment</h2>
+<p>We’ll need to add a few new libraries to our <a href="../#setting-up-your-python-environment">Python environment</a> for working with ONNX models.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>onnx</code></td>
+<td>This package provides a Python API for working with ONNX models. (<a href="https://pypi.org/project/onnx/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>onnxruntime</code></td>
+<td>ONNX Runtime is a runtime accelerator for machine learning models. (<a href="https://onnxruntime.ai/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>onnx-simplifier</code></td>
+<td>This package helps simplify ONNX models. (<a href="https://pypi.org/project/onnx-simplifier/">link</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Run the following command to install these additional libraries:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install ONNX packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnx onnxruntime onnx-simplifier</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="importing-the-required-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="importing-the-required-dependencies">Importing the Required Dependencies</h2>
+<p>With our environment updated, we can dive into the code. First, we will import the necessary Python dependencies into our Jupyter Notebook.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import Python Standard Library dependencies</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Import utility functions</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_psl_utils.core <span class="im">import</span> download_file</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_pil_utils.core <span class="im">import</span> resize_img</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Import YOLOX package</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_yolox_pytorch.model <span class="im">import</span> build_model</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_yolox_pytorch.inference <span class="im">import</span> YOLOXInferenceWrapper</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Import numpy</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the pandas package</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PIL for image manipulation</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image, ImageDraw, ImageFont</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Import ONNX dependencies</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnx <span class="co"># Import the onnx module</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> onnxsim <span class="im">import</span> simplify <span class="co"># Import the method to simplify ONNX models</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnxruntime <span class="im">as</span> ort <span class="co"># Import the ONNX Runtime</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="setting-up-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-project">Setting Up the Project</h2>
+<p>In this section, we’ll set the folder locations for our project and training session with the PyTorch checkpoint. Let’s also ensure we have a font file for annotating images.</p>
+<section id="set-the-directory-paths" class="level3">
+<h3 class="anchored" data-anchor-id="set-the-directory-paths">Set the Directory Paths</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The name for the project</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>project_name <span class="op">=</span> <span class="ss">f"pytorch-yolox-object-detector"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The path for the project folder</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>project_dir <span class="op">=</span> Path(<span class="ss">f"./</span><span class="sc">{</span>project_name<span class="sc">}</span><span class="ss">/"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the project directory if it does not already exist</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>project_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The path to the checkpoint folder</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> Path(project_dir<span class="op">/</span><span class="ss">f"2023-08-17_16-14-43"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Project Directory:"</span>: project_dir,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Checkpoint Directory:"</span>: checkpoint_dir,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table id="T_3c82a">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_3c82a_level0_row0" class="row_heading level0 row0">
+Project Directory:
+</th>
+<td id="T_3c82a_row0_col0" class="data row0 col0">
+pytorch-yolox-object-detector
+</td>
+</tr>
+<tr>
+<th id="T_3c82a_level0_row1" class="row_heading level0 row1">
+Checkpoint Directory:
+</th>
+<td id="T_3c82a_row1_col0" class="data row1 col0">
+pytorch-yolox-object-detector/2023-08-17_16-14-43
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="I made some model checkpoints available on Hugging Face Hub in the repository linked below:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+I made some model checkpoints available on Hugging Face Hub in the repository linked below:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="https://huggingface.co/cj-mills/yolox-hagrid-pytorch/tree/main">cj-mills/yolox-hagrid-pytorch</a></li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Those following along on Google Colab can drag the contents of their checkpoint folder into Colab's file browser. ">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Those following along on Google Colab can drag the contents of their checkpoint folder into Colab’s file browser.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+</section>
+<section id="download-a-font-file" class="level3">
+<h3 class="anchored" data-anchor-id="download-a-font-file">Download a Font File</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the font file</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>font_file <span class="op">=</span> <span class="st">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the font file</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>download_file(<span class="ss">f"https://fonts.gstatic.com/s/roboto/v30/</span><span class="sc">{</span>font_file<span class="sc">}</span><span class="ss">"</span>, <span class="st">"./"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="loading-the-checkpoint-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-checkpoint-data">Loading the Checkpoint Data</h2>
+<p>Now we can load the colormap and normalization stats used during training and initialize a YOLOX model with the saved checkpoint.</p>
+<section id="load-the-colormap" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-colormap">Load the Colormap</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The colormap path</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>colormap_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*colormap.json'</span>))[<span class="dv">0</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the JSON colormap data</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(colormap_path, <span class="st">'r'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        colormap_json <span class="op">=</span> json.load(<span class="bu">file</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the JSON data to a dictionary        </span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>colormap_dict <span class="op">=</span> {item[<span class="st">'label'</span>]: item[<span class="st">'color'</span>] <span class="cf">for</span> item <span class="kw">in</span> colormap_json[<span class="st">'items'</span>]}</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the class names from the colormap</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>class_names <span class="op">=</span> <span class="bu">list</span>(colormap_dict.keys())</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a copy of the colormap in integer format</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>int_colors <span class="op">=</span> [<span class="bu">tuple</span>(<span class="bu">int</span>(c<span class="op">*</span><span class="dv">255</span>) <span class="cf">for</span> c <span class="kw">in</span> color) <span class="cf">for</span> color <span class="kw">in</span> colormap_dict.values()]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="load-the-normalization-statistics" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-normalization-statistics">Load the Normalization Statistics</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The normalization stats path</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>norm_stats_path <span class="op">=</span> checkpoint_dir<span class="op">/</span><span class="st">'norm_stats.json'</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the normalization stats from the JSON file</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(norm_stats_path, <span class="st">"r"</span>) <span class="im">as</span> f:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    norm_stats_dict <span class="op">=</span> json.load(f)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the dictionary to a tuple</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>norm_stats <span class="op">=</span> (norm_stats_dict[<span class="st">"mean"</span>], norm_stats_dict[<span class="st">"std_dev"</span>])</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the mean and standard deviation</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(norm_stats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+<th>
+1
+</th>
+<th>
+2
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+0.5
+</td>
+<td>
+0.5
+</td>
+<td>
+0.5
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+1.0
+</td>
+<td>
+1.0
+</td>
+<td>
+1.0
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</section>
+<section id="load-the-model-checkpoint" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-model-checkpoint">Load the Model Checkpoint</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The model checkpoint path</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>checkpoint_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*.pth'</span>))[<span class="dv">0</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model checkpoint onto the CPU</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>model_checkpoint <span class="op">=</span> torch.load(checkpoint_path, map_location<span class="op">=</span><span class="st">'cpu'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="load-the-trained-yolox-model" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-trained-yolox-model">Load the Trained YOLOX Model</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select the YOLOX model configuration</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>model_type <span class="op">=</span> checkpoint_path.stem</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a YOLOX model with the number of output classes equal to the number of class names</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> build_model(model_type, <span class="bu">len</span>(class_names))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get stride values for processing output</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>strides <span class="op">=</span> model.bbox_head.strides</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the model with the checkpoint parameters and buffers</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>model.load_state_dict(model_checkpoint)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>&lt;All keys matched successfully&gt;</code></pre>
+</section>
+</section>
+<section id="exporting-the-model-to-onnx" class="level2">
+<h2 class="anchored" data-anchor-id="exporting-the-model-to-onnx">Exporting the Model to ONNX</h2>
+<p>Before exporting the model, we’ll wrap it with the preprocessing and post-processing steps as we did <a href="../#preparing-the-model-for-inference">previously</a>. These steps will be included in the ONNX model, reducing the code we need to write when deploying the model to other platforms.</p>
+<section id="prepare-the-model-for-inference" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-model-for-inference">Prepare the Model for Inference</h3>
+<p>The <a href="https://cj-mills.github.io/cjm-yolox-pytorch/inference.html#yoloxinferencewrapper"><code>YOLOXInferenceWrapper</code></a> class has some optional settings we did not explore in the previous tutorial. The <code>scale_inp</code> setting will scale pixel data from the range <code>[0,255]</code> to<code>[0,1]</code>, and the <code>channels_last</code> setting sets the model to expect input tensors in channels-last format. These settings can be helpful when deploying to platforms where tensor operations are less convenient.</p>
+<p>Additionally, we can turn off the post-processing steps if we plan to deploy the model using tools that do not support those operations, like the <a href="https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html">Barracuda</a> inference library for the <a href="https://unity.com/">Unity</a> game engine.</p>
+<p>The post-processing steps require the width and height of the input tensor. The indices for accessing those values depend on the format for the input tensor, so we’ll store the <a href="https://docs.python.org/3/library/functions.html#slice"><code>slice</code></a> to access them for later.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Default Settings</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Inverse</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the normalization stats to tensors</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>mean_tensor <span class="op">=</span> torch.tensor(norm_stats[<span class="dv">0</span>]).view(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>std_tensor <span class="op">=</span> torch.tensor(norm_stats[<span class="dv">1</span>]).view(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the model to evaluation mode</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>model.<span class="bu">eval</span>()<span class="op">;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Wrap the model with preprocessing and post-processing steps</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>wrapped_model <span class="op">=</span> YOLOXInferenceWrapper(model, </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>                                      mean_tensor, </span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>                                      std_tensor, </span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>                                      scale_inp<span class="op">=</span><span class="va">False</span>, <span class="co"># Scale input values from the rang [0,255] to [0,1]</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>                                      channels_last<span class="op">=</span><span class="va">False</span>, <span class="co"># Have the model expect input in channels-last format</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>                                      run_box_and_prob_calculation<span class="op">=</span><span class="va">True</span> <span class="co"># Enable or disable post-processing steps</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>                                     )</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the slice object for extracting the input dimensions</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>input_dim_slice <span class="op">=</span> wrapped_model.input_dim_slice</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>input_dim_slice</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>slice(2, 4, None)</code></pre>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the normalization stats to tensors</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>mean_tensor <span class="op">=</span> torch.tensor(norm_stats[<span class="dv">0</span>]).view(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>std_tensor <span class="op">=</span> torch.tensor(norm_stats[<span class="dv">1</span>]).view(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the model to evaluation mode</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>model.<span class="bu">eval</span>()<span class="op">;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Wrap the model with preprocessing and post-processing steps</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>wrapped_model <span class="op">=</span> YOLOXInferenceWrapper(model, </span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>                                      mean_tensor, </span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                                      std_tensor, </span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                                      scale_inp<span class="op">=</span><span class="va">True</span>, <span class="co"># Scale input values from the rang [0,255] to [0,1]</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                                      channels_last<span class="op">=</span><span class="va">True</span>, <span class="co"># Have the model expect input in channels-first format</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                                      run_box_and_prob_calculation<span class="op">=</span><span class="va">False</span> <span class="co"># Enable or disable post-processing steps</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                                     )</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the slice object for extracting the input dimensions</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>input_dim_slice <span class="op">=</span> wrapped_model.input_dim_slice</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>input_dim_slice</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>slice(1, 3, None)</code></pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Settings for Unity's Barracuda Inference Library:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Settings for Unity’s Barracuda Inference Library:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>scale_inp<span class="op">=</span><span class="va">False</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>channels_last<span class="op">=</span><span class="va">False</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>run_box_and_prob_calculation<span class="op">=</span><span class="va">False</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
+<section id="prepare-the-input-tensor" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-input-tensor">Prepare the Input Tensor</h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Default</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Channels-Last</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>input_tensor <span class="op">=</span> torch.randn(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">256</span>, <span class="dv">256</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>input_tensor <span class="op">=</span> torch.randn(<span class="dv">1</span>, <span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="export-the-model-to-onnx" class="level3">
+<h3 class="anchored" data-anchor-id="export-the-model-to-onnx">Export the Model to ONNX</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set a filename for the ONNX model</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>checkpoint_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>colormap_path<span class="sc">.</span>stem<span class="sc">.</span>removesuffix(<span class="st">'-colormap'</span>)<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>model_type<span class="sc">}</span><span class="ss">.onnx"</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Export the PyTorch model to ONNX format</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>torch.onnx.export(wrapped_model.cpu(),</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                  input_tensor.cpu(),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                  onnx_file_path,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                  export_params<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                  do_constant_folding<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                  input_names <span class="op">=</span> [<span class="st">'input'</span>],</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                  output_names <span class="op">=</span> [<span class="st">'output'</span>],</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>                  dynamic_axes<span class="op">=</span>{<span class="st">'input'</span>: {input_dim_slice.start : <span class="st">'height'</span>, input_dim_slice.stop<span class="op">-</span><span class="dv">1</span> : <span class="st">'width'</span>}}</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>============= Diagnostic Run torch.onnx.export version 2.0.1+cu118 =============
+verbose: False, log level: Level.ERROR
+======================= 0 NONE 0 NOTE 0 WARNING 0 ERROR ========================</code></pre>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The export function will return a <code>TracerWarning</code> when we export the model with the post-processing steps enabled. The post-processing steps involve iterating over the list of stride values for the YOLOX model, and the exported ONNX model will not support dynamic sizes for that list. We can ignore this warning as the stride values will not change during inference.</p>
+</div>
+</div>
+</section>
+<section id="simplify-the-onnx-model" class="level3">
+<h3 class="anchored" data-anchor-id="simplify-the-onnx-model">Simplify the ONNX model</h3>
+<p>The ONNX models generated by PyTorch are not always the most concise. We can use the <a href="https://pypi.org/project/onnx-simplifier/"><code>onnx-simplifier</code></a> package to tidy up the exported model.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This step is usually optional but is necessary for the ONNX model to work with the Barracuda inference library.</p>
+</div>
+</div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the ONNX model from the onnx_file_name</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>onnx_model <span class="op">=</span> onnx.load(onnx_file_path)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Simplify the model</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>model_simp, check <span class="op">=</span> simplify(onnx_model)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the simplified model to the onnx_file_name</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>onnx.save(model_simp, onnx_file_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="performing-inference-with-onnx-runtime" class="level2">
+<h2 class="anchored" data-anchor-id="performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</h2>
+<p>Now that we have our ONNX model, it’s time to test it with ONNX Runtime.</p>
+<section id="create-an-inference-session" class="level3">
+<h3 class="anchored" data-anchor-id="create-an-inference-session">Create an Inference Session</h3>
+<p>We interact with models in ONNX Runtime through an <a href="https://onnxruntime.ai/docs/api/python/api_summary.html#load-and-run-a-model"><code>InferenceSession</code></a> object. Here we can specify which Execution Providers to use for inference and other configuration information. <a href="https://onnxruntime.ai/docs/execution-providers/">Execution Providers</a> are the interfaces for hardware-specific inference engines like <a href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html">TensorRT</a> for NVIDIA and <a href="https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html">OpenVINO</a> for Intel. By default, the <code>InferenceSession</code> uses the generic <code>CPUExecutionProvider</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and create an InferenceSession</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> ort.InferenceSession(onnx_file_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-utility-functions" class="level3">
+<h3 class="anchored" data-anchor-id="define-utility-functions">Define Utility Functions</h3>
+<p>In the previous tutorial, we used PyTorch to <a href="../#wrap-the-model-with-preprocessing-and-post-processing-steps">process the model output</a>, <a href="../#filtering-model-output">filter the predictions</a>, and <a href="../#annotate-image-using-bounding-box-proposals">annotate images with bounding boxes</a>. Now we will implement that functionality using <a href="https://numpy.org/">NumPy</a> and <a href="https://pillow.readthedocs.io/en/stable/">PIL</a>.</p>
+<section id="define-a-function-to-generate-the-output-grids" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-generate-the-output-grids">Define a function to generate the output grids</h4>
+<p>The YOLOX model uses information from different parts of its <a href="https://cj-mills.github.io/cjm-yolox-pytorch/model.html#cspdarknet">backbone model</a> to make predictions. In our case, it uses features from three sections, with one early, in the middle, and at the end of the backbone model. This approach helps the YOLOX model detect objects of different sizes in the image.</p>
+<p>We use the stride values to scale predictions from these sections back to the input resolution. Here, we can see the difference in results when using a single stride value in isolation with a YOLOX model trained on the <a href="https://cocodataset.org/#home">COCO</a> dataset.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Stride 8</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Stride 16</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-3" role="tab" aria-controls="tabset-3-3" aria-selected="false">Stride 32</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/stride_8_demo.jpg" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/stride_16_demo.jpg" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div id="tabset-3-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-3-tab">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/stride_32_demo.jpg" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>The following function generates grids of values using the input dimensions and stride values to scale bounding box predictions to the input resolution.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_output_grids_np(height, width, strides<span class="op">=</span>[<span class="dv">8</span>,<span class="dv">16</span>,<span class="dv">32</span>]):</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate a numpy array containing grid coordinates and strides for a given height and width.</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="co">        height (int): The height of the image.</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co">        width (int): The width of the image.</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co">        np.ndarray: A numpy array containing grid coordinates and strides.</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    all_coordinates <span class="op">=</span> []</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> stride <span class="kw">in</span> strides:</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the grid height and width</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>        grid_height <span class="op">=</span> height <span class="op">//</span> stride</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>        grid_width <span class="op">=</span> width <span class="op">//</span> stride</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Generate grid coordinates</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>        g1, g0 <span class="op">=</span> np.meshgrid(np.arange(grid_height), np.arange(grid_width), indexing<span class="op">=</span><span class="st">'ij'</span>)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create an array of strides</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>        s <span class="op">=</span> np.full((grid_height, grid_width), stride)</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Stack the coordinates along with the stride</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>        coordinates <span class="op">=</span> np.stack((g0.flatten(), g1.flatten(), s.flatten()), axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Append to the list</span></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>        all_coordinates.append(coordinates)</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Concatenate all arrays in the list along the first dimension</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    output_grids <span class="op">=</span> np.concatenate(all_coordinates, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> output_grids</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-calculate-bounding-boxes-and-probabilities" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-calculate-bounding-boxes-and-probabilities">Define a function to calculate bounding boxes and probabilities</h4>
+<p>Next, we’ll scale the bounding box predictions and extract the predicted class and corresponding confidence score.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_boxes_and_probs(model_output:np.ndarray, output_grids:np.ndarray) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Calculate the bounding boxes and their probabilities.</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co">    model_output (numpy.ndarray): The output of the model.</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co">    output_grids (numpy.ndarray): The output grids.</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co">    numpy.ndarray: The array containing the bounding box coordinates, class labels, and maximum probabilities.</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the bounding box coordinates</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    box_centroids <span class="op">=</span> (model_output[..., :<span class="dv">2</span>] <span class="op">+</span> output_grids[..., :<span class="dv">2</span>]) <span class="op">*</span> output_grids[..., <span class="dv">2</span>:]</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    box_sizes <span class="op">=</span> np.exp(model_output[..., <span class="dv">2</span>:<span class="dv">4</span>]) <span class="op">*</span> output_grids[..., <span class="dv">2</span>:]</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    x0, y0 <span class="op">=</span> [t.squeeze(axis<span class="op">=</span><span class="dv">2</span>) <span class="cf">for</span> t <span class="kw">in</span> np.split(box_centroids <span class="op">-</span> box_sizes <span class="op">/</span> <span class="dv">2</span>, <span class="dv">2</span>, axis<span class="op">=</span><span class="dv">2</span>)]</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    w, h <span class="op">=</span> [t.squeeze(axis<span class="op">=</span><span class="dv">2</span>) <span class="cf">for</span> t <span class="kw">in</span> np.split(box_sizes, <span class="dv">2</span>, axis<span class="op">=</span><span class="dv">2</span>)]</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the probabilities for each class</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    box_objectness <span class="op">=</span> model_output[..., <span class="dv">4</span>]</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    box_cls_scores <span class="op">=</span> model_output[..., <span class="dv">5</span>:]</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>    box_probs <span class="op">=</span> np.expand_dims(box_objectness, <span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> box_cls_scores</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get the maximum probability and corresponding class for each proposal</span></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>    max_probs <span class="op">=</span> np.<span class="bu">max</span>(box_probs, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> np.argmax(box_probs, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([x0, y0, w, h, labels, max_probs]).transpose((<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-calculate-the-intersection-over-union" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-calculate-the-intersection-over-union">Define a function to calculate the intersection-over-union</h4>
+<p>Previously, we used the <a href="https://pytorch.org/vision/stable/generated/torchvision.ops.nms.html#torchvision.ops.nms">nms</a> function included with torchvision to filter bounding box proposals using Non-Maximum Suppression. This approach filters bounding box proposals when they overlap too much with another bounding box with a higher confidence score.</p>
+<p>We determine how much a pair of bounding boxes overlap by computing the Intersection over Union (IoU). The following function shows how to do this in NumPy.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_iou(proposals:np.ndarray) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Calculates the Intersection over Union (IoU) for all pairs of bounding boxes (x,y,w,h) in 'proposals'.</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co">    The IoU is a measure of overlap between two bounding boxes. It is calculated as the area of</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co">    intersection divided by the area of union of the two boxes.</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="co">    proposals (2D np.array): A NumPy array of bounding boxes, where each box is an array [x, y, width, height].</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co">    iou (2D np.array): The IoU matrix where each element i,j represents the IoU of boxes i and j.</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate coordinates for the intersection rectangles</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">=</span> np.maximum(proposals[:, <span class="dv">0</span>], proposals[:, <span class="dv">0</span>][:, <span class="va">None</span>])</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    y1 <span class="op">=</span> np.maximum(proposals[:, <span class="dv">1</span>], proposals[:, <span class="dv">1</span>][:, <span class="va">None</span>])</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">=</span> np.minimum(proposals[:, <span class="dv">0</span>] <span class="op">+</span> proposals[:, <span class="dv">2</span>], (proposals[:, <span class="dv">0</span>] <span class="op">+</span> proposals[:, <span class="dv">2</span>])[:, <span class="va">None</span>])</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    y2 <span class="op">=</span> np.minimum(proposals[:, <span class="dv">1</span>] <span class="op">+</span> proposals[:, <span class="dv">3</span>], (proposals[:, <span class="dv">1</span>] <span class="op">+</span> proposals[:, <span class="dv">3</span>])[:, <span class="va">None</span>])</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate intersection areas</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    intersections <span class="op">=</span> np.maximum(x2 <span class="op">-</span> x1, <span class="dv">0</span>) <span class="op">*</span> np.maximum(y2 <span class="op">-</span> y1, <span class="dv">0</span>)</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate union areas</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    areas <span class="op">=</span> proposals[:, <span class="dv">2</span>] <span class="op">*</span> proposals[:, <span class="dv">3</span>]</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>    unions <span class="op">=</span> areas[:, <span class="va">None</span>] <span class="op">+</span> areas <span class="op">-</span> intersections</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate IoUs</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>    iou <span class="op">=</span> intersections <span class="op">/</span> unions</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return the iou matrix</span></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> iou</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression">Define a function to filter bounding box proposals using Non-Maximum Suppression</h4>
+<p>Now we create a function to determine which proposal indices to keep using the calculated IoU values.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nms_sorted_boxes(iou:np.ndarray, iou_thresh:<span class="bu">float</span><span class="op">=</span><span class="fl">0.45</span>) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Applies non-maximum suppression (NMS) to sorted bounding boxes.</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co">    It suppresses boxes that have high overlap (as defined by the IoU threshold) with a box that </span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co">    has a higher score.</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="co">    iou (np.ndarray): An IoU matrix where each element i,j represents the IoU of boxes i and j.</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="co">    iou_thresh (float): The IoU threshold for suppression. Boxes with IoU &gt; iou_thresh are suppressed.</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="co">    keep (np.ndarray): The indices of the boxes to keep after applying NMS.</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a boolean mask to keep track of boxes</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> np.ones(iou.shape[<span class="dv">0</span>], dtype<span class="op">=</span><span class="bu">bool</span>)</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Apply non-max suppression</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(iou.shape[<span class="dv">0</span>]):</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> mask[i]:</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Suppress boxes with higher index and IoU &gt; threshold</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>            mask[(iou[i] <span class="op">&gt;</span> iou_thresh) <span class="op">&amp;</span> (np.arange(iou.shape[<span class="dv">0</span>]) <span class="op">&gt;</span> i)] <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return the indices of the boxes to keep</span></span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.arange(iou.shape[<span class="dv">0</span>])[mask]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-annotate-an-image-with-bounding-boxes" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-annotate-an-image-with-bounding-boxes">Define a function to annotate an image with bounding boxes</h4>
+<p>Now that we implemented the functionality to process and filter the model output, we only need to annotate images with bounding boxes and labels. PIL includes functionality to draw boxes and write text on images. The following function also scales the font size based on the image resolution to keep the relative size consistent across images.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_bboxes_pil(image, boxes, labels, colors, font, width:<span class="bu">int</span><span class="op">=</span><span class="dv">2</span>, font_size:<span class="bu">int</span><span class="op">=</span><span class="dv">18</span>, probs<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Annotates an image with bounding boxes, labels, and optional probability scores.</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co">    This function draws bounding boxes on the provided image using the given box coordinates, </span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co">    colors, and labels. If probabilities are provided, they will be added to the labels.</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co">    image (PIL.Image): The input image on which annotations will be drawn.</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co">    boxes (list of tuples): A list of bounding box coordinates where each tuple is (x, y, w, h).</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co">    labels (list of str): A list of labels corresponding to each bounding box.</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="co">    colors (list of str): A list of colors for each bounding box and its corresponding label.</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="co">    font (str): Path to the font file to be used for displaying the labels.</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="co">    width (int, optional): Width of the bounding box lines. Defaults to 2.</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="co">    font_size (int, optional): Size of the font for the labels. Defaults to 25.</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="co">    probs (list of float, optional): A list of probability scores corresponding to each label. Defaults to None.</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="co">    annotated_image (PIL.Image): The image annotated with bounding boxes, labels, and optional probability scores.</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define a reference diagonal</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>    REFERENCE_DIAGONAL <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Scale the font size using the hypotenuse of the image</span></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>    font_size <span class="op">=</span> <span class="bu">int</span>(font_size <span class="op">*</span> (np.hypot(<span class="op">*</span>image.size) <span class="op">/</span> REFERENCE_DIAGONAL))</span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add probability scores to labels</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> probs <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> [<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>prob<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span> <span class="cf">for</span> label, prob <span class="kw">in</span> <span class="bu">zip</span>(labels, probs)]</span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a copy of the image</span></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>    annotated_image <span class="op">=</span> image.copy()</span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create an ImageDraw object for drawing on the image</span></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>    draw <span class="op">=</span> ImageDraw.Draw(annotated_image)</span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Loop through the bounding boxes and labels in the 'annotation' DataFrame</span></span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(labels)):</span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the bounding box coordinates</span></span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a>        x, y, w, h <span class="op">=</span> boxes[i]</span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a tuple of coordinates for the bounding box</span></span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a>        shape <span class="op">=</span> (x, y, x<span class="op">+</span>w, y<span class="op">+</span>h)</span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the bounding box on the image</span></span>
+<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a>        draw.rectangle(shape, outline<span class="op">=</span>colors[i], width<span class="op">=</span>width)</span>
+<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Load the font file</span></span>
+<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a>        fnt <span class="op">=</span> ImageFont.truetype(font, font_size)</span>
+<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the label box on the image</span></span>
+<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a>        label_w, label_h <span class="op">=</span> draw.textbbox(xy<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">0</span>), text<span class="op">=</span>labels[i], font<span class="op">=</span>fnt)[<span class="dv">2</span>:]</span>
+<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a>        draw.rectangle((x, y<span class="op">-</span>label_h, x<span class="op">+</span>label_w, y), outline<span class="op">=</span>colors[i], fill<span class="op">=</span>colors[i], width<span class="op">=</span>width)</span>
+<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the label on the image</span></span>
+<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a>        draw.multiline_text((x, y<span class="op">-</span>label_h), labels[i], font<span class="op">=</span>fnt, fill<span class="op">=</span><span class="st">'black'</span> <span class="cf">if</span> np.mean(int_colors[<span class="dv">5</span>]) <span class="op">&gt;</span> <span class="fl">127.5</span> <span class="cf">else</span> <span class="st">'white'</span>)</span>
+<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> annotated_image</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With our utility functions taken care of, we can select an image to test our ONNX model.</p>
+</section>
+</section>
+<section id="select-a-test-image" class="level3">
+<h3 class="anchored" data-anchor-id="select-a-test-image">Select a Test Image</h3>
+<p>Let’s use the same test image and input size from the <a href="../#testing-the-model-on-new-data">previous tutorial</a> to compare the results with the PyTorch model.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>test_img_name <span class="op">=</span> <span class="st">"pexels-2769554-man-doing-rock-and-roll-sign.jpg"</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>test_img_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/</span><span class="sc">{</span>test_img_name<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>download_file(test_img_url, <span class="st">'./'</span>, <span class="va">False</span>)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> Image.<span class="bu">open</span>(test_img_name)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test Image Size:"</span>: test_img.size, </span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_45_1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table id="T_59825">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_59825_level0_row0" class="row_heading level0 row0">
+Test Image Size:
+</th>
+<td id="T_59825_row0_col0" class="data row0 col0">
+(640, 960)
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</section>
+<section id="prepare-the-test-image" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-test-image">Prepare the Test Image</h3>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set test image size</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>test_sz <span class="op">=</span> <span class="dv">384</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Resize image without cropping to multiple of the max stride</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>resized_img <span class="op">=</span> resize_img(test_img, target_sz<span class="op">=</span>test_sz, divisor<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculating the input dimensions that multiples of the max stride</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>input_dims <span class="op">=</span> [dim <span class="op">-</span> dim <span class="op">%</span> <span class="bu">max</span>(strides) <span class="cf">for</span> dim <span class="kw">in</span> resized_img.size]</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the offsets from the resized image dimensions to the input dimensions</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>offsets <span class="op">=</span> (np.array(resized_img.size) <span class="op">-</span> input_dims)<span class="op">/</span><span class="dv">2</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the scale between the source image and the resized image</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>min_img_scale <span class="op">=</span> <span class="bu">min</span>(test_img.size) <span class="op">/</span> <span class="bu">min</span>(resized_img.size)</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Crop the resized image to the input dimensions</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>input_img <span class="op">=</span> resized_img.crop(box<span class="op">=</span>[<span class="op">*</span>offsets, <span class="op">*</span>resized_img.size<span class="op">-</span>offsets])</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>display(input_img)</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Resized Image Size:"</span>: resized_img.size,</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Dims:"</span>: input_dims,</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Offsets:"</span>: offsets,</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Min Image Scale:"</span>: min_img_scale,</span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Image Size:"</span>: input_img.size</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_47_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table id="T_90177">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_90177_level0_row0" class="row_heading level0 row0">
+Resized Image Size:
+</th>
+<td id="T_90177_row0_col0" class="data row0 col0">
+(384, 576)
+</td>
+</tr>
+<tr>
+<th id="T_90177_level0_row1" class="row_heading level0 row1">
+Input Dims:
+</th>
+<td id="T_90177_row1_col0" class="data row1 col0">
+[384, 576]
+</td>
+</tr>
+<tr>
+<th id="T_90177_level0_row2" class="row_heading level0 row2">
+Offsets:
+</th>
+<td id="T_90177_row2_col0" class="data row2 col0">
+[0. 0.]
+</td>
+</tr>
+<tr>
+<th id="T_90177_level0_row3" class="row_heading level0 row3">
+Min Image Scale:
+</th>
+<td id="T_90177_row3_col0" class="data row3 col0">
+1.666667
+</td>
+</tr>
+<tr>
+<th id="T_90177_level0_row4" class="row_heading level0 row4">
+Input Image Size:
+</th>
+<td id="T_90177_row4_col0" class="data row4 col0">
+(384, 576)
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</section>
+<section id="prepare-the-input-tensor-1" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-input-tensor-1">Prepare the Input Tensor</h3>
+<p>When we convert the PIL input image to a NumPy array, we need to reorder the array values to channels-last format, scale the values from <code>[0,255]</code> to <code>[0,1]</code>, and add a batch dimension. When we enable the <code>scale_inp</code> and <code>channels_last</code> options, we only need to add a batch dimension.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Default</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Scaled &amp; Channels-Last</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32)[<span class="va">None</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="compute-the-predictions" class="level3">
+<h3 class="anchored" data-anchor-id="compute-the-predictions">Compute the Predictions</h3>
+<p>Now we can finally perform inference with our ONNX model.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run inference</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Process the model output</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> wrapped_model.run_box_and_prob_calculation:</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> calculate_boxes_and_probs(outputs, generate_output_grids_np(<span class="op">*</span>input_tensor_np.shape[input_dim_slice]))</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>bbox_conf_thresh <span class="op">=</span> <span class="fl">0.45</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>iou_thresh <span class="op">=</span> <span class="fl">0.45</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the proposals based on the confidence threshold</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>max_probs <span class="op">=</span> outputs[:, : ,<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> max_probs <span class="op">&gt;</span> bbox_conf_thresh</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>proposals <span class="op">=</span> outputs[mask]</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Sort the proposals by probability in descending order</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>proposals <span class="op">=</span> proposals[proposals[..., <span class="op">-</span><span class="dv">1</span>].argsort()][::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply non-max suppression to the proposals with the specified threshold</span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>proposal_indices <span class="op">=</span> nms_sorted_boxes(calc_iou(proposals[:, :<span class="op">-</span><span class="dv">2</span>]), iou_thresh)</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>proposals <span class="op">=</span> proposals[proposal_indices]</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>bbox_list <span class="op">=</span> (proposals[:,:<span class="dv">4</span>]<span class="op">+</span>[<span class="op">*</span>offsets, <span class="dv">0</span>, <span class="dv">0</span>])<span class="op">*</span>min_img_scale</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>label_list <span class="op">=</span> [class_names[<span class="bu">int</span>(idx)] <span class="cf">for</span> idx <span class="kw">in</span> proposals[:,<span class="dv">4</span>]]</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>probs_list <span class="op">=</span> proposals[:,<span class="dv">5</span>]</span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>draw_bboxes_pil(</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>test_img, </span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>bbox_list, </span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>label_list,</span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_list,</span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[class_names.index(i)] <span class="cf">for</span> i <span class="kw">in</span> label_list], </span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>    font<span class="op">=</span>font_file,</span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_51_0.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table id="T_5637a">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_5637a_level0_row0" class="row_heading level0 row0">
+Predicted BBoxes:
+</th>
+<td id="T_5637a_row0_col0" class="data row0 col0">
+[‘rock:[341.796 242.258 112.071 113.383]’, ‘no_gesture:[196.331 521.538 100.786 78.511]’]
+</td>
+</tr>
+<tr>
+<th id="T_5637a_level0_row1" class="row_heading level0 row1">
+Confidence Scores:
+</th>
+<td id="T_5637a_row1_col0" class="data row1 col0">
+[‘rock: 93.49%’, ‘no_gesture: 86.02%’]
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p>The model predictions should be virtually identical to the PyTorch model, but the probability scores can sometimes vary slightly.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Congratulations on reaching the end of this tutorial! We previously trained a YOLOX model in PyTorch for hand gesture detection and now exported that model to ONNX. With this, we can streamline our deployment process and leverage platform-specific hardware optimizations through ONNX Runtime.</p>
+<p>As you move forward, consider exploring more about ONNX and its ecosystem. Check out the available <a href="https://onnxruntime.ai/docs/execution-providers/">Execution Providers</a> that provide flexible interfaces to different hardware acceleration libraries.</p>
+<p>If you found this guide helpful, consider sharing it with others.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2023, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
