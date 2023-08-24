@@ -666,6 +666,7 @@ Settings for Unity’s Barracuda Inference Library:
 </section>
 <section id="prepare-the-input-tensor" class="level3">
 <h3 class="anchored" data-anchor-id="prepare-the-input-tensor">Prepare the Input Tensor</h3>
+<p>We need a sample input tensor for the export process.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Default</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Channels-Last</a></li></ul>
 <div class="tab-content">
@@ -680,6 +681,8 @@ Settings for Unity’s Barracuda Inference Library:
 </section>
 <section id="export-the-model-to-onnx" class="level3">
 <h3 class="anchored" data-anchor-id="export-the-model-to-onnx">Export the Model to ONNX</h3>
+<p>We can export the model using PyTorch’s <a href="https://pytorch.org/docs/stable/onnx.html#torch.onnx.export"><code>torch.onnx.export()</code></a> function. This function performs a single pass through the model and records all operations to generate a <a href="https://pytorch.org/docs/stable/jit.html">TorchScript graph</a>. It then exports this graph to ONNX by decomposing each graph node (which contains a PyTorch operator) into a series of ONNX operators.</p>
+<p>If we want the ONNX model to support different input sizes, we must set the width and height input axes as dynamic. These axes again depend on the input format, so we’ll use the slice object we saved earlier.</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set a filename for the ONNX model</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>checkpoint_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>colormap_path<span class="sc">.</span>stem<span class="sc">.</span>removesuffix(<span class="st">'-colormap'</span>)<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>model_type<span class="sc">}</span><span class="ss">.onnx"</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -916,7 +919,7 @@ Warning
 </section>
 <section id="define-a-function-to-annotate-an-image-with-bounding-boxes" class="level4">
 <h4 class="anchored" data-anchor-id="define-a-function-to-annotate-an-image-with-bounding-boxes">Define a function to annotate an image with bounding boxes</h4>
-<p>Now that we implemented the functionality to process and filter the model output, we only need to annotate images with bounding boxes and labels. PIL includes functionality to draw boxes and write text on images. The following function also scales the font size based on the image resolution to keep the relative size consistent across images.</p>
+<p>Now that we have implemented the functionality to process and filter the model output, we only need to annotate images with bounding boxes and labels. PIL includes functionality to draw boxes and write text on images. The following function also scales the font size based on the image resolution to keep the relative size consistent across images.</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_bboxes_pil(image, boxes, labels, colors, font, width:<span class="bu">int</span><span class="op">=</span><span class="dv">2</span>, font_size:<span class="bu">int</span><span class="op">=</span><span class="dv">18</span>, probs<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Annotates an image with bounding boxes, labels, and optional probability scores.</span></span>
@@ -1104,7 +1107,7 @@ Input Image Size:
 </section>
 <section id="prepare-the-input-tensor-1" class="level3">
 <h3 class="anchored" data-anchor-id="prepare-the-input-tensor-1">Prepare the Input Tensor</h3>
-<p>When we convert the PIL input image to a NumPy array, we need to reorder the array values to channels-last format, scale the values from <code>[0,255]</code> to <code>[0,1]</code>, and add a batch dimension. When we enable the <code>scale_inp</code> and <code>channels_last</code> options, we only need to add a batch dimension.</p>
+<p>When we convert the PIL input image to a NumPy array, we need to reorder the array values to channels-first format, scale the values from <code>[0,255]</code> to <code>[0,1]</code>, and add a batch dimension. When we enable the <code>scale_inp</code> and <code>channels_last</code> options, we only need to add a batch dimension.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Default</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Scaled &amp; Channels-Last</a></li></ul>
 <div class="tab-content">
@@ -1188,11 +1191,26 @@ Confidence Scores:
 </table>
 </div>
 <p>The model predictions should be virtually identical to the PyTorch model, but the probability scores can sometimes vary slightly.</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Google Colab Users
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Don’t forget to download the ONNX model from the Colab Environment’s file browser. (<a href="https://christianjmills.com/posts/google-colab-getting-started-tutorial/#working-with-data">tutorial link</a>)</li>
+</ol>
+</div>
+</div>
 </section>
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>Congratulations on reaching the end of this tutorial! We previously trained a YOLOX model in PyTorch for hand gesture detection and now exported that model to ONNX. With this, we can streamline our deployment process and leverage platform-specific hardware optimizations through ONNX Runtime.</p>
+<p>Congratulations on reaching the end of this tutorial! We previously trained a YOLOX model in PyTorch for hand gesture detection, and now we’ve exported that model to ONNX. With this, we can streamline our deployment process and leverage platform-specific hardware optimizations through ONNX Runtime.</p>
 <p>As you move forward, consider exploring more about ONNX and its ecosystem. Check out the available <a href="https://onnxruntime.ai/docs/execution-providers/">Execution Providers</a> that provide flexible interfaces to different hardware acceleration libraries.</p>
 <p>If you found this guide helpful, consider sharing it with others.</p>
 
