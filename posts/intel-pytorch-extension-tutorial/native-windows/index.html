@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2023-09-09">
+<meta name="description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.">
+
+<title>Christian Mills - Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows">
+<meta property="og:description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.">
+<meta property="og:image" content="christianjmills.com/posts/intel-pytorch-extension-tutorial/social-media/cover.jpg">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows">
+<meta name="twitter:description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.">
+<meta name="twitter:image" content="christianjmills.com/posts/intel-pytorch-extension-tutorial/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html" rel="" target="">
+ <span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html" rel="" target="">
+ <span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html" rel="" target="">
+ <span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../services.html" rel="" target="">
+ <span class="menu-text">Services</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com" rel="" target=""><i class="bi bi-envelope-fill" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml" rel="" target=""><i class="bi bi-rss" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#enable-resizable-bar-in-bios" id="toc-enable-resizable-bar-in-bios" class="nav-link" data-scroll-target="#enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</a></li>
+  <li><a href="#install-drivers" id="toc-install-drivers" class="nav-link" data-scroll-target="#install-drivers">Install Drivers</a></li>
+  <li><a href="#install-visual-studio" id="toc-install-visual-studio" class="nav-link" data-scroll-target="#install-visual-studio">Install Visual Studio</a></li>
+  <li><a href="#install-oneapi-base-toolkit" id="toc-install-oneapi-base-toolkit" class="nav-link" data-scroll-target="#install-oneapi-base-toolkit">Install oneAPI Base Toolkit</a>
+  <ul>
+  <li><a href="#download-the-oneapi-toolkit-installer" id="toc-download-the-oneapi-toolkit-installer" class="nav-link" data-scroll-target="#download-the-oneapi-toolkit-installer">Download the oneAPI Toolkit Installer</a></li>
+  </ul></li>
+  <li><a href="#disable-integrated-graphics" id="toc-disable-integrated-graphics" class="nav-link" data-scroll-target="#disable-integrated-graphics">Disable Integrated Graphics</a></li>
+  <li><a href="#set-up-a-python-environment" id="toc-set-up-a-python-environment" class="nav-link" data-scroll-target="#set-up-a-python-environment">Set Up a Python Environment</a>
+  <ul>
+  <li><a href="#install-mamba-package-manager" id="toc-install-mamba-package-manager" class="nav-link" data-scroll-target="#install-mamba-package-manager">Install Mamba Package Manager</a></li>
+  <li><a href="#create-a-python-environment" id="toc-create-a-python-environment" class="nav-link" data-scroll-target="#create-a-python-environment">Create a Python Environment</a></li>
+  <li><a href="#activate-the-oneapi-environment" id="toc-activate-the-oneapi-environment" class="nav-link" data-scroll-target="#activate-the-oneapi-environment">Activate the oneAPI Environment</a></li>
+  <li><a href="#install-training-code-dependencies" id="toc-install-training-code-dependencies" class="nav-link" data-scroll-target="#install-training-code-dependencies">Install Training Code Dependencies</a></li>
+  <li><a href="#install-prerequisite-packages" id="toc-install-prerequisite-packages" class="nav-link" data-scroll-target="#install-prerequisite-packages">Install Prerequisite Packages</a></li>
+  <li><a href="#install-pytorch-and-intels-pytorch-extension" id="toc-install-pytorch-and-intels-pytorch-extension" class="nav-link" data-scroll-target="#install-pytorch-and-intels-pytorch-extension">Install PyTorch and Intel’s PyTorch extension</a></li>
+  <li><a href="#set-onednn-memory-layout" id="toc-set-onednn-memory-layout" class="nav-link" data-scroll-target="#set-onednn-memory-layout">Set oneDNN Memory Layout</a></li>
+  </ul></li>
+  <li><a href="#modify-pytorch-code" id="toc-modify-pytorch-code" class="nav-link" data-scroll-target="#modify-pytorch-code">Modify PyTorch Code</a>
+  <ul>
+  <li><a href="#import-pytorch-extension" id="toc-import-pytorch-extension" class="nav-link" data-scroll-target="#import-pytorch-extension">Import PyTorch Extension</a></li>
+  <li><a href="#update-pytorch-imports" id="toc-update-pytorch-imports" class="nav-link" data-scroll-target="#update-pytorch-imports">Update PyTorch Imports</a></li>
+  <li><a href="#verify-arc-gpu-availability" id="toc-verify-arc-gpu-availability" class="nav-link" data-scroll-target="#verify-arc-gpu-availability">Verify Arc GPU Availability</a></li>
+  <li><a href="#update-the-device-name" id="toc-update-the-device-name" class="nav-link" data-scroll-target="#update-the-device-name">Update the Device Name</a></li>
+  <li><a href="#optimize-the-model-and-optimizer-objects" id="toc-optimize-the-model-and-optimizer-objects" class="nav-link" data-scroll-target="#optimize-the-model-and-optimizer-objects">Optimize the <code>model</code> and <code>optimizer</code> Objects</a></li>
+  <li><a href="#train-the-model" id="toc-train-the-model" class="nav-link" data-scroll-target="#train-the-model">Train the Model</a></li>
+  <li><a href="#update-the-inference-code" id="toc-update-the-inference-code" class="nav-link" data-scroll-target="#update-the-inference-code">Update the Inference Code</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">pytorch</div>
+    <div class="quarto-category">windows</div>
+    <div class="quarto-category">image-classification</div>
+    <div class="quarto-category">arc-gpu</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 9, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</a></li>
+<li><a href="#install-drivers">Install Drivers</a></li>
+<li><a href="#install-visual-studio">Install Visual Studio</a></li>
+<li><a href="#install-oneapi-base-toolkit">Install oneAPI Base Toolkit</a></li>
+<li><a href="#disable-integrated-graphics">Disable Integrated Graphics</a></li>
+<li><a href="#set-up-a-python-environment">Set Up a Python Environment</a></li>
+<li><a href="#modify-pytorch-code">Modify PyTorch Code</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://www.microsoft.com/en-us/windows">Windows</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it now includes <code>experimental</code> support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
+<p>The XMX engines are dedicated hardware for performing matrix operations like those in deep-learning workloads. Intel’s PyTorch extension allows us to leverage this hardware with minimal changes to existing PyTorch code.</p>
+<p>To illustrate this, we’ll adapt the training code from my <a href="https://christianjmills.com/posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all steps required to set up Windows for training PyTorch models using Arc GPUs.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The current setup process is for version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/2.0.110+xpu/"><code>2.0.110+xpu</code></a> of Intel’s PyTorch extension.</p>
+</div>
+</div>
+</section>
+<section id="enable-resizable-bar-in-bios" class="level2">
+<h2 class="anchored" data-anchor-id="enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</h2>
+<p>If you have an Arc GPU, one of the first things you should do is enable Resizable BAR. Resizable BAR allows a computer’s processor to access the graphics card’s entire memory instead of in small chunks. The Arc GPUs currently require this feature to perform as intended. You can enable the feature in your motherboard’s BIOS.</p>
+<p>Here are links on how to do this for some of the popular motherboard manufacturers:</p>
+<ul>
+<li><a href="https://www.asrock.com/support/faq.asp?id=498">ASRock</a></li>
+<li><a href="https://www.asus.com/support/FAQ/1046107/">Asus</a></li>
+<li><a href="https://www.evga.com/support/faq/FAQdetails.aspx?faqid=59772">EVGA</a></li>
+<li><a href="https://www.gigabyte.com/WebPage/785/NVIDIA_resizable_bar.html">Gigabyte</a></li>
+<li><a href="https://www.msi.com/blog/unlock-system-performance-to-extreme-resizable-bar">MSI</a></li>
+</ul>
+<p>With Resizable BAR enabled, let’s ensure we have the latest drivers for our Arc GPU.</p>
+</section>
+<section id="install-drivers" class="level2">
+<h2 class="anchored" data-anchor-id="install-drivers">Install Drivers</h2>
+<p>We can download the latest Arc GPU drivers from Intel’s website at the link below:</p>
+<ul>
+<li><a href="https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html?">Intel® Arc™ &amp; Iris® Xe Graphics - Windows</a></li>
+</ul>
+<p>The latest driver version available was <code>31.0.101.4676</code> at the time of writing. Click the <code>Download</code> button under <code>Available Downloads</code> to download the installer.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/download-intel-graphics-driver-installer-windows.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Once downloaded, double-click the installer executable and follow the prompts to install the drivers.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-graphics-driver-installer-begin-installation.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>You don’t need to agree to join the Intel Computing Improvement program to install the drivers.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-graphics-driver-installer-intel-computing-improvement-program.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Once the installation completes, click the <code>Reboot Recommended</code> button to reboot the computer.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-graphics-driver-installer-installation-complete-reboot.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>We can continue with the next step once we’re back in Windows.</p>
+</section>
+<section id="install-visual-studio" class="level2">
+<h2 class="anchored" data-anchor-id="install-visual-studio">Install Visual Studio</h2>
+<p>The <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html#gs.ztyvfm">oneAPI Base Toolkit</a>, which Intel’s extension depends on, requires <a href="https://visualstudio.microsoft.com/#vs-section">Visual Studio</a> with the <code>Desktop development with C++</code> workload for some of its packages to function. We can download the installer for the free <code>Community</code> version of Visual Studio at the link below:</p>
+<ul>
+<li><a href="https://visualstudio.microsoft.com/downloads/">Visual Studio 2022 Downloads</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Installing the extension via compiling from source
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>There is a compatibility issue with the latest version of oneAPI (2023.2) and the latest version of Visual Studio 2022 that causes the compilation process for the extension to fail. You can download a version of Visual 2019 Studio from the link below if you want to compile the extension from its source code.</p>
+<ul>
+<li><a href="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&amp;rel=16">Visual Studio 2019 Download</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-2022-community-download.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Once downloaded, double-click the installer executable and click <code>Continue</code> in the popup window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-installer-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Select the <code>Desktop development with C++</code> workload under <code>Desktop &amp; Mobile</code> and click <code>Install</code> in the bottom-right corner.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-installer-install-desktop-development-with-c++.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Once the installation finishes, Visual Studio will launch and prompt you to sign in. We can either skip that step or exit Visual Studio completely.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-sign-in.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Next, Visual Studio will prompt us to personalize the theme and development settings. We don’t need to use Visual Studio directly, so we stick with the defaults and exit the application once finished.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-select-theme.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="install-oneapi-base-toolkit" class="level2">
+<h2 class="anchored" data-anchor-id="install-oneapi-base-toolkit">Install oneAPI Base Toolkit</h2>
+<p>With the prerequisites satisfied, we can install the oneAPI Base Toolkit. The required packages in the toolkit will take up approximately 13GB of disk space.</p>
+<section id="download-the-oneapi-toolkit-installer" class="level3">
+<h3 class="anchored" data-anchor-id="download-the-oneapi-toolkit-installer">Download the oneAPI Toolkit Installer</h3>
+<p>We’ll install the toolkit using the offline Windows installer available at the link below:</p>
+<ul>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&amp;distributions=offline&amp;version=2023.2.0">oneAPI Base Toolkit 2023.2 Windows Offline Installer</a></li>
+</ul>
+<p>The download page has a form to register with an email address. We can skip this by clicking the <code>Continue without signing up</code> text below the <code>Sign Up &amp; Download</code> button.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-select-packages.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Once downloaded, double-click the installer executable and click the <code>Extract</code> button in the popup window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-extract-package.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Once extracted, click the <code>Continue</code> button in the installer window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-check-system-requirements.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Tick the checkbox on the next page to accept the license agreement and select the <code>Custom Installation</code> option. We can save a decent amount of space by only installing the necessary components.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-select-custom-installation.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>For Intel’s PyTorch extension to function, we need the following components:</p>
+<ul>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compatibility-tool.html#gs.4m6nmn">Intel DPC++ Compatibility Tool</a></li>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-library.html#gs.4m6ndt">Intel oneAPI DPC++ Library</a></li>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html#gs.4m6nc1">Intel oneAPI DPC++/C++ Compiler</a></li>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html#gs.4m6n49">Intel oneAPI Math Kernel Library</a></li>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-for-gdb.html#gs.4m6muy">Intel Distribution for GDB</a></li>
+<li><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html#gs.4m6q0f">Intel oneAPI Threading Building Blocks</a></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-select-packages.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>The next page allows us to integrate the oneAPI toolkit with installations of Visual Studio. We don’t need to make any changes here.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-select-ide-integrations.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>As with the Intel Computing Improvement program for the Graphics drivers, we don’t need to consent to the Intel Software Improvement program to use the toolkit. Go ahead and click the Install button to start the installation.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-software-improvement-program.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>The installation process will likely take several minutes.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-installation-in-progress.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Click the Finish button in the popup window once the toolkit successfully installs and exit the installer window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/intel-oneapi-base-toolkit-installer-finish.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="disable-integrated-graphics" class="level2">
+<h2 class="anchored" data-anchor-id="disable-integrated-graphics">Disable Integrated Graphics</h2>
+<p>I encountered the following error when I first attempted to use Intel’s PyTorch extension on Windows:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">RuntimeError:</span> Native API failed. Native API returns: <span class="at">-997</span> <span class="er">(</span><span class="ex">Command</span> failed to enqueue/execute<span class="kw">)</span> <span class="ex">-997</span> <span class="er">(</span><span class="ex">Command</span> failed to enqueue/execute<span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>I could only resolve the issue by deactivating the iGPU in the Windows Device Manager. Future versions of the extension will likely eliminate this bug, but I’ll include the steps to turn off the iGPUs for now.</p>
+<p>Type Device Manager into the Windows search bar and click Open.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-search-device-manager.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>You will see the following popup message if you are not using an Administrator account. Click <code>OK</code> to continue.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-device-manager-standard-user-warning.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>In the Device Manager window, open the <code>Display adapters</code> dropdown. There should be at least two options: the Arc GPU and the iGPU included with the CPU. Double-click the iGPU listing to open its properties window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-device-manager-select-integrated-graphics.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Non-Administrator users must click the <code>Change settings</code> button to enable changes to the iGPU device properties.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-device-manager-integrated-graphics-properties-change-settings.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Next, select the <code>Driver</code> tab and click the <code>Disable Device</code> button.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-device-manager-integrated-graphics-properties-disable-device.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Click <code>Yes</code> in the popup window to confirm the changes.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/windows-device-manager-integrated-graphics-properties-disable-device-confirm.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You will need to repeat this step when you install new graphics drivers in the future, assuming future releases of Intel’s extension do not resolve the issue.</p>
+</div>
+</div>
+</section>
+<section id="set-up-a-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="set-up-a-python-environment">Set Up a Python Environment</h2>
+<p>Now, we can create a Python environment to run the training code. We’ll install a patched version of PyTorch needed for Intel’s extension, the extension itself, and the other dependencies for the training code.</p>
+<section id="install-mamba-package-manager" class="level3">
+<h3 class="anchored" data-anchor-id="install-mamba-package-manager">Install Mamba Package Manager</h3>
+<p>We’ll use the <a href="https://mamba.readthedocs.io/en/latest/">Mamba</a> package manager to create the Python environment. I have a dedicated tutorial for setting up Mamba on Windows:</p>
+<ul>
+<li><a href="https://christianjmills.com/posts/mamba-getting-started-tutorial-windows/"><strong>Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows</strong></a></li>
+</ul>
+<p>For convenience, here is the command to activate the mamba environment from any command prompt window:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">%USERPROFILE%\mambaforge\Scripts\activate</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-a-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-python-environment">Create a Python Environment</h3>
+<p>Next, we’ll create a Python environment and activate it. The current version of the extension supports Python 3.11, so we’ll use that.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> create <span class="at">--name</span> pytorch-arc python=3.11 <span class="at">-y</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> activate pytorch-arc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="activate-the-oneapi-environment" class="level3">
+<h3 class="anchored" data-anchor-id="activate-the-oneapi-environment">Activate the oneAPI Environment</h3>
+<p>Run the following command to activate the oneAPI environment for this command prompt session:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">call</span> <span class="st">"C:\Program Files (x86)\Intel\oneAPI\setvars.bat"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We must reactivate the oneAPI environment whenever we open a new command prompt. It does not carry over from one terminal window to another.</p>
+</section>
+<section id="install-training-code-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="install-training-code-dependencies">Install Training Code Dependencies</h3>
+<p>After that, we’ll install the training code dependencies. You can learn about these dependencies (<a href="https://christianjmills.com/posts/pytorch-train-image-classifier-timm-hf-tutorial/#installing-additional-libraries">here</a>).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install matplotlib pandas pillow timm torcheval torchtnt tqdm</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install cjm_pandas_utils cjm_psl_utils cjm_pil_utils cjm_pytorch_utils</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="install-prerequisite-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-prerequisite-packages">Install Prerequisite Packages</h3>
+<p>The package for Intel’s PyTorch extension requires a couple of conda packages:</p>
+<ul>
+<li><a href="https://anaconda.org/conda-forge/pkg-config/">pkg-config</a></li>
+<li><a href="https://anaconda.org/conda-forge/libuv">libuv</a></li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> install pkg-config libuv <span class="at">-y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="install-pytorch-and-intels-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="install-pytorch-and-intels-pytorch-extension">Install PyTorch and Intel’s PyTorch extension</h3>
+<p>The following command will install the patched version of PyTorch and the extension itself:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install <span class="at">-U</span> torch==2.0.0a0 intel_extension_for_pytorch==2.0.110+gitba7f6c1 <span class="at">-f</span> https://developer.intel.com/ipex-whl-stable-xpu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Intel does not currently have a pre-compiled version of TorchVision available for Windows. We can compile a patched version of TorchVision from the source code using the instructions below:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Installing From Source Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<section id="install-additional-dependencies-for-torchvision" class="level3">
+<h3 class="anchored" data-anchor-id="install-additional-dependencies-for-torchvision">Install Additional Dependencies for TorchVision</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> install libpng <span class="at">-y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="download-the-compilation-batch-file" class="level3">
+<h3 class="anchored" data-anchor-id="download-the-compilation-batch-file">Download the Compilation Batch File</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-o</span> compile_bundle.bat https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/release/xpu/2.0.110/scripts/compile_bundle.bat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="run-the-batch-file" class="level3">
+<h3 class="anchored" data-anchor-id="run-the-batch-file">Run the Batch File</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">compile_bundle.bat</span> <span class="st">"C:\Program Files (x86)\Intel\oneAPI\compiler\latest"</span> <span class="st">"C:\Program Files (x86)\Intel\oneAPI\mkl\2023.2.0"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</div>
+</div>
+</div>
+<p>However, I did not notice any differences in performance between the standard version of TorchVision and the version I compiled from the source code The only thing of note is that pip complained when installing the patched version of PyTorch with the standard torchvision package.</p>
+<p>Compiling PyTorch, TorchVision, and Intel’s Extension can take a long time. Therefore, I would stick with the standard version of TorchVision and ignore the warning from pip.</p>
+</section>
+<section id="set-onednn-memory-layout" class="level3">
+<h3 class="anchored" data-anchor-id="set-onednn-memory-layout">Set oneDNN Memory Layout</h3>
+<p>We can improve training speed by setting an environment variable for the oneDNN memory layout. The following commands will add the appropriate value for the current command line session and save it for future sessions.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> IPEX_XPU_ONEDNN_LAYOUT=1</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">setx</span> IPEX_XPU_ONEDNN_LAYOUT 1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="modify-pytorch-code" class="level2">
+<h2 class="anchored" data-anchor-id="modify-pytorch-code">Modify PyTorch Code</h2>
+<p>It’s finally time to train a model. The Jupyter Notebooks with the original and modified training code are available on GitHub at the links below.</p>
+<ul>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/pytorch-timm-image-classifier-training-windows-without-hf-datasets.ipynb">pytorch-timm-image-classifier-training-windows-without-hf-datasets.ipynb</a></li>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/intel-arc-pytorch-timm-image-classifier-training-windows-without-hf-datasets.ipynb">intel-arc-pytorch-timm-image-classifier-training-windows-without-hf-datasets.ipynb</a></li>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/windows_utils_without_hf.py">windows_utils_without_hf.py</a></li>
+</ul>
+<p>You can also download the notebooks to the current directory by running the following commands:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-o</span> pytorch-timm-image-classifier-training-windows-without-hf-datasets.ipynb https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/pytorch-timm-image-classifier-training.ipynb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-o</span> intel-arc-pytorch-timm-image-classifier-training-windows-without-hf-datasets.ipynb https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/intel-arc-pytorch-timm-image-classifier-training-windows.ipynb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-o</span> windows_utils_without_hf.py https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/windows_utils_without_hf.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Once downloaded, run the following command to launch the Jupyter Notebook Environment:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="import-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="import-pytorch-extension">Import PyTorch Extension</h3>
+<p>We import Intel’s PyTorch extension with the following code:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">import</span> torch</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">import</span> intel_extension_for_pytorch as ipex</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="ex">print</span><span class="er">(</span><span class="ex">f</span><span class="st">'PyTorch Version: {torch.__version__}'</span><span class="kw">)</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="ex">print</span><span class="er">(</span><span class="ex">f</span><span class="st">'Intel PyTorch Extension Version: {ipex.__version__}'</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-pytorch-imports" class="level3">
+<h3 class="anchored" data-anchor-id="update-pytorch-imports">Update PyTorch Imports</h3>
+<p>We don’t want to re-import <code>torch</code> after the extension, so we’ll remove that line from the <code>Import PyTorch dependencies</code> section.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.amp <span class="im">import</span> autocast</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.cuda.amp <span class="im">import</span> GradScaler</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision.transforms.functional <span class="im">as</span> TF</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torcheval.tools <span class="im">import</span> get_module_summary</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torcheval.metrics <span class="im">import</span> MulticlassAccuracy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.amp <span class="im">import</span> autocast</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.cuda.amp <span class="im">import</span> GradScaler</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision.transforms.functional <span class="im">as</span> TF</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torcheval.tools <span class="im">import</span> get_module_summary</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torcheval.metrics <span class="im">import</span> MulticlassAccuracy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="verify-arc-gpu-availability" class="level3">
+<h3 class="anchored" data-anchor-id="verify-arc-gpu-availability">Verify Arc GPU Availability</h3>
+<p>We can double-check that the extension can use the Arc GPU by getting the properties of the available <code>xpu</code> devices.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_public_properties(obj):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        prop: <span class="bu">getattr</span>(obj, prop)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> prop <span class="kw">in</span> <span class="bu">dir</span>(obj)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> prop.startswith(<span class="st">"__"</span>) <span class="kw">and</span> <span class="kw">not</span> <span class="bu">callable</span>(<span class="bu">getattr</span>(obj, prop))</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>xpu_device_count <span class="op">=</span> torch.xpu.device_count()</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>dict_properties_list <span class="op">=</span> [get_public_properties(torch.xpu.get_device_properties(i)) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(xpu_device_count)]</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(dict_properties_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto;">
+
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+dev_type
+</th>
+<th>
+gpu_eu_count
+</th>
+<th>
+max_compute_units
+</th>
+<th>
+max_num_sub_groups
+</th>
+<th>
+max_work_group_size
+</th>
+<th>
+name
+</th>
+<th>
+platform_name
+</th>
+<th>
+sub_group_sizes
+</th>
+<th>
+support_fp64
+</th>
+<th>
+total_memory
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+gpu
+</td>
+<td>
+512
+</td>
+<td>
+512
+</td>
+<td>
+128
+</td>
+<td>
+1024
+</td>
+<td>
+Intel(R) Arc(TM) A770 Graphics
+</td>
+<td>
+Intel(R) Level-Zero
+</td>
+<td>
+[8, 16, 32]
+</td>
+<td>
+False
+</td>
+<td>
+16704737280
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+<p>In this case, the A770 is the only device listed since we deactivated the integrated graphics on the CPU.</p>
+</section>
+<section id="update-the-device-name" class="level3">
+<h3 class="anchored" data-anchor-id="update-the-device-name">Update the Device Name</h3>
+<p>Next, we’ll manually set the device name to <code>xpu</code>.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'xpu'</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>dtype <span class="op">=</span> torch.float32</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>device, dtype</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> get_torch_device()</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>dtype <span class="op">=</span> torch.float32</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>device, dtype</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="optimize-the-model-and-optimizer-objects" class="level3">
+<h3 class="anchored" data-anchor-id="optimize-the-model-and-optimizer-objects">Optimize the <code>model</code> and <code>optimizer</code> Objects</h3>
+<p>Before we run the <code>train_loop</code> function, we’ll use Intel’s PyTorch extension to apply optimizations to the model and optimizer objects. We’ll also cast the model to the <code>bfloat16</code> data type, so we can train using mixed precision. Intel’s PyTorch extension only supports the <code>bloat16</code> data type for mixed-precision training currently.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate for the model</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-3</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of training epochs</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op">=</span>lr, eps<span class="op">=</span><span class="fl">1e-5</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimize the model and optimizer objects</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>model, optimizer <span class="op">=</span> ipex.optimize(model, optimizer<span class="op">=</span>optimizer, dtype<span class="op">=</span>torch.bfloat16)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>lr_scheduler <span class="op">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>                                                   max_lr<span class="op">=</span>lr, </span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>                                                   total_steps<span class="op">=</span>epochs<span class="op">*</span><span class="bu">len</span>(train_dataloader))</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>metric <span class="op">=</span> MulticlassAccuracy()</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for CUDA-capable GPU availability</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>use_grad_scaler <span class="op">=</span> torch.cuda.is_available()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate for the model</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-3</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of training epochs</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op">=</span>lr, eps<span class="op">=</span><span class="fl">1e-5</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>lr_scheduler <span class="op">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>                                                   max_lr<span class="op">=</span>lr, </span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>                                                   total_steps<span class="op">=</span>epochs<span class="op">*</span><span class="bu">len</span>(train_dataloader))</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>metric <span class="op">=</span> MulticlassAccuracy()</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for CUDA-capable GPU availability</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>use_grad_scaler <span class="op">=</span> torch.cuda.is_available()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="train-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="train-the-model">Train the Model</h3>
+<p>That’s it for the required changes to the training code. We can now run the <code>train_loop</code> function. With the A770 and the dataset on an SSD, training takes between twelve and twelve and a half minutes to complete.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/arc-a770-pytorch-training-session-native-windows.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="update-the-inference-code" class="level3">
+<h3 class="anchored" data-anchor-id="update-the-inference-code">Update the Inference Code</h3>
+<p>Since we cast the model to <code>bloat16</code>, we must ensure input data use the same type. We can update the inference code using the auto-cast context manager as shown below:</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a prediction with the model</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.xpu.amp.autocast(enabled<span class="op">=</span><span class="va">True</span>, dtype<span class="op">=</span>torch.bfloat16, cache_enabled<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        pred <span class="op">=</span> model(img_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a prediction with the model</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> model(img_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>In this tutorial, we set up Intel’s PyTorch extension on PyTorch and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/latest/tutorials/installation.html">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2023, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
