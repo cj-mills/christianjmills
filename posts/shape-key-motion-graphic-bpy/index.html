@@ -23,6 +23,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -248,11 +282,12 @@ ul.task-list li input[type="checkbox"] {
 <section id="import-dependencies" class="level2">
 <h2 class="anchored" data-anchor-id="import-dependencies">Import Dependencies</h2>
 <p>The only dependencies strictly required for this tutorial are <code>bpy</code> and <code>bmesh</code>. The <code>bpy</code> package is the base API for Blender and the <code>bmesh</code> module provides access to Blender’s internal mesh editing API. I also used the <code>math</code> module from the Python Standard Library for one of my helper functions.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/import-dependencies.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The Blender Python API</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> bpy</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Gives access to Blender's internal mesh editing API</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> bmesh</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Provides access to mathematical functions</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="define-helper-functions" class="level2">
 <h2 class="anchored" data-anchor-id="define-helper-functions">Define Helper Functions</h2>
@@ -266,31 +301,65 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <p>I also made a function to empty the default collection so that nothing gets duplicated. Collections can be accessed with <code>bpy.data.collections["collection_name"]</code> or <code>bpy.data.collections[index]</code>.</p>
 <p>Lastly, I made a function to easily add sequences of keyframes to a given object. The function uses the built-in <code>setattr()</code> method to set the desired value for the target object and uses the <code>object.keyframe_insert()</code> method to add the keyframe.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/define-helper-functions_2.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_name():</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Get the name for the currently active object"""</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> bpy.context.active_object.name</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> degToRadian(angle):</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Convert angle from degrees to radians"""</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> angle<span class="op">*</span>(math.pi<span class="op">/</span><span class="dv">180</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> move_obj(name, coords):</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Set object location to the specified coordinates"""</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    bpy.data.objects[name].location <span class="op">=</span> coords</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rotate_obj(name, angles):</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Set object rotation to the specified angles"""</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    rotation <span class="op">=</span> [degToRadian(angle) <span class="cf">for</span> angle <span class="kw">in</span> angles]</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    bpy.data.objects[name].rotation_euler <span class="op">=</span> rotation</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> scale_obj(name, scale):</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Set object scale"""</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    bpy.data.objects[name].scale <span class="op">=</span> scale</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> clear_collection(collection):</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Remove everything from the specified collection"""</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> obj <span class="kw">in</span> collection.objects:</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        bpy.data.objects.remove(obj)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add_keyframe_sequence(obj, attribute, values, frames):</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Add a sequence of keyframes for an object"""</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> v, f <span class="kw">in</span> <span class="bu">zip</span>(values, frames):</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        <span class="bu">setattr</span>(obj, attribute, v)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        obj.keyframe_insert(data_path<span class="op">=</span>attribute, frame<span class="op">=</span>f)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="set-up-scene" class="level2">
 <h2 class="anchored" data-anchor-id="set-up-scene">Set up Scene</h2>
 <p>The first thing I do is set the Color Management property, View Transform, from the default value of <code>Filmic</code> to <code>Standard</code>. This setting can be accessed at <code>bpy.data.scenes["Scene"].view_settings.view_transform</code>.</p>
 <p>Next, I set the background to the desired color. In my case, it’s pure black. The background color is stored in <code>bpy.data.worlds['World'].node_tree.nodes["Background"].inputs[0].default_value</code>.</p>
 <p>The last setup step is to clear any objects added from the last time the script was run with the <code>clear_collection()</code> function.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/set-up-scene.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Set up the scene"""</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Set View Transform to Standard</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>bpy.data.scenes[<span class="st">"Scene"</span>].view_settings.view_transform <span class="op">=</span> <span class="st">"Standard"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the Background color to pure black</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>bpy.data.worlds[<span class="st">'World'</span>].node_tree.nodes[<span class="st">"Background"</span>].inputs[<span class="dv">0</span>].default_value <span class="op">=</span> (<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Clear Collection</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>clear_collection(bpy.data.collections[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="create-and-position-camera" class="level2">
 <h2 class="anchored" data-anchor-id="create-and-position-camera">Create and Position Camera</h2>
 <p>Cameras can be added using the <code>bpy.ops.object.camera_add()</code> method. I then positioned the camera using the wrapper functions I defined earlier.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/create-camera.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Create and position a new camera"""</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new camera</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.camera_add()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the name of the current object, the camera</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>name <span class="op">=</span> get_name()</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Move the camera</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>move_obj(name, [<span class="dv">0</span>, <span class="op">-</span><span class="dv">8</span>, <span class="dv">0</span>])</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Rotate the camera</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>rotate_obj(name, [<span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">0</span>])</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Set camera to orthographic</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>bpy.context.active_object.data.<span class="bu">type</span> <span class="op">=</span> <span class="st">"ORTHO"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="create-material-with-emission-shader" class="level2">
 <h2 class="anchored" data-anchor-id="create-material-with-emission-shader">Create Material With Emission Shader</h2>
@@ -299,21 +368,53 @@ ul.task-list li input[type="checkbox"] {
 <p>Since there’s is no light, I’ll add an <code>Emission</code> shader. This requires enabling nodes for the material with <code>material.use_nodes = True</code>.</p>
 <p>Next, I remove the default <code>Principled_BSDF</code> node as well as any <code>Emission</code> nodes from earlier runs. Nodes can be removed using the <code>material.node_tree.nodes.remove()</code> method.</p>
 <p>The <code>Emission</code> node needs to be linked to the first slot in the <code>Material Output</code> node. Nodes are linked using the <code>material.node_tree.links.new()</code> method.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/create-emission-material.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Create a material with an Emission Shader"""</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a material named "Material" if it does not exist</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>mat_name <span class="op">=</span> <span class="st">"Material"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>mat <span class="op">=</span> bpy.data.materials.get(mat_name) <span class="kw">or</span> bpy.data.materials.new(mat_name)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable nodes for the material</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>mat.use_nodes <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the material's node tree</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>nodes <span class="op">=</span> mat.node_tree.nodes</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove the 'Principled BSDF' node if there is one</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (nodes.get(<span class="st">'Principled BSDF'</span>) <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>):</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    nodes.remove(nodes.get(<span class="st">'Principled BSDF'</span>))</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove the 'Emission' node if there is one</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (nodes.get(<span class="st">'Emission'</span>) <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>):</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    nodes.remove(nodes.get(<span class="st">'Emission'</span>))</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the material's output node</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>mat_output <span class="op">=</span> nodes.get(<span class="st">'Material Output'</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new Emission shader</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>emission <span class="op">=</span> nodes.new(<span class="st">'ShaderNodeEmission'</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Link the Emission shader to the Surface value of the output node</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>mat.node_tree.links.new(mat_output.inputs[<span class="dv">0</span>], emission.outputs[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="create-a-plane-with-the-material" class="level2">
 <h2 class="anchored" data-anchor-id="create-a-plane-with-the-material">Create a Plane With the Material</h2>
 <p>The object in the above motion graphic is a plain. Plains can be added using the <code>bpy.ops.mesh.primitive_plane_add()</code> method.</p>
 <p>I then assign the previously created material to the plane. Materials can be added to an object with <code>object.data.materials.append(material)</code>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/create-plane.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Create a new plane with the Emission material"""</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new plane</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>bpy.ops.mesh.primitive_plane_add()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the name of the new plane</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>name <span class="op">=</span> get_name()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Rotate the plane</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>rotate_obj(name, [<span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">0</span>])</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Reduce the size of the plance by half</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plane_scale <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>scale_obj(name, [plane_scale]<span class="op">*</span><span class="dv">3</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the plane</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>plane <span class="op">=</span> bpy.context.active_object</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach the material with the Emission shader to the plane</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> plane.data.materials:</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    plane.data.materials[<span class="dv">0</span>] <span class="op">=</span> mat</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    plane.data.materials.append(mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="cut-out-center-from-plane" class="level2">
 <h2 class="anchored" data-anchor-id="cut-out-center-from-plane">Cut Out Center From Plane</h2>
@@ -322,11 +423,27 @@ ul.task-list li input[type="checkbox"] {
 <p>To edit the mesh, we need to get a BMesh representation. We first create an empty BMesh with <code>bm = bmesh.new()</code> and then fill it with the mesh using <code>bm.from_mesh(mesh)</code>.</p>
 <p>We can make the square by adding a new inset to the plane using the <code>bmesh.ops.inset_individual()</code> method. Then, we delete the new face that gets created with <code>bmesh.ops.delete()</code>.</p>
 <p>The mesh then needs to be updated with these alterations using <code>bm.to_mesh(mesh)</code>. Finally, we need to free the BMesh representation we created with <code>bm.free()</code>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/cut-out-center-square_2.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Cut out a center square from the plane"""</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the mesh for the plane object</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>mesh <span class="op">=</span> bpy.context.<span class="bu">object</span>.data</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a BMesh representation of the plane mesh</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>bm <span class="op">=</span> bmesh.new()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>bm.from_mesh(mesh)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of the plane faces</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>faces_copy <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> bm.faces]</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new inset for the selected face</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>bmesh.ops.inset_individual(bm, faces <span class="op">=</span> [faces_copy[<span class="dv">0</span>]], thickness<span class="op">=</span><span class="fl">0.3</span>, depth<span class="op">=</span><span class="fl">0.0</span>) </span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of faces</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>faces_select <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> bm.faces]</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete the middle face</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>bmesh.ops.delete(bm, geom<span class="op">=</span>[faces_select[<span class="dv">0</span>]], context<span class="op">=</span><span class="st">'FACES_ONLY'</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Update the mesh</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>bm.to_mesh(mesh)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Free the Bmesh representation and prevent further access</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>bm.free()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="add-shape-keys" class="level2">
 <h2 class="anchored" data-anchor-id="add-shape-keys">Add Shape Keys</h2>
@@ -337,67 +454,143 @@ ul.task-list li input[type="checkbox"] {
 <p>After freeing the BMesh representation, we can enter object mode with <code>bpy.ops.object.mode_set(mode="OBJECT")</code>.</p>
 <section id="first-shape-key" class="level4">
 <h4 class="anchored" data-anchor-id="first-shape-key">First Shape Key</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/add-shape-key-1v2.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Add first shape key to deform the plane"""</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a Basis shape key </span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.shape_key_add()</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new shape key</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.shape_key_add()</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Enter edit mode</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.mode_set(mode<span class="op">=</span><span class="st">"EDIT"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a BMesh representation from the current mesh in edit mode</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>bm <span class="op">=</span> bmesh.from_edit_mesh(mesh)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of the vertices</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>vertices <span class="op">=</span> [v <span class="cf">for</span> v <span class="kw">in</span> bm.verts]</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the location for the inner four corners to the same as the outer corners </span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">4</span>].co.x <span class="op">=</span> vertices[<span class="dv">0</span>].co.x</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">4</span>].co.y <span class="op">=</span> vertices[<span class="dv">0</span>].co.y</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">5</span>].co.x <span class="op">=</span> vertices[<span class="dv">1</span>].co.x</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">5</span>].co.y <span class="op">=</span> vertices[<span class="dv">1</span>].co.y</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">7</span>].co.x <span class="op">=</span> vertices[<span class="dv">2</span>].co.x</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">7</span>].co.y <span class="op">=</span> vertices[<span class="dv">2</span>].co.y</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">6</span>].co.x <span class="op">=</span> vertices[<span class="dv">3</span>].co.x</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">6</span>].co.y <span class="op">=</span> vertices[<span class="dv">3</span>].co.y</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Update the mesh</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>bmesh.update_edit_mesh(mesh, <span class="va">True</span>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Free the BMesh representation and prevent further access</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>bm.free()</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Enter object mode</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.mode_set(mode<span class="op">=</span><span class="st">"OBJECT"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="second-shape-key" class="level3">
 <h3 class="anchored" data-anchor-id="second-shape-key">Second Shape Key</h3>
 <p>The process for the second shape key is identical except it only moves two of the inner vertices.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/add-shape-key-2v2.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">"""Add second shape key to deform the plane"""</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new shape key</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.shape_key_add()</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Enter edit mode</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.mode_set(mode<span class="op">=</span><span class="st">"EDIT"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a BMesh representation from the current mesh in edit mode</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>bm <span class="op">=</span> bmesh.from_edit_mesh(mesh)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of vertices</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>vertices <span class="op">=</span> [v <span class="cf">for</span> v <span class="kw">in</span> bm.verts]</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Move the bottom inner left corner to the bottom outer left corner </span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">4</span>].co.x <span class="op">=</span> vertices[<span class="dv">0</span>].co.x</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">4</span>].co.y <span class="op">=</span> vertices[<span class="dv">0</span>].co.y</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Move the top inner right corner to the top right outer corner</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">6</span>].co.x <span class="op">=</span> vertices[<span class="dv">3</span>].co.x</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>vertices[<span class="dv">6</span>].co.y <span class="op">=</span> vertices[<span class="dv">3</span>].co.y</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Update the mesh</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>bmesh.update_edit_mesh(mesh, <span class="va">True</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Free the BMesh representation and prevent further access</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>bm.free()</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Enter object mode</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>bpy.ops.<span class="bu">object</span>.mode_set(mode<span class="op">=</span><span class="st">"OBJECT"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="add-keyframes" class="level2">
 <h2 class="anchored" data-anchor-id="add-keyframes">Add Keyframes</h2>
 <p>Before adding the keyframes, I set the render frame rate as well the start and end frames for the scene. The frame rate is stored at <code>bpy.context.scene.render.fps</code>.</p>
 <p>The start and end frames are stored in <code>bpy.data.scenes['Scene'].frame_start</code> and <code>bpy.data.scenes['Scene'].frame_end</code> respectively.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/set-up-animation_2.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Set up for animation"""</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the render frame rate to 60</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>bpy.context.scene.render.fps <span class="op">=</span> <span class="dv">60</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the start frame to 0</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>bpy.data.scenes[<span class="st">'Scene'</span>].frame_start <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the end frame to 200</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>bpy.data.scenes[<span class="st">'Scene'</span>].frame_end <span class="op">=</span> <span class="dv">175</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the current frame to 0</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>bpy.data.scenes[<span class="st">'Scene'</span>].frame_current <span class="op">=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="shape-keys" class="level3">
 <h3 class="anchored" data-anchor-id="shape-keys">Shape Keys</h3>
 <p>The shape keys for the plane are stored in <code>bpy.context.selected_objects[0].data.shape_keys</code>. Individual shape keys can be accessed with <code>bpy.context.selected_objects[0].data.shape_keys.key_blocks[index]</code>.</p>
 <section id="first-shape-key-1" class="level4">
 <h4 class="anchored" data-anchor-id="first-shape-key-1">First Shape Key</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/add-keyframes-first-shape-key.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Add keyframes to the first shape key"""</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the list of shape keys</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>shape_keys <span class="op">=</span> bpy.context.selected_objects[<span class="dv">0</span>].data.shape_keys</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the first shape key</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>zoomy <span class="op">=</span> shape_keys.key_blocks[<span class="dv">1</span>]</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Set values for keyframes</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> [<span class="fl">1.0</span>, <span class="fl">0.2</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.75</span>, <span class="fl">1.0</span>]</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the frames for keyframes</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">40</span>, <span class="dv">135</span>, <span class="dv">145</span>, <span class="dv">170</span>]</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Add keyframes for the value of the first shape key</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>add_keyframe_sequence(zoomy, <span class="st">'value'</span>, values, frames)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="second-shape-key-1" class="level4">
 <h4 class="anchored" data-anchor-id="second-shape-key-1">Second Shape Key</h4>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/add-keyframes-second-shape-key.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Add keyframes to animate the second shape key"""</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the second shape key</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>zoomy_2 <span class="op">=</span> shape_keys.key_blocks[<span class="dv">2</span>]</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Set values for keyframes</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> [<span class="fl">0.0</span>, <span class="fl">0.265</span>, <span class="fl">0.95</span>, <span class="fl">0.0</span>]</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the frames for keyframes</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> [<span class="dv">100</span>, <span class="dv">110</span>, <span class="dv">132</span>, <span class="dv">142</span>]</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Add keyframes for the value of the second shape key</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>add_keyframe_sequence(zoomy_2, <span class="st">'value'</span>, values, frames)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="plane-rotation" class="level3">
 <h3 class="anchored" data-anchor-id="plane-rotation">Plane Rotation</h3>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/add-keyframes-plane.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Add keyframes to rotato the plane"""</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the planey</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>plane <span class="op">=</span> bpy.context.selected_objects[<span class="dv">0</span>]</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Set values for keyframes</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> [[degToRadian(angle) <span class="cf">for</span> angle <span class="kw">in</span> [<span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">0</span>]],</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>          [degToRadian(angle) <span class="cf">for</span> angle <span class="kw">in</span> [<span class="dv">90</span>, <span class="dv">85</span>, <span class="dv">0</span>]],</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>          [degToRadian(angle) <span class="cf">for</span> angle <span class="kw">in</span> [<span class="dv">90</span>, <span class="dv">90</span>, <span class="dv">0</span>]]]</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the frames for keyframes</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">50</span>]</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add keyframes</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>add_keyframe_sequence(plane, <span class="st">'rotation_euler'</span>, values, frames)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="material-color" class="level3">
 <h3 class="anchored" data-anchor-id="material-color">Material Color</h3>
 <p>The color for the Emision shader can be accessed at <code>material.node_tree.nodes["Emission"].inputs["Color"].default_value</code>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/add-keyframes-color.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""Add keyframes to animate the material color"""</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a reference to the Emission shader</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>mat_node <span class="op">=</span> mat.node_tree.nodes[<span class="st">"Emission"</span>]</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Set values for keyframes</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> [(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">1</span>), (<span class="fl">0.96</span>, <span class="fl">0.42</span>, <span class="dv">0</span>, <span class="dv">1</span>), (<span class="fl">0.96</span>, <span class="fl">0.42</span>, <span class="dv">0</span>, <span class="dv">1</span>), (<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">1</span>)]</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the frames for keyframes</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> [<span class="dv">100</span>, <span class="dv">125</span>, <span class="dv">132</span>, <span class="dv">142</span>]</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Add keyframes for the color of the Emission shader</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>add_keyframe_sequence(mat_node.inputs[<span class="st">'Color'</span>], <span class="st">'default_value'</span>, values, frames)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="conclusion" class="level2">
