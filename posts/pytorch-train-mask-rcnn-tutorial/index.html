@@ -578,7 +578,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchtnt.utils <span class="im">import</span> get_module_summary</span>
 <span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision</span>
 <span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>torchvision.disable_beta_transforms_warning()</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.datapoints <span class="im">import</span> BoundingBox, Mask</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.tv_tensors <span class="im">import</span> BoundingBoxes, Mask</span>
 <span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.utils <span class="im">import</span> draw_bounding_boxes, draw_segmentation_masks</span>
 <span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision.transforms.v2  <span class="im">as</span> transforms</span>
 <span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.transforms.v2 <span class="im">import</span> functional <span class="im">as</span> TF</span>
@@ -1636,7 +1636,7 @@ Note
 <span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert mask images to tensors</span></span>
 <span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>masks <span class="op">=</span> torch.concat([Mask(transforms.PILToTensor()(mask_img), dtype<span class="op">=</span>torch.<span class="bu">bool</span>) <span class="cf">for</span> mask_img <span class="kw">in</span> mask_imgs])</span>
 <span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate bounding box annotations from segmentation masks</span></span>
-<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>bboxes <span class="op">=</span> BoundingBox(data<span class="op">=</span>torchvision.ops.masks_to_boxes(masks), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, spatial_size<span class="op">=</span>sample_img.size[::<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>bboxes <span class="op">=</span> BoundingBoxes(data<span class="op">=</span>torchvision.ops.masks_to_boxes(masks), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>sample_img.size[::<span class="op">-</span><span class="dv">1</span>])</span>
 <span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Get colors for dataset sample</span></span>
 <span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>sample_colors <span class="op">=</span> [int_colors[i] <span class="cf">for</span> i <span class="kw">in</span> [class_names.index(label) <span class="cf">for</span> label <span class="kw">in</span> labels]]</span>
@@ -1660,7 +1660,7 @@ Note
 <span id="cb38-33"><a href="#cb38-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure the padded image is the target size</span></span>
 <span id="cb38-34"><a href="#cb38-34" aria-hidden="true" tabindex="-1"></a>resize <span class="op">=</span> transforms.Resize([train_sz] <span class="op">*</span> <span class="dv">2</span>, antialias<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb38-35"><a href="#cb38-35" aria-hidden="true" tabindex="-1"></a>resized_padded_img, targets <span class="op">=</span> resize(padded_img, targets)</span>
-<span id="cb38-36"><a href="#cb38-36" aria-hidden="true" tabindex="-1"></a>sanitized_img, targets <span class="op">=</span> transforms.SanitizeBoundingBox()(resized_padded_img, targets)</span>
+<span id="cb38-36"><a href="#cb38-36" aria-hidden="true" tabindex="-1"></a>sanitized_img, targets <span class="op">=</span> transforms.SanitizeBoundingBoxes()(resized_padded_img, targets)</span>
 <span id="cb38-37"><a href="#cb38-37" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb38-38"><a href="#cb38-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the sample image with segmentation masks</span></span>
 <span id="cb38-39"><a href="#cb38-39" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_segmentation_masks(</span>
@@ -1831,7 +1831,7 @@ Resized Padded Image:
 <span id="cb39-81"><a href="#cb39-81" aria-hidden="true" tabindex="-1"></a>        masks <span class="op">=</span> Mask(torch.concat([Mask(transforms.PILToTensor()(mask_img), dtype<span class="op">=</span>torch.<span class="bu">bool</span>) <span class="cf">for</span> mask_img <span class="kw">in</span> mask_imgs]))</span>
 <span id="cb39-82"><a href="#cb39-82" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb39-83"><a href="#cb39-83" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Generate bounding box annotations from segmentation masks</span></span>
-<span id="cb39-84"><a href="#cb39-84" aria-hidden="true" tabindex="-1"></a>        bboxes <span class="op">=</span> BoundingBox(data<span class="op">=</span>torchvision.ops.masks_to_boxes(masks), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, spatial_size<span class="op">=</span>image.size[::<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb39-84"><a href="#cb39-84" aria-hidden="true" tabindex="-1"></a>        bboxes <span class="op">=</span> BoundingBoxes(data<span class="op">=</span>torchvision.ops.masks_to_boxes(masks), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>image.size[::<span class="op">-</span><span class="dv">1</span>])</span>
 <span id="cb39-85"><a href="#cb39-85" aria-hidden="true" tabindex="-1"></a>                </span>
 <span id="cb39-86"><a href="#cb39-86" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, {<span class="st">'masks'</span>: masks,<span class="st">'boxes'</span>: bboxes, <span class="st">'labels'</span>: labels}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
@@ -1890,9 +1890,9 @@ Resized Padded Image:
 <span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Compose transforms to sanitize bounding boxes and normalize input data</span></span>
 <span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a>final_tfms <span class="op">=</span> transforms.Compose([</span>
-<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a>    transforms.ToImageTensor(), </span>
-<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>    transforms.ConvertImageDtype(),</span>
-<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>    transforms.SanitizeBoundingBox(),</span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a>    transforms.ToImage(), </span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>    transforms.ToDtype(torch.float32, scale<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>    transforms.SanitizeBoundingBoxes(),</span>
 <span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a>])</span>
 <span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the transformations for training and validation datasets</span></span>
@@ -1913,7 +1913,7 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Always use the <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.SanitizeBoundingBox.html#torchvision.transforms.v2.SanitizeBoundingBox"><code>SanitizeBoundingBox</code></a> transform to clean up annotations after using data augmentations that alter bounding boxes (e.g., cropping, warping, etc.).</p>
+<p>Always use the <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.SanitizeBoundingBoxes.html#torchvision.transforms.v2.SanitizeBoundingBoxes"><code>SanitizeBoundingBoxes</code></a> transform to clean up annotations after using data augmentations that alter bounding boxes (e.g., cropping, warping, etc.).</p>
 </div>
 </div>
 </section>
@@ -2478,7 +2478,7 @@ Input Image Size:
 <span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the target labels and bounding boxes</span></span>
 <span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>target_labels <span class="op">=</span> [shape[<span class="st">'label'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation_df.loc[file_id][<span class="st">'shapes'</span>]]</span>
-<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>target_bboxes <span class="op">=</span> BoundingBox(data<span class="op">=</span>torchvision.ops.masks_to_boxes(target_masks), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, spatial_size<span class="op">=</span>test_img.size[::<span class="op">-</span><span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>target_bboxes <span class="op">=</span> BoundingBoxes(data<span class="op">=</span>torchvision.ops.masks_to_boxes(target_masks), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>test_img.size[::<span class="op">-</span><span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="pass-the-input-data-to-the-model" class="level4">
 <h4 class="anchored" data-anchor-id="pass-the-input-data-to-the-model">Pass the input data to the model</h4>
@@ -2488,7 +2488,7 @@ Input Image Size:
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure the model and input data are on the same device</span></span>
 <span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>model.to(device)</span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>input_tensor <span class="op">=</span> transforms.Compose([transforms.ToImageTensor(), transforms.ConvertImageDtype()])(input_img)[<span class="va">None</span>].to(device)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>input_tensor <span class="op">=</span> transforms.Compose([transforms.ToImage(), transforms.ToDtype(torch.float32, scale<span class="op">=</span><span class="va">True</span>)])(input_img)[<span class="va">None</span>].to(device)</span>
 <span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a prediction with the model</span></span>
 <span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
