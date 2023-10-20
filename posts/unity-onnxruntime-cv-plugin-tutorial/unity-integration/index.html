@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2023-10-19">
+<meta name="description" content="Learn how to integrate a native plugin within the Unity game engine for real-time object detection using ONNX Runtime.">
+
+<title>Christian Mills - Real-Time Object Detection in Unity with ONNX Runtime and DirectML</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Real-Time Object Detection in Unity with ONNX Runtime and DirectML">
+<meta property="og:description" content="Learn how to integrate a native plugin within the Unity game engine for real-time object detection using ONNX Runtime.">
+<meta property="og:image" content="christianjmills.com/posts/unity-onnxruntime-cv-plugin-tutorial/unity-integration/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Real-Time Object Detection in Unity with ONNX Runtime and DirectML">
+<meta name="twitter:description" content="Learn how to integrate a native plugin within the Unity game engine for real-time object detection using ONNX Runtime.">
+<meta name="twitter:image" content="christianjmills.com/posts/unity-onnxruntime-cv-plugin-tutorial/unity-integration/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html" rel="" target="">
+ <span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html" rel="" target="">
+ <span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html" rel="" target="">
+ <span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../services.html" rel="" target="">
+ <span class="menu-text">Services</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com" rel="" target=""><i class="bi bi-envelope-fill" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml" rel="" target=""><i class="bi bi-rss" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#setting-up-the-starter-project" id="toc-setting-up-the-starter-project" class="nav-link" data-scroll-target="#setting-up-the-starter-project">Setting Up the Starter Project</a>
+  <ul>
+  <li><a href="#obtaining-the-starter-project" id="toc-obtaining-the-starter-project" class="nav-link" data-scroll-target="#obtaining-the-starter-project">Obtaining the Starter Project</a></li>
+  <li><a href="#launching-the-starter-project-in-unity" id="toc-launching-the-starter-project-in-unity" class="nav-link" data-scroll-target="#launching-the-starter-project-in-unity">Launching the Starter Project in Unity</a>
+  <ul class="collapse">
+  <li><a href="#open-the-project" id="toc-open-the-project" class="nav-link" data-scroll-target="#open-the-project">Open the Project</a></li>
+  <li><a href="#access-the-sample-scene" id="toc-access-the-sample-scene" class="nav-link" data-scroll-target="#access-the-sample-scene">Access the Sample Scene</a></li>
+  <li><a href="#preview-the-scene" id="toc-preview-the-scene" class="nav-link" data-scroll-target="#preview-the-scene">Preview the Scene</a></li>
+  <li><a href="#exit-play-mode" id="toc-exit-play-mode" class="nav-link" data-scroll-target="#exit-play-mode">Exit Play Mode</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#importing-plugin-assets" id="toc-importing-plugin-assets" class="nav-link" data-scroll-target="#importing-plugin-assets">Importing Plugin Assets</a>
+  <ul>
+  <li><a href="#setting-up-plugin-directories" id="toc-setting-up-plugin-directories" class="nav-link" data-scroll-target="#setting-up-plugin-directories">Setting Up Plugin Directories</a>
+  <ul class="collapse">
+  <li><a href="#creating-the-plugins-directory" id="toc-creating-the-plugins-directory" class="nav-link" data-scroll-target="#creating-the-plugins-directory">Creating the ‘Plugins’ Directory</a></li>
+  <li><a href="#adding-the-x86_64-directory" id="toc-adding-the-x86_64-directory" class="nav-link" data-scroll-target="#adding-the-x86_64-directory">Adding the ‘x86_64’ Directory</a></li>
+  </ul></li>
+  <li><a href="#importing-the-dll-files" id="toc-importing-the-dll-files" class="nav-link" data-scroll-target="#importing-the-dll-files">Importing the DLL Files</a></li>
+  <li><a href="#importing-the-onnx-model-and-assets" id="toc-importing-the-onnx-model-and-assets" class="nav-link" data-scroll-target="#importing-the-onnx-model-and-assets">Importing the ONNX Model and Assets</a>
+  <ul class="collapse">
+  <li><a href="#download-the-yolox-model-and-colormap" id="toc-download-the-yolox-model-and-colormap" class="nav-link" data-scroll-target="#download-the-yolox-model-and-colormap">Download the YOLOX Model and Colormap</a></li>
+  <li><a href="#import-colormap-file" id="toc-import-colormap-file" class="nav-link" data-scroll-target="#import-colormap-file">Import Colormap File</a></li>
+  <li><a href="#import-the-onnx-model" id="toc-import-the-onnx-model" class="nav-link" data-scroll-target="#import-the-onnx-model">Import the ONNX Model</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#installing-unity-package-dependencies" id="toc-installing-unity-package-dependencies" class="nav-link" data-scroll-target="#installing-unity-package-dependencies">Installing Unity Package Dependencies</a>
+  <ul>
+  <li><a href="#installing-the-package" id="toc-installing-the-package" class="nav-link" data-scroll-target="#installing-the-package">Installing the Package</a>
+  <ul class="collapse">
+  <li><a href="#open-the-package-manager" id="toc-open-the-package-manager" class="nav-link" data-scroll-target="#open-the-package-manager">Open the Package Manager</a></li>
+  <li><a href="#add-the-package" id="toc-add-the-package" class="nav-link" data-scroll-target="#add-the-package">Add the Package</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#making-directml-accessible-to-the-editor" id="toc-making-directml-accessible-to-the-editor" class="nav-link" data-scroll-target="#making-directml-accessible-to-the-editor">Making DirectML Accessible to the Editor</a></li>
+  <li><a href="#importing-plugin-functions" id="toc-importing-plugin-functions" class="nav-link" data-scroll-target="#importing-plugin-functions">Importing Plugin Functions</a></li>
+  <li><a href="#performing-inference-with-the-plugin" id="toc-performing-inference-with-the-plugin" class="nav-link" data-scroll-target="#performing-inference-with-the-plugin">Performing Inference with the Plugin</a>
+  <ul>
+  <li><a href="#importing-namespace-dependencies" id="toc-importing-namespace-dependencies" class="nav-link" data-scroll-target="#importing-namespace-dependencies">Importing Namespace Dependencies</a></li>
+  <li><a href="#declaring-serialized-fields" id="toc-declaring-serialized-fields" class="nav-link" data-scroll-target="#declaring-serialized-fields">Declaring Serialized Fields</a>
+  <ul class="collapse">
+  <li><a href="#gameobject-components" id="toc-gameobject-components" class="nav-link" data-scroll-target="#gameobject-components">GameObject Components</a></li>
+  <li><a href="#data-processing-settings" id="toc-data-processing-settings" class="nav-link" data-scroll-target="#data-processing-settings">Data Processing Settings</a></li>
+  <li><a href="#output-processing-settings" id="toc-output-processing-settings" class="nav-link" data-scroll-target="#output-processing-settings">Output Processing Settings</a></li>
+  <li><a href="#onnx" id="toc-onnx" class="nav-link" data-scroll-target="#onnx">ONNX</a></li>
+  </ul></li>
+  <li><a href="#declaring-private-variables" id="toc-declaring-private-variables" class="nav-link" data-scroll-target="#declaring-private-variables">Declaring Private Variables</a>
+  <ul class="collapse">
+  <li><a href="#bounding-box-information" id="toc-bounding-box-information" class="nav-link" data-scroll-target="#bounding-box-information">Bounding Box Information</a></li>
+  <li><a href="#screen-properties" id="toc-screen-properties" class="nav-link" data-scroll-target="#screen-properties">Screen Properties</a></li>
+  <li><a href="#image-processing" id="toc-image-processing" class="nav-link" data-scroll-target="#image-processing">Image Processing</a></li>
+  <li><a href="#color-and-label-management" id="toc-color-and-label-management" class="nav-link" data-scroll-target="#color-and-label-management">Color and Label Management</a></li>
+  <li><a href="#yolox-model-information" id="toc-yolox-model-information" class="nav-link" data-scroll-target="#yolox-model-information">YOLOX Model Information</a></li>
+  <li><a href="#onnx-model-information" id="toc-onnx-model-information" class="nav-link" data-scroll-target="#onnx-model-information">ONNX Model Information</a></li>
+  </ul></li>
+  <li><a href="#defining-private-methods" id="toc-defining-private-methods" class="nav-link" data-scroll-target="#defining-private-methods">Defining Private Methods</a>
+  <ul class="collapse">
+  <li><a href="#prepare-input-textures" id="toc-prepare-input-textures" class="nav-link" data-scroll-target="#prepare-input-textures">Prepare Input Textures</a></li>
+  <li><a href="#process-input-images" id="toc-process-input-images" class="nav-link" data-scroll-target="#process-input-images">Process Input Images</a></li>
+  <li><a href="#update-bounding-boxes" id="toc-update-bounding-boxes" class="nav-link" data-scroll-target="#update-bounding-boxes">Update Bounding Boxes</a></li>
+  <li><a href="#get-onnx-models" id="toc-get-onnx-models" class="nav-link" data-scroll-target="#get-onnx-models">Get ONNX Models</a></li>
+  <li><a href="#get-onnx-execution-providers" id="toc-get-onnx-execution-providers" class="nav-link" data-scroll-target="#get-onnx-execution-providers">Get ONNX Execution Providers</a></li>
+  <li><a href="#update-onnx-model" id="toc-update-onnx-model" class="nav-link" data-scroll-target="#update-onnx-model">Update ONNX Model</a></li>
+  <li><a href="#asynchronous-gpu-readback" id="toc-asynchronous-gpu-readback" class="nav-link" data-scroll-target="#asynchronous-gpu-readback">Asynchronous GPU Readback</a></li>
+  </ul></li>
+  <li><a href="#defining-public-methods" id="toc-defining-public-methods" class="nav-link" data-scroll-target="#defining-public-methods">Defining Public Methods</a>
+  <ul class="collapse">
+  <li><a href="#update-the-confidence-threshold" id="toc-update-the-confidence-threshold" class="nav-link" data-scroll-target="#update-the-confidence-threshold">Update the Confidence Threshold</a></li>
+  </ul></li>
+  <li><a href="#defining-monobehaviour-methods" id="toc-defining-monobehaviour-methods" class="nav-link" data-scroll-target="#defining-monobehaviour-methods">Defining MonoBehaviour Methods</a>
+  <ul class="collapse">
+  <li><a href="#make-directml-accessible-to-the-project-build" id="toc-make-directml-accessible-to-the-project-build" class="nav-link" data-scroll-target="#make-directml-accessible-to-the-project-build">Make DirectML Accessible to the Project Build</a></li>
+  <li><a href="#initialize-the-plugin-and-colormap" id="toc-initialize-the-plugin-and-colormap" class="nav-link" data-scroll-target="#initialize-the-plugin-and-colormap">Initialize the Plugin and Colormap</a></li>
+  <li><a href="#perform-inference-with-the-plugin" id="toc-perform-inference-with-the-plugin" class="nav-link" data-scroll-target="#perform-inference-with-the-plugin">Perform Inference with the Plugin</a></li>
+  <li><a href="#clean-up-plugin-resources" id="toc-clean-up-plugin-resources" class="nav-link" data-scroll-target="#clean-up-plugin-resources">Clean Up Plugin Resources</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#setting-up-the-demo-scene" id="toc-setting-up-the-demo-scene" class="nav-link" data-scroll-target="#setting-up-the-demo-scene">Setting Up the Demo Scene</a>
+  <ul>
+  <li><a href="#adding-the-gameobjects" id="toc-adding-the-gameobjects" class="nav-link" data-scroll-target="#adding-the-gameobjects">Adding the GameObjects</a>
+  <ul class="collapse">
+  <li><a href="#create-an-empty-gameobject" id="toc-create-an-empty-gameobject" class="nav-link" data-scroll-target="#create-an-empty-gameobject">Create an Empty GameObject</a></li>
+  <li><a href="#add-the-bounding-box-visualizer-to-the-scene" id="toc-add-the-bounding-box-visualizer-to-the-scene" class="nav-link" data-scroll-target="#add-the-bounding-box-visualizer-to-the-scene">Add the Bounding Box Visualizer to the Scene</a></li>
+  </ul></li>
+  <li><a href="#configure-inference-manager" id="toc-configure-inference-manager" class="nav-link" data-scroll-target="#configure-inference-manager">Configure Inference Manager</a>
+  <ul class="collapse">
+  <li><a href="#add-the-image-processor-component" id="toc-add-the-image-processor-component" class="nav-link" data-scroll-target="#add-the-image-processor-component">Add the Image Processor Component</a></li>
+  <li><a href="#assign-inference-controller-components" id="toc-assign-inference-controller-components" class="nav-link" data-scroll-target="#assign-inference-controller-components">Assign Inference Controller Components</a></li>
+  </ul></li>
+  <li><a href="#test-in-editor" id="toc-test-in-editor" class="nav-link" data-scroll-target="#test-in-editor">Test in Editor</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Real-Time Object Detection in Unity with ONNX Runtime and DirectML</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">onnx</div>
+    <div class="quarto-category">directml</div>
+    <div class="quarto-category">yolox</div>
+    <div class="quarto-category">object-detection</div>
+    <div class="quarto-category">unity</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Learn how to integrate a native plugin within the Unity game engine for real-time object detection using ONNX Runtime.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 19, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/tutorials/onnx-runtime-unity-series.html"><strong>ONNX Runtime in Unity</strong></a></li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#setting-up-the-starter-project">Setting Up the Starter Project</a></li>
+<li><a href="#importing-plugin-assets">Importing Plugin Assets</a></li>
+<li><a href="#installing-unity-package-dependencies">Installing Unity Package Dependencies</a></li>
+<li><a href="#making-directml-accessible-to-the-editor">Making DirectML Accessible to the Editor</a></li>
+<li><a href="#importing-plugin-functions">Importing Plugin Functions</a></li>
+<li><a href="#performing-inference-with-the-plugin">Performing Inference with the Plugin</a></li>
+<li><a href="#setting-up-the-demo-scene">Setting Up the Demo Scene</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome back to this series on creating plugins for the Unity game engine with ONNX Runtime! <a href="../">Previously</a>, we created a simple plugin for performing inference on RGB images in Visual Studio. This tutorial builds on that by showing how to integrate the plugin into a Unity project to perform real-time object detection.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This post assumes <a href="https://unity.com/download">Unity</a> is present on your system.</p>
+</div>
+</div>
+</section>
+<section id="setting-up-the-starter-project" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-starter-project">Setting Up the Starter Project</h2>
+<p>To keep the focus for this tutorial on integrating the ONNX Runtime plugin, I created a starter Unity project for us to build on. This project simplifies testing various computer vision models using sample images and live webcam feeds.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The starter project uses <a href="unityhub://2023.1.14f1/9492f7722ddd">Unity 2023.1.14</a>, but the latest LTS release should work fine.</p>
+</div>
+</div>
+<section id="obtaining-the-starter-project" class="level3">
+<h3 class="anchored" data-anchor-id="obtaining-the-starter-project">Obtaining the Starter Project</h3>
+<p>The starter project is available on GitHub at the link below:</p>
+<ul>
+<li><a href="https://github.com/cj-mills/unity-2d-cv-tutorial-starter">unity-2d-cv-tutorial-starter</a></li>
+</ul>
+<p>There are two main ways to obtain the project:</p>
+<ol type="1">
+<li><p><strong>Clone with Git</strong>: If you have <a href="https://git-scm.com/downloads">Git</a> installed, you can clone the repository directly to your local machine using the command below:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/cj-mills/unity-2d-cv-tutorial-starter.git</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Download ZIP</strong>: Alternatively, on the GitHub repository page, you can choose the option to download the entire project as a ZIP file.</p></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/github-repository-show-download-options.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="launching-the-starter-project-in-unity" class="level3">
+<h3 class="anchored" data-anchor-id="launching-the-starter-project-in-unity">Launching the Starter Project in Unity</h3>
+<section id="open-the-project" class="level4">
+<h4 class="anchored" data-anchor-id="open-the-project">Open the Project</h4>
+<p>Once you’ve secured a copy of the starter project, launch the Unity Editor and open the project.</p>
+</section>
+<section id="access-the-sample-scene" class="level4">
+<h4 class="anchored" data-anchor-id="access-the-sample-scene">Access the Sample Scene</h4>
+<p>Within the Unity Editor, navigate to the <code>Assets-&gt;Scenes</code> directory in the <a href="https://docs.unity3d.com/Manual/ProjectView.html">Project Window</a>. From there, double-click on the <code>SampleScene</code> to open it.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-sample-scene-location.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="preview-the-scene" class="level4">
+<h4 class="anchored" data-anchor-id="preview-the-scene">Preview the Scene</h4>
+<p>Press the <code>Play</code> button to enter Play mode. If everything works correctly, you should see something like the image below in the <a href="https://docs.unity3d.com/Manual/GameView.html">Game view</a>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-verify-2d-cv-starter-project.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="exit-play-mode" class="level4">
+<h4 class="anchored" data-anchor-id="exit-play-mode">Exit Play Mode</h4>
+<p>Once you’ve confirmed the sample scene is operational, click the <code>Play</code> button again to exit play mode. Our starter project is now ready, and we can proceed to integrate the ONNX Runtime plugin.</p>
+</section>
+</section>
+</section>
+<section id="importing-plugin-assets" class="level2">
+<h2 class="anchored" data-anchor-id="importing-plugin-assets">Importing Plugin Assets</h2>
+<p>Now that we’ve initialized our Unity project, the next step is to import the assets required for our ONNX Runtime plugin.</p>
+<section id="setting-up-plugin-directories" class="level3">
+<h3 class="anchored" data-anchor-id="setting-up-plugin-directories">Setting Up Plugin Directories</h3>
+<section id="creating-the-plugins-directory" class="level4">
+<h4 class="anchored" data-anchor-id="creating-the-plugins-directory">Creating the ‘Plugins’ Directory</h4>
+<p>Within the Unity Editor, navigate to the Assets folder and create a new folder named Plugins.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-create-plugins-folder.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="adding-the-x86_64-directory" class="level4">
+<h4 class="anchored" data-anchor-id="adding-the-x86_64-directory">Adding the ‘x86_64’ Directory</h4>
+<p>Inside the ‘Plugins’ folder, create another folder titled <code>x86_64</code>. This folder will house the necessary DLL files for our plugin.</p>
+</section>
+</section>
+<section id="importing-the-dll-files" class="level3">
+<h3 class="anchored" data-anchor-id="importing-the-dll-files">Importing the DLL Files</h3>
+<p>If you don’t have the DLL files from the previous tutorial, download them from the links below:</p>
+<ul>
+<li><a href="https://github.com/cj-mills/unity-onnxruntime-inference-yolox-demo/raw/main/Assets/Plugins/x86_64/DirectML.dll">DirectML.dll</a></li>
+<li><a href="https://github.com/cj-mills/unity-onnxruntime-inference-yolox-demo/raw/main/Assets/Plugins/x86_64/onnxruntime.dll">onnxruntime.dll</a></li>
+<li><a href="https://github.com/cj-mills/unity-onnxruntime-inference-yolox-demo/raw/main/Assets/Plugins/x86_64/UnityONNXInferenceCVPlugin.dll">UnityONNXInferenceCVPlugin.dll</a></li>
+</ul>
+<p>After obtaining the DLL files, drag and drop them into the <code>x86_64</code> directory inside Unity.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-import-dll-files.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Close and reopen your Unity project once you’ve imported the DLL files. This step ensures Unity recognizes and registers the new plugin files.</p>
+</section>
+<section id="importing-the-onnx-model-and-assets" class="level3">
+<h3 class="anchored" data-anchor-id="importing-the-onnx-model-and-assets">Importing the ONNX Model and Assets</h3>
+<section id="download-the-yolox-model-and-colormap" class="level4">
+<h4 class="anchored" data-anchor-id="download-the-yolox-model-and-colormap">Download the YOLOX Model and Colormap</h4>
+<p>For demonstration purposes, we’ll use a YOLOX Tiny model that detects various hand gestures created using the following tutorial:</p>
+<ul>
+<li><a href="https://christianjmills.com/series/tutorials/pytorch-train-object-detector-yolox-series.html">Training YOLOX Models for Real-Time Object Detection in PyTorch</a></li>
+</ul>
+<p>Download the pre-trained model and its associated colormap using the links below:</p>
+<ul>
+<li><a href="https://huggingface.co/cj-mills/yolox-hagrid-onnx/resolve/main/yolox_tiny/hagrid-sample-30k-384p-yolox_tiny.onnx">hagrid-sample-30k-384p-yolox_tiny.onnx</a></li>
+<li><a href="https://huggingface.co/cj-mills/yolox-hagrid-onnx/resolve/main/hagrid-sample-30k-384p-colormap.json">hagrid-sample-30k-384p-colormap.json</a>
+<ul>
+<li>(To save the colormap file, right-click the link and opt for <code>Save Link As...</code>)</li>
+</ul></li>
+</ul>
+</section>
+<section id="import-colormap-file" class="level4">
+<h4 class="anchored" data-anchor-id="import-colormap-file">Import Colormap File</h4>
+<p>Return to the Unity Editor and, under the Assets folder, create a new folder called Colormaps. Transfer the downloaded JSON colormap file into this directory.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-import-json-colormap-file.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="import-the-onnx-model" class="level4">
+<h4 class="anchored" data-anchor-id="import-the-onnx-model">Import the ONNX Model</h4>
+<p>Since Unity doesn’t inherently recognize ONNX files, we must store them as <a href="https://docs.unity3d.com/Manual/StreamingAssets.html">streaming assets</a>. Create a folder called <code>StreamingAssets</code> within the Assets directory. Inside the <code>StreamingAssets</code> folder, create another folder named <code>Models</code>. Place the ONNX model you downloaded here.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-import-onnx-model.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>That takes care of the required asset files.</p>
+</section>
+</section>
+</section>
+<section id="installing-unity-package-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="installing-unity-package-dependencies">Installing Unity Package Dependencies</h2>
+<p>Before we dive into the code for our Unity project, we will install a package I made that provides utility functions for extracting bounding box proposals from the raw output of our YOLOX model:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Code Walkthrough</th>
+<th>Git URL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/cj-mills/unity-yolox-utils">Unity YOLOX Utilities</a></td>
+<td><a href="../../../posts/unity-yolox-utils-walkthrough/">Blog Post</a></td>
+<td><code>https://github.com/cj-mills/unity-yolox-utils.git</code></td>
+</tr>
+</tbody>
+</table>
+<section id="installing-the-package" class="level3">
+<h3 class="anchored" data-anchor-id="installing-the-package">Installing the Package</h3>
+<p>We can install this package from the Package Manager window.</p>
+<section id="open-the-package-manager" class="level4">
+<h4 class="anchored" data-anchor-id="open-the-package-manager">Open the Package Manager</h4>
+<p>In the Unity Editor, navigate to the top menu and select <code>Window -&gt; Package Manager</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-open-package-manager.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="add-the-package" class="level4">
+<h4 class="anchored" data-anchor-id="add-the-package">Add the Package</h4>
+<p>Click the add button in the top left corner of the Package Manager window and select the <code>Install package from git URL...</code> option from the dropdown menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-package-manager-select-install-package-from-git-url.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Enter the git URL for the package and click <code>Install</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">https://github.com/cj-mills/unity-yolox-utils.git</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-package-manager-install-unity-yolox-utils.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>You may notice the package automatically installs another package called <a href="https://github.com/cj-mills/unity-bounding-box-2d-toolkit"><code>Bounding Box 2D Toolkit</code></a>. This package provides functionality for working with and visualizing 2D bounding boxes on a Unity canvas.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-package-manager-bounding-box-2d-toolkit.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>That’s it for the package dependencies. In the next section, we will dive into the code for our project.</p>
+</section>
+</section>
+</section>
+<section id="making-directml-accessible-to-the-editor" class="level2">
+<h2 class="anchored" data-anchor-id="making-directml-accessible-to-the-editor">Making DirectML Accessible to the Editor</h2>
+<p>While the DLL files for our plugin and ONNX Runtime work fine in Unity’s default plugins folder, the file for DirectML must be in the same folder as the current application’s executable. Since we are in the Editor, we must store a copy of the DirectML DLL file in the folder for the Editor application. We can create a script to handle this automatically.</p>
+<p>Create a new Assets folder called <code>Editor</code>. Inside the <code>Editor</code> folder, create a new C# script named <code>DirectMLDllCopier</code>. This script will only run while we are in the Unity Editor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-create-directml-dll-copier-script.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Open the script and replace the default content with the following code:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">IO</span><span class="op">;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEditor<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>InitializeOnLoad<span class="op">]</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> DirectMLDllCopier</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">static</span> <span class="fu">DirectMLDllCopier</span><span class="op">()</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">CopyDirectMLDllToEditorDirectory</span><span class="op">();</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">static</span> <span class="dt">void</span> <span class="fu">CopyDirectMLDllToEditorDirectory</span><span class="op">()</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Get all files named "DirectML.dll" in the Assets directory</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="dt">string</span><span class="op">[]</span> files <span class="op">=</span> Directory<span class="op">.</span><span class="fu">GetFiles</span><span class="op">(</span><span class="st">"./Assets/"</span><span class="op">,</span> <span class="st">"DirectML.dll"</span><span class="op">,</span> SearchOption<span class="op">.</span><span class="fu">AllDirectories</span><span class="op">);</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Iterate through each found file</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="kw">foreach</span> <span class="op">(</span><span class="dt">string</span> file <span class="kw">in</span> files<span class="op">)</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Check if the file is in the "x86_64" folder</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> <span class="op">(</span>file<span class="op">.</span><span class="fu">Contains</span><span class="op">(</span><span class="st">"x86_64"</span><span class="op">))</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                <span class="co">// Get the file path for the Editor application</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                <span class="dt">string</span> editorPath <span class="op">=</span> EditorApplication<span class="op">.</span><span class="fu">applicationPath</span><span class="op">;</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                <span class="co">// Extract the parent folder for the Editor application</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                <span class="dt">string</span> editorDir <span class="op">=</span> Directory<span class="op">.</span><span class="fu">GetParent</span><span class="op">(</span>editorPath<span class="op">).</span><span class="fu">ToString</span><span class="op">();</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>                <span class="co">// Define target file path</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>                <span class="dt">string</span> targetPath <span class="op">=</span> $<span class="st">"{editorDir}/DirectML.dll"</span><span class="op">;</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                <span class="co">// Only copy the file to the Editor application folder if it is not already present</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>                <span class="kw">if</span> <span class="op">(!</span>File<span class="op">.</span><span class="fu">Exists</span><span class="op">(</span>targetPath<span class="op">))</span> File<span class="op">.</span><span class="fu">Copy</span><span class="op">(</span>file<span class="op">,</span> targetPath<span class="op">);</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We use the <a href="https://docs.unity3d.com/ScriptReference/InitializeOnLoadAttribute.html">InitializeOnLoad</a> attribute to have the Editor run this script whenever Unity loads or scripts recompile. That way, we can ensure the Editor has a copy of the DirectML file even when we change Unity versions.</p>
+<p>Save the script and go back to the Editor. Doing so will cause the script to execute and copy the DirectML DLL file to the folder for the current Editor version.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/file-explorer-unity-editor-verify-directml-dll-file.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Relaunch the Editor to ensure it loads with the DirectML file.</p>
+</section>
+<section id="importing-plugin-functions" class="level2">
+<h2 class="anchored" data-anchor-id="importing-plugin-functions">Importing Plugin Functions</h2>
+<p>Now that Unity can access DirectML, we will create a script that imports the plugin functions, allowing us to access them in other C# scripts.</p>
+<p>Create a new C# script inside the <code>Assets-&gt;Scripts</code> folder named <code>ONNXRuntimePluginImporter</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-create-onnx-runtime-plugin-importer-script.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Open the script and replace the default content with the following code:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// Class with Native plugin functions for ONNX Runtime.</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">static</span> <span class="kw">class</span> ONNXRuntimePluginImporter</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Name of the DLL file</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> <span class="dt">string</span> dll <span class="op">=</span> <span class="st">"UnityONNXInferenceCVPlugin"</span><span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">extern</span> <span class="dt">int</span> <span class="fu">InitOrtAPI</span><span class="op">();</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">extern</span> <span class="dt">int</span> <span class="fu">GetProviderCount</span><span class="op">();</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">extern</span> IntPtr <span class="fu">GetProviderName</span><span class="op">(</span><span class="dt">int</span> index<span class="op">);</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">extern</span> <span class="dt">void</span> <span class="fu">FreeResources</span><span class="op">();</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">extern</span> IntPtr <span class="fu">LoadModel</span><span class="op">(</span><span class="dt">string</span> model<span class="op">,</span> <span class="dt">string</span> execution_provider<span class="op">,</span> <span class="dt">int</span><span class="op">[]</span> inputDims<span class="op">);</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span><span class="fu">DllImport</span><span class="op">(</span>dll<span class="op">)]</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">extern</span> <span class="dt">void</span> <span class="fu">PerformInference</span><span class="op">(</span><span class="dt">byte</span><span class="op">[]</span> inputData<span class="op">,</span> <span class="dt">float</span><span class="op">[]</span> outputArray<span class="op">,</span> <span class="dt">int</span> length<span class="op">);</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We use the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.dllimportattribute"><code>DllImport</code></a> attribute from the <code>.NET</code> <a href="https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices"><code>System.Runtime.InteropServices</code></a> namespace to indicate the methods are from a DLL. Note we specify <a href="https://learn.microsoft.com/en-us/dotnet/api/system.intptr"><code>IntPtr</code></a> as the return value for methods that return a string.</p>
+</section>
+<section id="performing-inference-with-the-plugin" class="level2">
+<h2 class="anchored" data-anchor-id="performing-inference-with-the-plugin">Performing Inference with the Plugin</h2>
+<p>Now that we’ve imported the plugin functionality, we can create a script to handle performing inference. Inside the Scripts folder, create a new C# script named <code>InferenceController</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-create-inference-controller-script.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<section id="importing-namespace-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="importing-namespace-dependencies">Importing Namespace Dependencies</h3>
+<p>Inside the <code>InferenceController</code> script, we’ll first update the namespace dependencies:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> UnityEngine<span class="op">.</span><span class="fu">Rendering</span><span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Collections</span><span class="op">.</span><span class="fu">Generic</span><span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">IO</span><span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> System<span class="op">;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> CJM<span class="op">.</span><span class="fu">BBox2DToolkit</span><span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> CJM<span class="op">.</span><span class="fu">DeepLearningImageProcessor</span><span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> CJM<span class="op">.</span><span class="fu">YOLOXUtils</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><code>UnityEngine.Rendering</code>: Provides access to the elements of the rendering pipeline.</li>
+<li><code>System.IO</code>: Allows reading and writing to files and data streams.</li>
+<li><code>System.Runtime.InteropServices</code>: Provides a variety of members that support <a href="https://learn.microsoft.com/en-us/dotnet/standard/native-interop/cominterop">COM interop</a> and <a href="https://learn.microsoft.com/en-us/dotnet/standard/native-interop/pinvoke">platform invoke</a> services.</li>
+<li><code>CJM.BBox2DToolkit</code>: Provides an easy-to-use and customizable solution to work with and visualize 2D bounding boxes on a Unity canvas.</li>
+<li><code>CJM.DeepLearningImageProcessor</code>: Provides Shaders and Compute Shaders for various image processing tasks, such as cropping, normalizing, and flipping images in Unity.</li>
+<li><code>CJM.YOLOXUtils</code>: Provides utility functions to work with YOLOX object detection models in Unity.</li>
+</ul>
+</section>
+<section id="declaring-serialized-fields" class="level3">
+<h3 class="anchored" data-anchor-id="declaring-serialized-fields">Declaring Serialized Fields</h3>
+<p>Next, we will declare the variables we want to make accessible through the <a href="https://docs.unity3d.com/Manual/UsingTheInspector.html">Inspector window</a> in Unity Editor.</p>
+<section id="gameobject-components" class="level4">
+<h4 class="anchored" data-anchor-id="gameobject-components">GameObject Components</h4>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Header</span><span class="op">(</span><span class="st">"Components"</span><span class="op">)]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">,</span> <span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Responsible for image preprocessing"</span><span class="op">)]</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> ImageProcessor imageProcessor<span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">,</span> <span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Visualizes detected object bounding boxes"</span><span class="op">)]</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> BoundingBox2DVisualizer boundingBoxVisualizer<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">,</span> <span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Renders the input image on a screen"</span><span class="op">)]</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> MeshRenderer screenRenderer<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>imageProcessor</code></strong>: This component is responsible for the necessary image preprocessing operations before we feed to the ONNX model.</li>
+<li><strong><code>boundingBoxVisualizer</code></strong>: The YOLOX model predicts coordinates and dimensions for bounding boxes that contain detected objects in the input image. This component handles visualizing these boxes on the screen, allowing users to see the locations of detected objects within the image.</li>
+<li><strong><code>screenRenderer</code></strong>: This renders the input image on a screen or a canvas in the Unity environment. It helps users see the original image alongside any visualized detections or annotations.</li>
+</ul>
+</section>
+<section id="data-processing-settings" class="level4">
+<h4 class="anchored" data-anchor-id="data-processing-settings">Data Processing Settings</h4>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Header</span><span class="op">(</span><span class="st">"Data Processing"</span><span class="op">)]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The target dimensions for the processed image"</span><span class="op">)]</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">]</span> <span class="kw">private</span> <span class="dt">int</span> targetDim <span class="op">=</span> <span class="dv">224</span><span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Flag to normalize input images before passing them to the model."</span><span class="op">)]</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">]</span> <span class="kw">private</span> <span class="dt">bool</span> normalizeInput <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Flag to flip input images around the X-axis before passing them to the model."</span><span class="op">)]</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">]</span> <span class="kw">private</span> <span class="dt">bool</span> flipInput <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">,</span> <span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Flag to enable/disable async GPU readback for the input image"</span><span class="op">)]</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">bool</span> useAsyncGPUReadback <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>targetDim</code></strong>: This field specifies the desired height of input images.</li>
+<li><strong><code>normalizeInput</code></strong>: Normalization is a common preprocessing step that involves scaling the pixel values of an image to a standard range. It helps in maintaining consistency and can affect the model’s performance. Our model performs this step internally, but others might not.</li>
+<li><strong><code>flipInput</code></strong>: The input image gets flipped upside down when it goes to the plugin. We can pre-flip it in a <a href="https://docs.unity3d.com/Manual/class-ComputeShader.html">Compute Shader</a> to ensure it is right-side up when we feed it to the model.</li>
+<li><strong><code>useAsyncGPUReadback</code></strong>: We need to download the pixel data for the input image from the GPU to system memory before sending it to the plugin. This download process can cause a significant performance bottleneck as it waits for the GPU to complete all previous work. We mitigate the performance hit by downloading the pixel data asynchronously. This approach can significantly improve frame rates at the cost of some latency.</li>
+</ul>
+</section>
+<section id="output-processing-settings" class="level4">
+<h4 class="anchored" data-anchor-id="output-processing-settings">Output Processing Settings</h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Header</span><span class="op">(</span><span class="st">"Output Processing"</span><span class="op">)]</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">,</span> <span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Minimum confidence score for an object proposal to be considered"</span><span class="op">),</span> <span class="fu">Range</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">)]</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">float</span> confidenceThreshold <span class="op">=</span> <span class="fl">0.5f</span><span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">,</span> <span class="fu">Tooltip</span><span class="op">(</span><span class="st">"Threshold for Non-Maximum Suppression (NMS)"</span><span class="op">),</span> <span class="fu">Range</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">)]</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">float</span> nmsThreshold <span class="op">=</span> <span class="fl">0.45f</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>SerializeField<span class="op">,</span> <span class="fu">Tooltip</span><span class="op">(</span><span class="st">"JSON file with bounding box colormaps"</span><span class="op">)]</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> TextAsset colormapFile<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>confidenceThreshold</code></strong>: The YOLOX model assigns a confidence score to each detected object. This threshold ensures we only keep detections with a confidence score above the specified value. It helps in reducing false positives.</li>
+<li><strong><code>nmsThreshold</code></strong>: Non-maximum suppression (NMS) is a technique used to ensure that a single object doesn’t get detected multiple times with overlapping boxes. The threshold determines how much overlap to tolerate before ignoring a detection.</li>
+<li><strong><code>colormapFile</code></strong>: We can access the JSON colormap file we imported early as a Unity <a href="https://docs.unity3d.com/ScriptReference/TextAsset.html">TextAsset</a>.</li>
+</ul>
+</section>
+<section id="onnx" class="level4">
+<h4 class="anchored" data-anchor-id="onnx">ONNX</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Header</span><span class="op">(</span><span class="st">"ONNX"</span><span class="op">)]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="fu">Tooltip</span><span class="op">(</span><span class="st">"The name of the ONNX models folder"</span><span class="op">)]</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">string</span> onnxModelsDir <span class="op">=</span> <span class="st">"Models"</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>onnxModelsDir</code></strong>: This field specifies the name of the directory in the StreamingAssets folder we used to store the ONNX model.</li>
+</ul>
+</section>
+</section>
+<section id="declaring-private-variables" class="level3">
+<h3 class="anchored" data-anchor-id="declaring-private-variables">Declaring Private Variables</h3>
+<p>After that, we can define the private variables we want to remain internal to the script.</p>
+<section id="bounding-box-information" class="level4">
+<h4 class="anchored" data-anchor-id="bounding-box-information">Bounding Box Information</h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> BBox2DInfo<span class="op">[]</span> bboxInfoArray<span class="op">;</span> <span class="co">// Array to store bounding box information</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>bboxInfoArray</code></strong>: Stores information related to detected objects’ bounding boxes and their associated label and color from the colormap.</li>
+</ul>
+</section>
+<section id="screen-properties" class="level4">
+<h4 class="anchored" data-anchor-id="screen-properties">Screen Properties</h4>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">bool</span> mirrorScreen <span class="op">=</span> <span class="kw">false</span><span class="op">;</span> <span class="co">// Flag to check if the screen is mirrored</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>mirrorScreen</code></strong>: A flag that tracks whether the screen is mirrored or not. We need to know this when processing the predicted bounding boxes.</li>
+</ul>
+</section>
+<section id="image-processing" class="level4">
+<h4 class="anchored" data-anchor-id="image-processing">Image Processing</h4>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> Vector2Int offset<span class="op">;</span> <span class="co">// Offset used when cropping the input image</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>Texture2D inputTextureCPU<span class="op">;</span>  <span class="co">// The model CPU input texture</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>offsets</code></strong>: We need to ensure the input image dimensions are multiples of 32. We do this by cropping the resized input image. This variable stores the distance in pixels from the top-left corner of the input image and the cropped area. We then use these offset values to adjust the predicted bounding box locations.</li>
+<li><strong><code>inputTextureCPU</code></strong>: Stores the pixel data for the input image in system memory.</li>
+</ul>
+</section>
+<section id="color-and-label-management" class="level4">
+<h4 class="anchored" data-anchor-id="color-and-label-management">Color and Label Management</h4>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">// List to store label and color pairs for each class</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> List<span class="op">&lt;(</span><span class="dt">string</span><span class="op">,</span> Color<span class="op">)&gt;</span> colormapList <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;(</span><span class="dt">string</span><span class="op">,</span> Color<span class="op">)&gt;();</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>colormapList</code></strong>: We use this list to associate each detected object’s class with the matching color and label from the colormap.</li>
+</ul>
+</section>
+<section id="yolox-model-information" class="level4">
+<h4 class="anchored" data-anchor-id="yolox-model-information">YOLOX Model Information</h4>
+<div class="sourceCode" id="cb14"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// List to store grid and stride information for the YOLOX model</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> List<span class="op">&lt;</span>GridCoordinateAndStride<span class="op">&gt;</span> gridCoordsAndStrides <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span>GridCoordinateAndStride<span class="op">&gt;();</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">int</span> proposalLength<span class="op">;</span> <span class="co">// Length of the proposal array for YOLOX output</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span><span class="op">[]</span> outputArray<span class="op">;</span> <span class="co">// Stores the raw model output</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>gridCoordsAndStrides</code></strong>: Stores information related to the grid coordinates and strides for the YOLOX model, which we use for processing the model’s raw output into usable bounding box data.</li>
+<li><strong><code>proposalLength</code></strong>: Represents the length of a single object proposal from the YOLOX model’s output.</li>
+<li><strong><code>outputArray</code></strong>: A container that holds the raw output data from the YOLOX model.</li>
+</ul>
+</section>
+<section id="onnx-model-information" class="level4">
+<h4 class="anchored" data-anchor-id="onnx-model-information">ONNX Model Information</h4>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// File paths for the available ONNX models</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> modelPaths <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;();</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Names of the available ONNX models</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> modelNames <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;();</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Names of the available ONNX execution providers</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> onnxExecutionProviders <span class="op">=</span> <span class="kw">new</span> List<span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;();</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong><code>modelPaths</code></strong>: Contains the file paths for all available ONNX models within the specified directory.</li>
+<li><strong><code>modelNames</code></strong>: Holds the names of all available ONNX models. We can use this for display purposes or logging/debugging.</li>
+<li><strong><code>onnxExecutionProviders</code></strong>: Lists the names of available execution providers for ONNX. In our case, there should be two: the CPU and DirectML execution providers.</li>
+</ul>
+</section>
+</section>
+<section id="defining-private-methods" class="level3">
+<h3 class="anchored" data-anchor-id="defining-private-methods">Defining Private Methods</h3>
+<p>Now, we can define the private methods for our script.</p>
+<section id="prepare-input-textures" class="level4">
+<h4 class="anchored" data-anchor-id="prepare-input-textures">Prepare Input Textures</h4>
+<p>This method creates a temporary <code>RenderTexture</code> with the specified dimensions. We use this when setting up a texture for processing before sending it to the model, ensuring it matches the target input dimensions.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Prepare a temporary RenderTexture with the given input dimensions.</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"inputDims"</span><span class="kw">&gt;</span><span class="co">The input dimensions for the RenderTexture</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">A temporary RenderTexture with the specified input dimensions</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> RenderTexture <span class="fu">PrepareInputTexture</span><span class="op">(</span>Vector2Int inputDims<span class="op">)</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>inputDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> inputDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="process-input-images" class="level4">
+<h4 class="anchored" data-anchor-id="process-input-images">Process Input Images</h4>
+<p>This method takes in an input texture and applies a series of transformations, like cropping, normalization, and flipping.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Process the input image and apply necessary transformations.</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"inputTexture"</span><span class="kw">&gt;</span><span class="co">The input RenderTexture to process</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"imageTexture"</span><span class="kw">&gt;</span><span class="co">The source image texture</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"sourceDims"</span><span class="kw">&gt;</span><span class="co">The source image dimensions</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"inputDims"</span><span class="kw">&gt;</span><span class="co">The input dimensions for processing</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">ProcessInputImage</span><span class="op">(</span>RenderTexture inputTexture<span class="op">,</span> Texture imageTexture<span class="op">,</span> Vector2Int sourceDims<span class="op">,</span> Vector2Int inputDims<span class="op">)</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the offset for cropping the input image</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    offset <span class="op">=</span> <span class="op">(</span>sourceDims <span class="op">-</span> inputDims<span class="op">)</span> <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a temporary render texture to store the cropped image</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    RenderTexture sourceTexture <span class="op">=</span> RenderTexture<span class="op">.</span><span class="fu">GetTemporary</span><span class="op">(</span>sourceDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> sourceDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> RenderTextureFormat<span class="op">.</span><span class="fu">ARGBHalf</span><span class="op">);</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    Graphics<span class="op">.</span><span class="fu">Blit</span><span class="op">(</span>imageTexture<span class="op">,</span> sourceTexture<span class="op">);</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Crop and normalize the input image using Compute Shaders</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>SystemInfo<span class="op">.</span><span class="fu">supportsComputeShaders</span><span class="op">)</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>        imageProcessor<span class="op">.</span><span class="fu">CropImageComputeShader</span><span class="op">(</span>sourceTexture<span class="op">,</span> inputTexture<span class="op">,</span> offset<span class="op">,</span> inputDims<span class="op">);</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>normalizeInput<span class="op">)</span> imageProcessor<span class="op">.</span><span class="fu">ProcessImageComputeShader</span><span class="op">(</span>inputTexture<span class="op">,</span> <span class="st">"NormalizeImage"</span><span class="op">);</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>flipInput<span class="op">)</span> imageProcessor<span class="op">.</span><span class="fu">ProcessImageComputeShader</span><span class="op">(</span>inputTexture<span class="op">,</span> <span class="st">"FlipXAxis"</span><span class="op">);</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release the temporary render texture</span></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    RenderTexture<span class="op">.</span><span class="fu">ReleaseTemporary</span><span class="op">(</span>sourceTexture<span class="op">);</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-bounding-boxes" class="level4">
+<h4 class="anchored" data-anchor-id="update-bounding-boxes">Update Bounding Boxes</h4>
+<p>This method adjusts the position and scale of the bounding boxes based on the processed input’s dimensions and the screen’s dimensions. We use this to ensure the bounding boxes correctly overlay on the displayed image, considering any transformations made during the image processing phase.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Update the bounding boxes based on the input dimensions and screen dimensions.</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"inputDims"</span><span class="kw">&gt;</span><span class="co">The input dimensions for processing</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">UpdateBoundingBoxes</span><span class="op">(</span>Vector2Int inputDims<span class="op">)</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Check if the screen is mirrored</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    mirrorScreen <span class="op">=</span> screenRenderer<span class="op">.</span><span class="fu">transform</span><span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">z</span> <span class="op">==</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the screen dimensions</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    Vector2 screenDims <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector2</span><span class="op">(</span>screenRenderer<span class="op">.</span><span class="fu">transform</span><span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">x</span><span class="op">,</span> screenRenderer<span class="op">.</span><span class="fu">transform</span><span class="op">.</span><span class="fu">localScale</span><span class="op">.</span><span class="fu">y</span><span class="op">);</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Scale and position the bounding boxes based on the input and screen dimensions</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> bboxInfoArray<span class="op">.</span><span class="fu">Length</span><span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>        bboxInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">bbox</span> <span class="op">=</span> BBox2DUtility<span class="op">.</span><span class="fu">ScaleBoundingBox</span><span class="op">(</span>bboxInfoArray<span class="op">[</span>i<span class="op">].</span><span class="fu">bbox</span><span class="op">,</span> inputDims<span class="op">,</span> screenDims<span class="op">,</span> offset<span class="op">,</span> mirrorScreen<span class="op">);</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="get-onnx-models" class="level4">
+<h4 class="anchored" data-anchor-id="get-onnx-models">Get ONNX Models</h4>
+<p>This method scans the specified directory for available ONNX models and records their file paths and names. We can then pass a model path to the plugin to initialize an inference session.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Get the file paths for available ONNX models</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">GetONNXModels</span><span class="op">()</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the paths for each model folder</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">foreach</span> <span class="op">(</span><span class="dt">string</span> file <span class="kw">in</span> Directory<span class="op">.</span><span class="fu">GetFiles</span><span class="op">(</span>$<span class="st">"{Application.streamingAssetsPath}/{onnxModelsDir}"</span><span class="op">))</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>file<span class="op">.</span><span class="fu">EndsWith</span><span class="op">(</span><span class="st">".onnx"</span><span class="op">))</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Extract the model folder name</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>            <span class="dt">string</span> modelName <span class="op">=</span> file<span class="op">.</span><span class="fu">Split</span><span class="op">(</span><span class="ch">'\\'</span><span class="op">)[</span><span class="dv">1</span><span class="op">].</span><span class="fu">Split</span><span class="op">(</span><span class="ch">'.'</span><span class="op">)[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>            Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"modelName: {modelName}"</span><span class="op">);</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Add name to list of model names</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>            modelNames<span class="op">.</span><span class="fu">Add</span><span class="op">(</span>modelName<span class="op">);</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>            modelPaths<span class="op">.</span><span class="fu">Add</span><span class="op">(</span>file<span class="op">);</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="get-onnx-execution-providers" class="level4">
+<h4 class="anchored" data-anchor-id="get-onnx-execution-providers">Get ONNX Execution Providers</h4>
+<p>This method fetches the names of the available execution providers from the plugin. We can then choose which one to use for inference.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Get the names of the available ONNX execution providers</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">GetONNXExecutionProviders</span><span class="op">()</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the number of available ONNX execution providers</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> providerCount <span class="op">=</span> ONNXRuntimePluginImporter<span class="op">.</span><span class="fu">GetProviderCount</span><span class="op">();</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Provider Count: {providerCount}"</span><span class="op">);</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> providerCount<span class="op">;</span> i<span class="op">++)</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>        <span class="dt">string</span> providerName <span class="op">=</span> Marshal<span class="op">.</span><span class="fu">PtrToStringAnsi</span><span class="op">(</span>ONNXRuntimePluginImporter<span class="op">.</span><span class="fu">GetProviderName</span><span class="op">(</span>i<span class="op">));</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>providerName<span class="op">);</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>        providerName <span class="op">=</span> providerName<span class="op">.</span><span class="fu">Replace</span><span class="op">(</span><span class="st">"ExecutionProvider"</span><span class="op">,</span> <span class="st">""</span><span class="op">);</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>        onnxExecutionProviders<span class="op">.</span><span class="fu">Add</span><span class="op">(</span>providerName<span class="op">);</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    onnxExecutionProviders<span class="op">.</span><span class="fu">Reverse</span><span class="op">();</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="update-onnx-model" class="level4">
+<h4 class="anchored" data-anchor-id="update-onnx-model">Update ONNX Model</h4>
+<p>This method loads the selected ONNX model with the specified execution provider and input dimensions. For a production application, you may want to provide options to switch between models and execution providers. For this demo, we’ll hardcode using the first model found and the last execution provider in the list. In our case, that will be the DirectML provider.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Update the selected ONNX model</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">UpdateONNXModel</span><span class="op">()</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span><span class="op">[]</span> inputDims <span class="op">=</span> <span class="kw">new</span> <span class="dt">int</span><span class="op">[]</span> <span class="op">{</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">width</span><span class="op">,</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">height</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Load the specified ONNX model</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    IntPtr resultPtr <span class="op">=</span> ONNXRuntimePluginImporter<span class="op">.</span><span class="fu">LoadModel</span><span class="op">(</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>        modelPaths<span class="op">[</span><span class="dv">0</span><span class="op">],</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>        onnxExecutionProviders<span class="op">[</span><span class="dv">1</span><span class="op">],</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>        inputDims<span class="op">);</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">string</span> return_msg <span class="op">=</span> Marshal<span class="op">.</span><span class="fu">PtrToStringAnsi</span><span class="op">(</span>resultPtr<span class="op">);</span> <span class="co">// Convert IntPtr to string</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Return message: {return_msg}"</span><span class="op">);</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="asynchronous-gpu-readback" class="level4">
+<h4 class="anchored" data-anchor-id="asynchronous-gpu-readback">Asynchronous GPU Readback</h4>
+<p>This method handles the completion of an asynchronous GPU readback request. It ensures the readback data correctly transfers to a Texture2D object and resolves potential errors and resizing issues.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">OnCompleteReadback</span><span class="op">(</span>AsyncGPUReadbackRequest request<span class="op">,</span> Texture2D targetTexture<span class="op">,</span> RenderTexture sourceTexture<span class="op">)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>request<span class="op">.</span><span class="fu">hasError</span><span class="op">)</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span><span class="st">"GPU readback error detected."</span><span class="op">);</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Make sure the Texture2D is not null</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>targetTexture<span class="op">)</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Check if dimensions of targetTexture and sourceTexture are different</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>targetTexture<span class="op">.</span><span class="fu">width</span> <span class="op">!=</span> sourceTexture<span class="op">.</span><span class="fu">width</span> <span class="op">||</span> targetTexture<span class="op">.</span><span class="fu">height</span> <span class="op">!=</span> sourceTexture<span class="op">.</span><span class="fu">height</span><span class="op">)</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Re-create the Texture2D with the same dimensions as the RenderTexture</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>            targetTexture<span class="op">.</span><span class="fu">Reinitialize</span><span class="op">(</span>sourceTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> sourceTexture<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>            <span class="co">// It's usually a good idea to clear out any previous data after resizing</span></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>            targetTexture<span class="op">.</span><span class="fu">Apply</span><span class="op">();</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Fill Texture2D with raw data from the AsyncGPUReadbackRequest</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>        targetTexture<span class="op">.</span><span class="fu">LoadRawTextureData</span><span class="op">(</span>request<span class="op">.</span><span class="fu">GetData</span><span class="op">&lt;</span><span class="dt">uint</span><span class="op">&gt;());</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Apply changes to Texture2D</span></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>        targetTexture<span class="op">.</span><span class="fu">Apply</span><span class="op">();</span></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="defining-public-methods" class="level3">
+<h3 class="anchored" data-anchor-id="defining-public-methods">Defining Public Methods</h3>
+<p>We only have one public method, which handles changes to the confidence threshold from the GUI.</p>
+<section id="update-the-confidence-threshold" class="level4">
+<h4 class="anchored" data-anchor-id="update-the-confidence-threshold">Update the Confidence Threshold</h4>
+<div class="sourceCode" id="cb23"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Update the confidence threshold for object detection.</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"value"</span><span class="kw">&gt;</span><span class="co">The new confidence threshold value</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">UpdateConfidenceThreshold</span><span class="op">(</span><span class="dt">float</span> value<span class="op">)</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    confidenceThreshold <span class="op">=</span> value<span class="op">;</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="defining-monobehaviour-methods" class="level3">
+<h3 class="anchored" data-anchor-id="defining-monobehaviour-methods">Defining MonoBehaviour Methods</h3>
+<p>Lastly, we will define the <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.html"><code>MonoBehaviour</code></a> methods and implement the steps the script should execute when it’s loading, before the first frame update, during each frame, and when the application closes.</p>
+<section id="make-directml-accessible-to-the-project-build" class="level4">
+<h4 class="anchored" data-anchor-id="make-directml-accessible-to-the-project-build">Make DirectML Accessible to the Project Build</h4>
+<p>As mentioned earlier, the DirectML DLL file must be in the same directory as the application executable for us to use the DirectML execution provider. We’ve already addressed that for working in the Editor, and now we’ll do the same for our compiled Unity project.</p>
+<p>When the compiled application runs outside the Editor, it will copy the DirectML DLL file from the plugins folder to the same directory as the executable file. We want to ensure this code runs before the rest of the script, so we’ll place it in the <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html"><code>Awake()</code></a> method.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Awake runs when the script instance is being loaded</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">Awake</span><span class="op">()</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="kw">#if</span> <span class="op">!</span>UNITY_EDITOR</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define the path for the DirectML.dll file in the StreamingAssets folder</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">string</span> sourcePath <span class="op">=</span> $<span class="st">"{Application.dataPath}/Plugins/x86_64/DirectML.dll"</span><span class="op">;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">string</span> dataPath <span class="op">=</span> Application<span class="op">.</span><span class="fu">dataPath</span><span class="op">;</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">string</span> buildDir <span class="op">=</span> Directory<span class="op">.</span><span class="fu">GetParent</span><span class="op">(</span>dataPath<span class="op">).</span><span class="fu">ToString</span><span class="op">();</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define the destination path for the DirectML.dll file</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">string</span> targetPath <span class="op">=</span> $<span class="st">"{buildDir}/DirectML.dll"</span><span class="op">;</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Only copy the file if it is not already present at the destination</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(!</span>File<span class="op">.</span><span class="fu">Exists</span><span class="op">(</span>targetPath<span class="op">))</span> File<span class="op">.</span><span class="fu">Copy</span><span class="op">(</span>sourcePath<span class="op">,</span> targetPath<span class="op">);</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="kw">#endif</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="initialize-the-plugin-and-colormap" class="level4">
+<h4 class="anchored" data-anchor-id="initialize-the-plugin-and-colormap">Initialize the Plugin and Colormap</h4>
+<p>We want to load the colormap and initialize the plugin before the first frame update. Therefore, we’ll perform these steps in the <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Start.html"><code>Start()</code></a> method.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Start is called before the first frame update</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">Start</span><span class="op">()</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    colormapList <span class="op">=</span> ColormapUtility<span class="op">.</span><span class="fu">LoadColorMapList</span><span class="op">(</span>colormapFile<span class="op">);</span> <span class="co">// Load colormap information from JSON file</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    proposalLength <span class="op">=</span> colormapList<span class="op">.</span><span class="fu">Count</span> <span class="op">+</span> YOLOXConstants<span class="op">.</span><span class="fu">NumBBoxFields</span><span class="op">;</span> <span class="co">// Calculate proposal length</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the file paths for available ONNX models</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">GetONNXModels</span><span class="op">();</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the ONNX Runtime API</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    ONNXRuntimePluginImporter<span class="op">.</span><span class="fu">InitOrtAPI</span><span class="op">();</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the names of available ONNX execution providers</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">GetONNXExecutionProviders</span><span class="op">();</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="perform-inference-with-the-plugin" class="level4">
+<h4 class="anchored" data-anchor-id="perform-inference-with-the-plugin">Perform Inference with the Plugin</h4>
+<p>The <a href="https://docs.unity3d.com/ScriptReference/MonoBehaviour.Update.html"><code>Update()</code></a> method orchestrates real-time object detection in each frame.</p>
+<p>First, it extracts the current frame’s image data and applies the preprocessing steps. If the input dimensions change, the method updates the plugin with the new dimensions.</p>
+<p>We then download the pixel data for the input image from the GPU to the system memory, either asynchronously or synchronously, and pass it to the plugin for inference.</p>
+<p>The raw model output gets translated into potential bounding box proposals, which we further refine using Non-Maximum Suppression to eliminate redundant boxes. These proposals are then structured and filtered to offer actionable data, like object positions and labels.</p>
+<p>Finally, we pass the bounding boxes to the visualizer to display them on screen, showing the detected objects in real time.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Update the InferenceController every frame, processing the input image and updating the UI and bounding boxes.</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">Update</span><span class="op">()</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the input image and dimensions</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">var</span> imageTexture <span class="op">=</span> screenRenderer<span class="op">.</span><span class="fu">material</span><span class="op">.</span><span class="fu">mainTexture</span><span class="op">;</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">var</span> imageDims <span class="op">=</span> <span class="kw">new</span> <span class="fu">Vector2Int</span><span class="op">(</span>imageTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> imageTexture<span class="op">.</span><span class="fu">height</span><span class="op">);</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">var</span> inputDims <span class="op">=</span> imageProcessor<span class="op">.</span><span class="fu">CalculateInputDims</span><span class="op">(</span>imageDims<span class="op">,</span> targetDim<span class="op">);</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate source and input dimensions for model input</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">var</span> sourceDims <span class="op">=</span> inputDims<span class="op">;</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>    inputDims <span class="op">=</span> YOLOXUtility<span class="op">.</span><span class="fu">CropInputDims</span><span class="op">(</span>inputDims<span class="op">);</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Prepare and process the input texture</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    RenderTexture inputTexture <span class="op">=</span> <span class="fu">PrepareInputTexture</span><span class="op">(</span>inputDims<span class="op">);</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ProcessInputImage</span><span class="op">(</span>inputTexture<span class="op">,</span> imageTexture<span class="op">,</span> sourceDims<span class="op">,</span> inputDims<span class="op">);</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update the plugin with the current input dimensions</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(!</span>inputTextureCPU <span class="op">||</span> inputTextureCPU<span class="op">.</span><span class="fu">width</span> <span class="op">!=</span> inputTexture<span class="op">.</span><span class="fu">width</span> <span class="op">||</span> inputTextureCPU<span class="op">.</span><span class="fu">height</span> <span class="op">!=</span> inputTexture<span class="op">.</span><span class="fu">height</span><span class="op">)</span></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU <span class="op">=</span> <span class="kw">new</span> <span class="fu">Texture2D</span><span class="op">(</span>inputDims<span class="op">.</span><span class="fu">x</span><span class="op">,</span> inputDims<span class="op">.</span><span class="fu">y</span><span class="op">,</span> TextureFormat<span class="op">.</span><span class="fu">RGB24</span><span class="op">,</span> <span class="kw">false</span><span class="op">);</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>        gridCoordsAndStrides <span class="op">=</span> YOLOXUtility<span class="op">.</span><span class="fu">GenerateGridCoordinatesWithStrides</span><span class="op">(</span>YOLOXConstants<span class="op">.</span><span class="fu">Strides</span><span class="op">,</span> inputTexture<span class="op">.</span><span class="fu">height</span><span class="op">,</span> inputTexture<span class="op">.</span><span class="fu">width</span><span class="op">);</span></span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> output_size <span class="op">=</span> gridCoordsAndStrides<span class="op">.</span><span class="fu">Count</span> <span class="op">*</span> proposalLength<span class="op">;</span></span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>        outputArray <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[</span>output_size<span class="op">];</span></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Updating output array to {output_size}"</span><span class="op">);</span></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">"Input Dims: {inputTextureCPU.width}x{inputTextureCPU.height}"</span><span class="op">);</span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Update the selected ONNX model</span></span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">UpdateONNXModel</span><span class="op">();</span></span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Download the input image data from the GPU to system memory</span></span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useAsyncGPUReadback<span class="op">)</span></span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>        AsyncGPUReadback<span class="op">.</span><span class="fu">Request</span><span class="op">(</span>inputTexture<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> TextureFormat<span class="op">.</span><span class="fu">RGB24</span><span class="op">,</span> <span class="op">(</span>request<span class="op">)</span> <span class="op">=&gt;</span></span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a>            <span class="fu">OnCompleteReadback</span><span class="op">(</span>request<span class="op">,</span> inputTextureCPU<span class="op">,</span> inputTexture<span class="op">);</span></span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a>        <span class="op">});</span></span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Download pixel data from GPU to CPU</span></span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>        RenderTexture<span class="op">.</span><span class="fu">active</span> <span class="op">=</span> inputTexture<span class="op">;</span></span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">ReadPixels</span><span class="op">(</span><span class="kw">new</span> <span class="fu">Rect</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> inputTexture<span class="op">.</span><span class="fu">width</span><span class="op">,</span> inputTexture<span class="op">.</span><span class="fu">height</span><span class="op">),</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>        inputTextureCPU<span class="op">.</span><span class="fu">Apply</span><span class="op">();</span></span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Pass the input image to the model and get the raw output</span></span>
+<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>    ONNXRuntimePluginImporter<span class="op">.</span><span class="fu">PerformInference</span><span class="op">(</span>inputTextureCPU<span class="op">.</span><span class="fu">GetRawTextureData</span><span class="op">(),</span> outputArray<span class="op">,</span> outputArray<span class="op">.</span><span class="fu">Length</span><span class="op">);</span></span>
+<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free the memory for the input RenderTexture</span></span>
+<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a>    RenderTexture<span class="op">.</span><span class="fu">ReleaseTemporary</span><span class="op">(</span>inputTexture<span class="op">);</span></span>
+<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Generate bounding box proposals from the output array</span></span>
+<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a>    List<span class="op">&lt;</span>BBox2D<span class="op">&gt;</span> proposals <span class="op">=</span> YOLOXUtility<span class="op">.</span><span class="fu">GenerateBoundingBoxProposals</span><span class="op">(</span>outputArray<span class="op">,</span></span>
+<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>                                                                       gridCoordsAndStrides<span class="op">,</span></span>
+<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>                                                                       colormapList<span class="op">.</span><span class="fu">Count</span><span class="op">,</span></span>
+<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>                                                                       YOLOXConstants<span class="op">.</span><span class="fu">NumBBoxFields</span><span class="op">,</span></span>
+<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a>                                                                       confidenceThreshold<span class="op">);</span></span>
+<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Apply Non-Maximum Suppression (NMS) to the proposals</span></span>
+<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a>    List<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> proposalIndices <span class="op">=</span> BBox2DUtility<span class="op">.</span><span class="fu">NMSSortedBoxes</span><span class="op">(</span>proposals<span class="op">,</span> nmsThreshold<span class="op">);</span></span>
+<span id="cb26-65"><a href="#cb26-65" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create an array of BBox2DInfo objects containing the filtered bounding boxes, class labels, and colors</span></span>
+<span id="cb26-66"><a href="#cb26-66" aria-hidden="true" tabindex="-1"></a>    bboxInfoArray <span class="op">=</span> YOLOXUtility<span class="op">.</span><span class="fu">GetBBox2DInfos</span><span class="op">(</span>proposals<span class="op">,</span> proposalIndices<span class="op">,</span> colormapList<span class="op">);</span></span>
+<span id="cb26-67"><a href="#cb26-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-68"><a href="#cb26-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-69"><a href="#cb26-69" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update bounding boxes and user interface</span></span>
+<span id="cb26-70"><a href="#cb26-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">UpdateBoundingBoxes</span><span class="op">(</span>inputDims<span class="op">);</span></span>
+<span id="cb26-71"><a href="#cb26-71" aria-hidden="true" tabindex="-1"></a>    boundingBoxVisualizer<span class="op">.</span><span class="fu">UpdateBoundingBoxVisualizations</span><span class="op">(</span>bboxInfoArray<span class="op">);</span></span>
+<span id="cb26-72"><a href="#cb26-72" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="clean-up-plugin-resources" class="level4">
+<h4 class="anchored" data-anchor-id="clean-up-plugin-resources">Clean Up Plugin Resources</h4>
+<p>The last piece of code to add will free the resources the plugin allocates when the application closes or when we exit play mode in the Editor.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode c# code-with-copy"><code class="sourceCode cs"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="dt">void</span> <span class="fu">OnApplicationQuit</span><span class="op">()</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    ONNXRuntimePluginImporter<span class="op">.</span><span class="fu">FreeResources</span><span class="op">();</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>That’s it for the project code. All that’s left is to set up the demo scene.</p>
+</section>
+</section>
+</section>
+<section id="setting-up-the-demo-scene" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-demo-scene">Setting Up the Demo Scene</h2>
+<p>In this final section, we’ll add the InferenceController script and a Bounding Box Visualizer to our demo scene.</p>
+<section id="adding-the-gameobjects" class="level3">
+<h3 class="anchored" data-anchor-id="adding-the-gameobjects">Adding the GameObjects</h3>
+<p>We’ll first add the GameObjects for our InferenceController script and the Bounding Box Visualizer to the demo scene.</p>
+<section id="create-an-empty-gameobject" class="level4">
+<h4 class="anchored" data-anchor-id="create-an-empty-gameobject">Create an Empty GameObject</h4>
+<p>Right-click an open space in the <a href="https://docs.unity3d.com/Manual/Hierarchy.html">Hierarchy window</a> and select <code>Create Empty</code> from the popup menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-hierarchy-create-empty-object.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Name the new object <code>InferenceManager</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-hierarchy-name-inference-manager.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="add-the-bounding-box-visualizer-to-the-scene" class="level4">
+<h4 class="anchored" data-anchor-id="add-the-bounding-box-visualizer-to-the-scene">Add the Bounding Box Visualizer to the Scene</h4>
+<p>Next, go to the Project window and open the Packages-&gt;Bounding Box 2D Toolkit-&gt;Prefabs folder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-packages-select-bounding-box-2d-visualizer-prefab.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Select the BBox2DVisualizer prefab and drag it into the Hierarchy window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-hierarchy-add-bounding-box-2d-visualizer.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="configure-inference-manager" class="level3">
+<h3 class="anchored" data-anchor-id="configure-inference-manager">Configure Inference Manager</h3>
+<p>Now, we only need to configure the InferenceManager. With the InferenceManager object selected in the Hierarchy tab, drag the InferenceController script from the Assets folder to the <a href="https://docs.unity3d.com/Manual/UsingTheInspector.html">Inspector window</a>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-inspector-tab-add-inference-controller-component.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<section id="add-the-image-processor-component" class="level4">
+<h4 class="anchored" data-anchor-id="add-the-image-processor-component">Add the Image Processor Component</h4>
+<p>Next, click the Add Component button in the Inspector window. Type Image Processor into the search box and press Enter.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-inspector-tab-add-image-processor-component.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="assign-inference-controller-components" class="level4">
+<h4 class="anchored" data-anchor-id="assign-inference-controller-components">Assign Inference Controller Components</h4>
+<p>Now, we can assign the ImageProcessor component to the InferenceController component.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-inspector-tab-assign-image-processor-component.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>After that, drag the BBox2DVisualizer from the Hierarchy window onto the Bounding Box Visualizer field in the InferenceController.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-inspector-tab-assign-bounding-box-visualizer-component.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Next, drag the Screen object onto the Screen Render field.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-inspector-tab-assign-mesh-renderer-component.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Also, set the flags for flipping the input image and enabling asynchronous GPU readback.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-inspector-tab-enable-flip-input-async-readback.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>Lastly, drag the Colormap file from the Assets folder into the Colormap File field.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-inspector-tab-assign-colormap.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="test-in-editor" class="level3">
+<h3 class="anchored" data-anchor-id="test-in-editor">Test in Editor</h3>
+<p>We are finally ready to test our project. If you enter Play mode, you should seed the following in the Game view:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/unity-editor-play-test-project.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Congratulations on completing this tutorial! We previously created a native plugin in Visual Studio with ONNX Runtime and have now integrated it into a Unity project to perform real-time object detection. By now, you should have a firm grasp on how to embed a native plugin into the Unity game engine and leverage the power of ONNX Runtime for computer vision tasks.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2023, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>

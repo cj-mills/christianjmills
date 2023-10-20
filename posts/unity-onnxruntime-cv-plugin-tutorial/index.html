@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2023-10-18">
+<meta name="description" content="Learn how to create a native plugin for the Unity game engine to perform inference with computer vision models using ONNX Runtime.">
+
+<title>Christian Mills - Building a Computer Vision Plugin for Unity with ONNX Runtime</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/favicon.ico" rel="icon">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Christian Mills - Building a Computer Vision Plugin for Unity with ONNX Runtime">
+<meta property="og:description" content="Learn how to create a native plugin for the Unity game engine to perform inference with computer vision models using ONNX Runtime.">
+<meta property="og:image" content="christianjmills.com/posts/unity-onnxruntime-cv-plugin-tutorial/images/logo.png">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Building a Computer Vision Plugin for Unity with ONNX Runtime">
+<meta name="twitter:description" content="Learn how to create a native plugin for the Unity game engine to perform inference with computer vision models using ONNX Runtime.">
+<meta name="twitter:image" content="christianjmills.com/posts/unity-onnxruntime-cv-plugin-tutorial/images/logo.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html" rel="" target="">
+ <span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series/tutorials/index.html" rel="" target="">
+ <span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series/notes/index.html" rel="" target="">
+ <span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../services.html" rel="" target="">
+ <span class="menu-text">Services</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com" rel="" target=""><i class="bi bi-envelope-fill" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../blog.xml" rel="" target=""><i class="bi bi-rss" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#creating-a-dynamic-link-library-project" id="toc-creating-a-dynamic-link-library-project" class="nav-link" data-scroll-target="#creating-a-dynamic-link-library-project">Creating a Dynamic-Link Library Project</a>
+  <ul>
+  <li><a href="#launching-visual-studio" id="toc-launching-visual-studio" class="nav-link" data-scroll-target="#launching-visual-studio">Launching Visual Studio</a></li>
+  <li><a href="#selecting-the-project-type" id="toc-selecting-the-project-type" class="nav-link" data-scroll-target="#selecting-the-project-type">Selecting the Project Type</a></li>
+  <li><a href="#naming-and-locating-your-project" id="toc-naming-and-locating-your-project" class="nav-link" data-scroll-target="#naming-and-locating-your-project">Naming and Locating Your Project</a></li>
+  </ul></li>
+  <li><a href="#configuring-the-release-build" id="toc-configuring-the-release-build" class="nav-link" data-scroll-target="#configuring-the-release-build">Configuring the Release Build</a></li>
+  <li><a href="#installing-onnx-runtime-via-nuget" id="toc-installing-onnx-runtime-via-nuget" class="nav-link" data-scroll-target="#installing-onnx-runtime-via-nuget">Installing ONNX Runtime via NuGet</a>
+  <ul>
+  <li><a href="#accessing-nuget-packages-in-visual-studio" id="toc-accessing-nuget-packages-in-visual-studio" class="nav-link" data-scroll-target="#accessing-nuget-packages-in-visual-studio">Accessing NuGet Packages in Visual Studio</a></li>
+  <li><a href="#searching-for-the-onnx-runtime-package" id="toc-searching-for-the-onnx-runtime-package" class="nav-link" data-scroll-target="#searching-for-the-onnx-runtime-package">Searching for the ONNX Runtime Package</a></li>
+  <li><a href="#installing-the-package" id="toc-installing-the-package" class="nav-link" data-scroll-target="#installing-the-package">Installing the Package</a></li>
+  <li><a href="#confirming-the-installation" id="toc-confirming-the-installation" class="nav-link" data-scroll-target="#confirming-the-installation">Confirming the Installation</a></li>
+  </ul></li>
+  <li><a href="#including-the-onnx-runtime-header-files" id="toc-including-the-onnx-runtime-header-files" class="nav-link" data-scroll-target="#including-the-onnx-runtime-header-files">Including the ONNX Runtime Header Files</a></li>
+  <li><a href="#preparing-functions-for-export-and-preventing-name-mangling" id="toc-preparing-functions-for-export-and-preventing-name-mangling" class="nav-link" data-scroll-target="#preparing-functions-for-export-and-preventing-name-mangling">Preparing Functions for Export and Preventing Name Mangling</a>
+  <ul>
+  <li><a href="#creating-an-export-macro" id="toc-creating-an-export-macro" class="nav-link" data-scroll-target="#creating-an-export-macro">Creating an Export Macro</a></li>
+  <li><a href="#preventing-name-mangling" id="toc-preventing-name-mangling" class="nav-link" data-scroll-target="#preventing-name-mangling">Preventing Name Mangling</a></li>
+  </ul></li>
+  <li><a href="#declaring-global-variables" id="toc-declaring-global-variables" class="nav-link" data-scroll-target="#declaring-global-variables">Declaring Global Variables</a></li>
+  <li><a href="#defining-utility-functions" id="toc-defining-utility-functions" class="nav-link" data-scroll-target="#defining-utility-functions">Defining Utility Functions</a>
+  <ul>
+  <li><a href="#string-conversion" id="toc-string-conversion" class="nav-link" data-scroll-target="#string-conversion">String Conversion</a></li>
+  <li><a href="#initializing-onnx-runtime" id="toc-initializing-onnx-runtime" class="nav-link" data-scroll-target="#initializing-onnx-runtime">Initializing ONNX Runtime</a></li>
+  <li><a href="#getting-the-number-of-providers" id="toc-getting-the-number-of-providers" class="nav-link" data-scroll-target="#getting-the-number-of-providers">Getting the Number of Providers</a></li>
+  <li><a href="#retrieving-a-provider-name" id="toc-retrieving-a-provider-name" class="nav-link" data-scroll-target="#retrieving-a-provider-name">Retrieving a Provider Name</a></li>
+  <li><a href="#cleaning-up-resources" id="toc-cleaning-up-resources" class="nav-link" data-scroll-target="#cleaning-up-resources">Cleaning Up Resources</a></li>
+  </ul></li>
+  <li><a href="#loading-a-model" id="toc-loading-a-model" class="nav-link" data-scroll-target="#loading-a-model">Loading a Model</a>
+  <ul>
+  <li><a href="#the-loadmodel-function" id="toc-the-loadmodel-function" class="nav-link" data-scroll-target="#the-loadmodel-function">The <code>LoadModel</code> Function</a></li>
+  </ul></li>
+  <li><a href="#performing-inference" id="toc-performing-inference" class="nav-link" data-scroll-target="#performing-inference">Performing Inference</a>
+  <ul>
+  <li><a href="#the-performinference-function" id="toc-the-performinference-function" class="nav-link" data-scroll-target="#the-performinference-function">The <code>PerformInference</code> Function</a></li>
+  </ul></li>
+  <li><a href="#building-the-project" id="toc-building-the-project" class="nav-link" data-scroll-target="#building-the-project">Building the Project</a>
+  <ul>
+  <li><a href="#compiling-the-code" id="toc-compiling-the-code" class="nav-link" data-scroll-target="#compiling-the-code">Compiling the Code</a></li>
+  <li><a href="#accessing-the-build-output" id="toc-accessing-the-build-output" class="nav-link" data-scroll-target="#accessing-the-build-output">Accessing the Build Output</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#recommended-tutorials" id="toc-recommended-tutorials" class="nav-link" data-scroll-target="#recommended-tutorials">Recommended Tutorials</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Building a Computer Vision Plugin for Unity with ONNX Runtime</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">onnx</div>
+    <div class="quarto-category">directml</div>
+    <div class="quarto-category">unity</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Learn how to create a native plugin for the Unity game engine to perform inference with computer vision models using ONNX Runtime.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 18, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../series/tutorials/onnx-runtime-unity-series.html"><strong>ONNX Runtime in Unity</strong></a></li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#creating-a-dynamic-link-library-project">Creating a Dynamic-Link Library Project</a></li>
+<li><a href="#configuring-the-release-build">Configuring the Release Build</a></li>
+<li><a href="#installing-onnx-runtime-via-nuget">Installing ONNX Runtime via NuGet</a></li>
+<li><a href="#including-the-onnx-runtime-header-files">Including the ONNX Runtime Header Files</a></li>
+<li><a href="#preparing-functions-for-export-and-preventing-name-mangling">Preparing Functions for Export and Preventing Name Mangling</a></li>
+<li><a href="#declaring-global-variables">Declaring Global Variables</a></li>
+<li><a href="#defining-utility-functions">Defining Utility Functions</a></li>
+<li><a href="#loading-a-model">Loading a Model</a></li>
+<li><a href="#performing-inference">Performing Inference</a></li>
+<li><a href="#building-the-project">Building the Project</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial, we’ll create a native plugin for the Unity game engine that leverages ONNX Runtime for computer vision tasks. ONNX (Open Neural Network Exchange) Runtime is a high-performance, cross-platform engine that allows developers to run standardized machine learning models. Leveraging ONNX Runtime for computer vision in Unity applications will unlock many potential applications for users and developers.</p>
+<p>I’ll guide you step-by-step, from setting up a Visual Studio environment to compiling the project as a DLL. In a <a href="./unity-integration">follow-up post</a>, we’ll implement a simple Unity scene where we will use our plugin to perform object detection with a YOLOX model. The sample Unity project is available on GitHub at the link below:</p>
+<ul>
+<li><a href="https://github.com/cj-mills/unity-onnxruntime-inference-yolox-demo">unity-onnxruntime-inference-yolox-demo</a></li>
+</ul>
+<p>By the end of this tutorial, you’ll have a plugin for using ONNX Runtime to run a wide range of computer vision models in Unity projects.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This post assumes <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio</a> is present on your system and has the <code>Desktop Development with C++</code> workload installed.</p>
+</div>
+</div>
+</section>
+<section id="creating-a-dynamic-link-library-project" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-dynamic-link-library-project">Creating a Dynamic-Link Library Project</h2>
+<p>In this section, we initialize a C++ DLL project in Visual Studio.</p>
+<section id="launching-visual-studio" class="level3">
+<h3 class="anchored" data-anchor-id="launching-visual-studio">Launching Visual Studio</h3>
+<p>Begin by opening Visual Studio. On the welcome screen, locate the <code>Get started</code> section and choose <code>Create a new project</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-create-new-project.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="selecting-the-project-type" class="level3">
+<h3 class="anchored" data-anchor-id="selecting-the-project-type">Selecting the Project Type</h3>
+<p>We’ll use the C++ <code>Dynamic-Link Library (DLL)</code> template for our project. Select the template from the list and click <code>Next</code> to proceed.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-new-c++-dll-project.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="naming-and-locating-your-project" class="level3">
+<h3 class="anchored" data-anchor-id="naming-and-locating-your-project">Naming and Locating Your Project</h3>
+<p>Choose an appropriate name and location for the project and click the <code>Create</code> button. By default, the <code>.dll</code> file will use the project name.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-choose-project-name-and-location.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="configuring-the-release-build" class="level2">
+<h2 class="anchored" data-anchor-id="configuring-the-release-build">Configuring the Release Build</h2>
+<p>Once the project opens in Visual Studio, we must configure it for a <code>Release</code> build. At the top of the window, open the Solution Configurations dropdown menu and select <code>Release</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-switch-to-release.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="installing-onnx-runtime-via-nuget" class="level2">
+<h2 class="anchored" data-anchor-id="installing-onnx-runtime-via-nuget">Installing ONNX Runtime via NuGet</h2>
+<p>With the project configured, it’s time to install ONNX Runtime. For this tutorial, we will install ONNX Runtime with the DirectML execution provider. DirectML is a high-performance, hardware-accelerated DirectX 12 library for machine learning on Windows. It provides GPU acceleration for machine learning tasks across a broad range of supported hardware and drivers.</p>
+<p>We can install ONNX Runtime with DirectML directly into our project via the <a href="https://www.nuget.org/">NuGet</a> package manager integrated with Visual Studio.</p>
+<section id="accessing-nuget-packages-in-visual-studio" class="level3">
+<h3 class="anchored" data-anchor-id="accessing-nuget-packages-in-visual-studio">Accessing NuGet Packages in Visual Studio</h3>
+<p>Open the <code>Project</code> menu and select <code>Manage NuGet Packages...</code> from the dropdown menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-project-manage-nuget-packages.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="searching-for-the-onnx-runtime-package" class="level3">
+<h3 class="anchored" data-anchor-id="searching-for-the-onnx-runtime-package">Searching for the ONNX Runtime Package</h3>
+<p>Within the NuGet tab, select the <code>Browse</code> option and enter <code>Microsoft.ML.OnnxRuntime.DirectML</code> into the search box.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-nuget-package-manager-search-for-package.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="installing-the-package" class="level3">
+<h3 class="anchored" data-anchor-id="installing-the-package">Installing the Package</h3>
+<p>Select the appropriate package from the search results. For this tutorial, we’ll be using version <code>1.16.1</code>. Click on the <code>Install</code> button to add it to your project.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-nuget-package-manager-install-package.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="confirming-the-installation" class="level3">
+<h3 class="anchored" data-anchor-id="confirming-the-installation">Confirming the Installation</h3>
+<p>A confirmation popup will appear detailing the pending changes to the project. Review these and then click <code>Apply</code> to proceed.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-approve-nuget-package-install.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="including-the-onnx-runtime-header-files" class="level2">
+<h2 class="anchored" data-anchor-id="including-the-onnx-runtime-header-files">Including the ONNX Runtime Header Files</h2>
+<p>Now that we have ONNX Runtime installed, it’s time to dive into the code. First, we must include the header files for ONNX Runtime and the DirectML extension to access their functionality.</p>
+<p>Remove the default code after the <code>#include "pch.h"</code> line and add the following lines at the top of the dllmain.cpp file:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;onnxruntime_cxx_api.h&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"dml_provider_factory.h"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;vector&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;functional&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol type="1">
+<li><code>&lt;onnxruntime_cxx_api.h&gt;</code>: This header provides the primary C++ API definitions for ONNX Runtime, giving us access to core functionalities like sessions, input and output binding, etc.</li>
+<li><code>"dml_provider_factory.h"</code>: This header is specifically for the DirectML execution provider. It facilitates GPU acceleration via DirectML.</li>
+</ol>
+<p>The rest of the headers are from the C++ standard library.</p>
+</section>
+<section id="preparing-functions-for-export-and-preventing-name-mangling" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-functions-for-export-and-preventing-name-mangling">Preparing Functions for Export and Preventing Name Mangling</h2>
+<p>Before getting further into our plugin’s logic, we must set some groundwork to ensure smooth interoperability between our C++ code and Unity, which uses C#.</p>
+<section id="creating-an-export-macro" class="level3">
+<h3 class="anchored" data-anchor-id="creating-an-export-macro">Creating an Export Macro</h3>
+<p>When developing a DLL for Unity, we need a mechanism to specify which functions are available for external use. In C++, we can accomplish this by marking them with the <code>__declspec(dllexport)</code> directive. To streamline this process, we can define a macro:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DLLExport </span><span class="ex">__declspec(dllexport)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By prefixing a function with <code>DLLExport</code>, we signal that it’s available for Unity to call.</p>
+</section>
+<section id="preventing-name-mangling" class="level3">
+<h3 class="anchored" data-anchor-id="preventing-name-mangling">Preventing Name Mangling</h3>
+<p>C++ compilers often modify function names as part of the compilation process—a mechanism known as “name mangling.” Name mangling can make it challenging for other software (like Unity) to locate and call the functions.</p>
+<p>We can prevent name mangling by wrapping our code within an <code>extern "C"</code> block. This wrapper tells the compiler not to mangle the names of the contained functions, preserving their original signatures:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">extern</span> <span class="st">"C"</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Your function declarations and definitions will go here...</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>All subsequent code—including global variable declarations, utility functions, and the core logic of our plugin—should reside within this <code>extern "C"</code> block to ensure they remain accessible and free from name-mangling complications.</p>
+<p>With these preparations in place, we’re ready to dive into the specifics of our plugin, starting with global variable declarations.</p>
+</section>
+</section>
+<section id="declaring-global-variables" class="level2">
+<h2 class="anchored" data-anchor-id="declaring-global-variables">Declaring Global Variables</h2>
+<p>Since we are making a plugin, we want to make our variables global so the functions we call through Unity can access them. Here are the variables we’ll need for our plugin:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> input_w<span class="op">;</span>                      <span class="co">// Width of the input image</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> input_h<span class="op">;</span>                      <span class="co">// Height of the input image</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> n_pixels<span class="op">;</span>                     <span class="co">// Total number of pixels in the input image (width x height)</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">int</span> n_channels <span class="op">=</span> <span class="dv">3</span><span class="op">;</span>         <span class="co">// Number of color channels in the input image (3 for RGB)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> OrtApi<span class="op">*</span> ort <span class="op">=</span> <span class="kw">nullptr</span><span class="op">;</span>      <span class="co">// Pointer to the ONNX Runtime C API, used for most ONNX operations</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">&gt;</span> provider_names<span class="op">;</span> <span class="co">// Names of providers available for ONNX runtime, e.g., DirectML</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>OrtEnv<span class="op">*</span> env <span class="op">=</span> <span class="kw">nullptr</span><span class="op">;</span>            <span class="co">// ONNX Runtime environment, encapsulating global options and logging functionality</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>OrtSessionOptions<span class="op">*</span> session_options <span class="op">=</span> <span class="kw">nullptr</span><span class="op">;</span> <span class="co">// Configurations and settings for the ONNX session</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>OrtSession<span class="op">*</span> session <span class="op">=</span> <span class="kw">nullptr</span><span class="op">;</span>    <span class="co">// The ONNX Runtime session, representing the loaded model and its state</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>string<span class="op"> </span>input_name<span class="op">;</span>           <span class="co">// Name of the model's input node</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>string<span class="op"> </span>output_name<span class="op">;</span>          <span class="co">// Name of the model's output node</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;</span> input_data<span class="op">;</span>    <span class="co">// Buffer to hold preprocessed input data before feeding it to the model</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These global variables serve various purposes:</p>
+<ul>
+<li><code>input_w</code> and <code>input_h</code> will define the dimensions of our input images.</li>
+<li><code>n_pixels</code> provides a quick reference to the number of pixels.</li>
+<li>ONNX Runtime-related variables (<code>ort</code>, <code>env</code>, <code>session_options</code>, <code>session</code>) are for managing the model and performing inference.</li>
+<li><code>input_name</code> and <code>output_name</code> will specify which nodes of the model we’re interfacing with.</li>
+<li><code>input_data</code> provides a buffer to handle the preprocessed data, ready to be ingested by our machine-learning model.</li>
+</ul>
+<p>With our global variables declared, we can start defining the functions for the plugin.</p>
+</section>
+<section id="defining-utility-functions" class="level2">
+<h2 class="anchored" data-anchor-id="defining-utility-functions">Defining Utility Functions</h2>
+<p>In this section, we will define several utility functions that will aid in initializing the ONNX Runtime, converting strings, querying available providers, and cleaning up resources.</p>
+<section id="string-conversion" class="level3">
+<h3 class="anchored" data-anchor-id="string-conversion">String Conversion</h3>
+<p>Certain Windows APIs and functions expect wide strings (<code>wstring</code>) as arguments. In our case, we need to convert the string file path for the ONNX model when creating an Inference Session. We’ll perform this step in a dedicated function:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Convert a standard string to a wide string.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"str"</span><span class="kw">&gt;</span><span class="co">A standard string to convert.</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">The wide string representation of the given string.</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>wstring<span class="op"> </span>stringToWstring<span class="op">(</span><span class="at">const</span> <span class="bu">std::</span>string<span class="op">&amp;</span> str<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>wstring<span class="op"> </span>wstr<span class="op">(</span>str<span class="op">.</span>begin<span class="op">(),</span> str<span class="op">.</span>end<span class="op">());</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> wstr<span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="initializing-onnx-runtime" class="level3">
+<h3 class="anchored" data-anchor-id="initializing-onnx-runtime">Initializing ONNX Runtime</h3>
+<p>We need to initialize a pointer to access the ONNX Runtime API. Once we can access the API, we’ll get the available execution providers. By default, there should always be a CPU execution provider. There may be additional execution providers available depending on which NuGet package we install, like the one we selected for DirectML.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Initialize the ONNX Runtime API and retrieve the available providers.</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;&lt;/returns&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">void</span> InitOrtAPI<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get the ONNX Runtime API</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    ort <span class="op">=</span> OrtGetApiBase<span class="op">()-&gt;</span>GetApi<span class="op">(</span>ORT_API_VERSION<span class="op">);</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Temporary pointers to fetch provider names</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span><span class="op">**</span> raw_provider_names<span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> provider_count<span class="op">;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get available providers</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>GetAvailableProviders<span class="op">(&amp;</span>raw_provider_names<span class="op">,</span> <span class="op">&amp;</span>provider_count<span class="op">);</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Populate the global provider names vector</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    provider_names <span class="op">=</span> <span class="bu">std::</span>vector<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">&gt;(</span>raw_provider_names<span class="op">,</span> raw_provider_names <span class="op">+</span> provider_count<span class="op">);</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="getting-the-number-of-providers" class="level3">
+<h3 class="anchored" data-anchor-id="getting-the-number-of-providers">Getting the Number of Providers</h3>
+<p>We will likely want to know how many execution providers are available for the plugin inside a Unity application. This function allows us to get the number of available execution providers within Unity:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Get the number of available execution providers.</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">The number of execution providers.</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">int</span> GetProviderCount<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">static_cast</span><span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;(</span>provider_names<span class="op">.</span>size<span class="op">());</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="retrieving-a-provider-name" class="level3">
+<h3 class="anchored" data-anchor-id="retrieving-a-provider-name">Retrieving a Provider Name</h3>
+<p>Once we have the number of available execution providers inside Unity, we can index into the <code>vector</code> that stores the provider names and return the values to Unity.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Retrieve the name of a specific execution provider.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"index"</span><span class="kw">&gt;</span><span class="co">The index of the provider.</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">The name of the provider or nullptr if index is out of bounds.</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="at">const</span> <span class="dt">char</span><span class="op">*</span> GetProviderName<span class="op">(</span><span class="dt">int</span> index<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>index <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> index <span class="op">&lt;</span> provider_names<span class="op">.</span>size<span class="op">())</span> <span class="op">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> provider_names<span class="op">[</span>index<span class="op">].</span>c_str<span class="op">();</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">nullptr</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="cleaning-up-resources" class="level3">
+<h3 class="anchored" data-anchor-id="cleaning-up-resources">Cleaning Up Resources</h3>
+<p>We will allocate system memory for various resources while using the plugin. It’s a good practice to free these resources when they’re no longer needed.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Release allocated ONNX Runtime resources.</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;&lt;/returns&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">void</span> FreeResources<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>session<span class="op">)</span> ort<span class="op">-&gt;</span>ReleaseSession<span class="op">(</span>session<span class="op">);</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>env<span class="op">)</span> ort<span class="op">-&gt;</span>ReleaseEnv<span class="op">(</span>env<span class="op">);</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="loading-a-model" class="level2">
+<h2 class="anchored" data-anchor-id="loading-a-model">Loading a Model</h2>
+<p>Next, we will cover creating an Inference Session using information passed in from a Unity application.</p>
+<section id="the-loadmodel-function" class="level3">
+<h3 class="anchored" data-anchor-id="the-loadmodel-function">The <code>LoadModel</code> Function</h3>
+<p>This function will take a model path, an execution provider name, and the expected image dimensions. It handles the necessary steps to prepare the ONNX Runtime environment, load the model, and store some essential metadata:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Load an ONNX model and prepare it for inference.</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"model_path"</span><span class="kw">&gt;</span><span class="co">Path to the ONNX model file.</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"execution_provider"</span><span class="kw">&gt;</span><span class="co">The execution provider to use (e.g., "CPU" or "Dml").</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"image_dims"</span><span class="kw">&gt;</span><span class="co">Dimensions of the input image [width, height].</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;</span><span class="co">A message indicating the success or failure of the loading process.</span><span class="kw">&lt;/returns&gt;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="at">const</span> <span class="dt">char</span><span class="op">*</span> LoadModel<span class="op">(</span><span class="at">const</span> <span class="dt">char</span><span class="op">*</span> model_path<span class="op">,</span> <span class="at">const</span> <span class="dt">char</span><span class="op">*</span> execution_provider<span class="op">,</span> <span class="dt">int</span> image_dims<span class="op">[</span><span class="dv">2</span><span class="op">])</span> <span class="op">{</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> <span class="op">{</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Define an instance name for the session</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">std::</span>string<span class="op"> </span>instance_name <span class="op">=</span> <span class="st">"inference-session"</span><span class="op">;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Create an ONNX Runtime environment with a given logging level</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>CreateEnv<span class="op">(</span>ORT_LOGGING_LEVEL_WARNING<span class="op">,</span> instance_name<span class="op">.</span>c_str<span class="op">(),</span> <span class="op">&amp;</span>env<span class="op">);</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Disable telemetry events</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>DisableTelemetryEvents<span class="op">(</span>env<span class="op">);</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Create session options for further configuration</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>CreateSessionOptions<span class="op">(&amp;</span>session_options<span class="op">);</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Define the execution provider</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        <span class="bu">std::</span>string<span class="op"> </span>provider_name <span class="op">=</span> execution_provider<span class="op">;</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Map execution providers to specific actions (e.g., settings for DML)</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        <span class="bu">std::</span>unordered_map<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">,</span> <span class="bu">std::</span>function<span class="op">&lt;</span><span class="dt">void</span><span class="op">()&gt;&gt;</span> execution_provider_actions <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="st">"CPU"</span><span class="op">,</span> <span class="op">[]()</span> <span class="op">{}},</span>  <span class="co">// No special settings for CPU</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span><span class="st">"Dml"</span><span class="op">,</span> <span class="op">[&amp;]()</span> <span class="op">{</span>   <span class="co">// Settings for DirectML (DML)</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>                ort<span class="op">-&gt;</span>DisableMemPattern<span class="op">(</span>session_options<span class="op">);</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>                ort<span class="op">-&gt;</span>SetSessionExecutionMode<span class="op">(</span>session_options<span class="op">,</span> ExecutionMode<span class="op">::</span>ORT_SEQUENTIAL<span class="op">);</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>                OrtSessionOptionsAppendExecutionProvider_DML<span class="op">(</span>session_options<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>            <span class="op">}}</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>        <span class="op">};</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Apply the settings based on the chosen execution provider</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>        <span class="dt">bool</span> action_taken <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="at">const</span> <span class="kw">auto</span><span class="op">&amp;</span> pair <span class="op">:</span> execution_provider_actions<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>            <span class="at">const</span> <span class="kw">auto</span><span class="op">&amp;</span> key <span class="op">=</span> pair<span class="op">.</span>first<span class="op">;</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>            <span class="at">const</span> <span class="kw">auto</span><span class="op">&amp;</span> action <span class="op">=</span> pair<span class="op">.</span>second<span class="op">;</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>provider_name<span class="op">.</span>find<span class="op">(</span>key<span class="op">)</span> <span class="op">!=</span> <span class="bu">std::</span>string<span class="bu">::</span>npos<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>                action<span class="op">();</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>                action_taken <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>                <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>action_taken<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="st">"Unknown execution provider specified."</span><span class="op">;</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Load the ONNX model</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>CreateSession<span class="op">(</span>env<span class="op">,</span> stringToWstring<span class="op">(</span>model_path<span class="op">).</span>c_str<span class="op">(),</span> session_options<span class="op">,</span> <span class="op">&amp;</span>session<span class="op">);</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>ReleaseSessionOptions<span class="op">(</span>session_options<span class="op">);</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Set up an allocator for retrieving input-output names</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>        Ort<span class="op">::</span>AllocatorWithDefaultOptions allocator<span class="op">;</span></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>        <span class="dt">char</span><span class="op">*</span> temp_input_name<span class="op">;</span></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>SessionGetInputName<span class="op">(</span>session<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> allocator<span class="op">,</span> <span class="op">&amp;</span>temp_input_name<span class="op">);</span></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>        input_name <span class="op">=</span> temp_input_name<span class="op">;</span></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>        <span class="dt">char</span><span class="op">*</span> temp_output_name<span class="op">;</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>SessionGetOutputName<span class="op">(</span>session<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> allocator<span class="op">,</span> <span class="op">&amp;</span>temp_output_name<span class="op">);</span></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>        output_name <span class="op">=</span> temp_output_name<span class="op">;</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Store image dimensions and prepare the input data container</span></span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>        input_w <span class="op">=</span> image_dims<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>        input_h <span class="op">=</span> image_dims<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>        n_pixels <span class="op">=</span> input_w <span class="op">*</span> input_h<span class="op">;</span></span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>        input_data<span class="op">.</span>resize<span class="op">(</span>n_pixels <span class="op">*</span> n_channels<span class="op">);</span></span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">"Model loaded successfully."</span><span class="op">;</span></span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">catch</span> <span class="op">(</span><span class="at">const</span> <span class="bu">std::</span>exception<span class="op">&amp;</span> e<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Handle standard exceptions and return their messages</span></span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> e<span class="op">.</span>what<span class="op">();</span></span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>    <span class="cf">catch</span> <span class="op">(...)</span> <span class="op">{</span></span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Handle all other exceptions</span></span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">"An unknown error occurred while loading the model."</span><span class="op">;</span></span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The function sets up the ONNX Runtime environment based on the specified execution provider. It then loads the model, fetches the names of input and output tensors, and prepares the input data structure. Proper exception handling ensures that any issues encountered get passed back to the Unity application.</p>
+</section>
+</section>
+<section id="performing-inference" class="level2">
+<h2 class="anchored" data-anchor-id="performing-inference">Performing Inference</h2>
+<p>Once the ONNX model is loaded, the next step is to use this model for inference. Inference refers to inputting data (in our case, an image) into the model and obtaining the predicted output.</p>
+<section id="the-performinference-function" class="level3">
+<h3 class="anchored" data-anchor-id="the-performinference-function">The <code>PerformInference</code> Function</h3>
+<p>This function carries out the steps of preprocessing the input image, performing inference, and then storing the raw output in an array passed from Unity:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;summary&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">/// Perform inference using the loaded ONNX model.</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;/summary&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"image_data"</span><span class="kw">&gt;</span><span class="co">Raw image data as bytes.</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"output_array"</span><span class="kw">&gt;</span><span class="co">Array to store the inferred results.</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;param</span><span class="ot"> name=</span><span class="dt">"length"</span><span class="kw">&gt;</span><span class="co">Length of the output_array.</span><span class="kw">&lt;/param&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">/// </span><span class="kw">&lt;returns&gt;&lt;/returns&gt;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>DLLExport <span class="dt">void</span> PerformInference<span class="op">(</span>byte<span class="op">*</span> image_data<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> output_array<span class="op">,</span> <span class="dt">int</span> length<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Preprocessing: Normalize and restructure the image data</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> p <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> p <span class="op">&lt;</span> n_pixels<span class="op">;</span> p<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> ch <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> ch <span class="op">&lt;</span> n_channels<span class="op">;</span> ch<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Normalize pixel values to [0, 1] and reorder channels</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>            input_data<span class="op">[</span>ch <span class="op">*</span> n_pixels <span class="op">+</span> p<span class="op">]</span> <span class="op">=</span> <span class="op">(</span>image_data<span class="op">[</span>p <span class="op">*</span> n_channels <span class="op">+</span> ch<span class="op">]</span> <span class="op">/</span> <span class="fl">255.0</span><span class="bu">f</span><span class="op">);</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define the names of input and output tensors for inference</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">char</span><span class="op">*</span> input_names<span class="op">[]</span> <span class="op">=</span> <span class="op">{</span> input_name<span class="op">.</span>c_str<span class="op">()</span> <span class="op">};</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">char</span><span class="op">*</span> output_names<span class="op">[]</span> <span class="op">=</span> <span class="op">{</span> output_name<span class="op">.</span>c_str<span class="op">()</span> <span class="op">};</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define the shape of the input tensor</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int64_t</span> input_shape<span class="op">[]</span> <span class="op">=</span> <span class="op">{</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> input_h<span class="op">,</span> input_w <span class="op">};</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create a memory info instance for CPU allocation</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    OrtMemoryInfo<span class="op">*</span> memory_info<span class="op">;</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>CreateCpuMemoryInfo<span class="op">(</span>OrtArenaAllocator<span class="op">,</span> OrtMemTypeDefault<span class="op">,</span> <span class="op">&amp;</span>memory_info<span class="op">);</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Convert the processed image data into an ONNX tensor format</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    OrtValue<span class="op">*</span> input_tensor <span class="op">=</span> <span class="kw">nullptr</span><span class="op">;</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>CreateTensorWithDataAsOrtValue<span class="op">(</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>        memory_info<span class="op">,</span> input_data<span class="op">.</span>data<span class="op">(),</span> input_data<span class="op">.</span>size<span class="op">()</span> <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>        input_shape<span class="op">,</span> <span class="dv">4</span><span class="op">,</span> ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT<span class="op">,</span> <span class="op">&amp;</span>input_tensor</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">);</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free the memory info after usage</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>ReleaseMemoryInfo<span class="op">(</span>memory_info<span class="op">);</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Perform inference using the ONNX Runtime</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>    OrtValue<span class="op">*</span> output_tensor <span class="op">=</span> <span class="kw">nullptr</span><span class="op">;</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>Run<span class="op">(</span>session<span class="op">,</span> <span class="kw">nullptr</span><span class="op">,</span> input_names<span class="op">,</span> <span class="op">(</span><span class="at">const</span> OrtValue<span class="op">*</span> <span class="at">const</span><span class="op">*)&amp;</span>input_tensor<span class="op">,</span> <span class="dv">1</span><span class="op">,</span> output_names<span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="op">&amp;</span>output_tensor<span class="op">);</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">// If inference fails, release resources and return</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>output_tensor<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>        ort<span class="op">-&gt;</span>ReleaseValue<span class="op">(</span>input_tensor<span class="op">);</span></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Extract data from the output tensor</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> out_data<span class="op">;</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>GetTensorMutableData<span class="op">(</span>output_tensor<span class="op">,</span> <span class="op">(</span><span class="dt">void</span><span class="op">**)&amp;</span>out_data<span class="op">);</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the inference results to the provided output array</span></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>memcpy<span class="op">(</span>output_array<span class="op">,</span> out_data<span class="op">,</span> length <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Release resources associated with the tensors</span></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>ReleaseValue<span class="op">(</span>input_tensor<span class="op">);</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>    ort<span class="op">-&gt;</span>ReleaseValue<span class="op">(</span>output_tensor<span class="op">);</span></span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>That takes care of the code for our plugin. In the next section, we will compile our project as a DLL.</p>
+</section>
+</section>
+<section id="building-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="building-the-project">Building the Project</h2>
+<p>Now that we’ve completed the code for the plugin, we are ready to build our project. Follow the steps below to compile the DLL.</p>
+<section id="compiling-the-code" class="level3">
+<h3 class="anchored" data-anchor-id="compiling-the-code">Compiling the Code</h3>
+<p>Open the Build menu at the top of the Visual Studio window and click Build Solution. This action will compile the project and generate the necessary output files in the project directory. Visual Studio will create a new <code>x64</code> folder in the project directory containing the DLL files.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-build-solution.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="accessing-the-build-output" class="level3">
+<h3 class="anchored" data-anchor-id="accessing-the-build-output">Accessing the Build Output</h3>
+<p>To locate the compiled application, right-click the project name in the <code>Solution Explorer</code> panel and select <code>Open Folder in File Explorer</code> from the popup menu.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-open-folder-in-explorer.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>In the new File Explorer window, go to the parent folder and open the <code>x64 → Release</code> subfolder. Here, we should see the following DLL files:</p>
+<ul>
+<li><code>DirectML.dll</code></li>
+<li><code>onnxruntime.dll</code></li>
+<li><code>UnityONNXInferenceCVPlugin.dll</code></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/visual-studio-project-folder-x64-release-folder.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+<p>We’ll need to copy the three DLL files in the Release folder into a Unity project’s <code>Assets/Plugings/x86_64</code> folder.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Congratulations on building an ONNX Runtime plugin for Unity! The combination of Unity and ONNX opens up many possibilities, from AR/VR applications with real-time object recognition to simulations with dynamic behavior influenced by neural network outputs.</p>
+<p>Remember, this guide is just the foundation. You may need to expand and customize the functionalities of this plugin further for more advanced projects.</p>
+<p>Check out the <a href="./unity-integration">follow-up post</a> to learn how to integrate the plugin into a Unity project to perform real-time object detection with a YOLOX model.</p>
+</section>
+<section id="recommended-tutorials" class="level2">
+<h2 class="anchored" data-anchor-id="recommended-tutorials">Recommended Tutorials</h2>
+<ul>
+<li><a href="./unity-integration/"><strong>Real-Time Object Detection in Unity with ONNX Runtime and DirectML</strong></a>: Learn how to integrate a native plugin in the Unity game engine to perform real-time object detection with ONNX Runtime.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2023, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
