@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2023-10-27">
+<meta name="description" content="Learn how to track objects across video frames with YOLOX and ByteTrack.">
+
+<title>Christian Mills - Real-Time Object Tracking with YOLOX and ByteTrack</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Real-Time Object Tracking with YOLOX and ByteTrack">
+<meta property="og:description" content="Learn how to track objects across video frames with YOLOX and ByteTrack.">
+<meta property="og:image" content="christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/social-media/cover.jpg">
+<meta property="og:site-name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Real-Time Object Tracking with YOLOX and ByteTrack">
+<meta name="twitter:description" content="Learn how to track objects across video frames with YOLOX and ByteTrack.">
+<meta name="twitter:image" content="christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html" rel="" target="">
+ <span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html" rel="" target="">
+ <span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html" rel="" target="">
+ <span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../services.html" rel="" target="">
+ <span class="menu-text">Services</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com" rel="" target=""><i class="bi bi-envelope-fill" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml" rel="" target=""><i class="bi bi-rss" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#getting-started-with-the-code" id="toc-getting-started-with-the-code" class="nav-link" data-scroll-target="#getting-started-with-the-code">Getting Started with the Code</a></li>
+  <li><a href="#setting-up-your-python-environment" id="toc-setting-up-your-python-environment" class="nav-link" data-scroll-target="#setting-up-your-python-environment">Setting Up Your Python Environment</a></li>
+  <li><a href="#importing-the-required-dependencies" id="toc-importing-the-required-dependencies" class="nav-link" data-scroll-target="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+  <li><a href="#setting-up-the-project" id="toc-setting-up-the-project" class="nav-link" data-scroll-target="#setting-up-the-project">Setting Up the Project</a>
+  <ul>
+  <li><a href="#set-the-directory-paths" id="toc-set-the-directory-paths" class="nav-link" data-scroll-target="#set-the-directory-paths">Set the Directory Paths</a></li>
+  <li><a href="#download-a-font-file" id="toc-download-a-font-file" class="nav-link" data-scroll-target="#download-a-font-file">Download a Font File</a></li>
+  </ul></li>
+  <li><a href="#loading-the-checkpoint-data" id="toc-loading-the-checkpoint-data" class="nav-link" data-scroll-target="#loading-the-checkpoint-data">Loading the Checkpoint Data</a>
+  <ul>
+  <li><a href="#load-the-colormap" id="toc-load-the-colormap" class="nav-link" data-scroll-target="#load-the-colormap">Load the Colormap</a></li>
+  <li><a href="#set-the-preprocessing-and-post-processing-parameters" id="toc-set-the-preprocessing-and-post-processing-parameters" class="nav-link" data-scroll-target="#set-the-preprocessing-and-post-processing-parameters">Set the Preprocessing and Post-Processing Parameters</a></li>
+  </ul></li>
+  <li><a href="#defining-utility-functions" id="toc-defining-utility-functions" class="nav-link" data-scroll-target="#defining-utility-functions">Defining Utility Functions</a>
+  <ul>
+  <li><a href="#define-a-function-to-prepare-images-for-inference" id="toc-define-a-function-to-prepare-images-for-inference" class="nav-link" data-scroll-target="#define-a-function-to-prepare-images-for-inference">Define a Function to Prepare Images for Inference</a></li>
+  <li><a href="#define-functions-to-process-yolox-output" id="toc-define-functions-to-process-yolox-output" class="nav-link" data-scroll-target="#define-functions-to-process-yolox-output">Define Functions to Process YOLOX Output</a>
+  <ul class="collapse">
+  <li><a href="#define-a-function-to-generate-the-output-grids" id="toc-define-a-function-to-generate-the-output-grids" class="nav-link" data-scroll-target="#define-a-function-to-generate-the-output-grids">Define a function to generate the output grids</a></li>
+  <li><a href="#define-a-function-to-calculate-bounding-boxes-and-probabilities" id="toc-define-a-function-to-calculate-bounding-boxes-and-probabilities" class="nav-link" data-scroll-target="#define-a-function-to-calculate-bounding-boxes-and-probabilities">Define a function to calculate bounding boxes and probabilities</a></li>
+  <li><a href="#define-a-function-to-extract-object-proposals-from-the-raw-model-output" id="toc-define-a-function-to-extract-object-proposals-from-the-raw-model-output" class="nav-link" data-scroll-target="#define-a-function-to-extract-object-proposals-from-the-raw-model-output">Define a function to extract object proposals from the raw model output</a></li>
+  <li><a href="#define-a-function-to-calculate-the-intersection-over-union" id="toc-define-a-function-to-calculate-the-intersection-over-union" class="nav-link" data-scroll-target="#define-a-function-to-calculate-the-intersection-over-union">Define a function to calculate the intersection-over-union</a></li>
+  <li><a href="#define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression" id="toc-define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression" class="nav-link" data-scroll-target="#define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression">Define a function to filter bounding box proposals using Non-Maximum Suppression</a></li>
+  </ul></li>
+  <li><a href="#define-a-function-to-annotate-images-with-bounding-boxes" id="toc-define-a-function-to-annotate-images-with-bounding-boxes" class="nav-link" data-scroll-target="#define-a-function-to-annotate-images-with-bounding-boxes">Define a Function to Annotate Images with Bounding Boxes</a></li>
+  </ul></li>
+  <li><a href="#performing-inference-with-onnx-runtime" id="toc-performing-inference-with-onnx-runtime" class="nav-link" data-scroll-target="#performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</a>
+  <ul>
+  <li><a href="#create-an-inference-session" id="toc-create-an-inference-session" class="nav-link" data-scroll-target="#create-an-inference-session">Create an Inference Session</a></li>
+  <li><a href="#select-a-test-video" id="toc-select-a-test-video" class="nav-link" data-scroll-target="#select-a-test-video">Select a Test Video</a></li>
+  <li><a href="#initialize-a-videocapture-object" id="toc-initialize-a-videocapture-object" class="nav-link" data-scroll-target="#initialize-a-videocapture-object">Initialize a <code>VideoCapture</code> Object</a></li>
+  <li><a href="#initialize-a-videowriter-object" id="toc-initialize-a-videowriter-object" class="nav-link" data-scroll-target="#initialize-a-videowriter-object">Initialize a <code>VideoWriter</code> Object</a></li>
+  <li><a href="#define-inference-parameters" id="toc-define-inference-parameters" class="nav-link" data-scroll-target="#define-inference-parameters">Define Inference Parameters</a></li>
+  <li><a href="#detect-track-and-annotate-objects-in-video-frames" id="toc-detect-track-and-annotate-objects-in-video-frames" class="nav-link" data-scroll-target="#detect-track-and-annotate-objects-in-video-frames">Detect, Track, and Annotate Objects in Video Frames</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Real-Time Object Tracking with YOLOX and ByteTrack</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">onnx</div>
+    <div class="quarto-category">object-detection</div>
+    <div class="quarto-category">object-tracking</div>
+    <div class="quarto-category">yolox</div>
+    <div class="quarto-category">byte-track</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Learn how to track objects across video frames with YOLOX and ByteTrack.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 27, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/tutorials/pytorch-train-object-detector-yolox-series.html"><strong>Training YOLOX Models for Real-Time Object Detection in PyTorch</strong></a></li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#getting-started-with-the-code">Getting Started with the Code</a></li>
+<li><a href="#setting-up-your-python-environment">Setting Up Your Python Environment</a></li>
+<li><a href="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+<li><a href="#setting-up-the-project">Setting Up the Project</a></li>
+<li><a href="#loading-the-checkpoint-data">Loading the Checkpoint Data</a></li>
+<li><a href="#defining-utility-functions">Defining Utility Functions</a></li>
+<li><a href="#performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome back to this series on real-time object detection with YOLOX! Previously, we <a href="../">fine-tuned a YOLOX</a> model in PyTorch to detect hand signs and <a href="../onnx-export">exported it to ONNX</a>. This tutorial combines our YOLOX model with the <a href="https://arxiv.org/abs/2110.06864">ByteTrack</a> object tracker to track objects continuously across video frames.</p>
+<p>Tracking objects over time unlocks a wide range of potential applications. With our hand-sign detector, we could implement gesture-based controls to control devices and create interactive gaming and multimedia experiences. Beyond our specific model, object tracking has applications in everything from sports analysis to wildlife monitoring.</p>
+<p>By the end of this tutorial, you will understand how to combine a YOLOX object detection model with ByteTrack, enabling you to effectively track hand signs or other objects across consecutive video frames.</p>
+<div class="callout callout-style-default callout-important callout-titled" title="This post assumes the reader has completed the previous tutorial linked below:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post assumes the reader has completed the previous tutorial linked below:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../onnx-export/">Exporting YOLOX Models from PyTorch to ONNX</a></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="getting-started-with-the-code" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started-with-the-code">Getting Started with the Code</h2>
+<p>As with the previous tutorial, the code is available as a Jupyter Notebook.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Jupyter Notebook</th>
+<th>Google Colab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-tracking-onnx-byte-track.ipynb">GitHub Repository</a></td>
+<td><a href="https://colab.research.google.com/github/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-tracking-onnx-byte-track-colab.ipynb">Open In Colab</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="setting-up-your-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-your-python-environment">Setting Up Your Python Environment</h2>
+<p>We need to add a couple of new libraries to our <a href="../#setting-up-your-python-environment">Python environment</a>. We will use <a href="https://opencv.org/">OpenCV</a> to read and write video files. I also made a package with a standalone implementation of ByteTrack. Make sure to install <code>onnx</code> and <code>onnxruntime</code> if you did not follow the previous tutorial.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>onnx</code></td>
+<td>This package provides a Python API for working with ONNX models. (<a href="https://pypi.org/project/onnx/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>onnxruntime</code></td>
+<td>ONNX Runtime is a runtime accelerator for machine learning models. (<a href="https://onnxruntime.ai/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>opencv-python</code></td>
+<td>Wrapper package for <a href="https://opencv.org/">OpenCV</a> python bindings. (<a href="">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>cjm-byte-track</code></td>
+<td>A standalone Python implementation of the <a href="https://arxiv.org/abs/2110.06864">ByteTrack</a> multi-object tracker based on the official implementation. (<a href="https://github.com/cj-mills/cjm-byte-track">link</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Run the following command to install these additional libraries:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnx onnxruntime opencv-python cjm_byte_track</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="importing-the-required-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="importing-the-required-dependencies">Importing the Required Dependencies</h2>
+<p>With our environment updated, we can dive into the code. First, we will import the necessary Python dependencies into our Jupyter Notebook.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import Python Standard Library dependencies</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> List</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Import ByteTrack package</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_byte_track.core <span class="im">import</span> BYTETracker</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_byte_track.matching <span class="im">import</span> match_detections_with_tracks</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Import utility functions</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_psl_utils.core <span class="im">import</span> download_file</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_pil_utils.core <span class="im">import</span> resize_img</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Import OpenCV</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Import numpy</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the pandas package</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PIL for image manipulation</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image, ImageDraw, ImageFont</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Import ONNX dependencies</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnx <span class="co"># Import the onnx module</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnxruntime <span class="im">as</span> ort <span class="co"># Import the ONNX Runtime</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Import tqdm for progress bar</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="setting-up-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-project">Setting Up the Project</h2>
+<p>In this section, we will set the folder locations for our project and the directory with the ONNX model and JSON colormap file. We should also ensure we have a font file for annotating images.</p>
+<section id="set-the-directory-paths" class="level3">
+<h3 class="anchored" data-anchor-id="set-the-directory-paths">Set the Directory Paths</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The name for the project</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>project_name <span class="op">=</span> <span class="ss">f"pytorch-yolox-object-detector"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The path for the project folder</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>project_dir <span class="op">=</span> Path(<span class="ss">f"./</span><span class="sc">{</span>project_name<span class="sc">}</span><span class="ss">/"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the project directory if it does not already exist</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>project_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The path to the checkpoint folder</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> Path(project_dir<span class="op">/</span><span class="ss">f"2023-08-17_16-14-43"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># checkpoint_dir = Path(project_dir/f"pretrained-coco")</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Project Directory:"</span>: project_dir,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Checkpoint Directory:"</span>: checkpoint_dir,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table id="T_125b0">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_125b0_level0_row0" class="row_heading level0 row0">
+Project Directory:
+</th>
+<td id="T_125b0_row0_col0" class="data row0 col0">
+pytorch-yolox-object-detector
+</td>
+</tr>
+<tr>
+<th id="T_125b0_level0_row1" class="row_heading level0 row1">
+Checkpoint Directory:
+</th>
+<td id="T_125b0_row1_col0" class="data row1 col0">
+pytorch-yolox-object-detector/2023-08-17_16-14-43
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</section>
+<section id="download-a-font-file" class="level3">
+<h3 class="anchored" data-anchor-id="download-a-font-file">Download a Font File</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the font file</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>font_file <span class="op">=</span> <span class="st">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the font file</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>download_file(<span class="ss">f"https://fonts.gstatic.com/s/roboto/v30/</span><span class="sc">{</span>font_file<span class="sc">}</span><span class="ss">"</span>, <span class="st">"./"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="loading-the-checkpoint-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-checkpoint-data">Loading the Checkpoint Data</h2>
+<p>Now, we can load the colormap and set the max stride value and input dimension slice.</p>
+<section id="load-the-colormap" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-colormap">Load the Colormap</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The colormap path</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>colormap_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*colormap.json'</span>))[<span class="dv">0</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the JSON colormap data</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(colormap_path, <span class="st">'r'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        colormap_json <span class="op">=</span> json.load(<span class="bu">file</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the JSON data to a dictionary        </span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>colormap_dict <span class="op">=</span> {item[<span class="st">'label'</span>]: item[<span class="st">'color'</span>] <span class="cf">for</span> item <span class="kw">in</span> colormap_json[<span class="st">'items'</span>]}</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the class names from the colormap</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>class_names <span class="op">=</span> <span class="bu">list</span>(colormap_dict.keys())</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a copy of the colormap in integer format</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>int_colors <span class="op">=</span> [<span class="bu">tuple</span>(<span class="bu">int</span>(c<span class="op">*</span><span class="dv">255</span>) <span class="cf">for</span> c <span class="kw">in</span> color) <span class="cf">for</span> color <span class="kw">in</span> colormap_dict.values()]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="set-the-preprocessing-and-post-processing-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="set-the-preprocessing-and-post-processing-parameters">Set the Preprocessing and Post-Processing Parameters</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>max_stride <span class="op">=</span> <span class="dv">32</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>input_dim_slice <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="defining-utility-functions" class="level2">
+<h2 class="anchored" data-anchor-id="defining-utility-functions">Defining Utility Functions</h2>
+<p>Next, we will define some utility functions for preparing the input data and processing the model output.</p>
+<section id="define-a-function-to-prepare-images-for-inference" class="level3">
+<h3 class="anchored" data-anchor-id="define-a-function-to-prepare-images-for-inference">Define a Function to Prepare Images for Inference</h3>
+<p>OpenCV uses the BGR (Blue, Green, Red) color format for images, so we must change the current video frame to RGB before performing the <a href="../#preparing-input-data">standard preprocessing steps</a> for the YOLOX model.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prepare_image_for_inference(frame:np.ndarray, target_sz:<span class="bu">int</span>, max_stride:<span class="bu">int</span>):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Prepares an image for inference by performing a series of preprocessing steps.</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Steps:</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">    1. Converts a BGR image to RGB.</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">    2. Resizes the image to a target size without cropping, considering a given divisor.</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">    3. Calculates input dimensions as multiples of the max stride.</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">    4. Calculates offsets based on the resized image dimensions and input dimensions.</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">    5. Computes the scale between the original and resized image.</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">    6. Crops the resized image based on calculated input dimensions.</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co">    - frame (numpy.ndarray): The input image in BGR format.</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">    - target_sz (int): The target minimum size for resizing the image.</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co">    - max_stride (int): The maximum stride to be considered for calculating input dimensions.</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">    tuple: </span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">    - rgb_img (PIL.Image): The converted RGB image.</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">    - input_dims (list of int): Dimensions of the image that are multiples of max_stride.</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">    - offsets (numpy.ndarray): Offsets from the resized image dimensions to the input dimensions.</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">    - min_img_scale (float): Scale factor between the original and resized image.</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">    - input_img (PIL.Image): Cropped image based on the calculated input dimensions.</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert the BGR image to RGB</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    rgb_img <span class="op">=</span> Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Resize image without cropping to multiple of the max stride</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    resized_img <span class="op">=</span> resize_img(rgb_img, target_sz<span class="op">=</span>target_sz, divisor<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculating the input dimensions that multiples of the max stride</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    input_dims <span class="op">=</span> [dim <span class="op">-</span> dim <span class="op">%</span> max_stride <span class="cf">for</span> dim <span class="kw">in</span> resized_img.size]</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the offsets from the resized image dimensions to the input dimensions</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    offsets <span class="op">=</span> (np.array(resized_img.size) <span class="op">-</span> input_dims) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the scale between the source image and the resized image</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    min_img_scale <span class="op">=</span> <span class="bu">min</span>(rgb_img.size) <span class="op">/</span> <span class="bu">min</span>(resized_img.size)</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Crop the resized image to the input dimensions</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    input_img <span class="op">=</span> resized_img.crop(box<span class="op">=</span>[<span class="op">*</span>offsets, <span class="op">*</span>resized_img.size <span class="op">-</span> offsets])</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> rgb_img, input_dims, offsets, min_img_scale, input_img</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-functions-to-process-yolox-output" class="level3">
+<h3 class="anchored" data-anchor-id="define-functions-to-process-yolox-output">Define Functions to Process YOLOX Output</h3>
+<p>We can use the same <a href="../onnx-export/#define-utility-functions">utility functions</a> defined in the previous tutorial on exporting the model to ONNX.</p>
+<section id="define-a-function-to-generate-the-output-grids" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-generate-the-output-grids">Define a function to generate the output grids</h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_output_grids_np(height, width, strides<span class="op">=</span>[<span class="dv">8</span>,<span class="dv">16</span>,<span class="dv">32</span>]):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate a numpy array containing grid coordinates and strides for a given height and width.</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">        height (int): The height of the image.</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">        width (int): The width of the image.</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">        np.ndarray: A numpy array containing grid coordinates and strides.</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    all_coordinates <span class="op">=</span> []</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> stride <span class="kw">in</span> strides:</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the grid height and width</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        grid_height <span class="op">=</span> height <span class="op">//</span> stride</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        grid_width <span class="op">=</span> width <span class="op">//</span> stride</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Generate grid coordinates</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        g1, g0 <span class="op">=</span> np.meshgrid(np.arange(grid_height), np.arange(grid_width), indexing<span class="op">=</span><span class="st">'ij'</span>)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create an array of strides</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        s <span class="op">=</span> np.full((grid_height, grid_width), stride)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Stack the coordinates along with the stride</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        coordinates <span class="op">=</span> np.stack((g0.flatten(), g1.flatten(), s.flatten()), axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Append to the list</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>        all_coordinates.append(coordinates)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Concatenate all arrays in the list along the first dimension</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    output_grids <span class="op">=</span> np.concatenate(all_coordinates, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> output_grids</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-calculate-bounding-boxes-and-probabilities" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-calculate-bounding-boxes-and-probabilities">Define a function to calculate bounding boxes and probabilities</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_boxes_and_probs(model_output:np.ndarray, output_grids:np.ndarray) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Calculate the bounding boxes and their probabilities.</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">    model_output (numpy.ndarray): The output of the model.</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">    output_grids (numpy.ndarray): The output grids.</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">    numpy.ndarray: The array containing the bounding box coordinates, class labels, and maximum probabilities.</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the bounding box coordinates</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    box_centroids <span class="op">=</span> (model_output[..., :<span class="dv">2</span>] <span class="op">+</span> output_grids[..., :<span class="dv">2</span>]) <span class="op">*</span> output_grids[..., <span class="dv">2</span>:]</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    box_sizes <span class="op">=</span> np.exp(model_output[..., <span class="dv">2</span>:<span class="dv">4</span>]) <span class="op">*</span> output_grids[..., <span class="dv">2</span>:]</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    x0, y0 <span class="op">=</span> [t.squeeze(axis<span class="op">=</span><span class="dv">2</span>) <span class="cf">for</span> t <span class="kw">in</span> np.split(box_centroids <span class="op">-</span> box_sizes <span class="op">/</span> <span class="dv">2</span>, <span class="dv">2</span>, axis<span class="op">=</span><span class="dv">2</span>)]</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    w, h <span class="op">=</span> [t.squeeze(axis<span class="op">=</span><span class="dv">2</span>) <span class="cf">for</span> t <span class="kw">in</span> np.split(box_sizes, <span class="dv">2</span>, axis<span class="op">=</span><span class="dv">2</span>)]</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the probabilities for each class</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    box_objectness <span class="op">=</span> model_output[..., <span class="dv">4</span>]</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    box_cls_scores <span class="op">=</span> model_output[..., <span class="dv">5</span>:]</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    box_probs <span class="op">=</span> np.expand_dims(box_objectness, <span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> box_cls_scores</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get the maximum probability and corresponding class for each proposal</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    max_probs <span class="op">=</span> np.<span class="bu">max</span>(box_probs, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> np.argmax(box_probs, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([x0, y0, w, h, labels, max_probs]).transpose((<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-extract-object-proposals-from-the-raw-model-output" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-extract-object-proposals-from-the-raw-model-output">Define a function to extract object proposals from the raw model output</h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> process_outputs(outputs:np.ndarray, input_dims:<span class="bu">tuple</span>, bbox_conf_thresh:<span class="bu">float</span>):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Process the model outputs to generate bounding box proposals filtered by confidence threshold.</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">    - outputs (numpy.ndarray): The raw output from the model, which will be processed to calculate boxes and probabilities.</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">    - input_dims (tuple of int): Dimensions (height, width) of the input image to the model.</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">    - bbox_conf_thresh (float): Threshold for the bounding box confidence/probability. Bounding boxes with a confidence</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co">                                score below this threshold will be discarded.</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">    - numpy.array: An array of proposals where each proposal is an array containing bounding box coordinates</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co">                   and its associated probability, sorted in descending order by probability.</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Process the model output</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> calculate_boxes_and_probs(outputs, generate_output_grids_np(<span class="op">*</span>input_dims))</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter the proposals based on the confidence threshold</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    max_probs <span class="op">=</span> outputs[:, :, <span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> max_probs <span class="op">&gt;</span> bbox_conf_thresh</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    proposals <span class="op">=</span> outputs[mask]</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sort the proposals by probability in descending order</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    proposals <span class="op">=</span> proposals[proposals[..., <span class="op">-</span><span class="dv">1</span>].argsort()][::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> proposals</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-calculate-the-intersection-over-union" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-calculate-the-intersection-over-union">Define a function to calculate the intersection-over-union</h4>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_iou(proposals:np.ndarray) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Calculates the Intersection over Union (IoU) for all pairs of bounding boxes (x,y,w,h) in 'proposals'.</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">    The IoU is a measure of overlap between two bounding boxes. It is calculated as the area of</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">    intersection divided by the area of union of the two boxes.</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co">    proposals (2D np.array): A NumPy array of bounding boxes, where each box is an array [x, y, width, height].</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co">    iou (2D np.array): The IoU matrix where each element i,j represents the IoU of boxes i and j.</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate coordinates for the intersection rectangles</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">=</span> np.maximum(proposals[:, <span class="dv">0</span>], proposals[:, <span class="dv">0</span>][:, <span class="va">None</span>])</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    y1 <span class="op">=</span> np.maximum(proposals[:, <span class="dv">1</span>], proposals[:, <span class="dv">1</span>][:, <span class="va">None</span>])</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">=</span> np.minimum(proposals[:, <span class="dv">0</span>] <span class="op">+</span> proposals[:, <span class="dv">2</span>], (proposals[:, <span class="dv">0</span>] <span class="op">+</span> proposals[:, <span class="dv">2</span>])[:, <span class="va">None</span>])</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    y2 <span class="op">=</span> np.minimum(proposals[:, <span class="dv">1</span>] <span class="op">+</span> proposals[:, <span class="dv">3</span>], (proposals[:, <span class="dv">1</span>] <span class="op">+</span> proposals[:, <span class="dv">3</span>])[:, <span class="va">None</span>])</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate intersection areas</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    intersections <span class="op">=</span> np.maximum(x2 <span class="op">-</span> x1, <span class="dv">0</span>) <span class="op">*</span> np.maximum(y2 <span class="op">-</span> y1, <span class="dv">0</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate union areas</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    areas <span class="op">=</span> proposals[:, <span class="dv">2</span>] <span class="op">*</span> proposals[:, <span class="dv">3</span>]</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    unions <span class="op">=</span> areas[:, <span class="va">None</span>] <span class="op">+</span> areas <span class="op">-</span> intersections</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate IoUs</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    iou <span class="op">=</span> intersections <span class="op">/</span> unions</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return the iou matrix</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> iou</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-filter-bounding-box-proposals-using-non-maximum-suppression">Define a function to filter bounding box proposals using Non-Maximum Suppression</h4>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nms_sorted_boxes(iou:np.ndarray, iou_thresh:<span class="bu">float</span><span class="op">=</span><span class="fl">0.45</span>) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Applies non-maximum suppression (NMS) to sorted bounding boxes.</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">    It suppresses boxes that have high overlap (as defined by the IoU threshold) with a box that </span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">    has a higher score.</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">    iou (np.ndarray): An IoU matrix where each element i,j represents the IoU of boxes i and j.</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co">    iou_thresh (float): The IoU threshold for suppression. Boxes with IoU &gt; iou_thresh are suppressed.</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">    keep (np.ndarray): The indices of the boxes to keep after applying NMS.</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a boolean mask to keep track of boxes</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> np.ones(iou.shape[<span class="dv">0</span>], dtype<span class="op">=</span><span class="bu">bool</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Apply non-max suppression</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(iou.shape[<span class="dv">0</span>]):</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> mask[i]:</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Suppress boxes with higher index and IoU &gt; threshold</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>            mask[(iou[i] <span class="op">&gt;</span> iou_thresh) <span class="op">&amp;</span> (np.arange(iou.shape[<span class="dv">0</span>]) <span class="op">&gt;</span> i)] <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return the indices of the boxes to keep</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.arange(iou.shape[<span class="dv">0</span>])[mask]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="define-a-function-to-annotate-images-with-bounding-boxes" class="level3">
+<h3 class="anchored" data-anchor-id="define-a-function-to-annotate-images-with-bounding-boxes">Define a Function to Annotate Images with Bounding Boxes</h3>
+<p>Likewise, we can use the same <a href="../onnx-export/#define-a-function-to-annotate-an-image-with-bounding-boxes">function for annotating images</a> with bounding boxes with PIL.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_bboxes_pil(image, boxes, labels, colors, font, width<span class="op">=</span><span class="dv">2</span>, font_size<span class="op">=</span><span class="dv">18</span>, probs<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Annotates an image with bounding boxes, labels, and optional probability scores.</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">    - image (PIL.Image): The input image on which annotations will be drawn.</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">    - boxes (list of tuples): A list of bounding box coordinates where each tuple is (x, y, w, h).</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    - labels (list of str): A list of labels corresponding to each bounding box.</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">    - colors (list of str): A list of colors for each bounding box and its corresponding label.</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">    - font (str): Path to the font file to be used for displaying the labels.</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">    - width (int, optional): Width of the bounding box lines. Defaults to 2.</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">    - font_size (int, optional): Size of the font for the labels. Defaults to 18.</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">    - probs (list of float, optional): A list of probability scores corresponding to each label. Defaults to None.</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">    - annotated_image (PIL.Image): The image annotated with bounding boxes, labels, and optional probability scores.</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define a reference diagonal</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    REFERENCE_DIAGONAL <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Scale the font size using the hypotenuse of the image</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    font_size <span class="op">=</span> <span class="bu">int</span>(font_size <span class="op">*</span> (np.hypot(<span class="op">*</span>image.size) <span class="op">/</span> REFERENCE_DIAGONAL))</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add probability scores to labels if provided</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> probs <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> [<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>prob<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span> <span class="cf">for</span> label, prob <span class="kw">in</span> <span class="bu">zip</span>(labels, probs)]</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create an ImageDraw object for drawing on the image</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    draw <span class="op">=</span> ImageDraw.Draw(image)</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load the font file (outside the loop)</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    fnt <span class="op">=</span> ImageFont.truetype(font, font_size)</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute the mean color value for each color</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    mean_colors <span class="op">=</span> [np.mean(np.array(color)) <span class="cf">for</span> color <span class="kw">in</span> colors]</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Loop through the bounding boxes, labels, and colors</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> box, label, color, mean_color <span class="kw">in</span> <span class="bu">zip</span>(boxes, labels, colors, mean_colors):</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the bounding box coordinates</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        x, y, w, h <span class="op">=</span> box</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the bounding box on the image</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>        draw.rectangle([x, y, x<span class="op">+</span>w, y<span class="op">+</span>h], outline<span class="op">=</span>color, width<span class="op">=</span>width)</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the size of the label text box</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>        label_w, label_h <span class="op">=</span> draw.textbbox(xy<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">0</span>), text<span class="op">=</span>label, font<span class="op">=</span>fnt)[<span class="dv">2</span>:]</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the label rectangle on the image</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>        draw.rectangle([x, y<span class="op">-</span>label_h, x<span class="op">+</span>label_w, y], outline<span class="op">=</span>color, fill<span class="op">=</span>color)</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the label text on the image</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>        font_color <span class="op">=</span> <span class="st">'black'</span> <span class="cf">if</span> mean_color <span class="op">&gt;</span> <span class="fl">127.5</span> <span class="cf">else</span> <span class="st">'white'</span></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>        draw.multiline_text((x, y<span class="op">-</span>label_h), label, font<span class="op">=</span>fnt, fill<span class="op">=</span>font_color)</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> image</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With our utility functions taken care of, we can move on to performing inference with our ONNX model.</p>
+</section>
+</section>
+<section id="performing-inference-with-onnx-runtime" class="level2">
+<h2 class="anchored" data-anchor-id="performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</h2>
+<p>We will first initialize an inference session with our ONNX model.</p>
+<section id="create-an-inference-session" class="level3">
+<h3 class="anchored" data-anchor-id="create-an-inference-session">Create an Inference Session</h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a filename for the ONNX model</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*.onnx'</span>))[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and create an InferenceSession</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>providers <span class="op">=</span> [</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'CPUExecutionProvider'</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># "CUDAExecutionProvider",</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>sess_options <span class="op">=</span> ort.SessionOptions()</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> ort.InferenceSession(onnx_file_path, sess_options<span class="op">=</span>sess_options, providers<span class="op">=</span>providers)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="select-a-test-video" class="level3">
+<h3 class="anchored" data-anchor-id="select-a-test-video">Select a Test Video</h3>
+<p>Next, we need a video to test the object tracking performance. We can use this one from <a href="https://www.pexels.com/video/a-woman-giving-a-thumbs-up-10373924/">Pexels</a>, a free stock photo &amp; video site.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify the directory where videos are or will be stored.</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>video_dir <span class="op">=</span> <span class="st">"./videos/"</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Name of the test video to be used.</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>test_video_name <span class="op">=</span> <span class="st">"pexels-rodnae-productions-10373924.mp4"</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the full path for the video using the directory and video name.</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>video_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>video_dir<span class="sc">}{</span>test_video_name<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the URL for the test video stored on Huggingface's server.</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>test_video_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/cj-mills/pexels-object-tracking-test-videos/resolve/main/</span><span class="sc">{</span>test_video_name<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the video file from the specified URL to the local video directory.</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>download_file(test_video_url, video_dir, <span class="va">False</span>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the video using the Video function (assuming an appropriate library/module is imported).</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>Video(video_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><video src="./video/pexels-rodnae-productions-10373924.mp4" class="img-fluid" controls=""><a href="./video/pexels-rodnae-productions-10373924.mp4">Video</a></video></p>
+</figure>
+</div>
+</section>
+<section id="initialize-a-videocapture-object" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-a-videocapture-object">Initialize a <code>VideoCapture</code> Object</h3>
+<p>Now that we have a test video, we can use OpenCV’s <a href="https://docs.opencv.org/4.x/d8/dfe/classcv_1_1VideoCapture.html"><code>VideoCapture</code></a> class to iterate through it and access relevant metadata.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Open the video file located at 'video_path' using OpenCV</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>video_capture <span class="op">=</span> cv2.VideoCapture(video_path)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the frame width of the video</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>frame_width <span class="op">=</span> <span class="bu">int</span>(video_capture.get(<span class="dv">3</span>))</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the frame height of the video</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>frame_height <span class="op">=</span> <span class="bu">int</span>(video_capture.get(<span class="dv">4</span>))</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the frames per second (FPS) of the video</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>frame_fps <span class="op">=</span> <span class="bu">int</span>(video_capture.get(<span class="dv">5</span>))</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the total number of frames in the video</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> <span class="bu">int</span>(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a pandas Series containing video metadata and convert it to a DataFrame</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Frame Width:"</span>: frame_width,</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Frame Height:"</span>: frame_height,</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Frame FPS:"</span>: frame_fps,</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Frames:"</span>: frames</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+
+<table id="T_b9b06">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_b9b06_level0_row0" class="row_heading level0 row0">
+Frame Width:
+</th>
+<td id="T_b9b06_row0_col0" class="data row0 col0">
+720
+</td>
+</tr>
+<tr>
+<th id="T_b9b06_level0_row1" class="row_heading level0 row1">
+Frame Height:
+</th>
+<td id="T_b9b06_row1_col0" class="data row1 col0">
+1280
+</td>
+</tr>
+<tr>
+<th id="T_b9b06_level0_row2" class="row_heading level0 row2">
+Frame FPS:
+</th>
+<td id="T_b9b06_row2_col0" class="data row2 col0">
+29
+</td>
+</tr>
+<tr>
+<th id="T_b9b06_level0_row3" class="row_heading level0 row3">
+Frames:
+</th>
+<td id="T_b9b06_row3_col0" class="data row3 col0">
+226
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</section>
+<section id="initialize-a-videowriter-object" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-a-videowriter-object">Initialize a <code>VideoWriter</code> Object</h3>
+<p>We will use OpenCV’s <a href="https://docs.opencv.org/3.4/dd/d9e/classcv_1_1VideoWriter.html"><code>VideoWriter</code></a> class to save the annotated version of our test video.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the output video path </span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>video_out_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>(video_dir)<span class="sc">}{</span>Path(video_path)<span class="sc">.</span>stem<span class="sc">}</span><span class="ss">-byte-track.mp4"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a VideoWriter object for video writing.</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. video_out_path: Specifies the name of the output video file.</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. cv2.VideoWriter_fourcc(*'mp4v'): Specifies the codec for the output video. 'mp4v' is used for .mp4 format.</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. frame_fps: Specifies the frames per second for the output video.</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. (frame_width, frame_height): Specifies the width and height of the frames in the output video.</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>video_writer <span class="op">=</span> cv2.VideoWriter(video_out_path, cv2.VideoWriter_fourcc(<span class="op">*</span><span class="st">'mp4v'</span>), frame_fps, (frame_width, frame_height))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-inference-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="define-inference-parameters">Define Inference Parameters</h3>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>test_sz <span class="op">=</span> <span class="dv">288</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>bbox_conf_thresh <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>iou_thresh <span class="op">=</span> <span class="fl">0.45</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="detect-track-and-annotate-objects-in-video-frames" class="level3">
+<h3 class="anchored" data-anchor-id="detect-track-and-annotate-objects-in-video-frames">Detect, Track, and Annotate Objects in Video Frames</h3>
+<p>In this section, we’ll iterate through each frame of our test video, detect objects, track those objects across video frames, and then annotate the video frames with the corresponding bounding boxes and tracking IDs.</p>
+<p>We start by initializing a ByteTracker object. Then, we can iterate over the video frames using our VideoCapture object. For each frame, we pass it through the <code>prepare_image_for_inference</code> function to apply the preprocessing steps. We then convert the image to a NumPy array and scale the values to the range <code>[0,1]</code>.</p>
+<p>Next, we pass the input to our YOLOX model to get the raw prediction data. After that, we can process the raw output to extract the bounding box predictions. We then pass the bounding box predictions to the ByteTracker object so it can update its current object tracks.</p>
+<p>Once we match the updated track data with the current bounding box predictions, we can annotate the current frame with bounding boxes and associated track IDs.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize a ByteTracker object</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>tracker <span class="op">=</span> BYTETracker(track_thresh<span class="op">=</span><span class="fl">0.25</span>, track_buffer<span class="op">=</span><span class="dv">30</span>, match_thresh<span class="op">=</span><span class="fl">0.8</span>, frame_rate<span class="op">=</span>frame_fps)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> tqdm(total<span class="op">=</span>frames, desc<span class="op">=</span><span class="st">"Processing frames"</span>) <span class="im">as</span> pbar:</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> video_capture.isOpened():</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>        ret, frame <span class="op">=</span> video_capture.read()</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ret:</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Prepare an input image for inference</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>            rgb_img, input_dims, offsets, min_img_scale, input_img <span class="op">=</span> prepare_image_for_inference(frame, test_sz, max_stride)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>                        </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert the existing input image to NumPy format</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>            input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Start performance counter</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>            start_time <span class="op">=</span> time.perf_counter()</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>                        </span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Run inference</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>            outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Process the model output</span></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>            proposals <span class="op">=</span> process_outputs(outputs, input_tensor_np.shape[input_dim_slice], bbox_conf_thresh)</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Apply non-max suppression to the proposals with the specified threshold</span></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>            proposal_indices <span class="op">=</span> nms_sorted_boxes(calc_iou(proposals[:, :<span class="op">-</span><span class="dv">2</span>]), iou_thresh)</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>            proposals <span class="op">=</span> proposals[proposal_indices]</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>            bbox_list <span class="op">=</span> (proposals[:,:<span class="dv">4</span>]<span class="op">+</span>[<span class="op">*</span>offsets, <span class="dv">0</span>, <span class="dv">0</span>])<span class="op">*</span>min_img_scale</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>            label_list <span class="op">=</span> [class_names[<span class="bu">int</span>(idx)] <span class="cf">for</span> idx <span class="kw">in</span> proposals[:,<span class="dv">4</span>]]</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>            probs_list <span class="op">=</span> proposals[:,<span class="dv">5</span>]</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Update tracker with detections.</span></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>            track_ids <span class="op">=</span> [<span class="op">-</span><span class="dv">1</span>]<span class="op">*</span><span class="bu">len</span>(bbox_list)</span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert to tlbr format</span></span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>            tlbr_boxes <span class="op">=</span> bbox_list.copy()</span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>            tlbr_boxes[:, <span class="dv">2</span>:<span class="dv">4</span>] <span class="op">+=</span> tlbr_boxes[:, :<span class="dv">2</span>]</span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Update tracker with detections</span></span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>            tracks <span class="op">=</span> tracker.update(</span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>                output_results<span class="op">=</span>np.concatenate([tlbr_boxes, probs_list[:, np.newaxis]], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>                img_info<span class="op">=</span>rgb_img.size,</span>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>                img_size<span class="op">=</span>rgb_img.size)</span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>            track_ids <span class="op">=</span> match_detections_with_tracks(tlbr_boxes<span class="op">=</span>tlbr_boxes, track_ids<span class="op">=</span>track_ids, tracks<span class="op">=</span>tracks)</span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a>            <span class="co"># End performance counter</span></span>
+<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>            end_time <span class="op">=</span> time.perf_counter()</span>
+<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Calculate the combined FPS for object detection and tracking</span></span>
+<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>            fps <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (end_time <span class="op">-</span> start_time)</span>
+<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Display the frame rate in the progress bar</span></span>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>            pbar.set_postfix(fps<span class="op">=</span>fps)</span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Filter object detections based on tracking results</span></span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>            bbox_list, label_list, probs_list, track_ids <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>[(bbox, label, prob, track_id) </span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>                                                                 <span class="cf">for</span> bbox, label, prob, track_id </span>
+<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>                                                                 <span class="kw">in</span> <span class="bu">zip</span>(bbox_list, label_list, probs_list, track_ids) <span class="cf">if</span> track_id <span class="op">!=</span> <span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Annotate the current frame with bounding boxes and tracking IDs</span></span>
+<span id="cb20-59"><a href="#cb20-59" aria-hidden="true" tabindex="-1"></a>            annotated_img <span class="op">=</span> draw_bboxes_pil(</span>
+<span id="cb20-60"><a href="#cb20-60" aria-hidden="true" tabindex="-1"></a>                image<span class="op">=</span>rgb_img, </span>
+<span id="cb20-61"><a href="#cb20-61" aria-hidden="true" tabindex="-1"></a>                boxes<span class="op">=</span>bbox_list, </span>
+<span id="cb20-62"><a href="#cb20-62" aria-hidden="true" tabindex="-1"></a>                labels<span class="op">=</span>[<span class="ss">f"</span><span class="sc">{</span>track_id<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> track_id, label <span class="kw">in</span> <span class="bu">zip</span>(track_ids, label_list)],</span>
+<span id="cb20-63"><a href="#cb20-63" aria-hidden="true" tabindex="-1"></a>                probs<span class="op">=</span>probs_list,</span>
+<span id="cb20-64"><a href="#cb20-64" aria-hidden="true" tabindex="-1"></a>                colors<span class="op">=</span>[int_colors[class_names.index(i)] <span class="cf">for</span> i <span class="kw">in</span> label_list],  </span>
+<span id="cb20-65"><a href="#cb20-65" aria-hidden="true" tabindex="-1"></a>                font<span class="op">=</span>font_file,</span>
+<span id="cb20-66"><a href="#cb20-66" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb20-67"><a href="#cb20-67" aria-hidden="true" tabindex="-1"></a>            annotated_frame <span class="op">=</span> cv2.cvtColor(np.array(annotated_img), cv2.COLOR_RGB2BGR)</span>
+<span id="cb20-68"><a href="#cb20-68" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb20-69"><a href="#cb20-69" aria-hidden="true" tabindex="-1"></a>            video_writer.write(annotated_frame)</span>
+<span id="cb20-70"><a href="#cb20-70" aria-hidden="true" tabindex="-1"></a>            pbar.update(<span class="dv">1</span>)</span>
+<span id="cb20-71"><a href="#cb20-71" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb20-72"><a href="#cb20-72" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb20-73"><a href="#cb20-73" aria-hidden="true" tabindex="-1"></a>video_capture.release()</span>
+<span id="cb20-74"><a href="#cb20-74" aria-hidden="true" tabindex="-1"></a>video_writer.release()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally, we can check the annotated video to see how the object tracker performed.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><video src="./video/pexels-rodnae-productions-10373924-byte-track.mp4" class="img-fluid" controls=""><a href="./video/pexels-rodnae-productions-10373924-byte-track.mp4">Video</a></video></p>
+</figure>
+</div>
+<p>The ByteTracker had no issue tracking the two hands throughout the video, as the track IDs remained the same for each hand.</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Google Colab Users
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Don’t forget to download the the annotated video from the Colab Environment’s file browser. (<a href="https://christianjmills.com/posts/google-colab-getting-started-tutorial/#working-with-data">tutorial link</a>)</li>
+</ol>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Congratulations on reaching the end of this tutorial on object tracking with YOLOX and ByteTrack! With this knowledge, we have unlocked a new realm of potential applications for our YOLOX model.</p>
+<p>Combining YOLOX’s robust detection capabilities with ByteTrack’s tracking efficiency gives you a powerful toolset to work on myriad projects, from video analysis to immersive augmented reality experiences.</p>
+<p>As a follow-up project, consider integrating our hand sign detector with ByteTrack in an application for gesture-based controls or training a new YOLOX model for other domains. Many practical applications could benefit from this powerful combination, with the limit being your imagination.</p>
+<p>If you found this guide helpful, consider sharing it with others.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2023, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
