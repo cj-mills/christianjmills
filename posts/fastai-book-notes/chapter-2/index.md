@@ -17,6 +17,12 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [The Practice of Deep Learning](#the-practice-of-deep-learning)
 * [Gathering Data](#gathering-data)
 * [From Data to DataLoaders](#from-data-to-dataloaders)
@@ -24,9 +30,6 @@ aliases:
 * [Turn Your Model into an Online Application](#turn-your-model-into-an-online-application)
 * [How to Avoid Disaster](#how-to-avoid-disaster)
 * [References](#references)
-
-
-
 
 
 ## The Practice of Deep Learning
@@ -857,8 +860,3 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 
 **Next:** [Notes on fastai Book Ch. 3](../chapter-3/)
 
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

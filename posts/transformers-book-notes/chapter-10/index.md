@@ -16,6 +16,12 @@ aliases:
 - /Notes-on-Transformers-Book-10/
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
+
 * [Training Transformers from Scratch](#training-transformers-from-scratch)
 * [Project: Python Source Code Generator](#project-python-source-code-generator)
 * [Large Datasets and Where to Find Them](#large-datasets-and-where-to-find-them)
@@ -2879,12 +2885,4 @@ complete_code(generation, prompt, max_length=96)
 **Previous:** [Notes on Transformers Book Ch. 9](../chapter-9/)
 
 **Next:** [Notes on Transformers Book Ch. 11](../chapter-11/)
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
-
-
-
-
 

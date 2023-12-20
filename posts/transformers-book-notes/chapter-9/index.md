@@ -16,6 +16,11 @@ aliases:
 - /Notes-on-Transformers-Book-09/
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
 * [Dealing with Few to No Labels](#dealing-with-few-to-no-labels)
 * [Project: Build a GitHub Issues Tagger](#project-build-a-github-issues-tagger)
 * [Implementing a Naive Bayesline](#implementing-a-naive-bayesline)
@@ -3534,16 +3539,4 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 **Previous:** [Notes on Transformers Book Ch. 8](../chapter-8/)
 
 **Next:** [Notes on Transformers Book Ch. 10](../chapter-10/)
-
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
-
-
-
-
-
-
 

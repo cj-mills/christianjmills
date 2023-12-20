@@ -19,6 +19,12 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [Data Ethics](#data-ethics)
 * [Key Examples for Data Ethics](#key-examples-for-data-ethics)
 * [Integrating Machine Learning with Product Design](#integrating-machine-learning-with-product-design)
@@ -26,7 +32,6 @@ aliases:
 * [Identifying and Addressing Ethical Issues](#identifying-and-addressing-ethical-issues)
 * [Role of Policy](#role-of-policy)
 * [References](#references)
-
 
 
 ## Data Ethics
@@ -336,4 +341,3 @@ aliases:
 
 
 
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

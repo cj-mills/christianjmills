@@ -22,6 +22,15 @@ open-graph:
   image: ../social-media/cover.jpg
 ---
 
+
+
+::: {.callout-important}
+## A new version of this tutorial series is available at the link below:
+* [**ONNX Runtime in Unity**](/series/tutorials/onnx-runtime-unity-series.html)
+:::
+
+
+
 * [Introduction](#introduction)
 * [Overview](#overview)
 * [Download OpenCV](#download-opencv)
@@ -1109,8 +1118,4 @@ In this post, we created a dynamic link library (DLL) file in Visual Studio to p
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/onnx-directml-unity-tutorial)
 
 
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
 

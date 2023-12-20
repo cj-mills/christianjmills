@@ -16,11 +16,16 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [Going Deeper into fastai's Layered API](#going-deeper-into-fastai's-layered-api)
 * [TfmdLists and Datasets: Transformed Collections](#tfmdlists-and-datasets-transformed-collections)
 * [Applying the Mid-Level Data API: SiamesePair](#applying-the-mid-level-data-api-siamesepair)
 * [References](#references)
-
 
 
 -----
@@ -1801,6 +1806,3 @@ dls = tls.dataloaders(after_item=[Resize(224), ToTensor],
 
 **Next:** [Notes on fastai Book Ch. 12](../chapter-12/)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

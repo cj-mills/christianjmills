@@ -16,6 +16,11 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
 * [Introduction](#introduction)
 * [The Challenge with Generating Coherent Text](#the-challenge-with-generating-coherent-text)
 * [Greedy Search Decoding](#greedy-search-decoding)
@@ -879,6 +884,3 @@ print(tokenizer.decode(output_topp[0]))
 
 **Next:** [Notes on Transformers Book Ch. 6](../chapter-6/)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

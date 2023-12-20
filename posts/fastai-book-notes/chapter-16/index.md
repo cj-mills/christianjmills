@@ -19,6 +19,12 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [Establishing a Baseline](#establishing-a-baseline)
 * [A Generic Optimizer](#a-generic-optimizer)
 * [Momentum](#momentum)
@@ -27,6 +33,7 @@ aliases:
 * [Decoupled Weight Decay](#decoupled-weight-decay)
 * [Callbacks](#callbacks)
 * [References](#references)
+
 
 -----
 
@@ -1226,6 +1233,3 @@ _ex_docs
 
 **Next:** [Notes on fastai Book Ch. 17](../chapter-17/)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

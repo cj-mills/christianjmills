@@ -22,6 +22,16 @@ open-graph:
   image: ../social-media/cover.jpg
 ---
 
+
+::: {.callout-important}
+## A new version of this tutorial series that uses PyTorch directly instead of IceVision is available at the link below: 
+
+- [Training YOLOX Models for Real-Time Object Detection in Pytorch](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
+
+:::
+
+
+
 * [Overview](#overview)
 * [Create New Project](#create-new-project)
 * [Import Assets](#import-assets)
@@ -31,8 +41,6 @@ open-graph:
 * [Set up Unity Scene](#set-up-unity-scene)
 * [Test in Editor](#test-in-editor)
 * [Summary](#summary)
-
-
 
 
 
@@ -1677,10 +1685,3 @@ In this three-part tutorial series, we learned how to perform end-to-end object 
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/icevision-openvino-unity-tutorial)
 
-
-
-
-
-
-
-{{< include ../../../_cloudflare-analytics.qmd >}}

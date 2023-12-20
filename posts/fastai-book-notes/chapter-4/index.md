@@ -17,6 +17,13 @@ aliases:
 
 ---
 
+
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [Tenacity and Deep Learning](#tenacity-and-deep-learning)
 * [The Foundations of Computer Vision](#the-foundations-of-computer-vision)
 * [Pixels](#pixels)
@@ -27,7 +34,6 @@ aliases:
 * [Putting It All Together](#putting-it-all-together)
 * [Adding a Nonlinearity](#adding-a-nonlinearity)
 * [References](#references)
-
 
 
 ## Tenacity and Deep Learning
@@ -4084,5 +4090,3 @@ Sequential(
 
 **Next:** [Notes on fastai Book Ch. 5](../chapter-5/)
 
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

@@ -49,7 +49,24 @@ In Unity, right-click an empty space in the Assets folder and open the `Create` 
 
 Open the new compute shader in your code editor. By default, compute shaders contain the following code.
 
-![](./images/flipshader-default-code.png){fig-align="center"}
+```glsl
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+
+    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+}
+```
+
+
 
 We'll delete the `CSMain` function and create a new one for each of our three flip operations. 
 
@@ -62,7 +79,23 @@ Before we create our functions, we need to define some extra variables.
 * `int width`: the width of the input image
 * `int2 coords`: stores the new `(x,y)` coordinates for individual pixel values
 
-![](./images/flipshader-define-variables.png){fig-align="center"}
+```glsl
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+// Stores the original image
+Texture2D<float4> InputImage;
+
+// The height of the input image
+int height;
+// The width of the input image
+int width;
+// Stores the new location for individual pixel values
+int2 coords;
+```
+
+
 
 ### Define Flip Functions
 
@@ -74,7 +107,50 @@ The individual flip operations quite simple. They determine the coordinates of t
 
 These operations are performed on each pixel in parallel on the GPU. We'll use the default `numthreads(8, 8, 1)` for each function.
 
-![](./images/flip-shader-define-functions-2.png){fig-align="center"}
+```glsl
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel FlipXAxis
+#pragma kernel FlipYAxis
+#pragma kernel FlipDiag
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+// Stores the original image
+Texture2D<float4> InputImage;
+
+// The height of the input image
+int height;
+// The width of the input image
+int width;
+// Stores the new location for individual pixel values
+int2 coords;
+
+[numthreads(8, 8, 1)]
+void FlipXAxis(uint3 id : SV_DispatchThreadID)
+{
+    // Update the y value for the pixel coordinates
+    coords = int2(id.x, height - id.y);
+    Result[id.xy] = float4(InputImage[coords].x, InputImage[coords].y, InputImage[coords].z, 1.0f);
+}
+
+[numthreads(8, 8, 1)]
+void FlipYAxis(uint3 id : SV_DispatchThreadID)
+{
+    // Update the x value for the pixel coordinates
+    coords = int2(width - id.x, id.y);
+    Result[id.xy] = float4(InputImage[coords].x, InputImage[coords].y, InputImage[coords].z, 1.0f);
+}
+
+[numthreads(8, 8, 1)]
+void FlipDiag(uint3 id : SV_DispatchThreadID)
+{
+    // Swap the x and y coordinate values
+    coords = int2(id.y, id.x);
+    Result[id.xy] = float4(InputImage[coords].x, InputImage[coords].y, InputImage[coords].z, 1.0f);
+}
+```
 
 
 
@@ -102,7 +178,29 @@ We'll define the following variables at the top of the script.
 * `private GameObject mainCamera`: Stores a reference to the Main Camera object
 * `private RenderTexture image`: A copy of the original test image
 
-![](./images/flip-script-define-variables.png){fig-align="center"}
+```c#
+public class Flip : MonoBehaviour
+{
+    [Tooltip("The compute shader that contains the flip operations")]
+    public ComputeShader computeShader;
+
+    [Tooltip("The screen to which the test image is attached")]
+    public GameObject screen;
+
+    [Tooltip("Toggle whether to flip the image across the x-axis")]
+    public bool flipXAxis;
+
+    [Tooltip("Toggle whether to flip the image across the y-axis")]
+    public bool flipYAxis;
+
+    [Tooltip("Toggle whether to flip the image across the diagonal axis")]
+    public bool flipDiag;
+
+    // Stores a reference to the Main Camera object
+    private GameObject mainCamera;
+    // A copy of the original test image
+    private RenderTexture image;
+```
 
 
 
@@ -110,7 +208,22 @@ We'll define the following variables at the top of the script.
 
 In the `Start()` method, we'll store a copy the original test image in the `image` `RenderTexture`. We can do so by getting a reference to the `Texture` attached to the `screen` and using the [`Graphics.Blit()`](https://docs.unity3d.com/ScriptReference/Graphics.Blit.html) method. We'll also get a reference to the camera so that we can adjust the view to fit the current image. 
 
-![](./images/flip-script-start-method.png){fig-align="center"}
+```c#
+// Start is called before the first frame update
+void Start()
+{
+    // Get a reference to the image texture attached to the screen
+    Texture screenTexture = screen.GetComponent<MeshRenderer>().material.mainTexture;
+
+    // Create a new RenderTexture with the same dimensions as the test image
+    image = new RenderTexture(screenTexture.width, screenTexture.height, 24, RenderTextureFormat.ARGB32);
+    // Copy the screenTexture to the image RenderTexture
+    Graphics.Blit(screenTexture, image);
+
+    // Get a reference to the Main Camera GameObject
+    mainCamera = GameObject.Find("Main Camera");
+}
+```
 
 
 
@@ -120,7 +233,46 @@ Next, we'll define a new method called `FlipImage` to handle executing the compu
 
 To execute the compute shader, we need to first get the kernel index for the specified function and initialize the variables we defined in the compute shader. Once we execute the compute shader using the `computeShader.Dispatch()` method, we can copy the result to the empty `RenderTexture` we passed in. We could copy the result directly to the `RenderTexture` containing the original image. However, this would cause an error when flipping non-square images across the diagonal axis. This is because a `RenderTexture` can not dynamically change dimensions.
 
-![](./images/flip-script-flipImage-method.png){fig-align="center"}
+```c#
+/// <summary>
+/// Perform a flip operation of the GPU
+/// </summary>
+/// <param name="image">The image to be flipped</param>
+/// <param name="tempTex">Stores the flipped image</param>
+/// <param name="functionName">The name of the function to execute in the compute shader</param>
+private void FlipImage(RenderTexture image, RenderTexture tempTex, string functionName)
+{
+    // Specify the number of threads on the GPU
+    int numthreads = 8;
+    // Get the index for the PreprocessResNet function in the ComputeShader
+    int kernelHandle = computeShader.FindKernel(functionName);
+
+    /// Allocate a temporary RenderTexture
+    RenderTexture result = RenderTexture.GetTemporary(tempTex.width, tempTex.height, 24, tempTex.format);
+    // Enable random write access
+    result.enableRandomWrite = true;
+    // Create the RenderTexture
+    result.Create();
+
+    // Set the value for the Result variable in the ComputeShader
+    computeShader.SetTexture(kernelHandle, "Result", result);
+    // Set the value for the InputImage variable in the ComputeShader
+    computeShader.SetTexture(kernelHandle, "InputImage", image);
+    // Set the value for the height variable in the ComputeShader
+    computeShader.SetInt("height", image.height);
+    // Set the value for the width variable in the ComputeShader
+    computeShader.SetInt("width", image.width);
+
+    // Execute the ComputeShader
+    computeShader.Dispatch(kernelHandle, tempTex.width / numthreads, tempTex.height / numthreads, 1);
+
+    // Copy the flipped image to tempTex
+    Graphics.Blit(result, tempTex);
+
+    // Release the temporary RenderTexture
+    RenderTexture.ReleaseTemporary(result);
+}
+```
 
 
 
@@ -132,7 +284,83 @@ The steps are basically the same for performing each of the three flip operation
 
 After we copy `tempTex` back to `rTex` we'll update the `Texture` for the `screen` with the flipped image and adjust the shape of the screen to fit the new dimensions.
 
-![](./images/flip-script-update-method.png){fig-align="center"}
+```c#
+// Update is called once per frame
+void Update()
+{
+    // Allocate a temporary RenderTexture with the original image dimensions
+    RenderTexture rTex = RenderTexture.GetTemporary(image.width, image.height, 24, image.format);
+    // Copy the original image
+    Graphics.Blit(image, rTex);
+
+    // Temporarily store the flipped image
+    RenderTexture tempTex;
+
+    if (flipXAxis)
+    {
+        // Allocate a temporary RenderTexture
+        tempTex = RenderTexture.GetTemporary(rTex.width, rTex.height, 24, rTex.format);
+        // Perform flip operation
+        FlipImage(rTex, tempTex, "FlipXAxis");
+
+        // Free the resources allocated for the Tempoarary RenderTexture
+        RenderTexture.ReleaseTemporary(rTex);
+
+        // Allocate a temporary RenderTexture
+        rTex = RenderTexture.GetTemporary(tempTex.width, tempTex.height, 24, rTex.format);
+        // Copy the flipped image
+        Graphics.Blit(tempTex, rTex);
+
+        // Free the resources allocated for the Tempoarary RenderTexture
+        RenderTexture.ReleaseTemporary(tempTex);
+    }
+
+    if (flipYAxis)
+    {
+        // Allocate a temporary RenderTexture
+        tempTex = RenderTexture.GetTemporary(rTex.width, rTex.height, 24, rTex.format);
+        // Perform flip operation
+        FlipImage(rTex, tempTex, "FlipYAxis");
+
+        // Free the resources allocated for the Tempoarary RenderTexture
+        RenderTexture.ReleaseTemporary(rTex);
+        // Allocate a temporary RenderTexture
+        rTex = RenderTexture.GetTemporary(tempTex.width, tempTex.height, 24, rTex.format);
+        // Copy the flipped image
+        Graphics.Blit(tempTex, rTex);
+
+        // Free the resources allocated for the Tempoarary RenderTexture
+        RenderTexture.ReleaseTemporary(tempTex);
+    }
+
+    if (flipDiag)
+    {
+        // Allocate a temporary RenderTexture
+        tempTex = RenderTexture.GetTemporary(rTex.height, rTex.width, 24, rTex.format);
+        // Perform flip operation
+        FlipImage(rTex, tempTex, "FlipDiag");
+
+        // Free the resources allocated for the Tempoarary RenderTexture
+        RenderTexture.ReleaseTemporary(rTex);
+        // Assign a reference to the active RenderTexture
+        rTex = RenderTexture.active;
+
+        // Free the resources allocated for the Tempoarary RenderTexture
+        RenderTexture.ReleaseTemporary(tempTex);
+    }
+
+    // Apply the new RenderTexture
+    screen.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", rTex);
+    // Adjust the scree dimensions to fit the new RenderTexture
+    screen.transform.localScale = new Vector3(rTex.width, rTex.height, screen.transform.localScale.z);
+
+    // Adjust the camera size to account for updates to the screen
+    mainCamera.GetComponent<Camera>().orthographicSize = rTex.height / 2;
+
+    // Free the resources allocated for the Tempoarary RenderTexture
+    RenderTexture.ReleaseTemporary(rTex);
+}
+```
 
 
 
@@ -234,8 +462,3 @@ That is one approach to efficiently flip images on the GPU in Unity. As demonstr
 
 
 
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

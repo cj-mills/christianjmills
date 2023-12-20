@@ -16,6 +16,12 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [Collaborative Filtering](#collaborative-filtering)
 * [A First Look at the Data](#a-first-look-at-the-data)
 * [Learning the Latent Factors](#learning-the-latent-factors)
@@ -25,7 +31,6 @@ aliases:
 * [Bootstrapping a Collaborative Filtering Model](#bootstrapping-a-collaborative-filtering-model)
 * [Deep Learning for Collaborative Filtering](#deep-learning-for-collaborative-filtering)
 * [References](#references)
-
 
 
 ## Collaborative Filtering
@@ -2077,6 +2082,3 @@ fastai.tabular.model.TabularModel
 
 **Next:** [Notes on fastai Book Ch. 9](../chapter-9/)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

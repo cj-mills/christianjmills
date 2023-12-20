@@ -1,5 +1,5 @@
 ---
-title: Testing Intel's Arc A770 GPU for Deep Learning Pt. 1
+title: "Testing Intel's Arc A770 GPU for Deep Learning Pt. 1"
 date: 2022-10-18
 image: /images/empty.gif
 title-block-categories: true
@@ -8,9 +8,14 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML.
-categories: [directml, openvino, pytorch, unity]
+description: "I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML."
+categories: [directml, openvino, pytorch, unity, arc-gpu]
 ---
+
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Testing Intel's Arc A770 GPU for Deep Learning**](/series/notes/arc-a770-testing.html)
+:::
 
 * [Overview](#overview)
 * [OpenVINO Inference](#openvino-inference)
@@ -18,6 +23,10 @@ categories: [directml, openvino, pytorch, unity]
 * [PyTorch-DirectML Training](#pytorch-directml-training)
 
 
+## Tutorial Links
+
+* [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu](../../intel-pytorch-extension-tutorial/native-ubuntu/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs
+* [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows](../../intel-pytorch-extension-tutorial/native-windows/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.
 
 
 
@@ -119,6 +128,3 @@ The tensorflow-directml package recently received its first update since May, so
 
 
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

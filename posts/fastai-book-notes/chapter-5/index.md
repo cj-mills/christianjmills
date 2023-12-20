@@ -18,6 +18,12 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [Image Classification](#image-classification)
 * [From Dogs and Cats to Pet Breeds](#from-dogs-and-cats-to-pet-breeds)
 * [Presizing](#presizing)
@@ -1919,6 +1925,3 @@ learn.fine_tune(6, freeze_epochs=3)
 
 **Next:** [Notes on fastai Book Ch. 6](../chapter-6/)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

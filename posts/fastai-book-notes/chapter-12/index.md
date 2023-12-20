@@ -18,6 +18,12 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [The Data](#the-data)
 * [Our First Language Model from Scratch](#our-first-language-model-from-scratch)
 * [Improving the RNN](#improving-the-rnn)
@@ -25,6 +31,7 @@ aliases:
 * [LSTM](#lstm)
 * [Regularizing an LSTM](#regularizing-an-lstm)
 * [References](#references)
+
 
 -----
 
@@ -1976,6 +1983,3 @@ learn.fit_one_cycle(15, 1e-2, wd=0.1)
 
 **Next:** [Notes on fastai Book Ch. 13](../chapter-13/)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

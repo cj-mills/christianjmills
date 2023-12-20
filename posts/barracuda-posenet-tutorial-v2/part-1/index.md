@@ -14,7 +14,15 @@ categories: [unity, barracuda, tutorial]
 
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-1/
-
+- /posts/barracuda-posenet-tutorial/part-1/
+- /posts/barracuda-posenet-tutorial/part-2/
+- /posts/barracuda-posenet-tutorial/part-2-5/
+- /posts/barracuda-posenet-tutorial/part-3/
+- /posts/barracuda-posenet-tutorial/part-4/
+- /posts/barracuda-posenet-tutorial/part-5/
+- /posts/barracuda-posenet-tutorial/part-6/
+- /posts/barracuda-posenet-tutorial/part-7/
+- /posts/barracuda-posenet-tutorial/part-8/
 ---
 
 * [Introduction](#introduction)
@@ -199,6 +207,3 @@ That takes care of the preliminary setup for the project. The next post will cov
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

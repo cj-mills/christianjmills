@@ -16,11 +16,16 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
+
 * [Multi-Label Classification](#multi-label-classification)
 * [Regression](#regression)
 * [References](#references)
-
-
 
 
 ## Multi-Label Classification
@@ -1254,5 +1259,3 @@ learn.show_results(ds_idx=1, nrows=3, figsize=(6,8))
 
 **Next:** [Notes on fastai Book Ch. 7](../chapter-7/)
 
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

@@ -17,6 +17,13 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
+
 * [A Brief History of Neural Networks](#a-brief-history-of-neural-networks)
 * [How to Learn Deep Learning](#how-to-learn-deep-learning)
 * [What is Machine Learning?](#what-is-machine-learning?)
@@ -26,11 +33,6 @@ aliases:
 * [Other Deep Learning Applications](#other-deep-learning-applications)
 * [Jargon](#jargon)
 * [References](#references)
-
-
-
-
-
 
 
 ## A Brief History of Neural Networks
@@ -1791,5 +1793,3 @@ Use Judgment in Defining Test Sets
 
 
 
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

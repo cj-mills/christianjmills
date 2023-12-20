@@ -266,5 +266,3 @@ This will reduce the cost of production, enabling more productions overall
 * **Slides:** [Google Slides](https://docs.google.com/presentation/d/1nXwBdUEIbwtPyyMEu5nwJugd42sgU4YhunaUOSl2_tc/edit#slide=id.g44af636ac2_0_502)
 
 
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

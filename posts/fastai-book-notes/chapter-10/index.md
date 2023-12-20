@@ -18,11 +18,19 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [NLP Deep Dive](#nlp-deep-dive)
 * [Text Preprocessing](#text-preprocessing)
 * [Training a Text Classifier](#training-a-text-classifier)
 * [Disinformation and Language Models](#disinformation-and-language-models)
 * [References](#references)
+
+
 
 -----
 
@@ -2122,8 +2130,3 @@ learn.fit_one_cycle(2, slice(1e-3/(2.6**4),1e-3))
 
 
 
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

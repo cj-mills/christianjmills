@@ -17,6 +17,11 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
 * [The Transformer Architecture](#the-transformer-architecture)
 * [The Encoder](#the-encoder)
 * [The Decoder](#the-decoder)
@@ -1139,6 +1144,3 @@ def scaled_dot_product_attention(query, key, value, mask=None):
 
 **Next:** [Notes on Transformers Book Ch. 4](../chapter-4/)
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

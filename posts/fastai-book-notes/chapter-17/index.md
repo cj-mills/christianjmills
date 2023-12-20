@@ -17,11 +17,18 @@ aliases:
 - /Notes-on-Fastai-Book-17/
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [A Neural Net from the Foundations](#a-neural-net-from-the-foundations)
 * [Building a Neural Net Layer from Scratch](#building-a-neural-net-layer-from-scratch)
 * [The Forward and Backward Passes](#the-forward-and-backward-passes)
 * [Conclusion](#conclusion)
 * [References](#references)
+
 
 -----
 
@@ -1551,10 +1558,3 @@ class Model(Module):
 
 **Next:** [Notes on fastai Book Ch. 18](../chapter-18/)
 
-
-
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

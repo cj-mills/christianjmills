@@ -17,6 +17,12 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
+
 * [Scaling Transformers](#scaling-transformers)
 * [Going Beyond Text](#going-beyond-text)
 * [Multimodal Transformers](#multimodal-transformers)
@@ -1126,7 +1132,3 @@ pd.DataFrame(zip(texts, probs[0].numpy()), columns=['Text', "Probability"])
 
 **Previous:** [Notes on Transformers Book Ch. 10](../chapter-10/)
 
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

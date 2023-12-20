@@ -21,6 +21,15 @@ open-graph:
   image: ../social-media/cover.jpg
 ---
 
+
+::: {.callout-important}
+## A new version of this tutorial series that uses PyTorch directly instead of IceVision is available at the link below: 
+
+- [Training YOLOX Models for Real-Time Object Detection in Pytorch](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
+
+:::
+
+
 * [Overview](#overview)
 * [Install OpenVINO](#install-openvino)
 * [Create DLL Project](#create-dll-project)
@@ -33,6 +42,7 @@ open-graph:
 * [Build Solution](#build-solution)
 * [Gather Dependencies](#gather-dependencies)
 * [Summary](#summary)
+
 
 
 
@@ -983,8 +993,3 @@ In this post, we learned how to create a dynamic link library (DLL) file in Visu
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/icevision-openvino-unity-tutorial)
 
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

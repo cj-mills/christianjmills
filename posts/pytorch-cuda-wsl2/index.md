@@ -1,5 +1,5 @@
 ---
-title: Using PyTorch with CUDA on WSL2
+title: Using PyTorch with CUDA on WSL2 (2020)
 date: '2020-12-31'
 image: /images/empty.gif
 title-block-categories: true
@@ -178,6 +178,3 @@ I'm excited about the future of WSL. Having such tight integration between Windo
 
 
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

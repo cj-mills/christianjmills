@@ -16,10 +16,17 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
+:::
+
+
 * [The Magic of Convolutions](#the-magic-of-convolutions)
 * [Our First Convolutional Neural Network](#our-first-convolutional-neural-network)
 * [Improving Training Stability](#improving-training-stability)
 * [References](#references)
+
 
 -----
 
@@ -2163,6 +2170,3 @@ learn = fit(5, lr=0.1)
 
 
 
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

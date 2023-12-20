@@ -17,6 +17,11 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
 * [Introduction](#introduction)
 * [Project: Summarize Dialogues Between Several People](#project-summarize-dialogues-between-several-people)
 * [The CNN/DailyMail Dataset](#the-cnn/dailymail-dataset)
@@ -1828,9 +1833,4 @@ print(pipe(custom_dialogue, **gen_kwargs)[0]["summary_text"])
 **Previous:** [Notes on Transformers Book Ch. 5](../chapter-5/)
 
 **Next:** [Notes on Transformers Book Ch. 7](../chapter-7/)
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
 

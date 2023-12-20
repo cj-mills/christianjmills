@@ -13,6 +13,11 @@ description: Train a [YOLOX](https://arxiv.org/abs/2107.08430) model using [IceV
 
 aliases:
 - /IceVision-to-OpenVINO-to-Unity-Tutorial-1/
+- /posts/openvino-yolox-unity/part-1/
+- /posts/openvino-yolox-unity/part-2/
+- /posts/openvino-yolox-unity/part-3/
+- /posts/openvino-yolox-unity/in-editor/
+- /posts/openvino-yolox-unity/in-game-camera/
 
 twitter-card:
   creator: "@cdotjdotmills"
@@ -22,7 +27,12 @@ open-graph:
   image: ../social-media/cover.jpg
 ---
 
+::: {.callout-important}
+## A new version of this tutorial series that uses PyTorch directly instead of IceVision is available at the link below: 
 
+- [Training YOLOX Models for Real-Time Object Detection in Pytorch](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
+
+:::
 
 * [Introduction](#introduction)
 * [Overview](#overview)
@@ -167,6 +177,14 @@ You can find links to view the training code and run it on [Google Colab](https:
 | [GitHub Repository](https://github.com/cj-mills/icevision-openvino-unity-tutorial/blob/main/notebooks/Icevision-YOLOX-to-OpenVINO-Tutorial-HaGRID.ipynb) | [Open In Colab](https://colab.research.google.com/github/cj-mills/icevision-openvino-unity-tutorial/blob/main/notebooks/Icevision-YOLOX-to-OpenVINO-Tutorial-HaGRID-Colab.ipynb) | [Open in Kaggle](https://kaggle.com/kernels/welcome?src=https://github.com/cj-mills/icevision-openvino-unity-tutorial/blob/main/notebooks/Icevision-YOLOX-to-OpenVINO-Tutorial-HaGRID-Kaggle.ipynb) |
 
 > **Note:** The free GPU tier for Google Colab takes approximately 11 minutes per epoch, while the free GPU tier for Kaggle Notebooks takes around 15 minutes per epoch.
+
+
+
+> **Update `May 17, 2023`:** Google Colab and Kaggle Notebooks now use an updated Python version that conflicts with this tutorial's package versions. Please create a local conda environment to run the tutorial code.
+
+
+
+
 
 
 
@@ -3501,10 +3519,4 @@ We now have a template to train a YOLOX model using IceVision and export it to O
 
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/icevision-openvino-unity-tutorial)
-
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
 

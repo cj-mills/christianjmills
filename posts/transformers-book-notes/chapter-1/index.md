@@ -18,6 +18,13 @@ aliases:
 
 
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
+
+
 * [Key Advancements](#key-advancements)
 * [Recurrent Architectures](#recurrent-architectures)
 * [The Encoder-Decoder Framework](#the-encoder-decoder-framework)
@@ -697,8 +704,3 @@ Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was c
 
 **Next:** [Notes on Transformers Book Ch. 2](../chapter-2/)
 
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

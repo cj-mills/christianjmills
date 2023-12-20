@@ -15,6 +15,3 @@ page-layout: full
 title-block-banner: false
 ---
 
-
-
-{{< include ../../_cloudflare-analytics.qmd >}}

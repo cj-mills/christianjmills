@@ -17,6 +17,11 @@ aliases:
 
 ---
 
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
+:::
+
 * [Introduction](#introduction)
 * [Project: Build a Review-Based QA System](#project-build-a-review-based-qa-system)
 * [Improving Our QA Pipeline](#improving-our-qa-pipeline)
@@ -2534,7 +2539,3 @@ generate_answers("What is the main drawback?")
 
 **Next:** [Notes on Transformers Book Ch. 8](../chapter-8/)
 
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->

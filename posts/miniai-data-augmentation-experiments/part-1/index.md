@@ -2487,13 +2487,3 @@ Of course, experiments with a known dataset are no substitute for real-world tes
 The models run locally in your browser using the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html) inference library for [Unity](https://unity.com/). I selected the best-performing runs for each image augmentation to give them their best shot. Let me know which one performs best for you in the comments below.
 
 
-
-
-
-
-
-
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "56b8d2f624604c4891327b3c0d9f6703"}'></script><!-- End Cloudflare Web Analytics -->
-
-
-
