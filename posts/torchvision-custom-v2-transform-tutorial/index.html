@@ -1,0 +1,2153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.543">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-01-23">
+<meta name="description" content="Learn how to create custom Torchvision V2 Transforms that support bounding box annotations.">
+
+<title>Christian Mills - How to Create Custom Torchvision V2 Transforms</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/favicon.ico" rel="icon">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Christian Mills - How to Create Custom Torchvision V2 Transforms">
+<meta property="og:description" content="Learn how to create custom Torchvision V2 Transforms that support bounding box annotations.">
+<meta property="og:image" content="christianjmills.com/posts/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - How to Create Custom Torchvision V2 Transforms">
+<meta name="twitter:description" content="Learn how to create custom Torchvision V2 Transforms that support bounding box annotations.">
+<meta name="twitter:image" content="christianjmills.com/posts/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../services.html"> 
+<span class="menu-text">Services</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#getting-started-with-the-code" id="toc-getting-started-with-the-code" class="nav-link" data-scroll-target="#getting-started-with-the-code">Getting Started with the Code</a></li>
+  <li><a href="#setting-up-your-python-environment" id="toc-setting-up-your-python-environment" class="nav-link" data-scroll-target="#setting-up-your-python-environment">Setting Up Your Python Environment</a>
+  <ul>
+  <li><a href="#creating-a-python-environment" id="toc-creating-a-python-environment" class="nav-link" data-scroll-target="#creating-a-python-environment">Creating a Python Environment</a></li>
+  <li><a href="#installing-pytorch" id="toc-installing-pytorch" class="nav-link" data-scroll-target="#installing-pytorch">Installing PyTorch</a></li>
+  <li><a href="#installing-additional-libraries" id="toc-installing-additional-libraries" class="nav-link" data-scroll-target="#installing-additional-libraries">Installing Additional Libraries</a></li>
+  <li><a href="#installing-utility-packages" id="toc-installing-utility-packages" class="nav-link" data-scroll-target="#installing-utility-packages">Installing Utility Packages</a></li>
+  </ul></li>
+  <li><a href="#importing-the-required-dependencies" id="toc-importing-the-required-dependencies" class="nav-link" data-scroll-target="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+  <li><a href="#loading-and-exploring-the-dataset" id="toc-loading-and-exploring-the-dataset" class="nav-link" data-scroll-target="#loading-and-exploring-the-dataset">Loading and Exploring the Dataset</a>
+  <ul>
+  <li><a href="#setting-the-directory-paths" id="toc-setting-the-directory-paths" class="nav-link" data-scroll-target="#setting-the-directory-paths">Setting the Directory Paths</a></li>
+  <li><a href="#setting-the-dataset-path" id="toc-setting-the-dataset-path" class="nav-link" data-scroll-target="#setting-the-dataset-path">Setting the Dataset Path</a></li>
+  <li><a href="#downloading-the-dataset" id="toc-downloading-the-dataset" class="nav-link" data-scroll-target="#downloading-the-dataset">Downloading the Dataset</a></li>
+  <li><a href="#get-image-file-paths" id="toc-get-image-file-paths" class="nav-link" data-scroll-target="#get-image-file-paths">Get Image File Paths</a></li>
+  <li><a href="#get-image-annotations" id="toc-get-image-annotations" class="nav-link" data-scroll-target="#get-image-annotations">Get Image Annotations</a></li>
+  <li><a href="#visualizing-image-annotations" id="toc-visualizing-image-annotations" class="nav-link" data-scroll-target="#visualizing-image-annotations">Visualizing Image Annotations</a>
+  <ul class="collapse">
+  <li><a href="#get-image-classes" id="toc-get-image-classes" class="nav-link" data-scroll-target="#get-image-classes">Get image classes</a></li>
+  <li><a href="#generate-a-color-map" id="toc-generate-a-color-map" class="nav-link" data-scroll-target="#generate-a-color-map">Generate a color map</a></li>
+  <li><a href="#download-a-font-file" id="toc-download-a-font-file" class="nav-link" data-scroll-target="#download-a-font-file">Download a font file</a></li>
+  <li><a href="#define-the-bounding-box-annotation-function" id="toc-define-the-bounding-box-annotation-function" class="nav-link" data-scroll-target="#define-the-bounding-box-annotation-function">Define the bounding box annotation function</a></li>
+  <li><a href="#annotate-sample-image" id="toc-annotate-sample-image" class="nav-link" data-scroll-target="#annotate-sample-image">Annotate sample image</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#examining-the-transforms-v2-class" id="toc-examining-the-transforms-v2-class" class="nav-link" data-scroll-target="#examining-the-transforms-v2-class">Examining the Transforms V2 Class</a></li>
+  <li><a href="#creating-a-random-pixel-copy-transform" id="toc-creating-a-random-pixel-copy-transform" class="nav-link" data-scroll-target="#creating-a-random-pixel-copy-transform">Creating a Random Pixel Copy Transform</a>
+  <ul>
+  <li><a href="#define-the-custom-transform-class" id="toc-define-the-custom-transform-class" class="nav-link" data-scroll-target="#define-the-custom-transform-class">Define the Custom Transform Class</a></li>
+  <li><a href="#initialize-the-transform" id="toc-initialize-the-transform" class="nav-link" data-scroll-target="#initialize-the-transform">Initialize the Transform</a></li>
+  <li><a href="#prepare-the-annotation-targets" id="toc-prepare-the-annotation-targets" class="nav-link" data-scroll-target="#prepare-the-annotation-targets">Prepare the Annotation Targets</a></li>
+  <li><a href="#apply-the-augmentation" id="toc-apply-the-augmentation" class="nav-link" data-scroll-target="#apply-the-augmentation">Apply the Augmentation</a></li>
+  </ul></li>
+  <li><a href="#creating-a-random-patch-copy-transform" id="toc-creating-a-random-patch-copy-transform" class="nav-link" data-scroll-target="#creating-a-random-patch-copy-transform">Creating a Random Patch Copy Transform</a>
+  <ul>
+  <li><a href="#define-the-custom-transform-class-1" id="toc-define-the-custom-transform-class-1" class="nav-link" data-scroll-target="#define-the-custom-transform-class-1">Define the Custom Transform Class</a></li>
+  <li><a href="#initialize-the-transform-1" id="toc-initialize-the-transform-1" class="nav-link" data-scroll-target="#initialize-the-transform-1">Initialize the Transform</a></li>
+  <li><a href="#apply-the-augmentation-1" id="toc-apply-the-augmentation-1" class="nav-link" data-scroll-target="#apply-the-augmentation-1">Apply the Augmentation</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">How to Create Custom Torchvision V2 Transforms</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">pytorch</div>
+    <div class="quarto-category">object-detection</div>
+    <div class="quarto-category">instance-segmentation</div>
+    <div class="quarto-category">tutorial</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Learn how to create custom Torchvision V2 Transforms that support bounding box annotations.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 23, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#getting-started-with-the-code">Getting Started with the Code</a></li>
+<li><a href="#setting-up-your-python-environment">Setting Up Your Python Environment</a></li>
+<li><a href="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+<li><a href="#loading-and-exploring-the-dataset">Loading and Exploring the Dataset</a></li>
+<li><a href="#examining-the-transforms-v2-class">Examining the Transforms V2 Class</a></li>
+<li><a href="#creating-a-random-pixel-copy-transform">Creating a Random Pixel Copy Transform</a></li>
+<li><a href="#creating-a-random-patch-copy-transform">Creating a Random Patch Copy Transform</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome to this hands-on guide to creating custom <a href="https://pytorch.org/vision/stable/transforms.html#v1-or-v2-which-one-should-i-use">V2 transforms</a> in torchvision. Torchvision’s V2 <a href="https://pytorch.org/vision/stable/transforms.html#v2-api-reference-recommended">image transforms</a> support annotations for various tasks, such as <a href="../../posts/torchvision-labelme-annotation-tutorials/bounding-boxes/">bounding boxes</a> for object detection and <a href="../../posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/">segmentation masks</a> for image segmentation.</p>
+<p>The tutorial walks through setting up a Python environment, loading the raw annotations into a <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html">Pandas DataFrame</a>, and creating custom data augmentations that support bounding box annotations.</p>
+<p>Data augmentation is a technique that creates variations of existing training samples to prevent a model from seeing the same sample twice. The goal is to help the model learn general features versus memorizing specific examples.</p>
+<p>This guide is suitable for beginners and experienced practitioners, providing the code, explanations, and resources needed to understand and implement each step. Upon completion, you will have a solid foundation for creating custom V2 image transforms in torchvision for object detection tasks.</p>
+</section>
+<section id="getting-started-with-the-code" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started-with-the-code">Getting Started with the Code</h2>
+<p>The tutorial code is available as a <a href="https://jupyter.org/">Jupyter Notebook</a>, which you can run locally or in a cloud-based environment like <a href="https://colab.research.google.com/">Google Colab</a>. I have dedicated tutorials for those new to these platforms or who need guidance setting up:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Setup Guides">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Setup Guides
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../posts/google-colab-getting-started-tutorial/"><strong>Getting Started with Google Colab</strong></a></li>
+<li><a href="../../posts/mamba-getting-started-tutorial-windows/"><strong>Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows</strong></a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Tutorial Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tutorial Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="table">
+<thead>
+<tr class="header">
+<th>Jupyter Notebook:</th>
+<th><a href="https://github.com/cj-mills/torchvision-annotation-tutorials/blob/main/notebooks/labelme/torchvision-custom-v2-transform-tutorial.ipynb">GitHub Repository</a></th>
+<th><a href="https://colab.research.google.com/github/cj-mills/torchvision-annotation-tutorials/blob/main/notebooks/labelme/torchvision-custom-v2-transform-tutorial.ipynb">Open In Colab</a></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="setting-up-your-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-your-python-environment">Setting Up Your Python Environment</h2>
+<p>Before diving into the code, we’ll cover the steps to create a local Python environment and install the necessary dependencies.</p>
+<section id="creating-a-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-python-environment">Creating a Python Environment</h3>
+<p>First, we’ll create a Python environment using <a href="https://docs.conda.io/en/latest/">Conda</a>/<a href="https://mamba.readthedocs.io/en/latest/">Mamba</a>. Open a terminal with Conda/Mamba installed and run the following commands:</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Conda</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Mamba</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new Python 3.11 environment</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">--name</span> pytorch-env python=3.11 <span class="at">-y</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Activate the environment</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate pytorch-env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new Python 3.11 environment</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> create <span class="at">--name</span> pytorch-env python=3.11 <span class="at">-y</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Activate the environment</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> activate pytorch-env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="installing-pytorch" class="level3">
+<h3 class="anchored" data-anchor-id="installing-pytorch">Installing PyTorch</h3>
+<p>Next, we’ll install <a href="https://pytorch.org/">PyTorch</a>. Run the appropriate command for your hardware and operating system.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Linux/Windows (CUDA)</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Mac</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false">Linux (CPU)</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false">Windows (CPU)</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install PyTorch with CUDA</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch torchvision torchaudio <span class="at">--index-url</span> https://download.pytorch.org/whl/cu121</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># MPS (Metal Performance Shaders) acceleration is available on MacOS 12.3+</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch torchvision torchaudio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install PyTorch for CPU only</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch torchvision torchaudio <span class="at">--index-url</span> https://download.pytorch.org/whl/cpu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install PyTorch for CPU only</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch torchvision torchaudio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="installing-additional-libraries" class="level3">
+<h3 class="anchored" data-anchor-id="installing-additional-libraries">Installing Additional Libraries</h3>
+<p>We also need to install some additional libraries for our project.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Package Descriptions
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="table">
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>jupyter</code></td>
+<td>An open-source web application that allows you to create and share documents that contain live code, equations, visualizations, and narrative text. (<a href="https://jupyter.org/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>matplotlib</code></td>
+<td>This package provides a comprehensive collection of visualization tools to create high-quality plots, charts, and graphs for data exploration and presentation. (<a href="https://matplotlib.org/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>pandas</code></td>
+<td>This package provides fast, powerful, and flexible data analysis and manipulation tools. (<a href="https://pandas.pydata.org/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>pillow</code></td>
+<td>The Python Imaging Library adds image processing capabilities. (<a href="https://pillow.readthedocs.io/en/stable/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>tqdm</code></td>
+<td>A Python library that provides fast, extensible progress bars for loops and other iterable objects in Python. (<a href="https://tqdm.github.io/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>distinctipy</code></td>
+<td>A lightweight python package providing functions to generate colours that are visually distinct from one another. (<a href="https://distinctipy.readthedocs.io/en/latest/">link</a>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Run the following commands to install these additional libraries:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install additional dependencies</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install distinctipy jupyter matplotlib pandas pillow tqdm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="installing-utility-packages" class="level3">
+<h3 class="anchored" data-anchor-id="installing-utility-packages">Installing Utility Packages</h3>
+<p>We will also install some utility packages I made, which provide shortcuts for routine tasks.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Package Descriptions
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="table">
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>cjm_pil_utils</code></td>
+<td>Some PIL utility functions I frequently use. (<a href="https://cj-mills.github.io/cjm-pil-utils/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>cjm_psl_utils</code></td>
+<td>Some utility functions using the Python Standard Library. (<a href="https://cj-mills.github.io/cjm-psl-utils/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>cjm_pytorch_utils</code></td>
+<td>Some utility functions for working with PyTorch. (<a href="https://cj-mills.github.io/cjm-pytorch-utils/">link</a>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Run the following commands to install the utility packages:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install additional utility packages</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>pip install cjm_pil_utils cjm_psl_utils cjm_pytorch_utils</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With our environment set up, we can open our Jupyter Notebook and dive into the code.</p>
+</section>
+</section>
+<section id="importing-the-required-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="importing-the-required-dependencies">Importing the Required Dependencies</h2>
+<p>First, we will import the necessary Python packages into our Jupyter Notebook.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import Python Standard Library dependencies</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> functools <span class="im">import</span> partial</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Any, Dict, Optional, List, Tuple, Union</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> functools <span class="im">import</span> singledispatchmethod</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Import utility functions</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_pil_utils.core <span class="im">import</span> get_img_files</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_psl_utils.core <span class="im">import</span> download_file, file_extract</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_pytorch_utils.core <span class="im">import</span> tensor_to_pil</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the distinctipy module</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> distinctipy <span class="im">import</span> distinctipy</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Import matplotlib for creating plots</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Import numpy</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the pandas package</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Do not truncate the contents of cells and display all rows and columns</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'max_colwidth'</span>, <span class="va">None</span>, <span class="st">'display.max_rows'</span>, <span class="va">None</span>, <span class="st">'display.max_columns'</span>, <span class="va">None</span>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PIL for image manipulation</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Import torchvision dependencies</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>torchvision.disable_beta_transforms_warning()</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.tv_tensors <span class="im">import</span> BoundingBoxes, Mask</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> tv_tensors</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.tv_tensors <span class="im">import</span> wrap <span class="im">as</span> tv_wrap</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.utils <span class="im">import</span> draw_bounding_boxes</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision.transforms.v2 <span class="im">as</span> transforms</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Import tqdm for progress bar</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>After importing the dependencies, we can load our dataset.</p>
+</section>
+<section id="loading-and-exploring-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="loading-and-exploring-the-dataset">Loading and Exploring the Dataset</h2>
+<p>We will use the following toy dataset containing images from the free stock photo site <a href="https://www.pexels.com/">Pexels</a> and its bounding box annotations:</p>
+<ul>
+<li><strong>Dataset Repository:</strong> <a href="https://huggingface.co/datasets/cj-mills/labelme-bounding-box-toy-dataset/tree/main">labelme-bounding-box-toy-dataset</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Bounding Box Annotation Format">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Bounding Box Annotation Format
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The bounding boxes for this dataset use the <a href="https://github.com/labelmeai/labelme">LabelMe</a> annotation format. You can learn more about this format and how to work with such annotations in the tutorial linked below:</p>
+<ul>
+<li><a href="../../posts/torchvision-labelme-annotation-tutorials/bounding-boxes/">Working with LabelMe Bounding Box Annotations in Torchvision</a></li>
+</ul>
+</div>
+</div>
+<section id="setting-the-directory-paths" class="level3">
+<h3 class="anchored" data-anchor-id="setting-the-directory-paths">Setting the Directory Paths</h3>
+<p>We first need to specify a place to store our dataset and a location to download the zip file containing it. The following code creates the folders in the current directory (<code>./</code>). Update the path if that is not suitable for you.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define path to store datasets</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>dataset_dir <span class="op">=</span> Path(<span class="st">"./Datasets/"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the dataset directory if it does not exist</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>dataset_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define path to store archive files</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>archive_dir <span class="op">=</span> dataset_dir<span class="op">/</span><span class="st">'../Archive'</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the archive directory if it does not exist</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>archive_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a Series with the paths and converting it to a DataFrame for display</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dataset Directory:"</span>: dataset_dir, </span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Archive Directory:"</span>: archive_dir</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_4e87e">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_4e87e_level0_row0" class="row_heading level0 row0">
+Dataset Directory:
+</th>
+<td id="T_4e87e_row0_col0" class="data row0 col0">
+Datasets
+</td>
+</tr>
+<tr>
+<th id="T_4e87e_level0_row1" class="row_heading level0 row1">
+Archive Directory:
+</th>
+<td id="T_4e87e_row1_col0" class="data row1 col0">
+Datasets/../Archive
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="setting-the-dataset-path" class="level3">
+<h3 class="anchored" data-anchor-id="setting-the-dataset-path">Setting the Dataset Path</h3>
+<p>Next, we construct the name for the Hugging Face Hub dataset and set where to download and extract the dataset.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the dataset</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>dataset_name <span class="op">=</span> <span class="st">'labelme-bounding-box-toy-dataset'</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the HuggingFace Hub dataset name by combining the username and dataset name</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>hf_dataset <span class="op">=</span> <span class="ss">f'cj-mills/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the path to the zip file that contains the dataset</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>archive_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>archive_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">.zip'</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the path to the directory where the dataset will be extracted</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>dataset_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>dataset_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a Series with the dataset name and paths and converting it to a DataFrame for display</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"HuggingFace Dataset:"</span>: hf_dataset, </span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Archive Path:"</span>: archive_path, </span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dataset Path:"</span>: dataset_path</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_e1208">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_e1208_level0_row0" class="row_heading level0 row0">
+HuggingFace Dataset:
+</th>
+<td id="T_e1208_row0_col0" class="data row0 col0">
+cj-mills/labelme-bounding-box-toy-dataset
+</td>
+</tr>
+<tr>
+<th id="T_e1208_level0_row1" class="row_heading level0 row1">
+Archive Path:
+</th>
+<td id="T_e1208_row1_col0" class="data row1 col0">
+Datasets/../Archive/labelme-bounding-box-toy-dataset.zip
+</td>
+</tr>
+<tr>
+<th id="T_e1208_level0_row2" class="row_heading level0 row2">
+Dataset Path:
+</th>
+<td id="T_e1208_row2_col0" class="data row2 col0">
+Datasets/labelme-bounding-box-toy-dataset
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="downloading-the-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="downloading-the-dataset">Downloading the Dataset</h3>
+<p>We can now download the archive file and extract the dataset using the <a href="https://cj-mills.github.io/cjm-psl-utils/core.html#download_file"><code>download_file</code></a> and <a href="https://cj-mills.github.io/cjm-psl-utils/core.html#file_extract"><code>file_extract</code></a> functions from the <code>cjm_psl_utils</code> package. We can delete the archive afterward to save space.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the HuggingFace Hub dataset URL</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dataset_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/</span><span class="sc">{</span>hf_dataset<span class="sc">}</span><span class="ss">/resolve/main/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">.zip"</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"HuggingFace Dataset URL: </span><span class="sc">{</span>dataset_url<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set whether to delete the archive file after extracting the dataset</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>delete_archive <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the dataset if not present</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> dataset_path.is_dir():</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Dataset folder already exists"</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Downloading dataset..."</span>)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    download_file(dataset_url, archive_dir)    </span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Extracting dataset..."</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    file_extract(fname<span class="op">=</span>archive_path, dest<span class="op">=</span>dataset_dir)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Delete the archive if specified</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> delete_archive: archive_path.unlink()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="get-image-file-paths" class="level3">
+<h3 class="anchored" data-anchor-id="get-image-file-paths">Get Image File Paths</h3>
+<p>Next, we will make a dictionary that maps each image’s unique name to its file path, allowing us to retrieve the file path for a given image more efficiently.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of image files in the dataset</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>img_file_paths <span class="op">=</span> get_img_files(dataset_path)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a dictionary that maps file names to file paths</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>img_dict <span class="op">=</span> {<span class="bu">file</span>.stem : <span class="bu">file</span> <span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> (img_file_paths)}</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the number of image files</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of Images: </span><span class="sc">{</span><span class="bu">len</span>(img_dict)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first five entries from the dictionary using a Pandas DataFrame</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>pd.DataFrame.from_dict(img_dict, orient<span class="op">=</span><span class="st">'index'</span>).head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Number of Images: 28</code></pre>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+adults-attractive-beautiful-1727660
+</th>
+<td>
+Datasets/labelme-bounding-box-toy-dataset/adults-attractive-beautiful-1727660.jpg
+</td>
+</tr>
+<tr>
+<th>
+balloon-launch-festival-flame-1426050
+</th>
+<td>
+Datasets/labelme-bounding-box-toy-dataset/balloon-launch-festival-flame-1426050.jpg
+</td>
+</tr>
+<tr>
+<th>
+bar-beer-celebration-3009788
+</th>
+<td>
+Datasets/labelme-bounding-box-toy-dataset/bar-beer-celebration-3009788.jpg
+</td>
+</tr>
+<tr>
+<th>
+beach-child-daughter-1438511
+</th>
+<td>
+Datasets/labelme-bounding-box-toy-dataset/beach-child-daughter-1438511.jpg
+</td>
+</tr>
+<tr>
+<th>
+cellphone-festival-girl-1408983
+</th>
+<td>
+Datasets/labelme-bounding-box-toy-dataset/cellphone-festival-girl-1408983.jpg
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="get-image-annotations" class="level3">
+<h3 class="anchored" data-anchor-id="get-image-annotations">Get Image Annotations</h3>
+<p>We will then read the content of the JSON annotation file associated with each image into a single Pandas DataFrame so we can easily query the annotations.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of JSON files in the dataset</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>annotation_file_paths <span class="op">=</span> <span class="bu">list</span>(dataset_path.glob(<span class="st">'*.json'</span>))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a generator that yields Pandas DataFrames containing the data from each JSON file</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>cls_dataframes <span class="op">=</span> (pd.read_json(f, orient<span class="op">=</span><span class="st">'index'</span>).transpose() <span class="cf">for</span> f <span class="kw">in</span> tqdm(annotation_file_paths))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Concatenate the DataFrames into a single DataFrame</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>annotation_df <span class="op">=</span> pd.concat(cls_dataframes, ignore_index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign the image file name as the index for each row</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>annotation_df[<span class="st">'index'</span>] <span class="op">=</span> annotation_df.<span class="bu">apply</span>(<span class="kw">lambda</span> row: row[<span class="st">'imagePath'</span>].split(<span class="st">'.'</span>)[<span class="dv">0</span>], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>annotation_df <span class="op">=</span> annotation_df.set_index(<span class="st">'index'</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only the rows that correspond to the filenames in the 'img_dict' dictionary</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>annotation_df <span class="op">=</span> annotation_df.loc[<span class="bu">list</span>(img_dict.keys())]</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the first 5 rows of the DataFrame</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>annotation_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+version
+</th>
+<th>
+flags
+</th>
+<th>
+shapes
+</th>
+<th>
+imagePath
+</th>
+<th>
+imageData
+</th>
+<th>
+imageHeight
+</th>
+<th>
+imageWidth
+</th>
+</tr>
+<tr>
+<th>
+index
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+adults-attractive-beautiful-1727660
+</th>
+<td>
+5.3.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘person’, ‘points’: [[450.1688537597656, 174.04931640625], [925.5413818359375, 765.6500244140625]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[1.195121951219533, 169.67073170731703], [448.7560975609756, 766.6219512195121]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}]
+</td>
+<td>
+adults-attractive-beautiful-1727660.jpg
+</td>
+<td>
+None
+</td>
+<td>
+768
+</td>
+<td>
+928
+</td>
+</tr>
+<tr>
+<th>
+balloon-launch-festival-flame-1426050
+</th>
+<td>
+5.3.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘person’, ‘points’: [[740.9563598632812, 368.4273681640625], [1088.41552734375, 764.3656005859375]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}]
+</td>
+<td>
+balloon-launch-festival-flame-1426050.jpg
+</td>
+<td>
+None
+</td>
+<td>
+768
+</td>
+<td>
+1152
+</td>
+</tr>
+<tr>
+<th>
+bar-beer-celebration-3009788
+</th>
+<td>
+5.3.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘person’, ‘points’: [[670.41650390625, 147.376953125], [1088.8197021484375, 760.0108642578125]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[116.53658536585372, 207.47560975609753], [629.3414634146342, 766.6219512195121]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[250.68292682926835, 1.378048780487799], [455.5609756097561, 225.15853658536582]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[427.51219512195127, 2.59756097560975], [593.9756097560976, 219.67073170731703]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[647.6341463414634, 2.59756097560975], [817.7560975609756, 137.96341463414632]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[731.170731707317, 0.7682926829268231], [917.1463414634146, 221.49999999999997]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[1009.2195121951219, 19.670731707317067], [1116.5365853658536, 262.3536585365854]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}]
+</td>
+<td>
+bar-beer-celebration-3009788.jpg
+</td>
+<td>
+None
+</td>
+<td>
+768
+</td>
+<td>
+1216
+</td>
+</tr>
+<tr>
+<th>
+beach-child-daughter-1438511
+</th>
+<td>
+5.3.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘person’, ‘points’: [[393.214111328125, 317.10064697265625], [588.5502319335938, 723.3473510742188]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}, {‘label’: ‘person’, ‘points’: [[578.9024390243902, 351.3780487804878], [692.9268292682926, 697.1097560975609]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}]
+</td>
+<td>
+beach-child-daughter-1438511.jpg
+</td>
+<td>
+None
+</td>
+<td>
+768
+</td>
+<td>
+1120
+</td>
+</tr>
+<tr>
+<th>
+cellphone-festival-girl-1408983
+</th>
+<td>
+5.3.1
+</td>
+<td>
+{}
+</td>
+<td>
+[{‘label’: ‘person’, ‘points’: [[119.5823974609375, 97.06643676757812], [886.0499877929688, 763.5545654296875]], ‘group_id’: None, ‘description’: ’‘, ’shape_type’: ‘rectangle’, ‘flags’: {}}]
+</td>
+<td>
+cellphone-festival-girl-1408983.jpg
+</td>
+<td>
+None
+</td>
+<td>
+768
+</td>
+<td>
+1152
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="visualizing-image-annotations" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-image-annotations">Visualizing Image Annotations</h3>
+<p>In this section, we will annotate a single image with its bounding boxes using torchvision’s <a href="https://pytorch.org/vision/stable/generated/torchvision.tv_tensors.BoundingBoxes.html"><code>BoundingBoxes</code></a> class and <a href="https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html"><code>draw_bounding_boxes</code></a> function.</p>
+<section id="get-image-classes" class="level4">
+<h4 class="anchored" data-anchor-id="get-image-classes">Get image classes</h4>
+<p>First, we get the names of all the classes in our dataset.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Explode the 'shapes' column in the annotation_df dataframe</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the resulting series to a dataframe and rename the 'shapes' column to 'shapes'</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the pandas Series function to the 'shapes' column of the dataframe</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>shapes_df <span class="op">=</span> annotation_df[<span class="st">'shapes'</span>].explode().to_frame().shapes.<span class="bu">apply</span>(pd.Series)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of unique labels in the 'annotation_df' DataFrame</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>class_names <span class="op">=</span> shapes_df[<span class="st">'label'</span>].unique().tolist()</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Display labels using a Pandas DataFrame</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(class_names)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+person
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="generate-a-color-map" class="level4">
+<h4 class="anchored" data-anchor-id="generate-a-color-map">Generate a color map</h4>
+<p>Next, we will generate a color map for the object classes.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate a list of colors with a length equal to the number of labels</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>colors <span class="op">=</span> distinctipy.get_colors(<span class="bu">len</span>(class_names))</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a copy of the color map in integer format</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>int_colors <span class="op">=</span> [<span class="bu">tuple</span>(<span class="bu">int</span>(c<span class="op">*</span><span class="dv">255</span>) <span class="cf">for</span> c <span class="kw">in</span> color) <span class="cf">for</span> color <span class="kw">in</span> colors]</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate a color swatch to visualize the color map</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>distinctipy.color_swatch(colors)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_20_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="download-a-font-file" class="level4">
+<h4 class="anchored" data-anchor-id="download-a-font-file">Download a font file</h4>
+<p>The <a href="https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html"><code>draw_bounding_boxes</code></a> function included with torchvision uses a pretty small font size. We can increase the font size if we use a custom font. Font files are available on sites like <a href="https://fonts.google.com/">Google Fonts</a>, or we can use one included with the operating system.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the font file</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>font_file <span class="op">=</span> <span class="st">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the font file</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>download_file(<span class="ss">f"https://fonts.gstatic.com/s/roboto/v30/</span><span class="sc">{</span>font_file<span class="sc">}</span><span class="ss">"</span>, <span class="st">"./"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-the-bounding-box-annotation-function" class="level4">
+<h4 class="anchored" data-anchor-id="define-the-bounding-box-annotation-function">Define the bounding box annotation function</h4>
+<p>We can make a partial function using <code>draw_bounding_boxes</code> since we’ll use the same box thickness and font each time we visualize bounding boxes.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>draw_bboxes <span class="op">=</span> partial(draw_bounding_boxes, fill<span class="op">=</span><span class="va">False</span>, width<span class="op">=</span><span class="dv">2</span>, font<span class="op">=</span>font_file, font_size<span class="op">=</span><span class="dv">25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="annotate-sample-image" class="level4">
+<h4 class="anchored" data-anchor-id="annotate-sample-image">Annotate sample image</h4>
+<p>Finally, we will open a sample image and annotate it with it’s associated bounding boxes.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the file ID of the first image file</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>file_id <span class="op">=</span> <span class="bu">list</span>(img_dict.keys())[<span class="dv">19</span>]</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Open the associated image file as a RGB image</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>sample_img <span class="op">=</span> Image.<span class="bu">open</span>(img_dict[file_id]).convert(<span class="st">'RGB'</span>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the labels and bounding box annotations for the sample image</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [shape[<span class="st">'label'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation_df.loc[file_id][<span class="st">'shapes'</span>]]</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>bboxes <span class="op">=</span> np.array([shape[<span class="st">'points'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation_df.loc[file_id][<span class="st">'shapes'</span>]], dtype<span class="op">=</span>np.float32).reshape(<span class="bu">len</span>(labels),<span class="dv">4</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the sample image with labels and bounding boxes</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>transforms.PILToTensor()(sample_img), </span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>BoundingBoxes(torchvision.ops.box_convert(torch.Tensor(bboxes), <span class="st">'xyxy'</span>, <span class="st">'xyxy'</span>), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>sample_img.size[::<span class="op">-</span><span class="dv">1</span>]),</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>labels, </span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[i] <span class="cf">for</span> i <span class="kw">in</span> [class_names.index(label) <span class="cf">for</span> label <span class="kw">in</span> labels]]</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/output_37_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>We have loaded the dataset and visualized the annotations for a sample image. In the next section, we will explore the V2 Transforms class.</p>
+</section>
+</section>
+</section>
+<section id="examining-the-transforms-v2-class" class="level2">
+<h2 class="anchored" data-anchor-id="examining-the-transforms-v2-class">Examining the Transforms V2 Class</h2>
+<p>Our custom transforms will inherit from the <a href="https://github.com/pytorch/vision/blob/315f31527e720999eecbb986679b3177d4ed5e37/torchvision/transforms/v2/_transform.py#L17"><code>transforms.v2.Transform</code></a> class, so let’s look at the source code for that class first.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Transforms V2 Class Source Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Transforms V2 Class Source Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Transform(nn.Module):</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Class attribute defining transformed types. Other types are passed-through without any transformation</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We support both Types and callables that are able to do further checks on the type of the input.</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    _transformed_types: Tuple[Union[Type, Callable[[Any], <span class="bu">bool</span>]], ...] <span class="op">=</span> (torch.Tensor, PIL.Image.Image)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        _log_api_usage_once(<span class="va">self</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _check_inputs(<span class="va">self</span>, flat_inputs: List[Any]) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _get_params(<span class="va">self</span>, flat_inputs: List[Any]) <span class="op">-&gt;</span> Dict[<span class="bu">str</span>, Any]:</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">dict</span>()</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _call_kernel(<span class="va">self</span>, functional: Callable, inpt: Any, <span class="op">*</span>args: Any, <span class="op">**</span>kwargs: Any) <span class="op">-&gt;</span> Any:</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>        kernel <span class="op">=</span> _get_kernel(functional, <span class="bu">type</span>(inpt), allow_passthrough<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> kernel(inpt, <span class="op">*</span>args, <span class="op">**</span>kwargs)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _transform(<span class="va">self</span>, inpt: Any, params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">NotImplementedError</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, <span class="op">*</span>inputs: Any) <span class="op">-&gt;</span> Any:</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>        flat_inputs, spec <span class="op">=</span> tree_flatten(inputs <span class="cf">if</span> <span class="bu">len</span>(inputs) <span class="op">&gt;</span> <span class="dv">1</span> <span class="cf">else</span> inputs[<span class="dv">0</span>])</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._check_inputs(flat_inputs)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>        needs_transform_list <span class="op">=</span> <span class="va">self</span>._needs_transform_list(flat_inputs)</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>        params <span class="op">=</span> <span class="va">self</span>._get_params(</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>            [inpt <span class="cf">for</span> (inpt, needs_transform) <span class="kw">in</span> <span class="bu">zip</span>(flat_inputs, needs_transform_list) <span class="cf">if</span> needs_transform]</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>        flat_outputs <span class="op">=</span> [</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._transform(inpt, params) <span class="cf">if</span> needs_transform <span class="cf">else</span> inpt</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> (inpt, needs_transform) <span class="kw">in</span> <span class="bu">zip</span>(flat_inputs, needs_transform_list)</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> tree_unflatten(flat_outputs, spec)</span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _needs_transform_list(<span class="va">self</span>, flat_inputs: List[Any]) <span class="op">-&gt;</span> List[<span class="bu">bool</span>]:</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Below is a heuristic on how to deal with pure tensor inputs:</span></span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 1. Pure tensors, i.e. tensors that are not a tv_tensor, are passed through if there is an explicit image</span></span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>        <span class="co">#    (`tv_tensors.Image` or `PIL.Image.Image`) or video (`tv_tensors.Video`) in the sample.</span></span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2. If there is no explicit image or video in the sample, only the first encountered pure tensor is</span></span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>        <span class="co">#    transformed as image, while the rest is passed through. The order is defined by the returned `flat_inputs`</span></span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>        <span class="co">#    of `tree_flatten`, which recurses depth-first through the input.</span></span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>        <span class="co">#</span></span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This heuristic stems from two requirements:</span></span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 1. We need to keep BC for single input pure tensors and treat them as images.</span></span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2. We don't want to treat all pure tensors as images, because some datasets like `CelebA` or `Widerface`</span></span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>        <span class="co">#    return supplemental numerical data as tensors that cannot be transformed as images.</span></span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>        <span class="co">#</span></span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The heuristic should work well for most people in practice. The only case where it doesn't is if someone</span></span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a>        <span class="co"># tries to transform multiple pure tensors at the same time, expecting them all to be treated as images.</span></span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>        <span class="co"># However, this case wasn't supported by transforms v1 either, so there is no BC concern.</span></span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>        needs_transform_list <span class="op">=</span> []</span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a>        transform_pure_tensor <span class="op">=</span> <span class="kw">not</span> has_any(flat_inputs, tv_tensors.Image, tv_tensors.Video, PIL.Image.Image)</span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> inpt <span class="kw">in</span> flat_inputs:</span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>            needs_transform <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="kw">not</span> check_type(inpt, <span class="va">self</span>._transformed_types):</span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>                needs_transform <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> is_pure_tensor(inpt):</span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> transform_pure_tensor:</span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a>                    transform_pure_tensor <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>                <span class="cf">else</span>:</span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a>                    needs_transform <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>            needs_transform_list.append(needs_transform)</span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> needs_transform_list</span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> extra_repr(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
+<span id="cb21-75"><a href="#cb21-75" aria-hidden="true" tabindex="-1"></a>        extra <span class="op">=</span> []</span>
+<span id="cb21-76"><a href="#cb21-76" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> name, value <span class="kw">in</span> <span class="va">self</span>.__dict__.items():</span>
+<span id="cb21-77"><a href="#cb21-77" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> name.startswith(<span class="st">"_"</span>) <span class="kw">or</span> name <span class="op">==</span> <span class="st">"training"</span>:</span>
+<span id="cb21-78"><a href="#cb21-78" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb21-79"><a href="#cb21-79" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-80"><a href="#cb21-80" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="kw">not</span> <span class="bu">isinstance</span>(value, (<span class="bu">bool</span>, <span class="bu">int</span>, <span class="bu">float</span>, <span class="bu">str</span>, <span class="bu">tuple</span>, <span class="bu">list</span>, enum.Enum)):</span>
+<span id="cb21-81"><a href="#cb21-81" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb21-82"><a href="#cb21-82" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-83"><a href="#cb21-83" aria-hidden="true" tabindex="-1"></a>            extra.append(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">=</span><span class="sc">{</span>value<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb21-84"><a href="#cb21-84" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-85"><a href="#cb21-85" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">", "</span>.join(extra)</span>
+<span id="cb21-86"><a href="#cb21-86" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-87"><a href="#cb21-87" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This attribute should be set on all transforms that have a v1 equivalent. Doing so enables two things:</span></span>
+<span id="cb21-88"><a href="#cb21-88" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. In case the v1 transform has a static `get_params` method, it will also be available under the same name on</span></span>
+<span id="cb21-89"><a href="#cb21-89" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    the v2 transform. See `__init_subclass__` for details.</span></span>
+<span id="cb21-90"><a href="#cb21-90" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. The v2 transform will be JIT scriptable. See `_extract_params_for_v1_transform` and `__prepare_scriptable__`</span></span>
+<span id="cb21-91"><a href="#cb21-91" aria-hidden="true" tabindex="-1"></a>    <span class="co">#    for details.</span></span>
+<span id="cb21-92"><a href="#cb21-92" aria-hidden="true" tabindex="-1"></a>    _v1_transform_cls: Optional[Type[nn.Module]] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb21-93"><a href="#cb21-93" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-94"><a href="#cb21-94" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init_subclass__</span>(cls) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb21-95"><a href="#cb21-95" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Since `get_params` is a `@staticmethod`, we have to bind it to the class itself rather than to an instance.</span></span>
+<span id="cb21-96"><a href="#cb21-96" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This method is called after subclassing has happened, i.e. `cls` is the subclass, e.g. `Resize`.</span></span>
+<span id="cb21-97"><a href="#cb21-97" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cls._v1_transform_cls <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="bu">hasattr</span>(cls._v1_transform_cls, <span class="st">"get_params"</span>):</span>
+<span id="cb21-98"><a href="#cb21-98" aria-hidden="true" tabindex="-1"></a>            cls.get_params <span class="op">=</span> <span class="bu">staticmethod</span>(cls._v1_transform_cls.get_params)  <span class="co"># type: ignore[attr-defined]</span></span>
+<span id="cb21-99"><a href="#cb21-99" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-100"><a href="#cb21-100" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _extract_params_for_v1_transform(<span class="va">self</span>) <span class="op">-&gt;</span> Dict[<span class="bu">str</span>, Any]:</span>
+<span id="cb21-101"><a href="#cb21-101" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This method is called by `__prepare_scriptable__` to instantiate the equivalent v1 transform from the current</span></span>
+<span id="cb21-102"><a href="#cb21-102" aria-hidden="true" tabindex="-1"></a>        <span class="co"># v2 transform instance. It extracts all available public attributes that are specific to that transform and</span></span>
+<span id="cb21-103"><a href="#cb21-103" aria-hidden="true" tabindex="-1"></a>        <span class="co"># not `nn.Module` in general.</span></span>
+<span id="cb21-104"><a href="#cb21-104" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Overwrite this method on the v2 transform class if the above is not sufficient. For example, this might happen</span></span>
+<span id="cb21-105"><a href="#cb21-105" aria-hidden="true" tabindex="-1"></a>        <span class="co"># if the v2 transform introduced new parameters that are not support by the v1 transform.</span></span>
+<span id="cb21-106"><a href="#cb21-106" aria-hidden="true" tabindex="-1"></a>        common_attrs <span class="op">=</span> nn.Module().__dict__.keys()</span>
+<span id="cb21-107"><a href="#cb21-107" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
+<span id="cb21-108"><a href="#cb21-108" aria-hidden="true" tabindex="-1"></a>            attr: value</span>
+<span id="cb21-109"><a href="#cb21-109" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> attr, value <span class="kw">in</span> <span class="va">self</span>.__dict__.items()</span>
+<span id="cb21-110"><a href="#cb21-110" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="kw">not</span> attr.startswith(<span class="st">"_"</span>) <span class="kw">and</span> attr <span class="kw">not</span> <span class="kw">in</span> common_attrs</span>
+<span id="cb21-111"><a href="#cb21-111" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-112"><a href="#cb21-112" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-113"><a href="#cb21-113" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> __prepare_scriptable__(<span class="va">self</span>) <span class="op">-&gt;</span> nn.Module:</span>
+<span id="cb21-114"><a href="#cb21-114" aria-hidden="true" tabindex="-1"></a>        <span class="co"># This method is called early on when `torch.jit.script`'ing an `nn.Module` instance. If it succeeds, the return</span></span>
+<span id="cb21-115"><a href="#cb21-115" aria-hidden="true" tabindex="-1"></a>        <span class="co"># value is used for scripting over the original object that should have been scripted. Since the v1 transforms</span></span>
+<span id="cb21-116"><a href="#cb21-116" aria-hidden="true" tabindex="-1"></a>        <span class="co"># are JIT scriptable, and we made sure that for single image inputs v1 and v2 are equivalent, we just return the</span></span>
+<span id="cb21-117"><a href="#cb21-117" aria-hidden="true" tabindex="-1"></a>        <span class="co"># equivalent v1 transform here. This of course only makes transforms v2 JIT scriptable as long as transforms v1</span></span>
+<span id="cb21-118"><a href="#cb21-118" aria-hidden="true" tabindex="-1"></a>        <span class="co"># is around.</span></span>
+<span id="cb21-119"><a href="#cb21-119" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>._v1_transform_cls <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb21-120"><a href="#cb21-120" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">RuntimeError</span>(</span>
+<span id="cb21-121"><a href="#cb21-121" aria-hidden="true" tabindex="-1"></a>                <span class="ss">f"Transform </span><span class="sc">{</span><span class="bu">type</span>(<span class="va">self</span>)<span class="sc">.</span><span class="va">__name__</span><span class="sc">}</span><span class="ss"> cannot be JIT scripted. "</span></span>
+<span id="cb21-122"><a href="#cb21-122" aria-hidden="true" tabindex="-1"></a>                <span class="st">"torchscript is only supported for backward compatibility with transforms "</span></span>
+<span id="cb21-123"><a href="#cb21-123" aria-hidden="true" tabindex="-1"></a>                <span class="st">"which are already in torchvision.transforms. "</span></span>
+<span id="cb21-124"><a href="#cb21-124" aria-hidden="true" tabindex="-1"></a>                <span class="st">"For torchscript support (on tensors only), you can use the functional API instead."</span></span>
+<span id="cb21-125"><a href="#cb21-125" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb21-126"><a href="#cb21-126" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-127"><a href="#cb21-127" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>._v1_transform_cls(<span class="op">**</span><span class="va">self</span>._extract_params_for_v1_transform())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>The above source code indicates that our custom transforms must implement the <code>_transform</code> method, which handles images and annotations.</p>
+</section>
+<section id="creating-a-random-pixel-copy-transform" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-random-pixel-copy-transform">Creating a Random Pixel Copy Transform</h2>
+<p>Our first custom transform will randomly copy and paste pixels in random locations. This one will not require updating the associated image annotations.</p>
+<section id="define-the-custom-transform-class" class="level3">
+<h3 class="anchored" data-anchor-id="define-the-custom-transform-class">Define the Custom Transform Class</h3>
+<p>We can use Python’s <a href="https://docs.python.org/3/library/functools.html#functools.singledispatchmethod"><code>singledispatchmethod</code></a> decorator to overload the <code>_transform</code> method based on the first (non-<em>self</em> or non-<em>cls)</em> argument’s type.</p>
+<p>We will implement different versions to handle PIL Images, PyTorch Tensors, and torchvision’s <a href="https://pytorch.org/vision/stable/generated/torchvision.tv_tensors.Image.html"><code>tv_tensor.Image</code></a> class as image input types and to return annotations such as BoundingBoxes and Mask instances unaltered.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> RandomPixelCopy(transforms.Transform):</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A torchvision V2 transform that copies data from a randomly selected set of pixels to another </span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co">    randomly selected set of pixels of a image tensor.</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                 min_pct<span class="op">=</span><span class="fl">0.0025</span>, <span class="co"># The minimum percentage of the tensor's pixels to be copied.</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                 max_pct:<span class="bu">float</span><span class="op">=</span><span class="fl">0.1</span> <span class="co"># The maximum percentage of the tensor's pixels to be copied.</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>                ):</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.min_pct <span class="op">=</span> min_pct</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.max_pct <span class="op">=</span> max_pct</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> rand_pixel_copy(<span class="va">self</span>, </span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>                        img_tensor:torch.Tensor, <span class="co"># The input image tensor.</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>                        pct:<span class="bu">float</span> <span class="co"># The percentage of the total number of pixels to be selected as the source and target sets of pixels.</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>                       ) <span class="op">-&gt;</span> torch.Tensor : <span class="co"># The modified input image tensor.</span></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="co">        Copy data from a randomly selected set of pixels to another randomly selected set of pixels of a image tensor.</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>        src_dim <span class="op">=</span> img_tensor.dim()</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>        img_tensor <span class="op">=</span> img_tensor.unsqueeze(<span class="dv">0</span>) <span class="cf">if</span> src_dim <span class="op">==</span> <span class="dv">3</span> <span class="cf">else</span> img_tensor</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the shape of the img_tensor</span></span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>        b, c, h, w <span class="op">=</span> img_tensor.shape</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the number of pixels to be selected</span></span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>        num_pixels <span class="op">=</span> <span class="bu">int</span>(img_tensor[<span class="op">-</span><span class="dv">1</span>:].numel() <span class="op">*</span> pct)</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Select the source pixel indices</span></span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>        source_indices <span class="op">=</span> torch.LongTensor(num_pixels, <span class="dv">2</span>).random_(<span class="dv">0</span>, h <span class="op">*</span> w)</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>        source_indices[:, <span class="dv">0</span>] <span class="op">=</span> source_indices[:, <span class="dv">0</span>] <span class="op">//</span> w</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>        source_indices[:, <span class="dv">1</span>] <span class="op">=</span> source_indices[:, <span class="dv">1</span>] <span class="op">%</span> w</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Select the target pixel indices</span></span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>        target_indices <span class="op">=</span> torch.LongTensor(num_pixels, <span class="dv">2</span>).random_(<span class="dv">0</span>, h <span class="op">*</span> w)</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>        target_indices[:, <span class="dv">0</span>] <span class="op">=</span> target_indices[:, <span class="dv">0</span>] <span class="op">//</span> w</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>        target_indices[:, <span class="dv">1</span>] <span class="op">=</span> target_indices[:, <span class="dv">1</span>] <span class="op">%</span> w</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the indices of the channels</span></span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>        c_indices <span class="op">=</span> torch.arange(c).repeat(num_pixels, <span class="dv">1</span>).t()</span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Copy the pixels</span></span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>        source_pixels <span class="op">=</span> img_tensor[:, c_indices, source_indices[:, <span class="dv">0</span>], source_indices[:, <span class="dv">1</span>]]</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>        img_tensor[:, c_indices, target_indices[:, <span class="dv">0</span>], target_indices[:, <span class="dv">1</span>]] <span class="op">=</span> source_pixels</span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> img_tensor.squeeze(<span class="dv">0</span>) <span class="cf">if</span> src_dim <span class="op">==</span> <span class="dv">3</span> <span class="cf">else</span> img_tensor</span>
+<span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">@singledispatchmethod</span></span>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _transform(<span class="va">self</span>, inpt: Any, params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb22-53"><a href="#cb22-53" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Default Behavior: Don't modify the input"""</span></span>
+<span id="cb22-54"><a href="#cb22-54" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> inpt</span>
+<span id="cb22-55"><a href="#cb22-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-56"><a href="#cb22-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_transform.register</span></span>
+<span id="cb22-57"><a href="#cb22-57" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _(<span class="va">self</span>, inpt: Union[torch.Tensor, tv_tensors.Image], params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb22-58"><a href="#cb22-58" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Apply the `rand_pixel_copy` method to the input tensor"""</span></span>
+<span id="cb22-59"><a href="#cb22-59" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.rand_pixel_copy(inpt, <span class="bu">max</span>(<span class="va">self</span>.min_pct, random.random() <span class="op">*</span> <span class="va">self</span>.max_pct))</span>
+<span id="cb22-60"><a href="#cb22-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-61"><a href="#cb22-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_transform.register</span></span>
+<span id="cb22-62"><a href="#cb22-62" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _(<span class="va">self</span>, inpt: Image.Image, params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb22-63"><a href="#cb22-63" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Convert the PIL Image to a torch.Tensor to apply the transform"""</span></span>
+<span id="cb22-64"><a href="#cb22-64" aria-hidden="true" tabindex="-1"></a>        inpt_torch <span class="op">=</span> transforms.PILToTensor()(inpt)</span>
+<span id="cb22-65"><a href="#cb22-65" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> transforms.ToPILImage()(<span class="va">self</span>._transform(inpt_torch, params))</span>
+<span id="cb22-66"><a href="#cb22-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-67"><a href="#cb22-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_transform.register</span></span>
+<span id="cb22-68"><a href="#cb22-68" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _(<span class="va">self</span>, inpt: Union[BoundingBoxes, Mask], params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb22-69"><a href="#cb22-69" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Don't modify image annotations"""</span></span>
+<span id="cb22-70"><a href="#cb22-70" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> inpt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With our custom transform defined, we can create an instance of it and try it out.</p>
+</section>
+<section id="initialize-the-transform" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-the-transform">Initialize the Transform</h3>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a RandomPixelCopy object</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>rand_pixel_copy_tfm <span class="op">=</span> RandomPixelCopy(max_pct<span class="op">=</span><span class="fl">0.05</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="prepare-the-annotation-targets" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-annotation-targets">Prepare the Annotation Targets</h3>
+<p>The V2 image transforms take an image and a <code>targets</code> dictionary as input. The dictionary contains the annotations and labels for the image.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare bounding box targets</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>targets <span class="op">=</span> {</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'boxes'</span>: BoundingBoxes(torch.Tensor(bboxes), </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                           <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, </span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                           canvas_size<span class="op">=</span>sample_img.size[::<span class="op">-</span><span class="dv">1</span>]), </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'labels'</span>: torch.Tensor([class_names.index(label) <span class="cf">for</span> label <span class="kw">in</span> labels])</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="apply-the-augmentation" class="level3">
+<h3 class="anchored" data-anchor-id="apply-the-augmentation">Apply the Augmentation</h3>
+<p>Now, we can see how our sample image looks after applying the augmentation.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">PIL.Image</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">torch.Tensor</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-3" role="tab" aria-controls="tabset-3-3" aria-selected="false">tv_tensor.Image</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Feed sample image and targets through the image transform</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>augmented_img, augmented_targets <span class="op">=</span> rand_pixel_copy_tfm(sample_img, targets)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the augmented image with updated labels and bounding boxes</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>transforms.PILToTensor()(augmented_img), </span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>augmented_targets[<span class="st">'boxes'</span>], </span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(label.item())] <span class="cf">for</span> label <span class="kw">in</span> augmented_targets[<span class="st">'labels'</span>]], </span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i)] <span class="cf">for</span> i <span class="kw">in</span> augmented_targets[<span class="st">'labels'</span>]]</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the augmented image</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>transforms.ToPILImage()(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="./images/output_37_0.png" class="img-fluid"></p>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Feed sample image and targets through the image transform</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>augmented_img, augmented_targets <span class="op">=</span> rand_pixel_copy_tfm(transforms.PILToTensor()(sample_img), targets)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the augmented image with updated labels and bounding boxes</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>augmented_img, </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>augmented_targets[<span class="st">'boxes'</span>], </span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(label.item())] <span class="cf">for</span> label <span class="kw">in</span> augmented_targets[<span class="st">'labels'</span>]], </span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i)] <span class="cf">for</span> i <span class="kw">in</span> augmented_targets[<span class="st">'labels'</span>]]</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the augmented image</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>transforms.ToPILImage()(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="./images/output_39_0.png" class="img-fluid"></p>
+</div>
+<div id="tabset-3-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-3-tab">
+<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Feed sample image and targets through the image transform</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>augmented_img, augmented_targets <span class="op">=</span> rand_pixel_copy_tfm(transforms.ToImage()(sample_img), targets)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the augmented image with updated labels and bounding boxes</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>augmented_img, </span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>augmented_targets[<span class="st">'boxes'</span>], </span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(label.item())] <span class="cf">for</span> label <span class="kw">in</span> augmented_targets[<span class="st">'labels'</span>]], </span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i)] <span class="cf">for</span> i <span class="kw">in</span> augmented_targets[<span class="st">'labels'</span>]]</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the augmented image</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>transforms.ToPILImage()(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="./images/output_41_0.png" class="img-fluid"></p>
+</div>
+</div>
+</div>
+<p>As intended, the transform randomly copy-pasted pixel values while leaving the bounding box annotations unchanged. In the next section, we will create a transform that requires us to update the bounding box annotations with the image.</p>
+</section>
+</section>
+<section id="creating-a-random-patch-copy-transform" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-random-patch-copy-transform">Creating a Random Patch Copy Transform</h2>
+<p>Our second transform will randomly copy rectangular patches from the image and paste them in random locations. This transform may potentially occlude annotated areas, so we need to manage the associated bounding box annotations accordingly.</p>
+<section id="define-the-custom-transform-class-1" class="level3">
+<h3 class="anchored" data-anchor-id="define-the-custom-transform-class-1">Define the Custom Transform Class</h3>
+<p>To determine if any copy-pasted patches occlude an annotated area, we will keep track of the patches for the current image and check how much they overlap with the bounding box annotations.</p>
+<p>If the patches overlap a given bounding box by a certain threshold, we will set the dimensions for that bounding box to <code>0</code> so the <a href="https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.SanitizeBoundingBoxes.html#torchvision.transforms.v2.SanitizeBoundingBoxes"><code>SanitizeBoundingBoxes</code></a> transform removes it. The <code>SanitizeBoundingBoxes</code> transform would also remove a segmentation mask associated with the bounding box.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> RandomPatchCopy(transforms.Transform):</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A torchvision V2 transform that copies data from a randomly selected rectangular patch</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co">    to another randomly selected rectangular region of an image tensor multiple times.</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, </span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                 pct:<span class="bu">float</span><span class="op">=</span><span class="fl">0.2</span>, <span class="co"># The percentage of the tensor's size to be used as the side length of the square regions.</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>                 min_num:<span class="bu">int</span><span class="op">=</span><span class="dv">0</span>, <span class="co"># The minimum number of times to apply the `rand_square_copy` function.</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>                 max_num:<span class="bu">int</span><span class="op">=</span><span class="dv">4</span>, <span class="co"># The maximum number of times to apply the `rand_square_copy` function.</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>                 iou_thresh:<span class="bu">float</span><span class="op">=</span><span class="fl">0.25</span> <span class="co"># The IoU threshold for bounding box suppression.</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>                ):</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pct <span class="op">=</span> pct</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.min_num <span class="op">=</span> min_num</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.max_num <span class="op">=</span> max_num</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.iou_thresh <span class="op">=</span> iou_thresh</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.patches <span class="op">=</span> []</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> calculate_iou_multi(<span class="va">self</span>,</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>                            boxes1:torch.Tensor, <span class="co"># An array of bounding boxes in [x1, y1, x2, y2] format.</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>                            boxes2:torch.Tensor <span class="co"># Another array of bounding boxes in [x1, y1, x2, y2] format.</span></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>                           ) <span class="op">-&gt;</span> torch.Tensor: <span class="co"># A 2D array where element (i, j) is the IoU of boxes1[i] and boxes2[j].</span></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a><span class="co">        Calculate the Intersection over Union (IoU) for each combination of bounding boxes in two arrays</span></span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a><span class="co">        using PyTorch broadcasting.</span></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Expand boxes1 and boxes2 for broadcasting</span></span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>        boxes1 <span class="op">=</span> boxes1[:, <span class="va">None</span>, :]</span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>        boxes2 <span class="op">=</span> boxes2[<span class="va">None</span>, :, :]</span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate intersection coordinates</span></span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a>        int_x1 <span class="op">=</span> torch.<span class="bu">max</span>(boxes1[..., <span class="dv">0</span>], boxes2[..., <span class="dv">0</span>])</span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a>        int_y1 <span class="op">=</span> torch.<span class="bu">max</span>(boxes1[..., <span class="dv">1</span>], boxes2[..., <span class="dv">1</span>])</span>
+<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a>        int_x2 <span class="op">=</span> torch.<span class="bu">min</span>(boxes1[..., <span class="dv">2</span>], boxes2[..., <span class="dv">2</span>])</span>
+<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a>        int_y2 <span class="op">=</span> torch.<span class="bu">min</span>(boxes1[..., <span class="dv">3</span>], boxes2[..., <span class="dv">3</span>])</span>
+<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate intersection and union areas</span></span>
+<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a>        int_area <span class="op">=</span> torch.clamp(int_x2 <span class="op">-</span> int_x1, <span class="bu">min</span><span class="op">=</span><span class="dv">0</span>) <span class="op">*</span> torch.clamp(int_y2 <span class="op">-</span> int_y1, <span class="bu">min</span><span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a>        box1_area <span class="op">=</span> (boxes1[..., <span class="dv">2</span>] <span class="op">-</span> boxes1[..., <span class="dv">0</span>]) <span class="op">*</span> (boxes1[..., <span class="dv">3</span>] <span class="op">-</span> boxes1[..., <span class="dv">1</span>])</span>
+<span id="cb28-41"><a href="#cb28-41" aria-hidden="true" tabindex="-1"></a>        box2_area <span class="op">=</span> (boxes2[..., <span class="dv">2</span>] <span class="op">-</span> boxes2[..., <span class="dv">0</span>]) <span class="op">*</span> (boxes2[..., <span class="dv">3</span>] <span class="op">-</span> boxes2[..., <span class="dv">1</span>])</span>
+<span id="cb28-42"><a href="#cb28-42" aria-hidden="true" tabindex="-1"></a>        union_area <span class="op">=</span> box1_area <span class="op">+</span> box2_area <span class="op">-</span> int_area</span>
+<span id="cb28-43"><a href="#cb28-43" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-44"><a href="#cb28-44" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate IoU</span></span>
+<span id="cb28-45"><a href="#cb28-45" aria-hidden="true" tabindex="-1"></a>        iou <span class="op">=</span> int_area <span class="op">/</span> torch.clamp(union_area, <span class="bu">min</span><span class="op">=</span><span class="fl">1e-10</span>)</span>
+<span id="cb28-46"><a href="#cb28-46" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-47"><a href="#cb28-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> iou</span>
+<span id="cb28-48"><a href="#cb28-48" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-49"><a href="#cb28-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-50"><a href="#cb28-50" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> rand_patch_copy(<span class="va">self</span>, </span>
+<span id="cb28-51"><a href="#cb28-51" aria-hidden="true" tabindex="-1"></a>                        img_tensor:torch.Tensor, <span class="co"># The input image tensor.</span></span>
+<span id="cb28-52"><a href="#cb28-52" aria-hidden="true" tabindex="-1"></a>                        pct:<span class="bu">float</span> <span class="co"># # The percentage of the image tensor's size to be used as the side length of the patch.</span></span>
+<span id="cb28-53"><a href="#cb28-53" aria-hidden="true" tabindex="-1"></a>                       ) <span class="op">-&gt;</span> (torch.Tensor, <span class="bu">tuple</span>): <span class="co"># The modified input image tensor and coordinates of the target patch in the format [x, y, w, h].</span></span>
+<span id="cb28-54"><a href="#cb28-54" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb28-55"><a href="#cb28-55" aria-hidden="true" tabindex="-1"></a><span class="co">        Copy data from a randomly selected rectangular patch to another randomly selected </span></span>
+<span id="cb28-56"><a href="#cb28-56" aria-hidden="true" tabindex="-1"></a><span class="co">        rectangular region of an image tensor, and return the coordinates of the target patch.</span></span>
+<span id="cb28-57"><a href="#cb28-57" aria-hidden="true" tabindex="-1"></a><span class="co">        Assumes the tensor is in 'channels-first' format.</span></span>
+<span id="cb28-58"><a href="#cb28-58" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb28-59"><a href="#cb28-59" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> (<span class="dv">0</span> <span class="op">&lt;</span> pct <span class="op">&lt;=</span> <span class="dv">1</span>):</span>
+<span id="cb28-60"><a href="#cb28-60" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"pct must be between 0 and 1"</span>)</span>
+<span id="cb28-61"><a href="#cb28-61" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-62"><a href="#cb28-62" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the shape of the tensor</span></span>
+<span id="cb28-63"><a href="#cb28-63" aria-hidden="true" tabindex="-1"></a>        _, h, w <span class="op">=</span> img_tensor.shape</span>
+<span id="cb28-64"><a href="#cb28-64" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-65"><a href="#cb28-65" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the size of the rectangle</span></span>
+<span id="cb28-66"><a href="#cb28-66" aria-hidden="true" tabindex="-1"></a>        szx <span class="op">=</span> <span class="bu">int</span>(pct <span class="op">*</span> w)</span>
+<span id="cb28-67"><a href="#cb28-67" aria-hidden="true" tabindex="-1"></a>        szy <span class="op">=</span> <span class="bu">int</span>(pct <span class="op">*</span> h)</span>
+<span id="cb28-68"><a href="#cb28-68" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-69"><a href="#cb28-69" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the top-left coordinate of the source rectangle</span></span>
+<span id="cb28-70"><a href="#cb28-70" aria-hidden="true" tabindex="-1"></a>        sty1 <span class="op">=</span> random.randint(<span class="dv">0</span>, w <span class="op">-</span> szx)  <span class="co"># x-coordinate</span></span>
+<span id="cb28-71"><a href="#cb28-71" aria-hidden="true" tabindex="-1"></a>        stx1 <span class="op">=</span> random.randint(<span class="dv">0</span>, h <span class="op">-</span> szy)  <span class="co"># y-coordinate</span></span>
+<span id="cb28-72"><a href="#cb28-72" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-73"><a href="#cb28-73" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the top-left coordinate of the target rectangle</span></span>
+<span id="cb28-74"><a href="#cb28-74" aria-hidden="true" tabindex="-1"></a>        sty2 <span class="op">=</span> random.randint(<span class="dv">0</span>, w <span class="op">-</span> szx)  <span class="co"># x-coordinate</span></span>
+<span id="cb28-75"><a href="#cb28-75" aria-hidden="true" tabindex="-1"></a>        stx2 <span class="op">=</span> random.randint(<span class="dv">0</span>, h <span class="op">-</span> szy)  <span class="co"># y-coordinate</span></span>
+<span id="cb28-76"><a href="#cb28-76" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-77"><a href="#cb28-77" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Copy the data from the source square to the target rectangle</span></span>
+<span id="cb28-78"><a href="#cb28-78" aria-hidden="true" tabindex="-1"></a>        img_tensor[:, stx2:stx2 <span class="op">+</span> szy, sty2:sty2 <span class="op">+</span> szx] <span class="op">=</span> img_tensor[:, stx1:stx1 <span class="op">+</span> szy, sty1:sty1 <span class="op">+</span> szx]</span>
+<span id="cb28-79"><a href="#cb28-79" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-80"><a href="#cb28-80" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The coordinates of the target patch</span></span>
+<span id="cb28-81"><a href="#cb28-81" aria-hidden="true" tabindex="-1"></a>        target_patch_coords <span class="op">=</span> [sty2, stx2, sty2 <span class="op">+</span> szx, stx2 <span class="op">+</span> szy]</span>
+<span id="cb28-82"><a href="#cb28-82" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-83"><a href="#cb28-83" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> img_tensor, target_patch_coords</span>
+<span id="cb28-84"><a href="#cb28-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-85"><a href="#cb28-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-86"><a href="#cb28-86" aria-hidden="true" tabindex="-1"></a>    <span class="at">@singledispatchmethod</span></span>
+<span id="cb28-87"><a href="#cb28-87" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _transform(<span class="va">self</span>, inpt: Any, params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb28-88"><a href="#cb28-88" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Default Behavior: Don't modify the input"""</span></span>
+<span id="cb28-89"><a href="#cb28-89" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> inpt</span>
+<span id="cb28-90"><a href="#cb28-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-91"><a href="#cb28-91" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_transform.register</span></span>
+<span id="cb28-92"><a href="#cb28-92" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _(<span class="va">self</span>, inpt: Union[torch.Tensor, tv_tensors.Image], params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb28-93"><a href="#cb28-93" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.patches <span class="op">=</span> []</span>
+<span id="cb28-94"><a href="#cb28-94" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Apply the `rand_square_copy` function to the input tensor multiple times"""</span></span>
+<span id="cb28-95"><a href="#cb28-95" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(random.randint(<span class="va">self</span>.min_num, <span class="va">self</span>.max_num)):</span>
+<span id="cb28-96"><a href="#cb28-96" aria-hidden="true" tabindex="-1"></a>            inpt, patch <span class="op">=</span> <span class="va">self</span>.rand_patch_copy(inpt, <span class="bu">max</span>(<span class="fl">0.1</span>,random.random()<span class="op">*</span><span class="va">self</span>.pct))</span>
+<span id="cb28-97"><a href="#cb28-97" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.patches.append(patch)</span>
+<span id="cb28-98"><a href="#cb28-98" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> inpt</span>
+<span id="cb28-99"><a href="#cb28-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-100"><a href="#cb28-100" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_transform.register</span></span>
+<span id="cb28-101"><a href="#cb28-101" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _(<span class="va">self</span>, inpt: Image.Image, params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb28-102"><a href="#cb28-102" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Convert the PIL Image to a torch.Tensor to apply the transform"""</span></span>
+<span id="cb28-103"><a href="#cb28-103" aria-hidden="true" tabindex="-1"></a>        inpt_torch <span class="op">=</span> transforms.PILToTensor()(inpt)    </span>
+<span id="cb28-104"><a href="#cb28-104" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> transforms.ToPILImage()(<span class="va">self</span>._transform(inpt_torch, params))</span>
+<span id="cb28-105"><a href="#cb28-105" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-106"><a href="#cb28-106" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_transform.register</span></span>
+<span id="cb28-107"><a href="#cb28-107" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _(<span class="va">self</span>, inpt: BoundingBoxes, params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb28-108"><a href="#cb28-108" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Update the bounding box annotations based on the list of patches"""</span></span>
+<span id="cb28-109"><a href="#cb28-109" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(<span class="va">self</span>.patches) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb28-110"><a href="#cb28-110" aria-hidden="true" tabindex="-1"></a>            iou_matrix <span class="op">=</span> <span class="va">self</span>.calculate_iou_multi(inpt, torch.tensor(<span class="va">self</span>.patches, dtype<span class="op">=</span>torch.float32))</span>
+<span id="cb28-111"><a href="#cb28-111" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb28-112"><a href="#cb28-112" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Sum the IoU values for each box in boxes1</span></span>
+<span id="cb28-113"><a href="#cb28-113" aria-hidden="true" tabindex="-1"></a>            cumulative_iou <span class="op">=</span> torch.<span class="bu">sum</span>(iou_matrix, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb28-114"><a href="#cb28-114" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Create a mask based on the cumulative IoU threshold</span></span>
+<span id="cb28-115"><a href="#cb28-115" aria-hidden="true" tabindex="-1"></a>            mask <span class="op">=</span> cumulative_iou <span class="op">&gt;</span> <span class="va">self</span>.iou_thresh</span>
+<span id="cb28-116"><a href="#cb28-116" aria-hidden="true" tabindex="-1"></a>            inpt_copy <span class="op">=</span> torch.clone(inpt)</span>
+<span id="cb28-117"><a href="#cb28-117" aria-hidden="true" tabindex="-1"></a>            inpt_copy[mask] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb28-118"><a href="#cb28-118" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> tv_wrap(inpt_copy, like<span class="op">=</span>inpt)</span>
+<span id="cb28-119"><a href="#cb28-119" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> inpt</span>
+<span id="cb28-120"><a href="#cb28-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-121"><a href="#cb28-121" aria-hidden="true" tabindex="-1"></a>    <span class="at">@_transform.register</span></span>
+<span id="cb28-122"><a href="#cb28-122" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _(<span class="va">self</span>, inpt: Mask, params: Dict[<span class="bu">str</span>, Any]) <span class="op">-&gt;</span> Any:</span>
+<span id="cb28-123"><a href="#cb28-123" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Don't modify segmentation annotations"""</span></span>
+<span id="cb28-124"><a href="#cb28-124" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> inpt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now, let’s see how our sample image and its bounding box annotations look with this transform.</p>
+</section>
+<section id="initialize-the-transform-1" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-the-transform-1">Initialize the Transform</h3>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a RandomPatchCopy object</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>rand_patch_copy_tfm <span class="op">=</span> RandomPatchCopy(pct<span class="op">=</span><span class="fl">0.3</span>, min_num<span class="op">=</span><span class="dv">1</span>, max_num<span class="op">=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="apply-the-augmentation-1" class="level3">
+<h3 class="anchored" data-anchor-id="apply-the-augmentation-1">Apply the Augmentation</h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">PIL.Image</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">torch.Tensor</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-3" role="tab" aria-controls="tabset-4-3" aria-selected="false">tv_tensor.Image</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Feed sample image and targets through the image transform</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>augmented_img, augmented_targets <span class="op">=</span> rand_patch_copy_tfm(sample_img, targets)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove degenerate/invalid bounding boxes and their corresponding labels and masks.</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>sanitized_img, sanitized_targets <span class="op">=</span> transforms.SanitizeBoundingBoxes()(augmented_img, augmented_targets)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the augmented image with updated labels and bounding boxes</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>transforms.PILToTensor()(sanitized_img), </span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>sanitized_targets[<span class="st">'boxes'</span>], </span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(label.item())] <span class="cf">for</span> label <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]], </span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i)] <span class="cf">for</span> i <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]]</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the augmented image</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="./images/output_53_0.png" class="img-fluid"></p>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Feed sample image and targets through the image transform</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>augmented_img, augmented_targets <span class="op">=</span> rand_patch_copy_tfm(transforms.PILToTensor()(sample_img), targets)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove degenerate/invalid bounding boxes and their corresponding labels and masks.</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>sanitized_img, sanitized_targets <span class="op">=</span> transforms.SanitizeBoundingBoxes()(augmented_img, augmented_targets)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the augmented image with updated labels and bounding boxes</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>sanitized_img, </span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>sanitized_targets[<span class="st">'boxes'</span>], </span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(label.item())] <span class="cf">for</span> label <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]], </span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i)] <span class="cf">for</span> i <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]]</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the augmented image</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="./images/output_55_0.png" class="img-fluid"></p>
+</div>
+<div id="tabset-4-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-3-tab">
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Feed sample image and targets through the image transform</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>augmented_img, augmented_targets <span class="op">=</span> rand_patch_copy_tfm(transforms.ToImage()(sample_img), targets)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove degenerate/invalid bounding boxes and their corresponding labels and masks.</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>sanitized_img, sanitized_targets <span class="op">=</span> transforms.SanitizeBoundingBoxes()(augmented_img, augmented_targets)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the augmented image with updated labels and bounding boxes</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>sanitized_img, </span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>sanitized_targets[<span class="st">'boxes'</span>], </span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(label.item())] <span class="cf">for</span> label <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]], </span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i)] <span class="cf">for</span> i <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]]</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the augmented image</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="./images/output_57_0.png" class="img-fluid"></p>
+</div>
+</div>
+</div>
+<p>Here, we can see some of the patches overlapped with one of the annotated areas too much, and the <code>SanitizeBoundingBoxes</code> transform removed the relevant bounding box.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>In this tutorial, we created custom V2 image transforms in torchvision that support bounding box annotations. The knowledge acquired here provides a solid foundation for making other custom transforms.</p>
+<p>As a next step, perhaps try experimenting with the transforms created here to see how they impact training performance in one of the following tutorials:</p>
+<ul>
+<li><a href="../../posts/pytorch-train-image-classifier-timm-hf-tutorial/">Fine-Tuning Image Classifiers with PyTorch and the timm library for Beginners</a></li>
+<li><a href="../../posts/pytorch-train-object-detector-yolox-tutorial/">Training YOLOX Models for Real-Time Object Detection in PyTorch</a></li>
+<li><a href="../../posts/pytorch-train-mask-rcnn-tutorial/">Training Mask R-CNN Models with PyTorch</a></li>
+</ul>
+<p>See how adjusting the intensity of the data augmentations impacts the model accuracy on new data.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2023, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
