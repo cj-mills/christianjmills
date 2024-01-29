@@ -35,6 +35,8 @@
 <li>Setting Up the Project</li>
 <li>Loading and Exploring the Dataset</li>
 <li>Preparing the Data</li>
+<li>Fine-tuning the Model</li>
+<li>Making Predictions with the Model</li>
 <li>Conclusion</li>
 </ul>
 <section id="introduction" class="level2">
@@ -327,107 +329,112 @@ background-color: null;
 font-style: inherit;"># Import Python Standard Library dependencies</span></span>
 <span id="cb9-2"><span class="im" style="color: #00769E;
 background-color: null;
-font-style: inherit;">import</span> datetime</span>
+font-style: inherit;">from</span> contextlib <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> contextmanager</span>
 <span id="cb9-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> datetime</span>
+<span id="cb9-4"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> functools <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> partial</span>
-<span id="cb9-4"><span class="im" style="color: #00769E;
+<span id="cb9-5"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> glob <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> glob</span>
-<span id="cb9-5"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> json</span>
 <span id="cb9-6"><span class="im" style="color: #00769E;
 background-color: null;
-font-style: inherit;">import</span> math</span>
+font-style: inherit;">import</span> json</span>
 <span id="cb9-7"><span class="im" style="color: #00769E;
 background-color: null;
-font-style: inherit;">import</span> multiprocessing</span>
+font-style: inherit;">import</span> math</span>
 <span id="cb9-8"><span class="im" style="color: #00769E;
 background-color: null;
-font-style: inherit;">import</span> os</span>
+font-style: inherit;">import</span> multiprocessing</span>
 <span id="cb9-9"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb9-10"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> pathlib <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> Path</span>
-<span id="cb9-10"><span class="im" style="color: #00769E;
+<span id="cb9-11"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> random</span>
-<span id="cb9-11"></span>
-<span id="cb9-12"><span class="co" style="color: #5E5E5E;
+<span id="cb9-12"></span>
+<span id="cb9-13"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import utility functions</span></span>
-<span id="cb9-13"><span class="im" style="color: #00769E;
+<span id="cb9-14"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> cjm_pandas_utils.core <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> markdown_to_pandas</span>
-<span id="cb9-14"><span class="im" style="color: #00769E;
+<span id="cb9-15"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> cjm_pil_utils.core <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> resize_img, get_img_files, stack_imgs</span>
-<span id="cb9-15"><span class="im" style="color: #00769E;
+<span id="cb9-16"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> cjm_psl_utils.core <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> download_file, file_extract</span>
-<span id="cb9-16"><span class="im" style="color: #00769E;
+<span id="cb9-17"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> cjm_pytorch_utils.core <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> set_seed, pil_to_tensor, tensor_to_pil, get_torch_device, denorm_img_tensor, move_data_to_device</span>
-<span id="cb9-17"><span class="im" style="color: #00769E;
+<span id="cb9-18"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> cjm_torchvision_tfms.core <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> ResizeMax, PadSquare, CustomRandomIoUCrop, RandPixelCopy</span>
-<span id="cb9-18"></span>
-<span id="cb9-19"><span class="co" style="color: #5E5E5E;
+<span id="cb9-19"></span>
+<span id="cb9-20"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import the distinctipy module</span></span>
-<span id="cb9-20"><span class="im" style="color: #00769E;
+<span id="cb9-21"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> distinctipy <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> distinctipy</span>
-<span id="cb9-21"></span>
-<span id="cb9-22"><span class="co" style="color: #5E5E5E;
+<span id="cb9-22"></span>
+<span id="cb9-23"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import matplotlib for creating plots</span></span>
-<span id="cb9-23"><span class="im" style="color: #00769E;
+<span id="cb9-24"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">as</span> plt</span>
-<span id="cb9-24"></span>
-<span id="cb9-25"><span class="co" style="color: #5E5E5E;
+<span id="cb9-25"></span>
+<span id="cb9-26"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import numpy</span></span>
-<span id="cb9-26"><span class="im" style="color: #00769E;
+<span id="cb9-27"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">as</span> np</span>
-<span id="cb9-27"></span>
-<span id="cb9-28"><span class="co" style="color: #5E5E5E;
+<span id="cb9-28"></span>
+<span id="cb9-29"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import the pandas package</span></span>
-<span id="cb9-29"><span class="im" style="color: #00769E;
+<span id="cb9-30"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">as</span> pd</span>
-<span id="cb9-30"></span>
-<span id="cb9-31"><span class="co" style="color: #5E5E5E;
+<span id="cb9-31"></span>
+<span id="cb9-32"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Do not truncate the contents of cells and display all rows and columns</span></span>
-<span id="cb9-32">pd.set_option(<span class="st" style="color: #20794D;
+<span id="cb9-33">pd.set_option(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'max_colwidth'</span>, <span class="va" style="color: #111111;
 background-color: null;
@@ -440,95 +447,95 @@ background-color: null;
 font-style: inherit;">'display.max_columns'</span>, <span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">None</span>)</span>
-<span id="cb9-33"></span>
-<span id="cb9-34"><span class="co" style="color: #5E5E5E;
+<span id="cb9-34"></span>
+<span id="cb9-35"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import PIL for image manipulation</span></span>
-<span id="cb9-35"><span class="im" style="color: #00769E;
+<span id="cb9-36"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> PIL <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> Image</span>
-<span id="cb9-36"></span>
-<span id="cb9-37"><span class="co" style="color: #5E5E5E;
+<span id="cb9-37"></span>
+<span id="cb9-38"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import PyTorch dependencies</span></span>
-<span id="cb9-38"><span class="im" style="color: #00769E;
+<span id="cb9-39"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> torch</span>
-<span id="cb9-39"><span class="im" style="color: #00769E;
+<span id="cb9-40"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> torch.nn <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">as</span> nn</span>
-<span id="cb9-40"><span class="im" style="color: #00769E;
+<span id="cb9-41"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torch.amp <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> autocast</span>
-<span id="cb9-41"><span class="im" style="color: #00769E;
+<span id="cb9-42"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torch.cuda.amp <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> GradScaler</span>
-<span id="cb9-42"></span>
-<span id="cb9-43"><span class="im" style="color: #00769E;
+<span id="cb9-43"></span>
+<span id="cb9-44"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torch.utils.data <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> Dataset, DataLoader</span>
-<span id="cb9-44"><span class="im" style="color: #00769E;
+<span id="cb9-45"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torchtnt.utils <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> get_module_summary</span>
-<span id="cb9-45"></span>
-<span id="cb9-46"><span class="co" style="color: #5E5E5E;
+<span id="cb9-46"></span>
+<span id="cb9-47"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import torchvision dependencies</span></span>
-<span id="cb9-47"><span class="im" style="color: #00769E;
+<span id="cb9-48"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> torchvision</span>
-<span id="cb9-48">torchvision.disable_beta_transforms_warning()</span>
-<span id="cb9-49"><span class="im" style="color: #00769E;
+<span id="cb9-49">torchvision.disable_beta_transforms_warning()</span>
+<span id="cb9-50"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torchvision.tv_tensors <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> BoundingBoxes</span>
-<span id="cb9-50"><span class="im" style="color: #00769E;
+<span id="cb9-51"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torchvision.utils <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> draw_bounding_boxes</span>
-<span id="cb9-51"><span class="im" style="color: #00769E;
+<span id="cb9-52"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> torchvision.transforms.v2  <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">as</span> transforms</span>
-<span id="cb9-52"></span>
-<span id="cb9-53"><span class="co" style="color: #5E5E5E;
+<span id="cb9-53"></span>
+<span id="cb9-54"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import Keypoint R-CNN</span></span>
-<span id="cb9-54"><span class="im" style="color: #00769E;
+<span id="cb9-55"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torchvision.models.detection.keypoint_rcnn <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> KeypointRCNNPredictor</span>
-<span id="cb9-55"><span class="im" style="color: #00769E;
+<span id="cb9-56"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torchvision.models.detection.rpn <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> AnchorGenerator</span>
-<span id="cb9-56"><span class="im" style="color: #00769E;
+<span id="cb9-57"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> torchvision.models.detection <span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> keypointrcnn_resnet50_fpn</span>
-<span id="cb9-57"></span>
-<span id="cb9-58"><span class="co" style="color: #5E5E5E;
+<span id="cb9-58"></span>
+<span id="cb9-59"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Import tqdm for progress bar</span></span>
-<span id="cb9-59"><span class="im" style="color: #00769E;
+<span id="cb9-60"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">from</span> tqdm.auto <span class="im" style="color: #00769E;
 background-color: null;
@@ -1309,31 +1316,28 @@ background-color: null;
 font-style: inherit;"># Explode the 'shapes' column in the annotation_df dataframe</span></span>
 <span id="cb19-2"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Convert the resulting series to a dataframe and rename the 'shapes' column to 'shapes'</span></span>
-<span id="cb19-3"><span class="co" style="color: #5E5E5E;
-background-color: null;
 font-style: inherit;"># Apply the pandas Series function to the 'shapes' column of the dataframe</span></span>
-<span id="cb19-4">shapes_df <span class="op" style="color: #5E5E5E;
+<span id="cb19-3">shapes_df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> annotation_df[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'shapes'</span>].explode().to_frame().shapes.<span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">apply</span>(pd.Series)</span>
-<span id="cb19-5"></span>
-<span id="cb19-6"><span class="co" style="color: #5E5E5E;
+<span id="cb19-4"></span>
+<span id="cb19-5"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Get a list of unique labels in the 'annotation_df' DataFrame</span></span>
-<span id="cb19-7">class_names <span class="op" style="color: #5E5E5E;
+<span id="cb19-6">class_names <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> shapes_df[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'label'</span>].unique().tolist()</span>
-<span id="cb19-8"></span>
-<span id="cb19-9"><span class="co" style="color: #5E5E5E;
+<span id="cb19-7"></span>
+<span id="cb19-8"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Display labels using a Pandas DataFrame</span></span>
-<span id="cb19-10">pd.DataFrame(class_names)</span></code></pre></div>
+<span id="cb19-9">pd.DataFrame(class_names)</span></code></pre></div>
 <div style="overflow-x:auto; max-height:500px">
 <table class="dataframe table table-sm table-striped small">
 <thead>
@@ -3406,19 +3410,13 @@ font-style: inherit;">return</span> bbox</span></code></pre></div>
 <section id="define-a-conditional-autocast-context-manager" class="level4">
 <h4 class="anchored" data-anchor-id="define-a-conditional-autocast-context-manager">Define a conditional <code>autocast</code> context manager</h4>
 <p>The autocast context manager that handles mixed-precision training on CPUs does not fully support the Keypoint R-CNN model. Therefore, we will only use mixed-precision training when not using the CPU.</p>
-<div class="sourceCode" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> contextlib <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> contextmanager</span>
-<span id="cb39-2"></span>
-<span id="cb39-3"><span class="at" style="color: #657422;
+<div class="sourceCode" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">@contextmanager</span></span>
-<span id="cb39-4"><span class="kw" style="color: #003B4F;
+<span id="cb39-2"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">def</span> conditional_autocast(device):</span>
-<span id="cb39-5">    <span class="cf" style="color: #003B4F;
+<span id="cb39-3">    <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">if</span> <span class="st" style="color: #20794D;
 background-color: null;
@@ -3427,18 +3425,18 @@ background-color: null;
 font-style: inherit;">not</span> <span class="kw" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">in</span> device:</span>
-<span id="cb39-6">        <span class="cf" style="color: #003B4F;
+<span id="cb39-4">        <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">with</span> autocast(device_type<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>device):</span>
-<span id="cb39-7">            <span class="cf" style="color: #003B4F;
+<span id="cb39-5">            <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">yield</span></span>
-<span id="cb39-8">    <span class="cf" style="color: #003B4F;
+<span id="cb39-6">    <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">else</span>:</span>
-<span id="cb39-9">        <span class="cf" style="color: #003B4F;
+<span id="cb39-7">        <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">yield</span></span></code></pre></div>
 </section>
