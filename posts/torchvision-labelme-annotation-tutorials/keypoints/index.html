@@ -242,7 +242,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#training-dataset-class" id="toc-training-dataset-class" class="nav-link" data-scroll-target="#training-dataset-class">Training Dataset Class</a></li>
   <li><a href="#image-transforms" id="toc-image-transforms" class="nav-link" data-scroll-target="#image-transforms">Image Transforms</a></li>
   <li><a href="#initialize-dataset" id="toc-initialize-dataset" class="nav-link" data-scroll-target="#initialize-dataset">Initialize Dataset</a></li>
-  <li><a href="#inspect-samples" id="toc-inspect-samples" class="nav-link" data-scroll-target="#inspect-samples">Inspect Samples</a></li>
+  <li><a href="#inspect-samples" id="toc-inspect-samples" class="nav-link" data-scroll-target="#inspect-samples">Inspect Samples</a>
+  <ul class="collapse">
+  <li><a href="#inspect-training-set-sample" id="toc-inspect-training-set-sample" class="nav-link" data-scroll-target="#inspect-training-set-sample">Inspect training set sample</a></li>
+  </ul></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   <li><a href="#recommended-tutorials" id="toc-recommended-tutorials" class="nav-link" data-scroll-target="#recommended-tutorials">Recommended Tutorials</a></li>
@@ -1228,7 +1231,7 @@ imageWidth
 <p>We can convert our keypoint annotations to bounding boxes by adding values for box width and height, making it <code>[center-x, center-y, width, height]</code> format</p>
 <p>The <code>draw_bounding_boxes</code> function expects bounding box annotations in <code>[top-left X, top-left Y, bottom-right X, bottom-right Y]</code> format, so we’ll use the <a href="https://pytorch.org/vision/stable/generated/torchvision.ops.box_convert.html#torchvision.ops.box_convert"><code>box_convert</code></a> function included with torchvision to convert the bounding box annotations from <code>[cx,cy,w,h]</code> to <code>[x,y,x,y]</code> format.</p>
 <p>We can reverse this process during training to extract the target keypoints for calculating the loss.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the labels and bounding box annotations for the sample image</span></span>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the labels and keypoint annotations for the sample image</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [shape[<span class="st">'label'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation_df.loc[file_id][<span class="st">'shapes'</span>]]</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>keypoints <span class="op">=</span> torch.tensor(np.array([shape[<span class="st">'points'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation_df.loc[file_id][<span class="st">'shapes'</span>]])).reshape(<span class="dv">1</span>,<span class="dv">2</span>)</span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>keypoints_bboxes <span class="op">=</span> torch.cat((keypoints, torch.ones(<span class="bu">len</span>(keypoints), <span class="dv">2</span>)<span class="op">*</span><span class="dv">4</span>), dim<span class="op">=</span><span class="dv">1</span>)</span>
@@ -1450,55 +1453,95 @@ Resized Padded Image:
 <span id="cb30-61"><a href="#cb30-61" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Applying transformations if specified</span></span>
 <span id="cb30-62"><a href="#cb30-62" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>._transforms:</span>
 <span id="cb30-63"><a href="#cb30-63" aria-hidden="true" tabindex="-1"></a>            image, target <span class="op">=</span> <span class="va">self</span>._transforms(image, target)</span>
-<span id="cb30-64"><a href="#cb30-64" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb30-65"><a href="#cb30-65" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, target</span>
-<span id="cb30-66"><a href="#cb30-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-67"><a href="#cb30-67" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> order_points_by_labels(<span class="va">self</span>, data, label_order):</span>
-<span id="cb30-68"><a href="#cb30-68" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb30-69"><a href="#cb30-69" aria-hidden="true" tabindex="-1"></a><span class="co">        Extracts and orders points from a list of dictionaries based on a given order of labels.</span></span>
-<span id="cb30-70"><a href="#cb30-70" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
-<span id="cb30-71"><a href="#cb30-71" aria-hidden="true" tabindex="-1"></a><span class="co">        :param data: List of dictionaries containing labels and points.</span></span>
-<span id="cb30-72"><a href="#cb30-72" aria-hidden="true" tabindex="-1"></a><span class="co">        :param label_order: List of labels in the desired order.</span></span>
-<span id="cb30-73"><a href="#cb30-73" aria-hidden="true" tabindex="-1"></a><span class="co">        :return: List of points in the specified label order.</span></span>
-<span id="cb30-74"><a href="#cb30-74" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb30-75"><a href="#cb30-75" aria-hidden="true" tabindex="-1"></a>        ordered_points <span class="op">=</span> []</span>
-<span id="cb30-76"><a href="#cb30-76" aria-hidden="true" tabindex="-1"></a>        label_to_points <span class="op">=</span> {item[<span class="st">'label'</span>]: item[<span class="st">'points'</span>] <span class="cf">for</span> item <span class="kw">in</span> data}</span>
-<span id="cb30-77"><a href="#cb30-77" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb30-78"><a href="#cb30-78" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> label <span class="kw">in</span> label_order:</span>
-<span id="cb30-79"><a href="#cb30-79" aria-hidden="true" tabindex="-1"></a>            points <span class="op">=</span> label_to_points.get(label)</span>
-<span id="cb30-80"><a href="#cb30-80" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> points <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb30-81"><a href="#cb30-81" aria-hidden="true" tabindex="-1"></a>                ordered_points.extend(points)</span>
-<span id="cb30-82"><a href="#cb30-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-83"><a href="#cb30-83" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ordered_points</span>
+<span id="cb30-64"><a href="#cb30-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-65"><a href="#cb30-65" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Fill any missing keypoints with dummy values</span></span>
+<span id="cb30-66"><a href="#cb30-66" aria-hidden="true" tabindex="-1"></a>        target <span class="op">=</span> <span class="va">self</span>._fill_and_order_target(target)</span>
+<span id="cb30-67"><a href="#cb30-67" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, target</span>
+<span id="cb30-68"><a href="#cb30-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-69"><a href="#cb30-69" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> order_points_by_labels(<span class="va">self</span>, data, label_order):</span>
+<span id="cb30-70"><a href="#cb30-70" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb30-71"><a href="#cb30-71" aria-hidden="true" tabindex="-1"></a><span class="co">        Extracts and orders points from a list of dictionaries based on a given order of labels.</span></span>
+<span id="cb30-72"><a href="#cb30-72" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb30-73"><a href="#cb30-73" aria-hidden="true" tabindex="-1"></a><span class="co">        :param data: List of dictionaries containing labels and points.</span></span>
+<span id="cb30-74"><a href="#cb30-74" aria-hidden="true" tabindex="-1"></a><span class="co">        :param label_order: List of labels in the desired order.</span></span>
+<span id="cb30-75"><a href="#cb30-75" aria-hidden="true" tabindex="-1"></a><span class="co">        :return: List of points in the specified label order.</span></span>
+<span id="cb30-76"><a href="#cb30-76" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb30-77"><a href="#cb30-77" aria-hidden="true" tabindex="-1"></a>        ordered_points <span class="op">=</span> []</span>
+<span id="cb30-78"><a href="#cb30-78" aria-hidden="true" tabindex="-1"></a>        label_to_points <span class="op">=</span> {item[<span class="st">'label'</span>]: item[<span class="st">'points'</span>] <span class="cf">for</span> item <span class="kw">in</span> data}</span>
+<span id="cb30-79"><a href="#cb30-79" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-80"><a href="#cb30-80" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> label <span class="kw">in</span> label_order:</span>
+<span id="cb30-81"><a href="#cb30-81" aria-hidden="true" tabindex="-1"></a>            points <span class="op">=</span> label_to_points.get(label)</span>
+<span id="cb30-82"><a href="#cb30-82" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> points <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb30-83"><a href="#cb30-83" aria-hidden="true" tabindex="-1"></a>                ordered_points.extend(points)</span>
 <span id="cb30-84"><a href="#cb30-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-85"><a href="#cb30-85" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _load_image_and_target(<span class="va">self</span>, annotation):</span>
-<span id="cb30-86"><a href="#cb30-86" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb30-87"><a href="#cb30-87" aria-hidden="true" tabindex="-1"></a><span class="co">        Loads an image and its corresponding target (annotations) based on the provided annotation.</span></span>
-<span id="cb30-88"><a href="#cb30-88" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
-<span id="cb30-89"><a href="#cb30-89" aria-hidden="true" tabindex="-1"></a><span class="co">        Args:</span></span>
-<span id="cb30-90"><a href="#cb30-90" aria-hidden="true" tabindex="-1"></a><span class="co">            annotation (DataFrame row): Annotation data for a specific image.</span></span>
-<span id="cb30-91"><a href="#cb30-91" aria-hidden="true" tabindex="-1"></a><span class="co">            Returns:</span></span>
-<span id="cb30-92"><a href="#cb30-92" aria-hidden="true" tabindex="-1"></a><span class="co">        tuple: A tuple containing the loaded image and its corresponding target data.</span></span>
-<span id="cb30-93"><a href="#cb30-93" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb30-94"><a href="#cb30-94" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Load the image from the file path specified in the annotations</span></span>
-<span id="cb30-95"><a href="#cb30-95" aria-hidden="true" tabindex="-1"></a>        filepath <span class="op">=</span> <span class="va">self</span>._img_dict[annotation.name]</span>
-<span id="cb30-96"><a href="#cb30-96" aria-hidden="true" tabindex="-1"></a>        image <span class="op">=</span> Image.<span class="bu">open</span>(filepath).convert(<span class="st">'RGB'</span>)</span>
-<span id="cb30-97"><a href="#cb30-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-98"><a href="#cb30-98" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Extracting keypoints from the annotation and converting them to a tensor</span></span>
-<span id="cb30-99"><a href="#cb30-99" aria-hidden="true" tabindex="-1"></a>        keypoints <span class="op">=</span> <span class="va">self</span>.order_points_by_labels(annotation[<span class="st">'shapes'</span>], class_to_idx.keys())</span>
-<span id="cb30-100"><a href="#cb30-100" aria-hidden="true" tabindex="-1"></a>        keypoints <span class="op">=</span> torch.tensor(np.array(keypoints, dtype<span class="op">=</span>np.float32)).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">2</span>)</span>
-<span id="cb30-101"><a href="#cb30-101" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb30-102"><a href="#cb30-102" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Adding an offset to create bounding boxes around keypoints</span></span>
-<span id="cb30-103"><a href="#cb30-103" aria-hidden="true" tabindex="-1"></a>        keypoints_bboxes <span class="op">=</span> torch.cat((keypoints, torch.ones(<span class="bu">len</span>(keypoints), <span class="dv">2</span>) <span class="op">*</span> <span class="va">self</span>.BBOX_DIM), dim<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb30-104"><a href="#cb30-104" aria-hidden="true" tabindex="-1"></a>                </span>
-<span id="cb30-105"><a href="#cb30-105" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert bounding box format and create a BoundingBoxes object</span></span>
-<span id="cb30-106"><a href="#cb30-106" aria-hidden="true" tabindex="-1"></a>        bbox_tensor <span class="op">=</span> torchvision.ops.box_convert(keypoints_bboxes, <span class="st">'cxcywh'</span>, <span class="st">'xyxy'</span>)</span>
-<span id="cb30-107"><a href="#cb30-107" aria-hidden="true" tabindex="-1"></a>        boxes <span class="op">=</span> BoundingBoxes(bbox_tensor, <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>image.size[::<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb30-108"><a href="#cb30-108" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb30-109"><a href="#cb30-109" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create tensor for labels based on the class indices</span></span>
-<span id="cb30-110"><a href="#cb30-110" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> torch.Tensor([<span class="va">self</span>._class_to_idx[label] <span class="cf">for</span> label <span class="kw">in</span> class_to_idx.keys()])</span>
-<span id="cb30-111"><a href="#cb30-111" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb30-112"><a href="#cb30-112" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, {<span class="st">'boxes'</span>: boxes, <span class="st">'labels'</span>: labels}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-85"><a href="#cb30-85" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ordered_points</span>
+<span id="cb30-86"><a href="#cb30-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-87"><a href="#cb30-87" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _load_image_and_target(<span class="va">self</span>, annotation):</span>
+<span id="cb30-88"><a href="#cb30-88" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb30-89"><a href="#cb30-89" aria-hidden="true" tabindex="-1"></a><span class="co">        Loads an image and its corresponding target (annotations) based on the provided annotation.</span></span>
+<span id="cb30-90"><a href="#cb30-90" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
+<span id="cb30-91"><a href="#cb30-91" aria-hidden="true" tabindex="-1"></a><span class="co">        Args:</span></span>
+<span id="cb30-92"><a href="#cb30-92" aria-hidden="true" tabindex="-1"></a><span class="co">            annotation (DataFrame row): Annotation data for a specific image.</span></span>
+<span id="cb30-93"><a href="#cb30-93" aria-hidden="true" tabindex="-1"></a><span class="co">            Returns:</span></span>
+<span id="cb30-94"><a href="#cb30-94" aria-hidden="true" tabindex="-1"></a><span class="co">        tuple: A tuple containing the loaded image and its corresponding target data.</span></span>
+<span id="cb30-95"><a href="#cb30-95" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb30-96"><a href="#cb30-96" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Load the image from the file path specified in the annotations</span></span>
+<span id="cb30-97"><a href="#cb30-97" aria-hidden="true" tabindex="-1"></a>        filepath <span class="op">=</span> <span class="va">self</span>._img_dict[annotation.name]</span>
+<span id="cb30-98"><a href="#cb30-98" aria-hidden="true" tabindex="-1"></a>        image <span class="op">=</span> Image.<span class="bu">open</span>(filepath).convert(<span class="st">'RGB'</span>)</span>
+<span id="cb30-99"><a href="#cb30-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-100"><a href="#cb30-100" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Extracting keypoints from the annotation and converting them to a tensor</span></span>
+<span id="cb30-101"><a href="#cb30-101" aria-hidden="true" tabindex="-1"></a>        keypoints <span class="op">=</span> <span class="va">self</span>.order_points_by_labels(annotation[<span class="st">'shapes'</span>], class_to_idx.keys())</span>
+<span id="cb30-102"><a href="#cb30-102" aria-hidden="true" tabindex="-1"></a>        keypoints <span class="op">=</span> torch.tensor(np.array(keypoints, dtype<span class="op">=</span>np.float32)).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb30-103"><a href="#cb30-103" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-104"><a href="#cb30-104" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Adding an offset to create bounding boxes around keypoints</span></span>
+<span id="cb30-105"><a href="#cb30-105" aria-hidden="true" tabindex="-1"></a>        keypoints_bboxes <span class="op">=</span> torch.cat((keypoints, torch.ones(<span class="bu">len</span>(keypoints), <span class="dv">2</span>) <span class="op">*</span> <span class="va">self</span>.BBOX_DIM), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb30-106"><a href="#cb30-106" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb30-107"><a href="#cb30-107" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert bounding box format and create a BoundingBoxes object</span></span>
+<span id="cb30-108"><a href="#cb30-108" aria-hidden="true" tabindex="-1"></a>        bbox_tensor <span class="op">=</span> torchvision.ops.box_convert(keypoints_bboxes, <span class="st">'cxcywh'</span>, <span class="st">'xyxy'</span>)</span>
+<span id="cb30-109"><a href="#cb30-109" aria-hidden="true" tabindex="-1"></a>        boxes <span class="op">=</span> BoundingBoxes(bbox_tensor, <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>image.size[::<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb30-110"><a href="#cb30-110" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-111"><a href="#cb30-111" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create tensor for labels based on the class indices</span></span>
+<span id="cb30-112"><a href="#cb30-112" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> torch.Tensor([<span class="va">self</span>._class_to_idx[label] <span class="cf">for</span> label <span class="kw">in</span> class_to_idx.keys()])</span>
+<span id="cb30-113"><a href="#cb30-113" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-114"><a href="#cb30-114" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, {<span class="st">'boxes'</span>: boxes, <span class="st">'labels'</span>: labels}</span>
+<span id="cb30-115"><a href="#cb30-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-116"><a href="#cb30-116" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _fill_and_order_target(<span class="va">self</span>, target):</span>
+<span id="cb30-117"><a href="#cb30-117" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb30-118"><a href="#cb30-118" aria-hidden="true" tabindex="-1"></a><span class="co">        Fills and orders the target bounding boxes and labels based on the class index.</span></span>
+<span id="cb30-119"><a href="#cb30-119" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb30-120"><a href="#cb30-120" aria-hidden="true" tabindex="-1"></a><span class="co">        This method ensures that each target has a bounding box and label for each class,</span></span>
+<span id="cb30-121"><a href="#cb30-121" aria-hidden="true" tabindex="-1"></a><span class="co">        even if some classes are not present in the original target. Missing classes</span></span>
+<span id="cb30-122"><a href="#cb30-122" aria-hidden="true" tabindex="-1"></a><span class="co">        are filled with dummy values.</span></span>
+<span id="cb30-123"><a href="#cb30-123" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb30-124"><a href="#cb30-124" aria-hidden="true" tabindex="-1"></a><span class="co">        Args:</span></span>
+<span id="cb30-125"><a href="#cb30-125" aria-hidden="true" tabindex="-1"></a><span class="co">            target (dict): A dictionary containing 'boxes' and 'labels' keys, where</span></span>
+<span id="cb30-126"><a href="#cb30-126" aria-hidden="true" tabindex="-1"></a><span class="co">                           'boxes' is a tensor of bounding boxes and 'labels' is a tensor</span></span>
+<span id="cb30-127"><a href="#cb30-127" aria-hidden="true" tabindex="-1"></a><span class="co">                           of labels corresponding to these boxes.</span></span>
+<span id="cb30-128"><a href="#cb30-128" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb30-129"><a href="#cb30-129" aria-hidden="true" tabindex="-1"></a><span class="co">        Returns:</span></span>
+<span id="cb30-130"><a href="#cb30-130" aria-hidden="true" tabindex="-1"></a><span class="co">            dict: The updated target dictionary with boxes and labels ordered and filled</span></span>
+<span id="cb30-131"><a href="#cb30-131" aria-hidden="true" tabindex="-1"></a><span class="co">                  according to the class index.</span></span>
+<span id="cb30-132"><a href="#cb30-132" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb30-133"><a href="#cb30-133" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-134"><a href="#cb30-134" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Initialize new boxes with dummy values (-1.0) for each class</span></span>
+<span id="cb30-135"><a href="#cb30-135" aria-hidden="true" tabindex="-1"></a>        new_boxes <span class="op">=</span> torch.full((<span class="bu">len</span>(<span class="va">self</span>._class_to_idx), <span class="dv">4</span>), <span class="op">-</span><span class="fl">1.0</span>)</span>
+<span id="cb30-136"><a href="#cb30-136" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Prepare labels tensor based on the class indices</span></span>
+<span id="cb30-137"><a href="#cb30-137" aria-hidden="true" tabindex="-1"></a>        new_labels <span class="op">=</span> torch.tensor(<span class="bu">list</span>(<span class="va">self</span>._class_to_idx.values()), dtype<span class="op">=</span>torch.float32)</span>
+<span id="cb30-138"><a href="#cb30-138" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-139"><a href="#cb30-139" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Iterate over each class label</span></span>
+<span id="cb30-140"><a href="#cb30-140" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i, label <span class="kw">in</span> <span class="bu">enumerate</span>(new_labels):</span>
+<span id="cb30-141"><a href="#cb30-141" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Check if the current label exists in the target's labels</span></span>
+<span id="cb30-142"><a href="#cb30-142" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> label <span class="kw">in</span> target[<span class="st">'labels'</span>]:</span>
+<span id="cb30-143"><a href="#cb30-143" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Find the index of the current label in the target's labels</span></span>
+<span id="cb30-144"><a href="#cb30-144" aria-hidden="true" tabindex="-1"></a>                idx <span class="op">=</span> (target[<span class="st">'labels'</span>] <span class="op">==</span> label).nonzero(as_tuple<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>]</span>
+<span id="cb30-145"><a href="#cb30-145" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Assign the corresponding box to the new boxes tensor</span></span>
+<span id="cb30-146"><a href="#cb30-146" aria-hidden="true" tabindex="-1"></a>                new_boxes[i] <span class="op">=</span> target[<span class="st">'boxes'</span>][idx]</span>
+<span id="cb30-147"><a href="#cb30-147" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-148"><a href="#cb30-148" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Update the target dictionary with the new boxes and labels</span></span>
+<span id="cb30-149"><a href="#cb30-149" aria-hidden="true" tabindex="-1"></a>        target[<span class="st">'boxes'</span>] <span class="op">=</span> new_boxes</span>
+<span id="cb30-150"><a href="#cb30-150" aria-hidden="true" tabindex="-1"></a>        target[<span class="st">'labels'</span>] <span class="op">=</span> new_labels</span>
+<span id="cb30-151"><a href="#cb30-151" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-152"><a href="#cb30-152" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> target</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="image-transforms" class="level3">
 <h3 class="anchored" data-anchor-id="image-transforms">Image Transforms</h3>
@@ -1587,17 +1630,25 @@ Training dataset size:
 <section id="inspect-samples" class="level3">
 <h3 class="anchored" data-anchor-id="inspect-samples">Inspect Samples</h3>
 <p>To close out, we should verify the dataset object works as intended by inspecting the first sample.</p>
-<p><strong>Inspect training set sample</strong></p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>dataset_sample <span class="op">=</span> train_dataset[<span class="dv">0</span>]</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>(dataset_sample[<span class="dv">0</span>]<span class="op">*</span><span class="dv">255</span>).to(dtype<span class="op">=</span>torch.uint8), </span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>dataset_sample[<span class="dv">1</span>][<span class="st">'boxes'</span>], </span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(i.item())] <span class="cf">for</span> i <span class="kw">in</span> dataset_sample[<span class="dv">1</span>][<span class="st">'labels'</span>]], </span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i.item())] <span class="cf">for</span> i <span class="kw">in</span> dataset_sample[<span class="dv">1</span>][<span class="st">'labels'</span>]]</span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="inspect-training-set-sample" class="level4">
+<h4 class="anchored" data-anchor-id="inspect-training-set-sample">Inspect training set sample</h4>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a sample image and its target annotations</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>dataset_sample <span class="op">=</span> train_dataset[<span class="dv">0</span>]</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanitize bounding boxes to remove dummy values</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>targets <span class="op">=</span> dataset_sample[<span class="dv">1</span>]</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>targets[<span class="st">'boxes'</span>] <span class="op">=</span> BoundingBoxes(targets[<span class="st">'boxes'</span>], <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>dataset_sample[<span class="dv">0</span>].shape[<span class="dv">1</span>:])</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>sanitized_image, sanitized_targets <span class="op">=</span> transforms.SanitizeBoundingBoxes()(dataset_sample[<span class="dv">0</span>], targets)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the sample image with the sanitized annotations</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>(sanitized_image<span class="op">*</span><span class="dv">255</span>).to(dtype<span class="op">=</span>torch.uint8), </span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>sanitized_targets[<span class="st">'boxes'</span>], </span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>[class_names[<span class="bu">int</span>(i.item())] <span class="cf">for</span> i <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]], </span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[<span class="bu">int</span>(i.item())] <span class="cf">for</span> i <span class="kw">in</span> sanitized_targets[<span class="st">'labels'</span>]]</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_54_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
@@ -1605,10 +1656,14 @@ Training dataset size:
 </div>
 </section>
 </section>
+</section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
 <p>In this tutorial, we covered how to load custom keypoint annotations made with the LabelMe annotation tool and work with them using torchvision’s Transforms V2 API. The skills and knowledge you acquired here provide a solid foundation for future keypoint estimation projects.</p>
-<p>As a next step, perhaps try annotating a custom keypoint estimation dataset with LabelMe and loading it with this tutorial’s code.</p>
+<p>As a next step, perhaps try annotating a custom keypoint estimation dataset with LabelMe and loading it with this tutorial’s code. Once you’re comfortable with that, try adapting the code in the following tutorial to train a keypoint estimation model on your custom dataset.</p>
+<ul>
+<li><a href="../../../posts/pytorch-train-keypoint-rcnn-tutorial">Training Keypoint R-CNN Models with PyTorch</a></li>
+</ul>
 <p>If you found this guide helpful, consider sharing it with others and exploring some of my other tutorials linked below.</p>
 </section>
 <section id="recommended-tutorials" class="level2">
