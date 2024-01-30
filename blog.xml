@@ -17,7 +17,1115 @@
 <width>144</width>
 </image>
 <generator>quarto-1.4.543</generator>
-<lastBuildDate>Mon, 29 Jan 2024 08:00:00 GMT</lastBuildDate>
+<lastBuildDate>Tue, 30 Jan 2024 08:00:00 GMT</lastBuildDate>
+<item>
+  <title>Exporting Keypoint R-CNN Models from PyTorch to ONNX</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>christianjmills.com/posts/pytorch-train-keypoint-rcnn-tutorial/onnx-export/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/tutorials/pytorch-train-keypoint-rcnn-series.html"><strong>Training Keypoint R-CNN Models with PyTorch</strong></a></li>
+</ul>
+</div>
+</div>
+<ul>
+<li>Introduction</li>
+<li>Getting Started with the Code</li>
+<li>Setting Up Your Python Environment</li>
+<li>Importing the Required Dependencies</li>
+<li>Setting Up the Project</li>
+<li>Loading the Checkpoint Data</li>
+<li>Exporting the Model to ONNX</li>
+<li>Performing Inference with ONNX Runtime</li>
+<li>Conclusion</li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome back to this series on training Keypoint R-CNN models with PyTorch. Previously, we demonstrated how to fine-tune a Keypoint R-CNN model by training it to identify the locations of human noses and faces. This tutorial builds on that by showing how to export the model to <a href="https://onnx.ai/">ONNX</a> and perform inference using <a href="https://onnxruntime.ai/docs/">ONNX Runtime</a>.</p>
+<p>ONNX (Open Neural Network Exchange) is an open format to represent machine learning models and make them portable across various platforms. ONNX Runtime is a cross-platform inference accelerator that provides interfaces to hardware-specific libraries. By exporting our model to ONNX, we can deploy it to multiple devices and leverage hardware acceleration for faster inference. The Keypoint R-CNN model is computationally intensive, so any improvements to inference speed are welcome.</p>
+<p>Additionally, we’ll implement the functionality to annotate images with key points without relying on PyTorch as a dependency. By the end of this tutorial, you will have an ONNX version of our Keypoint R-CNN model that you can deploy to servers and edge devices using ONNX Runtime.</p>
+<div class="callout callout-style-default callout-important callout-titled" title="This post assumes the reader has completed the previous tutorial linked below:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post assumes the reader has completed the previous tutorial linked below:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../">Training Keypoint R-CNN Models with PyTorch</a></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="getting-started-with-the-code" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started-with-the-code">Getting Started with the Code</h2>
+<p>As with the previous tutorial, the code is available as a Jupyter Notebook.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Jupyter Notebook</th>
+<th>Google Colab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/cj-mills/pytorch-keypoint-rcnn-tutorial-code/blob/main/notebooks/pytorch-keypoint-r-cnn-onnx-export.ipynb">GitHub Repository</a></td>
+<td><a href="https://colab.research.google.com/github/cj-mills/pytorch-keypoint-rcnn-tutorial-code/blob/main/notebooks/pytorch-keypoint-r-cnn-onnx-export-colab.ipynb">Open In Colab</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="setting-up-your-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-your-python-environment">Setting Up Your Python Environment</h2>
+<p>We’ll need to add a few new libraries to our <a href="../#setting-up-your-python-environment">Python environment</a> for working with ONNX models.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Package Descriptions
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="table">
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>onnx</code></td>
+<td>This package provides a Python API for working with ONNX models. (<a href="https://pypi.org/project/onnx/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>onnxruntime</code></td>
+<td>ONNX Runtime is a runtime accelerator for machine learning models. (<a href="https://onnxruntime.ai/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>onnx-simplifier</code></td>
+<td>This package helps simplify ONNX models. (<a href="https://pypi.org/project/onnx-simplifier/">link</a>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Run the following command to install these additional libraries:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Install ONNX packages</span></span>
+<span id="cb1-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install onnx onnxruntime onnx-simplifier</span></code></pre></div>
+</section>
+<section id="importing-the-required-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="importing-the-required-dependencies">Importing the Required Dependencies</h2>
+<p>With our environment updated, we can dive into the code. First, we will import the necessary Python dependencies into our Jupyter Notebook.</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import Python Standard Library dependencies</span></span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> json</span>
+<span id="cb2-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> pathlib <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Path</span>
+<span id="cb2-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> random</span>
+<span id="cb2-5"></span>
+<span id="cb2-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import utility functions</span></span>
+<span id="cb2-7"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> cjm_psl_utils.core <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> download_file</span>
+<span id="cb2-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> cjm_pil_utils.core <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> resize_img</span>
+<span id="cb2-9"></span>
+<span id="cb2-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import numpy</span></span>
+<span id="cb2-11"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb2-12"></span>
+<span id="cb2-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import the pandas package</span></span>
+<span id="cb2-14"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb2-15"></span>
+<span id="cb2-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PIL for image manipulation</span></span>
+<span id="cb2-17"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> PIL <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Image, ImageDraw, ImageFont</span>
+<span id="cb2-18"></span>
+<span id="cb2-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PyTorch dependencies</span></span>
+<span id="cb2-20"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb2-21"></span>
+<span id="cb2-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import Keypoint R-CNN</span></span>
+<span id="cb2-23"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torchvision.models.detection <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> keypointrcnn_resnet50_fpn</span>
+<span id="cb2-24"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torchvision.models.detection.keypoint_rcnn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> KeypointRCNNPredictor</span>
+<span id="cb2-25"></span>
+<span id="cb2-26"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import ONNX dependencies</span></span>
+<span id="cb2-27"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> onnx <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import the onnx module</span></span>
+<span id="cb2-28"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> onnxsim <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> simplify <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import the method to simplify ONNX models</span></span>
+<span id="cb2-29"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> onnxruntime <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> ort <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import the ONNX Runtime</span></span></code></pre></div>
+</section>
+<section id="setting-up-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-project">Setting Up the Project</h2>
+<p>In this section, we’ll set the folder locations for our project and training session with the PyTorch checkpoint. Let’s also ensure we have a font file for annotating images.</p>
+<section id="set-the-directory-paths" class="level3">
+<h3 class="anchored" data-anchor-id="set-the-directory-paths">Set the Directory Paths</h3>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># The name for the project</span></span>
+<span id="cb3-2">project_name <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"pytorch-keypoint-r-cnn"</span></span>
+<span id="cb3-3"></span>
+<span id="cb3-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># The path for the project folder</span></span>
+<span id="cb3-5">project_dir <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Path(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"./</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>project_name<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/"</span>)</span>
+<span id="cb3-6"></span>
+<span id="cb3-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create the project directory if it does not already exist</span></span>
+<span id="cb3-8">project_dir.mkdir(parents<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, exist_ok<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb3-9"></span>
+<span id="cb3-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># The path to the checkpoint folder</span></span>
+<span id="cb3-11">checkpoint_dir <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Path(project_dir<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"2024-01-30_10-44-52"</span>)</span>
+<span id="cb3-12"></span>
+<span id="cb3-13">pd.Series({</span>
+<span id="cb3-14">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Project Directory:"</span>: project_dir,</span>
+<span id="cb3-15">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Checkpoint Directory:"</span>: checkpoint_dir,</span>
+<span id="cb3-16">}).to_frame().style.hide(axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'columns'</span>)</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_d7624">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_d7624_level0_row0" class="row_heading level0 row0">
+Project Directory:
+</th>
+<td id="T_d7624_row0_col0" class="data row0 col0">
+pytorch-keypoint-r-cnn
+</td>
+</tr>
+<tr>
+<th id="T_d7624_level0_row1" class="row_heading level0 row1">
+Checkpoint Directory:
+</th>
+<td id="T_d7624_row1_col0" class="data row1 col0">
+pytorch-keypoint-r-cnn/2024-01-30_10-44-52
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="I made a model checkpoint available on Hugging Face Hub in the repository linked below:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+I made a model checkpoint available on Hugging Face Hub in the repository linked below:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="https://huggingface.co/cj-mills/keypoint-rcnn-eyes-noses-pytorch/tree/main">cj-mills/keypoint-rcnn-eyes-noses-pytorch</a></li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Those following along on Google Colab can drag the contents of their checkpoint folder into Colab's file browser. Keep in mind the model checkpoint has a large file size. ">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Those following along on Google Colab can drag the contents of their checkpoint folder into Colab’s file browser. Keep in mind the model checkpoint has a large file size.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+</section>
+<section id="download-a-font-file" class="level3">
+<h3 class="anchored" data-anchor-id="download-a-font-file">Download a Font File</h3>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set the name of the font file</span></span>
+<span id="cb4-2">font_file <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
+<span id="cb4-3"></span>
+<span id="cb4-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Download the font file</span></span>
+<span id="cb4-5">download_file(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"https://fonts.gstatic.com/s/roboto/v30/</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>font_file<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"./"</span>)</span></code></pre></div>
+</section>
+</section>
+<section id="loading-the-checkpoint-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-checkpoint-data">Loading the Checkpoint Data</h2>
+<p>Now, we can load the colormap used during training and initialize a Keypoint R-CNN model with the saved checkpoint.</p>
+<section id="load-the-colormap" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-colormap">Load the Colormap</h3>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># The colormap path</span></span>
+<span id="cb5-2">colormap_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>(checkpoint_dir.glob(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'*colormap.json'</span>))[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="cb5-3"></span>
+<span id="cb5-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the JSON colormap data</span></span>
+<span id="cb5-5"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">with</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">open</span>(colormap_path, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'r'</span>) <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">file</span>:</span>
+<span id="cb5-6">        colormap_json <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> json.load(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">file</span>)</span>
+<span id="cb5-7"></span>
+<span id="cb5-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Convert the JSON data to a dictionary        </span></span>
+<span id="cb5-9">colormap_dict <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> {item[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'label'</span>]: item[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'color'</span>] <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> item <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> colormap_json[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'items'</span>]}</span>
+<span id="cb5-10"></span>
+<span id="cb5-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Extract the class names from the colormap</span></span>
+<span id="cb5-12">class_names <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>(colormap_dict.keys())</span>
+<span id="cb5-13"></span>
+<span id="cb5-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Make a copy of the colormap in integer format</span></span>
+<span id="cb5-15">int_colors <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">tuple</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span>(c<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">255</span>) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> c <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> color) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> color <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> colormap_dict.values()]</span></code></pre></div>
+</section>
+<section id="load-the-model-checkpoint" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-model-checkpoint">Load the Model Checkpoint</h3>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># The model checkpoint path</span></span>
+<span id="cb6-2">checkpoint_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>(checkpoint_dir.glob(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'*.pth'</span>))[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="cb6-3"></span>
+<span id="cb6-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the model checkpoint onto the CPU</span></span>
+<span id="cb6-5">model_checkpoint <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.load(checkpoint_path, map_location<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'cpu'</span>)</span></code></pre></div>
+</section>
+<section id="load-the-trained-keypoint-r-cnn-model" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-trained-keypoint-r-cnn-model">Load the Trained Keypoint R-CNN Model</h3>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load a pre-trained model</span></span>
+<span id="cb7-2">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> keypointrcnn_resnet50_fpn(weights<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'DEFAULT'</span>)</span>
+<span id="cb7-3"></span>
+<span id="cb7-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Replace the classifier head with the number of keypoints</span></span>
+<span id="cb7-5">in_features <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.roi_heads.keypoint_predictor.kps_score_lowres.in_channels</span>
+<span id="cb7-6">model.roi_heads.keypoint_predictor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> KeypointRCNNPredictor(in_channels<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>in_features, num_keypoints<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(class_names))</span>
+<span id="cb7-7"></span>
+<span id="cb7-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Initialize the model with the checkpoint parameters and buffers</span></span>
+<span id="cb7-9">model.load_state_dict(model_checkpoint)</span></code></pre></div>
+<pre class="text"><code>&lt;All keys matched successfully&gt;</code></pre>
+</section>
+</section>
+<section id="exporting-the-model-to-onnx" class="level2">
+<h2 class="anchored" data-anchor-id="exporting-the-model-to-onnx">Exporting the Model to ONNX</h2>
+<p>Before exporting the model, let’s ensure the model is in evaluation mode.</p>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1">model.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">eval</span>()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div>
+<section id="prepare-the-input-tensor" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-input-tensor">Prepare the Input Tensor</h3>
+<p>We need a sample input tensor for the export process.</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">input_tensor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">256</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">256</span>)</span></code></pre></div>
+</section>
+<section id="export-the-model-to-onnx" class="level3">
+<h3 class="anchored" data-anchor-id="export-the-model-to-onnx">Export the Model to ONNX</h3>
+<p>We can export the model using PyTorch’s <a href="https://pytorch.org/docs/stable/onnx.html#torch.onnx.export"><code>torch.onnx.export()</code></a> function. This function performs a single pass through the model and records all operations to generate a <a href="https://pytorch.org/docs/stable/jit.html">TorchScript graph</a>. It then exports this graph to ONNX by decomposing each graph node (which contains a PyTorch operator) into a series of ONNX operators.</p>
+<p>If we want the ONNX model to support different input sizes, we must set the width and height input axes as dynamic.</p>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set a filename for the ONNX model</span></span>
+<span id="cb11-2">onnx_file_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>checkpoint_dir<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>colormap_path<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>stem<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>removesuffix(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'-colormap'</span>)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">-</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>checkpoint_path<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>stem<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">.onnx"</span></span>
+<span id="cb11-3"></span>
+<span id="cb11-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Export the PyTorch model to ONNX format</span></span>
+<span id="cb11-5">torch.onnx.export(model.cpu(),</span>
+<span id="cb11-6">                  input_tensor.cpu(),</span>
+<span id="cb11-7">                  onnx_file_path,</span>
+<span id="cb11-8">                  export_params<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>,</span>
+<span id="cb11-9">                  do_constant_folding<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>,</span>
+<span id="cb11-10">                  input_names <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'input'</span>],</span>
+<span id="cb11-11">                  output_names <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'boxes'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'labels'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scores'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'keypoints'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'keypoints_scores'</span>],</span>
+<span id="cb11-12">                  dynamic_axes<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'input'</span>: {<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> : <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'height'</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span> : <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'width'</span>}}</span>
+<span id="cb11-13">                 )</span></code></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The export function may return some <code>UserWarning</code> messages when we export the model. We can ignore these warnings as the exported model functions as expected.</p>
+</div>
+</div>
+</section>
+<section id="simplify-the-onnx-model" class="level3">
+<h3 class="anchored" data-anchor-id="simplify-the-onnx-model">Simplify the ONNX Model</h3>
+<p>The ONNX models generated by PyTorch are not always the most concise. We can use the <a href="https://pypi.org/project/onnx-simplifier/"><code>onnx-simplifier</code></a> package to tidy up the exported model.</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the ONNX model from the onnx_file_name</span></span>
+<span id="cb12-2">onnx_model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> onnx.load(onnx_file_path)</span>
+<span id="cb12-3"></span>
+<span id="cb12-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Simplify the model</span></span>
+<span id="cb12-5">model_simp, check <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> simplify(onnx_model)</span>
+<span id="cb12-6"></span>
+<span id="cb12-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Save the simplified model to the onnx_file_name</span></span>
+<span id="cb12-8">onnx.save(model_simp, onnx_file_path)</span></code></pre></div>
+</section>
+</section>
+<section id="performing-inference-with-onnx-runtime" class="level2">
+<h2 class="anchored" data-anchor-id="performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</h2>
+<p>Now that we have our ONNX model, it’s time to test it with ONNX Runtime.</p>
+<section id="create-an-inference-session" class="level3">
+<h3 class="anchored" data-anchor-id="create-an-inference-session">Create an Inference Session</h3>
+<p>We interact with models in ONNX Runtime through an <a href="https://onnxruntime.ai/docs/api/python/api_summary.html#load-and-run-a-model"><code>InferenceSession</code></a> object. Here we can specify which Execution Providers to use for inference and other configuration information. <a href="https://onnxruntime.ai/docs/execution-providers/">Execution Providers</a> are the interfaces for hardware-specific inference engines like <a href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html">TensorRT</a> for NVIDIA and <a href="https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html">OpenVINO</a> for Intel. By default, the <code>InferenceSession</code> uses the generic <code>CPUExecutionProvider</code>.</p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the model and create an InferenceSession</span></span>
+<span id="cb13-2">session <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> ort.InferenceSession(onnx_file_path, providers<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CPUExecutionProvider'</span>])</span></code></pre></div>
+</section>
+<section id="define-annotation-function" class="level3">
+<h3 class="anchored" data-anchor-id="define-annotation-function">Define Annotation Function</h3>
+<p>Next, we need to annotate images with key points. PIL includes functionality to draw circles on images.</p>
+<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> draw_keypoints_pil(image, keypoints, labels, colors, radius:<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>):</span>
+<span id="cb14-2"></span>
+<span id="cb14-3">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb14-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Annotates an image with keypoints, each marked by a circle and associated with specific labels and colors.</span></span>
+<span id="cb14-5"></span>
+<span id="cb14-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    This function draws circles on the provided image at given keypoint coordinates. Each keypoint is associated </span></span>
+<span id="cb14-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    with a label and a color. The radius of the circles can be adjusted.</span></span>
+<span id="cb14-8"></span>
+<span id="cb14-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Parameters:</span></span>
+<span id="cb14-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    image (PIL.Image): The input image on which annotations will be drawn.</span></span>
+<span id="cb14-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    keypoints (list of tuples): A list of (x, y) tuples representing the coordinates of each keypoint.</span></span>
+<span id="cb14-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    labels (list of str): A list of labels corresponding to each keypoint.</span></span>
+<span id="cb14-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    colors (list of tuples): A list of RGB tuples for each keypoint, defining the color of the circle to be drawn.</span></span>
+<span id="cb14-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    radius (int, optional): The radius of the circles to be drawn for each keypoint. Defaults to 5.</span></span>
+<span id="cb14-15"></span>
+<span id="cb14-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Returns:</span></span>
+<span id="cb14-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    annotated_image (PIL.Image): The image annotated with keypoints, each represented as a colored circle.</span></span>
+<span id="cb14-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb14-19">        </span>
+<span id="cb14-20">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create a copy of the image</span></span>
+<span id="cb14-21">    annotated_image <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> image.copy()</span>
+<span id="cb14-22"></span>
+<span id="cb14-23">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create an ImageDraw object for drawing on the image</span></span>
+<span id="cb14-24">    draw <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> ImageDraw.Draw(annotated_image)</span>
+<span id="cb14-25"></span>
+<span id="cb14-26">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Loop through the bounding boxes and labels in the 'annotation' DataFrame</span></span>
+<span id="cb14-27">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(labels)):</span>
+<span id="cb14-28">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Get the key point coordinates</span></span>
+<span id="cb14-29">        x, y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> keypoints[i]</span>
+<span id="cb14-30"></span>
+<span id="cb14-31">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Draw a circle</span></span>
+<span id="cb14-32">        draw.ellipse((x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> radius, y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> radius, x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> radius, y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> radius), fill<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>colors[i])</span>
+<span id="cb14-33">        </span>
+<span id="cb14-34">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> annotated_image</span></code></pre></div>
+</section>
+<section id="select-a-test-image" class="level3">
+<h3 class="anchored" data-anchor-id="select-a-test-image">Select a Test Image</h3>
+<p>We can download an image from one of my HuggingFace repositories to verify the exported model performs as expected.</p>
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1">test_img_name <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"pexels-2769554-man-doing-rock-and-roll-sign.jpg"</span></span>
+<span id="cb15-2">test_img_url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>test_img_name<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="cb15-3"></span>
+<span id="cb15-4">download_file(test_img_url, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'./'</span>, <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb15-5"></span>
+<span id="cb15-6">test_img <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Image.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">open</span>(test_img_name)</span>
+<span id="cb15-7">display(test_img)</span>
+<span id="cb15-8"></span>
+<span id="cb15-9">pd.Series({</span>
+<span id="cb15-10">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Test Image Size:"</span>: test_img.size, </span>
+<span id="cb15-11">}).to_frame().style.hide(axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'columns'</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/pytorch-train-keypoint-rcnn-tutorial/onnx-export/images/output_32_1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_daf38">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_daf38_level0_row0" class="row_heading level0 row0">
+Test Image Size:
+</th>
+<td id="T_daf38_row0_col0" class="data row0 col0">
+(640, 960)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="prepare-the-test-image" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-test-image">Prepare the Test Image</h3>
+<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set test image size</span></span>
+<span id="cb16-2">test_sz <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span></span>
+<span id="cb16-3"></span>
+<span id="cb16-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">## Resize the test image</span></span>
+<span id="cb16-5">input_img <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> resize_img(test_img, target_sz<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>test_sz, divisor<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb16-6"></span>
+<span id="cb16-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Calculate the scale between the source image and the resized image</span></span>
+<span id="cb16-8">min_img_scale <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">min</span>(test_img.size) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">min</span>(input_img.size)</span>
+<span id="cb16-9"></span>
+<span id="cb16-10">display(input_img)</span>
+<span id="cb16-11"></span>
+<span id="cb16-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print the prediction data as a Pandas DataFrame for easy formatting</span></span>
+<span id="cb16-13">pd.Series({</span>
+<span id="cb16-14">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Source Image Size:"</span>: test_img.size,</span>
+<span id="cb16-15">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Input Dims:"</span>: input_img.size,</span>
+<span id="cb16-16">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Min Image Scale:"</span>: min_img_scale,</span>
+<span id="cb16-17">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Input Image Size:"</span>: input_img.size</span>
+<span id="cb16-18">}).to_frame().style.hide(axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'columns'</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/pytorch-train-keypoint-rcnn-tutorial/onnx-export/images/output_34_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_54014">
+<thead>
+</thead>
+<tbody>
+<tr>
+<th id="T_54014_level0_row0" class="row_heading level0 row0">
+Source Image Size:
+</th>
+<td id="T_54014_row0_col0" class="data row0 col0">
+(640, 960)
+</td>
+</tr>
+<tr>
+<th id="T_54014_level0_row1" class="row_heading level0 row1">
+Input Dims:
+</th>
+<td id="T_54014_row1_col0" class="data row1 col0">
+(512, 768)
+</td>
+</tr>
+<tr>
+<th id="T_54014_level0_row2" class="row_heading level0 row2">
+Min Image Scale:
+</th>
+<td id="T_54014_row2_col0" class="data row2 col0">
+1.250000
+</td>
+</tr>
+<tr>
+<th id="T_54014_level0_row3" class="row_heading level0 row3">
+Input Image Size:
+</th>
+<td id="T_54014_row3_col0" class="data row3 col0">
+(512, 768)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="prepare-the-input-tensor-1" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-input-tensor-1">Prepare the Input Tensor</h3>
+<p>When we convert the PIL input image to a NumPy array, we need to reorder the array values to channels-first format, scale the values from <code>[0,255]</code> to <code>[0,1]</code>, and add a batch dimension.</p>
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Convert the input image to NumPy format</span></span>
+<span id="cb17-2">input_tensor_np <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.array(input_img, dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>np.float32).transpose((<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))[<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">255</span></span></code></pre></div>
+</section>
+<section id="compute-the-predictions" class="level3">
+<h3 class="anchored" data-anchor-id="compute-the-predictions">Compute the Predictions</h3>
+<p>Now, we can finally perform inference with our ONNX model.</p>
+<div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Run inference</span></span>
+<span id="cb18-2">model_output <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> session.run(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>, {<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"input"</span>: input_tensor_np})</span>
+<span id="cb18-3"></span>
+<span id="cb18-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set the confidence threshold</span></span>
+<span id="cb18-5">conf_threshold <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.8</span></span>
+<span id="cb18-6"></span>
+<span id="cb18-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Filter the output based on the confidence threshold</span></span>
+<span id="cb18-8">scores_mask <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model_output[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> conf_threshold</span>
+<span id="cb18-9"></span>
+<span id="cb18-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Extract and scale the predicted keypoints</span></span>
+<span id="cb18-11">predicted_keypoints <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (model_output[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>][scores_mask])[:,:,:<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>].reshape(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>min_img_scale</span>
+<span id="cb18-12">predicted_keypoints</span>
+<span id="cb18-13"></span>
+<span id="cb18-14">labels<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>class_names<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>(scores_mask).item()</span>
+<span id="cb18-15"></span>
+<span id="cb18-16">draw_keypoints_pil(test_img, </span>
+<span id="cb18-17">                predicted_keypoints, </span>
+<span id="cb18-18">                labels<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>labels,</span>
+<span id="cb18-19">                colors<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[int_colors[i] <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> [class_names.index(label) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> label <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> labels]],</span>
+<span id="cb18-20">               )</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/pytorch-train-keypoint-rcnn-tutorial/onnx-export/images/output_38_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>The model appears to work as intended, even on this new image.</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Google Colab Users
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Don’t forget to download the ONNX model from the Colab Environment’s file browser. (<a href="https://christianjmills.com/posts/google-colab-getting-started-tutorial/#working-with-data">tutorial link</a>)</li>
+</ol>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Congratulations on reaching the end of this tutorial! We previously trained a Keypoint R-CNN model in PyTorch, and now we’ve exported that model to ONNX. With this, we can streamline our deployment process and leverage platform-specific hardware optimizations through ONNX Runtime.</p>
+<p>As you move forward, consider exploring more about ONNX and its ecosystem. Check out the available <a href="https://onnxruntime.ai/docs/execution-providers/">Execution Providers</a> that provide flexible interfaces to different hardware acceleration libraries.</p>
+<p>If you found this guide helpful, consider sharing it with others.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>pytorch</category>
+  <category>onnx</category>
+  <category>keypoint-rcnn</category>
+  <category>keypoint-estimation</category>
+  <category>tutorial</category>
+  <guid>christianjmills.com/posts/pytorch-train-keypoint-rcnn-tutorial/onnx-export/</guid>
+  <pubDate>Tue, 30 Jan 2024 08:00:00 GMT</pubDate>
+  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Training Keypoint R-CNN Models with PyTorch</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -27,6 +1135,21 @@
 
 
 
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../series/tutorials/pytorch-train-keypoint-rcnn-series.html"><strong>Training Keypoint R-CNN Models with PyTorch</strong></a></li>
+</ul>
+</div>
+</div>
 <ul>
 <li>Introduction</li>
 <li>Getting Started with the Code</li>
@@ -55,7 +1178,7 @@
 <h2 class="anchored" data-anchor-id="getting-started-with-the-code">Getting Started with the Code</h2>
 <p>The tutorial code is available as a <a href="https://jupyter.org/">Jupyter Notebook</a>, which you can run locally or in a cloud-based environment like <a href="https://colab.research.google.com/">Google Colab</a>. I have dedicated tutorials for those new to these platforms or who need guidance setting up:</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Setup Guides">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -64,7 +1187,7 @@ Setup Guides
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <ul>
 <li><a href="../../posts/google-colab-getting-started-tutorial/"><strong>Getting Started with Google Colab</strong></a></li>
@@ -74,7 +1197,7 @@ Setup Guides
 </div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled" title="Tutorial Code">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -83,7 +1206,7 @@ Tutorial Code
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <table class="table">
 <thead>
@@ -202,7 +1325,7 @@ font-style: inherit;">pip</span> install torch torchvision torchaudio</span></co
 <h3 class="anchored" data-anchor-id="installing-additional-libraries">Installing Additional Libraries</h3>
 <p>We also need to install some additional libraries for our project.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -211,7 +1334,7 @@ Package Descriptions
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <table class="table">
 <thead>
@@ -270,7 +1393,7 @@ font-style: inherit;">pip</span> install distinctipy jupyter matplotlib pandas p
 <h3 class="anchored" data-anchor-id="installing-utility-packages">Installing Utility Packages</h3>
 <p>We will also install some utility packages I made, which provide shortcuts for routine tasks.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -279,7 +1402,7 @@ Package Descriptions
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <table class="table">
 <thead>
@@ -4349,7 +5472,7 @@ font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>)</span></code></pre></div>
 <div class="callout callout-style-default callout-note callout-titled" title="Training Progress">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -4358,7 +5481,7 @@ Training Progress
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <pre class="text"><code>Epochs: 100% |██████████| 70/70 [07:29&lt;00:00, 6.55s/it]
 Train: 100% |██████████| 45/45 [00:07&lt;00:00, 8.58it/s, avg_loss=6.95, loss=6.07, lr=2.27e-5]
@@ -4880,6 +6003,7 @@ font-style: inherit;">in</span> labels]]</span>
 
  ]]></description>
   <category>pytorch</category>
+  <category>keypoint-rcnn</category>
   <category>keypoint-estimation</category>
   <category>tutorial</category>
   <guid>christianjmills.com/posts/pytorch-train-keypoint-rcnn-tutorial/</guid>
@@ -37342,1137 +38466,6 @@ This post is part of the following series:
   <category>history</category>
   <guid>christianjmills.com/posts/chip-war-book-notes/overview/</guid>
   <pubDate>Tue, 21 Nov 2023 08:00:00 GMT</pubDate>
-  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>The Learning Game Book Notes</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>christianjmills.com/posts/the-learning-game-book-notes/</link>
-  <description><![CDATA[ 
-
-
-
-
-<ul>
-<li>Introduction</li>
-<li>Seven Dangerous Lessons Taught in School</li>
-<li>How did we get here?</li>
-<li>How Tests and Rewards Go Wrong</li>
-<li>Unlearning Lessons from School</li>
-<li>The Game of School</li>
-<li>Learning to Love Learning</li>
-<li>Story-Driven Learning</li>
-<li>Learning through Memorization</li>
-<li>The Learning Style Myth</li>
-<li>Confusion Sparks Curiosity</li>
-<li>The Architecture of Great Games</li>
-<li>The Psychology of Healthy Gaming</li>
-<li>Skin in the Game</li>
-<li>Raising Antifragile Kids</li>
-<li>How to Develop Character like the Stoics</li>
-<li>Range and Specific Knowledge</li>
-<li>The Art of Failing and Quitting</li>
-<li>Mental Models for Parents</li>
-<li>The Thinking Toolkit</li>
-<li>Conclusion</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Book LInks:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="https://harriman.house/books/the-learning-game/">Publisher Page</a></li>
-<li><a href="https://afabrega.com/">Author’s Website</a></li>
-</ul>
-</div>
-</div>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Ana Lorena Fábrega challenges traditional educational systems and proposes new, curiosity-driven approaches. Fábrega, a former teacher, combines her classroom experience and diverse educational background to advocate for a system that fosters lifelong learning and creativity, moving beyond standardized methods.</p>
-<section id="ideas" class="level3">
-<h3 class="anchored" data-anchor-id="ideas">Ideas</h3>
-<ol type="1">
-<li>Traditional education prioritizes compliance over curiosity and creativity, needing a shift towards fostering lifelong learning.</li>
-<li>The current education system, mirroring the industrial age model, is outdated and calls for modernization.</li>
-<li>Fábrega advocates for an education system that nurtures lifelong learners filled with curiosity.</li>
-<li>Emphasis on moving beyond a one-size-fits-all curriculum to accommodate diverse learning styles and interests.</li>
-<li>The importance of adapting education to the digital age, utilizing technology and the internet as learning tools.</li>
-<li>Encouraging students to follow their interests, question everything, and learn at their own pace.</li>
-<li>Highlighting the disconnect between students’ natural curiosity and the structured environment of schools.</li>
-<li>Questioning the effectiveness of traditional grading and standardized tests in truly measuring learning.</li>
-<li>Proposing storytelling and engaging teaching methods instead of conventional techniques.</li>
-<li>Urging parents and educators to rethink and redesign the education system to be more student-centered and empowering.</li>
-</ol>
-</section>
-<section id="facts" class="level3">
-<h3 class="anchored" data-anchor-id="facts">Facts</h3>
-<ol type="1">
-<li>Fábrega attended ten schools in seven different countries as a child.</li>
-<li>Her teaching experience spans almost a decade of in-person teaching.</li>
-<li>The current education system closely resembles the model from a hundred years ago.</li>
-<li>Fábrega’s class placed first in math and reading despite deviating from standardized test preparation.</li>
-<li>She holds degrees in childhood education, special education, and psychology.</li>
-<li>The book includes a section summarizing its key points for easy reference.</li>
-</ol>
-</section>
-<section id="recommendations" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations">Recommendations</h3>
-<ol type="1">
-<li>Rethink and redesign the education system to be more curiosity-driven.</li>
-<li>Encourage students to follow their interests and question traditional norms.</li>
-<li>Utilize storytelling and engaging methods in education.</li>
-<li>Embrace technology as a tool to revolutionize learning.</li>
-<li>Adapt education to cater to the diverse needs of students.</li>
-<li>Implement student-centered approaches that empower learners.</li>
-<li>Explore alternatives to traditional schooling that focus on individual growth and creativity.</li>
-<li>Consider the role of mental models in shaping educational experiences.</li>
-<li>Design personalized learning experiences that reflect students’ interests and abilities.</li>
-<li>Foster an environment that encourages exploration and self-directed learning.</li>
-</ol>
-</section>
-</section>
-<section id="seven-dangerous-lessons-taught-in-school" class="level2">
-<h2 class="anchored" data-anchor-id="seven-dangerous-lessons-taught-in-school">Seven Dangerous Lessons Taught in School</h2>
-<p>Chapter 1 draws from John Taylor Gatto’s insights. Gatto, an acclaimed New York educator, criticizes the traditional education system for imparting harmful lessons that stifle creativity, curiosity, and self-reliance in students. Fábrega uses Gatto’s framework to analyze the current state of education and suggests alternative methods for more effective and engaging learning.</p>
-<section id="ideas-1" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-1">Ideas</h3>
-<ol type="1">
-<li>Traditional education promotes confusion with isolated subject teaching.</li>
-<li>The school system enforces a rigid class hierarchy.</li>
-<li>Students learn to suppress genuine interest in subjects.</li>
-<li>Schools encourage emotional dependency for self-esteem.</li>
-<li>Intellectual dependency is fostered, hindering creativity.</li>
-<li>Self-esteem is based on external evaluation.</li>
-<li>Lack of privacy in schools stifles individual creativity.</li>
-<li>Traditional education resists change, using outdated methods.</li>
-<li>Centralization contributes to education rigidity.</li>
-<li>Harmful lessons extend into adult education and training.</li>
-</ol>
-</section>
-<section id="personal-habits" class="level3">
-<h3 class="anchored" data-anchor-id="personal-habits">Personal Habits</h3>
-<ol type="1">
-<li>John Taylor Gatto questioned and analyzed the education system.</li>
-<li>He prioritized authentic learning experiences over rigid curricula.</li>
-<li>Gatto valued student autonomy and self-directed learning.</li>
-<li>Committed to reforming education for creativity and independent thought.</li>
-<li>Believed in context and real-world application in teaching.</li>
-<li>Advocated for emotional intelligence in education.</li>
-<li>Emphasized resisting harmful educational practices.</li>
-<li>Practiced a holistic approach to learning.</li>
-<li>Valued collaboration over competition in education.</li>
-<li>Addressed the impact of surveillance and lack of privacy in schools.</li>
-</ol>
-</section>
-<section id="facts-1" class="level3">
-<h3 class="anchored" data-anchor-id="facts-1">Facts</h3>
-<ol type="1">
-<li>Traditional schooling teaches subjects in isolation.</li>
-<li>School systems enforce a rigid hierarchy.</li>
-<li>Segmented schedules suppress student interest.</li>
-<li>Schools encourage emotional dependency on teachers.</li>
-<li>Intellectual dependency is a key lesson in traditional schooling.</li>
-<li>Self-esteem often based on external evaluations.</li>
-<li>Students lack privacy and autonomy.</li>
-<li>Traditional education is resistant to change.</li>
-<li>Centralization contributes to education rigidity.</li>
-<li>Harmful lessons extend to adult education and training.</li>
-</ol>
-</section>
-<section id="resources" class="level3">
-<h3 class="anchored" data-anchor-id="resources">Resources</h3>
-<ol type="1">
-<li>“<a href="https://newsociety.com/books/d/dumbing-us-down-25th-anniversary-edition">Dumbing Us Down, The Hidden Curriculum of Compulsory Schooling</a>” by John Taylor Gatto.</li>
-</ol>
-</section>
-<section id="recommendations-1" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-1">Recommendations</h3>
-<ol type="1">
-<li>Reform education for context and integration in learning.</li>
-<li>Challenge rigid hierarchy and class structure in schools.</li>
-<li>Foster student autonomy and self-directed learning.</li>
-<li>Encourage emotional intelligence and self-awareness.</li>
-<li>Promote intellectual independence and critical thinking.</li>
-<li>Develop models focusing on real-world problem-solving.</li>
-<li>Emphasize collaboration and teamwork.</li>
-<li>Create diverse and individual-expressive learning environments.</li>
-<li>Reduce reliance on standardized testing.</li>
-<li>Balance teacher-led instruction with student-led exploration.</li>
-</ol>
-</section>
-</section>
-<section id="how-did-we-get-here" class="level2">
-<h2 class="anchored" data-anchor-id="how-did-we-get-here">How did we get here?</h2>
-<p>Chapter 2 delves into the historical roots of the modern education system. It traces the origins to the Prussian model designed for creating loyal, literate citizens and soldiers, and the subsequent adaptation of the factory model in the United States, emphasizing standardization and efficiency. The chapter critiques how this history has led to a system that prioritizes instruction-based learning, limiting creativity and problem-solving skills in students.</p>
-<section id="ideas-2" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-2">Ideas</h3>
-<ol type="1">
-<li><strong>Prussian Model’s Influence:</strong> The modern education system’s roots in the Prussian model, designed for discipline and obedience.</li>
-<li><strong>Factory Model in U.S. Education:</strong> Adaptation of the factory model in the U.S., emphasizing standardization and efficiency.</li>
-<li><strong>Shift from Personalized to Mass Instruction:</strong> The historical shift from personalized learning to mass instruction.</li>
-<li><strong>Decline in Creative Thinking:</strong> The reliance on instruction-based learning leading to a decline in creative and elastic thinking.</li>
-<li><strong>Underestimating Students’ Abilities:</strong> The education system’s tendency to underestimate students, hindering genuine learning challenges.</li>
-<li><strong>External Guidance Reliance:</strong> Students in instruction-based systems developing reliance on external guidance, affecting problem-solving skills.</li>
-<li><strong>Preparation for Real-World Problems:</strong> The current model’s failure to adequately prepare students for real-world, ambiguous problems.</li>
-<li><strong>Need for Exploratory Learning Models:</strong> The necessity to revert to more open-ended, exploratory learning models.</li>
-<li><strong>Impact of Standardization on Motivation:</strong> The trend towards standardization leading to reduced motivation and self-esteem among students.</li>
-<li><strong>Trend Away from Critical Thinking:</strong> A historical trend away from developing critical thinking and autonomy in students.</li>
-</ol>
-</section>
-<section id="personal-habits-1" class="level3">
-<h3 class="anchored" data-anchor-id="personal-habits-1">Personal Habits</h3>
-<ol type="1">
-<li>Ana Lorena Fábrega practices deep historical research to understand current educational challenges.</li>
-<li>She values critical analysis of traditional systems to foster innovation in education.</li>
-<li>Fábrega encourages exploration of different educational models and their impacts.</li>
-<li>She advocates for a shift from standardization to creativity in learning.</li>
-<li>Fábrega emphasizes the importance of understanding the root causes of educational issues.</li>
-<li>She promotes the idea of giving students more autonomy and creative freedom in learning.</li>
-<li>Fábrega supports the use of analogies like the Lego example to illustrate educational concepts.</li>
-<li>She believes in the power of storytelling to convey complex ideas about education.</li>
-<li>Fábrega is committed to challenging conventional wisdom in educational practices.</li>
-<li>She practices and promotes a holistic approach to understanding and reforming education.</li>
-</ol>
-</section>
-<section id="facts-2" class="level3">
-<h3 class="anchored" data-anchor-id="facts-2">Facts</h3>
-<ol type="1">
-<li>The Prussian education model heavily influenced the modern education system.</li>
-<li>Prussia’s educational approach was geared towards creating loyal citizens and soldiers.</li>
-<li>The U.S. education system evolved to focus on training industrial managers.</li>
-<li>The factory model of education emphasizes standardization and efficiency.</li>
-<li>Modern education often prioritizes state needs over individual development.</li>
-<li>Instruction-based learning has become a core aspect of the current education system.</li>
-<li>The history of education reveals a shift from individualized learning to mass instruction.</li>
-<li>Standardized testing was initially introduced for quality control in education.</li>
-<li>Current educational models often fail to foster creative and elastic thinking.</li>
-<li>Students in modern education systems often develop a dependency on external instructions.</li>
-</ol>
-</section>
-<section id="resources-1" class="level3">
-<h3 class="anchored" data-anchor-id="resources-1">Resources</h3>
-<ul>
-<li>Historical Analysis: The <a href="https://afabrega.com/my-blog/the-origin-of-the-modern-school-system">Prussian model of education</a> and its impact on modern schooling.</li>
-</ul>
-</section>
-<section id="recommendations-2" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-2">Recommendations</h3>
-<ol type="1">
-<li>Move away from the Prussian and factory models of education towards more individualized learning.</li>
-<li>Emphasize creativity, problem-solving, and critical thinking in education.</li>
-<li>Reduce the focus on standardization and efficiency in schooling.</li>
-<li>Foster more open-ended, exploratory learning environments.</li>
-<li>Challenge and rethink the role of standardized testing in education.</li>
-<li>Encourage educational models that prioritize student autonomy and creativity.</li>
-<li>Understand and address the historical roots of current educational issues.</li>
-<li>Promote educational reforms that focus on real-world, practical skills.</li>
-<li>Implement teaching methods that stimulate elastic thinking in students.</li>
-<li>Develop educational systems that better prepare students for the complexities of adult life.</li>
-</ol>
-</section>
-</section>
-<section id="how-tests-and-rewards-go-wrong" class="level2">
-<h2 class="anchored" data-anchor-id="how-tests-and-rewards-go-wrong">How Tests and Rewards Go Wrong</h2>
-<p>Chapter 3 critiques the reliance on standardized tests and extrinsic rewards in education. Ana Lorena Fábrega discusses the negative impacts, including reduced genuine learning, heightened anxiety, and compromised integrity. She argues that these practices undermine intrinsic motivation and fail to prepare students for real-world challenges. Fábrega suggests alternative assessment methods and strategies to foster intrinsic motivation and a love for learning in students.</p>
-<section id="ideas-3" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-3">Ideas</h3>
-<ol type="1">
-<li>Standardized tests often measure test-taking skills more than actual learning or intelligence.</li>
-<li>The high stakes of standardized testing create negative consequences, including teacher and student stress and unethical behaviors.</li>
-<li>Extrinsic rewards can undermine long-term student engagement and intrinsic motivation.</li>
-<li>Success in the real world is not accurately predicted by standardized test scores.</li>
-<li>The overemphasis on testing leads to neglecting skills like problem-solving and creativity.</li>
-<li>Fábrega advocates for assessments that align with students’ unique skills and learning styles.</li>
-<li>Intrinsic motivation leads to more profound and sustainable learning compared to extrinsic motivators.</li>
-<li>Specific feedback and asking insightful questions can enhance learning and motivation.</li>
-<li>Making learning fun and relevant is crucial for fostering a love of learning.</li>
-<li>The current educational system often prioritizes compliance over creativity, curiosity, and problem-solving.</li>
-</ol>
-</section>
-<section id="personal-habits-2" class="level3">
-<h3 class="anchored" data-anchor-id="personal-habits-2">Personal Habits</h3>
-<ol type="1">
-<li>Fábrega practices critical evaluation of traditional educational methods.</li>
-<li>She advocates for alternative assessment methods that reflect real-world skills.</li>
-<li>Fábrega emphasizes the importance of fostering intrinsic motivation in students.</li>
-<li>She involves students in decision-making to enhance their engagement and sense of responsibility.</li>
-<li>Fábrega prioritizes making learning fun and relevant to increase student interest.</li>
-<li>She focuses on providing specific feedback and asking insightful questions to enhance understanding.</li>
-<li>Fábrega encourages understanding the ‘why’ behind learning activities.</li>
-<li>She values creativity and curiosity over compliance in education.</li>
-<li>Fábrega integrates diverse teaching strategies to cater to different learning styles.</li>
-<li>She practices and promotes a holistic approach to education, focusing on overall development.</li>
-</ol>
-</section>
-<section id="facts-3" class="level3">
-<h3 class="anchored" data-anchor-id="facts-3">Facts</h3>
-<ol type="1">
-<li><p>Standardized tests often measure a student’s test-taking skills rather than their overall intelligence or learning.</p></li>
-<li><p>High-stakes testing can lead to negative consequences, including unethical behavior and increased stress.</p></li>
-<li><p>Extrinsic rewards in education can diminish long-term engagement and intrinsic motivation.</p></li>
-<li><p>Standardized tests have evolved to become overly dominant in the education system.</p></li>
-<li><p>Test anxiety significantly impacts student performance and interest in learning.</p></li>
-<li><p>Success in real-world scenarios is not accurately predicted by standardized test scores.</p></li>
-<li><p>The current education system often overlooks skills like problem-solving and creativity.</p></li>
-<li><p>Assessments that align with students’ unique skills and learning styles are more effective.</p></li>
-<li><p>Intrinsic motivation is crucial for deep and lasting learning.</p></li>
-<li><p>Current educational practices often prioritize compliance over creativity and problem-solving.</p></li>
-</ol>
-</section>
-<section id="recommendations-3" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-3">Recommendations</h3>
-<ol type="1">
-<li>Reduce the emphasis on standardized testing in education.</li>
-<li>Foster intrinsic motivation in students for more profound and sustainable learning.</li>
-<li>Implement alternative assessment methods that reflect students’ unique skills and learning styles.</li>
-<li>Involve students in decision-making to increase engagement and responsibility.</li>
-<li>Make learning fun and relevant to enhance student interest and enjoyment.</li>
-<li>Provide specific feedback and ask insightful questions to deepen understanding.</li>
-<li>Understand and communicate the ‘why’ behind learning activities to increase student engagement.</li>
-<li>Shift educational focus from compliance to creativity, curiosity, and problem-solving.</li>
-<li>Rethink and reform educational practices to align with genuine learning and real-world success.</li>
-<li>Emphasize the development of skills like problem-solving and creativity in education.</li>
-</ol>
-</section>
-</section>
-<section id="unlearning-lessons-from-school" class="level2">
-<h2 class="anchored" data-anchor-id="unlearning-lessons-from-school">Unlearning Lessons from School</h2>
-<p>Chapter 4 focuses on challenging and unlearning harmful lessons ingrained in traditional schooling. Authored by Ana Lorena Fábrega, the chapter argues that certain school-taught principles like fearing mistakes, fitting in, waiting for instructions, learning just in case, and not questioning authority are detrimental. Fábrega emphasizes relearning approaches that foster independence, creativity, and critical thinking, essential for real-world success and innovation.</p>
-<section id="ideas-4" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-4">Ideas</h3>
-<ol type="1">
-<li>The need to unlearn fearing mistakes, as real-world learning often comes from making and learning from errors.</li>
-<li>Challenging the notion of fitting in, as the real world rewards those who think independently and uniquely.</li>
-<li>Unlearning the habit of waiting for instructions, promoting proactive and independent problem-solving.</li>
-<li>Shifting from learning ‘just in case’ to ‘learning on demand,’ focusing on relevant and immediate learning needs.</li>
-<li>Encouraging questioning authority to foster independent thinking and innovation.</li>
-<li>Recognizing that traditional schooling often prioritizes compliance and rote learning over creativity and critical thinking.</li>
-<li>The importance of relearning to embrace risks and stand out in a conformist educational system.</li>
-<li>Understanding that success in the real world often requires skills and mindsets not emphasized in school.</li>
-<li>Advocating for educational models that emphasize self-directed learning and curiosity.</li>
-<li>Promoting the idea of continuous learning and adaptation in response to real-world challenges.</li>
-</ol>
-</section>
-<section id="personal-habits-3" class="level3">
-<h3 class="anchored" data-anchor-id="personal-habits-3">Personal Habits</h3>
-<ol type="1">
-<li>Ana Lorena Fábrega practices and advocates for the unlearning of traditional schooling norms.</li>
-<li>She encourages embracing mistakes as learning opportunities.</li>
-<li>Fábrega promotes thinking outside the box and breaking away from the norm.</li>
-<li>She emphasizes the importance of independent problem-solving and initiative.</li>
-<li>Fábrega advocates for on-demand learning, adapting to immediate needs.</li>
-<li>She supports questioning authority and established norms to foster innovation.</li>
-<li>Fábrega values continuous learning and adapting to new challenges.</li>
-<li>She encourages learners to carve their own unique paths.</li>
-<li>Fábrega practices a critical approach to traditional educational methods.</li>
-<li>She emphasizes relearning skills and mindsets vital for success in the real world.</li>
-</ol>
-</section>
-<section id="facts-4" class="level3">
-<h3 class="anchored" data-anchor-id="facts-4">Facts</h3>
-<ol type="1">
-<li><p>Traditional schooling often teaches fear of making mistakes, which hinders learning from errors.</p></li>
-<li><p>Schools usually reward conformity, suppressing individual creativity and unique thinking.</p></li>
-<li><p>The educational system often conditions students to wait for instructions, hindering independent problem-solving.</p></li>
-<li><p>School curricula typically focus on learning just in case, rather than on-demand learning.</p></li>
-<li><p>Traditional schooling discourages questioning authority, limiting critical thinking and innovation.</p></li>
-<li><p>Real-world success often requires skills and mindsets not emphasized in traditional education.</p></li>
-<li><p>Traditional education often prioritizes compliance and rote learning over creativity and problem-solving.</p></li>
-<li><p>Schools inadvertently teach students to play it safe and avoid questioning the status quo.</p></li>
-<li><p>Educational models that emphasize self-directed learning and curiosity are essential for real-world challenges.</p></li>
-<li><p>A shift from a one-size-fits-all approach to personalized learning is needed in education.</p></li>
-</ol>
-</section>
-<section id="recommendations-4" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-4">Recommendations</h3>
-<ol type="1">
-<li>Encourage the unlearning of traditional schooling norms that hinder real-world success.</li>
-<li>Promote embracing mistakes as valuable learning experiences.</li>
-<li>Foster independent problem-solving skills in students.</li>
-<li>Shift educational focus to on-demand learning for real-time relevance.</li>
-<li>Encourage questioning and challenging authority and established norms.</li>
-<li>Emphasize the development of creativity, innovation, and critical thinking in education.</li>
-<li>Support continuous learning and adaptation in response to real-world challenges.</li>
-<li>Advocate for educational models that prioritize self-directed learning and curiosity.</li>
-<li>Promote the development of unique and creative thinking in students.</li>
-<li>Reform the education system to focus on personalized and relevant learning experiences.</li>
-</ol>
-</section>
-</section>
-<section id="the-game-of-school" class="level2">
-<h2 class="anchored" data-anchor-id="the-game-of-school">The Game of School</h2>
-<p>Chapter 5 critiques formal education for deviating from natural human learning methods. It contrasts self-directed play and exploration with the structured, often ineffective learning in schools, emphasizing the need for a shift towards a more engaging, personalized approach.</p>
-<section id="ideas-5" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-5">Ideas</h3>
-<ol type="1">
-<li>Humans naturally learn through play, exploration, and trial and error.</li>
-<li>Formal schooling often misaligns with these natural learning methods.</li>
-<li>The chapter argues for a shift from institutional learning to a more intuitive, exploratory approach.</li>
-<li>It discusses the ‘game of school,’ where success is measured by compliance and performance rather than genuine learning.</li>
-<li>Many students learn to navigate the school system without truly grasping the knowledge.</li>
-<li>The focus on grades and standardized performance can overshadow real understanding.</li>
-<li>Some students resist the pressures of conventional schooling, focusing instead on deeper, personal learning.</li>
-<li>These ‘rebel’ students often find more fulfillment and success by learning on their own terms.</li>
-<li>The chapter advocates for breaking out of traditional educational molds.</li>
-<li>It highlights the importance of adapting education to individual strengths and needs.</li>
-</ol>
-</section>
-<section id="facts-5" class="level3">
-<h3 class="anchored" data-anchor-id="facts-5">Facts</h3>
-<ol type="1">
-<li>Humans instinctively learn through self-directed methods.</li>
-<li>Formal schooling often contradicts natural learning processes.</li>
-<li>Success in school is frequently based on compliance and performance metrics.</li>
-<li>Many students adapt to the system without deeply understanding the material.</li>
-<li>Some students choose to focus on personal learning rather than conforming to school norms.</li>
-<li>These independent learners often find greater success and fulfillment.</li>
-</ol>
-</section>
-<section id="recommendations-5" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-5">Recommendations</h3>
-<ol type="1">
-<li>Embrace natural learning methods like play, exploration, and trial and error.</li>
-<li>Shift from institutional to more intuitive, exploratory approaches in education.</li>
-<li>Focus on individual student strengths and needs rather than standardized performance.</li>
-<li>Encourage independent, self-directed learning.</li>
-<li>Break out of traditional educational molds for greater life success.</li>
-<li>Rethink conventional assumptions about education and learning.</li>
-<li>Adapt educational practices to align with natural human learning instincts.</li>
-</ol>
-</section>
-</section>
-<section id="learning-to-love-learning" class="level2">
-<h2 class="anchored" data-anchor-id="learning-to-love-learning">Learning to Love Learning</h2>
-<p>Chapter 6 emphasizes the importance of self-directed projects in fostering genuine learning in children. Fábrega argues that hobbies and personal interests, often sidelined in traditional schooling, are crucial for developing a passion for learning and innovative thinking.</p>
-<section id="ideas-6" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-6">Ideas</h3>
-<ol type="1">
-<li>Separating learning from joy in formal education limits children’s natural curiosity.</li>
-<li>Personal projects are essential for genuine learning, allowing children to explore their interests.</li>
-<li>Children learn more effectively when they have agency over their work.</li>
-<li>Projects like building treehouses can teach valuable skills like math, engineering, and teamwork.</li>
-<li>School often fails to recognize the educational value of voluntary projects.</li>
-<li>Allowing children to work on personal projects cultivates innovative and critical thinking.</li>
-<li>The book proposes that school should revolve around student-chosen projects.</li>
-<li>Real learning occurs when working intensely on matters of personal significance.</li>
-<li>Children’s natural inclination for independent projects should be nurtured.</li>
-<li>Encouraging children to work on their projects can lead to a lifelong love of learning.</li>
-</ol>
-</section>
-<section id="facts-6" class="level3">
-<h3 class="anchored" data-anchor-id="facts-6">Facts</h3>
-<ol type="1">
-<li>Personal projects provide a platform for children to learn various skills in an engaging manner.</li>
-<li>Projects like building treehouses can teach children about math, engineering, and teamwork.</li>
-<li>The school system often undervalues the educational significance of personal projects.</li>
-<li>Independent projects can lead to innovation and critical thinking.</li>
-<li>The concept of “vous j’adait” involves seeing familiar situations with fresh eyes.</li>
-</ol>
-</section>
-<section id="recommendations-6" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-6">Recommendations</h3>
-<ol type="1">
-<li>Integrate personal projects into children’s learning to cultivate genuine interest and joy.</li>
-<li>Recognize the educational value of activities that children are naturally drawn to.</li>
-<li>Foster an environment where children can explore their curiosities and interests.</li>
-<li>Encourage children to challenge default assumptions and think critically.</li>
-<li>Promote innovative thinking by allowing children to step back and observe from a distance.</li>
-<li>Teach children to reject the defaults and seek novel insights.</li>
-<li>Encourage skepticism and independent thought in children.</li>
-<li>Nurture children’s natural ability for independent thinking.</li>
-<li>Create learning experiences that combine personal interests with educational goals.</li>
-<li>Emphasize the importance of seeing familiar things with a fresh perspective.</li>
-</ol>
-</section>
-</section>
-<section id="story-driven-learning" class="level2">
-<h2 class="anchored" data-anchor-id="story-driven-learning">Story-Driven Learning</h2>
-<p>Chapter 7 advocates for incorporating storytelling into education. It discusses how stories make learning more engaging and memorable, contrasting this approach with traditional methods focused on rote memorization and formulaic teaching. The chapter highlights how stories can bring abstract concepts to life and inspire students by connecting them to real-world examples and successful individuals.</p>
-<section id="ideas-7" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-7">Ideas</h3>
-<ol type="1">
-<li>Storytelling is a natural and powerful tool for learning, deeply rooted in human history.</li>
-<li>Traditional education often neglects the effectiveness of story-driven learning.</li>
-<li>Stories make abstract concepts more concrete and relatable.</li>
-<li>They help in forming emotional connections, enhancing memory and understanding.</li>
-<li>Storytelling can be more effective than traditional teaching methods like rote memorization.</li>
-<li>Real-world examples and narratives of successful people can inspire and teach practical lessons.</li>
-<li>Story-driven learning aligns with human nature’s preference for engaging and relatable content.</li>
-<li>Personal stories of individuals can make subjects like statistics more interesting and understandable.</li>
-<li>Stories can turn studying from a chore into an enjoyable activity.</li>
-<li>The chapter challenges educators to leverage storytelling for better engagement and retention.</li>
-</ol>
-</section>
-<section id="facts-7" class="level3">
-<h3 class="anchored" data-anchor-id="facts-7">Facts</h3>
-<ol type="1">
-<li>Storytelling has been an integral part of human learning since ancient times.</li>
-<li>Traditional education systems often overlook the value of story-driven learning.</li>
-<li>Emotional connections formed through stories enhance learning and memory.</li>
-<li>Story-driven learning can make complex subjects like statistics more accessible.</li>
-<li>The internet provides a vast resource for learning through stories.</li>
-<li>Schools typically underutilize story-driven learning in favor of rote memorization.</li>
-</ol>
-</section>
-<section id="resources-2" class="level3">
-<h3 class="anchored" data-anchor-id="resources-2">Resources</h3>
-<ul>
-<li>Newsletter: “<a href="https://theprofile.substack.com/">The Profile</a>” by Polina Pompliano, offering stories of unique individuals for learning.</li>
-</ul>
-</section>
-<section id="recommendations-7" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-7">Recommendations</h3>
-<ol type="1">
-<li>Incorporate storytelling into the educational curriculum to enhance engagement and understanding.</li>
-<li>Use stories to make abstract concepts concrete and relatable.</li>
-<li>Encourage students to form emotional connections with the subjects they study through narratives.</li>
-<li>Explore real-world examples and stories of successful individuals to inspire students.</li>
-<li>Shift from rote memorization to a more story-driven approach in teaching.</li>
-<li>Leverage the internet’s abundance of resources for story-driven learning.</li>
-<li>Challenge traditional education systems to integrate storytelling for more effective learning.</li>
-<li>Utilize biographies and personal stories as teaching tools across various subjects.</li>
-<li>Emphasize understanding the ‘why’ and ‘how’ behind concepts through storytelling.</li>
-<li>Make learning more enjoyable by transforming it from a chore to an engaging activity with stories.</li>
-</ol>
-</section>
-</section>
-<section id="learning-through-memorization" class="level2">
-<h2 class="anchored" data-anchor-id="learning-through-memorization">Learning through Memorization</h2>
-<p>Chapter 8 reevaluates the role of memorization in education. It highlights the need for meaningful memorization, integrating understanding with memory. The chapter discusses innovative methods like the ‘memory palace’ to make memorization more effective and engaging, moving away from rote learning to a deeper, more contextual understanding.</p>
-<section id="ideas-8" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-8">Ideas</h3>
-<ol type="1">
-<li>The accessibility of information via technology has changed the role of memorization in education.</li>
-<li>Memorization should be paired with meaning and understanding, not just rote learning.</li>
-<li>The chapter criticizes traditional education for focusing on memorization without context.</li>
-<li>It emphasizes the importance of understanding the ‘why’ behind memorized facts.</li>
-<li>Fábrega advocates for focusing on essential knowledge that is practical and relevant.</li>
-<li>The concept of the ‘memory palace’ is introduced as an effective memorization technique.</li>
-<li>This approach makes memorization more natural, memorable, and enjoyable.</li>
-<li>Fábrega suggests that memorization should be creative and align with natural brain functions.</li>
-<li>Educators are encouraged to rethink traditional methods of memorization.</li>
-<li>The chapter challenges the notion that memorization is inherently boring or frustrating.</li>
-</ol>
-</section>
-<section id="facts-8" class="level3">
-<h3 class="anchored" data-anchor-id="facts-8">Facts</h3>
-<ol type="1">
-<li>The chapter discusses the changing role of memorization in the digital age.</li>
-<li>It emphasizes the importance of understanding the reasoning behind memorized facts.</li>
-<li>The ‘memory palace’ technique is presented as a more effective approach to memorization.</li>
-<li>Fábrega critiques the traditional educational focus on rote memorization without context.</li>
-<li>The chapter proposes that memorization should be more aligned with natural brain functions.</li>
-</ol>
-</section>
-<section id="resources-3" class="level3">
-<h3 class="anchored" data-anchor-id="resources-3">Resources</h3>
-<ul>
-<li>Technique: The ‘<a href="https://artofmemory.com/blog/how-to-build-a-memory-palace/">memory palace</a>’ method for effective memorization.</li>
-<li>Book: “<a href="https://joshuafoer.com/moonwalking-with-einstein/">Moonwalking with Einstein</a>” by Joshua Foer, exploring memory techniques.</li>
-</ul>
-</section>
-<section id="recommendations-8" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-8">Recommendations</h3>
-<ol type="1">
-<li>Pair memorization with meaningful understanding rather than rote learning.</li>
-<li>Use the ‘memory palace’ technique to make memorization more engaging and effective.</li>
-<li>Focus on essential, practical knowledge in education rather than trivia.</li>
-<li>Embrace creative and natural methods of memorization.</li>
-<li>Encourage educators to rethink traditional memorization tactics.</li>
-<li>Utilize memorization as a tool for deeper learning and faster information retrieval.</li>
-<li>Avoid forcing students to memorize irrelevant information.</li>
-<li>Apply memorization techniques that are both fun and align with how the brain naturally works.</li>
-<li>Integrate context and reasoning into the memorization process.</li>
-<li>Challenge the conventional view of memorization in education.</li>
-</ol>
-</section>
-</section>
-<section id="the-learning-style-myth" class="level2">
-<h2 class="anchored" data-anchor-id="the-learning-style-myth">The Learning Style Myth</h2>
-<p>Chapter 9 challenges the widely accepted notion of individual learning styles. Fábrega critiques the classification of students into visual, auditory, or kinesthetic learners, arguing that this approach is overly simplistic and not supported by scientific evidence. She advocates for a more holistic, flexible approach to learning, emphasizing the importance of engaging multiple senses and avoiding fixed mindsets.</p>
-<section id="ideas-9" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-9">Ideas</h3>
-<ol type="1">
-<li>The concept of distinct learning styles (visual, auditory, kinesthetic) is a myth.</li>
-<li>Scientific studies have debunked the idea of a dominant sensory modality in learning.</li>
-<li>Learning involves the interconnection of multiple sensory modalities.</li>
-<li>Tailoring education to specific learning styles does not improve learning outcomes.</li>
-<li>Classifying students by learning style can encourage a fixed mindset.</li>
-<li>Fábrega argues for a more fluid approach to learning preferences.</li>
-<li>She suggests that learning habits change over time and are situational.</li>
-<li>Encouraging a variety of learning methods is more effective than sticking to one style.</li>
-<li>Fábrega emphasizes that we learn best using multiple sensory modalities.</li>
-<li>The chapter discusses the flexibility and adaptability in learning methods.</li>
-</ol>
-</section>
-<section id="facts-9" class="level3">
-<h3 class="anchored" data-anchor-id="facts-9">Facts</h3>
-<ol type="1">
-<li>The theory of distinct learning styles is not scientifically supported.</li>
-<li>Learning involves multiple sensory inputs, not just one dominant style.</li>
-<li>Studies show that tailoring education to specific learning styles doesn’t improve outcomes.</li>
-<li>Fixed classifications of learning styles can limit students’ learning potential.</li>
-<li>Modern educational resources offer diverse ways to engage in learning.</li>
-</ol>
-</section>
-<section id="recommendations-9" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-9">Recommendations</h3>
-<ol type="1">
-<li>Move away from the notion of fixed learning styles and embrace a more holistic approach.</li>
-<li>Utilize multiple sensory modalities for more effective learning.</li>
-<li>Recognize that learning preferences are fluid and situation-dependent.</li>
-<li>Encourage students to explore a variety of learning methods.</li>
-<li>Teach students to use different tools and approaches for different learning scenarios.</li>
-<li>Provide opportunities for students to learn in diverse ways.</li>
-<li>Question the notion of making learning ‘easier’ and explore the value of struggle in learning.</li>
-<li>Foster a growth mindset by avoiding fixed classifications in learning styles.</li>
-<li>Emphasize adaptability and flexibility in learning methods.</li>
-<li>Encourage curiosity and exploration in learning processes.</li>
-</ol>
-</section>
-</section>
-<section id="confusion-sparks-curiosity" class="level2">
-<h2 class="anchored" data-anchor-id="confusion-sparks-curiosity">Confusion Sparks Curiosity</h2>
-<p>Chapter 10 explores the positive aspects of confusion in learning. Fábrega emphasizes that confusion, when approached correctly, can lead to curiosity, motivation, engagement, and deeper learning. The chapter discusses techniques like embracing cognitive disequilibrium and learning through connections, highlighting the effectiveness of real-world applications and problem-solving in education.</p>
-<section id="ideas-10" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-10">Ideas</h3>
-<ol type="1">
-<li>Confusion, often seen negatively, is actually a powerful tool for learning.</li>
-<li>Cognitive disequilibrium occurs when new information challenges existing mental models.</li>
-<li>Embracing confusion can lead to deeper understanding and problem-solving skills.</li>
-<li>Traditional schooling often avoids confusion, leading to less effective learning.</li>
-<li>Learning in context, such as through real-world examples, enhances understanding.</li>
-<li>Fábrega advocates for teaching that encourages students to face and resolve confusion.</li>
-<li>Exposing students to challenging situations can foster curiosity and engagement.</li>
-<li>Allowing students to struggle productively is essential for learning.</li>
-<li>Synthesis uses complex team games to teach problem-solving and critical thinking.</li>
-<li>Changing the dialogue around confusion to view it as an opportunity, not a failure.</li>
-</ol>
-</section>
-<section id="facts-10" class="level3">
-<h3 class="anchored" data-anchor-id="facts-10">Facts</h3>
-<ol type="1">
-<li>Cognitive disequilibrium is a key concept in understanding how confusion aids learning.</li>
-<li>Effective learning involves facing and resolving confusion.</li>
-<li>Synthesis, a school program at SpaceX, uses complex games for teaching.</li>
-<li>The program was designed to help children learn to embrace and solve complex problems.</li>
-<li>The chapter emphasizes the importance of not sheltering children from confusion.</li>
-</ol>
-</section>
-<section id="resources-4" class="level3">
-<h3 class="anchored" data-anchor-id="resources-4">Resources</h3>
-<ul>
-<li>Educational Program: <a href="https://www.synthesis.com/">Synthesis</a>, developed by Elon Musk’s school teacher, for complex problem-solving.</li>
-<li>Psychological Concept: <a href="https://link.springer.com/referenceworkentry/10.1007/978-0-387-79061-9_598">Cognitive disequilibrium</a> and its role in learning.</li>
-</ul>
-</section>
-<section id="recommendations-10" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-10">Recommendations</h3>
-<ol type="1">
-<li>Embrace confusion as a positive aspect of learning.</li>
-<li>Foster cognitive disequilibrium to enhance problem-solving skills.</li>
-<li>Avoid sheltering students from confusion to promote deeper learning.</li>
-<li>Use real-world examples and challenges to contextualize learning.</li>
-<li>Encourage independent problem-solving among students.</li>
-<li>Change the dialogue around confusion to view it as a learning opportunity.</li>
-<li>Implement teaching methods that mimic game design for better engagement.</li>
-<li>Integrate complex, real-world challenges into educational curricula.</li>
-<li>Teach students to embrace and resolve confusion.</li>
-<li>Design learning experiences that encourage curiosity and sustained engagement.</li>
-</ol>
-</section>
-</section>
-<section id="the-architecture-of-great-games" class="level2">
-<h2 class="anchored" data-anchor-id="the-architecture-of-great-games">The Architecture of Great Games</h2>
-<p>Chapter 11 delves into how game design principles can enhance learning. Fábrega discusses the concepts of flow, intrinsically interesting challenges, and the ‘Super Mario effect’ in gaming to create compelling learning experiences. She argues that traditional schooling methods often fail to engage students, while game design techniques can make learning more exciting and effective.</p>
-<section id="ideas-11" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-11">Ideas</h3>
-<ol type="1">
-<li>Game design principles can be applied to education to make learning more engaging.</li>
-<li>Traditional classrooms often lack elements of game design, leading to disengagement.</li>
-<li>The concept of flow is crucial in keeping students engaged and focused.</li>
-<li>Intrinsically interesting challenges in games can make learning more enjoyable.</li>
-<li>The ‘Super Mario effect’ focuses on the end goal rather than failures, encouraging persistence.</li>
-<li>True gamification involves creating challenges that are inherently interesting to students.</li>
-<li>Games teach valuable skills like critical thinking, problem-solving, and resilience.</li>
-<li>Video games can be a significant means of learning due to their interactivity and complexity.</li>
-<li>Learning through games can be more effective than traditional methods.</li>
-<li>Fábrega suggests rethinking education to incorporate more game-like elements.</li>
-</ol>
-</section>
-<section id="facts-11" class="level3">
-<h3 class="anchored" data-anchor-id="facts-11">Facts</h3>
-<ol type="1">
-<li>Game design principles can significantly enhance the learning experience.</li>
-<li>Traditional classrooms often lack the engagement found in games.</li>
-<li>Video games teach valuable skills like critical thinking and problem-solving.</li>
-<li>The concept of flow is vital for keeping players engaged in games.</li>
-<li>The ‘Super Mario effect’ emphasizes focusing on end goals rather than failures.</li>
-<li>Games offer a safe environment for learning through trial and error.</li>
-<li>Video games can be a powerful tool for learning due to their interactive and complex nature.</li>
-</ol>
-</section>
-<section id="resources-5" class="level3">
-<h3 class="anchored" data-anchor-id="resources-5">Resources</h3>
-<ul>
-<li>Podcast: Patrick O’Shaughnessy’s interview with Jane McGonigal on true gamification (<a href="https://pod.casts.io/podcasts/invest-like-the-best/episodes/jane-mcgonigal-how-games-make-life-better-invest-like-the-best-ep-138">link</a>).</li>
-</ul>
-</section>
-<section id="recommendations-11" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-11">Recommendations</h3>
-<ol type="1">
-<li>Incorporate game design principles into educational curricula to enhance engagement.</li>
-<li>Focus on creating learning experiences that are intrinsically interesting to students.</li>
-<li>Utilize the concept of flow to keep students focused and absorbed in learning tasks.</li>
-<li>Apply the ‘Super Mario effect’ in education to encourage persistence and focus on end goals.</li>
-<li>Shift the focus from short-term grades to long-term learning and skill development.</li>
-<li>Use video games as a tool for teaching critical thinking and problem-solving skills.</li>
-<li>Create educational experiences that mimic the engagement and challenge of video games.</li>
-<li>Recognize the potential negative aspects of gaming and address them in educational contexts.</li>
-<li>Design learning activities that are interactive, complex, and offer risk-free trial and error.</li>
-<li>Emphasize the importance of meaningful challenges and rewards in educational games.</li>
-</ol>
-</section>
-</section>
-<section id="the-psychology-of-healthy-gaming" class="level2">
-<h2 class="anchored" data-anchor-id="the-psychology-of-healthy-gaming">The Psychology of Healthy Gaming</h2>
-<p>Chapter 12 explores the psychological aspects of screen time and gaming for children. It discusses the balance between beneficial and harmful aspects of technology, focusing on how to help children develop a healthy relationship with screens. The chapter emphasizes the importance of understanding children’s motivations and guiding them towards healthy technology use, including managing screen time and gaming in a way that supports mental well-being and development.</p>
-<section id="ideas-12" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-12">Ideas</h3>
-<ol type="1">
-<li>Kids spend significant time on screens, drawn to activities like gaming and social media.</li>
-<li>Screen time fulfills psychological needs: autonomy, competency, and relatedness.</li>
-<li>School environments often lack these elements, leading kids to seek them online.</li>
-<li>Excessive screen time can become unhealthy, needing parental guidance and balance.</li>
-<li>Tactics for managing screen time include discussing its pros and cons with kids.</li>
-<li>Setting examples and creating boundaries collaboratively can help manage screen time.</li>
-<li>Providing real-world opportunities for autonomy, competency, and relatedness is key.</li>
-<li>Encouraging creation over consumption online can lead to healthier screen time.</li>
-<li>Understanding the motivations behind excessive screen time is important for healthy management.</li>
-<li>Strategies for healthy gaming include examining motivations, limiting hours, and choosing types of games.</li>
-</ol>
-</section>
-<section id="facts-12" class="level3">
-<h3 class="anchored" data-anchor-id="facts-12">Facts</h3>
-<ol type="1">
-<li>Kids average 7.5 hours per day on screens.</li>
-<li>Screen time fulfills psychological needs not met in traditional schooling.</li>
-<li>The internet offers learning opportunities and social connections for kids.</li>
-<li>Excessive screen time can become unhealthy without proper guidance.</li>
-<li>Healthy gaming involves examining motivations and setting time limits.</li>
-<li>Video games can be beneficial up to three hours a day.</li>
-<li>Strategies for healthy gaming include avoiding aggressive games with strangers.</li>
-</ol>
-</section>
-<section id="resources-6" class="level3">
-<h3 class="anchored" data-anchor-id="resources-6">Resources</h3>
-<ul>
-<li>Book: “<a href="https://www.nirandfar.com/indistractable/">Indistractable</a>” by Nir Eyal, exploring the impact of technology on children.</li>
-</ul>
-</section>
-<section id="recommendations-12" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-12">Recommendations</h3>
-<ol type="1">
-<li><p>Understand and discuss the psychological needs fulfilled by screen time.</p></li>
-<li><p>Encourage a balance between online and offline activities.</p></li>
-<li><p>Engage in open conversations about the pros and cons of technology use.</p></li>
-<li><p>Collaboratively set boundaries for screen time with kids.</p></li>
-<li><p>Encourage creative and productive online activities over passive consumption.</p></li>
-<li><p>Provide real-world opportunities for kids to experience autonomy, competency, and relatedness.</p></li>
-<li><p>Limit video gaming to a healthy duration and avoid aggressive games with strangers.</p></li>
-<li><p>Involve kids in managing their screen time and gaming habits.</p></li>
-<li><p>Understand the motivations behind kids’ screen use for effective guidance.</p></li>
-<li><p>Set positive examples of technology use and offer fulfilling offline activities.</p></li>
-</ol>
-</section>
-</section>
-<section id="skin-in-the-game" class="level2">
-<h2 class="anchored" data-anchor-id="skin-in-the-game">Skin in the Game</h2>
-<p>Chapter 13 discusses the importance of personal investment in the educational process for both children and parents. Fábrega argues that real learning and responsibility come from facing the consequences of one’s decisions, a concept she refers to as having “skin in the game.” The chapter explores how this approach can lead to more meaningful, engaging, and effective learning experiences.</p>
-<section id="ideas-13" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-13">Ideas</h3>
-<ol type="1">
-<li>Personal responsibility in learning is essential for real-world preparation.</li>
-<li>“Skin in the game” means facing the consequences of one’s decisions.</li>
-<li>Traditional schooling often lacks real stakes, making learning less effective.</li>
-<li>Real-life problems and high-stakes scenarios enhance learning.</li>
-<li>Children need opportunities to make decisions and face outcomes.</li>
-<li>Parents should be more involved in their children’s learning process.</li>
-<li>Collaboration between child and parent can enhance the educational experience.</li>
-<li>Allowing children to tackle real problems helps them deal with life’s challenges.</li>
-<li>Real stakes in learning foster motivation, focus, and memory retention.</li>
-<li>The chapter suggests shifting from theoretical to practical, life-like education.</li>
-</ol>
-</section>
-<section id="facts-13" class="level3">
-<h3 class="anchored" data-anchor-id="facts-13">Facts</h3>
-<ol type="1">
-<li>Real-life challenges and high-stakes scenarios are effective in learning.</li>
-<li>Personal investment and facing consequences enhance learning.</li>
-<li>Synthesis is a program that uses real-world scenarios for educational purposes.</li>
-<li>Parental involvement in education can provide stability and tailored learning experiences.</li>
-<li>Teaching children at home can fill gaps in their formal education.</li>
-</ol>
-</section>
-<section id="resources-7" class="level3">
-<h3 class="anchored" data-anchor-id="resources-7">Resources</h3>
-<ul>
-<li>Concept: “<a href="https://www.penguinrandomhouse.com/books/537828/skin-in-the-game-by-nassim-nicholas-taleb/">Skin in the Game</a>” as described by Nassim Taleb.</li>
-</ul>
-</section>
-<section id="recommendations-13" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-13">Recommendations</h3>
-<ol type="1">
-<li>Encourage children to make decisions and face the outcomes.</li>
-<li>Integrate real-life problems and scenarios into education.</li>
-<li>Increase parental involvement in children’s learning process.</li>
-<li>Balance providing guidance with giving children autonomy.</li>
-<li>Explore various educational options, including homeschooling.</li>
-<li>Engage in passion projects with children to enhance learning.</li>
-<li>Use practical, life-like education methods rather than purely theoretical ones.</li>
-<li>Teach children to view challenges as opportunities.</li>
-<li>Address gaps in formal education by teaching children at home.</li>
-<li>Understand and respond to children’s educational needs through active parental participation.</li>
-</ol>
-</section>
-</section>
-<section id="raising-antifragile-kids" class="level2">
-<h2 class="anchored" data-anchor-id="raising-antifragile-kids">Raising Antifragile Kids</h2>
-<p>Chapter 14 addresses the concept of antifragility in children’s development. Fábrega argues against overprotective parenting, emphasizing the importance of exposing kids to moderate levels of stress and reasonable risks. The chapter discusses how such experiences can strengthen children, making them more resilient and capable of handling life’s challenges.</p>
-<section id="ideas-14" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-14">Ideas</h3>
-<ol type="1">
-<li>Overprotective parenting can lead to sensitive, risk-averse children.</li>
-<li>Antifragility, a concept by Nassim Taleb, refers to things that gain strength from stress.</li>
-<li>Children are inherently antifragile, benefiting from facing challenges and low-stake conflicts.</li>
-<li>Fábrega argues for allowing children to face moderate stress and risks.</li>
-<li>Overprotected children often can’t handle disappointments independently.</li>
-<li>It’s crucial for children to learn to navigate through life’s ups and downs.</li>
-<li>Parents should encourage children to take risks and face challenges.</li>
-<li>Exposing children to stressors can enhance their resilience and independence.</li>
-<li>The chapter advocates for a balanced approach in parenting and teaching.</li>
-<li>Encouraging children to try new things and solve problems on their own is essential.</li>
-</ol>
-</section>
-<section id="facts-14" class="level3">
-<h3 class="anchored" data-anchor-id="facts-14">Facts</h3>
-<ol type="1">
-<li>Overprotective parenting can lead to children being overly sensitive and risk-averse.</li>
-<li>Antifragility is about gaining strength from stress and challenges.</li>
-<li>Children benefit from facing moderate challenges and risks.</li>
-<li>Overprotection can hinder children’s long-term development and resilience.</li>
-<li>Letting children struggle and face challenges builds character and maturity.</li>
-</ol>
-</section>
-<section id="resources-8" class="level3">
-<h3 class="anchored" data-anchor-id="resources-8">Resources</h3>
-<ul>
-<li>Concept: <a href="https://www.penguinrandomhouse.com/books/176227/antifragile-by-nassim-nicholas-taleb/">Antifragility</a>, as described by Nassim Taleb.</li>
-</ul>
-</section>
-<section id="recommendations-14" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-14">Recommendations</h3>
-<ol type="1">
-<li>Allow children to face moderate stress and reasonable risks for their development.</li>
-<li>Balance being protective with letting children learn from their experiences.</li>
-<li>Encourage risk-taking and problem-solving in children.</li>
-<li>Teach children to handle challenges and disappointments independently.</li>
-<li>Foster resilience and independence in children through life’s ups and downs.</li>
-<li>Avoid overprotecting children to prevent them from becoming overly sensitive and risk-averse.</li>
-<li>Involve children in decision-making and facing the consequences.</li>
-<li>Provide opportunities for children to build character and ethical values.</li>
-<li>Encourage reflection and conflict resolution skills in children.</li>
-<li>Emphasize the importance of balancing safety and freedom in parenting and teaching.</li>
-</ol>
-</section>
-</section>
-<section id="how-to-develop-character-like-the-stoics" class="level2">
-<h2 class="anchored" data-anchor-id="how-to-develop-character-like-the-stoics">How to Develop Character like the Stoics</h2>
-<p>Chapter 15 explores Stoicism’s principles and their application in developing children’s character. Fábrega highlights four Stoic virtues—courage, temperance, justice, and wisdom—and provides practical tactics for integrating these virtues into children’s daily lives. She emphasizes the role of character building in guiding children through life’s challenges and preparing them to make meaningful contributions to the world.</p>
-<section id="ideas-15" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-15">Ideas</h3>
-<ol type="1">
-<li>Stoicism, an ancient philosophy, emphasizes self-control, perseverance, and moral virtue.</li>
-<li>The four Stoic virtues are courage, temperance, justice, and wisdom.</li>
-<li>Courage involves facing adversity bravely, not recklessly.</li>
-<li>Temperance balances courage by avoiding unnecessary risks.</li>
-<li>Justice is about contributing to society’s good and treating others with respect.</li>
-<li>Wisdom guides decisions and actions with long-term benefits.</li>
-<li>These virtues help guide children’s decisions and develop strong moral character.</li>
-<li>Character development should be an essential part of education.</li>
-<li>Practical techniques like reading hero stories can help children understand and embody virtues.</li>
-<li>Discussing virtue as a muscle emphasizes consistent effort and growth in character building.</li>
-</ol>
-</section>
-<section id="facts-15" class="level3">
-<h3 class="anchored" data-anchor-id="facts-15">Facts</h3>
-<ol type="1">
-<li>Stoicism teaches the importance of virtues like courage, temperance, justice, and wisdom.</li>
-<li>These virtues guide decisions and actions towards moral and ethical living.</li>
-<li>Stoicism emphasizes character development as essential for a good life.</li>
-<li>Practical techniques can help children understand and practice Stoic virtues.</li>
-<li>Character development is crucial for children to become well-rounded adults.</li>
-</ol>
-</section>
-<section id="recommendations-15" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-15">Recommendations</h3>
-<ol type="1">
-<li>Integrate Stoic virtues into children’s education and upbringing.</li>
-<li>Use stories of historical heroes to illustrate the importance of virtues.</li>
-<li>Teach children to focus on what they can control, fostering temperance and justice.</li>
-<li>Encourage children to keep a virtue journal for self-reflection and character development.</li>
-<li>Discuss the concept of virtue as a muscle that requires consistent effort to grow.</li>
-<li>Emphasize the role of character building in guiding children through life’s challenges.</li>
-<li>Introduce children to Stoic principles for moral and ethical decision-making.</li>
-<li>Provide opportunities for children to practice courage, temperance, justice, and wisdom.</li>
-<li>Foster a balanced approach to risk-taking and problem-solving.</li>
-<li>Help children understand the long-term benefits of virtuous actions.</li>
-</ol>
-</section>
-</section>
-<section id="range-and-specific-knowledge" class="level2">
-<h2 class="anchored" data-anchor-id="range-and-specific-knowledge">Range and Specific Knowledge</h2>
-<p>Chapter 16 challenges the notion that early specialization is key to success. It advocates for developing a broad base of knowledge, encouraging children to explore various areas to discover their unique value. The chapter draws on concepts from David Epstein’s book “Range,” emphasizing the benefits of generalization before specialization and exploring Naval Ravikant’s idea of specific knowledge—unique traits and skills that individuals can offer the world.</p>
-<section id="ideas-16" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-16">Ideas</h3>
-<ol type="1">
-<li>Early specialization is less beneficial than a broad base of knowledge.</li>
-<li>Success often comes from a generalist background, not just specialization.</li>
-<li>Generalization before specialization allows for more creative solutions and innovations.</li>
-<li>Children should be encouraged to explore a range of activities and interests.</li>
-<li>A ‘sampling period’ for new activities can help children find their passions.</li>
-<li>Unstructured play is crucial for developing autonomy and discovering new interests.</li>
-<li>Exposing children to a diverse range of subjects and thinking styles is beneficial.</li>
-<li>Specific knowledge is a combination of unique traits, upbringing, and responses to life.</li>
-<li>Helping children develop specific knowledge is about encouraging their natural curiosities and skills.</li>
-<li>Embracing failure and quitting is part of the process of finding one’s specific knowledge.</li>
-</ol>
-</section>
-<section id="facts-16" class="level3">
-<h3 class="anchored" data-anchor-id="facts-16">Facts</h3>
-<ol type="1">
-<li>Early specialization is less effective than developing a range of skills and knowledge.</li>
-<li>Nobel laureates often have a wide range of interests outside their specialized field.</li>
-<li>Specific knowledge combines unique traits and upbringing with personal responses to life.</li>
-<li>Encouraging a variety of activities and interests helps children discover their unique skills.</li>
-<li>Specific knowledge often involves connecting knowledge from multiple areas.</li>
-</ol>
-</section>
-<section id="resources-9" class="level3">
-<h3 class="anchored" data-anchor-id="resources-9">Resources</h3>
-<ul>
-<li>Book: “<a href="https://davidepstein.com/the-range/">Range</a>” by David Epstein, advocating for generalization before specialization.</li>
-</ul>
-</section>
-<section id="recommendations-16" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-16">Recommendations</h3>
-<ol type="1">
-<li>Encourage children to explore a variety of interests and activities.</li>
-<li>Foster a generalist background before moving towards specialization.</li>
-<li>Introduce children to a diverse range of subjects and thinking styles.</li>
-<li>Encourage self-reflection to help children understand their talents and passions.</li>
-<li>Focus on developing specific knowledge that is unique to each child.</li>
-<li>Allow children to engage in activities that feel like play to them.</li>
-<li>Provide a strong foundation of general knowledge for children.</li>
-<li>Emphasize the importance of embracing failure and quitting as part of learning.</li>
-<li>Encourage children to find connections between different areas of knowledge.</li>
-<li>Avoid forcing early specialization and instead let children discover their interests organically.</li>
-</ol>
-</section>
-</section>
-<section id="the-art-of-failing-and-quitting" class="level2">
-<h2 class="anchored" data-anchor-id="the-art-of-failing-and-quitting">The Art of Failing and Quitting</h2>
-<p>Chapter 17 reframes the concepts of failure and quitting as essential for learning and growth. The chapter encourages embracing failures as opportunities for feedback and learning, and recognizing when to quit activities that are unfulfilling or not aligned with one’s strengths. It emphasizes the importance of teaching kids to make thoughtful decisions about quitting and to see failure as a part of the learning process.</p>
-<section id="ideas-17" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-17">Ideas</h3>
-<ol type="1">
-<li>Failure is a natural and necessary part of the learning process.</li>
-<li>Quitting is not always negative; it can be a strategic decision to focus on more fulfilling activities.</li>
-<li>Schools often create a fear of failure, hindering children’s willingness to take risks and try new things.</li>
-<li>Encouraging kids to take risks and learn from failures can lead to greater discovery and innovation.</li>
-<li>The art of failure involves seeing mistakes as feedback for improvement.</li>
-<li>Constructive quitting involves recognizing when an activity does not align with one’s strengths or interests.</li>
-<li>Parents and educators should encourage kids to experiment and explore various interests.</li>
-<li>Children should learn to differentiate between small, constructive failures and catastrophic failures.</li>
-<li>Sharing stories of successful people who have failed and learned from their experiences can be inspiring.</li>
-<li>Teaching kids to reflect on their experiences helps them make informed decisions about quitting.</li>
-</ol>
-</section>
-<section id="facts-17" class="level3">
-<h3 class="anchored" data-anchor-id="facts-17">Facts</h3>
-<ol type="1">
-<li>Failure is crucial for discovery and progress.</li>
-<li>Quitting can be a strategic decision for better focusing one’s efforts.</li>
-<li>Schools often instill a fear of failure in students.</li>
-<li>Small failures are essential for learning and avoiding catastrophic failures.</li>
-<li>The average person holds a dozen different jobs in their lifetime, indicating the normality of quitting and changing paths.</li>
-</ol>
-</section>
-<section id="resources-10" class="level3">
-<h3 class="anchored" data-anchor-id="resources-10">Resources</h3>
-<ul>
-<li>Book: “<a href="https://www.johnholtgws.com/how-children-fail-by-john-holt">How Children Fail</a>” by John Holt, exploring the school system’s impact on fear of failure.</li>
-<li>Speech: Professor Deepak Malhotra’s speech to Harvard Business School on the value of quitting (<a href="https://www.youtube.com/watch?v=D73mm29XXAw">link</a>).</li>
-<li>Book: “<a href="https://adamgrant.net/book/think-again/">Think Again</a>” by Adam Grant, presenting alternative perspectives on careers and identity.</li>
-</ul>
-</section>
-<section id="recommendations-17" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-17">Recommendations</h3>
-<ol type="1">
-<li>Encourage children to see failure as a learning opportunity and not as a negative outcome.</li>
-<li>Teach kids to differentiate between constructive and catastrophic failures.</li>
-<li>Share stories of successful individuals who have failed and learned from their experiences.</li>
-<li>Model a positive attitude towards failure and quitting for children.</li>
-<li>Help children develop their own criteria for when to quit an activity.</li>
-<li>Encourage a range of experiences to help children find their specific knowledge and interests.</li>
-<li>Teach children that it’s okay to change their career paths or interests over time.</li>
-<li>Foster an environment where children feel safe to try new things and potentially fail.</li>
-<li>Guide children in reflective thinking to make informed decisions about quitting.</li>
-<li>Encourage exploration of various interests to develop a broad skill set before specializing.</li>
-</ol>
-</section>
-</section>
-<section id="mental-models-for-parents" class="level2">
-<h2 class="anchored" data-anchor-id="mental-models-for-parents">Mental Models for Parents</h2>
-<p>Chapter 18 delves into how parents can use mental models to effectively navigate the complexities of parenting. The chapter introduces concepts like Maslow’s Hammer, Reactants, Nudges, Reframing, and Inversion, explaining how these can aid in making better parenting decisions. It emphasizes the importance of understanding these models to respond appropriately to children’s needs and behaviors.</p>
-<section id="ideas-18" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-18">Ideas</h3>
-<ol type="1">
-<li>Mental models are frameworks or concepts that help organize experiences and make sense of the world.</li>
-<li>Maslow’s Hammer warns against over-relying on a single approach or tool in parenting.</li>
-<li>Reactants highlight the human desire for autonomy, including children’s need for choice.</li>
-<li>Nudges involve subtly guiding children towards better choices through environmental changes.</li>
-<li>Reframing teaches changing perspectives to find positives in challenging situations.</li>
-<li>Inversion, as a mental model, involves tackling problems by considering their opposite.</li>
-<li>Understanding these models can help parents respond more effectively to their children’s needs.</li>
-<li>Mental models assist in interpreting complex situations and making informed decisions.</li>
-<li>Parents can use these models to adapt to each child’s unique developmental stage and challenges.</li>
-<li>The chapter encourages parents to build their own mental models based on their experiences and observations.</li>
-</ol>
-</section>
-<section id="facts-18" class="level3">
-<h3 class="anchored" data-anchor-id="facts-18">Facts</h3>
-<ol type="1">
-<li>Mental models are essential tools for effective parenting and decision-making.</li>
-<li>Models like Maslow’s Hammer, Reactants, Nudges, Reframing, and Inversion offer different approaches to parenting challenges.</li>
-<li>Regular application of these models can help parents adapt to the evolving needs of their children.</li>
-<li>Documentation and reflection on children’s behavior are useful in developing specific mental models.</li>
-<li>Mental models can simplify complex parenting situations by providing structured approaches.</li>
-</ol>
-</section>
-<section id="resources-11" class="level3">
-<h3 class="anchored" data-anchor-id="resources-11">Resources</h3>
-<ul>
-<li>Website: <a href="https://fs.blog/">Farnam Street</a>, run by Shane Parrish, providing resources on mental models for parenting.</li>
-<li>Book: “<a href="https://www.penguinrandomhouse.com/books/562923/super-thinking-by-gabriel-weinberg-and-lauren-mccann/">Super Thinking</a>” by Gabriel Weinberg and Lauren McCann, exploring over 100 mental models applicable in real life.</li>
-</ul>
-</section>
-<section id="recommendations-18" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-18">Recommendations</h3>
-<ol type="1">
-<li>Understand and apply various mental models to respond effectively to children’s behaviors and needs.</li>
-<li>Avoid over-reliance on a single approach in parenting; adapt techniques to each situation.</li>
-<li>Foster children’s autonomy by providing choices and understanding their need for control.</li>
-<li>Use nudges to subtly guide children towards better decisions.</li>
-<li>Practice reframing to help children view challenges positively.</li>
-<li>Apply inversion to approach problems from different angles.</li>
-<li>Regularly practice and refine parenting strategies based on mental models.</li>
-<li>Keep notes on children’s behavior to develop specific mental models tailored to them.</li>
-<li>Create checklists as practical tools for applying effective parenting tactics.</li>
-<li>Explore additional tools and tactics for a comprehensive approach to parenting.</li>
-</ol>
-</section>
-</section>
-<section id="the-thinking-toolkit" class="level2">
-<h2 class="anchored" data-anchor-id="the-thinking-toolkit">The Thinking Toolkit</h2>
-<p>Chapter 19 focuses on developing good thinking skills in children, emphasizing the importance of various thinking strategies. It introduces the concept of ‘thinking hats’ for different perspectives, discusses thinking in probabilities, and emphasizes elastic thinking for creative problem-solving. The chapter critiques traditional education’s focus on analytical thinking, advocating for a more flexible, creative approach to prepare children for a rapidly changing world.</p>
-<section id="ideas-19" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-19">Ideas</h3>
-<ol type="1">
-<li><strong>Good Thinking as a Skill</strong>: Emphasizing that good thinking is a skill that can be developed, not just an innate trait.</li>
-<li><strong>Six Thinking Hats</strong>: Introducing different ‘thinking hats’ to approach problems from various perspectives.</li>
-<li><strong>Importance of Creative Thinking</strong>: Highlighting the need for creativity and exploration in thinking, beyond logic and analysis.</li>
-<li><strong>Teaching Children to Think</strong>: Discussing methods to teach children how to use different thinking strategies effectively.</li>
-<li><strong>Thinking in Probabilities</strong>: Encouraging thinking in terms of probabilities instead of absolutes, to better handle uncertainty.</li>
-<li><strong>Elastic Thinking</strong>: Advocating for elastic thinking, which involves creative and spontaneous connections, in problem-solving.</li>
-<li><strong>Limits of Analytical Thinking</strong>: Criticizing the overemphasis on analytical thinking in traditional education.</li>
-<li><strong>Preparing for the Future</strong>: Stressing the need for elastic thinking to tackle future, unforeseen challenges.</li>
-<li><strong>Encouraging Intuition in Children</strong>: Promoting the use of intuition and unstructured play in learning.</li>
-<li><strong>Rethinking Education for Elastic Thinking</strong>: Proposing changes to the education system to foster elastic thinking.</li>
-</ol>
-</section>
-<section id="resources-12" class="level3">
-<h3 class="anchored" data-anchor-id="resources-12">Resources</h3>
-<ol type="1">
-<li>Book: “<a href="https://www.debono.com/Books/teach-your-child-how-to-think">Teach Your Child How to Think</a>” by Edward de Bono, offers methods to teach children different thinking strategies.</li>
-<li>Book: “<a href="https://www.penguinrandomhouse.com/books/552885/thinking-in-bets-by-annie-duke/">Thinking in Bets</a>” by Annie Duke discusses decision-making and probability thinking.</li>
-<li>Concept: <a href="https://www.debono.com/Books/six-thinking-hats">Six Thinking Hats</a> is a technique for approaching problems from different perspectives.</li>
-<li><a href="https://www.amazon.com/gp/product/0141987391/">Elastic</a> by Leonard Mlodinow: Elastic thinking encourages creative and spontaneous problem-solving.</li>
-</ol>
-</section>
-<section id="recommendations-19" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-19">Recommendations</h3>
-<ol type="1">
-<li><p><strong>Develop Various Thinking Strategies</strong>: Teach children to use different thinking hats for broader perspectives.</p></li>
-<li><p><strong>Encourage Creative Problem-Solving</strong>: Foster elastic thinking in children for innovative solutions.</p></li>
-<li><p><strong>Teach Probability Thinking</strong>: Help children make decisions based on probabilities rather than certainties.</p></li>
-<li><p><strong>Focus on Process Over Outcome</strong>: Teach the importance of a good decision-making process over the outcome.</p></li>
-<li><p><strong>Reduce Emphasis on Analytical Thinking</strong>: Balance analytical thinking with creative and elastic thinking in education.</p></li>
-<li><p><strong>Address Biases in Decision-Making</strong>: Educate children about biases and how to overcome them.</p></li>
-<li><p><strong>Encourage Intuition and Exploration</strong>: Allow children to engage in unstructured play and self-directed projects.</p></li>
-<li><p><strong>Rethink Educational Practices</strong>: Advocate for educational reforms to encourage more flexible thinking.</p></li>
-<li><p><strong>Recognize Children’s Potential</strong>: Acknowledge and nurture the untapped innovative capabilities in children.</p></li>
-</ol>
-</section>
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>The author provides a set of guidelines for designing a learning environment that fosters creativity, independence, and critical thinking in children. The focus is on moving away from traditional education methods, emphasizing the importance of failure, intrinsic motivation, and diverse thinking strategies. The chapter encourages parents and educators to rethink their approach to children’s learning, aiming to cultivate curiosity, resilience, and a love for learning.</p>
-<section id="ideas-20" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-20">Ideas</h3>
-<ol type="1">
-<li><strong>Designing Learning Environments</strong>: Creating spaces that allow for independent and creative thinking in children.</li>
-<li><strong>Rethinking Failure</strong>: Viewing failure as a learning opportunity rather than something to be feared.</li>
-<li><strong>Value of Intrinsic Motivation</strong>: Focusing on internal drives rather than external rewards in learning.</li>
-<li><strong>Diverse Thinking Strategies</strong>: Encouraging the use of various mental models and thinking approaches.</li>
-<li><strong>Parental Involvement in Education</strong>: The importance of active parental engagement in the learning process.</li>
-<li><strong>Challenging Overprotection</strong>: Recognizing the need to allow children to face and overcome challenges.</li>
-<li><strong>Encouraging Skepticism and Inquiry</strong>: Teaching children to question and critically evaluate information.</li>
-<li><strong>Valuing Unstructured Play</strong>: The role of play and exploration in learning and development.</li>
-<li><strong>Fostering a Growth Mindset</strong>: Cultivating resilience, perseverance, and a willingness to learn from mistakes.</li>
-<li><strong>Navigating Screen Time</strong>: Balancing the benefits and drawbacks of digital media in children’s lives.</li>
-</ol>
-</section>
-<section id="recommendations-20" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-20">Recommendations</h3>
-<ol type="1">
-<li><strong>Foster Independent Thinking</strong>: Encourage spaces and opportunities for children to think creatively and independently.</li>
-<li><strong>Normalize and Learn from Failure</strong>: Teach children to view failure as a part of the learning process.</li>
-<li><strong>Encourage Intrinsic Motivation</strong>: Shift focus from external rewards to fostering internal motivation in learning.</li>
-<li><strong>Utilize Diverse Thinking Strategies</strong>: Introduce various mental models and thinking approaches to children.</li>
-<li><strong>Actively Participate in Children’s Education</strong>: Engage as parents or educators in the learning journey of children.</li>
-<li><strong>Challenge Overprotective Tendencies</strong>: Allow children to face and overcome challenges independently.</li>
-<li><strong>Promote Inquiry and Skepticism</strong>: Teach children to question and critically evaluate information.</li>
-<li><strong>Value Unstructured Play</strong>: Recognize the importance of play and exploration in learning.</li>
-<li><strong>Cultivate a Growth Mindset</strong>: Encourage resilience and perseverance in children.</li>
-<li><strong>Balance Screen Time Effectively</strong>: Manage digital media use to ensure it’s beneficial to learning.</li>
-</ol>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>education</category>
-  <category>notes</category>
-  <guid>christianjmills.com/posts/the-learning-game-book-notes/</guid>
-  <pubDate>Mon, 20 Nov 2023 08:00:00 GMT</pubDate>
   <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
