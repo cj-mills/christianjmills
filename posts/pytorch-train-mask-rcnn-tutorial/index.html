@@ -2151,7 +2151,7 @@ Number of batches in validation DataLoader:
 <h3 class="anchored" data-anchor-id="define-the-training-loop">Define the Training Loop</h3>
 <p>The following function performs a single pass through the training or validation set.</p>
 <p>The model has different behavior when in <code>training</code> mode versus <code>evaluation</code> mode. In training mode, it calculates the loss internally for the object detection and segmentation tasks and returns a dictionary with the individual loss values. We can sum up these separate values to get the total loss.</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_epoch(model, dataloader, optimizer, lr_scheduler, device, scaler, is_training):</span>
+<div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_epoch(model, dataloader, optimizer, lr_scheduler, device, scaler, epoch_id, is_training):</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Function to run a single training or evaluation epoch.</span></span>
 <span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
@@ -2217,10 +2217,10 @@ Number of batches in validation DataLoader:
 <span id="cb45-64"><a href="#cb45-64" aria-hidden="true" tabindex="-1"></a>        progress_bar.set_postfix(progress_bar_dict)</span>
 <span id="cb45-65"><a href="#cb45-65" aria-hidden="true" tabindex="-1"></a>        progress_bar.update()</span>
 <span id="cb45-66"><a href="#cb45-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-67"><a href="#cb45-67" aria-hidden="true" tabindex="-1"></a>        <span class="co"># If the loss is NaN or infinite, stop the training/evaluation process</span></span>
-<span id="cb45-68"><a href="#cb45-68" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> math.isnan(loss_item) <span class="kw">or</span> math.isinf(loss_item):</span>
-<span id="cb45-69"><a href="#cb45-69" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Loss is NaN or infinite at batch </span><span class="sc">{</span>batch_id<span class="sc">}</span><span class="ss">. Stopping </span><span class="sc">{</span><span class="st">'training'</span> <span class="cf">if</span> is_training <span class="cf">else</span> <span class="st">'evaluation'</span><span class="sc">}</span><span class="ss">."</span>)</span>
-<span id="cb45-70"><a href="#cb45-70" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb45-67"><a href="#cb45-67" aria-hidden="true" tabindex="-1"></a>        <span class="co"># If loss is NaN or infinity, stop training</span></span>
+<span id="cb45-68"><a href="#cb45-68" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> is_training:</span>
+<span id="cb45-69"><a href="#cb45-69" aria-hidden="true" tabindex="-1"></a>            stop_training_message <span class="op">=</span> <span class="ss">f"Loss is NaN or infinite at epoch </span><span class="sc">{</span>epoch_id<span class="sc">}</span><span class="ss">, batch </span><span class="sc">{</span>batch_id<span class="sc">}</span><span class="ss">. Stopping training."</span></span>
+<span id="cb45-70"><a href="#cb45-70" aria-hidden="true" tabindex="-1"></a>            <span class="cf">assert</span> <span class="kw">not</span> math.isnan(loss_item) <span class="kw">and</span> math.isfinite(loss_item), stop_training_message</span>
 <span id="cb45-71"><a href="#cb45-71" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb45-72"><a href="#cb45-72" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Cleanup and close the progress bar </span></span>
 <span id="cb45-73"><a href="#cb45-73" aria-hidden="true" tabindex="-1"></a>    progress_bar.close()</span>
@@ -2261,10 +2261,10 @@ Number of batches in validation DataLoader:
 <span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Loop over the epochs</span></span>
 <span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> epoch <span class="kw">in</span> tqdm(<span class="bu">range</span>(epochs), desc<span class="op">=</span><span class="st">"Epochs"</span>):</span>
 <span id="cb46-33"><a href="#cb46-33" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Run a training epoch and get the training loss</span></span>
-<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a>        train_loss <span class="op">=</span> run_epoch(model, train_dataloader, optimizer, lr_scheduler, device, scaler, is_training<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a>        train_loss <span class="op">=</span> run_epoch(model, train_dataloader, optimizer, lr_scheduler, device, scaler, epoch, is_training<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb46-35"><a href="#cb46-35" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Run an evaluation epoch and get the validation loss</span></span>
 <span id="cb46-36"><a href="#cb46-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> torch.no_grad():</span>
-<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a>            valid_loss <span class="op">=</span> run_epoch(model, valid_dataloader, <span class="va">None</span>, <span class="va">None</span>, device, scaler, is_training<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a>            valid_loss <span class="op">=</span> run_epoch(model, valid_dataloader, <span class="va">None</span>, <span class="va">None</span>, device, scaler, epoch, is_training<span class="op">=</span><span class="va">False</span>)</span>
 <span id="cb46-38"><a href="#cb46-38" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-39"><a href="#cb46-39" aria-hidden="true" tabindex="-1"></a>        <span class="co"># If the validation loss is lower than the best validation loss seen so far, save the model checkpoint</span></span>
 <span id="cb46-40"><a href="#cb46-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> valid_loss <span class="op">&lt;</span> best_loss:</span>
@@ -2282,14 +2282,9 @@ Number of batches in validation DataLoader:
 <span id="cb46-52"><a href="#cb46-52" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> <span class="bu">open</span>(Path(checkpoint_path.parent<span class="op">/</span><span class="st">'training_metadata.json'</span>), <span class="st">'w'</span>) <span class="im">as</span> f:</span>
 <span id="cb46-53"><a href="#cb46-53" aria-hidden="true" tabindex="-1"></a>                json.dump(training_metadata, f)</span>
 <span id="cb46-54"><a href="#cb46-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-55"><a href="#cb46-55" aria-hidden="true" tabindex="-1"></a>        <span class="co"># If the training or validation loss is NaN or infinite, stop the training process</span></span>
-<span id="cb46-56"><a href="#cb46-56" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">any</span>(math.isnan(loss) <span class="kw">or</span> math.isinf(loss) <span class="cf">for</span> loss <span class="kw">in</span> [train_loss, valid_loss]):</span>
-<span id="cb46-57"><a href="#cb46-57" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f"Loss is NaN or infinite at epoch </span><span class="sc">{</span>epoch<span class="sc">}</span><span class="ss">. Stopping training."</span>)</span>
-<span id="cb46-58"><a href="#cb46-58" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
-<span id="cb46-59"><a href="#cb46-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-60"><a href="#cb46-60" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If the device is a GPU, empty the cache</span></span>
-<span id="cb46-61"><a href="#cb46-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> device.<span class="bu">type</span> <span class="op">!=</span> <span class="st">'cpu'</span>:</span>
-<span id="cb46-62"><a href="#cb46-62" aria-hidden="true" tabindex="-1"></a>        <span class="bu">getattr</span>(torch, device.<span class="bu">type</span>).empty_cache()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb46-55"><a href="#cb46-55" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If the device is a GPU, empty the cache</span></span>
+<span id="cb46-56"><a href="#cb46-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> device.<span class="bu">type</span> <span class="op">!=</span> <span class="st">'cpu'</span>:</span>
+<span id="cb46-57"><a href="#cb46-57" aria-hidden="true" tabindex="-1"></a>        <span class="bu">getattr</span>(torch, device.<span class="bu">type</span>).empty_cache()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="set-the-model-checkpoint-path" class="level3">
 <h3 class="anchored" data-anchor-id="set-the-model-checkpoint-path">Set the Model Checkpoint Path</h3>
