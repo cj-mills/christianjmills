@@ -219,7 +219,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#prepare-the-input-tensor" id="toc-prepare-the-input-tensor" class="nav-link" data-scroll-target="#prepare-the-input-tensor">Prepare the Input Tensor</a></li>
   <li><a href="#export-the-model-to-onnx" id="toc-export-the-model-to-onnx" class="nav-link" data-scroll-target="#export-the-model-to-onnx">Export the Model to ONNX</a></li>
-  <li><a href="#enable-dynamic-input-dimensions" id="toc-enable-dynamic-input-dimensions" class="nav-link" data-scroll-target="#enable-dynamic-input-dimensions">Enable Dynamic Input Dimensions</a></li>
   <li><a href="#simplify-the-onnx-model" id="toc-simplify-the-onnx-model" class="nav-link" data-scroll-target="#simplify-the-onnx-model">Simplify the ONNX Model</a></li>
   </ul></li>
   <li><a href="#performing-inference-with-onnx-runtime" id="toc-performing-inference-with-onnx-runtime" class="nav-link" data-scroll-target="#performing-inference-with-onnx-runtime">Performing Inference with ONNX Runtime</a>
@@ -271,6 +270,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </div>
   </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">February 2, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -307,7 +312,7 @@ This post is part of the following series:
 </ul>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Welcome back to this series on fine-tuning image classifiers with PyTorch and the timm library! <a href="../">Previously</a>, we demonstrated how to fine-tune a ResNet18-D model from the timm library in PyTorch by creating a hand gesture classifier. This tutorial builds on that by showing how to export the model to <a href="https://onnx.ai/">ONNX</a> and perform inference using <a href="https://onnxruntime.ai/docs/">ONNX Runtime</a>.</p>
+<p>Welcome back to this series on fine-tuning image classifiers with PyTorch and the timm library. <a href="../">Previously</a>, we demonstrated how to fine-tune a ResNet18-D model from the timm library in PyTorch by creating a hand gesture classifier. This tutorial builds on that by showing how to export the model to <a href="https://onnx.ai/">ONNX</a> and perform inference using <a href="https://onnxruntime.ai/docs/">ONNX Runtime</a>.</p>
 <p>ONNX (Open Neural Network Exchange) is an open format to represent machine learning models and make them portable across various platforms. ONNX Runtime is a cross-platform inference accelerator that provides interfaces to hardware-specific libraries. By exporting our model to ONNX, we can deploy it to multiple devices and leverage hardware acceleration for faster inference.</p>
 <p>Additionally, we’ll wrap the PyTorch model with the required preprocessing and post-processing steps to include them in the ONNX model. By the end of this tutorial, you will have an ONNX version of our ResNet18-D model that you can deploy to servers and edge devices using ONNX Runtime.</p>
 <div class="callout callout-style-default callout-important callout-titled" title="This post assumes the reader has completed the previous tutorial linked below:">
@@ -436,7 +441,7 @@ Package Descriptions
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>project_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The path to the checkpoint folder</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> Path(project_dir<span class="op">/</span><span class="ss">f"2023-08-12_15-21-16"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> Path(project_dir<span class="op">/</span><span class="ss">f"2024-02-02_15-41-23"</span>)</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Project Directory:"</span>: project_dir,</span>
@@ -460,7 +465,7 @@ pytorch-timm-image-classifier
 Checkpoint Directory:
 </th>
 <td id="T_2c96e_row1_col0" class="data row1 col0">
-pytorch-timm-image-classifier/2023-08-12_15-21-16
+pytorch-timm-image-classifier/2024-02-02_15-41-23
 </td>
 </tr>
 </tbody>
@@ -677,7 +682,7 @@ two_up_inverted
 <section id="load-the-finetuned-model" class="level3">
 <h3 class="anchored" data-anchor-id="load-the-finetuned-model">Load the Finetuned Model</h3>
 <div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify the model configuration</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>model_type <span class="op">=</span> checkpoint_path.stem</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>model_type <span class="op">=</span> checkpoint_path.stem.split(<span class="st">"."</span>)[<span class="dv">0</span>]</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a model with the number of output classes equal to the number of class names</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> timm.create_model(model_type, num_classes<span class="op">=</span><span class="bu">len</span>(class_names))</span>
@@ -825,79 +830,38 @@ Settings for Unity’s Barracuda Inference Library:
 <span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                  do_constant_folding<span class="op">=</span><span class="va">False</span>,</span>
 <span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                  input_names <span class="op">=</span> [<span class="st">'input'</span>],</span>
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>                  output_names <span class="op">=</span> [<span class="st">'output'</span>],</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                  <span class="co"># dynamic_axes={'input': {2 : 'height', 3 : 'width'}}</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                  dynamic_axes<span class="op">=</span>{<span class="st">'input'</span>: {<span class="dv">2</span> : <span class="st">'height'</span>, <span class="dv">3</span> : <span class="st">'width'</span>}}</span>
 <span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre class="text"><code>============= Diagnostic Run torch.onnx.export version 2.0.1+cu118 =============
-verbose: False, log level: Level.ERROR
-======================= 0 NONE 0 NOTE 0 WARNING 0 ERROR ========================</code></pre>
 </div>
 <div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
-<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set a filename for the ONNX model</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>checkpoint_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>class_labels_path<span class="sc">.</span>stem<span class="sc">.</span>removesuffix(<span class="st">'-classes'</span>)<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>model_type<span class="sc">}</span><span class="ss">.onnx"</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Export the PyTorch model to ONNX format</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>torch.onnx.export(wrapped_model.cpu(),</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                  input_tensor.cpu(),</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                  onnx_file_path,</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                  export_params<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>                  do_constant_folding<span class="op">=</span><span class="va">False</span>,</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                  input_names <span class="op">=</span> [<span class="st">'input'</span>],</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                  output_names <span class="op">=</span> [<span class="st">'output'</span>],</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                  <span class="co"># dynamic_axes={'input': {1 : 'height', 2 : 'width'}}</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre class="text"><code>============= Diagnostic Run torch.onnx.export version 2.0.1+cu118 =============
-verbose: False, log level: Level.ERROR
-======================= 0 NONE 0 NOTE 0 WARNING 0 ERROR ========================</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set a filename for the ONNX model</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>checkpoint_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>class_labels_path<span class="sc">.</span>stem<span class="sc">.</span>removesuffix(<span class="st">'-classes'</span>)<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>model_type<span class="sc">}</span><span class="ss">.onnx"</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Export the PyTorch model to ONNX format</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>torch.onnx.export(wrapped_model.cpu(),</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                  input_tensor.cpu(),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                  onnx_file_path,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                  export_params<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                  do_constant_folding<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                  input_names <span class="op">=</span> [<span class="st">'input'</span>],</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                  output_names <span class="op">=</span> [<span class="st">'output'</span>],</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>                  dynamic_axes<span class="op">=</span>{<span class="st">'input'</span>: {<span class="dv">1</span> : <span class="st">'height'</span>, <span class="dv">2</span> : <span class="st">'width'</span>}}</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
-</section>
-<section id="enable-dynamic-input-dimensions" class="level3">
-<h3 class="anchored" data-anchor-id="enable-dynamic-input-dimensions">Enable Dynamic Input Dimensions</h3>
-<p>We can enable dynamic input dimensions for the ONNX model by changing the appropriate values in the input shape to <code>-1</code>.</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Default</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Channels-Last</a></li></ul>
-<div class="tab-content">
-<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
-<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the ONNX model from the onnx_file_name</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>onnx_model <span class="op">=</span> onnx.load(onnx_file_path)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the first input node for the ONNX model</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>input_tensor <span class="op">=</span> onnx_model.graph.<span class="bu">input</span>[<span class="dv">0</span>]</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the height and width dimensions to dynamic values (using -1)</span></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>height_dim <span class="op">=</span> input_tensor.<span class="bu">type</span>.tensor_type.shape.dim[<span class="dv">2</span>]</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>height_dim.dim_value <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>width_dim <span class="op">=</span> input_tensor.<span class="bu">type</span>.tensor_type.shape.dim[<span class="dv">3</span>]</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>width_dim.dim_value <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
-<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the ONNX model from the onnx_file_name</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>onnx_model <span class="op">=</span> onnx.load(onnx_file_path)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Assume the first input needs its dimensions modified</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>input_tensor <span class="op">=</span> onnx_model.graph.<span class="bu">input</span>[<span class="dv">0</span>]</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the height and width dimensions to dynamic values (using -1)</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>height_dim <span class="op">=</span> input_tensor.<span class="bu">type</span>.tensor_type.shape.dim[<span class="dv">1</span>]</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>height_dim.dim_value <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>width_dim <span class="op">=</span> input_tensor.<span class="bu">type</span>.tensor_type.shape.dim[<span class="dv">2</span>]</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>width_dim.dim_value <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</div>
-</div>
-<p>We then save the updated ONNX model back to disk for later. Before we do so, we’ll perform one more modification.</p>
 </section>
 <section id="simplify-the-onnx-model" class="level3">
 <h3 class="anchored" data-anchor-id="simplify-the-onnx-model">Simplify the ONNX Model</h3>
-<p>The ONNX models generated by PyTorch are not always the most concise. We can use the <a href="https://pypi.org/project/onnx-simplifier/"><code>onnx-simplifier</code></a> package to tidy up the exported model.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simplify the model</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>model_simp, check <span class="op">=</span> simplify(onnx_model)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the simplified model to the onnx_file_name</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>onnx.save(model_simp, onnx_file_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The ONNX models generated by PyTorch are not always the most concise. We can use the <a href="https://pypi.org/project/onnx-simplifier/"><code>onnx-simplifier</code></a> package to tidy up the exported model. We then save the updated ONNX model back to disk for later.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the ONNX model from the onnx_file_name</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>onnx_model <span class="op">=</span> onnx.load(onnx_file_path)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Simplify the model</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>model_simp, check <span class="op">=</span> simplify(onnx_model)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the simplified model to the onnx_file_name</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>onnx.save(model_simp, onnx_file_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="performing-inference-with-onnx-runtime" class="level2">
@@ -906,51 +870,40 @@ verbose: False, log level: Level.ERROR
 <section id="create-an-inference-session" class="level3">
 <h3 class="anchored" data-anchor-id="create-an-inference-session">Create an Inference Session</h3>
 <p>We interact with models in ONNX Runtime through an <a href="https://onnxruntime.ai/docs/api/python/api_summary.html#load-and-run-a-model"><code>InferenceSession</code></a> object. Here, we can specify which Execution Providers to use for inference and other configuration information. <a href="https://onnxruntime.ai/docs/execution-providers/">Execution Providers</a> are the interfaces for hardware-specific inference engines like <a href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html">TensorRT</a> for NVIDIA and <a href="https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html">OpenVINO</a> for Intel. By default, the <code>InferenceSession</code> uses the generic <code>CPUExecutionProvider</code>.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and create an InferenceSession</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> ort.InferenceSession(onnx_file_path, , providers<span class="op">=</span>[<span class="st">'CPUExecutionProvider'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and create an InferenceSession</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> ort.InferenceSession(onnx_file_path, , providers<span class="op">=</span>[<span class="st">'CPUExecutionProvider'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>With our inference session initialized, we can select an image to test our ONNX model.</p>
 </section>
 <section id="select-a-test-image" class="level3">
 <h3 class="anchored" data-anchor-id="select-a-test-image">Select a Test Image</h3>
 <p>Let’s use the same test image and input size from the <a href="../#testing-the-model-on-new-data">previous tutorial</a> to compare the results with the PyTorch model.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>test_img_name <span class="op">=</span> <span class="st">"pexels-2769554-man-doing-rock-and-roll-sign.jpg"</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>test_img_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/</span><span class="sc">{</span>test_img_name<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>download_file(test_img_url, <span class="st">'./'</span>, <span class="va">False</span>)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> Image.<span class="bu">open</span>(test_img_name)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>target_cls <span class="op">=</span> <span class="st">"rock"</span></span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test Image Size:"</span>: test_img.size, </span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Target Class:"</span>: target_cls</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>test_img_name <span class="op">=</span> <span class="st">'pexels-elina-volkova-16191659.jpg'</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>test_img_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/</span><span class="sc">{</span>test_img_name<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>download_file(test_img_url, <span class="st">'./'</span>, <span class="va">False</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> Image.<span class="bu">open</span>(test_img_name)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test Image Size:"</span>: test_img.size, </span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/output_41_1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="./images/output_37_1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_47ce0">
+<table id="T_0e8d0">
 <thead>
 </thead>
 <tbody>
 <tr>
-<th id="T_47ce0_level0_row0" class="row_heading level0 row0">
+<th id="T_0e8d0_level0_row0" class="row_heading level0 row0">
 Test Image Size:
 </th>
-<td id="T_47ce0_row0_col0" class="data row0 col0">
-(640, 960)
-</td>
-</tr>
-<tr>
-<th id="T_47ce0_level0_row1" class="row_heading level0 row1">
-Target Class:
-</th>
-<td id="T_47ce0_row1_col0" class="data row1 col0">
-rock
+<td id="T_0e8d0_row0_col0" class="data row0 col0">
+(637, 960)
 </td>
 </tr>
 </tbody>
@@ -959,20 +912,20 @@ rock
 </section>
 <section id="prepare-the-test-image" class="level3">
 <h3 class="anchored" data-anchor-id="prepare-the-test-image">Prepare the Test Image</h3>
-<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set test image size</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>test_sz <span class="op">=</span> <span class="dv">288</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Resize image without cropping to multiple of the max stride</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>input_img <span class="op">=</span> resize_img(test_img.copy(), target_sz<span class="op">=</span>test_sz)</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>display(input_img)</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Image Size:"</span>: input_img.size</span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set test image size</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>test_sz <span class="op">=</span> <span class="dv">288</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Resize image without cropping to multiple of the max stride</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>input_img <span class="op">=</span> resize_img(test_img.copy(), target_sz<span class="op">=</span>test_sz)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>display(input_img)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Image Size:"</span>: input_img.size</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/output_43_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="./images/output_39_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <div style="overflow-x:auto; max-height:500px">
@@ -996,15 +949,15 @@ Input Image Size:
 <h3 class="anchored" data-anchor-id="prepare-the-input-tensor-1">Prepare the Input Tensor</h3>
 <p>When we convert the PIL input image to a NumPy array, we need to reorder the array values to channels-first format, scale the values from <code>[0,255]</code> to <code>[0,1]</code>, and add a batch dimension. When we enable the <code>scale_inp</code> and <code>channels_last</code> options, we only need to add a batch dimension.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" role="tab" aria-controls="tabset-5-1" aria-selected="true">Default</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" role="tab" aria-controls="tabset-5-2" aria-selected="false">Scaled &amp; Channels-Last</a></li></ul>
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Default</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Scaled &amp; Channels-Last</a></li></ul>
 <div class="tab-content">
-<div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
-<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
-<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32)[<span class="va">None</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32)[<span class="va">None</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -1012,65 +965,57 @@ Input Image Size:
 <section id="compute-the-predictions" class="level3">
 <h3 class="anchored" data-anchor-id="compute-the-predictions">Compute the Predictions</h3>
 <p>Now, we can finally perform inference with our ONNX model.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run inference</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the highest confidence score</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>confidence_score <span class="op">=</span> outputs.<span class="bu">max</span>()</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the class index with the highest confidence score and convert it to the class name</span></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>pred_class <span class="op">=</span> class_names[outputs.argmax()]</span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image</span></span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Store the prediction data in a Pandas Series for easy formatting</span></span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Size:"</span>: input_img.size,</span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Target Class:"</span>: target_cls,</span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Predicted Class:"</span>: pred_class,</span>
-<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Confidence Score:"</span>: <span class="ss">f"</span><span class="sc">{</span>confidence_score<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span></span>
-<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run inference</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the highest confidence score</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>confidence_score <span class="op">=</span> outputs.<span class="bu">max</span>()</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the class index with the highest confidence score and convert it to the class name</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>pred_class <span class="op">=</span> class_names[outputs.argmax()]</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Store the prediction data in a Pandas Series for easy formatting</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Size:"</span>: input_img.size,</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Target Class:"</span>: target_cls,</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Predicted Class:"</span>: pred_class,</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Confidence Score:"</span>: <span class="ss">f"</span><span class="sc">{</span>confidence_score<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/output_47_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+<p><img src="./images/output_43_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_effd1">
+<table id="T_af9c8">
 <thead>
 </thead>
 <tbody>
 <tr>
-<th id="T_effd1_level0_row0" class="row_heading level0 row0">
+<th id="T_af9c8_level0_row0" class="row_heading level0 row0">
 Input Size:
 </th>
-<td id="T_effd1_row0_col0" class="data row0 col0">
+<td id="T_af9c8_row0_col0" class="data row0 col0">
 (288, 416)
 </td>
 </tr>
 <tr>
-<th id="T_effd1_level0_row1" class="row_heading level0 row1">
-Target Class:
-</th>
-<td id="T_effd1_row1_col0" class="data row1 col0">
-rock
-</td>
-</tr>
-<tr>
-<th id="T_effd1_level0_row2" class="row_heading level0 row2">
+<th id="T_af9c8_level0_row1" class="row_heading level0 row1">
 Predicted Class:
 </th>
-<td id="T_effd1_row2_col0" class="data row2 col0">
-rock
+<td id="T_af9c8_row1_col0" class="data row1 col0">
+mute
 </td>
 </tr>
 <tr>
-<th id="T_effd1_level0_row3" class="row_heading level0 row3">
+<th id="T_af9c8_level0_row2" class="row_heading level0 row2">
 Confidence Score:
 </th>
-<td id="T_effd1_row3_col0" class="data row3 col0">
-79.93%
+<td id="T_af9c8_row2_col0" class="data row2 col0">
+100.00%
 </td>
 </tr>
 </tbody>
