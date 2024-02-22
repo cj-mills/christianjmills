@@ -1340,16 +1340,17 @@ imageWidth
 <div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the labels and bounding box annotations for the sample image</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [shape[<span class="st">'label'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation_df.loc[file_id][<span class="st">'shapes'</span>]]</span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>bboxes <span class="op">=</span> np.array([shape[<span class="st">'points'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation_df.loc[file_id][<span class="st">'shapes'</span>]]).reshape(<span class="bu">len</span>(labels),<span class="dv">4</span>)</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the sample image with labels and bounding boxes</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>transforms.PILToTensor()(sample_img), </span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>BoundingBoxes(torch.Tensor(bboxes), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>sample_img.size[::<span class="op">-</span><span class="dv">1</span>]),</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>labels, </span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[i] <span class="cf">for</span> i <span class="kw">in</span> [class_names.index(label) <span class="cf">for</span> label <span class="kw">in</span> labels]]</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>bboxes <span class="op">=</span> correct_bounding_boxes(bboxes)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotate the sample image with labels and bounding boxes</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>annotated_tensor <span class="op">=</span> draw_bboxes(</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    image<span class="op">=</span>transforms.PILToTensor()(sample_img), </span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    boxes<span class="op">=</span>BoundingBoxes(torch.Tensor(bboxes), <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>sample_img.size[::<span class="op">-</span><span class="dv">1</span>]),</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span>labels, </span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    colors<span class="op">=</span>[int_colors[i] <span class="cf">for</span> i <span class="kw">in</span> [class_names.index(label) <span class="cf">for</span> label <span class="kw">in</span> labels]]</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>tensor_to_pil(annotated_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_37_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
@@ -1574,14 +1575,15 @@ Resized Padded Image:
 <span id="cb31-77"><a href="#cb31-77" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb31-78"><a href="#cb31-78" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Process bounding box annotations</span></span>
 <span id="cb31-79"><a href="#cb31-79" aria-hidden="true" tabindex="-1"></a>        bbox_list <span class="op">=</span> np.array([shape[<span class="st">'points'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation[<span class="st">'shapes'</span>]]).reshape(<span class="bu">len</span>(annotation[<span class="st">'shapes'</span>]), <span class="dv">4</span>)</span>
-<span id="cb31-80"><a href="#cb31-80" aria-hidden="true" tabindex="-1"></a>        bbox_tensor <span class="op">=</span> torch.Tensor(bbox_list)</span>
-<span id="cb31-81"><a href="#cb31-81" aria-hidden="true" tabindex="-1"></a>        boxes <span class="op">=</span> BoundingBoxes(bbox_tensor, <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>image.size[::<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb31-82"><a href="#cb31-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-83"><a href="#cb31-83" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Process label annotations</span></span>
-<span id="cb31-84"><a href="#cb31-84" aria-hidden="true" tabindex="-1"></a>        annotation_labels <span class="op">=</span> [shape[<span class="st">'label'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation[<span class="st">'shapes'</span>]]</span>
-<span id="cb31-85"><a href="#cb31-85" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> torch.Tensor([<span class="va">self</span>._class_to_idx[label] <span class="cf">for</span> label <span class="kw">in</span> annotation_labels])</span>
-<span id="cb31-86"><a href="#cb31-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-87"><a href="#cb31-87" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, {<span class="st">'boxes'</span>: boxes, <span class="st">'labels'</span>: labels}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-80"><a href="#cb31-80" aria-hidden="true" tabindex="-1"></a>        bbox_list <span class="op">=</span> correct_bounding_boxes(bbox_list)</span>
+<span id="cb31-81"><a href="#cb31-81" aria-hidden="true" tabindex="-1"></a>        bbox_tensor <span class="op">=</span> torch.Tensor(bbox_list)</span>
+<span id="cb31-82"><a href="#cb31-82" aria-hidden="true" tabindex="-1"></a>        boxes <span class="op">=</span> BoundingBoxes(bbox_tensor, <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>image.size[::<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb31-83"><a href="#cb31-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-84"><a href="#cb31-84" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Process label annotations</span></span>
+<span id="cb31-85"><a href="#cb31-85" aria-hidden="true" tabindex="-1"></a>        annotation_labels <span class="op">=</span> [shape[<span class="st">'label'</span>] <span class="cf">for</span> shape <span class="kw">in</span> annotation[<span class="st">'shapes'</span>]]</span>
+<span id="cb31-86"><a href="#cb31-86" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> torch.Tensor([<span class="va">self</span>._class_to_idx[label] <span class="cf">for</span> label <span class="kw">in</span> annotation_labels])</span>
+<span id="cb31-87"><a href="#cb31-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-88"><a href="#cb31-88" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, {<span class="st">'boxes'</span>: boxes, <span class="st">'labels'</span>: labels}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="image-transforms" class="level3">
 <h3 class="anchored" data-anchor-id="image-transforms">Image Transforms</h3>
