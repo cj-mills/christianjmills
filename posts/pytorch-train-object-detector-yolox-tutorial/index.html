@@ -2374,15 +2374,15 @@ Resized Padded Image:
 <span id="cb39-66"><a href="#cb39-66" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
 <span id="cb39-67"><a href="#cb39-67" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Retrieve the file path of the image</span></span>
 <span id="cb39-68"><a href="#cb39-68" aria-hidden="true" tabindex="-1"></a>        filepath <span class="op">=</span> <span class="va">self</span>._img_dict[annotation.name]</span>
-<span id="cb39-69"><a href="#cb39-69" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Read the image file into an RGB tensor</span></span>
-<span id="cb39-70"><a href="#cb39-70" aria-hidden="true" tabindex="-1"></a>        image <span class="op">=</span> torchvision.io.read_image(<span class="bu">str</span>(filepath), mode<span class="op">=</span>torchvision.io.ImageReadMode.RGB)</span>
+<span id="cb39-69"><a href="#cb39-69" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Read the image file</span></span>
+<span id="cb39-70"><a href="#cb39-70" aria-hidden="true" tabindex="-1"></a>        image <span class="op">=</span> Image.<span class="bu">open</span>(filepath).convert(<span class="st">'RGB'</span>)</span>
 <span id="cb39-71"><a href="#cb39-71" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the bounding boxes in the image size scale</span></span>
-<span id="cb39-72"><a href="#cb39-72" aria-hidden="true" tabindex="-1"></a>        bbox_list <span class="op">=</span> np.array([bbox<span class="op">*</span>(image.shape[<span class="dv">1</span>:][::<span class="op">-</span><span class="dv">1</span>]<span class="op">*</span><span class="dv">2</span>) <span class="cf">for</span> bbox <span class="kw">in</span> annotation.bboxes])</span>
+<span id="cb39-72"><a href="#cb39-72" aria-hidden="true" tabindex="-1"></a>        bbox_list <span class="op">=</span> np.array([bbox<span class="op">*</span>(image.size<span class="op">*</span><span class="dv">2</span>) <span class="cf">for</span> bbox <span class="kw">in</span> annotation.bboxes])</span>
 <span id="cb39-73"><a href="#cb39-73" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb39-74"><a href="#cb39-74" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert bounding box coordinates from [xmin, ymin, width, height] to [xmin, ymin, xmax, ymax]</span></span>
 <span id="cb39-75"><a href="#cb39-75" aria-hidden="true" tabindex="-1"></a>        bbox_tensor <span class="op">=</span> torchvision.ops.box_convert(torch.Tensor(bbox_list), <span class="st">'xywh'</span>, <span class="st">'xyxy'</span>)</span>
 <span id="cb39-76"><a href="#cb39-76" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a BoundingBoxes object with the bounding boxes</span></span>
-<span id="cb39-77"><a href="#cb39-77" aria-hidden="true" tabindex="-1"></a>        boxes <span class="op">=</span> BoundingBoxes(bbox_tensor, <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>image.shape[<span class="dv">1</span>:])</span>
+<span id="cb39-77"><a href="#cb39-77" aria-hidden="true" tabindex="-1"></a>        boxes <span class="op">=</span> BoundingBoxes(bbox_tensor, <span class="bu">format</span><span class="op">=</span><span class="st">'xyxy'</span>, canvas_size<span class="op">=</span>image.size[::<span class="op">-</span><span class="dv">1</span>])</span>
 <span id="cb39-78"><a href="#cb39-78" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert the class labels to indices</span></span>
 <span id="cb39-79"><a href="#cb39-79" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> torch.Tensor([<span class="va">self</span>._class_to_idx[label] <span class="cf">for</span> label <span class="kw">in</span> annotation.labels])</span>
 <span id="cb39-80"><a href="#cb39-80" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> image, {<span class="st">'boxes'</span>: boxes, <span class="st">'labels'</span>: labels}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -2424,18 +2424,19 @@ Resized Padded Image:
 <span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Compose transforms to sanitize bounding boxes and normalize input data</span></span>
 <span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>final_tfms <span class="op">=</span> transforms.Compose([</span>
-<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>    transforms.ToDtype(torch.float32, scale<span class="op">=</span><span class="va">True</span>),</span>
-<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>    transforms.SanitizeBoundingBoxes(),</span>
-<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>    transforms.Normalize(<span class="op">*</span>norm_stats),</span>
-<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the transformations for training and validation datasets</span></span>
-<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a>train_tfms <span class="op">=</span> transforms.Compose([</span>
-<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>    data_aug_tfms,</span>
-<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>    resize_pad_tfm, </span>
-<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a>    final_tfms,</span>
-<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>valid_tfms <span class="op">=</span> transforms.Compose([resize_pad_tfm, final_tfms])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>    transforms.ToImage(),</span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>    transforms.ToDtype(torch.float32, scale<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>    transforms.SanitizeBoundingBoxes(),</span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>    transforms.Normalize(<span class="op">*</span>norm_stats),</span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the transformations for training and validation datasets</span></span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>train_tfms <span class="op">=</span> transforms.Compose([</span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>    data_aug_tfms,</span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a>    resize_pad_tfm, </span>
+<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a>    final_tfms,</span>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a>valid_tfms <span class="op">=</span> transforms.Compose([resize_pad_tfm, final_tfms])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -3010,7 +3011,7 @@ Target BBoxes:
 <h3 class="anchored" data-anchor-id="filtering-model-output">Filtering Model Output</h3>
 <p>We first use a threshold value to remove proposals the model is not confident about. Then, we can use the <a href="https://pytorch.org/vision/stable/generated/torchvision.ops.nms.html#torchvision.ops.nms"><code>nms</code></a> function included with torchvision to remove overlapping bounding boxes using non-maximum suppression.</p>
 <div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the bounding box confidence threshold</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>bbox_conf_thresh <span class="op">=</span> <span class="fl">0.4</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>bbox_conf_thresh <span class="op">=</span> <span class="fl">0.35</span></span>
 <span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Move model output to the CPU</span></span>
 <span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>model_output <span class="op">=</span> model_output.to(<span class="st">'cpu'</span>)</span>
