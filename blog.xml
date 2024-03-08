@@ -17,7 +17,2665 @@
 <width>144</width>
 </image>
 <generator>quarto-1.4.550</generator>
-<lastBuildDate>Fri, 23 Feb 2024 08:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 08 Mar 2024 08:00:00 GMT</lastBuildDate>
+<item>
+  <title>Setting Up CUDA for Python on Ubuntu</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>christianjmills.com/posts/cuda-python-setup-tutorial/ubuntu/</link>
+  <description><![CDATA[ 
+
+
+
+
+<ul>
+<li>Introduction</li>
+<li>Getting Started with the Code</li>
+<li>Installing NVIDIA Drivers</li>
+<li>Setting Up a Python Environment</li>
+<li>Importing the Required Dependencies</li>
+<li>Setting Up the Project</li>
+<li>Converting RGB Images to Grayscale in Python</li>
+<li>Converting RGB Images to Grayscale in CUDA</li>
+<li>Conclusion</li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>This tutorial covers a convenient method for installing CUDA within a Python environment. CUDA (Compute Unified Device Architecture) is a parallel computing platform and programming model developed by NVIDIA for general computing on Graphics Processing Units (GPUs).</p>
+<p>Installing CUDA directly within Python environments helps streamline working with projects that use custom CUDA kernels like <a href="https://github.com/IDEA-Research/GroundingDINO">GroundingDINO</a> and creating custom kernels ourselves. Writing custom CUDA kernels can be beneficial when optimizing computational tasks for speed and efficiency, such as fusing operations in a PyTorch project.</p>
+<p>The core steps and examples in this tutorial are from the following lecture by <a href="https://jeremy.fast.ai/">Jeremy Howard</a>:</p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=nOxKexn3iBo"><strong>Getting Started With CUDA for Python Programmers</strong></a></li>
+</ul>
+<p>The tutorial covers each step, from installing NVIDIA graphics drivers in Ubuntu to verifying our CUDA installation by creating a custom kernel with PyTorch. While the provided steps for installing NVIDIA graphics drivers are specific to Ubuntu, the steps to install CUDA within Python environments should work for other Linux distros and WSL.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Installing Ubuntu">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Installing Ubuntu
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>The Ubuntu website provides <a href="https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview">a step-by-step guide</a> to installing Ubuntu on your PC, and you can install it alongside an existing operating system.</p>
+<ul>
+<li><strong>Tutorial:</strong> <a href="https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview">Install Ubuntu with a Bootable USB Stick</a></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="getting-started-with-the-code" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started-with-the-code">Getting Started with the Code</h2>
+<p>The tutorial code is available as a <a href="https://jupyter.org/">Jupyter Notebook</a>, which you can run locally or in a cloud-based environment like <a href="https://colab.research.google.com/">Google Colab</a>, which <a href="../../../posts/google-colab-getting-started-tutorial/#using-hardware-acceleration">provides free access</a> to a CUDA-enabled GPU. I have dedicated tutorials for those new to these platforms or who need guidance setting up:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Setup Guides">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Setup Guides
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../posts/google-colab-getting-started-tutorial/"><strong>Getting Started with Google Colab</strong></a></li>
+<li><a href="../../../posts/mamba-getting-started-tutorial-windows/"><strong>Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows</strong></a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Tutorial Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tutorial Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="table">
+<thead>
+<tr class="header">
+<th>Platform</th>
+<th>Jupyter Notebook</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Google Colab</td>
+<td><a href="https://colab.research.google.com/github/cj-mills/cuda-pytorch-tutorials/blob/main/notebooks/pytorch-verify-cuda-install.ipynb">Open In Colab</a></td>
+</tr>
+<tr class="even">
+<td>Linux</td>
+<td><a href="https://github.com/cj-mills/cuda-pytorch-tutorials/blob/main/notebooks/pytorch-verify-cuda-install.ipynb">GitHub Repository</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="installing-nvidia-drivers" class="level2">
+<h2 class="anchored" data-anchor-id="installing-nvidia-drivers">Installing NVIDIA Drivers</h2>
+<p>We need to ensure we have NVIDIA GPU drivers installed before installing CUDA, so let’s first check if we already have them.</p>
+<section id="check-for-existing-drivers" class="level4">
+<h4 class="anchored" data-anchor-id="check-for-existing-drivers">Check for Existing Drivers</h4>
+<p>Open a terminal window (<code>Ctrl</code>+<code>Alt</code>+<code>T</code>) and run the following command to see if you already have NVIDIA drivers installed:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cat</span> /proc/driver/nvidia/version</span></code></pre></div>
+<p>Sample output with NVIDIA drivers:</p>
+<pre class="text"><code>NVRM version: NVIDIA UNIX x86_64 Kernel Module  535.154.05  Thu Dec 28 15:37:48 UTC 2023
+GCC version:  gcc version 12.3.0 (Ubuntu 12.3.0-1ubuntu1~22.04) </code></pre>
+<hr>
+<p>You can skip to the next section if you already have NVIDIA drivers.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Uninstall Existing NVIDIA Drivers &amp; CUDA">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Uninstall Existing NVIDIA Drivers &amp; CUDA
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can run the following terminal commands to uninstall any existing NVIDIA and CUDA packages, if you want to start fresh:</p>
+<ul>
+<li>Press <code>Ctrl</code>+<code>Alt</code>+<code>T</code> to open a terminal window.</li>
+</ul>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Remove all installed NVIDIA packages</span></span>
+<span id="cb3-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt-get remove <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--purge</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'nvidia-.*'</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb3-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Remove all installed CUDA packages</span></span>
+<span id="cb3-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt-get remove <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--purge</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'cuda-.*'</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb3-5"></span>
+<span id="cb3-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Clean up any remaining dependencies</span></span>
+<span id="cb3-7"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt-get autoremove <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb3-8"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt-get autoclean</span>
+<span id="cb3-9"></span>
+<span id="cb3-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Update the initial RAM filesystem to ensure it doesn't include any NVIDIA drivers</span></span>
+<span id="cb3-11"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> update-initramfs <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-u</span></span>
+<span id="cb3-12"></span>
+<span id="cb3-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Reboot the system</span></span>
+<span id="cb3-14"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> reboot</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="view-available-drivers" class="level3">
+<h3 class="anchored" data-anchor-id="view-available-drivers">View available drivers</h3>
+<p>Ubuntu includes a convenient <a href="https://ubuntu.com/server/docs/nvidia-drivers-installation">command-line tool</a> for installing drivers. Open a terminal (<code>Ctrl</code>+<code>Alt</code>+<code>T</code>) and run the following command to see the available GPU drivers.</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Check the available drivers for your hardware</span></span>
+<span id="cb4-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> ubuntu-drivers list</span></code></pre></div>
+<p>Here is the output on Ubuntu 22.04 with an RTX 40-series GPU:</p>
+<pre class="text"><code>$ sudo ubuntu-drivers list
+nvidia-driver-545, (kernel modules provided by linux-modules-nvidia-545-generic-hwe-22.04)
+nvidia-driver-535-open, (kernel modules provided by linux-modules-nvidia-535-open-generic-hwe-22.04)
+nvidia-driver-545-open, (kernel modules provided by linux-modules-nvidia-545-open-generic-hwe-22.04)
+nvidia-driver-525, (kernel modules provided by linux-modules-nvidia-525-generic-hwe-22.04)
+nvidia-driver-535-server-open, (kernel modules provided by linux-modules-nvidia-535-server-open-generic-hwe-22.04)
+nvidia-driver-535-server, (kernel modules provided by linux-modules-nvidia-535-server-generic-hwe-22.04)
+nvidia-driver-525-open, (kernel modules provided by linux-modules-nvidia-525-open-generic-hwe-22.04)
+nvidia-driver-535, (kernel modules provided by linux-modules-nvidia-535-generic-hwe-22.04)
+nvidia-driver-525-server, (kernel modules provided by linux-modules-nvidia-525-server-generic-hwe-22.04)</code></pre>
+<hr>
+</section>
+<section id="install-the-drivers" class="level3">
+<h3 class="anchored" data-anchor-id="install-the-drivers">Install the Drivers</h3>
+<p>Next, we run the <code>install</code> command where we can stick with the default driver version or manually specify one.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true">Default</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false">Manual</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Install the driver that is considered the best match for your hardware</span></span>
+<span id="cb6-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> ubuntu-drivers install</span></code></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Install driver version 535</span></span>
+<span id="cb7-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> ubuntu-drivers install nvidia:535</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>After that, we need to reboot the computer.</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Reboot the system</span></span>
+<span id="cb8-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> reboot</span></code></pre></div>
+<p>Once back in Ubuntu, we can create a Python environment and install CUDA.</p>
+</section>
+</section>
+<section id="setting-up-a-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-a-python-environment">Setting Up a Python Environment</h2>
+<p>We will use the <a href="https://mamba.readthedocs.io/en/latest/">Mamba</a> package manager to create the Python environment. You can learn more about it in my <a href="../../../posts/mamba-getting-started-tutorial-windows/#introduction">getting started</a> tutorial. Feel free to use <a href="https://docs.anaconda.com/free/miniconda/">Conda</a> instead of Mamba if you already have that installed.</p>
+<section id="install-mamba-package-manager" class="level3">
+<h3 class="anchored" data-anchor-id="install-mamba-package-manager">Install Mamba Package Manager</h3>
+<p>The following bash commands will download the latest release, install it, and relaunch the current bash shell to apply the relevant changes:</p>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wget</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">-</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">.sh"</span></span>
+<span id="cb9-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bash</span> Mambaforge-<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span>-<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span>.sh <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-b</span></span>
+<span id="cb9-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">~/mambaforge/bin/mamba</span> init</span>
+<span id="cb9-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bash</span></span></code></pre></div>
+</section>
+<section id="create-a-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-python-environment">Create a Python Environment</h3>
+<p>Next, we’ll create a Python environment and activate it.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" aria-controls="tabset-2-1" aria-selected="true">Mamba</a></li><li class="nav-item"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" aria-controls="tabset-2-2" aria-selected="false">Conda</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> create <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--name</span> cuda-env python=3.11 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb10-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> activate cuda-env</span></code></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" aria-labelledby="tabset-2-2-tab">
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">conda</span> create <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--name</span> cuda-env python=3.11 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb11-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">conda</span> activate cuda-env</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="install-cuda-package" class="level3">
+<h3 class="anchored" data-anchor-id="install-cuda-package">Install CUDA Package</h3>
+<p>We will later use PyTorch to verify our CUDA installation, so let’s ensure we install the appropriate CUDA version. You can use the link below to check the latest CUDA version supported by PyTorch. At the time of writing, that was CUDA version <code>12.1</code>.</p>
+<ul>
+<li><a href="https://pytorch.org/get-started/locally/">PyTorch: Get Started</a></li>
+</ul>
+<p>Run the following command to install CUDA in our Python environment with <a href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#conda-installation">Conda/Mamba</a>.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" aria-controls="tabset-3-1" aria-selected="true">Mamba</a></li><li class="nav-item"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" aria-controls="tabset-3-2" aria-selected="false">Conda</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" aria-labelledby="tabset-3-1-tab">
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> install cuda <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-c</span> nvidia/label/cuda-12.1.0 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span></code></pre></div>
+</div>
+<div id="tabset-3-2" class="tab-pane" aria-labelledby="tabset-3-2-tab">
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">conda</span> install cuda <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-c</span> nvidia/label/cuda-12.1.0 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<p>The command installs CUDA into our <code>cuda-env</code> environment’s root directory.</p>
+<pre class="text"><code>$ find $CONDA_PREFIX/include -name cuda
+/home/innom-dt/mambaforge/envs/cuda-env/include/thrust/system/cuda
+/home/innom-dt/mambaforge/envs/cuda-env/include/cuda</code></pre>
+<hr>
+</section>
+<section id="install-pytorch" class="level3">
+<h3 class="anchored" data-anchor-id="install-pytorch">Install PyTorch</h3>
+<p>Run the following command to install PyTorch with CUDA version <code>12.1</code>.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" aria-controls="tabset-4-1" aria-selected="true">Mamba</a></li><li class="nav-item"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" aria-controls="tabset-4-2" aria-selected="false">Conda</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" aria-labelledby="tabset-4-1-tab">
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Install PyTorch with CUDA</span></span>
+<span id="cb15-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> install pytorch torchvision torchaudio pytorch-cuda=12.1 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-c</span> pytorch <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-c</span> nvidia/label/cuda-12.1.0 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span></code></pre></div>
+</div>
+<div id="tabset-4-2" class="tab-pane" aria-labelledby="tabset-4-2-tab">
+<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Install PyTorch with CUDA</span></span>
+<span id="cb16-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">conda</span> install pytorch torchvision torchaudio pytorch-cuda=12.1 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-c</span> pytorch <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-c</span> nvidia/label/cuda-12.1.0 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="install-additional-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="install-additional-dependencies">Install additional dependencies</h3>
+<p>We also need to install some additional libraries for our test code.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Package Descriptions
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="table">
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>jupyter</code></td>
+<td>An open-source web application that allows you to create and share documents that contain live code, equations, visualizations, and narrative text. (<a href="https://jupyter.org/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>ninja</code></td>
+<td>Ninja is a small build system with a focus on speed. (<a href="https://pypi.org/project/ninja/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>pandas</code></td>
+<td>This package provides fast, powerful, and flexible data analysis and manipulation tools. (<a href="https://pandas.pydata.org/">link</a>)</td>
+</tr>
+<tr class="even">
+<td><code>pillow</code></td>
+<td>The Python Imaging Library adds image processing capabilities. (<a href="https://pillow.readthedocs.io/en/stable/">link</a>)</td>
+</tr>
+<tr class="odd">
+<td><code>wurlitzer</code></td>
+<td>Capture C-level output in context managers. (<a href="https://pypi.org/project/wurlitzer/">link</a>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Run the following commands to install these additional libraries:</p>
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install jupyter ninja pandas pillow wurlitzer</span></code></pre></div>
+<p>With our environment set up, we can open our Jupyter Notebook and dive into the code.</p>
+</section>
+</section>
+<section id="importing-the-required-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="importing-the-required-dependencies">Importing the Required Dependencies</h2>
+<p>First, we will import the necessary Python modules into our Jupyter Notebook and verify that PyTorch can find our CUDA installation.</p>
+<div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import Python Standard Library dependencies</span></span>
+<span id="cb18-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os, math, gzip, pickle</span>
+<span id="cb18-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> urllib.request <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> urlretrieve</span>
+<span id="cb18-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> pathlib <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Path</span>
+<span id="cb18-5"></span>
+<span id="cb18-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import the pandas package</span></span>
+<span id="cb18-7"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb18-8"></span>
+<span id="cb18-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Do not truncate the contents of cells and display all rows and columns</span></span>
+<span id="cb18-10">pd.set_option(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_colwidth'</span>, <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'display.max_rows'</span>, <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'display.max_columns'</span>, <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>)</span>
+<span id="cb18-11"></span>
+<span id="cb18-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PIL for image manipulation</span></span>
+<span id="cb18-13"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> PIL <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Image</span>
+<span id="cb18-14"></span>
+<span id="cb18-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PyTorch dependencies</span></span>
+<span id="cb18-16"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb18-17"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> tensor</span>
+<span id="cb18-18"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torchvision <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> tv</span>
+<span id="cb18-19"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torchvision.transforms.functional <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> tvf</span>
+<span id="cb18-20"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torchvision <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> io</span>
+<span id="cb18-21"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.utils.cpp_extension <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> load_inline, CUDA_HOME</span>
+<span id="cb18-22"></span>
+<span id="cb18-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Verify the CUDA install path </span></span>
+<span id="cb18-24"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(CUDA_HOME)</span></code></pre></div>
+<pre class="text"><code>/home/innom-dt/mambaforge/envs/cuda-env</code></pre>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We can tell from the above print statement that PyTorch correctly detected the path for our Python environment’s CUDA install.</p>
+</div>
+</div>
+</section>
+<section id="setting-up-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-project">Setting Up the Project</h2>
+<p>In this section, we set up some basics for our project, such as enabling the capture of C/C++ output in the notebook and making CUDA operations synchronous for easier debugging.</p>
+<section id="capture-c-output" class="level3">
+<h3 class="anchored" data-anchor-id="capture-c-output">Capture C++ Output</h3>
+<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Enable capture of C/C++ output in the notebook cells.</span></span>
+<span id="cb20-2"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>load_ext wurlitzer</span></code></pre></div>
+</section>
+<section id="make-cuda-operations-synchronous" class="level3">
+<h3 class="anchored" data-anchor-id="make-cuda-operations-synchronous">Make CUDA Operations Synchronous</h3>
+<div class="sourceCode" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set environment variable to make CUDA operations synchronous for easier debugging</span></span>
+<span id="cb21-2">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CUDA_LAUNCH_BLOCKING'</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'1'</span></span></code></pre></div>
+</section>
+</section>
+<section id="converting-rgb-images-to-grayscale-in-python" class="level2">
+<h2 class="anchored" data-anchor-id="converting-rgb-images-to-grayscale-in-python">Converting RGB Images to Grayscale in Python</h2>
+<p>To gauge the performance of CUDA over standard Python, we will convert an RGB image to grayscale.</p>
+<section id="download-a-test-image" class="level3">
+<h3 class="anchored" data-anchor-id="download-a-test-image">Download a Test Image</h3>
+<p>We can download a copy of Vincent van Gogh’s <em>The Starry Night</em> painting from <a href="https://commons.wikimedia.org/wiki/Main_Page">Wikimedia Commons</a> for our test image.</p>
+<div class="sourceCode" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Define the URL of the test image</span></span>
+<span id="cb22-2">test_img_url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg'</span></span>
+<span id="cb22-3"></span>
+<span id="cb22-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Extract the file name from the URL</span></span>
+<span id="cb22-5">test_img_name <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Path(test_img_url).name</span>
+<span id="cb22-6"></span>
+<span id="cb22-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create a Path object for the image file</span></span>
+<span id="cb22-8">img_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Path(test_img_name)</span>
+<span id="cb22-9"></span>
+<span id="cb22-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Check if the image file does not exist in the local directory</span></span>
+<span id="cb22-11"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">not</span> img_path.exists():</span>
+<span id="cb22-12">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># If the file does not exist, download it from the URL to the local directory</span></span>
+<span id="cb22-13">    urlretrieve(test_img_url, img_path)</span></code></pre></div>
+</section>
+<section id="load-the-test-image" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-test-image">Load the Test Image</h3>
+<p>Once downloaded, we will load the image as an RGB tensor.</p>
+<div class="sourceCode" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the test image as an RGB tensor</span></span>
+<span id="cb23-2">img_tensor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> io.read_image(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(img_path))</span>
+<span id="cb23-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(img_tensor.shape)</span>
+<span id="cb23-4"></span>
+<span id="cb23-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Resize the image tensor</span></span>
+<span id="cb23-6">resized_img_tensor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tvf.resize(img_tensor, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span>, antialias<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb23-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(resized_img_tensor.shape)</span>
+<span id="cb23-8"></span>
+<span id="cb23-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Visualize the tensor as a PIL image</span></span>
+<span id="cb23-10">Image.fromarray(resized_img_tensor.permute(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>).numpy())</span></code></pre></div>
+<pre class="text"><code>torch.Size([3, 1014, 1280])
+torch.Size([3, 512, 646])</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/cuda-python-setup-tutorial/ubuntu/images/output_16_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+</section>
+<section id="baseline-python-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="baseline-python-implementation">Baseline Python Implementation</h3>
+<p>Next, we will define a function that uses a standard for-loop to iterate through the RGB pixel values to create a new grayscale tensor.</p>
+<section id="define-a-function-to-convert-an-rgb-tensor-to-grayscale" class="level4">
+<h4 class="anchored" data-anchor-id="define-a-function-to-convert-an-rgb-tensor-to-grayscale">Define a function to convert an RGB Tensor to Grayscale</h4>
+<div class="sourceCode" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> rgb2gray_py(rgb_tensor, gray_coeffs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2989</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5870</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1140</span>]):</span>
+<span id="cb25-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Extract the channel (c), height (h), and width (w) dimensions of the input image tensor</span></span>
+<span id="cb25-3">    c, h, w <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rgb_tensor.shape</span>
+<span id="cb25-4">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Calculate the total number of pixels in the image (height * width)</span></span>
+<span id="cb25-5">    n <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> h <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> w</span>
+<span id="cb25-6">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Flatten the input image tensor from CxHxW format to a long array to simplify processing</span></span>
+<span id="cb25-7">    rgb_tensor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rgb_tensor.flatten()</span>
+<span id="cb25-8">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create an empty tensor 'res' to hold the grayscale values, with the same datatype and device as the input</span></span>
+<span id="cb25-9">    res <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.empty(n, dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>rgb_tensor.dtype, device<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>rgb_tensor.device)</span>
+<span id="cb25-10">    </span>
+<span id="cb25-11">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Loop through each pixel to compute the grayscale value</span></span>
+<span id="cb25-12">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(n):</span>
+<span id="cb25-13">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Apply the grayscale conversion formula: 0.2989 * Red + 0.5870 * Green + 0.1140 * Blue</span></span>
+<span id="cb25-14">        res[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> gray_coeffs[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> rgb_tensor[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> gray_coeffs[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> rgb_tensor[i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>n] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> gray_coeffs[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> rgb_tensor[i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>n]</span>
+<span id="cb25-15">    </span>
+<span id="cb25-16">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Reshape the resulting flat grayscale values back into a 2D image (height x width)</span></span>
+<span id="cb25-17">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> res.view(h, w)</span></code></pre></div>
+</section>
+<section id="time-the-python-implementation" class="level4">
+<h4 class="anchored" data-anchor-id="time-the-python-implementation">Time the Python implementation</h4>
+<p>We can use the IPython magic command <code>%%time</code> to gauge the performance of our Python implementation.</p>
+<div class="sourceCode" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb26-2">img_gray_tensor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rgb2gray_py(resized_img_tensor)</span>
+<span id="cb26-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(img_gray_tensor.shape)</span></code></pre></div>
+<pre class="text"><code>torch.Size([512, 646])
+CPU times: user 6.53 s, sys: 0 ns, total: 6.53 s
+Wall time: 6.53 s</code></pre>
+<p>On my system’s i7-11700K CPU, it takes nearly seven seconds to iterate through all the pixels in the <code>512x646</code> image.</p>
+</section>
+<section id="verify-the-result" class="level4">
+<h4 class="anchored" data-anchor-id="verify-the-result">Verify the Result</h4>
+<div class="sourceCode" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Visualize the result as a PIL grayscale image</span></span>
+<span id="cb28-2">Image.fromarray(img_gray_tensor.numpy(), mode<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'L'</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/cuda-python-setup-tutorial/ubuntu/images/output_23_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>With our baseline established, let’s make an equivalent CUDA implementation to leverage the parallel processing capabilities of a GPU.</p>
+</section>
+</section>
+</section>
+<section id="converting-rgb-images-to-grayscale-in-cuda" class="level2">
+<h2 class="anchored" data-anchor-id="converting-rgb-images-to-grayscale-in-cuda">Converting RGB Images to Grayscale in CUDA</h2>
+<p>We can use PyTorch’s <a href="https://pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.load_inline"><code>load_inline</code></a> function to build a custom CUDA kernel and load it as a PyTorch extension. The function takes the CUDA code as a Python string and automatically compiles it.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Processing on NVIDA GPUs">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Processing on NVIDA GPUs
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<section id="streaming-multiprocessors-sms" class="level5">
+<h5 class="anchored" data-anchor-id="streaming-multiprocessors-sms">Streaming Multiprocessors (SMs):</h5>
+<ul>
+<li>SMs are the fundamental execution units in NVIDIA GPUs.</li>
+<li>Each one can execute multiple threads concurrently.</li>
+</ul>
+</section>
+<section id="thread-blocks" class="level5">
+<h5 class="anchored" data-anchor-id="thread-blocks">Thread Blocks:</h5>
+<ul>
+<li>A thread block is a group of threads that can cooperate through shared memory and synchronization.</li>
+<li>All threads in a block run on the same SM, meaning they can share resources such as shared memory and can synchronize their execution with each other.</li>
+<li><code>2^31</code> max blocks for dim <code>0</code>, <code>2^16</code> max for dims <code>1</code> &amp; <code>2</code></li>
+<li><code>1024</code> max threads per block (use a multiple of <code>32</code>)</li>
+</ul>
+</section>
+<section id="shared-memory" class="level5">
+<h5 class="anchored" data-anchor-id="shared-memory">Shared Memory:</h5>
+<ul>
+<li>Shared memory is a small space in GPU memory shared among the threads in a block.</li>
+<li>It is much faster than global memory (the main GPU memory) but also limited in size.</li>
+<li>Threads in the same block can use shared memory to share data efficiently.</li>
+</ul>
+</section>
+<section id="concurrency" class="level5">
+<h5 class="anchored" data-anchor-id="concurrency">Concurrency:</h5>
+<ul>
+<li>In CUDA, all threads in a block have the potential to run concurrently.</li>
+<li>The actual concurrency depends on the number of CUDA cores per SM and the resources required by the threads.</li>
+</ul>
+</section>
+</div>
+</div>
+<section id="define-the-cuda-code" class="level3">
+<h3 class="anchored" data-anchor-id="define-the-cuda-code">Define the CUDA Code</h3>
+<p>We will define the CUDA code in sections.</p>
+<section id="define-the-utility-includes-and-definitions-for-pytorch-and-cuda" class="level4">
+<h4 class="anchored" data-anchor-id="define-the-utility-includes-and-definitions-for-pytorch-and-cuda">Define the utility includes and definitions for PyTorch and CUDA</h4>
+<p>Let’s start by adding the required header files and macros. The following code adds the headers for the PyTorch extension library and CUDA-specific exceptions for error handling.</p>
+<p>It also defines a few macros to check if a tensor is on a CUDA device and if the tensor is contiguous in memory.</p>
+<p>Lastly, it defines a function to calculate the ceiling of an integer division. We use this later for calculating how to split work on the GPU.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="C++ Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+C++ Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code></code></pre>
+<div class="sourceCode" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb30-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Include the necessary headers for PyTorch and CUDA functionality.</span></span>
+<span id="cb30-2"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;torch/extension.h&gt;</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// PyTorch extension library for custom C++ and CUDA extensions.</span></span>
+<span id="cb30-3"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;stdio.h&gt;</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Standard I/O for debugging (e.g., printf).</span></span>
+<span id="cb30-4"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;c10/cuda/CUDAException.h&gt;</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// CUDA-specific exceptions for error handling.</span></span>
+<span id="cb30-5"></span>
+<span id="cb30-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Macro to check if a tensor is allocated on a CUDA device.</span></span>
+<span id="cb30-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// If not, it throws an error.</span></span>
+<span id="cb30-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// x: The tensor to check.</span></span>
+<span id="cb30-9"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#define CHECK_CUDA</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>TORCH_CHECK<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>device<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">().</span>is_cuda<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(),</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#</span>x<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">" must be a CUDA tensor"</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span></span>
+<span id="cb30-10"></span>
+<span id="cb30-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Macro to check if a tensor is contiguous in memory.</span></span>
+<span id="cb30-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// If not, it throws an error.</span></span>
+<span id="cb30-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Contiguous tensors are often required for efficient CUDA operations.</span></span>
+<span id="cb30-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// x: The tensor to check.</span></span>
+<span id="cb30-15"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#define CHECK_CONTIGUOUS</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>TORCH_CHECK<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>is_contiguous<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(),</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#</span>x<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">" must be contiguous"</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span></span>
+<span id="cb30-16"></span>
+<span id="cb30-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Macro to perform both CUDA and contiguity checks on a tensor.</span></span>
+<span id="cb30-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// This is a convenience macro to ensure a tensor is suitable for CUDA operations.</span></span>
+<span id="cb30-19"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#define CHECK_INPUT</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>CHECK_CUDA<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>CHECK_CONTIGUOUS<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span></span>
+<span id="cb30-20"></span>
+<span id="cb30-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Function to calculate the ceiling of an integer division.</span></span>
+<span id="cb30-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// This is often used to determine the number of blocks needed in a CUDA kernel launch</span></span>
+<span id="cb30-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// when the total number of threads does not evenly divide by the number of threads per block.</span></span>
+<span id="cb30-24"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// a: The numerator in the division.</span></span>
+<span id="cb30-25"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// b: The denominator in the division.</span></span>
+<span id="cb30-26"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Returns: The smallest integer greater than or equal to a/b.</span></span>
+<span id="cb30-27"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">inline</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> cdiv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> a<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span> </span>
+<span id="cb30-28">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> b <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb30-29"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="sourceCode" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1">cuda_utils_macros <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">r'''</span></span>
+<span id="cb31-2"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Include the necessary headers for PyTorch and CUDA functionality.</span></span>
+<span id="cb31-3"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">#include &lt;torch/extension.h&gt; // PyTorch extension library for custom C++ and CUDA extensions.</span></span>
+<span id="cb31-4"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">#include &lt;stdio.h&gt; // Standard I/O for debugging (e.g., printf).</span></span>
+<span id="cb31-5"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">#include &lt;c10/cuda/CUDAException.h&gt; // CUDA-specific exceptions for error handling.</span></span>
+<span id="cb31-6"></span>
+<span id="cb31-7"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Macro to check if a tensor is allocated on a CUDA device.</span></span>
+<span id="cb31-8"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// If not, it throws an error.</span></span>
+<span id="cb31-9"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// x: The tensor to check.</span></span>
+<span id="cb31-10"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">#define CHECK_CUDA(x) TORCH_CHECK(x.device().is_cuda(), #x " must be a CUDA tensor")</span></span>
+<span id="cb31-11"></span>
+<span id="cb31-12"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Macro to check if a tensor is contiguous in memory.</span></span>
+<span id="cb31-13"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// If not, it throws an error.</span></span>
+<span id="cb31-14"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Contiguous tensors are often required for efficient CUDA operations.</span></span>
+<span id="cb31-15"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// x: The tensor to check.</span></span>
+<span id="cb31-16"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">#define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")</span></span>
+<span id="cb31-17"></span>
+<span id="cb31-18"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Macro to perform both CUDA and contiguity checks on a tensor.</span></span>
+<span id="cb31-19"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// This is a convenience macro to ensure a tensor is suitable for CUDA operations.</span></span>
+<span id="cb31-20"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">#define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)</span></span>
+<span id="cb31-21"></span>
+<span id="cb31-22"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Function to calculate the ceiling of an integer division.</span></span>
+<span id="cb31-23"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// This is often used to determine the number of blocks needed in a CUDA kernel launch</span></span>
+<span id="cb31-24"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// when the total number of threads does not evenly divide by the number of threads per block.</span></span>
+<span id="cb31-25"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// a: The numerator in the division.</span></span>
+<span id="cb31-26"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// b: The denominator in the division.</span></span>
+<span id="cb31-27"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Returns: The smallest integer greater than or equal to a/b.</span></span>
+<span id="cb31-28"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">inline unsigned int cdiv(unsigned int a, unsigned int b) { </span></span>
+<span id="cb31-29"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    return (a + b - 1) / b;</span></span>
+<span id="cb31-30"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb31-31"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'''</span></span></code></pre></div>
+</section>
+<section id="define-the-cuda-kernel-for-rgb-to-grayscale-conversion" class="level4">
+<h4 class="anchored" data-anchor-id="define-the-cuda-kernel-for-rgb-to-grayscale-conversion">Define the CUDA kernel for RGB to Grayscale conversion</h4>
+<p>Next, we define the CUDA kernel for converting RGB tensors to grayscale. The kernel takes pointers to the memory locations for the input RGB and output grayscale tensors, along with the total number of pixels.</p>
+<p>Instead of iterating through each pixel, the kernel applies the grayscale conversion formula to each pixel in parallel.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="C++ Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+C++ Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code></code></pre>
+<div class="sourceCode" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb33-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// CUDA kernel to convert an RGB image to grayscale.</span></span>
+<span id="cb33-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Inputs:</span></span>
+<span id="cb33-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - x: Pointer to the input image data in RGB format.</span></span>
+<span id="cb33-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - out: Pointer to the output image data in grayscale.</span></span>
+<span id="cb33-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - n: The total number of pixels in the image.</span></span>
+<span id="cb33-6">__global__ <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">void</span> rgb_to_grayscale_kernel<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> out<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb33-7">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Calculate the global thread index.</span></span>
+<span id="cb33-8">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb33-9"></span>
+<span id="cb33-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Ensure the thread index is within the bounds of the image data.</span></span>
+<span id="cb33-11">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb33-12">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Convert the RGB values to grayscale using the luminosity method.</span></span>
+<span id="cb33-13">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// The luminosity method is a weighted sum of the R, G, and B values.</span></span>
+<span id="cb33-14">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Weights: 0.2989 for Red, 0.5870 for Green, and 0.1140 for Blue.</span></span>
+<span id="cb33-15">        out<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2989</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5870</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1140</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">];</span></span>
+<span id="cb33-16">    <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb33-17"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="sourceCode" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1">cuda_kernel <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">r'''</span></span>
+<span id="cb34-2"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// CUDA kernel to convert an RGB image to grayscale.</span></span>
+<span id="cb34-3"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Inputs:</span></span>
+<span id="cb34-4"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// - x: Pointer to the input image data in RGB format.</span></span>
+<span id="cb34-5"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// - out: Pointer to the output image data in grayscale.</span></span>
+<span id="cb34-6"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// - n: The total number of pixels in the image.</span></span>
+<span id="cb34-7"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">__global__ void rgb_to_grayscale_kernel(unsigned char* x, unsigned char* out, int n) {</span></span>
+<span id="cb34-8"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Calculate the global thread index.</span></span>
+<span id="cb34-9"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int i = blockIdx.x * blockDim.x + threadIdx.x;</span></span>
+<span id="cb34-10"></span>
+<span id="cb34-11"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Ensure the thread index is within the bounds of the image data.</span></span>
+<span id="cb34-12"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    if (i &lt; n) {</span></span>
+<span id="cb34-13"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        // Convert the RGB values to grayscale using the luminosity method.</span></span>
+<span id="cb34-14"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        // The luminosity method is a weighted sum of the R, G, and B values.</span></span>
+<span id="cb34-15"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        // Weights: 0.2989 for Red, 0.5870 for Green, and 0.1140 for Blue.</span></span>
+<span id="cb34-16"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        out[i] = 0.2989 * x[i] + 0.5870 * x[i + n] + 0.1140 * x[i + 2 * n];</span></span>
+<span id="cb34-17"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    }</span></span>
+<span id="cb34-18"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb34-19"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'''</span></span></code></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <code>__global__</code> qualifier keyword indicates the kernel will be callable from the CPU or GPU and run on the GPU.</p>
+</div>
+</div>
+</section>
+<section id="define-the-pytorch-function-to-convert-rgb-to-grayscale" class="level4">
+<h4 class="anchored" data-anchor-id="define-the-pytorch-function-to-convert-rgb-to-grayscale">Define the PyTorch function to convert RGB to Grayscale</h4>
+<p>Last, we must define a PyTorch function to use the custom CUDA kernel within Python.</p>
+<p>The function will take an RGB tensor as input, initialize the output grayscale tensor, launch the CUDA kernel, and return the updated grayscale tensor.</p>
+<p>We need to specify how to divide the work for the list or pixel values among thread blocks on the GPU. For our function, we will set each block to have <code>256</code> threads and then use the number of pixels to determine how many blocks we need.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="C++ Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+C++ Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code></code></pre>
+<div class="sourceCode" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb36-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Function to convert a PyTorch tensor representing an RGB image to grayscale.</span></span>
+<span id="cb36-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Input:</span></span>
+<span id="cb36-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - input: A PyTorch tensor of the input RGB image.</span></span>
+<span id="cb36-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Output:</span></span>
+<span id="cb36-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - A PyTorch tensor of the output grayscale image.</span></span>
+<span id="cb36-6">torch<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>Tensor rgb_to_grayscale<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>torch<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>Tensor input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb36-7">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Perform CUDA and contiguity checks</span></span>
+<span id="cb36-8">    CHECK_INPUT<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb36-9">    </span>
+<span id="cb36-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Extract the height and width from the input tensor's dimensions.</span></span>
+<span id="cb36-11">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> h <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb36-12">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> w <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb36-13">    printf<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">h*w: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">*</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span> <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Debug print statement for dimensions.</span></span>
+<span id="cb36-14"></span>
+<span id="cb36-15">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Create an empty output tensor with the same dimensions as the input.</span></span>
+<span id="cb36-16">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">auto</span> output <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>empty<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">({</span>h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">},</span> input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">());</span></span>
+<span id="cb36-17"></span>
+<span id="cb36-18">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Define the number of threads per block.</span></span>
+<span id="cb36-19">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> threads <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">256</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb36-20">    </span>
+<span id="cb36-21">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Calculate the number of blocks needed for the conversion, ensuring</span></span>
+<span id="cb36-22">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// we have enough blocks to cover all pixels.</span></span>
+<span id="cb36-23">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Launch the CUDA kernel with calculated dimensions.</span></span>
+<span id="cb36-24">    rgb_to_grayscale_kernel<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;&lt;&lt;</span>cdiv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> threads<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">),</span> threads<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;(</span></span>
+<span id="cb36-25">        input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>data_ptr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;(),</span> output<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>data_ptr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;(),</span> w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb36-26"></span>
+<span id="cb36-27">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Check for any errors during kernel launch or execution.</span></span>
+<span id="cb36-28">    C10_CUDA_KERNEL_LAUNCH_CHECK<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">();</span></span>
+<span id="cb36-29"></span>
+<span id="cb36-30">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Return the output tensor.</span></span>
+<span id="cb36-31">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> output<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb36-32"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="sourceCode" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1">pytorch_function <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">r'''</span></span>
+<span id="cb37-2"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Function to convert a PyTorch tensor representing an RGB image to grayscale.</span></span>
+<span id="cb37-3"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Input:</span></span>
+<span id="cb37-4"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// - input: A PyTorch tensor of the input RGB image.</span></span>
+<span id="cb37-5"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// Output:</span></span>
+<span id="cb37-6"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">// - A PyTorch tensor of the output grayscale image.</span></span>
+<span id="cb37-7"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor rgb_to_grayscale(torch::Tensor input) {</span></span>
+<span id="cb37-8"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Perform CUDA and contiguity checks</span></span>
+<span id="cb37-9"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    CHECK_INPUT(input);</span></span>
+<span id="cb37-10"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    </span></span>
+<span id="cb37-11"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Extract the height and width from the input tensor's dimensions.</span></span>
+<span id="cb37-12"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int h = input.size(1);</span></span>
+<span id="cb37-13"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int w = input.size(2);</span></span>
+<span id="cb37-14"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    printf("\nh*w: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d</span><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">*</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d</span><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n", h, w); // Debug print statement for dimensions.</span></span>
+<span id="cb37-15"></span>
+<span id="cb37-16"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Create an empty output tensor with the same dimensions as the input.</span></span>
+<span id="cb37-17"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    auto output = torch::empty({h, w}, input.options());</span></span>
+<span id="cb37-18"></span>
+<span id="cb37-19"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Define the number of threads per block.</span></span>
+<span id="cb37-20"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int threads = 256;</span></span>
+<span id="cb37-21"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    </span></span>
+<span id="cb37-22"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Calculate the number of blocks needed for the conversion, ensuring</span></span>
+<span id="cb37-23"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // we have enough blocks to cover all pixels.</span></span>
+<span id="cb37-24"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Launch the CUDA kernel with calculated dimensions.</span></span>
+<span id="cb37-25"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    rgb_to_grayscale_kernel&lt;&lt;&lt;cdiv(w*h, threads), threads&gt;&gt;&gt;(</span></span>
+<span id="cb37-26"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        input.data_ptr&lt;unsigned char&gt;(), output.data_ptr&lt;unsigned char&gt;(), w*h);</span></span>
+<span id="cb37-27"></span>
+<span id="cb37-28"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Check for any errors during kernel launch or execution.</span></span>
+<span id="cb37-29"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
+<span id="cb37-30"></span>
+<span id="cb37-31"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Return the output tensor.</span></span>
+<span id="cb37-32"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    return output;</span></span>
+<span id="cb37-33"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb37-34"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'''</span></span></code></pre></div>
+</section>
+</section>
+<section id="build-the-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="build-the-pytorch-extension">Build the PyTorch Extension</h3>
+<p>With the code for our CUDA file defined, we can pass it to the <code>load_inline</code> function to compile it.</p>
+<div class="sourceCode" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Combine the CUDA source code</span></span>
+<span id="cb38-2">cuda_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cuda_utils_macros <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> cuda_kernel <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> pytorch_function</span>
+<span id="cb38-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Define the C++ source code</span></span>
+<span id="cb38-4">cpp_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"torch::Tensor rgb_to_grayscale(torch::Tensor input);"</span></span>
+<span id="cb38-5"></span>
+<span id="cb38-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># A flag indicating whether to use optimization flags for CUDA compilation.</span></span>
+<span id="cb38-7">opt<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span></span>
+<span id="cb38-8"></span>
+<span id="cb38-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Compile and load the CUDA and C++ sources as an inline PyTorch extension</span></span>
+<span id="cb38-10">module <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_inline(</span>
+<span id="cb38-11">    cuda_sources<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[cuda_src],                  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># List of CUDA source code strings.</span></span>
+<span id="cb38-12">    cpp_sources<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[cpp_src],                    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># List of C++ source code strings.</span></span>
+<span id="cb38-13">    functions<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'rgb_to_grayscale'</span>],           <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># List of function names to be included in the extension.</span></span>
+<span id="cb38-14">    extra_cuda_cflags<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"-O2"</span>] <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> opt <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">else</span> [], <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Enable optimization flags if `opt` is True.</span></span>
+<span id="cb38-15">    verbose<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>,                             <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Enable verbose output if `verbose` is True.</span></span>
+<span id="cb38-16">    name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"inline_ext"</span>                         <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Name of the generated extension module.</span></span>
+<span id="cb38-17">)</span></code></pre></div>
+<pre class="text"><code>    Using /home/innom-dt/.cache/torch_extensions/py311_cu121 as PyTorch extensions root...
+    Detected CUDA files, patching ldflags
+    Emitting ninja build file /home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/build.ninja...
+    Building extension module inline_ext...
+    Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+
+
+    [1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=inline_ext -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include/TH -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include/THC -isystem /home/innom-dt/mambaforge/envs/cuda-env/include -isystem /home/innom-dt/mambaforge/envs/cuda-env/include/python3.11 -D_GLIBCXX_USE_CXX11_ABI=0 -fPIC -std=c++17 -c /home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/main.cpp -o main.o 
+    [2/3] /home/innom-dt/mambaforge/envs/cuda-env/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=inline_ext -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include/TH -isystem /home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/include/THC -isystem /home/innom-dt/mambaforge/envs/cuda-env/include -isystem /home/innom-dt/mambaforge/envs/cuda-env/include/python3.11 -D_GLIBCXX_USE_CXX11_ABI=0 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_89,code=compute_89 -gencode=arch=compute_89,code=sm_89 --compiler-options '-fPIC' -std=c++17 -c /home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/cuda.cu -o cuda.cuda.o 
+    [3/3] c++ main.o cuda.cuda.o -shared -L/home/innom-dt/mambaforge/envs/cuda-env/lib/python3.11/site-packages/torch/lib -lc10 -lc10_cuda -ltorch_cpu -ltorch_cuda -ltorch -ltorch_python -L/home/innom-dt/mambaforge/envs/cuda-env/lib -lcudart -o inline_ext.so
+
+
+    Loading extension module inline_ext...</code></pre>
+</section>
+<section id="getting-information-about-the-module" class="level3">
+<h3 class="anchored" data-anchor-id="getting-information-about-the-module">Getting Information About the Module</h3>
+<p>With our PyTorch extension loaded as a Python module, we can get the path to the module and explore the files created during the build process.</p>
+<section id="get-the-module-path" class="level4">
+<h4 class="anchored" data-anchor-id="get-the-module-path">Get the module path</h4>
+<div class="sourceCode" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print the path to the extension module</span></span>
+<span id="cb40-2"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Module Path: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>module<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__file__</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<pre class="text"><code>Module Path: /home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/inline_ext.so</code></pre>
+</section>
+<section id="get-the-module-content" class="level4">
+<h4 class="anchored" data-anchor-id="get-the-module-content">Get the module content</h4>
+<div class="sourceCode" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print the content of the module folder as a Pandas DataFrame</span></span>
+<span id="cb42-2">pd.DataFrame(Path(module.<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__file__</span>).parent.iterdir())</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/inline_ext.so
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/cuda.cu
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/.ninja_deps
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/main.cpp
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/build.ninja
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/.ninja_log
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/main.o
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+/home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/cuda.cuda.o
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>If we open the <code>cuda.cu</code> file, we can see the code we fed the <code>load_inline</code> function:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="C++ Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+C++ Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code></code></pre>
+<div class="sourceCode" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb44-1"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;torch/types.h&gt;</span></span>
+<span id="cb44-2"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;cuda.h&gt;</span></span>
+<span id="cb44-3"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;cuda_runtime.h&gt;</span></span>
+<span id="cb44-4"></span>
+<span id="cb44-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Include the necessary headers for PyTorch and CUDA functionality.</span></span>
+<span id="cb44-6"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;torch/extension.h&gt;</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// PyTorch extension library for custom C++ and CUDA extensions.</span></span>
+<span id="cb44-7"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;stdio.h&gt;</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Standard I/O for debugging (e.g., printf).</span></span>
+<span id="cb44-8"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#include </span><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">&lt;c10/cuda/CUDAException.h&gt;</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// CUDA-specific exceptions for error handling.</span></span>
+<span id="cb44-9"></span>
+<span id="cb44-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Macro to check if a tensor is allocated on a CUDA device.</span></span>
+<span id="cb44-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// If not, it throws an error.</span></span>
+<span id="cb44-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// x: The tensor to check.</span></span>
+<span id="cb44-13"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#define CHECK_CUDA</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>TORCH_CHECK<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>device<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">().</span>is_cuda<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(),</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#</span>x<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">" must be a CUDA tensor"</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span></span>
+<span id="cb44-14"></span>
+<span id="cb44-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Macro to check if a tensor is contiguous in memory.</span></span>
+<span id="cb44-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// If not, it throws an error.</span></span>
+<span id="cb44-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Contiguous tensors are often required for efficient CUDA operations.</span></span>
+<span id="cb44-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// x: The tensor to check.</span></span>
+<span id="cb44-19"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#define CHECK_CONTIGUOUS</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>TORCH_CHECK<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>is_contiguous<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(),</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#</span>x<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">" must be contiguous"</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span></span>
+<span id="cb44-20"></span>
+<span id="cb44-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Macro to perform both CUDA and contiguity checks on a tensor.</span></span>
+<span id="cb44-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// This is a convenience macro to ensure a tensor is suitable for CUDA operations.</span></span>
+<span id="cb44-23"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">#define CHECK_INPUT</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>CHECK_CUDA<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;"> </span>CHECK_CONTIGUOUS<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span></span>
+<span id="cb44-24"></span>
+<span id="cb44-25"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Function to calculate the ceiling of an integer division.</span></span>
+<span id="cb44-26"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// This is often used to determine the number of blocks needed in a CUDA kernel launch</span></span>
+<span id="cb44-27"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// when the total number of threads does not evenly divide by the number of threads per block.</span></span>
+<span id="cb44-28"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// a: The numerator in the division.</span></span>
+<span id="cb44-29"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// b: The denominator in the division.</span></span>
+<span id="cb44-30"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Returns: The smallest integer greater than or equal to a/b.</span></span>
+<span id="cb44-31"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">inline</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> cdiv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> a<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span> </span>
+<span id="cb44-32">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> b <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb44-33"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb44-34"></span>
+<span id="cb44-35"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// CUDA kernel to convert an RGB image to grayscale.</span></span>
+<span id="cb44-36"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Inputs:</span></span>
+<span id="cb44-37"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - x: Pointer to the input image data in RGB format.</span></span>
+<span id="cb44-38"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - out: Pointer to the output image data in grayscale.</span></span>
+<span id="cb44-39"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - n: The total number of pixels in the image.</span></span>
+<span id="cb44-40">__global__ <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">void</span> rgb_to_grayscale_kernel<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> out<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb44-41">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Calculate the global thread index.</span></span>
+<span id="cb44-42">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb44-43"></span>
+<span id="cb44-44">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Ensure the thread index is within the bounds of the image data.</span></span>
+<span id="cb44-45">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb44-46">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Convert the RGB values to grayscale using the luminosity method.</span></span>
+<span id="cb44-47">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// The luminosity method is a weighted sum of the R, G, and B values.</span></span>
+<span id="cb44-48">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Weights: 0.2989 for Red, 0.5870 for Green, and 0.1140 for Blue.</span></span>
+<span id="cb44-49">        out<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2989</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5870</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1140</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span>i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">];</span></span>
+<span id="cb44-50">    <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb44-51"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb44-52"></span>
+<span id="cb44-53"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Function to convert a PyTorch tensor representing an RGB image to grayscale.</span></span>
+<span id="cb44-54"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Input:</span></span>
+<span id="cb44-55"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - input: A PyTorch tensor of the input RGB image.</span></span>
+<span id="cb44-56"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Output:</span></span>
+<span id="cb44-57"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// - A PyTorch tensor of the output grayscale image.</span></span>
+<span id="cb44-58">torch<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>Tensor rgb_to_grayscale<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>torch<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>Tensor input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb44-59">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Perform CUDA and contiguity checks</span></span>
+<span id="cb44-60">    CHECK_INPUT<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb44-61">    </span>
+<span id="cb44-62">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Extract the height and width from the input tensor's dimensions.</span></span>
+<span id="cb44-63">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> h <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb44-64">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> w <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb44-65">    printf<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">h*w: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">*</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span> <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Debug print statement for dimensions.</span></span>
+<span id="cb44-66"></span>
+<span id="cb44-67">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Create an empty output tensor with the same dimensions as the input.</span></span>
+<span id="cb44-68">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">auto</span> output <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>empty<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">({</span>h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">},</span> input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">());</span></span>
+<span id="cb44-69"></span>
+<span id="cb44-70">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Define the number of threads per block.</span></span>
+<span id="cb44-71">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">int</span> threads <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">256</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb44-72">    </span>
+<span id="cb44-73">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Calculate the number of blocks needed for the conversion, ensuring</span></span>
+<span id="cb44-74">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// we have enough blocks to cover all pixels.</span></span>
+<span id="cb44-75">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Launch the CUDA kernel with calculated dimensions.</span></span>
+<span id="cb44-76">    rgb_to_grayscale_kernel<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;&lt;&lt;</span>cdiv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">(</span>w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> threads<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">),</span> threads<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;(</span></span>
+<span id="cb44-77">        input<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>data_ptr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;(),</span> output<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>data_ptr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;(),</span> w<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">);</span></span>
+<span id="cb44-78"></span>
+<span id="cb44-79">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Check for any errors during kernel launch or execution.</span></span>
+<span id="cb44-80">    C10_CUDA_KERNEL_LAUNCH_CHECK<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">();</span></span>
+<span id="cb44-81"></span>
+<span id="cb44-82">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">// Return the output tensor.</span></span>
+<span id="cb44-83">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> output<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb44-84"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="get-the-module-attributes" class="level4">
+<h4 class="anchored" data-anchor-id="get-the-module-attributes">Get the module attributes</h4>
+<div class="sourceCode" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print the attribute names of the module as a Pandas DataFrame</span></span>
+<span id="cb45-2">pd.DataFrame(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">dir</span>(module))</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+0
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+<strong>doc</strong>
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+<strong>file</strong>
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+<strong>loader</strong>
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+<strong>name</strong>
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+<strong>package</strong>
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+<strong>spec</strong>
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+rgb_to_grayscale
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We can see from the list of module attributes that the <code>rgb_to_grayscale</code> PyTorch function we defined is available.</p>
+</section>
+</section>
+<section id="test-the-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="test-the-pytorch-extension">Test the PyTorch Extension</h3>
+<p>Now, all that’s left is to test the custom CUDA kernel to see how it compares to the baseline Python implementation.</p>
+<section id="prepare-the-image-tensor" class="level4">
+<h4 class="anchored" data-anchor-id="prepare-the-image-tensor">Prepare the image tensor</h4>
+<p>First, we must move the RGB tensor to the GPU and ensure it’s contiguous in memory.</p>
+<div class="sourceCode" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Convert the tensor to a contiguous format and move it to the default CUDA device</span></span>
+<span id="cb46-2">img_tensor_cuda <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> resized_img_tensor.contiguous().cuda()</span></code></pre></div>
+</section>
+<section id="time-the-cuda-implementation" class="level4">
+<h4 class="anchored" data-anchor-id="time-the-cuda-implementation">Time the CUDA implementation</h4>
+<p>We will use the same <code>%%time</code> magic command to gauge the performance.</p>
+<div class="sourceCode" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb47-2">res <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> module.rgb_to_grayscale(img_tensor_cuda).cpu()</span>
+<span id="cb47-3">h,w <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> res.shape</span>
+<span id="cb47-4">h,w,h<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>w</span></code></pre></div>
+<pre class="text"><code>CPU times: user 725 µs, sys: 26 µs, total: 751 µs
+Wall time: 559 µs
+
+h*w: 512*646
+
+(512, 646, 330752)</code></pre>
+<p>As a reminder, the baseline Python implementation took <code>6.53</code> seconds (<code>6,530,000</code> microseconds (<code>µs</code>) for the same input on the CPU.</p>
+</section>
+<section id="verify-the-result-1" class="level4">
+<h4 class="anchored" data-anchor-id="verify-the-result-1">Verify the Result</h4>
+<div class="sourceCode" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1">Image.fromarray(res.numpy(), mode<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'L'</span>)</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/cuda-python-setup-tutorial/ubuntu/images/output_48_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>This tutorial covered the steps for setting up CUDA within a Python environment and using PyTorch to build a custom CUDA kernel.</p>
+<p>If you found this topic interesting, I recommend checking out the lectures from the CUDA MODE reading group and joining its discord:</p>
+<ul>
+<li><a href="https://github.com/cuda-mode/lectures">CUDA Mode Lectures</a></li>
+<li><a href="https://discord.gg/cuda-mode-1189498204333543425">CUDA Mode Discord</a></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <strong>Getting Started With CUDA</strong> lecture by Jeremy Howard is <a href="https://github.com/cuda-mode/lectures?tab=readme-ov-file#lecture-3-getting-started-with-cuda">lecture 3</a>, and the follow-up is <a href="https://github.com/cuda-mode/lectures?tab=readme-ov-file#lecture-5-going-further-with-cuda-for-python-programmers">lecture 5</a>.</p>
+</div>
+</div>
+<p><br></p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Next Steps">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Next Steps
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Feel free to post questions or problems related to this tutorial in the comments below. I try to make time to address them on Thursdays and Fridays.</li>
+<li>If you would like to explore my services for your project, you can reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a></li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>mamba</category>
+  <category>conda</category>
+  <category>cuda</category>
+  <category>getting-started</category>
+  <category>tutorial</category>
+  <guid>christianjmills.com/posts/cuda-python-setup-tutorial/ubuntu/</guid>
+  <pubDate>Fri, 08 Mar 2024 08:00:00 GMT</pubDate>
+  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Notes on Why Greatness Cannot Be Planned</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -40737,328 +43395,6 @@ This post is part of the following series:
   <category>notes</category>
   <category>history</category>
   <guid>christianjmills.com/posts/chip-war-book-notes/part-6/</guid>
-  <pubDate>Tue, 21 Nov 2023 08:00:00 GMT</pubDate>
-  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Chip War Part 5: Integrated Circuits, Integrated World?</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>christianjmills.com/posts/chip-war-book-notes/part-5/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/chip-war-book-notes.html"><strong>Chip War: The Fight for the World’s Most Critical Technology</strong></a></li>
-</ul>
-</div>
-</div>
-<ul>
-<li>We Want a Semiconductor Industry in Taiwan</li>
-<li>All People Must Make Semiconductors</li>
-<li>“Sharing God’s Love With the Chinese”</li>
-<li>Lithography Wars</li>
-<li>The Innovator’s Dilemma</li>
-<li>Running Faster?</li>
-</ul>
-<section id="we-want-a-semiconductor-industry-in-taiwan" class="level2">
-<h2 class="anchored" data-anchor-id="we-want-a-semiconductor-industry-in-taiwan">We Want a Semiconductor Industry in Taiwan</h2>
-<p>Chapter Twenty-Nine narrates Taiwan’s ascent as a semiconductor powerhouse. It focuses on Morris Chang’s role in leading Taiwan Semiconductor Manufacturing Company (TSMC) and Taiwan’s deliberate strategy to integrate into global semiconductor supply chains. The chapter highlights Taiwan’s transition from assembling devices to producing advanced chips, supported by government investment and collaboration with the U.S. semiconductor industry. It underscores Taiwan’s strategic positioning in the semiconductor market, driven by Chang’s vision and the government’s backing.</p>
-<section id="ideas" class="level3">
-<h3 class="anchored" data-anchor-id="ideas">Ideas</h3>
-<ol type="1">
-<li>Taiwan’s government, particularly Minister K.T. Lee, identified semiconductors as a strategic industry and actively promoted its development.</li>
-<li>Morris Chang, a former Texas Instruments executive, played a central role in Taiwan’s semiconductor industry, leading TSMC.</li>
-<li>Taiwan’s entry into the semiconductor market was part of a broader strategy for economic growth and technological advancement.</li>
-<li>The government’s significant investment and support were crucial in the establishment and success of TSMC.</li>
-<li>Collaboration with U.S. firms and technology transfer were key factors in Taiwan’s rise as a semiconductor hub.</li>
-<li>Taiwan’s shift from assembly to chip fabrication marked a significant technological leap.</li>
-<li>TSMC’s foundry model, focusing on manufacturing chips designed by customers, was a novel approach that reshaped the industry.</li>
-<li>The success of TSMC and Taiwan’s semiconductor industry is a testament to strategic planning, governmental support, and entrepreneurial vision.</li>
-<li>Taiwan’s emergence as a leading semiconductor producer had significant implications for global technology and economics.</li>
-<li>The chapter illustrates how a small nation strategically positioned itself in a critical global industry through innovation and government-industry collaboration.</li>
-</ol>
-</section>
-<section id="facts" class="level3">
-<h3 class="anchored" data-anchor-id="facts">Facts</h3>
-<ol type="1">
-<li>Taiwan’s government, led by Minister K.T. Lee, played a pivotal role in developing the country’s semiconductor industry.</li>
-<li>Morris Chang was instrumental in leading TSMC and shaping Taiwan’s semiconductor sector.</li>
-<li>Taiwan’s strategy involved transitioning from assembly to advanced chip production.</li>
-<li>The Taiwanese government provided significant investment and support for TSMC.</li>
-<li>Collaboration with U.S. companies and technology transfer were crucial in Taiwan’s semiconductor industry development.</li>
-<li>TSMC’s foundry model, focusing on manufacturing customer-designed chips, was innovative and influential.</li>
-<li>Taiwan’s rise as a semiconductor hub was a result of strategic planning and government-industry collaboration.</li>
-<li>TSMC and Taiwan’s success in semiconductors had major global technological and economic implications.</li>
-<li>The Taiwanese semiconductor industry’s growth was marked by strategic government support and entrepreneurial vision.</li>
-<li>Taiwan’s emergence as a leading semiconductor producer significantly impacted the global technology landscape.</li>
-</ol>
-</section>
-</section>
-<section id="all-people-must-make-semiconductors" class="level2">
-<h2 class="anchored" data-anchor-id="all-people-must-make-semiconductors">All People Must Make Semiconductors</h2>
-<p>Chapter 30 contrasts the semiconductor industry’s evolution in Taiwan and China. It highlights Taiwan’s technological advancement through TSMC and the founding of Huawei in China, emphasizing the impact of political and economic policies on the development of the semiconductor industry in both regions.</p>
-<section id="ideas-1" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-1">Ideas</h3>
-<ol type="1">
-<li>Taiwan’s advancement in semiconductor technology was rapid and significant, largely due to TSMC.</li>
-<li>China’s technological development in the semiconductor industry was initially slow due to political and economic constraints.</li>
-<li>Political policies, particularly in China, had a profound impact on the development of the semiconductor industry.</li>
-<li>Taiwan and China’s approaches to technology and semiconductor development were markedly different.</li>
-<li>The founding of TSMC and Huawei represented different strategies in technology adoption and development.</li>
-<li>Taiwan’s semiconductor success was aided by its connection to global tech companies and educated engineers.</li>
-<li>China’s initial backwardness in technology was a result of its isolationist policies and political turmoil.</li>
-<li>The Chinese government’s late realization of the importance of semiconductors changed its approach to technology.</li>
-<li>Taiwan leveraged its skilled workforce and international connections to excel in semiconductor manufacturing.</li>
-<li>The Cultural Revolution in China severely hampered technological progress, particularly in the semiconductor industry.</li>
-</ol>
-</section>
-<section id="facts-1" class="level3">
-<h3 class="anchored" data-anchor-id="facts-1">Facts</h3>
-<ol type="1">
-<li>TSMC was founded in Taiwan in 1987 by Morris Chang.</li>
-<li>Huawei, a major telecommunications company, was established in China in 1987 by Ren Zhengfei.</li>
-<li>Taiwan’s success in the semiconductor industry is partly due to its skilled engineers educated at top universities like Stanford and Berkeley.</li>
-<li>China’s semiconductor industry lagged due to its political and economic isolation.</li>
-<li>The Chinese government, under Jiang Zemin, identified electronics as a priority in the 1980s.</li>
-<li>China’s technological capabilities in the 1980s were over a decade behind the global cutting edge.</li>
-<li>Mao Zedong’s policies, especially the Cultural Revolution, hindered China’s technological advancement.</li>
-<li>Taiwan’s economic strategies significantly differed from China’s, leading to a more advanced semiconductor industry.</li>
-<li>The development of the semiconductor industry in East Asia was heavily influenced by political decisions and global economics.</li>
-<li>Deng Xiaoping’s policy changes in the late 1970s marked a shift towards modernization in China, impacting its technological development.</li>
-</ol>
-</section>
-<section id="recommendations" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations">Recommendations</h3>
-<ol type="1">
-<li>Study the history of Taiwan’s semiconductor industry to understand its success.</li>
-<li>Examine the impact of China’s political policies on its technological development.</li>
-<li>Understand the significance of key figures like Morris Chang and Ren Zhengfei in the tech industry.</li>
-<li>Consider the role of education and global connections in technological advancement.</li>
-<li>Analyze the effects of political turmoil, like the Cultural Revolution, on scientific progress.</li>
-<li>Explore how national policies can drastically impact technological industries.</li>
-<li>Recognize the strategic importance of the semiconductor industry in global power dynamics.</li>
-<li>Consider the implications of global economic forces on technological development and national policies.</li>
-<li>Observe how late policy shifts, like those under Deng Xiaoping, can transform a country’s technological landscape.</li>
-<li>Understand the pivotal role of semiconductors in modern technology and global politics.</li>
-</ol>
-</section>
-</section>
-<section id="sharing-gods-love-with-the-chinese" class="level2">
-<h2 class="anchored" data-anchor-id="sharing-gods-love-with-the-chinese">“Sharing God’s Love With the Chinese”</h2>
-<p>Chapter 31 focuses on Richard Chang’s efforts to establish a semiconductor industry in China, contrasting the different approaches and challenges faced by East Asian countries in semiconductor production. It highlights the geopolitical and economic shifts in chip fabrication, detailing the roles of TSMC, Huawei, and other major players in shaping the industry.</p>
-<section id="ideas-2" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-2">Ideas</h3>
-<ol type="1">
-<li>Richard Chang’s vision for semiconductor manufacturing in China was driven by a mix of personal conviction and economic strategy.</li>
-<li>The global geography of chip fabrication shifted significantly from the 1990s to the 2000s, with East Asian countries becoming more prominent.</li>
-<li>U.S. dominance in chip production declined over two decades, while Asian countries increased their market share.</li>
-<li>The growth of the semiconductor industry in countries like South Korea, Singapore, and Taiwan was fueled by government investment and strategic partnerships.</li>
-<li>China’s approach to building a semiconductor industry included a mix of government subsidies, foreign investment, and technology transfer attempts.</li>
-<li>The complexity and cost of semiconductor production require significant financial backing and technological expertise.</li>
-<li>Samsung’s success in the memory chip market illustrates the competitive nature of the semiconductor industry.</li>
-<li>The semiconductor industry’s evolution reflects broader trends in globalization and technological advancement.</li>
-<li>The entry of China into semiconductor manufacturing marked a significant shift in the global tech landscape.</li>
-<li>Political and economic decisions play a crucial role in shaping the semiconductor industry.</li>
-</ol>
-</section>
-<section id="facts-2" class="level3">
-<h3 class="anchored" data-anchor-id="facts-2">Facts</h3>
-<ol type="1">
-<li>Richard Chang played a pivotal role in establishing China’s semiconductor industry.</li>
-<li>The U.S. share of global chip production declined from 37% in 1990 to 13% in 2010.</li>
-<li>Asian countries, particularly South Korea, Singapore, and Taiwan, increased their chip production significantly.</li>
-<li>Samsung became the world leader in memory chip production in 1992.</li>
-<li>The semiconductor industry requires substantial investment and often relies on government support.</li>
-<li>China’s chip manufacturing capabilities in the 1990s were significantly behind those of Taiwan and South Korea.</li>
-<li>SMIC, founded by Richard Chang, received substantial investment from both Chinese and international sources, including U.S. investors.</li>
-<li>The development of China’s semiconductor industry involved significant technology transfer and overseas hiring.</li>
-<li>SMIC’s strategy mirrored that of TSMC, focusing on hiring skilled engineers and acquiring the best available tools.</li>
-<li>The semiconductor industry’s growth is intertwined with the rise of smartphones and fabless semiconductor designers.</li>
-</ol>
-</section>
-<section id="recommendations-1" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-1">Recommendations</h3>
-<ol type="1">
-<li>Examine the strategic importance of semiconductor technology in national economies.</li>
-<li>Analyze the impact of government policies and subsidies on the semiconductor industry.</li>
-<li>Consider the role of key individuals like Richard Chang in shaping the semiconductor landscape.</li>
-<li>Study the competitive dynamics of the semiconductor market, including the DRAM sector.</li>
-<li>Observe the impact of globalization on the semiconductor industry.</li>
-<li>Understand the technological and financial challenges in semiconductor manufacturing.</li>
-<li>Recognize the significance of semiconductor technology in the rise of smartphones and modern devices.</li>
-<li>Explore the role of international collaboration and investment in semiconductor industry growth.</li>
-<li>Assess the geopolitical implications of the semiconductor industry’s development in East Asia.</li>
-<li>Reflect on the broader economic and technological trends influencing the semiconductor industry.</li>
-</ol>
-</section>
-</section>
-<section id="lithography-wars" class="level2">
-<h2 class="anchored" data-anchor-id="lithography-wars">Lithography Wars</h2>
-<p>Chapter 32 discusses the technological and financial challenges Intel faced in developing extreme ultraviolet (EUV) lithography. It narrates John Carruthers’ quest for funding from Intel CEO Andy Grove and the strategic decisions that led to ASML becoming the dominant player in the EUV lithography market, highlighting the geopolitical implications of these developments.</p>
-<section id="ideas-3" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-3">Ideas</h3>
-<ol type="1">
-<li>The development of EUV lithography was a significant technological challenge, requiring substantial investment and innovation.</li>
-<li>Intel’s commitment to Moore’s Law drove its investment in advanced lithography technologies.</li>
-<li>The shift from deep ultraviolet to EUV lithography was essential for maintaining the pace of semiconductor miniaturization.</li>
-<li>The lithography industry experienced a period of intense competition and technological experimentation.</li>
-<li>ASML’s rise as a dominant player in the lithography market illustrates the importance of strategic partnerships and global supply chains.</li>
-<li>The semiconductor industry’s evolution reflects broader trends in globalization, technological advancement, and corporate strategy.</li>
-<li>The decline of U.S. dominance in lithography equipment manufacturing had significant geopolitical implications.</li>
-<li>The collaboration between ASML and TSMC was pivotal in advancing semiconductor technology.</li>
-<li>The concentration of advanced lithography technology in a few companies raised concerns about supply chain security and technological sovereignty.</li>
-<li>Intel’s funding decisions reflected the complex interplay of science, business, and politics in the semiconductor industry.</li>
-</ol>
-</section>
-<section id="facts-3" class="level3">
-<h3 class="anchored" data-anchor-id="facts-3">Facts</h3>
-<ol type="1">
-<li>Intel invested heavily in developing EUV lithography, a key technology for semiconductor manufacturing.</li>
-<li>By 1992, Intel had regained its position as the world’s biggest chipmaker.</li>
-<li>The shift from deep ultraviolet to EUV lithography was critical for producing smaller and more efficient semiconductors.</li>
-<li>ASML, a Dutch company, emerged as a key player in the advanced lithography market.</li>
-<li>The development of EUV lithography required global collaboration and significant financial investment.</li>
-<li>U.S. chipmakers lost their dominance in lithography tool manufacturing to international competitors.</li>
-<li>The U.S. government’s policy decisions influenced the development and export of lithography technology.</li>
-<li>The concentration of lithography technology in a few companies raised concerns about global supply chain security.</li>
-<li>The collaboration between ASML and TSMC was crucial for advancing semiconductor technology.</li>
-<li>The development of EUV lithography involved challenges in engineering, business, and geopolitics.</li>
-</ol>
-</section>
-<section id="recommendations-2" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-2">Recommendations</h3>
-<ol type="1">
-<li>Explore the strategic importance of advanced lithography technology in semiconductor manufacturing.</li>
-<li>Analyze the impact of corporate investment and government policies on technological innovation.</li>
-<li>Study the evolution of the lithography industry and the rise of companies like ASML.</li>
-<li>Consider the geopolitical implications of shifts in technological leadership and supply chain control.</li>
-<li>Understand the importance of international collaboration in advancing semiconductor technology.</li>
-<li>Reflect on the role of technological sovereignty and supply chain security in global technology development.</li>
-<li>Examine the challenges and opportunities presented by the globalization of the semiconductor industry.</li>
-<li>Recognize the importance of strategic partnerships, like that between ASML and TSMC, in technological advancement.</li>
-<li>Investigate the impact of financial investment and research and development on technological progress.</li>
-<li>Consider the long-term implications of the “lithography wars” on the global semiconductor industry.</li>
-</ol>
-</section>
-</section>
-<section id="the-innovators-dilemma" class="level2">
-<h2 class="anchored" data-anchor-id="the-innovators-dilemma">The Innovator’s Dilemma</h2>
-<p>Chapter 33 explores Intel’s strategic decisions and missed opportunities in the semiconductor industry. It highlights the contrast between Intel’s focus on x86 architecture for PCs and servers and the rise of mobile devices. The chapter illustrates how Intel’s prioritization of profit margins and its reluctance to embrace new technologies like ARM architecture led to missed opportunities in the rapidly evolving mobile market, exemplified by Intel’s decision to decline Apple’s iPhone chip contract.</p>
-<section id="ideas-4" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-4">Ideas</h3>
-<ol type="1">
-<li><strong>Intel’s Business Strategy and x86 Architecture</strong>: The heavy influence of Intel’s commitment to x86 architecture and high profit margins on its business strategy.</li>
-<li><strong>Missed Opportunities in Mobile Markets</strong>: Intel’s focus on PCs and servers leading to overlooked opportunities in the burgeoning mobile device sector.</li>
-<li><strong>Short-term Financial Goals vs.&nbsp;Long-term Innovation</strong>: The prioritization of short-term financial goals over long-term technological innovation under CEO Paul Otellini.</li>
-<li><strong>Shift from Engineering to Management-Driven Decisions</strong>: The transition at Intel impacting its adaptability to new market trends.</li>
-<li><strong>Strategic Misstep with Apple’s iPhone</strong>: Intel’s significant strategic error in declining to produce chips for Apple’s iPhone.</li>
-<li><strong>Underestimating Mobile Market Growth</strong>: The failure to recognize the rapid growth and importance of the mobile market in the semiconductor industry.</li>
-<li><strong>Cultural Shift Impacting Market Position</strong>: The shift from engineering innovation to financial management within Intel and its profound market implications.</li>
-<li><strong>The Innovator’s Dilemma in Intel’s Context</strong>: The challenges established companies like Intel face in adapting to technological shifts.</li>
-<li><strong>Conservative Approach to Innovation Risks</strong>: The risks of Intel’s conservative approach to innovation in a rapidly evolving industry.</li>
-<li><strong>Paradigm Shift in Semiconductor Industry</strong>: The rise of mobile computing representing a paradigm shift that Intel was slow to recognize and capitalize on.</li>
-</ol>
-</section>
-<section id="facts-4" class="level3">
-<h3 class="anchored" data-anchor-id="facts-4">Facts</h3>
-<ol type="1">
-<li>Intel’s dominance in the PC and server chip market was heavily reliant on its x86 architecture.</li>
-<li>Intel’s leadership, especially under CEO Paul Otellini, focused more on financial management than engineering innovation.</li>
-<li>Intel missed the opportunity to produce chips for Apple’s iPhone, which later proved to be a significant market.</li>
-<li>ARM architecture, which Intel had considered but rejected, became dominant in the mobile device market.</li>
-<li>Intel’s conservative approach to innovation led to missed opportunities in the rapidly evolving semiconductor industry.</li>
-<li>The rise of mobile devices represented a major shift in the semiconductor industry, which Intel was slow to adapt to.</li>
-<li>Intel’s focus on maintaining high profit margins influenced its reluctance to invest in new technologies.</li>
-<li>The partnership between Intel and Apple for Mac computers was a notable success, but did not extend to mobile devices.</li>
-<li>Intel’s market position was challenged by its conservative approach to embracing new market trends and technologies.</li>
-<li>The semiconductor industry’s evolution required companies to be agile and forward-thinking, a challenge for Intel’s traditional business</li>
-</ol>
-<p>strategy.</p>
-</section>
-<section id="recommendations-3" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-3">Recommendations</h3>
-<ol type="1">
-<li>Study the impact of corporate culture on a company’s ability to innovate and adapt to new market trends.</li>
-<li>Explore the strategic implications of focusing on traditional profitable lines versus investing in emerging technologies.</li>
-<li>Understand the importance of agile decision-making in rapidly evolving industries like the semiconductor market.</li>
-<li>Analyze the impact of leadership styles on a company’s technological and market position.</li>
-<li>Consider the risks and opportunities associated with the innovator’s dilemma in technology companies.</li>
-<li>Examine the evolution of the semiconductor industry, particularly the shift towards mobile computing.</li>
-<li>Reflect on the strategic decisions of companies like Intel and Apple and their long-term market implications.</li>
-<li>Investigate the importance of technological adaptability in maintaining market leadership in the semiconductor industry.</li>
-<li>Assess the influence of technological trends, such as ARM architecture, on the global semiconductor market.</li>
-<li>Explore the role of strategic partnerships in shaping a company’s position in the technology industry.</li>
-</ol>
-</section>
-</section>
-<section id="running-faster" class="level2">
-<h2 class="anchored" data-anchor-id="running-faster">Running Faster?</h2>
-<p>Chapter 34 focuses on Andy Grove’s perspective on offshoring in the semiconductor industry. It details Grove’s concerns about the offshoring of advanced manufacturing jobs and the U.S.’s diminishing role in semiconductor manufacturing. The chapter highlights the strategic and geopolitical implications of these trends, with a particular focus on the rise of China’s semiconductor capabilities and the U.S.’s reliance on foreign manufacturing.</p>
-<section id="ideas-5" class="level3">
-<h3 class="anchored" data-anchor-id="ideas-5">Ideas</h3>
-<ol type="1">
-<li><strong>Grove’s Concerns About Offshoring</strong>: Andy Grove’s worries about the risks of losing domestic advanced manufacturing capabilities.</li>
-<li><strong>Shift of Manufacturing to Asia</strong>: The relocation of semiconductor manufacturing from the U.S. to Asia, particularly China and Taiwan, and its strategic and economic implications.</li>
-<li><strong>Globalization in High-Tech Industries</strong>: Reflection on the broader implications of globalization in the high-tech sector.</li>
-<li><strong>Importance of Domestic Manufacturing</strong>: Grove’s emphasis on the necessity of a strong domestic manufacturing base for strategic industries.</li>
-<li><strong>Rise of China’s Semiconductor Industry</strong>: The significant shift in global technological dynamics marked by the development of China’s semiconductor sector.</li>
-<li><strong>U.S. Policies Impacting the Industry</strong>: How U.S. government policies on technology exports and trade shaped the semiconductor industry.</li>
-<li><strong>Contrast in Manufacturing Approaches</strong>: The differences between the U.S. and China’s strategies in semiconductor manufacturing, highlighting diverse economic and strategic priorities.</li>
-<li><strong>Grove’s Skepticism of Offshoring</strong>: Challenge to the prevailing views on the long-term benefits of offshoring.</li>
-<li><strong>Risks in Global Supply Chains</strong>: The dependence on key facilities in Taiwan for chip manufacturing and its risks to global supply chains.</li>
-<li><strong>Balancing Economic Efficiency and Strategy</strong>: The complexities of aligning economic efficiency with strategic considerations in global manufacturing.</li>
-</ol>
-</section>
-<section id="facts-5" class="level3">
-<h3 class="anchored" data-anchor-id="facts-5">Facts</h3>
-<ol type="1">
-<li>Andy Grove was a key figure at Intel and had concerns about the impact of offshoring on U.S. manufacturing.</li>
-<li>The shift in semiconductor manufacturing from the U.S. to Asia, particularly to China, was significant.</li>
-<li>The rise of China’s semiconductor industry, including companies like SMIC, indicated a major shift in global technology dynamics.</li>
-<li>The U.S. government’s approach to technology exports and trade agreements played a role in the semiconductor industry’s globalization.</li>
-<li>The reliance on a few facilities in Taiwan for semiconductor manufacturing created vulnerabilities in global supply chains.</li>
-<li>The chapter discusses the economic and strategic implications of offshoring in high-tech industries.</li>
-<li>Andy Grove’s perspective challenges the prevailing attitudes toward globalization in the semiconductor industry.</li>
-<li>The U.S.’s position in the global semiconductor industry was changing, with potential implications for its technological leadership.</li>
-<li>The debate over technology exports from the U.S. highlighted tensions between economic interests and national security.</li>
-<li>The narrative illustrates the complexities and risks associated with the global semiconductor supply chain.</li>
-</ol>
-</section>
-<section id="recommendations-4" class="level3">
-<h3 class="anchored" data-anchor-id="recommendations-4">Recommendations</h3>
-<ol type="1">
-<li>Consider the strategic importance of maintaining domestic manufacturing capabilities in critical industries.</li>
-<li>Analyze the impact of globalization on high-tech industries, particularly semiconductor manufacturing.</li>
-<li>Reflect on the implications of the U.S.’s diminishing role in semiconductor manufacturing for its technological leadership.</li>
-<li>Explore the contrasting approaches of the U.S. and China in the semiconductor industry and their economic and strategic outcomes.</li>
-<li>Examine the vulnerabilities created by global semiconductor supply chains and the reliance on a few key manufacturing locations.</li>
-<li>Debate the merits and risks of offshoring in the context of national security and economic resilience.</li>
-<li>Assess the long-term impacts of the U.S.’s policies on technology exports and trade agreements in the semiconductor industry.</li>
-<li>Investigate the changing landscape of the global semiconductor industry and the evolving position of the U.S. within it.</li>
-<li>Evaluate the perspectives and predictions of industry figures like Andy Grove on the future of manufacturing and innovation.</li>
-<li>Study the balance between economic efficiency and strategic considerations in global manufacturing decisions.</li>
-</ol>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>history</category>
-  <guid>christianjmills.com/posts/chip-war-book-notes/part-5/</guid>
   <pubDate>Tue, 21 Nov 2023 08:00:00 GMT</pubDate>
   <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
