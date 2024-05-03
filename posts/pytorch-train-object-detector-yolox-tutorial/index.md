@@ -1,11 +1,16 @@
 ---
 title: "Training YOLOX Models for Real-Time Object Detection in PyTorch"
 date: 2023-8-21
+date-modified: last-modified
 image: /images/empty.gif
 hide: false
 search_exclude: false
 categories: [pytorch, object-detection, yolox, tutorial]
 description: "Learn how to train YOLOX models for real-time object detection in PyTorch by creating a hand gesture detection model."
+
+aliases:
+- /posts/icevision-openvino-unity-tutorial/part-1/
+
 
 twitter-card:
   creator: "@cdotjdotmills"
@@ -19,10 +24,10 @@ open-graph:
 
 ::: {.callout-tip}
 ## This post is part of the following series:
-* [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
+[**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
 :::
 
-  
+
 
 
 * [Introduction](#introduction)
@@ -40,7 +45,7 @@ open-graph:
 
 ## Introduction
 
-Welcome to this hands-on guide to training real-time object detection models in [PyTorch](https://pytorch.org/)! Object detectors can identify and locate multiple objects within images and videos, allowing you to quantify them and track their location. The [YOLOX](https://arxiv.org/abs/2107.08430) model we'll use is fast and accurate, making it well-suited for real-time applications.
+Welcome to this hands-on guide to training real-time object detection models in [PyTorch](https://pytorch.org/). Object detectors can identify and locate multiple objects within images and videos, allowing you to quantify them and track their location. The [YOLOX](https://arxiv.org/abs/2107.08430) model we'll use is fast and accurate, making it well-suited for real-time applications.
 
 In this tutorial, we create a hand gesture detector that identifies and locates various hand gestures within images. Real-time gesture detection has many applications ranging from human-computer interaction and sign-language interpretation to augmented reality and interactive gaming experiences. 
 
@@ -54,23 +59,21 @@ This tutorial is suitable for anyone with rudimentary PyTorch experience. If you
 
 
 
-::: {.callout-note title="Update: October 4, 2023"}
-
-I updated the tutorial code for torchvision [`0.16.0`](https://github.com/pytorch/vision/releases/tag/v0.16.0).
-
-:::
-
-
-
 ## Getting Started with the Code
 
 The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), which you can run locally or in a cloud-based environment like [Google Colab](https://colab.research.google.com/). I have dedicated tutorials for those new to these platforms or who need guidance setting up:
 
-* [**Getting Started with Google Colab**](../google-colab-getting-started-tutorial/)
+::: {.callout-tip title="Setup Guides" collapse="true"}
 
-* [**Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows**](../mamba-getting-started-tutorial-windows/)
+* [**Getting Started with Google Colab**](/posts/google-colab-getting-started-tutorial/)
+
+* [**Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows**](/posts/mamba-getting-started-tutorial-windows/)
 
 
+
+:::
+
+::: {.callout-tip title="Tutorial Code" collapse="false"}
 
 | Platform     | Jupyter Notebook                                             | Utility File                                                 |
 | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -80,7 +83,11 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 
 
-::: {.callout-tip}
+:::
+
+
+
+::: {.callout-tip title='COCO Annotation Format'}
 
 I've added a notebook for training models on the [COCO dataset](https://cocodataset.org/#home) to this tutorial's GitHub repository. You can modify it to train models on other datasets that follow the COCO annotation format.
 
@@ -138,7 +145,7 @@ Next, we'll install PyTorch. Run the appropriate command for your hardware and o
 
 ``` {.bash}
 # Install PyTorch with CUDA
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 ```
 
 ## Mac
@@ -172,6 +179,8 @@ pip install torch torchvision torchaudio
 
 We also need to install some additional libraries for our project.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 | Package       | Description                                                  |
 | ------------- | ------------------------------------------------------------ |
 | `jupyter`     | An  open-source web application that allows you to create and share  documents that contain live code, equations, visualizations, and  narrative text. ([link](https://jupyter.org/)) |
@@ -187,11 +196,15 @@ We also need to install some additional libraries for our project.
 
 
 
+:::
+
+
+
 Run the following commands to install these additional libraries:
 
 ```bash
 # Install additional dependencies
-pip install distinctipy jupyter matplotlib pandas pillow torchtnt tqdm
+pip install distinctipy jupyter matplotlib pandas pillow torchtnt==0.2.0 tqdm
 # Install extra dependencies for pandas
 pip install tabulate pyarrow fastparquet
 ```
@@ -206,7 +219,7 @@ Walking through the code for the YOLOX model and the code for computing loss val
 
 We'll also install some additional packages I made to help us handle images, interact with PyTorch, and work with Pandas DataFrames. These utility packages provide shortcuts for routine tasks and keep our code clean and readable.
 
-
+::: {.callout-note title="Package Descriptions" collapse="true"}
 
 | Package                | Description                                                  |
 | ---------------------- | ------------------------------------------------------------ |
@@ -216,6 +229,10 @@ We'll also install some additional packages I made to help us handle images, int
 | `cjm_pytorch_utils`    | Some utility functions for working with PyTorch. ([link](https://cj-mills.github.io/cjm-pytorch-utils/)) |
 | `cjm_torchvision_tfms` | Some custom Torchvision tranforms. ([link](https://cj-mills.github.io/cjm-torchvision-tfms/)) |
 | `cjm_yolox_pytorch`    | A PyTorch implementation of the [YOLOX](https://arxiv.org/abs/2107.08430) object detection model based on [OpenMMLab](https://github.com/open-mmlab)’s implementation in the [mmdetection](https://github.com/open-mmlab/mmdetection) library. ([link](https://cj-mills.github.io/cjm-yolox-pytorch/)) |
+
+
+
+:::
 
 Run the following commands to install the utility packages:
 
@@ -233,7 +250,7 @@ pip install cjm_pandas_utils cjm_pil_utils cjm_psl_utils cjm_pytorch_utils cjm_t
 
 ## Importing the Required Dependencies
 
-With our environment set up, let's dive into the code. First, we will import the necessary Python packages into our Jupyter Notebook.
+With our environment set up, let’s dive into the code. First, we will import the necessary Python packages into our Jupyter Notebook.
 
 
 ```python
@@ -247,14 +264,13 @@ import multiprocessing
 import os
 from pathlib import Path
 import random
-from typing import Any, Dict, Optional
 
 # Import utility functions
-from cjm_psl_utils.core import download_file, file_extract, get_source_code
+from cjm_psl_utils.core import download_file, file_extract
 from cjm_pil_utils.core import resize_img, get_img_files, stack_imgs
-from cjm_pytorch_utils.core import pil_to_tensor, tensor_to_pil, get_torch_device, set_seed, denorm_img_tensor
+from cjm_pytorch_utils.core import tensor_to_pil, get_torch_device, set_seed, denorm_img_tensor
 from cjm_pandas_utils.core import markdown_to_pandas, convert_to_numeric, convert_to_string
-from cjm_torchvision_tfms.core import ResizeMax, PadSquare, CustomRandomIoUCrop
+from cjm_torchvision_tfms.core import ResizeMax, PadSquare, CustomRandomIoUCrop, CustomRandomAugment
 
 # Import YOLOX package
 from cjm_yolox_pytorch.model import build_model, MODEL_CFGS, NORM_STATS
@@ -274,10 +290,8 @@ import numpy as np
 # Import the pandas package
 import pandas as pd
 
-# Set options for Pandas DataFrame display
-pd.set_option('max_colwidth', None)  # Do not truncate the contents of cells in the DataFrame
-pd.set_option('display.max_rows', None)  # Display all rows in the DataFrame
-pd.set_option('display.max_columns', None)  # Display all columns in the DataFrame
+# Do not truncate the contents of cells and display all rows and columns
+pd.set_option('max_colwidth', None, 'display.max_rows', None, 'display.max_columns', None)
 
 # Import PIL for image manipulation
 from PIL import Image
@@ -290,6 +304,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchtnt.utils import get_module_summary
+
+# Import torchvision dependencies
 import torchvision
 torchvision.disable_beta_transforms_warning()
 from torchvision.tv_tensors import BoundingBoxes
@@ -305,13 +321,11 @@ from tqdm.auto import tqdm
 
 ## Setting Up the Project
 
-In this section, we set up some basics for our project, such as initializing random number generators, setting the PyTorch device to run the model, and preparing the folders for our project and datasets.
-
-
+In this section, we set up some basics for our project, such as  initializing random number generators, setting the PyTorch device to run the model, and preparing the folders for our project and datasets.
 
 ### Setting a Random Number Seed
 
-First, we set the seed for generating random numbers using the [set_seed](https://cj-mills.github.io/cjm-pytorch-utils/core.html#set_seed) function from the `cjm_pytorch_utils` package.
+First, we set the seed for generating random numbers using the [`set_seed`](https://cj-mills.github.io/cjm-pytorch-utils/core.html#set_seed) function from the `cjm_pytorch_utils` package.
 
 
 ```python
@@ -320,11 +334,9 @@ seed = 1234
 set_seed(seed)
 ```
 
-
-
 ### Setting the Device and Data Type
 
-Next, we determine the device to use for training and set the data type of our tensors using the [get_torch_device](https://cj-mills.github.io/cjm-pytorch-utils/core.html#get_torch_device) function from the `cjm_pytorch_utils` package.
+Next, we determine the device to use for training and set the data type of our tensors using the [`get_torch_device`](https://cj-mills.github.io/cjm-pytorch-utils/core.html#get_torch_device) function from the `cjm_pytorch_utils` package.
 
 
 ```python
@@ -342,13 +354,9 @@ device, dtype
 
 ### Setting the Directory Paths
 
-We can then set up a directory for our project to store our results and other related files. The following code creates the folder in the current directory (`./`). Update the path if that is not suitable for you.
+We can then set up a directory for our project to store our results  and other related files. The following code creates the folder in the  current directory (`./`). Update the path if that is not suitable for you.
 
-
-
-We also need a place to store our datasets and a location to download the zip file containing the dataset. Readers following the tutorial on their local machine should select locations with read and write access to store archive files and datasets. For a cloud service like Google Colab, you can set it to the current directory.
-
-
+We also need a place to store our datasets and a location to download the zip file containing the dataset. Readers following the tutorial on  their local machine should select locations with read and write access  to store archive files and datasets. For a cloud service like Google  Colab, you can set it to the current directory.
 
 
 ```python
@@ -379,46 +387,40 @@ pd.Series({
 ```
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_574bb">
+<table id="T_47dc1">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_574bb_level0_row0" class="row_heading level0 row0" >Project Directory:</th>
-      <td id="T_574bb_row0_col0" class="data row0 col0" >pytorch-yolox-object-detector</td>
+      <th id="T_47dc1_level0_row0" class="row_heading level0 row0" >Project Directory:</th>
+      <td id="T_47dc1_row0_col0" class="data row0 col0" >pytorch-yolox-object-detector</td>
     </tr>
     <tr>
-      <th id="T_574bb_level0_row1" class="row_heading level0 row1" >Dataset Directory:</th>
-      <td id="T_574bb_row1_col0" class="data row1 col0" >/mnt/980_1TB_2/Datasets</td>
+      <th id="T_47dc1_level0_row1" class="row_heading level0 row1" >Dataset Directory:</th>
+      <td id="T_47dc1_row1_col0" class="data row1 col0" >/mnt/980_1TB_2/Datasets</td>
     </tr>
     <tr>
-      <th id="T_574bb_level0_row2" class="row_heading level0 row2" >Archive Directory:</th>
-      <td id="T_574bb_row2_col0" class="data row2 col0" >/mnt/980_1TB_2/Datasets/../Archive</td>
+      <th id="T_47dc1_level0_row2" class="row_heading level0 row2" >Archive Directory:</th>
+      <td id="T_47dc1_row2_col0" class="data row2 col0" >/mnt/980_1TB_2/Datasets/../Archive</td>
     </tr>
   </tbody>
 </table>
 </div>
-
-
-Double-check the project and dataset directories exist in the specified paths and that you can add files to them before continuing. At this point, our project is set up and ready to go. In the next section, we will download and explore the dataset.
+Double-check the project and dataset directories exist in the specified  paths and that you can add files to them before continuing. At this  point, our project is set up and ready to go. In the next section, we  will download and explore the dataset.
 
 
 
 ## Loading and Exploring the Dataset
 
-Now that we set up the project, we can start working with our dataset. The dataset is a downscaled subset of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset), which contains 18 distinct hand gestures and an additional `no_gesture` class for idle hands. 
+Now that we set up the project, we can start working with our dataset. The dataset is a downscaled subset of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset), which contains 18 distinct hand gestures and an additional `no_gesture` class for idle hands.
 
-I made four subsets of different sizes available on Hugging Face Hub. The most compact subset of the dataset is approximately 1 GB, with 31,833 samples. You will need about 2 GB to store the archive file and extracted dataset.
+I made four subsets of different sizes available on Hugging Face Hub. The most compact subset of the dataset is approximately 1 GB, with  31,833 samples. You will need about 2 GB to store the archive file and  extracted dataset.
 
-
-
-We will download and access the dataset directly rather than through Hugging Face's [Datasets](https://huggingface.co/docs/datasets/index) library. 
-
-
+We will download and access the dataset directly rather than through Hugging Face’s [Datasets](https://huggingface.co/docs/datasets/index) library.
 
 ### Setting the Dataset Path
 
-We first need to construct the name for the chosen Hugging Face Hub dataset and define where to download and extract the dataset.
+We first need to construct the name for the chosen Hugging Face Hub  dataset and define where to download and extract the dataset.
 
 
 ```python
@@ -445,21 +447,21 @@ pd.Series({
 ```
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_52612">
+<table id="T_fffb6">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_52612_level0_row0" class="row_heading level0 row0" >HuggingFace Dataset:</th>
-      <td id="T_52612_row0_col0" class="data row0 col0" >cj-mills/hagrid-sample-30k-384p</td>
+      <th id="T_fffb6_level0_row0" class="row_heading level0 row0" >HuggingFace Dataset:</th>
+      <td id="T_fffb6_row0_col0" class="data row0 col0" >cj-mills/hagrid-sample-30k-384p</td>
     </tr>
     <tr>
-      <th id="T_52612_level0_row1" class="row_heading level0 row1" >Archive Path:</th>
-      <td id="T_52612_row1_col0" class="data row1 col0" >/mnt/980_1TB_2/Datasets/../Archive/hagrid-sample-30k-384p.zip</td>
+      <th id="T_fffb6_level0_row1" class="row_heading level0 row1" >Archive Path:</th>
+      <td id="T_fffb6_row1_col0" class="data row1 col0" >/mnt/980_1TB_2/Datasets/../Archive/hagrid-sample-30k-384p.zip</td>
     </tr>
     <tr>
-      <th id="T_52612_level0_row2" class="row_heading level0 row2" >Dataset Path:</th>
-      <td id="T_52612_row2_col0" class="data row2 col0" >/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p</td>
+      <th id="T_fffb6_level0_row2" class="row_heading level0 row2" >Dataset Path:</th>
+      <td id="T_fffb6_row2_col0" class="data row2 col0" >/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p</td>
     </tr>
   </tbody>
 </table>
@@ -499,7 +501,7 @@ else:
 
 ### Getting the Image and Annotation Folders
 
-The dataset has two folders containing the sample images and annotation files. The image folder organizes samples for each gesture class into separate subfolders. Each image subfolder has a corresponding JSON annotation file.
+The dataset has two folders containing the sample images and  annotation files. The image folder organizes samples for each gesture  class into separate subfolders. Each image subfolder has a corresponding JSON annotation file.
 
 
 ```python
@@ -642,7 +644,7 @@ Image Directory: /mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k
 
 ### Get Image File Paths
 
-Each image file has a unique name that we can use to locate the corresponding annotation data. Let's make a dictionary that maps image names to file paths. The dictionary will allow us to retrieve the file path for a given image more efficiently.
+Each image file has a unique name that we can use to locate the  corresponding annotation data. Let’s make a dictionary that maps image  names to file paths. The dictionary will allow us to retrieve the file  path for a given image more efficiently.
 
 
 ```python
@@ -700,7 +702,7 @@ Number of Images: 31833
 
 ### Get Bounding Box Annotations
 
-Next, we read the contents of the JSON annotation files into a Pandas DataFrame so we can easily query the annotations. Reading each JSON file can be slow, so I added a [parquet](https://parquet.apache.org/) file with a premade annotation DataFrame.
+Next, we read the contents of the JSON annotation files into a Pandas DataFrame so we can easily query the annotations. Reading each JSON  file can be slow, so I added a [parquet](https://parquet.apache.org/) file with a premade annotation DataFrame.
 
 
 ```python
@@ -726,8 +728,6 @@ else:
 # Print the first 5 rows of the DataFrame
 annotation_df.head()
 ```
-
-
 <div style="overflow-x:auto; max-height:500px">
 <table border="1" class="dataframe">
   <thead>
@@ -784,29 +784,28 @@ annotation_df.head()
   </tbody>
 </table>
 </div>
-
-
 ::: {.callout-note}
 Note that one of the samples contains a `no_gesture` label to identify an idle hand in the image.
 :::
 
 
 
-
 ### Inspecting the Class Distribution
 
-Now that we have the annotation data, we can get the unique class names and inspect the distribution of samples among the gesture classes.
+Now that we have the annotation data, we can get the unique class  names and inspect the distribution of samples among the gesture classes.
 
 #### Get image classes
 
 
 ```python
-# Get a list of unique labels in the 'annotation_df' DataFrame
-class_names = annotation_df['labels'].explode().unique().tolist()
-class_names.sort()
+# Get the number of samples for each object class
+class_counts = annotation_df['labels'].explode().value_counts()
 
-# Display labels using a Pandas DataFrame
-pd.DataFrame(class_names)
+# Get a list of unique labels in the 'annotation_df' DataFrame
+class_names = class_counts.index.tolist()
+
+# Display the labels and the corresponding number of samples using a Pandas DataFrame
+pd.DataFrame(class_counts)
 ```
 
 
@@ -815,85 +814,89 @@ pd.DataFrame(class_names)
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>0</th>
+      <th>count</th>
+    </tr>
+    <tr>
+      <th>labels</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
-      <td>call</td>
+      <th>no_gesture</th>
+      <td>7052</td>
     </tr>
     <tr>
-      <th>1</th>
-      <td>dislike</td>
+      <th>two_up</th>
+      <td>1855</td>
     </tr>
     <tr>
-      <th>2</th>
-      <td>fist</td>
+      <th>mute</th>
+      <td>1811</td>
     </tr>
     <tr>
-      <th>3</th>
-      <td>four</td>
+      <th>four</th>
+      <td>1805</td>
     </tr>
     <tr>
-      <th>4</th>
-      <td>like</td>
+      <th>stop_inverted</th>
+      <td>1803</td>
     </tr>
     <tr>
-      <th>5</th>
-      <td>mute</td>
+      <th>dislike</th>
+      <td>1783</td>
     </tr>
     <tr>
-      <th>6</th>
-      <td>no_gesture</td>
+      <th>one</th>
+      <td>1778</td>
     </tr>
     <tr>
-      <th>7</th>
-      <td>ok</td>
+      <th>palm</th>
+      <td>1770</td>
     </tr>
     <tr>
-      <th>8</th>
-      <td>one</td>
+      <th>peace</th>
+      <td>1769</td>
     </tr>
     <tr>
-      <th>9</th>
-      <td>palm</td>
+      <th>two_up_inverted</th>
+      <td>1765</td>
     </tr>
     <tr>
-      <th>10</th>
-      <td>peace</td>
+      <th>call</th>
+      <td>1763</td>
     </tr>
     <tr>
-      <th>11</th>
-      <td>peace_inverted</td>
+      <th>three</th>
+      <td>1751</td>
     </tr>
     <tr>
-      <th>12</th>
-      <td>rock</td>
+      <th>ok</th>
+      <td>1750</td>
     </tr>
     <tr>
-      <th>13</th>
-      <td>stop</td>
+      <th>stop</th>
+      <td>1748</td>
     </tr>
     <tr>
-      <th>14</th>
-      <td>stop_inverted</td>
+      <th>peace_inverted</th>
+      <td>1742</td>
     </tr>
     <tr>
-      <th>15</th>
-      <td>three</td>
+      <th>three2</th>
+      <td>1737</td>
     </tr>
     <tr>
-      <th>16</th>
-      <td>three2</td>
+      <th>rock</th>
+      <td>1736</td>
     </tr>
     <tr>
-      <th>17</th>
-      <td>two_up</td>
+      <th>fist</th>
+      <td>1734</td>
     </tr>
     <tr>
-      <th>18</th>
-      <td>two_up_inverted</td>
+      <th>like</th>
+      <td>1732</td>
     </tr>
   </tbody>
 </table>
@@ -905,19 +908,20 @@ pd.DataFrame(class_names)
 
 
 ```python
-# Get the number of samples for each object class
-class_counts = annotation_df['labels'].explode().value_counts().sort_index()
-
 # Plot the distribution
 class_counts.plot(kind='bar')
 plt.title('Class distribution')
 plt.ylabel('Count')
 plt.xlabel('Classes')
-plt.xticks(range(len(class_counts.index)), class_names, rotation=75)  # Set the x-axis tick labels
+plt.xticks(range(len(class_counts.index)), class_counts.index, rotation=75)  # Set the x-axis tick labels
 plt.show()
 ```
 
-![](./images/output_26_0.png){fig-align="center"}
+
+
+![](./images/output_27_0.png){fig-align="center"}
+
+
 
 Each class, excluding `no_gesture`, has roughly the same number of samples. There are approximately four times as many `no_gesture` samples because of the immense variety of non-matching hand positions.
 
@@ -927,11 +931,9 @@ Each class, excluding `no_gesture`, has roughly the same number of samples. Ther
 
 Lastly, we will visualize the bounding box for one of the sample images to demonstrate how to interpret the annotations.
 
-
-
 #### Generate a color map
 
-While not required, assigning a unique color to bounding boxes for each object class enhances visual distinction, allowing for easier identification of different objects in the scene. We can use the [`distinctipy`](https://distinctipy.readthedocs.io/en/latest/) package to generate a visually distinct colormap.
+While not required, assigning a unique color to bounding boxes for  each object class enhances visual distinction, allowing for easier  identification of different objects in the scene. We can use the [`distinctipy`](https://distinctipy.readthedocs.io/en/latest/) package to generate a visually distinct colormap.
 
 
 ```python
@@ -945,39 +947,37 @@ int_colors = [tuple(int(c*255) for c in color) for color in colors]
 distinctipy.color_swatch(colors)
 ```
 
-![](./images/output_29_0.png){fig-align="center"}
+
+
+![](./images/output_30_0.png){fig-align="center"}
 
 
 
 #### Download a font file
 
-The [`draw_bounding_boxes`](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html) function included with torchvision uses a pretty small font size. We can increase the font size if we use a custom font. Font files are available on sites like [Google Fonts](https://fonts.google.com/), or we can use one included with the operating system.
+The [`draw_bounding_boxes`](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html) function included with torchvision uses a pretty small font size. We  can increase the font size if we use a custom font. Font files are  available on sites like [Google Fonts](https://fonts.google.com/), or we can use one included with the operating system.
 
 
 ```python
-# Define the filename of the font file
+# Set the name of the font file
 font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
 
 # Download the font file
 download_file(f"https://fonts.gstatic.com/s/roboto/v30/{font_file}", "./")
 ```
 
-
-
 #### Define the bounding box annotation function
 
-Let's make a partial function using `draw_bounding_boxes` since we'll use the same box thickness and font each time we visualize bounding boxes.
+Let’s make a partial function using `draw_bounding_boxes` since we’ll use the same box thickness and font each time we visualize bounding boxes.
 
 
 ```python
 draw_bboxes = partial(draw_bounding_boxes, fill=False, width=2, font=font_file, font_size=25)
 ```
 
-
-
 ### Selecting a Sample Image
 
-We can use the unique ID for an image in the image dictionary to get the image's file path and the associated annotations from the annotation DataFrame.
+We can use the unique ID for an image in the image dictionary to get  the image’s file path and the associated annotations from the annotation DataFrame.
 
 #### Load the sample image
 
@@ -999,9 +999,7 @@ sample_img
 ```text
 Image Dims: (384, 512)
 ```
-
-
-![](./images/output_36_1.png){fig-align="center"}
+![](./images/output_37_1.png){fig-align="center"}
 
 
 
@@ -1047,15 +1045,13 @@ annotation_df.loc[file_id].to_frame()
   </tbody>
 </table>
 </div>
-
-
 The bounding box annotations are in the format `[top-left X, top-left Y, width, height]`. The HaGRID dataset also normalizes bounding box annotations for this dataset to the range `[0,1]` based on the image dimensions. Therefore, we need to scale the `top-left X` and `width` values by the image width and the `top-left Y` and `height` values by the image height.
 
 
 
 #### Annotate sample image
 
-The `draw_bounding_boxes` function expects bounding box annotations in `[top-left X, top-left Y, bottom-right X, bottom-right Y]` format, so we'll use the [`box_convert`](https://pytorch.org/vision/stable/generated/torchvision.ops.box_convert.html#torchvision.ops.box_convert) function included with torchvision to convert the bounding box annotations from `[x,y,w,h]` to `[x,y,x,y]` format.
+The `draw_bounding_boxes` function expects bounding box annotations in `[top-left X, top-left Y, bottom-right X, bottom-right Y]` format, so we’ll use the [`box_convert`](https://pytorch.org/vision/stable/generated/torchvision.ops.box_convert.html#torchvision.ops.box_convert) function included with torchvision to convert the bounding box annotations from `[x,y,w,h]` to `[x,y,x,y]` format.
 
 
 ```python
@@ -1078,20 +1074,17 @@ annotated_tensor = draw_bboxes(
 tensor_to_pil(annotated_tensor)
 ```
 
-![](./images/output_40_0.png){fig-align="center"}
+![](./images/output_41_0.png){fig-align="center"}
 
 
 
-We have loaded the dataset, inspected its class distribution, and visualized the bounding box annotations for a sample image. In the next section, we will select and load our model.
-
+We have loaded the dataset, inspected its class distribution, and  visualized the bounding box annotations for a sample image. In the next  section, we will select and load our model.
 
 
 
 ## Selecting a Model
 
-I provide five predefined model configurations of different sizes in the [`cjm_yolox_pytorch`](https://cj-mills.github.io/cjm-yolox-pytorch/) package. Each predefined config comes with a model checkpoint trained on the [COCO](https://cocodataset.org) (Common Objects in Context) dataset.
-
-
+I provide five predefined model configurations of different sizes in the [`cjm_yolox_pytorch`](https://cj-mills.github.io/cjm-yolox-pytorch/) package. Each predefined config comes with a model checkpoint trained on the [COCO](https://cocodataset.org/) (Common Objects in Context) dataset.
 
 ### Exploring Available Models
 
@@ -1169,9 +1162,7 @@ pd.DataFrame(MODEL_CFGS).transpose()
   </tbody>
 </table>
 </div>
-
-
-We'll go with the `yolox_tiny` configuration as it is the most efficient and sufficiently accurate on this dataset.
+We’ll go with the `yolox_tiny` configuration as it is the most efficient and sufficiently accurate on this dataset.
 
 
 
@@ -1248,7 +1239,7 @@ pd.DataFrame(norm_stats)
 
 ### Summarizing the Model
 
-Before moving on, let's generate a summary of our model to get an overview of its performance characteristics. We can use this to gauge the difference in computational requirements between the model configs.
+Before moving on, let’s generate a summary of our model to get an  overview of its performance characteristics. We can use this to gauge  the difference in computational requirements between the model configs.
 
 
 ```python
@@ -1331,10 +1322,7 @@ summary_df.drop(['In size', 'Out size', 'Contains Uninitialized Parameters?'], a
   </tbody>
 </table>
 </div>
-
-
-
-The above table shows the summary for the entire `yolox_tiny` model and the model's backbone, neck, and head individually. The model has approximately `5.1` million trainable parameters. It takes up `20.2` Megabytes of space and performs around `1.2` billion floating point operations for a single `256x256` RGB image. 
+The above table shows the summary for the entire `yolox_tiny` model and the model’s backbone, neck, and head individually. The model has approximately `5.1` million trainable parameters. It takes up `20.2` Megabytes of space and performs around `1.2` billion floating point operations for a single `256x256` RGB image.
 
 For reference, the `yolox_x` model has about `99` million trainable parameters, takes up over `395` MB, and performs around `22.5` billion floating point operations for the same input.
 
@@ -1342,18 +1330,13 @@ That completes the model selection and setup. In the next section, we will prepa
 
 
 
-
-
-
 ## Preparing the Data
 
-The data preparation involves several steps, such as applying data augmentation techniques, setting up the train-validation split for the dataset, resizing and padding the images, defining the training dataset class, and initializing DataLoaders to feed data to the model.
-
-
+The data preparation involves several steps, such as applying data  augmentation techniques, setting up the train-validation split for the  dataset, resizing and padding the images, defining the training dataset  class, and initializing DataLoaders to feed data to the model.
 
 ### Training-Validation Split
 
-Let's begin by defining the training-validation split. We'll randomly select 90% of the available samples for the training set and use the remaining 10% for the validation set.
+Let’s begin by defining the training-validation split. We’ll randomly select 90% of the available samples for the training set and use the  remaining 10% for the validation set.
 
 
 ```python
@@ -1383,17 +1366,17 @@ pd.Series({
 ```
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_475ce">
+<table id="T_5ef14">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_475ce_level0_row0" class="row_heading level0 row0" >Training Samples:</th>
-      <td id="T_475ce_row0_col0" class="data row0 col0" >28649</td>
+      <th id="T_5ef14_level0_row0" class="row_heading level0 row0" >Training Samples:</th>
+      <td id="T_5ef14_row0_col0" class="data row0 col0" >28649</td>
     </tr>
     <tr>
-      <th id="T_475ce_level0_row1" class="row_heading level0 row1" >Validation Samples:</th>
-      <td id="T_475ce_row1_col0" class="data row1 col0" >3184</td>
+      <th id="T_5ef14_level0_row1" class="row_heading level0 row1" >Validation Samples:</th>
+      <td id="T_5ef14_row1_col0" class="data row1 col0" >3184</td>
     </tr>
   </tbody>
 </table>
@@ -1402,17 +1385,18 @@ pd.Series({
 
 
 
+
 ### Data Augmentation
 
-Next, we can define what data augmentations to apply to images during training. I created a few custom image transforms to help streamline the code.
+Next, we can define what data augmentations to apply to images during training. I created a few custom image transforms to help streamline  the code.
 
-The [first](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#customrandomioucrop) extends torchvision's [`RandomIoUCrop`](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.RandomIoUCrop.html#torchvision.transforms.v2.RandomIoUCrop) transform to give the user more control over how much it crops into bounding box areas. The [second](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#resizemax) resizes images based on their largest dimension rather than their smallest. The [third](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#padsquare) applies square padding and allows the padding to be applied equally on both sides or randomly split between the two sides.
+The [first](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#customrandomaugment) mimics the [TrivialAugmentWide](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.TrivialAugmentWide.html#torchvision.transforms.v2.TrivialAugmentWide) transform available through torchvision, but supports bounding box annotations. The [second](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#customrandomioucrop) extends torchvision’s [`RandomIoUCrop`](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.RandomIoUCrop.html#torchvision.transforms.v2.RandomIoUCrop) transform to give the user more control over how much it crops into bounding box areas. The [third](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#resizemax) resizes images based on their largest dimension rather than their smallest. The [fourth](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#padsquare) applies square padding and allows the padding to be applied equally on both sides or randomly split between the two sides.
 
-All three are available through the [`cjm-torchvision-tfms`](https://cj-mills.github.io/cjm-torchvision-tfms/) package. 
+All four are available through the [`cjm-torchvision-tfms`](https://cj-mills.github.io/cjm-torchvision-tfms/) package.
 
 #### Set training image size
 
-First, we'll set the size to use for training. The [`ResizeMax`](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#resizemax) transform will resize images so that the longest dimension equals this value while preserving the aspect ratio. The [`PadSquare`](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#padsquare) transform will then pad the other side to make all the input squares. The input width and height must be multiples of the max [stride value](#loading-the-yolox-tiny-model).
+First, we’ll set the size to use for training. The [`ResizeMax`](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#resizemax) transform will resize images so that the longest dimension equals this value while preserving the aspect ratio. The [`PadSquare`](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#padsquare) transform will then pad the other side to make all the input squares. The input width and height must be multiples of the max [stride value](https://christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/#loading-the-yolox-tiny-model).
 
 
 ```python
@@ -1427,37 +1411,38 @@ train_sz = 384
 [224, 256, 288, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640]
 ```
 
-
-
 #### Initialize the transforms
 
-Now we can initialize the transform objects. The `jitter_factor` parameter for the [`CustomRandomIoUCrop`](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#customrandomioucrop) transform controls how much the center coordinates for the crop area can deviate from the center of a bounding box. Setting this to a value greater than zero allows the transform to crop into the bounding box area. We'll keep this value small as cutting into the hand gestures too much will change their meaning.
+Now we can initialize the transform objects. We will set the fill color for the transforms to black.
 
 
 ```python
+# Set the fill color as black
+fill = (0,0,0)
+
+# Create a CustomRandomAugment object
+random_aug_tfm = CustomRandomAugment()
+
 # Create a RandomIoUCrop object
 iou_crop = CustomRandomIoUCrop(min_scale=0.3, 
                                max_scale=1.0, 
                                min_aspect_ratio=0.5, 
                                max_aspect_ratio=2.0, 
                                sampler_options=[0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0],
-                               trials=400, 
-                               jitter_factor=0.25)
-```
+                               trials=400
+                              )
+iou_crop.fill = fill
 
-```python
 # Create a `ResizeMax` object
 resize_max = ResizeMax(max_sz=train_sz)
 
 # Create a `PadSquare` object
-pad_square = PadSquare(shift=True)
+pad_square = PadSquare(shift=True, fill=fill)
 ```
-
-
 
 #### Test the transforms
 
-We'll pass input through the `CustomRandomIoUCrop` transform first and then through `ResizeMax`, and `PadSquare`. We can pass the result through a final resize operation to ensure both sides match the `train_sz` value.
+We’ll pass input through the `CustomRandomIoUCrop` transform first and then through `CustomRandomAugment`, `ResizeMax`, and `PadSquare`. We can pass the result through a final resize operation to ensure both sides match the `train_sz` value.
 
 
 ```python
@@ -1470,8 +1455,11 @@ targets = {'boxes': BoundingBoxes(torchvision.ops.box_convert(torch.Tensor(bboxe
 # Crop the image
 cropped_img, targets = iou_crop(sample_img, targets)
 
+# Augment the image
+augmented_img, targets = random_aug_tfm(cropped_img, targets)
+
 # Resize the image
-resized_img, targets = resize_max(cropped_img, targets)
+resized_img, targets = resize_max(augmented_img, targets)
 
 # Pad the image
 padded_img, targets = pad_square(resized_img, targets)
@@ -1503,29 +1491,29 @@ pd.Series({
 ![](./images/output_60_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_271f1">
+<table id="T_e96df">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_271f1_level0_row0" class="row_heading level0 row0" >Source Image:</th>
-      <td id="T_271f1_row0_col0" class="data row0 col0" >(384, 512)</td>
+      <th id="T_e96df_level0_row0" class="row_heading level0 row0" >Source Image:</th>
+      <td id="T_e96df_row0_col0" class="data row0 col0" >(384, 512)</td>
     </tr>
     <tr>
-      <th id="T_271f1_level0_row1" class="row_heading level0 row1" >Cropped Image:</th>
-      <td id="T_271f1_row1_col0" class="data row1 col0" >(294, 228)</td>
+      <th id="T_e96df_level0_row1" class="row_heading level0 row1" >Cropped Image:</th>
+      <td id="T_e96df_row1_col0" class="data row1 col0" >(294, 228)</td>
     </tr>
     <tr>
-      <th id="T_271f1_level0_row2" class="row_heading level0 row2" >Resized Image:</th>
-      <td id="T_271f1_row2_col0" class="data row2 col0" >(382, 297)</td>
+      <th id="T_e96df_level0_row2" class="row_heading level0 row2" >Resized Image:</th>
+      <td id="T_e96df_row2_col0" class="data row2 col0" >(382, 297)</td>
     </tr>
     <tr>
-      <th id="T_271f1_level0_row3" class="row_heading level0 row3" >Padded Image:</th>
-      <td id="T_271f1_row3_col0" class="data row3 col0" >(382, 382)</td>
+      <th id="T_e96df_level0_row3" class="row_heading level0 row3" >Padded Image:</th>
+      <td id="T_e96df_row3_col0" class="data row3 col0" >(382, 382)</td>
     </tr>
     <tr>
-      <th id="T_271f1_level0_row4" class="row_heading level0 row4" >Resized Padded Image:</th>
-      <td id="T_271f1_row4_col0" class="data row4 col0" >(384, 384)</td>
+      <th id="T_e96df_level0_row4" class="row_heading level0 row4" >Resized Padded Image:</th>
+      <td id="T_e96df_row4_col0" class="data row4 col0" >(384, 384)</td>
     </tr>
   </tbody>
 </table>
@@ -1534,9 +1522,10 @@ pd.Series({
 
 
 
+
 ### Training Dataset Class
 
-Now we can define a custom dataset class to load images, extract the bounding box annotation, and apply the image transforms during training.
+Now we can define a custom dataset class to load images, extract the  bounding box annotation, and apply the image transforms during training.
 
 
 ```python
@@ -1595,7 +1584,7 @@ class HagridDataset(Dataset):
             image, target = self._transforms(image, target)
         
         return image, target
-
+    
     def _load_image_and_target(self, annotation):
         """
         Load an image and its target (bounding boxes and labels).
@@ -1608,7 +1597,7 @@ class HagridDataset(Dataset):
         """
         # Retrieve the file path of the image
         filepath = self._img_dict[annotation.name]
-        # Open the image file and convert it to RGB
+        # Read the image file
         image = Image.open(filepath).convert('RGB')
         # Calculate the bounding boxes in the image size scale
         bbox_list = np.array([bbox*(image.size*2) for bbox in annotation.bboxes])
@@ -1622,21 +1611,13 @@ class HagridDataset(Dataset):
         return image, {'boxes': boxes, 'labels': labels}
 ```
 
-
-
 ### Image Transforms
 
-We'll add additional data augmentations with the IoU crop transform to help the model generalize.
+We’ll add additional data augmentations with the IoU crop and random augment transforms to help the model generalize.
 
-
-
-| Transform         | Description                                                  |
-| ----------------- | ------------------------------------------------------------ |
-| `RandomZoomOut`   | Randomly pad images, videos, bounding boxes and masks creating a zoom out effect. ([link](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.RandomZoomOut.html#torchvision.transforms.v2.RandomZoomOut)) |
-| `ColorJitter`     | Randomly change the brightness, contrast, saturation and hue of an image or video. ([link](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.ColorJitter.html#torchvision.transforms.v2.ColorJitter)) |
-| `RandomGrayscale` | Randomly convert image or videos to grayscale with a probability of p (default 0.1). ([link](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.RandomGrayscale.html#torchvision.transforms.v2.RandomGrayscale)) |
-| `RandomEqualize`  | Equalize the histogram of the given image or video with a given probability. ([link](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.RandomEqualize.html#torchvision.transforms.v2.RandomEqualize)) |
-| `RandomPosterize` | Randomly posterize an image by reducing the number of bits for each color channel. ([link](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.RandomPosterize.html#torchvision.transforms.v2.RandomPosterize)) |
+| Transform       | Description                                                  |
+| --------------- | ------------------------------------------------------------ |
+| `RandomZoomOut` | Randomly pad images, videos, bounding boxes and masks creating a zoom out effect. ([link](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.RandomZoomOut.html#torchvision.transforms.v2.RandomZoomOut)) |
 
 
 
@@ -1646,19 +1627,10 @@ We'll add additional data augmentations with the IoU crop transform to help the 
 data_aug_tfms = transforms.Compose(
     transforms=[
         transforms.RandomChoice([
-            transforms.RandomZoomOut(fill= (123, 117, 104), side_range=(1.125, 1.5)), 
+            transforms.RandomZoomOut(fill=fill, side_range=(1.125, 1.5)), 
             iou_crop
-        ], p=[0.3, 0.7]),
-        transforms.ColorJitter(
-                brightness = (0.875, 1.125),
-                contrast = (0.5, 1.5),
-                saturation = (0.5, 1.5),
-                hue = (-0.05, 0.05),
-        ),
-        transforms.RandomGrayscale(),
-        transforms.RandomEqualize(),
-        transforms.RandomPosterize(bits=3, p=0.5),
-        transforms.RandomHorizontalFlip(p=0.5),
+        ], p=[0.35, 0.65]),
+        random_aug_tfm,
     ],
 )
 
@@ -1671,7 +1643,7 @@ resize_pad_tfm = transforms.Compose([
 
 # Compose transforms to sanitize bounding boxes and normalize input data
 final_tfms = transforms.Compose([
-    transforms.ToImage(), 
+    transforms.ToImage(),
     transforms.ToDtype(torch.float32, scale=True),
     transforms.SanitizeBoundingBoxes(),
     transforms.Normalize(*norm_stats),
@@ -1679,21 +1651,18 @@ final_tfms = transforms.Compose([
 
 # Define the transformations for training and validation datasets
 train_tfms = transforms.Compose([
-    data_aug_tfms, 
+    data_aug_tfms,
     resize_pad_tfm, 
-    final_tfms
+    final_tfms,
 ])
 valid_tfms = transforms.Compose([resize_pad_tfm, final_tfms])
 ```
 
-
-
 ::: {.callout-important}
 
 Always use the [`SanitizeBoundingBoxes`](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.SanitizeBoundingBoxes.html#torchvision.transforms.v2.SanitizeBoundingBoxes) transform to clean up annotations after using data augmentations that alter bounding boxes (e.g., cropping, warping, etc.).
+
 :::
-
-
 
 
 
@@ -1718,17 +1687,17 @@ pd.Series({
 ```
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_1219d">
+<table id="T_3e0d6">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_1219d_level0_row0" class="row_heading level0 row0" >Training dataset size:</th>
-      <td id="T_1219d_row0_col0" class="data row0 col0" >28649</td>
+      <th id="T_3e0d6_level0_row0" class="row_heading level0 row0" >Training dataset size:</th>
+      <td id="T_3e0d6_row0_col0" class="data row0 col0" >28649</td>
     </tr>
     <tr>
-      <th id="T_1219d_level0_row1" class="row_heading level0 row1" >Validation dataset size:</th>
-      <td id="T_1219d_row1_col0" class="data row1 col0" >3184</td>
+      <th id="T_3e0d6_level0_row1" class="row_heading level0 row1" >Validation dataset size:</th>
+      <td id="T_3e0d6_row1_col0" class="data row1 col0" >3184</td>
     </tr>
   </tbody>
 </table>
@@ -1736,10 +1705,9 @@ pd.Series({
 
 
 
-
 ### Inspect Samples
 
-Let's verify the dataset objects work properly by inspecting the first samples from the training and validation sets.
+Let’s verify the dataset objects work properly by inspecting the first samples from the training and validation sets.
 
 #### Inspect training set sample
 
@@ -1748,7 +1716,7 @@ Let's verify the dataset objects work properly by inspecting the first samples f
 dataset_sample = train_dataset[0]
 
 annotated_tensor = draw_bboxes(
-    image=(denorm_img_tensor(dataset_sample[0], *norm_stats)*255).to(dtype=torch.uint8), 
+    image=(denorm_img_tensor(dataset_sample[0].cpu(), *norm_stats)*255).to(dtype=torch.uint8), 
     boxes=dataset_sample[1]['boxes'], 
     labels=[class_names[int(i.item())] for i in dataset_sample[1]['labels']], 
     colors=[int_colors[int(i.item())] for i in dataset_sample[1]['labels']]
@@ -1769,7 +1737,7 @@ tensor_to_pil(annotated_tensor)
 dataset_sample = valid_dataset[0]
 
 annotated_tensor = draw_bboxes(
-    image=(denorm_img_tensor(dataset_sample[0], *norm_stats)*255).to(dtype=torch.uint8), 
+    image=(denorm_img_tensor(dataset_sample[0].cpu(), *norm_stats)*255).to(dtype=torch.uint8), 
     boxes=dataset_sample[1]['boxes'], 
     labels=[class_names[int(i.item())] for i in dataset_sample[1]['labels']], 
     colors=[int_colors[int(i.item())] for i in dataset_sample[1]['labels']]
@@ -1792,7 +1760,7 @@ The last step before training is to instantiate the DataLoaders for the training
 bs = 32
 
 # Set the number of worker processes for loading data.
-num_workers = multiprocessing.cpu_count()//2
+num_workers = multiprocessing.cpu_count()
 
 # Define parameters for DataLoader
 data_loader_params = {
@@ -1800,9 +1768,8 @@ data_loader_params = {
     'num_workers': num_workers,  # Number of subprocesses to use for data loading
     'collate_fn': lambda batch: tuple(zip(*batch)),
     'drop_last': True,
-    'prefetch_factor': 8,
-    'pin_memory': True,
-    'pin_memory_device': device
+    'pin_memory': 'cuda' in device,
+    'pin_memory_device': device if 'cuda' in device else ''
 }
 
 # Create DataLoader for training data. Data is shuffled for every epoch.
@@ -1819,26 +1786,23 @@ pd.Series({
 ```
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_b5faf">
+<table id="T_8ed31">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_b5faf_level0_row0" class="row_heading level0 row0" >Number of batches in train DataLoader:</th>
-      <td id="T_b5faf_row0_col0" class="data row0 col0" >895</td>
+      <th id="T_8ed31_level0_row0" class="row_heading level0 row0" >Number of batches in train DataLoader:</th>
+      <td id="T_8ed31_row0_col0" class="data row0 col0" >895</td>
     </tr>
     <tr>
-      <th id="T_b5faf_level0_row1" class="row_heading level0 row1" >Number of batches in validation DataLoader:</th>
-      <td id="T_b5faf_row1_col0" class="data row1 col0" >99</td>
+      <th id="T_8ed31_level0_row1" class="row_heading level0 row1" >Number of batches in validation DataLoader:</th>
+      <td id="T_8ed31_row1_col0" class="data row1 col0" >99</td>
     </tr>
   </tbody>
 </table>
 </div>
 
-
 That completes the data preparation. Now we can finally train our hand gesture detector.
-
-
 
 
 
@@ -1850,15 +1814,15 @@ In this section, we will implement the training code and fine-tune our model.
 
 The following function performs a single pass through the training or validation set.
 
-The model takes in a batch of images and returns a tuple containing three variables. The first variable stores the image classification predictions for each proposed bounding box, which we use to determine the object type for a given bounding box. The second holds the coordinates and dimensions for all potential bounding boxes. The third variable contains probability scores for each proposed detection, indicating the likelihood it is an object.
+The model takes in a batch of images and returns a tuple containing  three variables. The first variable stores the image classification  predictions for each proposed bounding box, which we use to determine  the object type for a given bounding box. The second holds the  coordinates and dimensions for all potential bounding boxes. The third  variable contains probability scores for each proposed detection,  indicating the likelihood it is an object.
 
-The model always makes the same number of predictions for a given image size. Given a `384x384` image, the model will make `(384/8)*(384/8) + (384/16)*(384/16) + (384/32)*(384/32) = 3024` predictions. However, many of those predictions get filtered out when performing inference. 
+The model always makes the same number of predictions for a given image size. Given a `384x384` image, the model will make `(384/8)*(384/8) + (384/16)*(384/16) + (384/32)*(384/32) = 3024` predictions. However, many of those predictions get filtered out when performing inference.
 
-During training, we must determine which of the model's predictions to pair with the ground truth annotations from our dataset before calculating the loss. YOLOX uses an approach called [SimOTA](https://cj-mills.github.io/cjm-yolox-pytorch/simota.html#simotaassigner) for this step. The [YOLOXLoss](https://cj-mills.github.io/cjm-yolox-pytorch/loss.html#yoloxloss) class performs this assignment automatically when [called](https://cj-mills.github.io/cjm-yolox-pytorch/loss.html#yoloxloss.__call__).
+During training, we must determine which of the model’s predictions  to pair with the ground truth annotations from our dataset before  calculating the loss. YOLOX uses an approach called [SimOTA](https://cj-mills.github.io/cjm-yolox-pytorch/simota.html#simotaassigner) for this step. The [YOLOXLoss](https://cj-mills.github.io/cjm-yolox-pytorch/loss.html#yoloxloss) class performs this assignment automatically when [called](https://cj-mills.github.io/cjm-yolox-pytorch/loss.html#yoloxloss.__call__).
 
 
 ```python
-def run_epoch(model, dataloader, optimizer, lr_scheduler, loss_func, device, scaler, is_training):
+def run_epoch(model, dataloader, optimizer, lr_scheduler, loss_func, device, scaler, epoch_id, is_training):
     """
     Function to run a single training or evaluation epoch.
     
@@ -1923,10 +1887,10 @@ def run_epoch(model, dataloader, optimizer, lr_scheduler, loss_func, device, sca
         progress_bar.set_postfix(progress_bar_dict)
         progress_bar.update()
 
-        # If the loss is NaN or infinite, stop the training/evaluation process
-        if math.isnan(loss_item) or math.isinf(loss_item):
-            print(f"Loss is NaN or infinite at batch {batch_id}. Stopping {'training' if is_training else 'evaluation'}.")
-            break
+        # If loss is NaN or infinity, stop training
+        if is_training:
+            stop_training_message = f"Loss is NaN or infinite at epoch {epoch_id}, batch {batch_id}. Stopping training."
+            assert not math.isnan(loss_item) and math.isfinite(loss_item), stop_training_message
 
     # Cleanup and close the progress bar 
     progress_bar.close()
@@ -1935,11 +1899,7 @@ def run_epoch(model, dataloader, optimizer, lr_scheduler, loss_func, device, sca
     return epoch_loss / (batch_id + 1)
 ```
 
-
-
-Next, we define the `train_loop` function, which executes the main training loop. It iterates over each epoch, runs through the training and validation sets, and saves the best model based on the validation loss.
-
-
+Next, we define the `train_loop` function, which executes  the main training loop. It iterates over each epoch, runs through the  training and validation sets, and saves the best model based on the  validation loss.
 
 ```python
 def train_loop(model, 
@@ -1977,10 +1937,10 @@ def train_loop(model,
     # Loop over the epochs
     for epoch in tqdm(range(epochs), desc="Epochs"):
         # Run a training epoch and get the training loss
-        train_loss = run_epoch(model, train_dataloader, optimizer, lr_scheduler, loss_func, device, scaler, is_training=True)
+        train_loss = run_epoch(model, train_dataloader, optimizer, lr_scheduler, loss_func, device, scaler, epoch, is_training=True)
         # Run an evaluation epoch and get the validation loss
         with torch.no_grad():
-            valid_loss = run_epoch(model, valid_dataloader, None, None, loss_func, device, scaler, is_training=False)
+            valid_loss = run_epoch(model, valid_dataloader, None, None, loss_func, device, scaler, epoch, is_training=False)
 
         # If the validation loss is lower than the best validation loss seen so far, save the model checkpoint
         if valid_loss < best_loss:
@@ -1998,11 +1958,6 @@ def train_loop(model,
             with open(Path(checkpoint_path.parent/'training_metadata.json'), 'w') as f:
                 json.dump(training_metadata, f)
 
-        # If the training or validation loss is NaN or infinite, stop the training process
-        if any(math.isnan(loss) or math.isinf(loss) for loss in [train_loss, valid_loss]):
-            print(f"Loss is NaN or infinite at epoch {epoch}. Stopping training.")
-            break
-
     # If the device is a GPU, empty the cache
     if device.type != 'cpu':
         getattr(torch, device.type).empty_cache()
@@ -2010,13 +1965,9 @@ def train_loop(model,
 
 
 
-
-
-
-
 ### Set the Model Checkpoint Path
 
-Before we proceed with training, let's generate a timestamp for the training session and create a directory to save the checkpoints during training.
+Before we proceed with training, let’s generate a timestamp for the  training session and create a directory to save the checkpoints during  training.
 
 
 ```python
@@ -2036,12 +1987,10 @@ print(checkpoint_path)
 ```
 
 ```text
-pytorch-yolox-object-detector/2023-08-17_16-14-43/yolox_tiny.pth
+pytorch-yolox-object-detector/2024-02-17_00-31-07/yolox_tiny.pth
 ```
 
-
-
-Let's save a copy of the normalization stats and the colormap for the current dataset in the training folder for future use.
+Let’s save a copy of the normalization stats and the colormap for the current dataset in the training folder for future use.
 
 
 
@@ -2059,11 +2008,10 @@ with open(f"{checkpoint_dir}/norm_stats.json", "w") as f:
 # Print the name of the file that the normalization stats were written to
 print(f"{checkpoint_dir}/norm_stats.json")
 ```
+
 ```text
-pytorch-yolox-object-detector/2023-08-17_16-14-43/norm_stats.json
+pytorch-yolox-object-detector/2024-02-17_00-31-07/norm_stats.json
 ```
-
-
 
 
 ### Save the Color Map
@@ -2080,23 +2028,20 @@ print(f"{checkpoint_dir}/{dataset_path.name}-colormap.json")
 ```
 
 ```text
-pytorch-yolox-object-detector/2023-08-17_16-14-43/hagrid-sample-30k-384p-colormap.json
+pytorch-yolox-object-detector/2024-02-17_00-31-07/hagrid-sample-30k-384p-colormap.json
 ```
-
-
 
 ### Configure the Training Parameters
 
-Now, we can configure the parameters for training. We must define the learning rate, the number of training epochs and instantiate the optimizer, learning rate scheduler, and a `YOLOXLoss` object.
+Now, we can configure the parameters for training. We must define the learning rate, the number of training epochs and instantiate the  optimizer, learning rate scheduler, and a `YOLOXLoss` object.
 
 
 ```python
 # Learning rate for the model
-lr = 5e-4
+lr = 7e-4
 
 # Number of training epochs
 epochs = 10
-# epochs = 20
 
 # AdamW optimizer; includes weight decay for regularization
 optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
@@ -2107,17 +2052,19 @@ lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
                                                    total_steps=epochs*len(train_dataloader))
 
 # Initialize the loss function for evaluating model predictions
-yolox_loss = YOLOXLoss(num_classes=model.bbox_head.cls_out_channels, bbox_loss_weight=10.0, use_l1=False)
+yolox_loss = YOLOXLoss(num_classes=model.bbox_head.cls_out_channels, 
+                       bbox_loss_weight=10.0, 
+                       use_l1=False)
 ```
-
-
 
 ### Train the Model
 
 Finally, we can train the model using the `train_loop` function. Training time will depend on the available hardware.
 
 ::: {.callout-note}
-Training usually takes around 3 hours and 6 minutes on the free GPU tier of Google Colab.
+
+Training usually takes around 1 hour and 52 minutes on the free GPU tier of Google Colab.
+
 :::
 
 
@@ -2136,44 +2083,40 @@ train_loop(model=model,
 
 
 ```text
-Epochs:   100%|██████████| 10/10 [21:14<00:00, 126.73s/it]
-Train:   100%|██████████| 895/895 [01:57<00:00, 11.01it/s, loss=7.48, avg_loss=13, lr=0.000139]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 13.75it/s, loss=6.72, avg_loss=6.56]
-Train:   100%|██████████| 895/895 [01:58<00:00, 10.77it/s, loss=5.92, avg_loss=6.19, lr=0.000379]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 14.25it/s, loss=5.03, avg_loss=4.73]
-Train:   100%|██████████| 895/895 [02:01<00:00, 10.70it/s, loss=4.76, avg_loss=5.14, lr=0.0005]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 13.20it/s, loss=4.51, avg_loss=4.23]
-Train:   100%|██████████| 895/895 [02:00<00:00, 10.72it/s, loss=4.32, avg_loss=4.63, lr=0.000475]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 13.60it/s, loss=4.16, avg_loss=3.86]
-Train:   100%|██████████| 895/895 [01:57<00:00, 11.12it/s, loss=4.35, avg_loss=4.31, lr=0.000406]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 14.25it/s, loss=4.03, avg_loss=3.62]
-Train:   100%|██████████| 895/895 [01:54<00:00, 11.15it/s, loss=3.64, avg_loss=4, lr=0.000306]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 14.10it/s, loss=3.75, avg_loss=3.37]
-Train:   100%|██████████| 895/895 [01:54<00:00, 11.08it/s, loss=3.35, avg_loss=3.71, lr=0.000195]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 14.07it/s, loss=3.72, avg_loss=3.13]
-Train:   100%|██████████| 895/895 [01:54<00:00, 11.10it/s, loss=3.1, avg_loss=3.44, lr=9.47e-5]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 14.24it/s, loss=3.35, avg_loss=2.9]
-Train:   100%|██████████| 895/895 [01:54<00:00, 11.16it/s, loss=2.93, avg_loss=3.24, lr=2.51e-5]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 14.15it/s, loss=3.46, avg_loss=2.8]
-Train:   100%|██████████| 895/895 [01:58<00:00, 10.89it/s, loss=3.03, avg_loss=3.14, lr=3.54e-9]
-Eval:   100%|██████████| 99/99 [00:10<00:00, 13.65it/s, loss=3.28, avg_loss=2.77]
+Epochs: 100% |██████████| 10/10 [23:44<00:00, 143.24s/it]
+Train: 100% |██████████| 895/895 [02:10<00:00, 9.06it/s, loss=6.65, avg_loss=11.7, lr=0.000194]
+Eval: 100% |██████████| 99/99 [00:11<00:00, 12.44it/s, loss=6.48, avg_loss=6.21]
+Train: 100% |██████████| 895/895 [02:11<00:00, 10.22it/s, loss=5.27, avg_loss=6.07, lr=0.00053]
+Eval: 100% |██████████| 99/99 [00:11<00:00, 13.22it/s, loss=5.26, avg_loss=4.68]
+Train: 100% |██████████| 895/895 [02:07<00:00, 10.44it/s, loss=5.53, avg_loss=5.25, lr=0.0007]
+Eval: 100% |██████████| 99/99 [00:11<00:00, 12.95it/s, loss=4.5, avg_loss=4.1]
+Train: 100% |██████████| 895/895 [02:09<00:00, 9.47it/s, loss=4.67, avg_loss=4.85, lr=0.000666]
+Eval: 100% |██████████| 99/99 [00:12<00:00, 11.98it/s, loss=4.48, avg_loss=3.89]
+Train: 100% |██████████| 895/895 [02:12<00:00, 9.84it/s, loss=4.11, avg_loss=4.5, lr=0.000569]
+Eval: 100% |██████████| 99/99 [00:11<00:00, 12.70it/s, loss=3.99, avg_loss=3.54]
+Train: 100% |██████████| 895/895 [02:09<00:00, 10.21it/s, loss=3.91, avg_loss=4.18, lr=0.000429]
+Eval: 100% |██████████| 99/99 [00:12<00:00, 12.94it/s, loss=3.96, avg_loss=3.33]
+Train: 100% |██████████| 895/895 [02:11<00:00, 9.38it/s, loss=3.64, avg_loss=3.82, lr=0.000273]
+Eval: 100% |██████████| 99/99 [00:12<00:00, 11.29it/s, loss=3.77, avg_loss=3.1]
+Train: 100% |██████████| 895/895 [02:10<00:00, 10.33it/s, loss=3.91, avg_loss=3.52, lr=0.000133]
+Eval: 100% |██████████| 99/99 [00:11<00:00, 12.95it/s, loss=3.46, avg_loss=2.85]
+Train: 100% |██████████| 895/895 [02:09<00:00, 10.51it/s, loss=2.96, avg_loss=3.25, lr=3.52e-5]
+Eval: 100% |██████████| 99/99 [00:11<00:00, 12.68it/s, loss=3.25, avg_loss=2.74]
+Train: 100% |██████████| 895/895 [02:14<00:00, 9.69it/s, loss=3.05, avg_loss=3.12, lr=4.96e-9]
+Eval: 100% |██████████| 99/99 [00:12<00:00, 12.01it/s, loss=3.29, avg_loss=2.71]
 ```
 
-
-
-At last, we have our hand gesture detector. To wrap up the tutorial, we can test our model by performing inference on individual images.
-
-
+At last, we have our hand gesture detector. To wrap up the tutorial,  we can test our model by performing inference on individual images.
 
 
 
 ## Making Predictions with the Model
 
-In this final part of the tutorial, we will cover how to perform inference on individual images with our YOLOX model and filter the predictions.
+In this final part of the tutorial, we will cover how to perform  inference on individual images with our YOLOX model and filter the  predictions.
 
 ### Preparing the Model for Inference
 
-Whenever we make predictions with the model, we must normalize the input data, scale the predicted bounding boxes, and calculate the associated confidence scores. Since these steps are always required, I included a [wrapper class](https://cj-mills.github.io/cjm-yolox-pytorch/inference.html#yoloxinferencewrapper) with the `cjm_yolox_pytorch` package.
+Whenever we make predictions with the model, we must normalize the  input data, scale the predicted bounding boxes, and calculate the  associated confidence scores. Since these steps are always required, I  included a [wrapper class](https://cj-mills.github.io/cjm-yolox-pytorch/inference.html#yoloxinferencewrapper) with the `cjm_yolox_pytorch` package.
 
 #### Wrap the model with preprocessing and post-processing steps
 
@@ -2194,12 +2137,16 @@ With our model prepped with the preprocessing and post-processing steps, we only
 
 ### Preparing Input Data
 
-Let's start with a random image from the validation set. That way, we have some ground truth bounding boxes to compare against. Unlike during training, we won't stick to square input dimensions for inference. However, we still need to ensure both input dimensions are multiples of the max [stride value](#loading-the-yolox-tiny-model).
+Let’s start with a random image from the validation set. That way, we have some ground truth bounding boxes to compare against. Unlike during training, we won’t stick to square input dimensions for inference.  However, we still need to ensure both input dimensions are multiples of  the max [stride value](https://christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/#loading-the-yolox-tiny-model).
 
 
 ```python
 # Choose a random item from the validation set
 file_id = random.choice(val_keys)
+# file_id = '1bd84a50-12ce-43d2-a092-70aca798c8db'
+# file_id = 'f493ef0a-465e-46ba-ab28-8ffd97d74c4a'
+# file_id = '00973fac-440e-4a56-b60c-2a06d5fb155d'
+# file_id = 'd83a4f5a-7712-4267-91d5-b7e18fff04f3'
 
 # Retrieve the image file path associated with the file ID
 test_file = img_dict[file_id]
@@ -2254,37 +2201,36 @@ pd.Series({
 }).to_frame().style.hide(axis='columns')
 ```
 
-
-![](./images/output_92_0.png){fig-align="center"}
+![](./images/output_93_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_a5b54">
+<table id="T_ce5be">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_a5b54_level0_row0" class="row_heading level0 row0" >Resized Image Size:</th>
-      <td id="T_a5b54_row0_col0" class="data row0 col0" >(384, 511)</td>
+      <th id="T_ce5be_level0_row0" class="row_heading level0 row0" >Resized Image Size:</th>
+      <td id="T_ce5be_row0_col0" class="data row0 col0" >(384, 511)</td>
     </tr>
     <tr>
-      <th id="T_a5b54_level0_row1" class="row_heading level0 row1" >Input Dims:</th>
-      <td id="T_a5b54_row1_col0" class="data row1 col0" >[384, 480]</td>
+      <th id="T_ce5be_level0_row1" class="row_heading level0 row1" >Input Dims:</th>
+      <td id="T_ce5be_row1_col0" class="data row1 col0" >[384, 480]</td>
     </tr>
     <tr>
-      <th id="T_a5b54_level0_row2" class="row_heading level0 row2" >Offsets:</th>
-      <td id="T_a5b54_row2_col0" class="data row2 col0" >[ 0.  15.5]</td>
+      <th id="T_ce5be_level0_row2" class="row_heading level0 row2" >Offsets:</th>
+      <td id="T_ce5be_row2_col0" class="data row2 col0" >[ 0.  15.5]</td>
     </tr>
     <tr>
-      <th id="T_a5b54_level0_row3" class="row_heading level0 row3" >Min Image Scale:</th>
-      <td id="T_a5b54_row3_col0" class="data row3 col0" >1.000000</td>
+      <th id="T_ce5be_level0_row3" class="row_heading level0 row3" >Min Image Scale:</th>
+      <td id="T_ce5be_row3_col0" class="data row3 col0" >1.000000</td>
     </tr>
     <tr>
-      <th id="T_a5b54_level0_row4" class="row_heading level0 row4" >Input Image Size:</th>
-      <td id="T_a5b54_row4_col0" class="data row4 col0" >(384, 480)</td>
+      <th id="T_ce5be_level0_row4" class="row_heading level0 row4" >Input Image Size:</th>
+      <td id="T_ce5be_row4_col0" class="data row4 col0" >(384, 480)</td>
     </tr>
     <tr>
-      <th id="T_a5b54_level0_row5" class="row_heading level0 row5" >Target BBoxes:</th>
-      <td id="T_a5b54_row5_col0" class="data row5 col0" >['palm:[208.828 180.933 117.177 151.437]']</td>
+      <th id="T_ce5be_level0_row5" class="row_heading level0 row5" >Target BBoxes:</th>
+      <td id="T_ce5be_row5_col0" class="data row5 col0" >['palm:[208.828 180.933 117.177 151.437]']</td>
     </tr>
   </tbody>
 </table>
@@ -2293,7 +2239,8 @@ pd.Series({
 
 
 
-### Pass the input data to the model
+
+#### Pass the input data to the model
 
 Now we can convert the test image to a tensor and pass it to the wrapped model.
 
@@ -2316,9 +2263,9 @@ model_output.shape
 torch.Size([1, 3780, 6])
 ```
 
+With an input resolution of `384x480`, there are `3780` bounding box proposals. Each contains the top-left X and Y coordinates  and dimensions for a bounding box, plus the class index and the  associated confidence score. Most of these proposals are useless, so  we’ll filter them out.
 
 
-With an input resolution of `384x480`, there are `3780` bounding box proposals. Each contains the top-left X and Y coordinates and dimensions for a bounding box, plus the class index and the associated confidence score. Most of these proposals are useless, so we'll filter them out.
 
 ### Filtering Model Output
 
@@ -2327,7 +2274,7 @@ We first use a threshold value to remove proposals the model is not confident ab
 
 ```python
 # Set the bounding box confidence threshold
-bbox_conf_thresh = 0.45
+bbox_conf_thresh = 0.35
 
 # Move model output to the CPU
 model_output = model_output.to('cpu')
@@ -2382,19 +2329,18 @@ proposals_df
   <tbody>
     <tr>
       <th>0</th>
-      <td>210.370773</td>
-      <td>181.496429</td>
-      <td>113.071388</td>
-      <td>148.285553</td>
+      <td>207.83989</td>
+      <td>181.730957</td>
+      <td>116.061073</td>
+      <td>146.640503</td>
       <td>palm</td>
-      <td>0.958708</td>
+      <td>0.959833</td>
     </tr>
   </tbody>
 </table>
 </div>
+By the end, we have a single `one` gesture proposal. All that’s left is to see how it compares to the ground-truth bounding box for this sample.
 
-
-By the end, we have a single `palm` gesture proposal. All that's left is to see how it compares to the ground-truth bounding box for this sample.
 
 
 
@@ -2427,79 +2373,89 @@ pd.Series({
 }).to_frame().style.hide(axis='columns')
 ```
 
-![](./images/output_98_0.png){fig-align="center"}
+![](./images/output_99_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_5ea2f">
+<table id="T_0b4a3">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_5ea2f_level0_row0" class="row_heading level0 row0" >Target BBoxes:</th>
-      <td id="T_5ea2f_row0_col0" class="data row0 col0" >['palm:[208.828 180.933 117.177 151.437]']</td>
+      <th id="T_0b4a3_level0_row0" class="row_heading level0 row0" >Target BBoxes:</th>
+      <td id="T_0b4a3_row0_col0" class="data row0 col0" >['palm:[208.828 180.933 117.177 151.437]']</td>
     </tr>
     <tr>
-      <th id="T_5ea2f_level0_row1" class="row_heading level0 row1" >Predicted BBoxes:</th>
-      <td id="T_5ea2f_row1_col0" class="data row1 col0" >['palm:[210.371 181.496 113.071 148.286]']</td>
+      <th id="T_0b4a3_level0_row1" class="row_heading level0 row1" >Predicted BBoxes:</th>
+      <td id="T_0b4a3_row1_col0" class="data row1 col0" >['palm:[207.84  181.731 116.061 146.64 ]']</td>
     </tr>
     <tr>
-      <th id="T_5ea2f_level0_row2" class="row_heading level0 row2" >Confidence Scores:</th>
-      <td id="T_5ea2f_row2_col0" class="data row2 col0" >['palm: 95.87%']</td>
+      <th id="T_0b4a3_level0_row2" class="row_heading level0 row2" >Confidence Scores:</th>
+      <td id="T_0b4a3_row2_col0" class="data row2 col0" >['palm: 95.98%']</td>
     </tr>
   </tbody>
 </table>
 </div>
-The predicted bounding box is not a perfect match to the ground-truth values, but it's pretty close. Now let's test the model on a brand-new image.
+
+The predicted bounding box is not a perfect match to the ground-truth values, but it’s pretty close. Now let’s test the model on a brand-new  image.
 
 
 
 ### Testing the Model on New Data
 
-If we deploy the model in a real-world setting, we might want to scale predicted bounding boxes back up to a high-resolution source image. Below, we'll show how to do this using an input image with a different aspect ratio than the source image. The test image is from the free stock photo site, [Pexels](https://www.pexels.com/photo/man-doing-rock-and-roll-sign-2769554/).
+If we deploy the model in a real-world setting, we might want to  scale predicted bounding boxes back up to a high-resolution source  image. Below, we’ll show how to do this using an input image with a  different aspect ratio than the source image. The test images are from the free stock photo site, [Pexels](https://www.pexels.com/photo/man-doing-rock-and-roll-sign-2769554/).
 
 
 ```python
 test_img_name = "pexels-2769554-man-doing-rock-and-roll-sign.jpg"
+# test_img_name = 'pexels-elina-volkova-16191659.jpg'
+# test_img_name = 'pexels-joshua-roberts-12922530.jpg'
+# test_img_name = 'pexels-luke-barky-2899727.jpg'
+# test_img_name = 'pexels-ketut-subiyanto-4584599.jpg'
+# test_img_name = 'pexels-nataliya-vaitkevich-5411990.jpg'
+# test_img_name = 'pexels-darina-belonogova-7886753.jpg'
+# test_img_name = 'pexels-katrin-bolovtsova-6706013.jpg'
+# test_img_name = 'pexels-leo-vinicius-3714450.jpg'
+# test_img_name = 'pexels-diva-plavalaguna-6937816.jpg'
 test_img_url = f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/{test_img_name}"
 
 download_file(test_img_url, './', False)
 
 test_img = Image.open(test_img_name)
+original_size = test_img.size
 
 # Crop test image so it's height is not a multiple of the max stride
 test_img = test_img.crop(box=[0, 1, test_img.width, test_img.height-1])
 display(test_img)
 
 pd.Series({
-    "Test Image Size:": test_img.size, 
+    "Test Image Size:": original_size, 
     "Cropped Image Size:": test_img.size
 }).to_frame().style.hide(axis='columns')
 ```
 
 
-![](./images/output_100_1.png){fig-align="center"}
+![](./images/output_101_1.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_9e9ba">
+<table id="T_ffd5c">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_9e9ba_level0_row0" class="row_heading level0 row0" >Test Image Size:</th>
-      <td id="T_9e9ba_row0_col0" class="data row0 col0" >(640, 958)</td>
+      <th id="T_ffd5c_level0_row0" class="row_heading level0 row0" >Test Image Size:</th>
+      <td id="T_ffd5c_row0_col0" class="data row0 col0" >(640, 960)</td>
     </tr>
     <tr>
-      <th id="T_9e9ba_level0_row1" class="row_heading level0 row1" >Cropped Image Size:</th>
-      <td id="T_9e9ba_row1_col0" class="data row1 col0" >(640, 958)</td>
+      <th id="T_ffd5c_level0_row1" class="row_heading level0 row1" >Cropped Image Size:</th>
+      <td id="T_ffd5c_row1_col0" class="data row1 col0" >(640, 958)</td>
     </tr>
   </tbody>
 </table>
 </div>
 
 
-Since the input and source images have different aspect ratios, we'll offset any predicted bounding box coordinates.
 
-
+Since the input and source images have different aspect ratios, we’ll offset any predicted bounding box coordinates.
 
 
 ```python
@@ -2529,39 +2485,38 @@ pd.Series({
 }).to_frame().style.hide(axis='columns')
 ```
 
-![](./images/output_101_0.png){fig-align="center"}
+![](./images/output_102_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_59a8a">
+<table id="T_1c2aa">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_59a8a_level0_row0" class="row_heading level0 row0" >Resized Image Size:</th>
-      <td id="T_59a8a_row0_col0" class="data row0 col0" >(384, 574)</td>
+      <th id="T_1c2aa_level0_row0" class="row_heading level0 row0" >Resized Image Size:</th>
+      <td id="T_1c2aa_row0_col0" class="data row0 col0" >(384, 574)</td>
     </tr>
     <tr>
-      <th id="T_59a8a_level0_row1" class="row_heading level0 row1" >Input Dims:</th>
-      <td id="T_59a8a_row1_col0" class="data row1 col0" >[384, 544]</td>
+      <th id="T_1c2aa_level0_row1" class="row_heading level0 row1" >Input Dims:</th>
+      <td id="T_1c2aa_row1_col0" class="data row1 col0" >[384, 544]</td>
     </tr>
     <tr>
-      <th id="T_59a8a_level0_row2" class="row_heading level0 row2" >Offsets:</th>
-      <td id="T_59a8a_row2_col0" class="data row2 col0" >[ 0. 15.]</td>
+      <th id="T_1c2aa_level0_row2" class="row_heading level0 row2" >Offsets:</th>
+      <td id="T_1c2aa_row2_col0" class="data row2 col0" >[ 0. 15.]</td>
     </tr>
     <tr>
-      <th id="T_59a8a_level0_row3" class="row_heading level0 row3" >Min Image Scale:</th>
-      <td id="T_59a8a_row3_col0" class="data row3 col0" >1.666667</td>
+      <th id="T_1c2aa_level0_row3" class="row_heading level0 row3" >Min Image Scale:</th>
+      <td id="T_1c2aa_row3_col0" class="data row3 col0" >1.666667</td>
     </tr>
     <tr>
-      <th id="T_59a8a_level0_row4" class="row_heading level0 row4" >Input Image Size:</th>
-      <td id="T_59a8a_row4_col0" class="data row4 col0" >(384, 544)</td>
+      <th id="T_1c2aa_level0_row4" class="row_heading level0 row4" >Input Image Size:</th>
+      <td id="T_1c2aa_row4_col0" class="data row4 col0" >(384, 544)</td>
     </tr>
   </tbody>
 </table>
 </div>
 
-
-With our input image prepared, we can pass it through the model and perform the same filtering steps. But this time, we'll offset the `(x,y)` coordinates for the predicted bounding boxes and scale the dimensions to the source resolution.
+With our input image prepared, we can pass it through the model and  perform the same filtering steps. But this time, we’ll offset the `(x,y)` coordinates for the predicted bounding boxes and scale the dimensions to the source resolution.
 
 
 
@@ -2613,24 +2568,184 @@ pd.Series({
 }).to_frame().style.hide(axis='columns')
 ```
 
-![](./images/output_102_0.png){fig-align="center"}
+::: {.panel-tabset}
+
+## Rock & No Gesture
+![](./images/output_103_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_1ad00">
+<table id="T_56f25">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_1ad00_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
-      <td id="T_1ad00_row0_col0" class="data row0 col0" >['rock:[341.466 240.903 112.367 113.142]', 'no_gesture:[197.428 520.04 100.073 77.791]']</td>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['rock:[342.451 240.994 111.934 109.824]', 'no_gesture:[191.77  516.789 105.333  80.797]']</td>
     </tr>
     <tr>
-      <th id="T_1ad00_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
-      <td id="T_1ad00_row1_col0" class="data row1 col0" >['rock: 93.36%', 'no_gesture: 84.87%']</td>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['rock: 91.52%', 'no_gesture: 87.33%']</td>
     </tr>
   </tbody>
 </table>
 </div>
+
+
+## Mute
+![](./images/mute.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['mute:[191.9 446.118 294.302 502.099]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['mute: 76.21%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+## Peace Inverted
+![](./images/peace_inverted.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['peace_inverted:[370.955 387.639 133.596 236.746]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['peace_inverted: 94.24%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+## Call
+![](./images/call.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['call:[294.758 209.666 90.34 70.097]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['call: 90.57%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+## Palm
+![](./images/palm.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['palm:[ 99.852 122.838 247.511 208.458]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['palm: 81.47%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+## Like
+![](./images/like.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['like:[188.877 318.4 102.481 151.627]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['like: 93.64%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+## Ok
+![](./images/ok.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['ok:[125.575 251.352 355.902 518.605]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['ok: 44.65%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+## Peace
+![](./images/peace.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['peace:[110.392 218.664 137.574 168.629]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['peace: 78.71%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+## Rock
+![](./images/rock.png){fig-align="center"}
+<div style="overflow-x:auto; max-height:500px">
+<table id="T_56f25">
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_56f25_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_56f25_row0_col0" class="data row0 col0" >['rock:[ 71.192 97.024 169.156 170.206]']</td>
+    </tr>
+    <tr>
+      <th id="T_56f25_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_56f25_row1_col0" class="data row1 col0" >['rock: 66.71%']</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+:::
 
 
 
@@ -2647,10 +2762,6 @@ pd.Series({
 
 Congratulations on completing this tutorial for training real-time object detection models in PyTorch! By now, you have successfully built a hand gesture detector that can identify and locate various gestures within images. The skills and knowledge you've acquired here serve as a solid foundation for future object detection projects. 
 
-If you found this guide helpful, consider sharing it with others and exploring some of my other tutorials linked below.
-
-
-
 
 
 ## Recommended Tutorials
@@ -2658,3 +2769,8 @@ If you found this guide helpful, consider sharing it with others and exploring s
 - [**Exporting YOLOX Models from PyTorch to ONNX**](./onnx-export/)**:** Learn how to export YOLOX models from PyTorch to ONNX and perform inference using ONNX Runtime.
 - [**Exporting YOLOX Models from PyTorch to TensorFlow.js**](./tfjs-export/)**:** Learn how to export YOLOX models from PyTorch to TensorFlow.js to leverage efficient object detection in web applications.
 
+
+
+
+
+{{< include /_tutorial-cta.qmd >}}

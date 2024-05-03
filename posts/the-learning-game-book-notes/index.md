@@ -17,6 +17,15 @@ open-graph:
 
 
 
+::: {.callout-tip}
+## These notes are part of the following collection:
+[**Education**](/series/notes/education-notes.html)
+:::
+
+
+
+
+
 * [Introduction](#introduction)
 * [Seven Dangerous Lessons Taught in School](#seven-dangerous-lessons-taught-in-school)
 * [How did we get here?](#how-did-we-get-here)
@@ -79,7 +88,6 @@ Ana Lorena Fábrega challenges traditional educational systems and proposes new,
 3. Utilize storytelling and engaging methods in education.
 4. Embrace technology as a tool to revolutionize learning.
 5. Adapt education to cater to the diverse needs of students.
-
 6. Implement student-centered approaches that empower learners.
 7. Explore alternatives to traditional schooling that focus on individual growth and creativity.
 8. Consider the role of mental models in shaping educational experiences.
@@ -308,9 +316,7 @@ Chapter 4 focuses on challenging and unlearning harmful lessons ingrained in tra
 3. The educational system often conditions students to wait for instructions, hindering independent problem-solving.
 4. School curricula typically focus on learning just in case, rather than on-demand learning.
 5. Traditional schooling discourages questioning authority, limiting critical thinking and innovation.
-6. Real-world success often requires skills and mindsets not emphasized in
-
- traditional education.
+6. Real-world success often requires skills and mindsets not emphasized in traditional education.
 
 7. Traditional education often prioritizes compliance and rote learning over creativity and problem-solving.
 8. Schools inadvertently teach students to play it safe and avoid questioning the status quo.

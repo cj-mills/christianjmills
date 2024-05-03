@@ -75,11 +75,14 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 
 We'll need to add a couple of new packages to our [Python environment](../#setting-up-your-python-environment).
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 | Package        | Description                                                  |
 | -------------- | ------------------------------------------------------------ |
 | `nobuco`       | A tool that helps you translate pytorch models into TensorFlow graphs. ([link](https://github.com/AlexanderLutsenko/nobuco)) |
 | `tensorflowjs` | A pip package that contains libraries and tools for TensorFlow.js ([link](https://pypi.org/project/tensorflowjs/)) |
 
+:::
 
 Run the following command to install these additional libraries:
 
@@ -421,4 +424,6 @@ converters.convert_tf_saved_model(saved_model_dir=str(savedmodel_dir),
 
 Congratulations on reaching the end of this tutorial! We previously trained a YOLOX model in PyTorch for hand gesture detection, and now we've exported that model to TensorFlow.js. With it, we can deploy our model to the web and run it locally in users' browsers.
 
-If you found this guide helpful, consider sharing it with others.
+
+
+{{< include /_tutorial-cta.qmd >}}

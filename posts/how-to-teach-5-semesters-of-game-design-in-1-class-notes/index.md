@@ -14,6 +14,16 @@ title: Notes on How to Teach 5 Semesters of Game Design in 1 Class
 
 ---
 
+
+
+::: {.callout-tip}
+## These notes are part of the following collections:
+* [**Education**](/series/notes/education-notes.html)
+* [**Game Development**](/series/notes/game-dev-notes.html)
+:::
+
+
+
 * [Overview](#overview)
 * [How to Make This Course Work](#how-to-make-this-course-work)
 * [Email Two Weeks Before the Semester](#email-two-weeks-before-the-semester)
@@ -156,7 +166,6 @@ Here are some notes I took while watching Jason Wiser's [talk](https://www.youtu
 **References:**
 
 * [How to Teach 5 Semesters of Game Design in 1 Class](https://www.youtube.com/watch?v=uoc0U-WsPa0)
-
 
 
 

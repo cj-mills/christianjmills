@@ -67,12 +67,15 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 
 We'll need to add a few new libraries to our [Python environment](../#setting-up-your-python-environment) for working with ONNX models.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 | Package           | Description                                                  |
 | ----------------- | ------------------------------------------------------------ |
 | `onnx`            | This package provides a Python API for working with ONNX models. ([link](https://pypi.org/project/onnx/)) |
 | `onnxruntime`     | ONNX Runtime is a runtime accelerator for machine learning models. ([link](https://onnxruntime.ai/)) |
 | `onnx-simplifier` | This package helps simplify ONNX models. ([link](https://pypi.org/project/onnx-simplifier/)) |
 
+:::
 
 Run the following command to install these additional libraries:
 

@@ -1,6 +1,7 @@
 ---
 title: "Exporting timm Image Classifiers from PyTorch to ONNX"
 date: 2023-8-23
+date-modified: last-modified
 image: /images/empty.gif
 hide: false
 search_exclude: false
@@ -34,7 +35,7 @@ open-graph:
 
 ## Introduction
 
-Welcome back to this series on fine-tuning image classifiers with PyTorch and the timm library! [Previously](../), we demonstrated how to fine-tune a ResNet18-D model from the timm library in PyTorch by creating a hand gesture classifier. This tutorial builds on that by showing how to export the model to [ONNX](https://onnx.ai/) and perform inference using [ONNX Runtime](https://onnxruntime.ai/docs/).
+Welcome back to this series on fine-tuning image classifiers with PyTorch and the timm library. [Previously](../), we demonstrated how to fine-tune a ResNet18-D model from the timm library in PyTorch by creating a hand gesture classifier. This tutorial builds on that by showing how to export the model to [ONNX](https://onnx.ai/) and perform inference using [ONNX Runtime](https://onnxruntime.ai/docs/).
 
 ONNX (Open Neural Network Exchange) is an open format to represent machine learning models and make them portable across various platforms. ONNX Runtime is a cross-platform inference accelerator that provides interfaces to hardware-specific libraries. By exporting our model to ONNX, we can deploy it to multiple devices and leverage hardware acceleration for faster inference.
 
@@ -66,12 +67,17 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 
 We'll need to add a few new libraries to our [Python environment](../#setting-up-your-python-environment) for working with ONNX models.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
+
+
 | Package           | Description                                                  |
 | ----------------- | ------------------------------------------------------------ |
 | `onnx`            | This package provides a Python API for working with ONNX models. ([link](https://pypi.org/project/onnx/)) |
 | `onnxruntime`     | ONNX Runtime is a runtime accelerator for machine learning models. ([link](https://onnxruntime.ai/)) |
 | `onnx-simplifier` | This package helps simplify ONNX models. ([link](https://pypi.org/project/onnx-simplifier/)) |
 
+:::
 
 Run the following command to install these additional libraries:
 
@@ -141,7 +147,7 @@ project_dir = Path(f"./{project_name}/")
 project_dir.mkdir(parents=True, exist_ok=True)
 
 # The path to the checkpoint folder
-checkpoint_dir = Path(project_dir/f"2023-08-12_15-21-16")
+checkpoint_dir = Path(project_dir/f"2024-02-02_15-41-23")
 
 pd.Series({
     "Project Directory:": project_dir,
@@ -162,11 +168,12 @@ pd.Series({
     </tr>
     <tr>
       <th id="T_2c96e_level0_row1" class="row_heading level0 row1" >Checkpoint Directory:</th>
-      <td id="T_2c96e_row1_col0" class="data row1 col0" >pytorch-timm-image-classifier/2023-08-12_15-21-16</td>
+      <td id="T_2c96e_row1_col0" class="data row1 col0" >pytorch-timm-image-classifier/2024-02-02_15-41-23</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 
@@ -314,7 +321,7 @@ model_checkpoint = torch.load(checkpoint_path, map_location='cpu')
 
 ```python
 # Specify the model configuration
-model_type = checkpoint_path.stem
+model_type = checkpoint_path.stem.split(".")[0]
 
 # Create a model with the number of output classes equal to the number of class names
 model = timm.create_model(model_type, num_classes=len(class_names))
@@ -483,7 +490,7 @@ input_tensor = torch.randn(1, 256, 256, 3)
 
 We can export the model using the [`torch.onnx.export()`](https://pytorch.org/docs/stable/onnx.html#torch.onnx.export) function. This function performs a single pass through the model and records all operations to generate a [TorchScript graph](https://pytorch.org/docs/stable/jit.html). It then exports this graph to ONNX by decomposing each graph node (which contains a PyTorch operator) into a series of ONNX operators.
 
-If we want the ONNX model to support different input sizes, we must set the width and height input axes as dynamic. However, attempting to do this with the ResNet18-D model causes the export function to throw an error. Therefore, we'll need to modify the exported ONNX model directly.
+If we want the ONNX model to support different input sizes, we must set the width and height input axes as dynamic.
 
 
 ::: {.panel-tabset}
@@ -500,14 +507,10 @@ torch.onnx.export(wrapped_model.cpu(),
                   do_constant_folding=False,
                   input_names = ['input'],
                   output_names = ['output'],
-                  # dynamic_axes={'input': {2 : 'height', 3 : 'width'}}
+                  dynamic_axes={'input': {2 : 'height', 3 : 'width'}}
                  )
 ```
-```text
-============= Diagnostic Run torch.onnx.export version 2.0.1+cu118 =============
-verbose: False, log level: Level.ERROR
-======================= 0 NONE 0 NOTE 0 WARNING 0 ERROR ========================
-```
+
 
 ## Channels-Last
 ```python
@@ -522,70 +525,24 @@ torch.onnx.export(wrapped_model.cpu(),
                   do_constant_folding=False,
                   input_names = ['input'],
                   output_names = ['output'],
-                  # dynamic_axes={'input': {1 : 'height', 2 : 'width'}}
+                  dynamic_axes={'input': {1 : 'height', 2 : 'width'}}
                  )
 ```
-```text
-============= Diagnostic Run torch.onnx.export version 2.0.1+cu118 =============
-verbose: False, log level: Level.ERROR
-======================= 0 NONE 0 NOTE 0 WARNING 0 ERROR ========================
-```
+
 
 :::
 
 
-
-
-
-### Enable Dynamic Input Dimensions
-
-We can enable dynamic input dimensions for the ONNX model by changing the appropriate values in the input shape to `-1`.
-
-::: {.panel-tabset}
-## Default
-```python
-# Load the ONNX model from the onnx_file_name
-onnx_model = onnx.load(onnx_file_path)
-
-# Get the first input node for the ONNX model
-input_tensor = onnx_model.graph.input[0]
-
-# Set the height and width dimensions to dynamic values (using -1)
-height_dim = input_tensor.type.tensor_type.shape.dim[2]
-height_dim.dim_value = -1
-
-width_dim = input_tensor.type.tensor_type.shape.dim[3]
-width_dim.dim_value = -1
-```
-
-## Channels-Last
-```python
-# Load the ONNX model from the onnx_file_name
-onnx_model = onnx.load(onnx_file_path)
-
-# Assume the first input needs its dimensions modified
-input_tensor = onnx_model.graph.input[0]
-
-# Set the height and width dimensions to dynamic values (using -1)
-height_dim = input_tensor.type.tensor_type.shape.dim[1]
-height_dim.dim_value = -1
-
-width_dim = input_tensor.type.tensor_type.shape.dim[2]
-width_dim.dim_value = -1
-```
-
-:::
-
-
-
-We then save the updated ONNX model back to disk for later. Before we do so, we'll perform one more modification.
 
 
 
 ### Simplify the ONNX Model
-The ONNX models generated by PyTorch are not always the most concise. We can use the [`onnx-simplifier`](https://pypi.org/project/onnx-simplifier/) package to tidy up the exported model.
+The ONNX models generated by PyTorch are not always the most concise. We can use the [`onnx-simplifier`](https://pypi.org/project/onnx-simplifier/) package to tidy up the exported model. We then save the updated ONNX model back to disk for later.
 
 ```python
+# Load the ONNX model from the onnx_file_name
+onnx_model = onnx.load(onnx_file_path)
+
 # Simplify the model
 model_simp, check = simplify(onnx_model)
 
@@ -624,7 +581,7 @@ Let's use the same test image and input size from the [previous tutorial](../#te
 
 
 ```python
-test_img_name = "pexels-2769554-man-doing-rock-and-roll-sign.jpg"
+test_img_name = 'pexels-elina-volkova-16191659.jpg'
 test_img_url = f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/{test_img_name}"
 
 download_file(test_img_url, './', False)
@@ -632,36 +589,29 @@ download_file(test_img_url, './', False)
 test_img = Image.open(test_img_name)
 display(test_img)
 
-target_cls = "rock"
-
 pd.Series({
     "Test Image Size:": test_img.size, 
-    "Target Class:": target_cls
 }).to_frame().style.hide(axis='columns')
 ```
 
 
 
 
-![](./images/output_41_1.png){fig-align="center"}
-
+![](./images/output_37_1.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_47ce0">
+<table id="T_0e8d0">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_47ce0_level0_row0" class="row_heading level0 row0" >Test Image Size:</th>
-      <td id="T_47ce0_row0_col0" class="data row0 col0" >(640, 960)</td>
-    </tr>
-    <tr>
-      <th id="T_47ce0_level0_row1" class="row_heading level0 row1" >Target Class:</th>
-      <td id="T_47ce0_row1_col0" class="data row1 col0" >rock</td>
+      <th id="T_0e8d0_level0_row0" class="row_heading level0 row0" >Test Image Size:</th>
+      <td id="T_0e8d0_row0_col0" class="data row0 col0" >(637, 960)</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 
@@ -674,7 +624,7 @@ pd.Series({
 # Set test image size
 test_sz = 288
 
-# Resize image without cropping to multiple of the max stride
+# Resize image without cropping
 input_img = resize_img(test_img.copy(), target_sz=test_sz)
 
 display(input_img)
@@ -686,7 +636,7 @@ pd.Series({
 
 
 
-![](./images/output_43_0.png){fig-align="center"}
+![](./images/output_39_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
 <table id="T_3ba23">
@@ -752,32 +702,29 @@ pd.Series({
 ```
 
 
-![](./images/output_47_0.png){fig-align="center"}
+![](./images/output_43_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_effd1">
+<table id="T_af9c8">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_effd1_level0_row0" class="row_heading level0 row0" >Input Size:</th>
-      <td id="T_effd1_row0_col0" class="data row0 col0" >(288, 416)</td>
+      <th id="T_af9c8_level0_row0" class="row_heading level0 row0" >Input Size:</th>
+      <td id="T_af9c8_row0_col0" class="data row0 col0" >(288, 416)</td>
     </tr>
     <tr>
-      <th id="T_effd1_level0_row1" class="row_heading level0 row1" >Target Class:</th>
-      <td id="T_effd1_row1_col0" class="data row1 col0" >rock</td>
+      <th id="T_af9c8_level0_row1" class="row_heading level0 row1" >Predicted Class:</th>
+      <td id="T_af9c8_row1_col0" class="data row1 col0" >mute</td>
     </tr>
     <tr>
-      <th id="T_effd1_level0_row2" class="row_heading level0 row2" >Predicted Class:</th>
-      <td id="T_effd1_row2_col0" class="data row2 col0" >rock</td>
-    </tr>
-    <tr>
-      <th id="T_effd1_level0_row3" class="row_heading level0 row3" >Confidence Score:</th>
-      <td id="T_effd1_row3_col0" class="data row3 col0" >79.93%</td>
+      <th id="T_af9c8_level0_row2" class="row_heading level0 row2" >Confidence Score:</th>
+      <td id="T_af9c8_row2_col0" class="data row2 col0" >100.00%</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 The model predictions should be virtually identical to the PyTorch model, but the confidence scores can sometimes vary slightly.
@@ -794,12 +741,22 @@ The model predictions should be virtually identical to the PyTorch model, but th
 
 
 
-
-
 ## Conclusion
 
 Congratulations on reaching the end of this tutorial! We previously fine-tuned a model from the timm library in PyTorch for hand gesture classification and now exported that model to ONNX. With this, we can streamline our deployment process and leverage platform-specific hardware optimizations through ONNX Runtime.
 
 As you move forward, consider exploring more about ONNX and its ecosystem. Check out the available [Execution Providers](https://onnxruntime.ai/docs/execution-providers/) that provide flexible interfaces to different hardware acceleration libraries.
 
-If you found this guide helpful, consider sharing it with others.
+
+
+
+
+## Recommended Tutorials
+
+- [**Quantizing timm Image Classifiers with ONNX Runtime and TensorRT in Ubuntu**](../ort-tensorrt-ubuntu/): Learn how to quantize timm image classification models with ONNX Runtime and TensorRT for int8 inference. 
+
+
+
+
+
+{{< include /_tutorial-cta.qmd >}}

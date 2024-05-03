@@ -66,12 +66,15 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 
 We'll need to add a few new libraries to our [Python environment](../#setting-up-your-python-environment) for working with ONNX models.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 | Package           | Description                                                  |
 | ----------------- | ------------------------------------------------------------ |
 | `onnx`            | This package provides a Python API for working with ONNX models. ([link](https://pypi.org/project/onnx/)) |
 | `onnxruntime`     | ONNX Runtime is a runtime accelerator for machine learning models. ([link](https://onnxruntime.ai/)) |
 | `onnx-simplifier` | This package helps simplify ONNX models. ([link](https://pypi.org/project/onnx-simplifier/)) |
 
+:::
 
 Run the following command to install these additional libraries:
 
@@ -141,7 +144,7 @@ project_dir = Path(f"./{project_name}/")
 project_dir.mkdir(parents=True, exist_ok=True)
 
 # The path to the checkpoint folder
-checkpoint_dir = Path(project_dir/f"2023-08-17_16-14-43")
+checkpoint_dir = Path(project_dir/f"2024-02-17_11-08-46")
 
 pd.Series({
     "Project Directory:": project_dir,
@@ -162,11 +165,12 @@ pd.Series({
     </tr>
     <tr>
       <th id="T_3c82a_level0_row1" class="row_heading level0 row1" >Checkpoint Directory:</th>
-      <td id="T_3c82a_row1_col0" class="data row1 col0" >pytorch-yolox-object-detector/2023-08-17_16-14-43</td>
+      <td id="T_3c82a_row1_col0" class="data row1 col0" >pytorch-yolox-object-detector/2024-02-17_11-08-46</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 
@@ -764,7 +768,7 @@ pd.Series({
 
 
 
-![](./images/output_45_1.png){fig-align="center"}
+![](./images/output_48_1.png){fig-align="center"}
     
 
 <div style="overflow-x:auto; max-height:500px">
@@ -818,7 +822,7 @@ pd.Series({
 
 
 
-![](./images/output_47_0.png){fig-align="center"}
+![](./images/output_50_0.png){fig-align="center"}
 
 
 <div style="overflow-x:auto; max-height:500px">
@@ -915,7 +919,7 @@ draw_bboxes_pil(
 ```
 
 
-![](./images/output_51_0.png){fig-align="center"}
+![](./images/output_56_0.png){fig-align="center"}
 
 <div style="overflow-x:auto; max-height:500px">
 <table id="T_5637a">
@@ -924,15 +928,16 @@ draw_bboxes_pil(
   <tbody>
     <tr>
       <th id="T_5637a_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
-      <td id="T_5637a_row0_col0" class="data row0 col0" >['rock:[341.796 242.258 112.071 113.383]', 'no_gesture:[196.331 521.538 100.786  78.511]']</td>
+      <td id="T_5637a_row0_col0" class="data row0 col0" >['rock:[342.625 242.367 111.735 110.166]', 'no_gesture:[192.449 518.634 104.243 80.717]']</td>
     </tr>
     <tr>
       <th id="T_5637a_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
-      <td id="T_5637a_row1_col0" class="data row1 col0" >['rock: 93.49%', 'no_gesture: 86.02%']</td>
+      <td id="T_5637a_row1_col0" class="data row1 col0" >['rock: 91.29%', 'no_gesture: 86.78%']</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 
@@ -960,11 +965,16 @@ Congratulations on reaching the end of this tutorial! We previously trained a YO
 
 As you move forward, consider exploring more about ONNX and its ecosystem. Check out the available [Execution Providers](https://onnxruntime.ai/docs/execution-providers/) that provide flexible interfaces to different hardware acceleration libraries.
 
-If you found this guide helpful, consider sharing it with others and exploring some of my other tutorials linked below.
-
 
 
 ## Recommended Tutorials
 
+* [**Quantizing YOLOX with ONNX Runtime and TensorRT in Ubuntu**](../ort-tensorrt-ubuntu/): Learn how to quantize YOLOX models with ONNX Runtime and TensorRT for int8 inference.
 * [**Real-Time Object Tracking with YOLOX and ByteTrack**](../byte-track/): Learn how to track objects across video frames with YOLOX and ByteTrack.
 * [**Real-Time Object Detection in Unity with ONNX Runtime and DirectML**](/series/tutorials/onnx-runtime-unity-series.html): Learn how to integrate a native plugin within the Unity game engine for real-time object detection using ONNX Runtime.  
+
+
+
+
+
+{{< include /_tutorial-cta.qmd >}}

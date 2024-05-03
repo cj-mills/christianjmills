@@ -760,3 +760,7 @@ with torch.no_grad():
 ## Conclusion
 
 In this tutorial, we set up Intel's PyTorch extension on Ubuntu and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the [documentation](https://intel.github.io/intel-extension-for-pytorch/xpu/latest/tutorials/installation.html) for the latest version to see if there are any changes. I'll try to keep this tutorial updated with any significant changes to the process.
+
+
+
+{{< include /_tutorial-cta.qmd >}}

@@ -1,6 +1,7 @@
 ---
 title: "Exporting Mask R-CNN Models from PyTorch to ONNX"
 date: 2023-9-21
+date-modified: last-modified
 image: /images/empty.gif
 hide: false
 search_exclude: false
@@ -34,7 +35,7 @@ open-graph:
 
 ## Introduction
 
-Welcome back to this series on training Mask R-CNN models with PyTorch! Previously, we demonstrated how to fine-tune a Mask R-CNN model by training it on a small image dataset of Student ID cards.. This tutorial builds on that by showing how to export the model to [ONNX](https://onnx.ai/) and perform inference using [ONNX Runtime](https://onnxruntime.ai/docs/). 
+Welcome back to this series on training Mask R-CNN models with PyTorch! Previously, we demonstrated how to fine-tune a Mask R-CNN model by training it on a small image dataset of Student ID cards. This tutorial builds on that by showing how to export the model to [ONNX](https://onnx.ai/) and perform inference using [ONNX Runtime](https://onnxruntime.ai/docs/). 
 
 ONNX (Open Neural Network Exchange) is an open format to represent machine learning models and make them portable across various platforms. ONNX Runtime is a cross-platform inference accelerator that provides interfaces to hardware-specific libraries. By exporting our model to ONNX, we can deploy it to multiple devices and leverage hardware acceleration  for faster inference. The Mask R-CNN model is computationally intensive, so any improvements to inference speed are welcome.
 
@@ -66,12 +67,15 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 
 We'll need to add a few new libraries to our [Python environment](../#setting-up-your-python-environment) for working with ONNX models.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 | Package           | Description                                                  |
 | ----------------- | ------------------------------------------------------------ |
 | `onnx`            | This package provides a Python API for working with ONNX models. ([link](https://pypi.org/project/onnx/)) |
 | `onnxruntime`     | ONNX Runtime is a runtime accelerator for machine learning models. ([link](https://onnxruntime.ai/)) |
 | `onnx-simplifier` | This package helps simplify ONNX models. ([link](https://pypi.org/project/onnx-simplifier/)) |
 
+:::
 
 Run the following command to install these additional libraries:
 
@@ -530,7 +534,7 @@ pd.Series({
 # Set test image size
 test_sz = 512
 
-## Resize the test image
+# Resize the test image
 input_img = resize_img(test_img, target_sz=test_sz, divisor=1)
 
 # Calculate the scale between the source image and the resized image
@@ -664,16 +668,12 @@ The model predictions should be virtually identical to the PyTorch model, but th
 
 
 
-
-
-
-
-
-
 ## Conclusion
 
 Congratulations on reaching the end of this tutorial! We previously trained a Mask R-CNN model in PyTorch, and now we've exported that model to ONNX. With this, we can streamline our deployment process and leverage platform-specific hardware optimizations through ONNX Runtime.
 
 As you move forward, consider exploring more about ONNX and its ecosystem. Check out the available [Execution Providers](https://onnxruntime.ai/docs/execution-providers/) that provide flexible interfaces to different hardware acceleration libraries.
 
-If you found this guide helpful, consider sharing it with others.
+
+
+{{< include /_tutorial-cta.qmd >}}

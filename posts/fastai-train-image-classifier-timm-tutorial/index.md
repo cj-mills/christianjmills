@@ -60,13 +60,19 @@ Let's dive in and start training our hand gesture classifier!
 
 The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), which you can run locally or in a cloud-based environment like [Google Colab](https://colab.research.google.com/). If you're new to these platforms or need some guidance setting up, I've created dedicated tutorials to help you:
 
+::: {.callout-tip title="Setup Guides" collapse="true"}
+
 * [**Getting Started with Google Colab**](https://christianjmills.com/posts/google-colab-getting-started-tutorial/)**:** This tutorial introduces you to Google Colab, a free, cloud-based Jupyter Notebook service. You'll learn to write, run, and share Python code directly in your browser.
 
 * [**Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows**](https://christianjmills.com/posts/mamba-getting-started-tutorial-windows/)**:** This tutorial guides you through installing the Mamba package manager on Windows, setting up a local Python environment, and installing PyTorch and Jupyter for machine learning projects.
 
+
+
+:::
+
 No matter your choice of environment, you'll be well-prepared to follow along with the rest of this tutorial. You can download the notebook from the tutorial's GitHub repository or open the notebook directly in Google Colab using the links below.
 
-
+::: {.callout-tip title="Tutorial Code" collapse="true"}
 
 | Platform     | Jupyter Notebook                                             |
 | ------------ | ------------------------------------------------------------ |
@@ -76,7 +82,7 @@ No matter your choice of environment, you'll be well-prepared to follow along wi
 
 
 
-
+:::
 
 
 
@@ -135,7 +141,7 @@ pip install fastai==2.7.13
 
 We also need to install some additional libraries for our project. If you're new to Python or haven't used some of these packages before, don't worry.
 
-Here's a brief overview:
+::: {.callout-note title="Package Descriptions" collapse="true"}
 
 | Package    | Description                                                  |
 | ---------- | ------------------------------------------------------------ |
@@ -143,11 +149,13 @@ Here's a brief overview:
 | `timm`     | The timm library provides state-of-the-art (SOTA) computer vision models, layers, utilities, optimizers, schedulers, data loaders, augmentations, and training/evaluation scripts. ([link](https://github.com/huggingface/pytorch-image-models)) |
 | `torchtnt` | A library for PyTorch training tools and utilities. ([link](https://pytorch.org/tnt/stable/)) |
 
+:::
+
 Run the following commands to install these additional libraries:
 
 ```bash
 # Install additional dependencies
-pip install jupyter timm torchtnt
+pip install jupyter timm torchtnt==0.2.0
 ```
 
 
@@ -156,6 +164,8 @@ pip install jupyter timm torchtnt
 
 We’ll also install some additional packages I made to help us handle images, interact with PyTorch, and work with Pandas DataFrames. These utility packages provide shortcuts for routine tasks and keep our code  clean and readable.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 | Package                | Description                                                  |
 | ---------------------- | ------------------------------------------------------------ |
 | `cjm_pandas_utils`     | Some utility functions for working with Pandas. ([link](https://cj-mills.github.io/cjm-pandas-utils/)) |
@@ -163,6 +173,10 @@ We’ll also install some additional packages I made to help us handle images, i
 | `cjm_psl_utils`        | Some utility functions using the Python Standard Library. ([link](https://cj-mills.github.io/cjm-psl-utils/)) |
 | `cjm_pytorch_utils`    | Some utility functions for working with PyTorch. ([link](https://cj-mills.github.io/cjm-pytorch-utils/)) |
 | `cjm_torchvision_tfms` | Some custom Torchvision tranforms. ([link](https://cj-mills.github.io/cjm-torchvision-tfms/)) |
+
+
+
+:::
 
 ```bash
 # Install utility packages
@@ -194,6 +208,8 @@ Remember: If you close your terminal, the Jupyter Notebook server will stop. So,
 
 With our environment set up, it's time to start the coding part of this tutorial. First, we will import the necessary Python packages into our Jupyter Notebook. Here's a brief overview of how we'll use these packages:
 
+::: {.callout-note title="Package Uses" collapse="true"}
+
 - **Python Standard Library dependencies**: These are built-in modules that come with Python. We'll use them for various tasks like handling file paths ([`pathlib.Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)), manipulating JSON files ([`json`](https://docs.python.org/3/library/json.html)), random number generation ([`random`](https://docs.python.org/3/library/random.html)), mathematical operations ([`math`](https://docs.python.org/3/library/math.html)), copying Python objects ([`copy`](https://docs.python.org/3/library/copy.html)), and working with dates and times ([`datetime`](https://docs.python.org/3/library/datetime.html)).
 - **Utility functions**: These are helper functions from the packages we installed earlier. They provide shortcuts for routine tasks and keep our code clean and readable.
 - **matplotlib**: We use the matplotlib package to explore the dataset samples and class distribution.
@@ -203,6 +219,8 @@ With our environment set up, it's time to start the coding part of this tutorial
 - **timm library**: We'll use the timm library to download and prepare a pre-trained model for fine-tuning.
 
 
+
+:::
 
 
 ```python

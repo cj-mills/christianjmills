@@ -6,6 +6,11 @@ hide: false
 search_exclude: false
 categories: [onnx, directml, unity, tutorial]
 description: "Learn how to create a native plugin for the Unity game engine to perform inference with computer vision models using ONNX Runtime."
+
+aliases:
+- /posts/icevision-openvino-unity-tutorial/part-2/
+- /posts/onnx-directml-unity-tutorial/part-1/
+
 ---
 
 ::: {.callout-tip}
@@ -540,11 +545,12 @@ Check out the [follow-up post](./unity-integration) to learn how to integrate th
 
 
 
-
-
-
-
 ## Recommended Tutorials
 
 * [**Real-Time Object Detection in Unity with ONNX Runtime and DirectML**](./unity-integration/): Learn how to integrate a native plugin in the Unity game engine to perform real-time object detection with ONNX Runtime. 
 
+
+
+
+
+{{< include /_tutorial-cta.qmd >}}

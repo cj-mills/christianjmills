@@ -492,3 +492,4 @@ In this tutorial, we've walked through the process of integrating OpenCV with a 
 
 
 
+{{< include /_tutorial-cta.qmd >}}

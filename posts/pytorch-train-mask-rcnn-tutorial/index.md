@@ -1,6 +1,7 @@
 ---
 title: "Training Mask R-CNN Models with PyTorch"
 date: 2023-9-20
+date-modified: last-modified
 image: /images/empty.gif
 hide: false
 search_exclude: false
@@ -68,11 +69,19 @@ I updated the tutorial code for torchvision [`0.16.0`](https://github.com/pytorc
 
 The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), which you can run locally or in a cloud-based environment like [Google Colab](https://colab.research.google.com/). I have dedicated tutorials for those new to these platforms or who need guidance setting up:
 
-* [**Getting Started with Google Colab**](../google-colab-getting-started-tutorial/)
+::: {.callout-tip title="Setup Guides" collapse="true"}
 
-* [**Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows**](../mamba-getting-started-tutorial-windows/)
+* [**Getting Started with Google Colab**](/posts/google-colab-getting-started-tutorial/)
+
+* [**Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows**](/posts/mamba-getting-started-tutorial-windows/)
 
 
+
+:::
+
+
+
+::: {.callout-tip title="Tutorial Code" collapse="false"}
 
 | Platform     | Jupyter Notebook                                             | Utility File                                                 |
 | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -81,6 +90,8 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 | Windows      | [GitHub Repository](https://github.com/cj-mills/pytorch-mask-rcnn-tutorial-code/blob/main/notebooks/pytorch-mask-r-cnn-training-windows.ipynb) | [windows_utils.py](https://github.com/cj-mills/pytorch-mask-rcnn-tutorial-code/blob/main/notebooks/windows_utils.py) |
 
 
+
+:::
 
 
 
@@ -164,6 +175,10 @@ pip install torch torchvision torchaudio
 
 We also need to install some additional libraries for our project.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
+
+
 | Package       | Description                                                  |
 | ------------- | ------------------------------------------------------------ |
 | `jupyter`     | An  open-source web application that allows you to create and share  documents that contain live code, equations, visualizations, and  narrative text. ([link](https://jupyter.org/)) |
@@ -177,11 +192,13 @@ We also need to install some additional libraries for our project.
 
 
 
+:::
+
 Run the following commands to install these additional libraries:
 
 ```bash
 # Install additional dependencies
-pip install distinctipy jupyter matplotlib pandas pillow torchtnt tqdm tabulate
+pip install distinctipy jupyter matplotlib pandas pillow torchtnt==0.2.0 tqdm tabulate
 ```
 
 
@@ -192,6 +209,8 @@ pip install distinctipy jupyter matplotlib pandas pillow torchtnt tqdm tabulate
 
 We'll also install some utility packages I made to help us handle images, interact with PyTorch, and work with Pandas DataFrames. These utility packages provide shortcuts for routine tasks and keep our code clean and readable.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 
 
 | Package                | Description                                                  |
@@ -201,6 +220,10 @@ We'll also install some utility packages I made to help us handle images, intera
 | `cjm_psl_utils`        | Some utility functions using the Python Standard Library. ([link](https://cj-mills.github.io/cjm-psl-utils/)) |
 | `cjm_pytorch_utils`    | Some utility functions for working with PyTorch. ([link](https://cj-mills.github.io/cjm-pytorch-utils/)) |
 | `cjm_torchvision_tfms` | Some custom Torchvision tranforms. ([link](https://cj-mills.github.io/cjm-torchvision-tfms/)) |
+
+
+
+:::
 
 Run the following commands to install the utility packages:
 
@@ -373,6 +396,18 @@ Now that we set up the project, we can start working with our dataset. The datas
 - [pytorch-for-information-extraction](https://github.com/MbassiJaphet/pytorch-for-information-extraction)
 
 I made a fork of the original repository with only the files needed for this tutorial, which takes up approximately 77 MB.
+
+
+
+::: {.callout-tip title="Segmentation Annotation Format"}
+
+The segmentation masks for this dataset use the [LabelMe](https://github.com/labelmeai/labelme) annotation format. You can learn more about this format and how to work with such annotations in the tutorial linked below:
+
+* [Working with LabelMe Segmentation Annotations in Torchvision](/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)
+
+:::
+
+
 
 ### Setting the Dataset Path
 
@@ -1555,9 +1590,10 @@ num_workers = multiprocessing.cpu_count()//2
 data_loader_params = {
     'batch_size': bs,  # Batch size for data loading
     'num_workers': num_workers,  # Number of subprocesses to use for data loading
+    'persistent_workers': True,  # If True, the data loader will not shutdown the worker processes after a dataset has been consumed once. This allows to maintain the worker dataset instances alive.
+    'pin_memory': 'cuda' in device,  # If True, the data loader will copy Tensors into CUDA pinned memory before returning them. Useful when using GPU.
+    'pin_memory_device': device if 'cuda' in device else '',  # Specifies the device where the data should be loaded. Commonly set to use the GPU.
     'collate_fn': lambda batch: tuple(zip(*batch)),
-    'pin_memory': True,
-    'pin_memory_device': device
 }
 
 # Create DataLoader for training data. Data is shuffled for every epoch.
@@ -1605,7 +1641,7 @@ The model has different behavior when in `training` mode versus `evaluation` mod
 
 
 ```python
-def run_epoch(model, dataloader, optimizer, lr_scheduler, device, scaler, is_training):
+def run_epoch(model, dataloader, optimizer, lr_scheduler, device, scaler, epoch_id, is_training):
     """
     Function to run a single training or evaluation epoch.
     
@@ -1671,10 +1707,10 @@ def run_epoch(model, dataloader, optimizer, lr_scheduler, device, scaler, is_tra
         progress_bar.set_postfix(progress_bar_dict)
         progress_bar.update()
 
-        # If the loss is NaN or infinite, stop the training/evaluation process
-        if math.isnan(loss_item) or math.isinf(loss_item):
-            print(f"Loss is NaN or infinite at batch {batch_id}. Stopping {'training' if is_training else 'evaluation'}.")
-            break
+        # If loss is NaN or infinity, stop training
+        if is_training:
+            stop_training_message = f"Loss is NaN or infinite at epoch {epoch_id}, batch {batch_id}. Stopping training."
+            assert not math.isnan(loss_item) and math.isfinite(loss_item), stop_training_message
 
     # Cleanup and close the progress bar 
     progress_bar.close()
@@ -1719,10 +1755,10 @@ def train_loop(model,
     # Loop over the epochs
     for epoch in tqdm(range(epochs), desc="Epochs"):
         # Run a training epoch and get the training loss
-        train_loss = run_epoch(model, train_dataloader, optimizer, lr_scheduler, device, scaler, is_training=True)
+        train_loss = run_epoch(model, train_dataloader, optimizer, lr_scheduler, device, scaler, epoch, is_training=True)
         # Run an evaluation epoch and get the validation loss
         with torch.no_grad():
-            valid_loss = run_epoch(model, valid_dataloader, None, None, device, scaler, is_training=False)
+            valid_loss = run_epoch(model, valid_dataloader, None, None, device, scaler, epoch, is_training=False)
 
         # If the validation loss is lower than the best validation loss seen so far, save the model checkpoint
         if valid_loss < best_loss:
@@ -1739,11 +1775,6 @@ def train_loop(model,
             }
             with open(Path(checkpoint_path.parent/'training_metadata.json'), 'w') as f:
                 json.dump(training_metadata, f)
-
-        # If the training or validation loss is NaN or infinite, stop the training process
-        if any(math.isnan(loss) or math.isinf(loss) for loss in [train_loss, valid_loss]):
-            print(f"Loss is NaN or infinite at epoch {epoch}. Stopping training.")
-            break
 
     # If the device is a GPU, empty the cache
     if device.type != 'cpu':
@@ -2144,7 +2175,6 @@ The segmentation mask has a few rough spots, but the model appears to have learn
 
 
 
-
 ::: {.callout-caution}
 ## Google Colab Users
 1. Don't forget to download the model checkpoint and class labels from the Colab Environment's file browser. ([tutorial link](https://christianjmills.com/posts/google-colab-getting-started-tutorial/#working-with-data)) 
@@ -2158,13 +2188,15 @@ The segmentation mask has a few rough spots, but the model appears to have learn
 
 Congratulations on completing this tutorial for training Mask R-CNN models in PyTorch! The skills and knowledge you’ve acquired here serve as a solid foundation for future projects.
 
-If you found this guide helpful, consider sharing it with others and exploring some of my other tutorials linked below.
-
-
-
 
 
 ## Recommended Tutorials
 
 - [**Exporting Mask R-CNN Models from PyTorch to ONNX**](./onnx-export/)**:** Learn how to export Mask R-CNN models from PyTorch to ONNX and perform inference using ONNX Runtime.
+- [**Working with LabelMe Segmentation Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)**:** Learn how to work with LabelMe segmentation annotations in torchvision for instance segmentation tasks.
 
+
+
+
+
+{{< include /_tutorial-cta.qmd >}}

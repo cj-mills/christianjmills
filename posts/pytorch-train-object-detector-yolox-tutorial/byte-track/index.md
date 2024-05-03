@@ -66,6 +66,8 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 
 We need to add a couple of new libraries to our [Python environment](../#setting-up-your-python-environment). We will use [OpenCV](https://opencv.org/) to read and write video files. I also made a package with a standalone implementation of ByteTrack. Make sure to install `onnx` and `onnxruntime` if you did not follow the previous tutorial.
 
+::: {.callout-note title="Package Descriptions" collapse="true"}
+
 | Package          | Description                                                  |
 | ---------------- | ------------------------------------------------------------ |
 | `onnx`           | This package provides a Python API for working with ONNX models. ([link](https://pypi.org/project/onnx/)) |
@@ -73,6 +75,9 @@ We need to add a couple of new libraries to our [Python environment](../#setting
 | `opencv-python`  | Wrapper package for [OpenCV](https://opencv.org/) python bindings. ([link]()) |
 | `cjm-byte-track` | A standalone Python implementation of the [ByteTrack](https://arxiv.org/abs/2110.06864) multi-object tracker based on the official implementation. ([link](https://github.com/cj-mills/cjm-byte-track)) |
 
+
+
+:::
 
 Run the following command to install these additional libraries:
 
@@ -797,7 +802,8 @@ Combining YOLOX's robust detection capabilities with ByteTrack's tracking effici
 
 As a follow-up project, consider integrating our hand sign detector with ByteTrack in an application for gesture-based controls or training a new YOLOX model for other domains. The potential applications of this powerful combination are vast, limited only by your imagination.
 
-If you found this guide helpful, consider sharing it with others.
 
 
 
+
+{{< include /_tutorial-cta.qmd >}}

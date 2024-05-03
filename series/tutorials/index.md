@@ -3,12 +3,13 @@ title: "Tutorials"
 listing:
   contents: ./
   sort: 
-    - "date desc"
+    - "date-modified desc"
   type: default
   categories: numbered
   fields: [
     title, 
-    date,  
+    #date,  
+    date-modified,
     categories, 
     description
     ]

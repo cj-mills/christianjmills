@@ -6,6 +6,11 @@ hide: false
 search_exclude: false
 categories: [onnx, directml, yolox, object-detection, unity, tutorial]
 description: "Learn how to integrate a native plugin within the Unity game engine for real-time object detection using ONNX Runtime."
+
+aliases:
+- /posts/icevision-openvino-unity-tutorial/part-3/
+- /posts/onnx-directml-unity-tutorial/part-2/
+
 ---
 
 ::: {.callout-tip}
@@ -982,3 +987,4 @@ Congratulations on completing this tutorial! We previously created a native plug
 
 
 
+{{< include /_tutorial-cta.qmd >}}
