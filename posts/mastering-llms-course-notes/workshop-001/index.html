@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.554">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-05-31">
+<meta name="description" content="Workshop #1 provides a practical overview of fine-tuning large language models, focusing on when it is and is not beneficial, emphasizing a workflow of simplification, prototyping, and iterative improvement using evaluations.">
+
+<title>Christian Mills - Fine-Tuning Workshop 1: When and Why to Fine-Tune an LLM</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Fine-Tuning Workshop 1: When and Why to Fine-Tune an LLM">
+<meta property="og:description" content="Workshop #1 provides a practical overview of fine-tuning large language models, focusing on when it is and is not beneficial, emphasizing a workflow of simplification, prototyping, and iterative improvement using evaluations.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Fine-Tuning Workshop 1: When and Why to Fine-Tune an LLM">
+<meta name="twitter:description" content="Workshop #1 provides a practical overview of fine-tuning large language models, focusing on when it is and is not beneficial, emphasizing a workflow of simplification, prototyping, and iterative improvement using evaluations.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link active" data-scroll-target="#key-takeaways">Key Takeaways</a></li>
+  <li><a href="#course-overview" id="toc-course-overview" class="nav-link" data-scroll-target="#course-overview">Course Overview</a></li>
+  <li><a href="#when-to-fine-tune" id="toc-when-to-fine-tune" class="nav-link" data-scroll-target="#when-to-fine-tune">When to Fine-Tune</a></li>
+  <li><a href="#understanding-fine-tuning" id="toc-understanding-fine-tuning" class="nav-link" data-scroll-target="#understanding-fine-tuning">Understanding Fine-Tuning</a></li>
+  <li><a href="#case-study-logistics-company-regression-problem" id="toc-case-study-logistics-company-regression-problem" class="nav-link" data-scroll-target="#case-study-logistics-company-regression-problem">Case Study: Logistics Company Regression Problem</a>
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#traditional-nlp-and-ml-approaches" id="toc-traditional-nlp-and-ml-approaches" class="nav-link" data-scroll-target="#traditional-nlp-and-ml-approaches">Traditional NLP and ML Approaches</a></li>
+  <li><a href="#fine-tuning-large-language-models" id="toc-fine-tuning-large-language-models" class="nav-link" data-scroll-target="#fine-tuning-large-language-models">Fine-Tuning Large Language Models</a></li>
+  <li><a href="#key-observations-from-fine-tuning" id="toc-key-observations-from-fine-tuning" class="nav-link" data-scroll-target="#key-observations-from-fine-tuning">Key Observations from Fine-Tuning</a></li>
+  <li><a href="#data-representation-and-preprocessing" id="toc-data-representation-and-preprocessing" class="nav-link" data-scroll-target="#data-representation-and-preprocessing">Data Representation and Preprocessing</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#insights-and-recommendations" id="toc-insights-and-recommendations" class="nav-link" data-scroll-target="#insights-and-recommendations">Insights and Recommendations</a></li>
+  </ul></li>
+  <li><a href="#case-study-honeycomb-natural-language-query-assistant" id="toc-case-study-honeycomb-natural-language-query-assistant" class="nav-link" data-scroll-target="#case-study-honeycomb-natural-language-query-assistant">Case Study: Honeycomb Natural Language Query Assistant</a>
+  <ul>
+  <li><a href="#overview-1" id="toc-overview-1" class="nav-link" data-scroll-target="#overview-1">Overview</a></li>
+  <li><a href="#honeycomb-platform-overview" id="toc-honeycomb-platform-overview" class="nav-link" data-scroll-target="#honeycomb-platform-overview">Honeycomb Platform Overview</a></li>
+  <li><a href="#initial-solution-natural-language-query-assistant" id="toc-initial-solution-natural-language-query-assistant" class="nav-link" data-scroll-target="#initial-solution-natural-language-query-assistant">Initial Solution: Natural Language Query Assistant</a></li>
+  <li><a href="#prompt-structure" id="toc-prompt-structure" class="nav-link" data-scroll-target="#prompt-structure">Prompt Structure</a></li>
+  <li><a href="#challenges-with-initial-solution" id="toc-challenges-with-initial-solution" class="nav-link" data-scroll-target="#challenges-with-initial-solution">Challenges with Initial Solution</a></li>
+  <li><a href="#business-challenges" id="toc-business-challenges" class="nav-link" data-scroll-target="#business-challenges">Business Challenges</a></li>
+  <li><a href="#fine-tuning-solution" id="toc-fine-tuning-solution" class="nav-link" data-scroll-target="#fine-tuning-solution">Fine-Tuning Solution</a></li>
+  <li><a href="#recommendations" id="toc-recommendations" class="nav-link" data-scroll-target="#recommendations">Recommendations</a></li>
+  </ul></li>
+  <li><a href="#qa-session-1" id="toc-qa-session-1" class="nav-link" data-scroll-target="#qa-session-1">Q&amp;A Session #1</a>
+  <ul>
+  <li><a href="#fine-tuning-vs.-rag" id="toc-fine-tuning-vs.-rag" class="nav-link" data-scroll-target="#fine-tuning-vs.-rag">Fine-Tuning vs.&nbsp;RAG</a></li>
+  <li><a href="#fine-tuning-for-function-calls" id="toc-fine-tuning-for-function-calls" class="nav-link" data-scroll-target="#fine-tuning-for-function-calls">Fine-Tuning for Function Calls</a></li>
+  <li><a href="#data-requirements-for-fine-tuning" id="toc-data-requirements-for-fine-tuning" class="nav-link" data-scroll-target="#data-requirements-for-fine-tuning">Data Requirements for Fine-Tuning</a></li>
+  <li><a href="#synthetic-data-generation" id="toc-synthetic-data-generation" class="nav-link" data-scroll-target="#synthetic-data-generation">Synthetic Data Generation</a></li>
+  <li><a href="#base-models-vs.-instruction-tuned-models" id="toc-base-models-vs.-instruction-tuned-models" class="nav-link" data-scroll-target="#base-models-vs.-instruction-tuned-models">Base Models vs.&nbsp;Instruction-Tuned Models</a></li>
+  <li><a href="#model-size-for-fine-tuning" id="toc-model-size-for-fine-tuning" class="nav-link" data-scroll-target="#model-size-for-fine-tuning">Model Size for Fine-Tuning</a></li>
+  <li><a href="#multimodal-fine-tuning" id="toc-multimodal-fine-tuning" class="nav-link" data-scroll-target="#multimodal-fine-tuning">Multimodal Fine-Tuning</a></li>
+  <li><a href="#recommendations-1" id="toc-recommendations-1" class="nav-link" data-scroll-target="#recommendations-1">Recommendations</a></li>
+  </ul></li>
+  <li><a href="#chatbots" id="toc-chatbots" class="nav-link" data-scroll-target="#chatbots">Chatbots</a>
+  <ul>
+  <li><a href="#overview-2" id="toc-overview-2" class="nav-link" data-scroll-target="#overview-2">Overview</a></li>
+  <li><a href="#importance-of-saying-no-to-general-purpose-chatbots" id="toc-importance-of-saying-no-to-general-purpose-chatbots" class="nav-link" data-scroll-target="#importance-of-saying-no-to-general-purpose-chatbots">Importance of Saying No to General-Purpose Chatbots</a></li>
+  <li><a href="#case-study-rechat-real-estate-crm-tool" id="toc-case-study-rechat-real-estate-crm-tool" class="nav-link" data-scroll-target="#case-study-rechat-real-estate-crm-tool">Case Study: Rechat Real Estate CRM Tool</a></li>
+  <li><a href="#lessons-from-rechat-case-study" id="toc-lessons-from-rechat-case-study" class="nav-link" data-scroll-target="#lessons-from-rechat-case-study">Lessons from Rechat Case Study</a></li>
+  <li><a href="#managing-user-expectations" id="toc-managing-user-expectations" class="nav-link" data-scroll-target="#managing-user-expectations">Managing User Expectations</a></li>
+  <li><a href="#real-world-example-dpd-chatbot-incident" id="toc-real-world-example-dpd-chatbot-incident" class="nav-link" data-scroll-target="#real-world-example-dpd-chatbot-incident">Real-World Example: DPD Chatbot Incident</a></li>
+  <li><a href="#guardrails-and-prompt-injections" id="toc-guardrails-and-prompt-injections" class="nav-link" data-scroll-target="#guardrails-and-prompt-injections">Guardrails and Prompt Injections</a></li>
+  <li><a href="#recommendations-2" id="toc-recommendations-2" class="nav-link" data-scroll-target="#recommendations-2">Recommendations</a></li>
+  </ul></li>
+  <li><a href="#preference-optimization" id="toc-preference-optimization" class="nav-link" data-scroll-target="#preference-optimization">Preference Optimization</a>
+  <ul>
+  <li><a href="#preference-optimization-algorithms" id="toc-preference-optimization-algorithms" class="nav-link" data-scroll-target="#preference-optimization-algorithms">Preference Optimization Algorithms</a></li>
+  <li><a href="#direct-preference-optimization-dpo" id="toc-direct-preference-optimization-dpo" class="nav-link" data-scroll-target="#direct-preference-optimization-dpo">Direct Preference Optimization (DPO)</a></li>
+  <li><a href="#process-of-direct-preference-optimization" id="toc-process-of-direct-preference-optimization" class="nav-link" data-scroll-target="#process-of-direct-preference-optimization">Process of Direct Preference Optimization</a></li>
+  <li><a href="#case-study-customer-service-email-project" id="toc-case-study-customer-service-email-project" class="nav-link" data-scroll-target="#case-study-customer-service-email-project">Case Study: Customer Service Email Project</a></li>
+  <li><a href="#performance-comparison" id="toc-performance-comparison" class="nav-link" data-scroll-target="#performance-comparison">Performance Comparison</a></li>
+  <li><a href="#advantages-of-direct-preference-optimization" id="toc-advantages-of-direct-preference-optimization" class="nav-link" data-scroll-target="#advantages-of-direct-preference-optimization">Advantages of Direct Preference Optimization</a></li>
+  <li><a href="#recommendations-3" id="toc-recommendations-3" class="nav-link" data-scroll-target="#recommendations-3">Recommendations</a></li>
+  </ul></li>
+  <li><a href="#evaluating-use-cases-for-fine-tuning" id="toc-evaluating-use-cases-for-fine-tuning" class="nav-link" data-scroll-target="#evaluating-use-cases-for-fine-tuning">Evaluating Use Cases for Fine-Tuning</a>
+  <ul>
+  <li><a href="#customer-service-automation-for-a-fast-food-chain" id="toc-customer-service-automation-for-a-fast-food-chain" class="nav-link" data-scroll-target="#customer-service-automation-for-a-fast-food-chain">1. Customer Service Automation for a Fast Food Chain</a></li>
+  <li><a href="#classification-of-research-articles-for-a-medical-publisher" id="toc-classification-of-research-articles-for-a-medical-publisher" class="nav-link" data-scroll-target="#classification-of-research-articles-for-a-medical-publisher">2. Classification of Research Articles for a Medical Publisher</a></li>
+  <li><a href="#short-fiction-generation-for-a-startup" id="toc-short-fiction-generation-for-a-startup" class="nav-link" data-scroll-target="#short-fiction-generation-for-a-startup">3. Short Fiction Generation for a Startup</a></li>
+  <li><a href="#automated-news-summarization-for-employees" id="toc-automated-news-summarization-for-employees" class="nav-link" data-scroll-target="#automated-news-summarization-for-employees">4. Automated News Summarization for Employees</a></li>
+  <li><a href="#important-considerations" id="toc-important-considerations" class="nav-link" data-scroll-target="#important-considerations">Important Considerations</a></li>
+  <li><a href="#recommendations-4" id="toc-recommendations-4" class="nav-link" data-scroll-target="#recommendations-4">Recommendations</a></li>
+  </ul></li>
+  <li><a href="#qa-session-2" id="toc-qa-session-2" class="nav-link" data-scroll-target="#qa-session-2">Q&amp;A Session #2</a>
+  <ul>
+  <li><a href="#quantization" id="toc-quantization" class="nav-link" data-scroll-target="#quantization">Quantization</a></li>
+  <li><a href="#hallucination-in-language-models" id="toc-hallucination-in-language-models" class="nav-link" data-scroll-target="#hallucination-in-language-models">Hallucination in Language Models</a></li>
+  <li><a href="#fine-tuning-large-language-models-1" id="toc-fine-tuning-large-language-models-1" class="nav-link" data-scroll-target="#fine-tuning-large-language-models-1">Fine-Tuning Large Language Models</a></li>
+  <li><a href="#optimizing-prompts" id="toc-optimizing-prompts" class="nav-link" data-scroll-target="#optimizing-prompts">Optimizing Prompts</a></li>
+  <li><a href="#data-annotation-and-evaluation" id="toc-data-annotation-and-evaluation" class="nav-link" data-scroll-target="#data-annotation-and-evaluation">Data Annotation and Evaluation</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Fine-Tuning Workshop 1: When and Why to Fine-Tune an LLM</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Workshop #1 provides a practical overview of fine-tuning large language models, focusing on when it is and is not beneficial, emphasizing a workflow of simplification, prototyping, and iterative improvement using evaluations.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 31, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#key-takeaways">Key Takeaways</a></li>
+<li><a href="#course-overview">Course Overview</a></li>
+<li><a href="#when-to-fine-tune">When to Fine-Tune</a></li>
+<li><a href="#understanding-fine-tuning">Understanding Fine-Tuning</a></li>
+<li><a href="#case-study-logistics-company-regression-problem">Case Study: Logistics Company Regression Problem</a></li>
+<li><a href="#case-study-honeycomb-natural-language-query-assistant">Case Study: Honeycomb Natural Language Query Assistant</a></li>
+<li><a href="#qa-session-1">Q&amp;A Session #1</a></li>
+<li><a href="#chatbots">Chatbots</a></li>
+<li><a href="#preference-optimization">Preference Optimization</a></li>
+<li><a href="#evaluating-use-cases-for-fine-tuning">Evaluating Use Cases for Fine-Tuning</a></li>
+<li><a href="#qa-session-2">Q&amp;A Session #2</a></li>
+</ul>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key Takeaways</h2>
+<ul>
+<li><strong>Start simple:</strong> Focus on prompt engineering and using pre-trained models like those from OpenAI before jumping into the complexity of fine-tuning.</li>
+<li><strong>Fine-tune strategically:</strong> Consider fine-tuning when you need bespoke behavior, have unique data, or require data privacy.</li>
+<li><strong>Templating is crucial:</strong> Pay close attention to consistency in templating between training and inference to avoid unexpected model behavior.</li>
+<li><strong>Evaluate rigorously:</strong> Use domain-specific evaluations and metrics to measure model performance and guide fine-tuning decisions.</li>
+<li><strong>Preference optimization shows promise:</strong> Techniques like Direct Preference Optimization (DPO) can train models to outperform even human experts by learning from comparative feedback.</li>
+</ul>
+</section>
+<section id="course-overview" class="level2">
+<h2 class="anchored" data-anchor-id="course-overview">Course Overview</h2>
+<ul>
+<li><strong>Focus:</strong> Actionable insights and practical guidance from real-world experience in deploying LLMs for various business needs.</li>
+<li><strong>Philosophy:</strong>
+<ul>
+<li>Prioritize practical value over project ideas that only sound cool.</li>
+<li>Start with simple, straightforward solutions and progressively refine them.</li>
+<li>Ship prototypes quickly for rapid iteration and feedback.</li>
+</ul></li>
+<li><strong>Workflow:</strong>
+<ul>
+<li>Start with prompt engineering before considering fine-tuning.
+<ul>
+<li>Prompt engineering provides much faster iteration and experimentation.</li>
+<li>The results from prompt engineering will help inform whether fine-tuning is necessary.</li>
+</ul></li>
+<li>Iterate quickly with simple prototypes.
+<ul>
+<li>Build and show people concrete things, so they can provide feedback.</li>
+<li>Simple prototypes almost always work well enough to start making progress.</li>
+</ul></li>
+<li>Incorporate evaluations (Evals) to measure and improve model performance.
+<ul>
+<li>Blog Post: <a href="https://hamel.dev/blog/posts/evals/">Your AI Product Needs Evals</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="when-to-fine-tune" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-fine-tune">When to Fine-Tune</h2>
+<ul>
+<li><strong>Don’t fine-tune for generic behavior:</strong>
+<ul>
+<li>Use existing powerful models like OpenAI’s GPT or Anthropic’s models via API for tasks where they excel.</li>
+<li>Increasingly larger context windows allows us to fit more examples to fit into a prompt.</li>
+<li>You should have some minimal evaluation system that you hit a wall on with prompting alone, before considering fine-tuning.</li>
+</ul></li>
+<li><strong>Do fine-tune for bespoke behavior:</strong>
+<ul>
+<li>When you need specific outputs or behavior not achievable through prompt engineering alone.</li>
+<li>When you have a narrow, well-defined problem domain and sufficient data for training.
+<ul>
+<li>Fine-tuning requires examples of desired inputs and outputs for supervised learning.</li>
+</ul></li>
+<li>When data privacy and model ownership are critical.</li>
+<li>When you need improved quality and lower latency compared to large pre-trained models.</li>
+<li>Requires proper operational setup and significant value use cases.</li>
+</ul></li>
+<li><strong>Iteration Speed &amp; Complexity:</strong> Fine-tuning involves slower iteration cycles and operational complexities compared to using pre-trained models.</li>
+</ul>
+</section>
+<section id="understanding-fine-tuning" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-fine-tuning">Understanding Fine-Tuning</h2>
+<ul>
+<li><strong>Pre-training:</strong> Training LLMs on massive text datasets to learn language fundamentals and next-token prediction.</li>
+<li><strong>Building on Pre-trained Models:</strong>
+<ul>
+<li>Fine-tuning adapts pre-trained models with vast general language knowledge to excel in specific domains.</li>
+<li>Fine-tuning harnesses the next-token prediction mechanism used in pre-training to generate desired outputs.</li>
+</ul></li>
+<li><strong>Importance of Input-Output Examples</strong>
+<ul>
+<li>Fine-tuning requires clear examples of desired inputs and outputs.</li>
+<li>Documentation alone isn’t sufficient; practical examples are necessary.</li>
+<li>Mixed quality of training data (e.g., varied quality of human-written summaries) can lead to mediocre model performance.</li>
+</ul></li>
+<li><strong>Templating for Inference Control:</strong>
+<ul>
+<li>Guides the model to produce specific outputs by short-circuiting pre-trained behavior.</li>
+<li>Inputs and outputs are placed within a consistent template to guide the model during inference.</li>
+<li>Crucial for aligning training and inference.</li>
+<li>Defines the structure of input and output text to guide the model.<br>
+</li>
+<li>Inconsistencies in templating are a major source of errors.
+<ul>
+<li>Templates must be identical between training and inference.</li>
+<li>There are many kinds of templates and it is easy to misinterpret them.</li>
+<li>Many tools try to abstract away and automate building templates and something often goes wrong.</li>
+<li>Blog Post: <a href="https://hamel.dev/notes/llm/finetuning/05_tokenizer_gotchas.html">Tokenization Gotchas</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="case-study-logistics-company-regression-problem" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-logistics-company-regression-problem">Case Study: Logistics Company Regression Problem</h2>
+<section id="overview" class="level3">
+<h3 class="anchored" data-anchor-id="overview">Overview</h3>
+<ul>
+<li><strong>Task:</strong> Logistics company (e.g., UPS, DHL, USPS) needed to predict item value based on an 80-character description.</li>
+<li><strong>Takeaways:</strong> Highlights the importance of understanding and preparing the training data, the limitations of fine-tuning for specific regression tasks, and the practical issues encountered with this approach.</li>
+</ul>
+</section>
+<section id="traditional-nlp-and-ml-approaches" class="level3">
+<h3 class="anchored" data-anchor-id="traditional-nlp-and-ml-approaches">Traditional NLP and ML Approaches</h3>
+<ul>
+<li><strong>Classical Techniques:</strong> Initial consideration to use traditional NLP and ML methods.</li>
+<li><strong>Bag of Words Representation:</strong> Highlighted issue where models fail to recognize unseen words or infrequent words due to limited data.</li>
+</ul>
+</section>
+<section id="fine-tuning-large-language-models" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-large-language-models">Fine-Tuning Large Language Models</h3>
+<ul>
+<li><strong>Initial Approach:</strong> Attempted to use a large language model (LLM) with and without fine-tuning for regression.</li>
+<li><strong>Outcome:</strong> The model learned patterns in the data that were not ideal for the task.</li>
+</ul>
+</section>
+<section id="key-observations-from-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="key-observations-from-fine-tuning">Key Observations from Fine-Tuning</h3>
+<ul>
+<li><strong>Round Numbers:</strong> The model tended to predict round numbers frequently because past entries often used round numbers.</li>
+<li><strong>Mismatch in Values:</strong> Conventional ML models can predict approximate values (e.g., $97 vs.&nbsp;$100), which is often more useful than exact but less frequent round number predictions by the LLM.</li>
+<li><strong>Training Data Limitations:</strong> Training data often contained inaccuracies, such as undervalued entries to avoid insurance costs.</li>
+</ul>
+</section>
+<section id="data-representation-and-preprocessing" class="level3">
+<h3 class="anchored" data-anchor-id="data-representation-and-preprocessing">Data Representation and Preprocessing</h3>
+<ul>
+<li><strong>Description Complexity:</strong> Corporate descriptions were often abbreviated or used acronyms, making them hard to interpret both for humans and models.</li>
+<li><strong>Pre-trained Model Limitations:</strong> Pre-trained models struggled with unknown abbreviations or context-specific terms not encountered during pre-training.</li>
+</ul>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion">Conclusion</h3>
+<ul>
+<li><strong>Unsuccessful Case Study:</strong> The fine-tuning approach was largely unsuccessful due to predictable data issues.</li>
+</ul>
+</section>
+<section id="insights-and-recommendations" class="level3">
+<h3 class="anchored" data-anchor-id="insights-and-recommendations">Insights and Recommendations</h3>
+<ul>
+<li><strong>Data Quality:</strong> Emphasized the importance of high-quality, representative training data for desired future behavior.</li>
+<li><strong>Raw Data Examination:</strong> Stressed the need to carefully inspect raw data, a common yet frequently overlooked step in data science.</li>
+<li><strong>Practicality of ML Solutions:</strong> For this case, traditional ML and NLP techniques did not provide satisfactory results, leading to the retention of the manual workflow.</li>
+</ul>
+</section>
+</section>
+<section id="case-study-honeycomb-natural-language-query-assistant" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-honeycomb-natural-language-query-assistant">Case Study: Honeycomb Natural Language Query Assistant</h2>
+<section id="overview-1" class="level3">
+<h3 class="anchored" data-anchor-id="overview-1">Overview</h3>
+<ul>
+<li><p><strong>Task:</strong> Building a system for Honeycomb, an observability platform that logs telemetry data about software applications, that translates natural language queries into the platform’s domain-specific query language.</p></li>
+<li><p><strong>Takeaways:</strong> Highlights the importance of fine-tuning in addressing domain-specific challenges, improving model performance, and meeting business requirements such as data privacy and operational efficiency.</p></li>
+</ul>
+</section>
+<section id="honeycomb-platform-overview" class="level3">
+<h3 class="anchored" data-anchor-id="honeycomb-platform-overview">Honeycomb Platform Overview</h3>
+<ul>
+<li>Honeycomb is an observability platform.</li>
+<li>Logs telemetry data like page load times, database response times, and application bottlenecks.</li>
+<li>Users query this data using a domain-specific query language.</li>
+</ul>
+</section>
+<section id="initial-solution-natural-language-query-assistant" class="level3">
+<h3 class="anchored" data-anchor-id="initial-solution-natural-language-query-assistant">Initial Solution: Natural Language Query Assistant</h3>
+<ul>
+<li><strong>Problem:</strong> Users must learn a specific query language to use Honeycomb effectively.</li>
+<li><strong>Solution:</strong> Create a natural language query assistant that translates user queries into Honeycomb’s query language using large language models (LLMs).</li>
+<li><strong>Initial Approach:</strong>
+<ul>
+<li>User provides a query and schema (list of column names from the user’s data).</li>
+<li>Prompt assembled with user input and schema sent to GPT-3/GPT-3.5.</li>
+<li>Generated a Honeycomb query based on the prompt.</li>
+</ul></li>
+</ul>
+</section>
+<section id="prompt-structure" class="level3">
+<h3 class="anchored" data-anchor-id="prompt-structure">Prompt Structure</h3>
+<ol type="1">
+<li><strong>System Message:</strong>
+<ul>
+<li>“Honeycomb AI suggests queries based on user input.”</li>
+</ul></li>
+<li><strong>Columns Section:</strong>
+<ul>
+<li>Schema from the user’s data inserted here.</li>
+</ul></li>
+<li><strong>Query Spec:</strong>
+<ul>
+<li>Simplified programming manual for Honeycomb’s query language.</li>
+<li>Contains operations and comments on their usage.</li>
+</ul></li>
+<li><strong>Tips Section:</strong>
+<ul>
+<li>Guidelines to handle different failure modes and edge cases.</li>
+<li>Example: Handling time ranges correctly.</li>
+</ul></li>
+<li><strong>Few-Shot Examples:</strong>
+<ul>
+<li>Examples of natural language queries and corresponding Honeycomb query outputs.</li>
+</ul></li>
+</ol>
+</section>
+<section id="challenges-with-initial-solution" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-with-initial-solution">Challenges with Initial Solution</h3>
+<ul>
+<li><strong>Expressing Query Language Nuances:</strong>
+<ul>
+<li>Hard to capture all idioms and best practices of the query language.</li>
+<li>GPT-3.5 lacks extensive exposure to Honeycomb’s specific query language.</li>
+</ul></li>
+<li><strong>Tips Section Complexity:</strong>
+<ul>
+<li>Tips devolved into numerous if-then statements.</li>
+<li>Difficult for the language model to follow multiple conditionals.</li>
+</ul></li>
+<li><strong>Few-Shot Examples Limitations:</strong>
+<ul>
+<li>Hard to cover all edge cases.</li>
+<li>Dynamic few-shot examples could help but were not implemented.</li>
+</ul></li>
+</ul>
+</section>
+<section id="business-challenges" class="level3">
+<h3 class="anchored" data-anchor-id="business-challenges">Business Challenges</h3>
+<ul>
+<li><strong>Data Privacy:</strong>
+<ul>
+<li>Need permission to send customer data to OpenAI.</li>
+<li>Preference to keep data within a trusted boundary.</li>
+</ul></li>
+<li><strong>Quality vs.&nbsp;Latency Tradeoff:</strong>
+<ul>
+<li>GPT-4 offered higher quality but was too slow and expensive.</li>
+<li>Goal: Train a smaller, faster model with comparable quality.</li>
+</ul></li>
+<li><strong>Narrow Domain Problem:</strong>
+<ul>
+<li>Honeycomb queries are a focused, narrow domain ideal for fine-tuning.</li>
+</ul></li>
+<li><strong>Impracticality of Extensive Prompt Engineering:</strong>
+<ul>
+<li>Hard to manually encode all nuances of the query language.</li>
+<li>Fine-tuning with many examples is more practical.</li>
+</ul></li>
+</ul>
+</section>
+<section id="fine-tuning-solution" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-solution">Fine-Tuning Solution</h3>
+<ul>
+<li><strong>Advantages:</strong>
+<ul>
+<li>Faster, more compliant with data privacy needs.</li>
+<li>Higher quality responses compared to GPT-3.5.</li>
+</ul></li>
+<li><strong>Implementation:</strong>
+<ul>
+<li>Fine-tuned a model using synthetic data provided by Honeycomb.</li>
+<li>The process and challenges encountered during fine-tuning will be simulated in the course.</li>
+</ul></li>
+</ul>
+</section>
+<section id="recommendations" class="level3">
+<h3 class="anchored" data-anchor-id="recommendations">Recommendations</h3>
+<ol type="1">
+<li><strong>Implement Fine-Tuning:</strong>
+<ul>
+<li>Use synthetic data to replicate and improve the model.</li>
+<li>Focus on capturing edge cases and nuances in the training data.</li>
+</ul></li>
+<li><strong>Optimize for Performance:</strong>
+<ul>
+<li>Balance model size and latency to ensure quick responses without sacrificing quality.</li>
+</ul></li>
+<li><strong>Ensure Data Privacy:</strong>
+<ul>
+<li>Keep data within a trusted boundary to comply with customer privacy requirements.</li>
+</ul></li>
+<li><strong>Regularly Update Few-Shot Examples:</strong>
+<ul>
+<li>Dynamically generate examples to cover new edge cases and improve model accuracy.</li>
+</ul></li>
+<li><strong>Monitor and Iterate:</strong>
+<ul>
+<li>Continuously monitor model performance and iteratively improve based on user feedback and new data.</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="qa-session-1" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session-1">Q&amp;A Session #1</h2>
+<p>This Q&amp;A session covers various aspects of fine-tuning machine learning models, particularly focusing on fine-tuning versus retrieval-augmented generation (RAG), function calling, and synthetic data generation. It also touches upon the use of base models versus instruction-tuned models and the appropriate amount of data for fine-tuning.</p>
+<section id="fine-tuning-vs.-rag" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-vs.-rag">Fine-Tuning vs.&nbsp;RAG</h3>
+<ul>
+<li><strong>Definitions</strong>:
+<ul>
+<li><strong>Fine-Tuning</strong>: Adjusting a pre-trained model with additional data to improve performance in specific tasks.</li>
+<li><strong>RAG (Retrieval-Augmented Generation)</strong>: Combines information retrieval with generation to produce responses based on external documents.</li>
+</ul></li>
+<li><strong>Key Point</strong>: Fine-tuning and RAG are not mutually exclusive; they can complement each other.</li>
+<li><strong>Process</strong>: Validate the need for fine-tuning by ensuring good prompts and effective RAG.</li>
+</ul>
+</section>
+<section id="fine-tuning-for-function-calls" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-for-function-calls">Fine-Tuning for Function Calls</h3>
+<ul>
+<li><strong>Capability</strong>: Models can be fine-tuned to improve at making function calls.</li>
+<li><strong>Examples</strong>: Open models like LLaMA 3 and LLaMA 2 have been fine-tuned for function calling.</li>
+<li><strong>Challenges</strong>: Identify and use good training data with successful function call examples while filtering out failures.</li>
+</ul>
+</section>
+<section id="data-requirements-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="data-requirements-for-fine-tuning">Data Requirements for Fine-Tuning</h3>
+<ul>
+<li><strong>Amount of Data</strong>: Success with as few as 100 samples, though this varies by problem scope.</li>
+<li><strong>Broad Scope Problems</strong>: Require more data to cover the problem space adequately.</li>
+<li><strong>Narrow Scope Problems</strong>: Can often be fine-tuned with relatively little data.</li>
+</ul>
+</section>
+<section id="synthetic-data-generation" class="level3">
+<h3 class="anchored" data-anchor-id="synthetic-data-generation">Synthetic Data Generation</h3>
+<ul>
+<li><strong>Importance</strong>: Helps overcome data scarcity in specific domains.</li>
+<li><strong>Methods</strong>: Use powerful models to generate synthetic data, perturb existing data, and create test cases.</li>
+<li><strong>Practical Example</strong>: Honeycomb example shows generating synthetic data to test and train models.</li>
+</ul>
+</section>
+<section id="base-models-vs.-instruction-tuned-models" class="level3">
+<h3 class="anchored" data-anchor-id="base-models-vs.-instruction-tuned-models">Base Models vs.&nbsp;Instruction-Tuned Models</h3>
+<ul>
+<li><strong>Base Models</strong>: Not fine-tuned for specific instructions, allowing more control over fine-tuning processes.</li>
+<li><strong>Instruction-Tuned Models</strong>: Pre-fine-tuned to respond to instructions, useful in broader chat-based applications.</li>
+<li><strong>Preference</strong>: Often uses base models to avoid template conflicts and ensure specific fine-tuning needs.</li>
+</ul>
+</section>
+<section id="model-size-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="model-size-for-fine-tuning">Model Size for Fine-Tuning</h3>
+<ul>
+<li><strong>Preferred Size</strong>: Starts with smaller models (e.g., 7 billion parameters) and scales up based on complexity and performance needs.</li>
+<li><strong>Trade-Offs</strong>: Larger models require more resources and justification due to higher costs and hosting difficulties.</li>
+</ul>
+</section>
+<section id="multimodal-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="multimodal-fine-tuning">Multimodal Fine-Tuning</h3>
+<ul>
+<li><strong>Example Project</strong>: Fine-tuning models to write alt text for images to assist visually impaired users.</li>
+<li><strong>Tools</strong>: The LLaVA model is recommended for fine-tuning multimodal tasks.</li>
+</ul>
+</section>
+<section id="recommendations-1" class="level3">
+<h3 class="anchored" data-anchor-id="recommendations-1">Recommendations</h3>
+<ol type="1">
+<li><strong>Validate the Need for Fine-Tuning</strong>: Before starting, ensure you have good prompts and effective RAG if applicable.</li>
+<li><strong>Choose the Right Data</strong>: Use high-quality, successful examples for fine-tuning and filter out poor results.</li>
+<li><strong>Start Small</strong>: Begin with smaller models and incrementally increase size based on performance needs.</li>
+<li><strong>Leverage Synthetic Data</strong>: Generate and use synthetic data to supplement training data, especially in data-scarce domains.</li>
+<li><strong>Understand Model Types</strong>: Choose between base models and instruction-tuned models based on the specific use case and desired control over fine-tuning.</li>
+<li><strong>Explore Multimodal Capabilities</strong>: Consider multimodal fine-tuning for tasks that require handling both text and images, utilizing models like LLaVA.</li>
+</ol>
+</section>
+</section>
+<section id="chatbots" class="level2">
+<h2 class="anchored" data-anchor-id="chatbots">Chatbots</h2>
+<section id="overview-2" class="level3">
+<h3 class="anchored" data-anchor-id="overview-2">Overview</h3>
+<ul>
+<li><strong>Topic:</strong> Delves into the common pitfalls and considerations when working with LLM-powered chatbots.</li>
+<li><strong>Takaways:</strong> Highlights why general-purpose chatbots are often a bad idea, with unrealistic expectations and overly broad scope leading to poor user experiences and significant challenges in development.</li>
+</ul>
+</section>
+<section id="importance-of-saying-no-to-general-purpose-chatbots" class="level3">
+<h3 class="anchored" data-anchor-id="importance-of-saying-no-to-general-purpose-chatbots">Importance of Saying No to General-Purpose Chatbots</h3>
+<ul>
+<li><strong>Prevalence of Chatbot Requests</strong>: When working with LLMs, most clients will request a chatbot.</li>
+<li><strong>Need for Caution</strong>: It’s often necessary to push back on these requests due to potential complications.</li>
+</ul>
+</section>
+<section id="case-study-rechat-real-estate-crm-tool" class="level3">
+<h3 class="anchored" data-anchor-id="case-study-rechat-real-estate-crm-tool">Case Study: Rechat Real Estate CRM Tool</h3>
+<ul>
+<li><strong>Initial Concept</strong>: A CRM tool for real estate that integrated multiple functionalities (appointments, listings, social media marketing).</li>
+<li><strong>Initial Implementation</strong>: Started with a broad chat interface labeled “Ask Lucy anything.”
+<ul>
+<li><strong>Problems with Broad Scope</strong>:
+<ul>
+<li>Unmanageable surface area.</li>
+<li>User expectations mismatched with capabilities.</li>
+<li>Difficult to make progress on scoped tasks.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="lessons-from-rechat-case-study" class="level3">
+<h3 class="anchored" data-anchor-id="lessons-from-rechat-case-study">Lessons from Rechat Case Study</h3>
+<ul>
+<li><strong>Scoped Interfaces</strong>: Introduced cards to guide users towards specific tasks (e.g., write a blog post, create a website).
+<ul>
+<li><strong>Function Modules</strong>: Broke down functionalities into manageable modules (email composer, CMA).</li>
+<li><strong>Fine-Tuning Challenges</strong>: Difficult to fine-tune against a large and varied set of functions.</li>
+</ul></li>
+</ul>
+</section>
+<section id="managing-user-expectations" class="level3">
+<h3 class="anchored" data-anchor-id="managing-user-expectations">Managing User Expectations</h3>
+<ul>
+<li><strong>High User Expectations</strong>: Users often assume chatbots can handle any request, leading to disappointment.</li>
+<li><strong>Setting Realistic Boundaries</strong>: Important to guide users on what the chatbot can realistically do.</li>
+</ul>
+</section>
+<section id="real-world-example-dpd-chatbot-incident" class="level3">
+<h3 class="anchored" data-anchor-id="real-world-example-dpd-chatbot-incident">Real-World Example: DPD Chatbot Incident</h3>
+<ul>
+<li><strong>Background</strong>: A chatbot released for a package delivery company, DPD, faced issues on launch.</li>
+<li><strong>Incident</strong>: The chatbot swore in response to a user’s prompt, leading to negative publicity.
+<ul>
+<li><strong>Media Coverage</strong>: The incident was widely reported, causing significant concern within the company.</li>
+</ul></li>
+<li><strong>Lesson Learned</strong>:
+<ul>
+<li><strong>Expectations vs.&nbsp;Reality</strong>: Even harmless errors can become major issues if they attract public attention.</li>
+<li><strong>Guardrails</strong>: Conventional software has clear input validation; free-form text input in chatbots is harder to manage.</li>
+</ul></li>
+</ul>
+</section>
+<section id="guardrails-and-prompt-injections" class="level3">
+<h3 class="anchored" data-anchor-id="guardrails-and-prompt-injections">Guardrails and Prompt Injections</h3>
+<ul>
+<li><strong>Challenges with Guardrails</strong>: Tools to check for prompt injections are imperfect.</li>
+<li><strong>Importance of Reviewing Prompts</strong>: Critical to understand and review the prompts used by guardrails to ensure safety.</li>
+</ul>
+</section>
+<section id="recommendations-2" class="level3">
+<h3 class="anchored" data-anchor-id="recommendations-2">Recommendations</h3>
+<ol type="1">
+<li><strong>Scoped Interfaces Over General Chatbots</strong>: Focus on integrating chatbot functionalities into specific parts of the application rather than creating a general-purpose chatbot.</li>
+<li><strong>User Expectation Management</strong>: Clearly communicate what the chatbot can and cannot do to manage user expectations effectively.</li>
+<li><strong>Modular Functionality</strong>: Break down the chatbot’s functionalities into specific modules that can be fine-tuned individually.</li>
+<li><strong>Review Guardrails</strong>: Regularly review and understand the prompts and guardrails to ensure they are functioning correctly.</li>
+<li><strong>Careful Rollout</strong>: Test chatbots extensively before public release to avoid unexpected behaviors that could lead to negative publicity.</li>
+</ol>
+</section>
+</section>
+<section id="preference-optimization" class="level2">
+<h2 class="anchored" data-anchor-id="preference-optimization">Preference Optimization</h2>
+<p>Discusses the effectiveness of Direct Preference Optimization (DPO) in fine-tuning LLMs to produce superior outputs. By leveraging human preferences in comparing two responses to the same prompt, DPO can significantly improve the quality of model outputs.</p>
+<section id="preference-optimization-algorithms" class="level3">
+<h3 class="anchored" data-anchor-id="preference-optimization-algorithms">Preference Optimization Algorithms</h3>
+<ul>
+<li><strong>Challenge:</strong> Human-generated data is often imperfect, and training models solely on this data can lead to suboptimal results.</li>
+<li><strong>Human Preference Evaluation</strong>: Humans excel at choosing between two options based on preference.</li>
+<li><strong>Preference Optimization Algorithms</strong>: These techniques leverage human preferences to fine-tune models.</li>
+</ul>
+</section>
+<section id="direct-preference-optimization-dpo" class="level3">
+<h3 class="anchored" data-anchor-id="direct-preference-optimization-dpo">Direct Preference Optimization (DPO)</h3>
+<ul>
+<li><strong>Definition</strong>: DPO involves using human preference data to guide model fine-tuning.</li>
+<li>Comparison to Supervised Fine-Tuning:
+<ul>
+<li><strong>Supervised Fine-Tuning</strong>: Model learns to imitate responses based on a prompt-response pair.</li>
+<li><strong>DPO</strong>: Model learns from human preference data by comparing two responses to the same prompt and determining which is better.</li>
+</ul></li>
+</ul>
+</section>
+<section id="process-of-direct-preference-optimization" class="level3">
+<h3 class="anchored" data-anchor-id="process-of-direct-preference-optimization">Process of Direct Preference Optimization</h3>
+<ul>
+<li>Data Collection:
+<ul>
+<li><strong>Prompt</strong>: Initial input or question.</li>
+<li><strong>Responses</strong>: Two different responses to the prompt.</li>
+<li><strong>Human Evaluation</strong>: Determining which response is better.</li>
+</ul></li>
+<li><strong>Model Update</strong>: Model adjusts weights to favor better responses, potentially exceeding the quality of the best human-generated responses.</li>
+</ul>
+</section>
+<section id="case-study-customer-service-email-project" class="level3">
+<h3 class="anchored" data-anchor-id="case-study-customer-service-email-project">Case Study: Customer Service Email Project</h3>
+<ul>
+<li>Project Overview:
+<ul>
+<li><strong>Data</strong>: 200 customer service emails.</li>
+<li><strong>Responses</strong>: Two responses per email from different agents.</li>
+<li><strong>Manager Evaluation</strong>: Manager chose the preferred response from each pair.</li>
+</ul></li>
+<li><strong>Model Used</strong>: Fine-tuned on Zephyr (base model).</li>
+</ul>
+</section>
+<section id="performance-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="performance-comparison">Performance Comparison</h3>
+<ul>
+<li>Methods Compared:
+<ol type="1">
+<li><strong>GPT-4 Response Generation</strong>: Direct use of GPT-4 for generating responses.</li>
+<li><strong>Supervised Fine-Tuning</strong>: Model fine-tuned on pairs of input-output data.</li>
+<li><strong>Human Agents</strong>: Responses generated by human customer service agents.</li>
+<li><strong>DPO Model</strong>: Model fine-tuned using direct preference optimization.</li>
+</ol></li>
+<li>Results:
+<ul>
+<li><strong>GPT-4</strong>: Produced the lowest quality responses.</li>
+<li><strong>Supervised Fine-Tuning</strong>: Better than GPT-4 but worse than human agents.</li>
+<li><strong>Human Agents</strong>: Better than the supervised fine-tuned model.</li>
+<li><strong>DPO Model</strong>: Outperformed human agents, producing responses preferred 2 to 1 over human responses in blind comparisons.</li>
+</ul></li>
+</ul>
+</section>
+<section id="advantages-of-direct-preference-optimization" class="level3">
+<h3 class="anchored" data-anchor-id="advantages-of-direct-preference-optimization">Advantages of Direct Preference Optimization</h3>
+<ul>
+<li><strong>Superhuman Performance</strong>: DPO models can generate responses superior to those of human experts.</li>
+<li><strong>Flexibility with Data Quality</strong>: Effective even with imperfect or messy data.</li>
+</ul>
+</section>
+<section id="recommendations-3" class="level3">
+<h3 class="anchored" data-anchor-id="recommendations-3">Recommendations</h3>
+<ol type="1">
+<li><strong>Adopt DPO for Fine-Tuning</strong>: Implement DPO in model fine-tuning processes to achieve superior performance.</li>
+<li><strong>Leverage Human Preferences</strong>: Collect and utilize human preference data to guide model improvements.</li>
+<li><strong>Evaluate Model Performance</strong>: Regularly compare DPO model outputs with human-generated outputs to ensure quality.</li>
+<li><strong>Explore Variations of DPO</strong>: Investigate slight tweaks and alternative algorithms related to DPO to further enhance model performance.</li>
+</ol>
+</section>
+</section>
+<section id="evaluating-use-cases-for-fine-tuning" class="level2">
+<h2 class="anchored" data-anchor-id="evaluating-use-cases-for-fine-tuning">Evaluating Use Cases for Fine-Tuning</h2>
+<p>This discussion focuses on evaluating different use cases for fine-tuning large language models (LLMs). The primary aim is to determine when fine-tuning is beneficial for the target use case compared to using a general model like ChatGPT.</p>
+<section id="customer-service-automation-for-a-fast-food-chain" class="level3">
+<h3 class="anchored" data-anchor-id="customer-service-automation-for-a-fast-food-chain">1. Customer Service Automation for a Fast Food Chain</h3>
+<ul>
+<li><strong>Use Case</strong>: Automating responses to most customer service emails, with unusual requests routed to a human.</li>
+<li>Evaluation:
+<ul>
+<li><strong>Fit for Fine-Tuning</strong>: Strong fit.</li>
+<li><strong>Reasoning</strong>: The company likely has a substantial dataset from past customer interactions. Fine-tuning can capture the specific nuances of the company’s customer service style and common issues.</li>
+<li><strong>Example</strong>: Handling specific inquiries about menu items, store locations, or promotions that are frequently encountered.</li>
+</ul></li>
+</ul>
+</section>
+<section id="classification-of-research-articles-for-a-medical-publisher" class="level3">
+<h3 class="anchored" data-anchor-id="classification-of-research-articles-for-a-medical-publisher">2. Classification of Research Articles for a Medical Publisher</h3>
+<ul>
+<li><strong>Use Case</strong>: Classifying new research articles into a complex ontology, facilitating trend analysis for various organizations.</li>
+<li>Evaluation:
+<ul>
+<li><strong>Fit for Fine-Tuning</strong>: Excellent fit.</li>
+<li><strong>Reasoning</strong>: The ontology is complex with many subtle distinctions that are hard to convey in a prompt. The publisher likely has extensive historical data for training.</li>
+<li><strong>Example</strong>: Classifying articles into one of 10,000 categories, focusing on the most common 500 categories initially for efficiency.</li>
+<li><strong>Implementation Detail</strong>: Used a JSON array output for multi-class classification.</li>
+</ul></li>
+</ul>
+</section>
+<section id="short-fiction-generation-for-a-startup" class="level3">
+<h3 class="anchored" data-anchor-id="short-fiction-generation-for-a-startup">3. Short Fiction Generation for a Startup</h3>
+<ul>
+<li><strong>Use Case</strong>: Creating the world’s best short fiction writer.</li>
+<li>Evaluation:
+<ul>
+<li><strong>Fit for Fine-Tuning</strong>: Potentially good fit.</li>
+<li><strong>Reasoning</strong>:
+<ul>
+<li>General models like ChatGPT can write good short stories.</li>
+<li>Fine-tuning can help the model learn specific preferences in storytelling that go beyond what a general LLM can offer. The startup can gather user preferences on generated stories to continually improve the model.</li>
+</ul></li>
+<li><strong>Example</strong>: Generating two different story versions on a given topic and having users rate them to inform future fine-tuning.</li>
+<li><strong>Considerations</strong>: The feedback loop involving user ratings can help refine and optimize the storytelling quality.</li>
+</ul></li>
+</ul>
+</section>
+<section id="automated-news-summarization-for-employees" class="level3">
+<h3 class="anchored" data-anchor-id="automated-news-summarization-for-employees">4. Automated News Summarization for Employees</h3>
+<ul>
+<li><strong>Use Case</strong>: Providing employees with summaries of new articles on specific topics daily.</li>
+<li>Evaluation:
+<ul>
+<li><strong>Fit for Fine-Tuning</strong>: Potentially unnecessary.</li>
+<li><strong>Reasoning</strong>: General LLMs like ChatGPT can already provide high-quality summaries. The benefit of fine-tuning depends on the availability of unique internal data to improve the summarization process.</li>
+<li><strong>Example</strong>: Summarizing a wide range of news articles without a significant internal dataset may not justify the effort of fine-tuning.</li>
+<li><strong>Alternative</strong>: Using preference-based optimization (DPO) to gather feedback on summary quality and improve the model if news summarization is a critical business function.</li>
+</ul></li>
+</ul>
+</section>
+<section id="important-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="important-considerations">Important Considerations</h3>
+<ul>
+<li><strong>Data Availability</strong>: Fine-tuning is more effective when there is a large, high-quality dataset available from past interactions or classifications.</li>
+<li><strong>Complexity and Specificity</strong>: Use cases with complex, nuanced requirements are better candidates for fine-tuning compared to general tasks.</li>
+<li><strong>Resource Commitment</strong>: The decision to fine-tune should consider the resources required for collecting and annotating additional data, as well as the importance of the task within the organization.</li>
+</ul>
+</section>
+<section id="recommendations-4" class="level3">
+<h3 class="anchored" data-anchor-id="recommendations-4">Recommendations</h3>
+<ol type="1">
+<li><strong>Assess Data Quality and Quantity</strong>: Ensure sufficient and relevant data is available for fine-tuning.</li>
+<li><strong>Evaluate Task Complexity</strong>: Use fine-tuning for tasks that require specific knowledge or subtle distinctions that a general model might not capture.</li>
+<li><strong>Consider Cost-Benefit</strong>: Weigh the benefits of improved performance against the costs of data collection and model training.</li>
+<li><strong>Iterate and Improve</strong>: Continuously gather feedback to refine and improve the fine-tuned model, especially for user-preference-driven tasks.</li>
+</ol>
+</section>
+</section>
+<section id="qa-session-2" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session-2">Q&amp;A Session #2</h2>
+<p>This Q&amp;A session addressed various questions related to model quantization, handling hallucinations in language models, and the importance of data annotation.</p>
+<section id="quantization" class="level3">
+<h3 class="anchored" data-anchor-id="quantization">Quantization</h3>
+<ul>
+<li><strong>Definition</strong>: Quantization is a technique used to reduce the precision of models.</li>
+<li><strong>Performance Impact</strong>: Over-quantization can lead to performance degradation.</li>
+<li><strong>Testing</strong>: It is crucial to test the quantized models to ensure performance is not adversely affected.</li>
+</ul>
+</section>
+<section id="hallucination-in-language-models" class="level3">
+<h3 class="anchored" data-anchor-id="hallucination-in-language-models">Hallucination in Language Models</h3>
+<ul>
+<li><strong>Issue</strong>: When classifying academic or scientific articles, ensuring that the language model (LM) only outputs valid classes is critical.</li>
+<li><strong>Solution</strong>: Providing enough examples with specific sets of classes to train the model effectively.</li>
+<li><strong>Metrics</strong>: Continuous monitoring and treating misclassifications as part of the expected process.</li>
+</ul>
+</section>
+<section id="fine-tuning-large-language-models-1" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-large-language-models-1">Fine-Tuning Large Language Models</h3>
+<ul>
+<li><strong>Use Case Evaluation</strong>: The skill of evaluating use cases for fine-tuning is essential for data scientists.</li>
+<li><strong>Example</strong>: Fine-tuning can outperform even human experts in specific, well-defined tasks, such as customer service for companies like McDonald’s.</li>
+</ul>
+</section>
+<section id="optimizing-prompts" class="level3">
+<h3 class="anchored" data-anchor-id="optimizing-prompts">Optimizing Prompts</h3>
+<ul>
+<li><strong>Efficiency</strong>: Static elements in prompts that don’t change should be removed in favor of more dynamic elements.</li>
+<li><strong>Few-Shot Examples</strong>: These should be minimized or eliminated with extensive fine-tuning.</li>
+<li><strong>Prompt Engineering</strong>: A critical technique in making language models more efficient and effective.</li>
+</ul>
+</section>
+<section id="data-annotation-and-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="data-annotation-and-evaluation">Data Annotation and Evaluation</h3>
+<ul>
+<li><strong>Human in the Loop</strong>: Essential for evaluating LLMs and curating data for training and fine-tuning.</li>
+<li><strong>Tool Building</strong>: Custom tools are often more effective than generic ones for specific domains.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

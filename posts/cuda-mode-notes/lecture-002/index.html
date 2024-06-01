@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.554">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-04-26">
+<meta name="description" content="Lecture #2 provides an introduction to parallel programming with CUDA C, covering key concepts like heterogeneous computing, data parallelism, thread organization, and memory management, and showcasing examples such as vector addition, image blurring, and matrix multiplication.">
+
+<title>Christian Mills - CUDA MODE Lecture 2 : Ch.1-3 PMPP Book</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - CUDA MODE Lecture 2 : Ch.1-3 PMPP Book">
+<meta property="og:description" content="Lecture #2 provides an introduction to parallel programming with CUDA C, covering key concepts like heterogeneous computing, data parallelism, thread organization, and memory management, and showcasing examples such as vector addition, image blurring, and matrix multiplication.">
+<meta property="og:image" content="christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - CUDA MODE Lecture 2 : Ch.1-3 PMPP Book">
+<meta name="twitter:description" content="Lecture #2 provides an introduction to parallel programming with CUDA C, covering key concepts like heterogeneous computing, data parallelism, thread organization, and memory management, and showcasing examples such as vector addition, image blurring, and matrix multiplication.">
+<meta name="twitter:image" content="christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#lecture-information" id="toc-lecture-information" class="nav-link active" data-scroll-target="#lecture-information">Lecture Information</a></li>
+  <li><a href="#section-0" id="toc-section-0" class="nav-link" data-scroll-target="#section-0">Section 0:</a></li>
+  <li><a href="#section-1-ch.1---introduction" id="toc-section-1-ch.1---introduction" class="nav-link" data-scroll-target="#section-1-ch.1---introduction">Section 1: Ch.1 - Introduction</a></li>
+  <li><a href="#section-2-ch.2---heterogeneous-data-parallel-computing" id="toc-section-2-ch.2---heterogeneous-data-parallel-computing" class="nav-link" data-scroll-target="#section-2-ch.2---heterogeneous-data-parallel-computing">Section 2: Ch.2 - Heterogeneous Data Parallel Computing</a></li>
+  <li><a href="#section-3-ch.3---multidimensional-grids-and-data" id="toc-section-3-ch.3---multidimensional-grids-and-data" class="nav-link" data-scroll-target="#section-3-ch.3---multidimensional-grids-and-data">Section 3: Ch.3 - Multidimensional Grids and Data</a></li>
+  <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4">Section 4:</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CUDA MODE Lecture 2 : Ch.1-3 PMPP Book</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+    <div class="quarto-category">pytorch</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #2 provides an introduction to parallel programming with CUDA C, covering key concepts like heterogeneous computing, data parallelism, thread organization, and memory management, and showcasing examples such as vector addition, image blurring, and matrix multiplication.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 26, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#lecture-information">Lecture Information</a></li>
+<li><a href="#profiling-pytorch-operations">Profiling PyTorch Operations</a></li>
+<li><a href="#integrating-custom-cuda-kernels">Integrating Custom CUDA Kernels</a></li>
+<li><a href="#">Optimization &amp; Profiling with Nsight Compute</a></li>
+<li><a href="#torch-compile-code-generation">Torch Compile &amp; Code Generation</a></li>
+</ul>
+<section id="lecture-information" class="level2">
+<h2 class="anchored" data-anchor-id="lecture-information">Lecture Information</h2>
+<p><strong>Speaker:</strong> Andreas Kopf</p>
+<p><strong>Topic:</strong> PMPP Book Ch. 1-3</p>
+<p><strong>Resources:</strong></p>
+<ul>
+<li><strong>Lecture Slides:</strong> <a href="https://docs.google.com/presentation/d/1deqvEHdqEC4LHUpStO6z3TT77Dt84fNAvTIAxBJgDck/edit#slide=id.g2b1444253e5_1_75">CUDA Mode: Lecture 2</a></li>
+<li><strong>Textbook:</strong> <a href="https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/">Programming Massively Parallel Processors</a></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/cuda-mode/lectures/tree/main/lecture_002">CUDA MODE Lecture 2</a></li>
+<li><strong>Discord Channel:</strong> <a href="https://discord.gg/cudamode">CUDA MODE</a></li>
+<li><strong>YouTube Channel:</strong> <a href="https://www.youtube.com/@CUDAMODE">CUDA MODE</a></li>
+</ul>
+</section>
+<section id="section-0" class="level2">
+<h2 class="anchored" data-anchor-id="section-0">Section 0:</h2>
+<ul>
+<li>Timestamp: <a href="https://youtu.be/NQ-0D5Ti2dc?si=jqVJWYBwYzuL06sH">0:00</a></li>
+<li></li>
+</ul>
+</section>
+<section id="section-1-ch.1---introduction" class="level2">
+<h2 class="anchored" data-anchor-id="section-1-ch.1---introduction">Section 1: Ch.1 - Introduction</h2>
+<ul>
+<li><p>Timestamp: <a href="https://youtu.be/NQ-0D5Ti2dc?si=59R0B3U5I8SLKY8K&amp;t=60">1:00</a></p></li>
+<li><p>Motivation: Optimize GPU performance as much as possible</p>
+<ul>
+<li>Applications:
+<ul>
+<li>simulate and model worlds
+<ul>
+<li>games</li>
+<li>weather</li>
+<li>proteins</li>
+<li>robotics</li>
+</ul></li>
+</ul></li>
+<li>Bigger models are smarter</li>
+<li>speed and size improvements can have a significant impact on useability</li>
+<li>GPUs are the backbon of modern deep learning</li>
+</ul></li>
+<li><p>History:</p>
+<ul>
+<li>Classic software uses sequential programs
+<ul>
+<li>executed one step at a time</li>
+<li>relied on higher CPU clock rates for improved performance</li>
+</ul></li>
+<li>Higher clock rate trend for CPUs slowed in 2003 due to energy consumption and heat dissipation challenges
+<ul>
+<li>Increasing frequency would make the chip to hot to cool feasibly</li>
+</ul></li>
+<li>Multi-core CPU came up
+<ul>
+<li>Developers had to learn multi-threading
+<ul>
+<li>New challenges such as deadlocks and race conditions</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p>Rise of CUDA</p>
+<ul>
+<li>Compute Unified Device Architecture</li>
+<li>CUDA is all about parallel programs
+<ul>
+<li>divide work among threads</li>
+</ul></li>
+<li>GPUs have much higher peak FLOPS than multi-core CPUs
+<ul>
+<li>Benefits highly parallelized programs</li>
+<li>Not suitable for largely sequential programs</li>
+</ul></li>
+<li>CPU+GPU
+<ul>
+<li>Run sequential parts on CPU and numerically intensive parts on GPU</li>
+</ul></li>
+<li>GPGPU
+<ul>
+<li>Before CUDA tricks were used to compute with graphics APIs like OpenGL and Direct3D</li>
+</ul></li>
+<li>GPU programming is now attractive to developers due to massive availability</li>
+</ul></li>
+<li><p>Amdahl’s Law</p>
+<ul>
+<li><p><span class="math display">\[
+speedup = ( Slow \ System \ Time )/(Fast \ System \ Time)
+\]</span></p></li>
+<li><p>achievable speedup is limited by the parallelizable portion of <span class="math inline">\(p\)</span></p></li>
+<li><p><span class="math display">\[
+speedup &lt; \frac{1}{1-p}
+\]</span></p>
+<ul>
+<li>If <span class="math inline">\(p\)</span> is <span class="math inline">\(90\%\)</span>, <span class="math inline">\(speedup &lt; 10X\)</span></li>
+</ul></li>
+<li><p><span class="math inline">\(p &gt; 99\%\)</span> for many real applications</p>
+<ul>
+<li>especially for large datasets</li>
+<li>speedups <span class="math inline">\(&gt; 100X\)</span> are attainable</li>
+</ul></li>
+</ul></li>
+<li><p>Challenges</p>
+<ul>
+<li>“If you do not care about performance, parallel programming is very easy”</li>
+<li>In practice, designing parallel algorithms is harder than sequential algorithms
+<ul>
+<li>Parallelizing recurrent computations requires nonintuitive thinking
+<ul>
+<li>prefix sum
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Prefix_sum">Wikipedia Page</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>Speed is often limited by memory latency/throughput (memory bound)
+<ul>
+<li>Often need to read something to the GPU, perform some computation, and the write back the result
+<ul>
+<li>LLM inference generates token by token</li>
+</ul></li>
+</ul></li>
+<li>Input data characteristics can significantly influence performance of parallel programs
+<ul>
+<li>LLMs short or large sequences</li>
+<li>Might need different kernels optimized for different input shapes</li>
+</ul></li>
+<li>Not all applications are “embarrassingly parallel”
+<ul>
+<li>Synchronization imposes overhead
+<ul>
+<li>Need to wait for GPU operations to complete</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p>Main Goals of the Book</p>
+<ol type="1">
+<li>Parallel programming &amp; computational thinking
+<ul>
+<li>Aims to build a foundation for parallel programming in general</li>
+<li>Uses GPUs as a learning vehicle
+<ul>
+<li>Techniques apply to other accelerators</li>
+<li>Concepts are introduced through hands-on CUDA examples</li>
+</ul></li>
+</ul></li>
+<li>Correct &amp; reliable parallel programing
+<ul>
+<li>Debugging both functions and performance</li>
+<li>Understanding where things are fast and slow and how to improve the slow parts</li>
+</ul></li>
+<li>Scalability
+<ul>
+<li>Regularize and localize memory access</li>
+<li>How to organize memory</li>
+</ul></li>
+</ol></li>
+</ul>
+</section>
+<section id="section-2-ch.2---heterogeneous-data-parallel-computing" class="level2">
+<h2 class="anchored" data-anchor-id="section-2-ch.2---heterogeneous-data-parallel-computing">Section 2: Ch.2 - Heterogeneous Data Parallel Computing</h2>
+<ul>
+<li><p>Timestamp: <a href="https://youtu.be/NQ-0D5Ti2dc?si=ZeFGj3WVYDF_TI96&amp;t=511">8:31</a></p></li>
+<li><p>heterogeneous: CPU + GPU</p></li>
+<li><p>data parallelism: break work down into computations that can be executed independently</p></li>
+<li><p>CUDA C</p>
+<ul>
+<li>extends ANSI C with minimal new syntax</li>
+<li>Terminology
+<ul>
+<li>CPU=host</li>
+<li>GPU=device</li>
+<li>Kernels: device code functions</li>
+</ul></li>
+<li>CUDA C source can be a mixture of host &amp; device code</li>
+<li>grid of threads
+<ul>
+<li>Many threads are launched to execute a kernel</li>
+</ul></li>
+<li>CPU &amp; GPU code runs concurrently (overlapped)
+<ul>
+<li>Kernels launch and run on GPU asynchronously</li>
+<li>Need to wait for the kernels to finish before copying data back to CPU</li>
+</ul></li>
+<li>Don’t be afraid to launch many threads on GPU
+<ul>
+<li>One thread per output tensor is fine</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>​</p>
+<ul>
+<li><p>CUDA Essentials: Memory Allocation</p>
+<ul>
+<li><p>NVIDIA devices come with their own DRAM (device) global memory</p></li>
+<li><p><code>cudaMalloc</code> &amp; <code>cudaFree</code>:</p>
+<ul>
+<li><p><code>cudaMalloc</code>: Allocate device global memory</p></li>
+<li><p><code>cudaFree</code>: Free device global memory</p></li>
+<li><div class="sourceCode" id="cb1"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>  <span class="dt">float</span> <span class="op">*</span>A_d<span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">size_t</span> size <span class="op">=</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">);</span> <span class="co">// size in bytes</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  cudaMalloc<span class="op">((</span><span class="dt">void</span><span class="op">**)&amp;</span>A_d<span class="op">,</span> size<span class="op">);</span> <span class="co">// pointer to pointer</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">...</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  cudaFree<span class="op">(</span>A_d<span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Code convention</p>
+<ul>
+<li><code>_d</code> for device pointer</li>
+<li><code>_h</code> for host</li>
+</ul></li>
+<li><p><code>cudaMemcpy</code></p>
+<ul>
+<li><p>Copy data from CPU memory to GPU memory and vice versa</p></li>
+<li><div class="sourceCode" id="cb2"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>  <span class="co">// copy input vectors to device (host -&gt; device)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  cudaMemcpy<span class="op">(</span>A_d<span class="op">,</span> A_h<span class="op">,</span> size<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  cudaMemcpy<span class="op">(</span>B_d<span class="op">,</span> B_h<span class="op">,</span> size<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">...</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">// transfer result back to CPU memory (device -&gt; host)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  cudaMemcpy<span class="op">(</span>C_h<span class="op">,</span> C_d<span class="op">,</span> size<span class="op">,</span> cudaMemcpyDeviceToHost<span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p>CUDA Error Handling</p>
+<ul>
+<li>CUDA functions return <code>cudaError_t</code>
+<ul>
+<li><code>cudaSuccess</code> for successful operation</li>
+</ul></li>
+<li>Always check returned error status</li>
+</ul></li>
+<li><p>Kernel functions <code>fn&lt;&lt;&gt;&gt;</code></p>
+<ul>
+<li>Launching kernel
+<ul>
+<li>grid of threads is launched</li>
+</ul></li>
+<li>All threads execute the same code
+<ul>
+<li>SPMD: Single Program Multiple Data</li>
+<li>Figure 2.9</li>
+</ul></li>
+<li>Threads are hierarchically organized into grid blocks &amp; thread blocks
+<ul>
+<li>Up to 1024 threads in a thread block</li>
+</ul></li>
+</ul></li>
+<li><p>Kernel Coordinates</p>
+<ul>
+<li><p>Built-in variables available inside the kernel</p>
+<ul>
+<li><code>blockIdx</code>: the area code for a telephone
+<ul>
+<li>Note: Blocks are a logical organization of threads, not physical</li>
+</ul></li>
+<li><code>threadIdx</code>: the local phone number</li>
+<li>These are ‘coordinates’ that allow threads to identify which portion of the data to process</li>
+<li>Can use <code>blockIdx</code> and <code>threadIdx</code> to uniquely identify threads</li>
+<li><code>blockDim</code>: tells us the number of threads in a block</li>
+</ul></li>
+<li><p>For vector addition, we can calculate the array index of the thread</p>
+<ul>
+<li><div class="sourceCode" id="cb3"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul></li>
+<li><p><code>__global__</code> &amp; <code>__host__</code></p>
+<ul>
+<li>Tell the compiler whether the function should live on the device or host</li>
+<li>Declare a kernel function with <code>__global__</code>
+<ul>
+<li>Calling a <code>__global__</code> function launches new grid of CUDA threads</li>
+</ul></li>
+<li>Functions declared with <code>__device__</code> can be called from within CUDA thread
+<ul>
+<li>Does not launch a new thread</li>
+<li>Only accessible from within kernels</li>
+</ul></li>
+<li>If both <code>__host__</code> and <code>__device__</code> are used in a function declaration
+<ul>
+<li>CPU and GPU versions will be compiled</li>
+</ul></li>
+<li>Figure 2.11</li>
+</ul></li>
+<li><p>Calling Kernels</p>
+<ul>
+<li><p>Kernel configuration is specified between <code>&lt;&lt;&lt;</code> and <code>&gt;&gt;&gt;</code></p></li>
+<li><p>Number of blocks, number of threads in each block</p></li>
+<li><div class="sourceCode" id="cb4"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>  dim3 numThreads<span class="op">(</span><span class="dv">256</span><span class="op">);</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Use ceiling division to calculate the number of blocks to ensure you have enough</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// for the whole vector</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  dim3 numBlocks<span class="op">((</span>n <span class="op">+</span> numThreads <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> numThreads<span class="op">);</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  vecAddKernel<span class="op">&lt;&lt;</span>numBlocks<span class="op">,</span> numThreads<span class="op">&gt;&gt;&gt;(</span>A_d<span class="op">,</span> B_d<span class="op">,</span> C_d<span class="op">,</span> n<span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p>Compiler</p>
+<ul>
+<li>nvcc
+<ul>
+<li>NVIDIA C Compiler</li>
+<li>Use to compiler kernels into PTX (CUDA assembly)</li>
+</ul></li>
+<li>PTX
+<ul>
+<li>Parallel Thread Execution</li>
+<li>Low-level VM &amp; instruction set</li>
+</ul></li>
+<li>Grahics driver translates PTX into executable binary code (SASS)
+<ul>
+<li>SASS is the low-level assembly language that compiles to binary microcode, which executes natively on NVIDIA GPU hardware.</li>
+</ul></li>
+</ul></li>
+<li><p>Code Example: Vector addition</p>
+<ul>
+<li><p>main concept: replace loop with a grid of threads</p></li>
+<li><p>easily parallelizable</p>
+<ul>
+<li>all additions can be computed independently</li>
+</ul></li>
+<li><p>Naive GPU vector addition</p>
+<ol type="1">
+<li>Allocate device memory for vectors</li>
+<li>Transfer inputs from host to device</li>
+<li>Launch kernel and perform addition operations</li>
+<li>Copy outputs from device to host</li>
+<li>Free device memory</li>
+</ol>
+<ul>
+<li>The ratio of data transfer vs compute is not very good
+<ul>
+<li>Normally keep data on the GPU ad long as possible to asynchronously schedule many kernel launches</li>
+</ul></li>
+</ul></li>
+<li><p>Figure from slide 13</p></li>
+<li><p>Data sizes might not be perfectly divisible by block sizes</p>
+<ul>
+<li>always check bounds</li>
+</ul></li>
+<li><p>Prevent threads of boundary block to read/write outside allocated memory</p>
+<ul>
+<li><div class="sourceCode" id="cb5"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>  <span class="co">// compute vector sum C = A + B</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// each thread performs one pari-wise addition</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  __global__</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> vecAddKernel<span class="op">(</span><span class="dt">float</span><span class="op">*</span> A<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> B<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> C<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">int</span> i <span class="op">=</span> threadIdx<span class="op">.</span>x <span class="op">+</span> blockDim<span class="op">.</span>x <span class="op">*</span> blockIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">(</span>i <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span> <span class="co">// check bounds</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>          C<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> A<span class="op">[</span>i<span class="op">]</span> <span class="op">+</span> B<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul></li>
+<li><p>Code Example: Kernel to convert an RGB image to grayscale</p>
+<ul>
+<li><p>Each RGB pixel can be converted individually</p></li>
+<li><p><span class="math display">\[
+Luminance = r\cdot{0.21} + g\cdot{0.72} + b\cdot{0.07}
+\]</span></p></li>
+<li><p>Simple weighted sum</p></li>
+<li><p>Figure 2.2</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="section-3-ch.3---multidimensional-grids-and-data" class="level2">
+<h2 class="anchored" data-anchor-id="section-3-ch.3---multidimensional-grids-and-data">Section 3: Ch.3 - Multidimensional Grids and Data</h2>
+<ul>
+<li><p>Timestamp: <a href="https://youtu.be/NQ-0D5Ti2dc?si=k2a0vvryolFT8AsZ&amp;t=1495">24:55</a></p></li>
+<li><p>CUDA grid</p>
+<ul>
+<li><p>2-level hierarchy</p>
+<ul>
+<li>Blocks and threads</li>
+</ul></li>
+<li><p>Idea: Map threads to multi-dimensional data (e.g., an image)</p></li>
+<li><p>All threads in a grid execute the same kernel</p></li>
+<li><p>Threads in the same block can access the same shared memory</p></li>
+<li><p>Max block size: 1024</p></li>
+<li><p>Built-in 3D coordinates of a thread</p></li>
+<li><p><code>blockIdx</code> and <code>threadIdx</code> identify which portion of the data to process</p></li>
+<li><p>shape of grid &amp; blocks</p>
+<ul>
+<li><code>gridDim</code>: number of blocks in the grid</li>
+<li><code>blockDim</code>: number of threads in a block</li>
+</ul></li>
+<li><p>Figure 3.1</p></li>
+<li><p>Grid can be different for each kernel launch</p>
+<ul>
+<li>Normally dependent on data shapes</li>
+</ul></li>
+<li><p>Typical grids contain thousands to millions of threads</p></li>
+<li><p>Simple Strategy</p>
+<ul>
+<li>One thread per output element
+<ul>
+<li>One thread per pixel</li>
+<li>One thread per tensor element</li>
+</ul></li>
+</ul></li>
+<li><p>Threads can be scheduled in any order</p></li>
+<li><p>Can use fewer than 3 dims (set others to 1)</p>
+<ul>
+<li><p>1D for sequences, 2D for images, etc.</p></li>
+<li><div class="sourceCode" id="cb6"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  dim3 grid<span class="op">(</span><span class="dv">32</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  dim3 block<span class="op">(</span><span class="dv">128</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  kernelFunction<span class="op">&lt;&lt;&lt;</span>grid<span class="op">,</span> block<span class="op">&gt;&gt;&gt;(..);</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Number of threads: 128 * 32=4096</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul></li>
+<li><p>Built-in Variables</p>
+<ul>
+<li><p>Built-in variables inside kernels:</p>
+<ul>
+<li><div class="sourceCode" id="cb7"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>  blockIdx <span class="co">// dim3 block coordinate</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  threadIdx <span class="co">// dim3 thread coordinate</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  blockDim <span class="co">// number of threads in a block</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  gridDim <span class="co">// number of blocks in a grid</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><code>blockDim</code> and <code>gridDim</code> have the same values in all threads</li>
+</ul></li>
+</ul></li>
+<li><p>nd-Arrays in Memory</p>
+<ul>
+<li><p>Figures in slide 28</p></li>
+<li><p>memory of multi-dim arrays under the hood is flat 1d</p></li>
+<li><p>2d array can be linearized in different ways</p>
+<ul>
+<li><pre class="text"><code>  A B C D E F G H I</code></pre></li>
+<li><p>row-major</p>
+<ul>
+<li><pre class="text"><code>  A B C
+  D E F
+  G H I</code></pre></li>
+<li>Most common</li>
+</ul></li>
+<li><p>column-major</p>
+<ul>
+<li><pre class="text"><code>  A D G
+  B E H
+  C F I</code></pre></li>
+<li>Used in fortran</li>
+</ul></li>
+</ul></li>
+<li><p>PyTorch tensors and numpy arrays use strides to specify how elements are laid out in memory</p></li>
+</ul></li>
+<li><p>Code Example: Image Blur</p>
+<ul>
+<li>mean filter example <code>blurKernel</code></li>
+<li>each thread writes one output element, read multiple values</li>
+<li>single plane in book, can be easily extended to multi-channel</li>
+<li>shows row-major pixel memory access (in &amp; out pointers)</li>
+<li>track of how many pixel values are summed</li>
+<li>Figure 3.9</li>
+</ul></li>
+<li><p>Matrix Multiplication</p>
+<ul>
+<li><p>Staple of science, engineering, and deep learning</p></li>
+<li><p>Computer inner-products of rows and columns</p></li>
+<li><p>Strategy: 1 thread per output matrix element</p></li>
+<li><p>Example: Multiplying square matrices (rows == cols)</p>
+<ul>
+<li><div class="sourceCode" id="cb11"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>  __global__ <span class="dt">void</span> MatrixMulKernel<span class="op">(</span><span class="dt">float</span><span class="op">*</span> M<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> N<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> P<span class="op">,</span> <span class="dt">int</span> Width<span class="op">){</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>      <span class="dt">int</span> row <span class="op">=</span> blockIdx<span class="op">.</span>y<span class="op">*</span>blockDim<span class="op">.</span>y<span class="op">+</span>threadIdx<span class="op">.</span>y<span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>      <span class="dt">int</span> col <span class="op">=</span> blockIdx<span class="op">.</span>x<span class="op">*</span>blockDim<span class="op">.</span>x<span class="op">+</span>threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">((</span>row <span class="op">&lt;</span> Width<span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="op">(</span>col <span class="op">&lt;</span> Width<span class="op">)){</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>          <span class="dt">float</span> Pvalue <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>          <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> k <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> k <span class="op">&lt;</span> Width<span class="op">;</span> <span class="op">++</span>k<span class="op">){</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>              Pvalue <span class="op">=</span> <span class="op">+=</span> M<span class="op">[</span>row<span class="op">*</span>Width<span class="op">+</span>k<span class="op">]*</span>N<span class="op">[</span>k<span class="op">*</span>Width<span class="op">+</span>col<span class="op">];</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>          <span class="op">}</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>          p<span class="op">[</span>row<span class="op">*</span>Width<span class="op">+</span>col<span class="op">]</span> <span class="op">=</span> Pvalue<span class="op">;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p>Figure 3.10</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="section-4" class="level2">
+<h2 class="anchored" data-anchor-id="section-4">Section 4:</h2>
+<ul>
+<li></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
