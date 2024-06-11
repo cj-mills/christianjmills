@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-06-10">
+<meta name="description" content="This talk by Kyle Corbitt from OpenPipe outlines ten key recommendations for successfully deploying fine-tuned language models (LLMs) in production.">
+
+<title>Christian Mills - Conference Talk 1: Ten Commandments to Deploy Fine-Tuned Models in Production</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Conference Talk 1: Ten Commandments to Deploy Fine-Tuned Models in Production">
+<meta property="og:description" content="This talk by Kyle Corbitt from OpenPipe outlines ten key recommendations for successfully deploying fine-tuned language models (LLMs) in production.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Conference Talk 1: Ten Commandments to Deploy Fine-Tuned Models in Production">
+<meta name="twitter:description" content="This talk by Kyle Corbitt from OpenPipe outlines ten key recommendations for successfully deploying fine-tuned language models (LLMs) in production.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#thou-shalt-not-fine-tune" id="toc-thou-shalt-not-fine-tune" class="nav-link active" data-scroll-target="#thou-shalt-not-fine-tune">Thou Shalt Not Fine-Tune</a></li>
+  <li><a href="#thou-shalt-write-a-freaking-prompt" id="toc-thou-shalt-write-a-freaking-prompt" class="nav-link" data-scroll-target="#thou-shalt-write-a-freaking-prompt">Thou Shalt Write a Freaking Prompt</a>
+  <ul>
+  <li><a href="#example-logistics-company-item-valuation" id="toc-example-logistics-company-item-valuation" class="nav-link" data-scroll-target="#example-logistics-company-item-valuation">Example: Logistics Company &amp; Item Valuation</a></li>
+  <li><a href="#heuristic-prompting-success-predicts-fine-tuning-success" id="toc-heuristic-prompting-success-predicts-fine-tuning-success" class="nav-link" data-scroll-target="#heuristic-prompting-success-predicts-fine-tuning-success">Heuristic: Prompting Success Predicts Fine-tuning Success</a></li>
+  <li><a href="#recommended-workflow-prototype-to-production" id="toc-recommended-workflow-prototype-to-production" class="nav-link" data-scroll-target="#recommended-workflow-prototype-to-production">Recommended Workflow: Prototype to Production</a></li>
+  </ul></li>
+  <li><a href="#thou-shalt-review-thy-freaking-data" id="toc-thou-shalt-review-thy-freaking-data" class="nav-link" data-scroll-target="#thou-shalt-review-thy-freaking-data">Thou Shalt Review Thy Freaking Data</a>
+  <ul>
+  <li><a href="#importance-of-data-review" id="toc-importance-of-data-review" class="nav-link" data-scroll-target="#importance-of-data-review">Importance of Data Review</a></li>
+  <li><a href="#how-to-review-data" id="toc-how-to-review-data" class="nav-link" data-scroll-target="#how-to-review-data">How to Review Data</a></li>
+  <li><a href="#what-to-look-for" id="toc-what-to-look-for" class="nav-link" data-scroll-target="#what-to-look-for">What to Look For</a></li>
+  </ul></li>
+  <li><a href="#thou-shalt-use-thy-actual-freaking-data" id="toc-thou-shalt-use-thy-actual-freaking-data" class="nav-link" data-scroll-target="#thou-shalt-use-thy-actual-freaking-data">Thou Shalt Use Thy Actual Freaking Data</a>
+  <ul>
+  <li><a href="#the-importance-of-using-your-actual-data" id="toc-the-importance-of-using-your-actual-data" class="nav-link" data-scroll-target="#the-importance-of-using-your-actual-data">The Importance of Using Your Actual Data</a></li>
+  <li><a href="#addressing-poor-performance" id="toc-addressing-poor-performance" class="nav-link" data-scroll-target="#addressing-poor-performance">Addressing Poor Performance</a></li>
+  <li><a href="#when-imperfect-data-can-be-useful" id="toc-when-imperfect-data-can-be-useful" class="nav-link" data-scroll-target="#when-imperfect-data-can-be-useful">When Imperfect Data Can Be Useful</a></li>
+  </ul></li>
+  <li><a href="#thou-shalt-reserve-a-test-set" id="toc-thou-shalt-reserve-a-test-set" class="nav-link" data-scroll-target="#thou-shalt-reserve-a-test-set">Thou Shalt Reserve a Test Set</a></li>
+  <li><a href="#thou-shalt-choose-an-appropriate-model" id="toc-thou-shalt-choose-an-appropriate-model" class="nav-link" data-scroll-target="#thou-shalt-choose-an-appropriate-model">Thou Shalt Choose an Appropriate Model</a>
+  <ul>
+  <li><a href="#choosing-a-model" id="toc-choosing-a-model" class="nav-link" data-scroll-target="#choosing-a-model">Choosing a Model</a></li>
+  </ul></li>
+  <li><a href="#thou-shalt-write-fast-evals" id="toc-thou-shalt-write-fast-evals" class="nav-link" data-scroll-target="#thou-shalt-write-fast-evals">Thou Shalt Write Fast Evals</a>
+  <ul>
+  <li><a href="#fast-evaluations" id="toc-fast-evaluations" class="nav-link" data-scroll-target="#fast-evaluations">Fast Evaluations:</a></li>
+  <li><a href="#llm-as-judge" id="toc-llm-as-judge" class="nav-link" data-scroll-target="#llm-as-judge">LLM as Judge</a></li>
+  <li><a href="#benefits-of-fast-evaluations" id="toc-benefits-of-fast-evaluations" class="nav-link" data-scroll-target="#benefits-of-fast-evaluations">Benefits of Fast Evaluations</a></li>
+  </ul></li>
+  <li><a href="#also-thou-shalt-write-slow-evals" id="toc-also-thou-shalt-write-slow-evals" class="nav-link" data-scroll-target="#also-thou-shalt-write-slow-evals">Also, Thou Shalt Write Slow Evals</a>
+  <ul>
+  <li><a href="#the-need-for-slow-evaluations" id="toc-the-need-for-slow-evaluations" class="nav-link" data-scroll-target="#the-need-for-slow-evaluations">The Need for Slow Evaluations</a></li>
+  <li><a href="#examples-from-openais-chatgpt" id="toc-examples-from-openais-chatgpt" class="nav-link" data-scroll-target="#examples-from-openais-chatgpt">Examples from OpenAI’s ChatGPT</a></li>
+  </ul></li>
+  <li><a href="#thou-shalt-not-fire-and-forget" id="toc-thou-shalt-not-fire-and-forget" class="nav-link" data-scroll-target="#thou-shalt-not-fire-and-forget">Thou Shalt Not Fire and Forget</a>
+  <ul>
+  <li><a href="#continuous-evaluation-is-crucial" id="toc-continuous-evaluation-is-crucial" class="nav-link" data-scroll-target="#continuous-evaluation-is-crucial">Continuous Evaluation is Crucial</a></li>
+  <li><a href="#data-drift" id="toc-data-drift" class="nav-link" data-scroll-target="#data-drift">Data Drift</a></li>
+  <li><a href="#real-world-example" id="toc-real-world-example" class="nav-link" data-scroll-target="#real-world-example">Real-World Example</a></li>
+  </ul></li>
+  <li><a href="#thou-shalt-not-take-the-commandments-too-seriously" id="toc-thou-shalt-not-take-the-commandments-too-seriously" class="nav-link" data-scroll-target="#thou-shalt-not-take-the-commandments-too-seriously">Thou Shalt Not Take the Commandments Too Seriously</a></li>
+  <li><a href="#qa-highlights" id="toc-qa-highlights" class="nav-link" data-scroll-target="#qa-highlights">Q&amp;A Highlights</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Conference Talk 1: Ten Commandments to Deploy Fine-Tuned Models in Production</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This talk by <strong>Kyle Corbitt</strong> from OpenPipe outlines ten key recommendations for successfully deploying fine-tuned language models (LLMs) in production.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 10, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#thou-shalt-not-fine-tune">1: Thou Shalt Not Fine-Tune</a></li>
+<li><a href="#thou-shalt-write-a-freaking-prompt">2: Thou Shalt Write a Freaking Prompt</a></li>
+<li><a href="#thou-shalt-review-thy-freaking-data">3: Thou Shalt Review Thy Freaking Data</a></li>
+<li><a href="#thou-shalt-use-thy-actual-freaking-data">4: Thou Shalt Use Thy Actual Freaking Data</a></li>
+<li><a href="#thou-shalt-reserve-a-test-set">5: Thou Shalt Reserve a Test Set</a></li>
+<li><a href="#thou-shalt-choose-an-appropriate-model">6: Thou Shalt Choose an Appropriate Model</a></li>
+<li><a href="#thou-shalt-write-fast-evals">7: Thou Shalt Write Fast Evals</a></li>
+<li><a href="#also-thou-shalt-write-slow-evals">8: Also, Thou Shalt Write Slow Evals</a></li>
+<li><a href="#thou-shalt-not-fire-and-forget">9: Thou Shalt Not Fire and Forget</a></li>
+<li><a href="#thou-shalt-not-take-the-commandments-too-seriously">10: Thou Shalt Not Take the Commandments Too Seriously</a></li>
+<li><a href="#qa-highlights">Q&amp;A Highlights</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Slides">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Presentation Slides
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="https://docs.google.com/presentation/d/1IIRrTED0w716OsU_-PL5bONL0Pq_7E8alewvcJO1BCE/">Ten Commandments to Deploy Fine-Tuned Models in Prod</a></li>
+</ul>
+</div>
+</div>
+<section id="thou-shalt-not-fine-tune" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-not-fine-tune">Thou Shalt Not Fine-Tune</h2>
+<ul>
+<li><strong>Start with Prompting:</strong> Focus on crafting effective prompts and leverage techniques like few-shot learning before considering fine-tuning.</li>
+<li><strong>Reasons to Fine-Tune:</strong> Only fine-tune if prompting cannot achieve desired outcomes due to:
+<ul>
+<li><strong>Quality:</strong> Prompting alone cannot meet the required performance standards.</li>
+<li><strong>Latency:</strong> Fine-tuning allows the use of smaller, faster models for real-time applications.</li>
+<li><strong>Cost:</strong> Fine-tuning enables the use of smaller, more cost-effective models at scale.</li>
+</ul></li>
+</ul>
+</section>
+<section id="thou-shalt-write-a-freaking-prompt" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-write-a-freaking-prompt">Thou Shalt Write a Freaking Prompt</h2>
+<ul>
+<li><strong>Establish a Baseline:</strong> A well-crafted prompt provides a performance baseline for comparison with fine-tuned models.</li>
+<li><strong>Assess Task Feasibility:</strong> Trying to solve the problem with prompting reveals whether the task is achievable with the available data and model capabilities.</li>
+<li><strong>Check Data Quality:</strong>
+<ul>
+<li>Successful prompting suggests your data has enough signal for effective model learning.</li>
+<li>Failed prompting often indicates data issues like inconsistencies or insufficient information.</li>
+</ul></li>
+</ul>
+<section id="example-logistics-company-item-valuation" class="level3">
+<h3 class="anchored" data-anchor-id="example-logistics-company-item-valuation">Example: Logistics Company &amp; Item Valuation</h3>
+<ul>
+<li><strong>Goal:</strong> Predict item values from descriptions.</li>
+<li><strong>Assumption:</strong> That descriptions contained enough information for a model to infer value.</li>
+<li><strong>Outcome:</strong> Prompting revealed that the descriptions lacked sufficient detail.</li>
+</ul>
+</section>
+<section id="heuristic-prompting-success-predicts-fine-tuning-success" class="level3">
+<h3 class="anchored" data-anchor-id="heuristic-prompting-success-predicts-fine-tuning-success">Heuristic: Prompting Success Predicts Fine-tuning Success</h3>
+<ul>
+<li>If you can achieve reasonable performance with a well-crafted prompt, there’s a high probability (90%+) that fine-tuning will yield further improvements in latency, quality, or cost.</li>
+<li>If prompting proves ineffective, successfully fine-tuning the model becomes less certain and significantly more challenging.</li>
+</ul>
+</section>
+<section id="recommended-workflow-prototype-to-production" class="level3">
+<h3 class="anchored" data-anchor-id="recommended-workflow-prototype-to-production">Recommended Workflow: Prototype to Production</h3>
+<ol type="1">
+<li><strong>Prototype with GPT-4:</strong> During the initial stages, focus on rapid iteration and validation of your application’s core concept. Utilize GPT-4 and prompting to experiment and refine your approach.</li>
+<li><strong>Transition to Fine-tuning:</strong> Once you have a working prototype that demonstrates value and scalability, consider incorporating fine-tuning to optimize performance further.</li>
+</ol>
+</section>
+</section>
+<section id="thou-shalt-review-thy-freaking-data" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-review-thy-freaking-data">Thou Shalt Review Thy Freaking Data</h2>
+<section id="importance-of-data-review" class="level3">
+<h3 class="anchored" data-anchor-id="importance-of-data-review">Importance of Data Review</h3>
+<ul>
+<li><strong>Evaluate Model Performance:</strong> See how well the prompt guides the model to generate desired outputs in real-world scenarios.</li>
+<li><strong>Understand User Behavior:</strong> Gain insights into how users interact with the prompt and the types of inputs they provide. This is crucial for:
+<ul>
+<li><strong>Refining Assumptions:</strong> Avoid making inaccurate assumptions about user needs and use cases.</li>
+<li><strong>Improving Prompt Design:</strong> Tailor the prompt to better align with actual usage patterns.</li>
+<li><strong>Developing Targeted Tests:</strong> Create more effective tests based on real-world input data.</li>
+</ul></li>
+</ul>
+</section>
+<section id="how-to-review-data" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-review-data">How to Review Data</h3>
+<ul>
+<li><strong>Utilize Existing UI:</strong> If your system has a user interface (e.g., chat interface, classification system), leverage it to observe input-output pairs in context.</li>
+<li><strong>Employ Specialized Tools:</strong> If a dedicated UI is unavailable, utilize tools like OpenPipe to visualize and analyze input and output data in a structured format.</li>
+</ul>
+</section>
+<section id="what-to-look-for" class="level3">
+<h3 class="anchored" data-anchor-id="what-to-look-for">What to Look For</h3>
+<ul>
+<li><strong>Input Distribution:</strong> Pay close attention to the variety, complexity, and common patterns within user inputs.</li>
+<li><strong>Output Quality:</strong> Assess the relevance, accuracy, and overall quality of model outputs in response to real-world inputs.</li>
+</ul>
+</section>
+</section>
+<section id="thou-shalt-use-thy-actual-freaking-data" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-use-thy-actual-freaking-data">Thou Shalt Use Thy Actual Freaking Data</h2>
+<section id="the-importance-of-using-your-actual-data" class="level3">
+<h3 class="anchored" data-anchor-id="the-importance-of-using-your-actual-data">The Importance of Using Your Actual Data</h3>
+<ul>
+<li><strong>Don’t exclude “bad” data:</strong>
+<ul>
+<li>Removing data points where the base model performs poorly can lead to a model that excels in a limited domain while failing in real-world scenarios.<br>
+</li>
+<li>The “bad” data likely represents real-world inputs your model needs to handle.</li>
+</ul></li>
+<li><strong>Example:</strong> If your model struggles with a specific class of data and you exclude it, the fine-tuned model will likely repeat the mistake in production.</li>
+</ul>
+</section>
+<section id="addressing-poor-performance" class="level3">
+<h3 class="anchored" data-anchor-id="addressing-poor-performance">Addressing Poor Performance</h3>
+<ul>
+<li><strong>Diagnose the issue:</strong> Instead of removing “bad” data, analyze why the model struggles.
+<ul>
+<li>Is there a pattern in the input space where it fails?</li>
+<li>Can you improve the instructions to guide the model better?</li>
+</ul></li>
+<li><strong>Solutions:</strong>
+<ul>
+<li><strong>Manually relabel data:</strong> Use a relabeling UI to correct outputs.</li>
+<li><strong>Refine instructions:</strong> Experiment with different prompts and instructions to improve performance.</li>
+</ul></li>
+</ul>
+</section>
+<section id="when-imperfect-data-can-be-useful" class="level3">
+<h3 class="anchored" data-anchor-id="when-imperfect-data-can-be-useful">When Imperfect Data Can Be Useful</h3>
+<ul>
+<li><strong>Generalization and regularization:</strong>
+<ul>
+<li>Large LLMs are surprisingly good at generalizing from imperfect data.</li>
+<li>The training process itself acts as a form of regularization, allowing the model to learn from both correct and incorrect examples.</li>
+</ul></li>
+<li><strong>Training on model outputs:</strong>
+<ul>
+<li>Fine-tuning on the outputs of a larger model (e.g., GPT-4) can lead to a smaller model that outperforms the original due to this regularization effect.
+<ul>
+<li>The smaller model learns from the larger model’s successes and avoids repeating its occasional errors.</li>
+</ul></li>
+</ul></li>
+<li><strong>Caveat:</strong> This applies mainly to larger LLMs (4B+ parameters) where errors are relatively random. If there’s a consistent pattern of errors, address it directly.</li>
+</ul>
+</section>
+</section>
+<section id="thou-shalt-reserve-a-test-set" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-reserve-a-test-set">Thou Shalt Reserve a Test Set</h2>
+<ul>
+<li><p><strong>Importance of a Test Set:</strong> A dedicated test set, separate from the training data, is essential to evaluate the true performance of a fine-tuned language model.</p></li>
+<li><p><strong>Common Pitfalls:</strong></p>
+<ul>
+<li><strong>Non-representative Test Sets:</strong> Test sets with hand-picked examples, often based on perceived poor performance or customer complaints, are often not representative of the overall input data and can lead to misleading results.</li>
+<li><strong>Exclusively Using Non-Random Test Sets:</strong> Relying solely on a set a specific corner cases can give a false sense of performance as the model might not generalize well to unseen data.</li>
+</ul></li>
+<li><p><strong>Recommendations:</strong></p>
+<ul>
+<li><strong>Create a Randomly Sampled Test Set:</strong> Reserve 5-10% of your data randomly as a test set. This ensures that the model’s performance is evaluated on data representative of the overall distribution.</li>
+<li><strong>Maintain Separate Test Sets:</strong> Use both a randomly sampled test set for general performance evaluation and a separate set for targeted testing of specific corner cases or challenging examples.</li>
+</ul></li>
+</ul>
+</section>
+<section id="thou-shalt-choose-an-appropriate-model" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-choose-an-appropriate-model">Thou Shalt Choose an Appropriate Model</h2>
+<section id="choosing-a-model" class="level3">
+<h3 class="anchored" data-anchor-id="choosing-a-model">Choosing a Model</h3>
+<ul>
+<li><p><strong>Experimentation is Key:</strong> The cost of fine-tuning runs is relatively low, allowing for trying different models with your data.</p></li>
+<li><p><strong>Dataset Size Matters:</strong></p>
+<ul>
+<li><strong>Small Datasets (Dozens):</strong> Larger models like Llama2 70B can often match GPT-4’s performance.</li>
+<li><strong>Medium Datasets (Thousands):</strong> Llama2 7B-8B or Mistral 7B offer a good balance.</li>
+<li><strong>Task Dependency:</strong> Some tasks may never reach GPT-4’s level regardless of training data.</li>
+</ul></li>
+<li><p><strong>Sweet Spot:</strong> 7B-8B parameter models are recommended for most production use cases due to:</p>
+<ul>
+<li><p><strong>Sufficient Performance:</strong> Achievable with around 1,000-5,000 training examples.</p></li>
+<li><p><strong>Cost Savings:</strong> Significantly cheaper inference costs compared to GPT-4 (around 15-20 cents per million tokens vs.&nbsp;GPT-4’s much higher cost).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/model-chart.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://docs.google.com/presentation/d/1IIRrTED0w716OsU_-PL5bONL0Pq_7E8alewvcJO1BCE/edit#slide=id.g2720912eb0c_0_9">Ten Commandments to Deploy Fine-Tuned Models in Prod - Slide 17</a></figcaption>
+</figure>
+</div></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="thou-shalt-write-fast-evals" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-write-fast-evals">Thou Shalt Write Fast Evals</h2>
+<section id="fast-evaluations" class="level3">
+<h3 class="anchored" data-anchor-id="fast-evaluations">Fast Evaluations:</h3>
+<ul>
+<li>Can be integrated into the training loop or prompt engineering workflow.</li>
+<li>Quick and inexpensive to run.</li>
+<li>Provide immediate feedback on model performance.</li>
+</ul>
+</section>
+<section id="llm-as-judge" class="level3">
+<h3 class="anchored" data-anchor-id="llm-as-judge">LLM as Judge</h3>
+<ul>
+<li><strong>Default Recommendation:</strong> Use an LLM (e.g., GPT-4) to evaluate the quality of outputs.</li>
+<li><strong>Method:</strong> Present the LLM judge with the input task and outputs from different models. Ask the judge to compare and rate the quality.</li>
+<li><strong>Considerations:</strong>
+<ul>
+<li><strong>Randomization:</strong> Randomize the order of presented outputs to avoid bias towards the first option.</li>
+<li><strong>Self-Preference:</strong> Be aware that LLMs tend to prefer their own outputs if evaluated on themselves.</li>
+</ul></li>
+<li><strong>Tools and Libraries:</strong> Utilize existing libraries (some suggested on OpenPipe) that streamline this process.</li>
+</ul>
+</section>
+<section id="benefits-of-fast-evaluations" class="level3">
+<h3 class="anchored" data-anchor-id="benefits-of-fast-evaluations">Benefits of Fast Evaluations</h3>
+<ul>
+<li><strong>Rapid Iteration:</strong> Quickly test changes to prompts, fine-tuning, etc., and get immediate feedback.</li>
+<li><strong>Direction Confirmation:</strong> Ensure that development efforts are moving in the right direction.</li>
+<li><strong>Faster Feedback Cycle:</strong> Avoid the long delays associated with slower, production-level evaluations.</li>
+</ul>
+</section>
+</section>
+<section id="also-thou-shalt-write-slow-evals" class="level2">
+<h2 class="anchored" data-anchor-id="also-thou-shalt-write-slow-evals">Also, Thou Shalt Write Slow Evals</h2>
+<section id="the-need-for-slow-evaluations" class="level3">
+<h3 class="anchored" data-anchor-id="the-need-for-slow-evaluations">The Need for Slow Evaluations</h3>
+<ul>
+<li><strong>Fast vs.&nbsp;Slow Evaluations:</strong> Fast evaluations are quick checks of model performance in isolation, while slow evaluations assess the model’s impact in a real-world setting.</li>
+<li><strong>Importance of Real-World Impact:</strong> Even if a model performs well in isolation, other system interactions or deployment factors (like quantization) can lead to unexpected results. Slow evaluations capture this.</li>
+<li><strong>Outcome-Driven Evaluation:</strong> Design evaluations based on the desired business or product outcome. For example, if building a customer support chatbot, measure customer satisfaction with problem resolution.</li>
+</ul>
+</section>
+<section id="examples-from-openais-chatgpt" class="level3">
+<h3 class="anchored" data-anchor-id="examples-from-openais-chatgpt">Examples from OpenAI’s ChatGPT</h3>
+<ul>
+<li><strong>User Engagement Metrics:</strong> OpenAI tracks metrics like how often users regenerate responses or give “thumbs down” as indicators of model performance.</li>
+<li><strong>Side-by-Side Comparisons:</strong> While less frequent, OpenAI sometimes presents users with two responses side-by-side, allowing them to choose the better one. This provides direct comparative feedback.</li>
+</ul>
+</section>
+</section>
+<section id="thou-shalt-not-fire-and-forget" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-not-fire-and-forget">Thou Shalt Not Fire and Forget</h2>
+<section id="continuous-evaluation-is-crucial" class="level3">
+<h3 class="anchored" data-anchor-id="continuous-evaluation-is-crucial">Continuous Evaluation is Crucial</h3>
+<ul>
+<li>After deploying a fine-tuned model, it is essential to continuously evaluate its performance using objective metrics and real-world data. This helps detect any degradation in accuracy.</li>
+</ul>
+</section>
+<section id="data-drift" class="level3">
+<h3 class="anchored" data-anchor-id="data-drift">Data Drift</h3>
+<ul>
+<li>The world is constantly changing, and so is the data that models encounter.</li>
+<li>Data drift occurs when the input data starts to differ from the data the model was originally trained on, leading to decreased performance.</li>
+</ul>
+</section>
+<section id="real-world-example" class="level3">
+<h3 class="anchored" data-anchor-id="real-world-example">Real-World Example</h3>
+<ul>
+<li><strong>Problem:</strong> A customer using a fine-tuned model for extracting data from call logs experienced a decline in accuracy.
+<ul>
+<li>The training data only contained examples from 2023, leading the model to always use the year 2023 when extracting dates even for calls made in 2024.</li>
+</ul></li>
+<li><strong>Solution:</strong> The problem was solved by retraining the model with a small set of examples from 2024, demonstrating the importance of keeping the training data up-to-date.</li>
+</ul>
+</section>
+</section>
+<section id="thou-shalt-not-take-the-commandments-too-seriously" class="level2">
+<h2 class="anchored" data-anchor-id="thou-shalt-not-take-the-commandments-too-seriously">Thou Shalt Not Take the Commandments Too Seriously</h2>
+<ul>
+<li>The above recommendations are only guidelines, not hard requirements.</li>
+<li>Tailor your approach based on the specific requirements of your project and data.</li>
+</ul>
+</section>
+<section id="qa-highlights" class="level2">
+<h2 class="anchored" data-anchor-id="qa-highlights">Q&amp;A Highlights</h2>
+<ul>
+<li><strong>Data Quality vs.&nbsp;Effort:</strong> While higher-quality data generally leads to better results, strive for a balance between data refinement and the overall time investment.</li>
+<li><strong>When to Fine-Tune:</strong> Fine-tuning is more beneficial when the task is highly specific and diverges from the capabilities of a general-purpose chatbot.</li>
+<li><strong>Low-Resource Languages:</strong>
+<ul>
+<li>Fine-tuning for low-resource languages can be effective with sufficient data.</li>
+<li>Consider pre-trained multilingual models as a starting point.</li>
+</ul></li>
+<li><strong>Evaluation During Training:</strong>
+<ul>
+<li>Fine-tune on an initial dataset.</li>
+<li>If evaluation results are unsatisfactory, increase the dataset size and re-evaluate.</li>
+</ul></li>
+<li><strong>Deployment and Inference Optimization:</strong>
+<ul>
+<li><strong>Low-Rank Adaptation (LoRA):</strong>
+<ul>
+<li>Fine-tunes a smaller set of parameters, resulting in faster training and reduced inference costs.</li>
+<li>Allows for loading multiple LoRA models simultaneously in VLM or TRT LLM, maximizing GPU utilization.</li>
+</ul></li>
+<li><strong>Serverless Endpoints:</strong> Services like OpenPipe, Fireworks, and OctoAI provide cost-effective deployment options by handling infrastructure and utilizing timesharing among users.</li>
+</ul></li>
+<li><strong>Reasoning Chains:</strong>
+<ul>
+<li><strong>Challenges:</strong> Complex reasoning tasks may pose difficulties for fine-tuned models, even if they can be solved by larger models like GPT-4.</li>
+<li><strong>Factors Influencing Success:</strong>
+<ul>
+<li>Reproducibility of reasoning patterns.</li>
+<li>Availability of sufficient training data covering diverse scenarios within the reasoning chain.</li>
+</ul></li>
+<li><strong>Recommendations:</strong>
+<ul>
+<li>Log the entire reasoning chain during data collection.</li>
+<li>Ensure data freshness by updating traces if function definitions or other components change.</li>
+<li>Consider generating synthetic data to augment the dataset and cover a wider range of scenarios, especially for complex chains.</li>
+</ul></li>
+</ul></li>
+<li><strong>JSON Extraction and Evaluation:</strong>
+<ul>
+<li><strong>Tracing:</strong> Tracing all LLM calls for JSON extraction is recommended, as storage is relatively inexpensive and should not significantly impact latency in a well-designed system.</li>
+<li><strong>Evaluation with Larger Models:</strong> Using a larger model like GPT-4 for evaluating extractions is acceptable. Random sampling can be used to manage costs if necessary.</li>
+</ul></li>
+<li><strong>Fine-Tuning for Classification with Decoder Models:</strong> While encoder models are theoretically advantageous for classification, there’s a lack of readily available, high-quality, open-source encoder models, especially for long context scenarios.</li>
+<li><strong>Relabeling UI Recommendations:</strong> Explore tools like Argilla or consider building custom solutions tailored to your specific needs.</li>
+<li><strong>Fine-Tuning Techniques Comparison (LoRa, QLoRa, DoRa):</strong> Start with LoRa for its efficiency and regularization benefits. Consider full fine-tuning or DoRa if LoRa’s performance is insufficient.</li>
+<li><strong>Multimodal Scenarios:</strong> While production use cases for vision-language models are still emerging, advancements in open-source models are expected to drive adoption.</li>
+<li><strong>Models on the Efficient Frontier:</strong> Current techniques may have reached a saturation point for model efficiency in smaller model sizes.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
