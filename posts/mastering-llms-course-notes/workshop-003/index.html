@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-06-20">
+<meta name="description" content="Workshop #3 focuses on the crucial role of evaluation in fine-tuning and improving LLMs. It covers three main types of evaluations: unit tests, LLM as a judge, and human evaluation.">
+
+<title>Christian Mills - Workshop 3: Instrumenting &amp; Evaluating LLMs</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Workshop 3: Instrumenting &amp; Evaluating LLMs">
+<meta property="og:description" content="Workshop #3 focuses on the crucial role of evaluation in fine-tuning and improving LLMs. It covers three main types of evaluations: unit tests, LLM as a judge, and human evaluation.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Workshop 3: Instrumenting &amp; Evaluating LLMs">
+<meta name="twitter:description" content="Workshop #3 focuses on the crucial role of evaluation in fine-tuning and improving LLMs. It covers three main types of evaluations: unit tests, LLM as a judge, and human evaluation.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#types-of-evaluations" id="toc-types-of-evaluations" class="nav-link" data-scroll-target="#types-of-evaluations">Types of Evaluations</a>
+  <ul>
+  <li><a href="#example-editing-out-stereotypes-in-academic-writing" id="toc-example-editing-out-stereotypes-in-academic-writing" class="nav-link" data-scroll-target="#example-editing-out-stereotypes-in-academic-writing">Example: Editing Out Stereotypes In Academic Writing</a></li>
+  <li><a href="#unit-tests" id="toc-unit-tests" class="nav-link" data-scroll-target="#unit-tests">Unit Tests</a>
+  <ul class="collapse">
+  <li><a href="#generate-data-for-each-scenario" id="toc-generate-data-for-each-scenario" class="nav-link" data-scroll-target="#generate-data-for-each-scenario">Generate Data For Each Scenario</a></li>
+  <li><a href="#use-llms-to-synthetically-generate-inputs-to-the-system" id="toc-use-llms-to-synthetically-generate-inputs-to-the-system" class="nav-link" data-scroll-target="#use-llms-to-synthetically-generate-inputs-to-the-system">Use LLMs to synthetically generate inputs to the system</a></li>
+  <li><a href="#log-results-to-database-and-visualize" id="toc-log-results-to-database-and-visualize" class="nav-link" data-scroll-target="#log-results-to-database-and-visualize">Log Results to Database and Visualize</a></li>
+  <li><a href="#unit-test-considerations" id="toc-unit-test-considerations" class="nav-link" data-scroll-target="#unit-test-considerations">Unit Test Considerations</a></li>
+  </ul></li>
+  <li><a href="#llm-as-a-judge" id="toc-llm-as-a-judge" class="nav-link" data-scroll-target="#llm-as-a-judge">LLM as a Judge</a>
+  <ul class="collapse">
+  <li><a href="#llm-as-a-judge-example-de-biasing-text-project" id="toc-llm-as-a-judge-example-de-biasing-text-project" class="nav-link" data-scroll-target="#llm-as-a-judge-example-de-biasing-text-project">LLM-As-A-Judge Example: De-biasing Text Project</a></li>
+  </ul></li>
+  <li><a href="#human-evaluation" id="toc-human-evaluation" class="nav-link" data-scroll-target="#human-evaluation">Human Evaluation</a></li>
+  <li><a href="#what-worked" id="toc-what-worked" class="nav-link" data-scroll-target="#what-worked">What Worked</a></li>
+  <li><a href="#evaluation-workflow" id="toc-evaluation-workflow" class="nav-link" data-scroll-target="#evaluation-workflow">Evaluation Workflow</a></li>
+  <li><a href="#human-eval-going-wrong-in-alt-text-project" id="toc-human-eval-going-wrong-in-alt-text-project" class="nav-link" data-scroll-target="#human-eval-going-wrong-in-alt-text-project">Human Eval Going Wrong in Alt Text Project</a>
+  <ul class="collapse">
+  <li><a href="#ab-testing" id="toc-ab-testing" class="nav-link" data-scroll-target="#ab-testing">A/B Testing</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#looking-at-your-data" id="toc-looking-at-your-data" class="nav-link" data-scroll-target="#looking-at-your-data">Looking At Your Data</a>
+  <ul>
+  <li><a href="#what-is-a-trace" id="toc-what-is-a-trace" class="nav-link" data-scroll-target="#what-is-a-trace">What is a Trace?</a></li>
+  <li><a href="#remove-all-friction-from-looking-at-your-data" id="toc-remove-all-friction-from-looking-at-your-data" class="nav-link" data-scroll-target="#remove-all-friction-from-looking-at-your-data">Remove All Friction from Looking at Your Data</a></li>
+  <li><a href="#rendering-logging-traces" id="toc-rendering-logging-traces" class="nav-link" data-scroll-target="#rendering-logging-traces">Rendering &amp; Logging Traces</a></li>
+  <li><a href="#its-best-to-use-a-tool" id="toc-its-best-to-use-a-tool" class="nav-link" data-scroll-target="#its-best-to-use-a-tool">It’s Best to Use a Tool</a></li>
+  </ul></li>
+  <li><a href="#harrison-chase-langsmith-for-logging-tests" id="toc-harrison-chase-langsmith-for-logging-tests" class="nav-link" data-scroll-target="#harrison-chase-langsmith-for-logging-tests">Harrison Chase: Langsmith for Logging &amp; Tests</a>
+  <ul>
+  <li><a href="#langsmith-features" id="toc-langsmith-features" class="nav-link" data-scroll-target="#langsmith-features">LangSmith Features</a></li>
+  <li><a href="#observability-looking-at-your-data" id="toc-observability-looking-at-your-data" class="nav-link" data-scroll-target="#observability-looking-at-your-data">Observability: Looking at Your Data</a>
+  <ul class="collapse">
+  <li><a href="#filtering-and-dissecting-data" id="toc-filtering-and-dissecting-data" class="nav-link" data-scroll-target="#filtering-and-dissecting-data">Filtering and Dissecting Data</a></li>
+  </ul></li>
+  <li><a href="#datasets-and-testing" id="toc-datasets-and-testing" class="nav-link" data-scroll-target="#datasets-and-testing">Datasets and Testing</a>
+  <ul class="collapse">
+  <li><a href="#tracking-experiments-over-time" id="toc-tracking-experiments-over-time" class="nav-link" data-scroll-target="#tracking-experiments-over-time">Tracking Experiments Over Time</a></li>
+  </ul></li>
+  <li><a href="#llm-as-a-judge-1" id="toc-llm-as-a-judge-1" class="nav-link" data-scroll-target="#llm-as-a-judge-1">LLM as a Judge</a></li>
+  <li><a href="#human-in-the-loop-feedback" id="toc-human-in-the-loop-feedback" class="nav-link" data-scroll-target="#human-in-the-loop-feedback">Human-in-the-Loop Feedback</a></li>
+  </ul></li>
+  <li><a href="#bryan-bischof-spellgrounds-for-prodigious-prestidigitation" id="toc-bryan-bischof-spellgrounds-for-prodigious-prestidigitation" class="nav-link" data-scroll-target="#bryan-bischof-spellgrounds-for-prodigious-prestidigitation">Bryan Bischof: Spellgrounds for Prodigious Prestidigitation</a>
+  <ul>
+  <li><a href="#preamble" id="toc-preamble" class="nav-link" data-scroll-target="#preamble">Preamble</a></li>
+  <li><a href="#miscats-and-fizzled-spells-things-to-avoid" id="toc-miscats-and-fizzled-spells-things-to-avoid" class="nav-link" data-scroll-target="#miscats-and-fizzled-spells-things-to-avoid">Miscats and Fizzled Spells: Things to avoid</a>
+  <ul class="collapse">
+  <li><a href="#thinking-llm-evaluations-are-entirely-new" id="toc-thinking-llm-evaluations-are-entirely-new" class="nav-link" data-scroll-target="#thinking-llm-evaluations-are-entirely-new">Thinking LLM Evaluations Are Entirely New</a></li>
+  <li><a href="#failing-to-include-use-case-experts" id="toc-failing-to-include-use-case-experts" class="nav-link" data-scroll-target="#failing-to-include-use-case-experts">Failing to Include Use-Case Experts</a></li>
+  <li><a href="#waiting-too-long-to-make-evaluations" id="toc-waiting-too-long-to-make-evaluations" class="nav-link" data-scroll-target="#waiting-too-long-to-make-evaluations">Waiting Too Long to Make Evaluations</a></li>
+  <li><a href="#not-recognizing-product-metrics-vs.-evaluation-metrics" id="toc-not-recognizing-product-metrics-vs.-evaluation-metrics" class="nav-link" data-scroll-target="#not-recognizing-product-metrics-vs.-evaluation-metrics">Not Recognizing Product Metrics vs.&nbsp;Evaluation Metrics</a></li>
+  <li><a href="#buying-an-evaluation-framework-doesnt-make-it-easy" id="toc-buying-an-evaluation-framework-doesnt-make-it-easy" class="nav-link" data-scroll-target="#buying-an-evaluation-framework-doesnt-make-it-easy">Buying an Evaluation Framework Doesn’t Make It Easy</a></li>
+  <li><a href="#reacing-too-early-for-llm-assisted-evaluation" id="toc-reacing-too-early-for-llm-assisted-evaluation" class="nav-link" data-scroll-target="#reacing-too-early-for-llm-assisted-evaluation">Reacing Too Early for LLM-Assisted Evaluation</a></li>
+  </ul></li>
+  <li><a href="#moderating-magic-how-to-build-your-eval-system" id="toc-moderating-magic-how-to-build-your-eval-system" class="nav-link" data-scroll-target="#moderating-magic-how-to-build-your-eval-system">Moderating Magic: How to build your eval system</a>
+  <ul class="collapse">
+  <li><a href="#magic" id="toc-magic" class="nav-link" data-scroll-target="#magic">Magic</a></li>
+  <li><a href="#rag-evals" id="toc-rag-evals" class="nav-link" data-scroll-target="#rag-evals">RAG Evals</a></li>
+  <li><a href="#planning-evals" id="toc-planning-evals" class="nav-link" data-scroll-target="#planning-evals">Planning Evals</a></li>
+  <li><a href="#agent-specific-evals" id="toc-agent-specific-evals" class="nav-link" data-scroll-target="#agent-specific-evals">Agent-Specific Evals</a></li>
+  <li><a href="#final-stage-evals" id="toc-final-stage-evals" class="nav-link" data-scroll-target="#final-stage-evals">Final Stage Evals</a></li>
+  <li><a href="#experiments-are-repeated-measure-designs" id="toc-experiments-are-repeated-measure-designs" class="nav-link" data-scroll-target="#experiments-are-repeated-measure-designs">Experiments are Repeated-Measure Designs</a></li>
+  <li><a href="#production-endpoints-minimize-drift" id="toc-production-endpoints-minimize-drift" class="nav-link" data-scroll-target="#production-endpoints-minimize-drift">Production Endpoints Minimize Drift</a></li>
+  </ul></li>
+  <li><a href="#qa" id="toc-qa" class="nav-link" data-scroll-target="#qa">Q&amp;A</a></li>
+  </ul></li>
+  <li><a href="#eugene-yan-evaluating-llm-generated-summaries-with-out-of-domain-fine-tuning" id="toc-eugene-yan-evaluating-llm-generated-summaries-with-out-of-domain-fine-tuning" class="nav-link" data-scroll-target="#eugene-yan-evaluating-llm-generated-summaries-with-out-of-domain-fine-tuning">Eugene Yan: Evaluating LLM-Generated Summaries with Out-of-Domain Fine-tuning</a>
+  <ul>
+  <li><a href="#introduction-1" id="toc-introduction-1" class="nav-link" data-scroll-target="#introduction-1">Introduction</a></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
+  <li><a href="#overview-notebook" id="toc-overview-notebook" class="nav-link" data-scroll-target="#overview-notebook">Overview Notebook</a></li>
+  <li><a href="#prepare-data-notebook" id="toc-prepare-data-notebook" class="nav-link" data-scroll-target="#prepare-data-notebook">Prepare Data Notebook</a></li>
+  <li><a href="#finetune-fib-notebook" id="toc-finetune-fib-notebook" class="nav-link" data-scroll-target="#finetune-fib-notebook">Finetune FIB Notebook</a></li>
+  <li><a href="#finetune-usb-then-fib-notebook" id="toc-finetune-usb-then-fib-notebook" class="nav-link" data-scroll-target="#finetune-usb-then-fib-notebook">Finetune USB then FIB Notebook</a></li>
+  <li><a href="#advantages-of-the-evaluator-model" id="toc-advantages-of-the-evaluator-model" class="nav-link" data-scroll-target="#advantages-of-the-evaluator-model">Advantages of the Evaluator Model</a></li>
+  <li><a href="#evaluating-agents" id="toc-evaluating-agents" class="nav-link" data-scroll-target="#evaluating-agents">Evaluating Agents</a></li>
+  </ul></li>
+  <li><a href="#shreya-shankar-scaling-up-vibe-checks-for-llms" id="toc-shreya-shankar-scaling-up-vibe-checks-for-llms" class="nav-link" data-scroll-target="#shreya-shankar-scaling-up-vibe-checks-for-llms">Shreya Shankar: Scaling Up Vibe Checks for LLMs</a>
+  <ul>
+  <li><a href="#llm-pipelines" id="toc-llm-pipelines" class="nav-link" data-scroll-target="#llm-pipelines">LLM Pipelines</a></li>
+  <li><a href="#llms-make-unpredictable-mistakes" id="toc-llms-make-unpredictable-mistakes" class="nav-link" data-scroll-target="#llms-make-unpredictable-mistakes">LLMs Make Unpredictable Mistakes</a></li>
+  <li><a href="#vibe-checks-custom-evaluation-for-llms" id="toc-vibe-checks-custom-evaluation-for-llms" class="nav-link" data-scroll-target="#vibe-checks-custom-evaluation-for-llms">Vibe Checks: Custom Evaluation for LLMs</a></li>
+  <li><a href="#evaluation-assistants-using-llms-to-build-vibe-checks" id="toc-evaluation-assistants-using-llms-to-build-vibe-checks" class="nav-link" data-scroll-target="#evaluation-assistants-using-llms-to-build-vibe-checks">Evaluation Assistants: Using LLMs to Build Vibe Checks</a></li>
+  <li><a href="#auto-generated-assertions-learning-from-prompt-history" id="toc-auto-generated-assertions-learning-from-prompt-history" class="nav-link" data-scroll-target="#auto-generated-assertions-learning-from-prompt-history">Auto-Generated Assertions: Learning from Prompt History</a></li>
+  <li><a href="#evalgen-a-mixed-initiative-interface-for-evaluation" id="toc-evalgen-a-mixed-initiative-interface-for-evaluation" class="nav-link" data-scroll-target="#evalgen-a-mixed-initiative-interface-for-evaluation">EvalGen: A Mixed Initiative Interface for Evaluation</a></li>
+  <li><a href="#overall-takeaways" id="toc-overall-takeaways" class="nav-link" data-scroll-target="#overall-takeaways">Overall Takeaways</a></li>
+  </ul></li>
+  <li><a href="#qa-session" id="toc-qa-session" class="nav-link" data-scroll-target="#qa-session">Q&amp;A Session</a>
+  <ul>
+  <li><a href="#using-prompt-history-for-generating-assertions" id="toc-using-prompt-history-for-generating-assertions" class="nav-link" data-scroll-target="#using-prompt-history-for-generating-assertions">Using Prompt History for Generating Assertions</a></li>
+  <li><a href="#generalizability-of-assertion-criteria" id="toc-generalizability-of-assertion-criteria" class="nav-link" data-scroll-target="#generalizability-of-assertion-criteria">Generalizability of Assertion Criteria</a></li>
+  <li><a href="#unit-tests-for-specific-llm-tasks" id="toc-unit-tests-for-specific-llm-tasks" class="nav-link" data-scroll-target="#unit-tests-for-specific-llm-tasks">Unit Tests for Specific LLM Tasks</a></li>
+  <li><a href="#temperature-parameter-in-open-source-llms" id="toc-temperature-parameter-in-open-source-llms" class="nav-link" data-scroll-target="#temperature-parameter-in-open-source-llms">Temperature Parameter in Open-Source LLMs</a></li>
+  <li><a href="#importance-of-evaluation-methods" id="toc-importance-of-evaluation-methods" class="nav-link" data-scroll-target="#importance-of-evaluation-methods">Importance of Evaluation Methods</a></li>
+  <li><a href="#fine-tuning-llm-as-a-judge" id="toc-fine-tuning-llm-as-a-judge" class="nav-link" data-scroll-target="#fine-tuning-llm-as-a-judge">Fine-tuning LLM as a Judge</a></li>
+  <li><a href="#starting-the-data-flywheel" id="toc-starting-the-data-flywheel" class="nav-link" data-scroll-target="#starting-the-data-flywheel">Starting the Data Flywheel</a></li>
+  <li><a href="#do-sample-parameter-in-production" id="toc-do-sample-parameter-in-production" class="nav-link" data-scroll-target="#do-sample-parameter-in-production">“Do Sample” Parameter in Production</a></li>
+  <li><a href="#preparing-data-for-ab-testing-with-llms" id="toc-preparing-data-for-ab-testing-with-llms" class="nav-link" data-scroll-target="#preparing-data-for-ab-testing-with-llms">Preparing Data for A/B Testing with LLMs</a></li>
+  <li><a href="#evaluating-retriever-performance-in-rag" id="toc-evaluating-retriever-performance-in-rag" class="nav-link" data-scroll-target="#evaluating-retriever-performance-in-rag">Evaluating Retriever Performance in RAG</a></li>
+  <li><a href="#filtering-documents-for-factuality-and-bias-in-rag" id="toc-filtering-documents-for-factuality-and-bias-in-rag" class="nav-link" data-scroll-target="#filtering-documents-for-factuality-and-bias-in-rag">Filtering Documents for Factuality and Bias in RAG</a></li>
+  <li><a href="#running-unit-tests-during-cicd" id="toc-running-unit-tests-during-cicd" class="nav-link" data-scroll-target="#running-unit-tests-during-cicd">Running Unit Tests during CI/CD</a></li>
+  <li><a href="#checking-for-contamination-of-base-models" id="toc-checking-for-contamination-of-base-models" class="nav-link" data-scroll-target="#checking-for-contamination-of-base-models">Checking for Contamination of Base Models</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Workshop 3: Instrumenting &amp; Evaluating LLMs</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Workshop #3 focuses on the crucial role of evaluation in fine-tuning and improving LLMs. It covers three main types of evaluations: unit tests, LLM as a judge, and human evaluation.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 20, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#types-of-evaluations">Types of Evaluations</a></li>
+<li><a href="#looking-at-your-data">Looking At Your Data</a></li>
+<li><a href="#harrison-chase-langsmith-for-logging-tests">Harrison Chase: Langsmith for Logging &amp; Tests</a></li>
+<li><a href="#bryan-bischof-spellgrounds-for-prodigious-prestidigitation">Bryan Bischof: Spellgrounds for Prodigious Prestidigitation</a></li>
+<li><a href="#eugene-yan-evaluating-llm-generated-summaries-with-out-of-domain-fine-tuning">Eugene Yan: Evaluating LLM-Generated Summaries with Out-of-Domain Fine-tuning</a></li>
+<li><a href="#shreya-shankar-scaling-up-vibe-checks-for-llms">Shreya Shankar: Scaling Up Vibe Checks for LLMs</a></li>
+<li><a href="#qa-session">Q&amp;A Session</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><strong>Importance of Evaluation:</strong> Evaluation is crucial for iteratively improving LLMs, whether through prompt engineering, fine-tuning, or other methods.</li>
+<li><strong>Data Flywheel:</strong> A fast iteration cycle requires rapid feedback from evaluations, enabling you to experiment and improve your AI quickly.
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://hamel.dev/blog/posts/evals/">Your AI Product Needs Evals</a></li>
+</ul></li>
+<li><strong>Applied AI:</strong> Evaluation and data analysis are key components of applied AI, allowing you to measure progress and make informed decisions.</li>
+</ul>
+</section>
+<section id="types-of-evaluations" class="level2">
+<h2 class="anchored" data-anchor-id="types-of-evaluations">Types of Evaluations</h2>
+<ul>
+<li><strong>Unit Tests:</strong>
+<ul>
+<li>Code-based tests that validate specific expectations about LLM responses.</li>
+<li>Typically fast to run and can catch basic errors.</li>
+</ul></li>
+<li><strong>LLM as a Judge:</strong>
+<ul>
+<li>Using another LLM to evaluate the quality of the primary LLM’s response.</li>
+<li>Can be efficient but requires careful alignment with human judgment.</li>
+</ul></li>
+<li><strong>Human Evaluation:</strong>
+<ul>
+<li>Direct human assessment of LLM output.</li>
+<li>Considered the gold standard, but can be expensive and time-consuming.</li>
+</ul></li>
+</ul>
+<section id="example-editing-out-stereotypes-in-academic-writing" class="level3">
+<h3 class="anchored" data-anchor-id="example-editing-out-stereotypes-in-academic-writing">Example: Editing Out Stereotypes In Academic Writing</h3>
+<ul>
+<li><strong>Goal:</strong> Automate the process of identifying and removing subconscious biases and stereotypes from text.
+<ul>
+<li><strong>Original Text:</strong> “Norway’s mining economy flourished during the period due to Norwegian’s natural hardiness.”</li>
+<li><strong>Desired Edit:</strong> Remove the stereotype of “Norwegian’s natural hardiness.”</li>
+</ul></li>
+<li><strong>Approach:</strong> Leverages the experience of a team that manually reviews and edits manuscripts for biases, highlighting the importance of considering existing workflows when designing evaluations.</li>
+</ul>
+</section>
+<section id="unit-tests" class="level3">
+<h3 class="anchored" data-anchor-id="unit-tests">Unit Tests</h3>
+<ul>
+<li><p><strong>Purpose:</strong> First line of defense against basic errors in LLM output.</p></li>
+<li><p><strong>Identifying Failure Modes:</strong> Even seemingly complex LLM tasks often have predictable failure modes that can be tested with code.</p></li>
+<li><p><strong>Abstraction and Reusability:</strong> Unit tests should be abstracted and reusable, both during development and in production.</p></li>
+<li><p><strong>Logging and Tracking:</strong> Log unit test results to a database or other system for tracking progress and identifying trends.</p></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> pipeline, Pipeline</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pytest</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Unit Tests</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">@pytest.fixture</span>(scope<span class="op">=</span><span class="st">"module"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> llm_pipeline():</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pipeline(<span class="st">"text-generation"</span>, model<span class="op">=</span><span class="st">"meta-llama/Llama-2-7b-chat-hf"</span>, device<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> verify_answer_contains(p: Pipeline, query: <span class="bu">str</span>, expected: <span class="bu">str</span>):</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> p(query, do_sample<span class="op">=</span><span class="va">False</span>, truncation<span class="op">=</span><span class="va">True</span>, return_full_text<span class="op">=</span><span class="va">False</span>)[<span class="dv">0</span>][<span class="st">"generated_text"</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> expected <span class="kw">in</span> result, <span class="ss">f"The result does not contain '</span><span class="sc">{</span>expected<span class="sc">}</span><span class="ss">'"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> test_google_ceo(llm_pipeline):</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    verify_answer_contains(llm_pipeline, <span class="st">"Who is the CEO of Google?"</span>, <span class="st">"Sundar Pichai"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> test_2_plus_3(llm_pipeline):</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    verify_answer_contains(llm_pipeline, <span class="st">"What is 2+3?"</span>, <span class="st">"5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div></li>
+</ul>
+<section id="generate-data-for-each-scenario" class="level4">
+<h4 class="anchored" data-anchor-id="generate-data-for-each-scenario">Generate Data For Each Scenario</h4>
+<ul>
+<li><strong>Feature and Scenario Breakdown:</strong> Break down the LLM application into features and scenarios to systematically generate test data.</li>
+<li><strong>Example:</strong> A real estate CRM application with features like finding listings, each with scenarios like finding one listing, multiple listings, or no listings.</li>
+</ul>
+</section>
+<section id="use-llms-to-synthetically-generate-inputs-to-the-system" class="level4">
+<h4 class="anchored" data-anchor-id="use-llms-to-synthetically-generate-inputs-to-the-system">Use LLMs to synthetically generate inputs to the system</h4>
+<ul>
+<li><p><strong>Synthetic Data Generation:</strong> Use LLMs to generate synthetic test data for various scenarios, especially when real user data is limited.</p></li>
+<li><p><strong>Example:</strong> Generating synthetic real estate agent instructions for testing a CMA (comparative market analysis) feature.</p>
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code>Write an instruction that a real estate agent can give to his assistant to create CMA's for him. The results should be a string containing the instruction like so:
+
+```json
+[
+  "Create a CMA for 2430 Victory Park"
+]
+```
+
+If you need a listing you can use any of the following:
+
+&lt;SELECT address FROM listings_filters;&gt; (From minimal database)</code></pre>
+</div>
+</div>
+</div></li>
+</ul></li>
+</ul>
+</section>
+<section id="log-results-to-database-and-visualize" class="level4">
+<h4 class="anchored" data-anchor-id="log-results-to-database-and-visualize">Log Results to Database and Visualize</h4>
+<ul>
+<li><p>Use existing tools to systematically track unit test results to monitor progress and identify areas for improvement.</p>
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code>----------
+Website - one-listing-found Results
+Success: 0 Fail 26 Total 26 Average Duration: 7
+Technical Tokens Leaked: 26
+----------
+Website - multiple-listings-found Results
+Success: 0 Fail 22 Total 22 Average Duration: 4
+Unknown: 1
+Exposed UUIDs: 17
+Failed to format JSON Output: 4
+----------
+Website - no-listing-found Results
+Success: 25 Fail 1 Total 26 Average Duration: 3
+Unknown: 1
+----------</code></pre>
+</div>
+</div>
+</div></li>
+</ul></li>
+<li><p>Use bar charts or other visualizations to track error rates across different scenarios and iterations.</p></li>
+</ul>
+</section>
+<section id="unit-test-considerations" class="level4">
+<h4 class="anchored" data-anchor-id="unit-test-considerations">Unit Test Considerations</h4>
+<ul>
+<li><strong>Strict vs.&nbsp;Leaderboard Approach:</strong>
+<ul>
+<li><strong>Strict:</strong> All unit tests must pass; otherwise, the pipeline is halted.</li>
+<li><strong>Leaderboard:</strong> Track the number of passing tests over iterations to measure progress.</li>
+</ul></li>
+<li><strong>Use Case Specificity:</strong>
+<ul>
+<li><strong>Public-facing products:</strong> Prioritize tests that prevent data leaks and ensure user privacy.</li>
+<li><strong>Internal tools:</strong> Focus on identifying major issues, as minor errors might be less critical.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="llm-as-a-judge" class="level3">
+<h3 class="anchored" data-anchor-id="llm-as-a-judge">LLM as a Judge</h3>
+<ul>
+<li><strong>Alignment with Human Standard:</strong> LLM as a judge must be aligned with a trusted human standard to ensure reliable evaluation.</li>
+<li><strong>Iterative Alignment:</strong> Continuously measure and improve the agreement between LLM as a judge and human evaluation.</li>
+<li><strong>Tips:</strong> Use a powerful LLM, treat the judge as a mini-evaluation system, and periodically re-align with human judgment.</li>
+</ul>
+<section id="llm-as-a-judge-example-de-biasing-text-project" class="level4">
+<h4 class="anchored" data-anchor-id="llm-as-a-judge-example-de-biasing-text-project">LLM-As-A-Judge Example: De-biasing Text Project</h4>
+<ul>
+<li><strong>Challenge:</strong> Lack of transitivity in LLM as a judge’s evaluation, leading to unreliable results.</li>
+<li><strong>Solution:</strong> Relying on human evaluation due to the limitations of LLM as a judge in this specific use case.</li>
+</ul>
+</section>
+</section>
+<section id="human-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="human-evaluation">Human Evaluation</h3>
+<ul>
+<li><strong>Importance:</strong> Human evaluation is always necessary, even when using other evaluation methods, to ensure alignment and prevent over-fitting.</li>
+<li><strong>Regular Data Analysis:</strong> Continuously analyze human evaluations to identify patterns, biases, and areas for improvement.</li>
+<li><strong>Balancing Cost and Accuracy:</strong> Determine the appropriate level of human evaluation based on project constraints and desired accuracy.</li>
+</ul>
+</section>
+<section id="what-worked" class="level3">
+<h3 class="anchored" data-anchor-id="what-worked">What Worked</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 42%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Writing Queries</th>
+<th>Debiasing Text</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Unit Tests</td>
+<td>Good</td>
+<td>Too Rigid</td>
+</tr>
+<tr class="even">
+<td>LLM as a judge</td>
+<td>Pretty Good</td>
+<td>Not transitive</td>
+</tr>
+<tr class="odd">
+<td>Human Evaluation</td>
+<td>Some labor required, aided by LLM as a judge</td>
+<td>Labor intensive, which was ok for this task</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="evaluation-workflow" class="level3">
+<h3 class="anchored" data-anchor-id="evaluation-workflow">Evaluation Workflow</h3>
+<ul>
+<li><strong>Iterative Feedback Loop:</strong> Evaluation enables a fast feedback loop for prompt engineering, fine-tuning, and other improvements.</li>
+<li><strong>Hidden Complexity:</strong> Building effective evaluation systems is not trivial and requires careful consideration of various factors.</li>
+</ul>
+</section>
+<section id="human-eval-going-wrong-in-alt-text-project" class="level3">
+<h3 class="anchored" data-anchor-id="human-eval-going-wrong-in-alt-text-project">Human Eval Going Wrong in Alt Text Project</h3>
+<ul>
+<li><strong>Challenge:</strong> Human evaluators’ standards can drift over time, leading to misleading results, even with a fixed rubric.</li>
+<li><strong>Example:</strong> Alt text generation project where human evaluators’ standards increased as they saw better models, making later models appear worse than they actually were.</li>
+</ul>
+<section id="ab-testing" class="level4">
+<h4 class="anchored" data-anchor-id="ab-testing">A/B Testing</h4>
+<ul>
+<li><strong>Solution:</strong> A/B testing can control for changes in human judgment over time by randomly assigning evaluators to different models.</li>
+<li><strong>Limitations:</strong> A/B testing requires sufficient data and human labelers, making it impractical for early-stage projects.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="looking-at-your-data" class="level2">
+<h2 class="anchored" data-anchor-id="looking-at-your-data">Looking At Your Data</h2>
+<ul>
+<li><strong>Crucial Importance:</strong> Looking at your data is essential for understanding LLM behavior, identifying failure modes, and improving evaluation methods.</li>
+<li><strong>Common Pitfall:</strong> Many practitioners do not look at their data enough, even when they think they do.</li>
+</ul>
+<section id="what-is-a-trace" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-a-trace">What is a Trace?</h3>
+<ul>
+<li><strong>Definition:</strong> A trace is a sequence of events in an LLM pipeline, such as multi-turn conversations, RAG processes, or function calls.</li>
+<li><strong>Importance:</strong> Traces are valuable for debugging, fine-tuning, and understanding LLM behavior.</li>
+<li><strong>Representation:</strong> Traces are often represented as JSON-L files, but other formats are possible.</li>
+</ul>
+</section>
+<section id="remove-all-friction-from-looking-at-your-data" class="level3">
+<h3 class="anchored" data-anchor-id="remove-all-friction-from-looking-at-your-data">Remove All Friction from Looking at Your Data</h3>
+<ul>
+<li><strong>Ease of Access:</strong> Make it easy to access, filter, and navigate your data to encourage regular inspection.</li>
+<li><strong>Custom Tools:</strong> Consider building custom tools using Shiny, Gradio, Streamlit, or other frameworks to streamline data exploration.
+<ul>
+<li><strong><a href="https://github.com/parlance-labs/langfree">langefree</a>:</strong> Tools for extraction, transformation, and curation of <code>ChatOpenAI</code> runs from LangSmith.</li>
+</ul></li>
+<li><strong>Key Considerations:</strong> Ensure that your tools remove enough friction and provide the necessary information for effective analysis.</li>
+</ul>
+</section>
+<section id="rendering-logging-traces" class="level3">
+<h3 class="anchored" data-anchor-id="rendering-logging-traces">Rendering &amp; Logging Traces</h3>
+<ul>
+<li><strong>Tools:</strong> Use tools like LangSmith, IdenticLogFire, Braintrust, Weights&amp;Biases Weave, OpenLLMetry, and Instruct to log and render traces.
+<ul>
+<li><strong>Commercial:</strong>
+<ul>
+<li><a href="https://smith.langchain.com/">Langsmith</a></li>
+<li><a href="https://pydantic.dev/logfire">Pydantic LogFire</a></li>
+<li><a href="https://www.braintrustdata.com/">BrainTrust</a></li>
+<li><a href="https://wandb.ai/site/weave">W&amp;B Weave</a></li>
+</ul></li>
+<li><strong>OSS:</strong>
+<ul>
+<li><a href="https://ukgovernmentbeis.github.io/inspect_ai/workflow.html">Instruct</a></li>
+<li><a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a></li>
+</ul></li>
+</ul></li>
+<li><strong>LangSmith:</strong> A platform for logging, testing, and visualizing LLM pipelines, with features like trace rendering, filtering, and feedback integration.</li>
+</ul>
+</section>
+<section id="its-best-to-use-a-tool" class="level3">
+<h3 class="anchored" data-anchor-id="its-best-to-use-a-tool">It’s Best to Use a Tool</h3>
+<ul>
+<li><strong>Off-the-Shelf Solutions:</strong> Leverage existing tools for logging traces and other evaluation tasks to focus on data analysis and model improvement.</li>
+<li><strong>Tool Exploration:</strong> Explore the various tools available through workshops, office hours, and other resources to find the best fit for your needs.</li>
+</ul>
+</section>
+</section>
+<section id="harrison-chase-langsmith-for-logging-tests" class="level2">
+<h2 class="anchored" data-anchor-id="harrison-chase-langsmith-for-logging-tests">Harrison Chase: Langsmith for Logging &amp; Tests</h2>
+<ul>
+<li><a href="https://www.langchain.com/langsmith">Langsmith Website</a></li>
+<li><a href="https://docs.smith.langchain.com/">Langsmith Docs</a></li>
+</ul>
+<section id="langsmith-features" class="level3">
+<h3 class="anchored" data-anchor-id="langsmith-features">LangSmith Features</h3>
+<ul>
+<li><strong>Data Visualization and Analysis:</strong> Log, visualize, and analyze interactions with your LLM applications, enabling deep dives into individual runs and identification of potential issues.</li>
+<li><strong>Dataset Management and Testing:</strong> Create, manage, and test your LLM applications against diverse datasets, facilitating targeted improvements and robust evaluation.</li>
+<li><strong>Experiment Tracking and Comparison:</strong> Track experiment results over time, compare different model versions, and gain insights into performance changes.</li>
+<li><strong>Leveraging LLM as a Judge:</strong> Utilize LLMs for automated evaluation, streamline feedback loops, and align LLM judgments with human preferences.</li>
+<li><strong>Human-in-the-Loop Feedback:</strong> Integrate human feedback seamlessly through annotation queues, enabling continuous improvement and refinement of your LLM applications.</li>
+</ul>
+</section>
+<section id="observability-looking-at-your-data" class="level3">
+<h3 class="anchored" data-anchor-id="observability-looking-at-your-data">Observability: Looking at Your Data</h3>
+<ul>
+<li><strong>Integration:</strong> Langsmith integrates with Langchain via environment variables and offers various entry points for non-Langchain users, including decorators, direct span logging, and project-based organization.</li>
+<li><strong>Data Visualization:</strong> Provides an interface to visualize logged data, including system messages, human and AI interactions, outputs, and relevant documents, all presented in an easily digestible format.</li>
+<li><strong>Transition to Playground:</strong> Allows direct navigation from a specific trace to a playground environment, facilitating rapid iteration and prompt modification.</li>
+</ul>
+<section id="filtering-and-dissecting-data" class="level4">
+<h4 class="anchored" data-anchor-id="filtering-and-dissecting-data">Filtering and Dissecting Data</h4>
+<ul>
+<li><strong>Filtering Capabilities:</strong> Offers robust filtering options based on errors, latency, status, tags (e.g., LLM provider), and user feedback, enabling focused analysis of specific data subsets.</li>
+<li><strong>Aggregate Statistics:</strong> Provides aggregated statistics over time, allowing for the identification of trends and patterns in application performance.</li>
+<li><strong>A/B Testing and Metadata Grouping:</strong> Enables A/B testing by grouping statistics based on metadata, such as LLM provider, to compare performance across different models or configurations.</li>
+</ul>
+</section>
+</section>
+<section id="datasets-and-testing" class="level3">
+<h3 class="anchored" data-anchor-id="datasets-and-testing">Datasets and Testing</h3>
+<ul>
+<li><strong>Dataset Creation:</strong> Supports manual example uploads, imports from existing traces (e.g., failed interactions), and the organization of data into distinct splits for targeted testing.</li>
+<li><strong>Split Testing:</strong> Allows for the evaluation of LLM applications on specific data splits, enabling focused analysis and improvement of performance in identified problem areas.</li>
+</ul>
+<section id="tracking-experiments-over-time" class="level4">
+<h4 class="anchored" data-anchor-id="tracking-experiments-over-time">Tracking Experiments Over Time</h4>
+<ul>
+<li><strong>Experiment Tracking:</strong> Automatically logs and displays experiment results, including metrics and performance over time, allowing for monitoring and identification of regressions.</li>
+<li><strong>Experiment Comparison:</strong> Provides an interface to compare two or more experiments side-by-side, highlighting performance differences and facilitating detailed analysis of specific cases.</li>
+</ul>
+</section>
+</section>
+<section id="llm-as-a-judge-1" class="level3">
+<h3 class="anchored" data-anchor-id="llm-as-a-judge-1">LLM as a Judge</h3>
+<ul>
+<li><strong>Automated Evaluation:</strong> Supports the use of LLMs as judges for automated evaluation, streamlining the feedback process and reducing reliance on manual review.</li>
+<li><strong>Off-the-Shelf and Custom Evaluators:</strong> Offers both pre-built evaluation prompts and the flexibility to define custom evaluation functions, catering to diverse use cases.</li>
+<li><strong>Aligning Human Preferences:</strong> Facilitates the alignment of LLM judgments with human preferences through few-shot learning and an upcoming correction flow feature, enabling continuous improvement of evaluation accuracy.</li>
+</ul>
+</section>
+<section id="human-in-the-loop-feedback" class="level3">
+<h3 class="anchored" data-anchor-id="human-in-the-loop-feedback">Human-in-the-Loop Feedback</h3>
+<ul>
+<li><strong>Annotation Queues:</strong> Provides annotation queues for efficient human feedback collection, allowing for the review, labeling, and categorization of data points to improve model performance.</li>
+<li><strong>Collaborative Features:</strong> Includes features for adding notes, marking completion status, and collaborating on data annotation tasks, fostering teamwork and efficient feedback integration.</li>
+</ul>
+</section>
+</section>
+<section id="bryan-bischof-spellgrounds-for-prodigious-prestidigitation" class="level2">
+<h2 class="anchored" data-anchor-id="bryan-bischof-spellgrounds-for-prodigious-prestidigitation">Bryan Bischof: Spellgrounds for Prodigious Prestidigitation</h2>
+<ul>
+<li><strong>Spellgrounds:</strong> An internal library for developing and running evaluations, combining systematic and use-case-specific approaches.</li>
+<li><strong>Opinionated View on Evals:</strong> Evals should help determine product readiness, ensure system reliability, and aid in debugging.</li>
+<li><a href="https://docs.google.com/presentation/d/1GC868XXjhxOpQEt1jUM79aW0RHjzxPp0XhpFHnYH760/edit#slide=id.p">Google Slides</a></li>
+<li><a href="https://hex.tech/product/magic-ai/">hex.tech</a></li>
+</ul>
+<section id="preamble" class="level3">
+<h3 class="anchored" data-anchor-id="preamble">Preamble</h3>
+<ul>
+<li><strong>Three Purposes of Evals:</strong>
+<ul>
+<li>Determine product readiness.</li>
+<li>Ensure system reliability.</li>
+<li>Aid in debugging.</li>
+</ul></li>
+<li><strong>Evals as Data Science:</strong> LLM evaluations are not entirely new and should leverage existing data science principles and techniques.</li>
+</ul>
+</section>
+<section id="miscats-and-fizzled-spells-things-to-avoid" class="level3">
+<h3 class="anchored" data-anchor-id="miscats-and-fizzled-spells-things-to-avoid">Miscats and Fizzled Spells: Things to avoid</h3>
+<section id="thinking-llm-evaluations-are-entirely-new" class="level4">
+<h4 class="anchored" data-anchor-id="thinking-llm-evaluations-are-entirely-new">Thinking LLM Evaluations Are Entirely New</h4>
+<ul>
+<li><strong>Leverage Existing Expertise:</strong> Data scientists have extensive experience in evaluating unpredictable outputs and mapping user problems to objective functions.</li>
+<li><strong>Examples:</strong>
+<ul>
+<li><strong>Code generation:</strong> Execution evaluation.</li>
+<li><strong>Agents:</strong> Planning as binary classification.</li>
+<li><strong>Summarization:</strong> Retrieval accuracy.</li>
+</ul></li>
+</ul>
+</section>
+<section id="failing-to-include-use-case-experts" class="level4">
+<h4 class="anchored" data-anchor-id="failing-to-include-use-case-experts">Failing to Include Use-Case Experts</h4>
+<ul>
+<li><strong>Expert Input:</strong> Users and domain experts provide valuable insights into what constitutes good output for specific use cases.</li>
+<li><strong>Example:</strong> Collaborating with data scientists to define ideal chart outputs for an LLM-powered data visualization tool.</li>
+</ul>
+</section>
+<section id="waiting-too-long-to-make-evaluations" class="level4">
+<h4 class="anchored" data-anchor-id="waiting-too-long-to-make-evaluations">Waiting Too Long to Make Evaluations</h4>
+<ul>
+<li><strong>Early Integration:</strong> Evals should be part of the development cycle from the beginning, including RFC creation and design discussions.</li>
+</ul>
+</section>
+<section id="not-recognizing-product-metrics-vs.-evaluation-metrics" class="level4">
+<h4 class="anchored" data-anchor-id="not-recognizing-product-metrics-vs.-evaluation-metrics">Not Recognizing Product Metrics vs.&nbsp;Evaluation Metrics</h4>
+<ul>
+<li><strong>Distinct but Related:</strong>
+<ul>
+<li>Product metrics track overall system performance, while evaluation metrics assess specific LLM components or functionalities.</li>
+<li>Product metrics provide valuable insights for designing evals, but they are not sufficient for comprehensive evaluation.</li>
+</ul></li>
+<li><strong>Custom Environments:</strong> Create custom datasets and environments that reflect real-world use cases, even when access to production data is limited.</li>
+</ul>
+</section>
+<section id="buying-an-evaluation-framework-doesnt-make-it-easy" class="level4">
+<h4 class="anchored" data-anchor-id="buying-an-evaluation-framework-doesnt-make-it-easy">Buying an Evaluation Framework Doesn’t Make It Easy</h4>
+<ul>
+<li><strong>Focus on Fundamentals:</strong> The hard part of evals is understanding user stories and input diversity, not the framework itself.</li>
+<li><strong>Jupyter Notebooks:</strong> Jupyter Notebooks are powerful tools for interactive data exploration and evaluation.</li>
+<li><strong>Invest Wisely:</strong> Prioritize understanding user needs and building effective evals before investing in complex frameworks.</li>
+</ul>
+</section>
+<section id="reacing-too-early-for-llm-assisted-evaluation" class="level4">
+<h4 class="anchored" data-anchor-id="reacing-too-early-for-llm-assisted-evaluation">Reacing Too Early for LLM-Assisted Evaluation</h4>
+<ul>
+<li><strong>LLM Judging as a Tool:</strong> LLM judging can be valuable for scaling evaluations and identifying potential issues, but it is not a replacement for human judgment.</li>
+<li><strong>Systematic Approach:</strong>
+<ul>
+<li>Establish a solid foundation of traditional evaluations before incorporating LLM-assisted methods.</li>
+<li>Use multiple judges and periodically check for alignment with human evaluation.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="moderating-magic-how-to-build-your-eval-system" class="level3">
+<h3 class="anchored" data-anchor-id="moderating-magic-how-to-build-your-eval-system">Moderating Magic: How to build your eval system</h3>
+<section id="magic" class="level4">
+<h4 class="anchored" data-anchor-id="magic">Magic</h4>
+<ul>
+<li><strong>Definition:</strong> An AI copilot for data science that generates code, reacts to edits, and creates visualizations.</li>
+<li><a href="https://hex.tech/product/magic-ai/">Product Page</a></li>
+</ul>
+</section>
+<section id="rag-evals" class="level4">
+<h4 class="anchored" data-anchor-id="rag-evals">RAG Evals</h4>
+<ul>
+<li><strong>Treat RAG as Retrieval:</strong> Evaluate RAG systems like traditional retrieval systems, focusing on hit rate and relevance.</li>
+<li><strong>Baselines and Calibration:</strong> Establish clear baselines and avoid treating retrieval scores as absolute confidence estimates.</li>
+</ul>
+</section>
+<section id="planning-evals" class="level4">
+<h4 class="anchored" data-anchor-id="planning-evals">Planning Evals</h4>
+<ul>
+<li><strong>State Machine as Classifier:</strong> Evaluate agent planning as a binary classification task, checking the correctness of each step.</li>
+<li><strong>Prompt Quality:</strong> Evaluate the quality of downstream prompts generated by the planning stage, as they can be suboptimal.</li>
+</ul>
+</section>
+<section id="agent-specific-evals" class="level4">
+<h4 class="anchored" data-anchor-id="agent-specific-evals">Agent-Specific Evals</h4>
+<ul>
+<li><strong>Structured Output:</strong> Encourage and evaluate the use of structured output from agents to facilitate integration and consistency.</li>
+<li><strong>API Interfaces:</strong> Design tightly coupled API interfaces between agent components and evaluate their consistency.</li>
+</ul>
+</section>
+<section id="final-stage-evals" class="level4">
+<h4 class="anchored" data-anchor-id="final-stage-evals">Final Stage Evals</h4>
+<ul>
+<li><strong>Topic:</strong> Evaluating the final output or summary generated by an agent chain.</li>
+<li><strong>Recommendation:</strong> Ensure the summary accurately reflects the agent’s actions and avoid providing excessive context that can introduce noise.</li>
+</ul>
+</section>
+<section id="experiments-are-repeated-measure-designs" class="level4">
+<h4 class="anchored" data-anchor-id="experiments-are-repeated-measure-designs">Experiments are Repeated-Measure Designs</h4>
+<ul>
+<li><strong>Treat Updates as Experiments:</strong> Evaluate the impact of updates and bug fixes as experiments, measuring significance and comparing to historical data.</li>
+<li><strong>Production Event Reruns:</strong> Rerun historical production events through updated models and use automated evals to assess improvements.</li>
+</ul>
+</section>
+<section id="production-endpoints-minimize-drift" class="level4">
+<h4 class="anchored" data-anchor-id="production-endpoints-minimize-drift">Production Endpoints Minimize Drift</h4>
+<ul>
+<li><strong>Direct Connection:</strong> Connect your evals framework directly to your production environment to minimize drift and ensure consistency.</li>
+<li><strong>Endpoint Exposure:</strong> Expose each step of the production workflow as an endpoint to facilitate testing and debugging.</li>
+</ul>
+</section>
+</section>
+<section id="qa" class="level3">
+<h3 class="anchored" data-anchor-id="qa">Q&amp;A</h3>
+<ul>
+<li>Leverage Jupyter Notebooks for reproducible evaluation orchestration and detailed log analysis.</li>
+<li>Focus on evaluating the most critical and informative aspects of the LLM system, prioritizing evaluations that exhibit variability and potential for improvement.</li>
+<li>Use bootstrap sampling to efficiently assess performance and identify areas for improvement.</li>
+<li>Strive for an evaluation suite with a passing rate of 60-70% to ensure sufficient sensitivity to changes and improvements.</li>
+</ul>
+</section>
+</section>
+<section id="eugene-yan-evaluating-llm-generated-summaries-with-out-of-domain-fine-tuning" class="level2">
+<h2 class="anchored" data-anchor-id="eugene-yan-evaluating-llm-generated-summaries-with-out-of-domain-fine-tuning">Eugene Yan: Evaluating LLM-Generated Summaries with Out-of-Domain Fine-tuning</h2>
+<section id="introduction-1" class="level3">
+<h3 class="anchored" data-anchor-id="introduction-1">Introduction</h3>
+<ul>
+<li><p><strong>Problem:</strong> Evaluating the factual accuracy of LLM-generated summaries and detecting hallucinations.</p></li>
+<li><p><strong>Solution:</strong> Develop an evaluator model that predicts the probability of a summary being factually inconsistent with the source document.</p></li>
+<li><p><strong>Approach:</strong> Frame the problem as a Natural Language Inference (NLI) task, treating “contradiction” as factual inconsistency.</p></li>
+<li><p><strong>GitHub Repository:</strong> <a href="eugeneyan/visualizing-finetunes">eugeneyan/visualizing-finetunes</a></p></li>
+<li><p><strong>Blog Post:</strong> <a href="https://eugeneyan.com/writing/finetuning/">Out-of-Domain Finetuning to Bootstrap Hallucination Detection</a></p></li>
+</ul>
+</section>
+<section id="methodology" class="level3">
+<h3 class="anchored" data-anchor-id="methodology">Methodology</h3>
+<ol type="1">
+<li><p><strong>Data Preparation:</strong></p>
+<ul>
+<li>Exclude low-quality data (e.g., CNN Daily Mail from FIB).</li>
+<li>Split data into train, validation, and test sets, ensuring no data leakage.</li>
+<li>Balance classes within each set.</li>
+</ul></li>
+<li><p><strong>Model Fine-tuning:</strong></p>
+<ul>
+<li>Use a pre-trained NLI model (DistilBART fine-tuned on MNLI).</li>
+<li>Fine-tune on FIB data alone and evaluate performance.</li>
+<li>Fine-tune on USB data, then FIB data, and evaluate performance on both datasets.</li>
+</ul></li>
+<li><p><strong>Evaluation Metrics:</strong></p>
+<ul>
+<li><p><strong>Standard metrics:</strong></p>
+<ul>
+<li><p><strong>ROC AUC:</strong> Area Under the Receiver Operating Characteristic Curve.</p>
+<ul>
+<li>Measures the ability of a binary classification model to distinguish between the positive and negative classes across all possible thresholds.</li>
+<li>Higher values indicate better performance, with 1 being perfect and 0.5 indicating no better performance than random guessing.</li>
+</ul>
+<p><strong>PR AUC:</strong> Area Under the Precision-Recall Curve.</p>
+<ul>
+<li>Evaluates the trade-off between precision (the accuracy of positive predictions) and recall (the ability to find all positive instances) across different thresholds.</li>
+<li>Useful when dealing with imbalanced datasets.</li>
+<li>A higher PR AUC indicates better performance in identifying the positive class.</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Custom metrics:</strong></p>
+<ul>
+<li><strong>Recall:</strong> Measures the proportion of actual positive cases that are correctly identified by the model</li>
+<li><strong>Precision:</strong> Measures the proportion of positive predictions that are actually correct.</li>
+</ul></li>
+<li><p><strong>Visualizations:</strong> Distribution overlap of predicted probabilities for consistent and inconsistent summaries.</p></li>
+</ul></li>
+</ol>
+</section>
+<section id="overview-notebook" class="level3">
+<h3 class="anchored" data-anchor-id="overview-notebook"><a href="https://github.com/eugeneyan/visualizing-finetunes/blob/main/0_overview.ipynb">Overview Notebook</a></h3>
+<ul>
+<li><strong>Evaluator Model:</strong> A model trained to detect factual inconsistencies in summaries, framed as a natural language inference (NLI) task.</li>
+<li><strong>NLI for Factual Inconsistency:</strong> Using the “contradiction” label in NLI to identify factual inconsistencies in summaries.</li>
+<li><strong>Objective:</strong> Fine-tune an evaluator model to catch hallucinations and evaluate its performance through each epoch.</li>
+<li><strong>Data Blending:</strong> Demonstrating how blending data from different benchmarks can improve the evaluator model’s performance.</li>
+</ul>
+</section>
+<section id="prepare-data-notebook" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-data-notebook"><a href="https://github.com/eugeneyan/visualizing-finetunes/blob/main/1_prep_data.ipynb">Prepare Data Notebook</a></h3>
+<ul>
+<li><strong><a href="https://huggingface.co/datasets/r-three/fib">Factual Inconsistency Benchmark (FIB)</a>:</strong> A dataset containing one-sentence summaries from news articles, with labels indicating factual consistency.</li>
+<li><strong><a href="https://huggingface.co/datasets/kundank/usb">Unified Summarization Benchmark (USB)</a>:</strong> A dataset containing summaries of Wikipedia articles, with labels indicating factual consistency.</li>
+<li><strong>Data Splitting and Balancing:</strong> Splitting the data into train, validation, and test sets, ensuring no data leakage and balancing positive and negative examples.</li>
+</ul>
+</section>
+<section id="finetune-fib-notebook" class="level3">
+<h3 class="anchored" data-anchor-id="finetune-fib-notebook"><a href="https://github.com/eugeneyan/visualizing-finetunes/blob/main/2_ft_fib.ipynb">Finetune FIB Notebook</a></h3>
+<ul>
+<li><strong>Model:</strong> Distilled BART, a pre-trained encoder-decoder model fine-tuned on MNLI.</li>
+<li><strong>Fine-Tuning:</strong> Fine-tuning the model on the FIB dataset, tracking custom metrics like ROC AUC, recall, and precision.</li>
+<li><strong>Results:</strong> Fine-tuning on FIB alone shows limited improvement in ROC AUC and recall, indicating the need for more data.</li>
+</ul>
+</section>
+<section id="finetune-usb-then-fib-notebook" class="level3">
+<h3 class="anchored" data-anchor-id="finetune-usb-then-fib-notebook"><a href="https://github.com/eugeneyan/visualizing-finetunes/blob/main/3_ft_usb_then_fib.ipynb">Finetune USB then FIB Notebook</a></h3>
+<ul>
+<li><strong>Data Blending:</strong> Fine-tuning the model on the larger USB dataset first, followed by fine-tuning on the FIB dataset.</li>
+<li><strong>Results:</strong> Fine-tuning on USB significantly improves performance on both USB and FIB, demonstrating the benefits of data blending.</li>
+<li><strong>Evaluator Model as a Tool:</strong> The fine-tuned evaluator model can be used to evaluate generative models, acting as a fast and scalable hallucination detector.</li>
+</ul>
+</section>
+<section id="advantages-of-the-evaluator-model" class="level3">
+<h3 class="anchored" data-anchor-id="advantages-of-the-evaluator-model">Advantages of the Evaluator Model</h3>
+<ul>
+<li><strong>Fast and Scalable:</strong> Evaluates summaries in milliseconds, making it suitable for real-time applications.</li>
+<li><strong>Controllable:</strong> Allows setting thresholds to prioritize precision or recall based on specific needs.</li>
+<li><strong>Versatile:</strong> Can be adapted to evaluate other aspects of summaries, such as relevance and information density.</li>
+</ul>
+</section>
+<section id="evaluating-agents" class="level3">
+<h3 class="anchored" data-anchor-id="evaluating-agents">Evaluating Agents</h3>
+<ul>
+<li>Break down complex tasks into smaller, evaluable steps.</li>
+<li>Use a combination of classification, extraction, and potentially reward model-based metrics.</li>
+<li><strong>Example:</strong> Evaluating a meeting transcript summarization agent:
+<ul>
+<li>Step 1: Evaluate the extraction of decisions, actions, and owners (classification).</li>
+<li>Step 2: Evaluate the factual consistency of extracted information against the transcript (classification using the hallucination detection model).</li>
+<li>Step 3: Evaluate the quality of the final summary in terms of information density and writing style (potentially using a reward model).</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="shreya-shankar-scaling-up-vibe-checks-for-llms" class="level2">
+<h2 class="anchored" data-anchor-id="shreya-shankar-scaling-up-vibe-checks-for-llms">Shreya Shankar: Scaling Up Vibe Checks for LLMs</h2>
+<ul>
+<li><strong>Focus:</strong> Using LLMs to scale up human evaluation and create task-specific assertions or guardrails.</li>
+<li><strong>Evaluation Assistants:</strong> Tools that aid humans in creating and refining evaluations for LLM pipelines.</li>
+<li><strong>Longer Talk:</strong> <a href="https://www.youtube.com/watch?v=eGVDKegRdgM">Scaling Up “Vibe Checks” for LLMs - Shreya Shankar | Stanford MLSys #97</a></li>
+</ul>
+<section id="llm-pipelines" class="level3">
+<h3 class="anchored" data-anchor-id="llm-pipelines">LLM Pipelines</h3>
+<ul>
+<li><strong>Zero-Shot Capabilities:</strong> LLM pipelines can perform complex tasks without explicit training, using prompt templates and instructions.
+<ul>
+<li><strong>Examples:</strong>
+<ul>
+<li><strong><a href="https://smith.langchain.com/hub/julia/podcaster-tweet-thread">julia/podcaster-tweet-thread</a>:</strong> Take a podcast episode transcript and turn into a tweet thread.</li>
+<li><strong><a href="https://smith.langchain.com/hub/homanp/github-code-reviews">homanp/github-code-reviews</a>:</strong> This prompt reviews pull request on GitHub.</li>
+<li><strong><a href="https://smith.langchain.com/hub/matu/customer_satisfaction">matu/customer_satisfaction</a>:</strong> This prompt is being use to extract services and sentiments from a customer answer to a survey.</li>
+<li><strong><a href="muhsinbashir/youtube-transcript-to-article:">muhsinbashir/youtube-transcript-to-article:</a></strong> Convert any Youtube Video Transcript into an Article.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="llms-make-unpredictable-mistakes" class="level3">
+<h3 class="anchored" data-anchor-id="llms-make-unpredictable-mistakes">LLMs Make Unpredictable Mistakes</h3>
+<ul>
+<li><strong>Instruction Following:</strong> LLMs may not always follow instructions perfectly, leading to unexpected errors and inconsistencies.</li>
+<li><strong>Need for Guardrails:</strong> Evaluation and assertions are crucial for detecting and correcting LLM errors, ensuring reliable output.</li>
+</ul>
+</section>
+<section id="vibe-checks-custom-evaluation-for-llms" class="level3">
+<h3 class="anchored" data-anchor-id="vibe-checks-custom-evaluation-for-llms">Vibe Checks: Custom Evaluation for LLMs</h3>
+<ul>
+<li><strong>Vibe Checks:</strong> Task-specific constraints, guidelines, or assertions that define “good” output based on human judgment.</li>
+<li><strong>Challenges:</strong>
+<ul>
+<li><strong>Subjectivity:</strong> Different users may have different expectations for the same task.</li>
+<li><strong>Complexity:</strong> Metrics like “tone” are difficult to quantify and evaluate.</li>
+<li><strong>Scalability:</strong> Manual vibe checks by humans are effective but don’t scale well.</li>
+</ul></li>
+<li><strong>Spectrum of Vibe Checks:</strong>
+<ul>
+<li><strong>Generic:</strong> Common ML performance metrics provided by model developers.</li>
+<li><strong>Architecture-Specific:</strong> Metrics relevant to specific LLM architectures (e.g., faithfulness in RAG pipelines).</li>
+<li><strong>Task-Specific:</strong> Fine-grained constraints tailored to the exact requirements of a task.</li>
+</ul></li>
+<li><strong>Goal:</strong> Develop scalable, codified vibe checks (validators, assertions, guardrails) that capture task-specific requirements.</li>
+</ul>
+</section>
+<section id="evaluation-assistants-using-llms-to-build-vibe-checks" class="level3">
+<h3 class="anchored" data-anchor-id="evaluation-assistants-using-llms-to-build-vibe-checks">Evaluation Assistants: Using LLMs to Build Vibe Checks</h3>
+<ul>
+<li><strong>Evaluation Assistants:</strong> Tools that help humans define and implement task-specific evaluations and assertions.</li>
+<li><strong>Key Idea:</strong> Leverage LLMs to scale, not replace, human judgment.</li>
+<li><strong>Workflow Components:</strong>
+<ul>
+<li><strong>Auto-generate criteria and implementations:</strong> Use LLMs to suggest potential evaluation criteria and ways to implement them.</li>
+<li><strong>Mixed Initiative Interface:</strong> Allow humans to interact with and refine LLM-generated criteria and provide feedback.</li>
+</ul></li>
+</ul>
+</section>
+<section id="auto-generated-assertions-learning-from-prompt-history" class="level3">
+<h3 class="anchored" data-anchor-id="auto-generated-assertions-learning-from-prompt-history">Auto-Generated Assertions: Learning from Prompt History</h3>
+<ul>
+<li><strong>Challenge:</strong> Identifying relevant assertion criteria and ensuring coverage of potential failures.</li>
+<li><strong><a href="https://arxiv.org/abs/2401.03038">SPADE System</a>:</strong> A two-step workflow for generating assertions.
+<ol type="1">
+<li><strong>Generate candidate assertions:</strong> Use LLMs to propose potential assertions.</li>
+<li><strong>Filter based on human preferences:</strong> Allow humans to select and refine the most relevant assertions.</li>
+</ol></li>
+<li><strong>Insight:</strong> Prompt version history reveals information about developer priorities and common LLM errors.
+<ul>
+<li><strong>Example:</strong> Repeated edits to instructions related to sensitive information indicate a need for a corresponding assertion.</li>
+</ul></li>
+<li><strong>Categorizing Prompt Deltas:</strong> Analyzing how humans modify prompts helps identify common categories of edits, which can inform assertion generation.</li>
+<li><strong>From Taxonomy to Assertions:</strong> LLMs can use the categorized prompt deltas and the current prompt to suggest relevant assertion criteria.</li>
+<li><strong>Lessons from Deployment:</strong>
+<ul>
+<li>Inclusion and exclusion assertions are most common.</li>
+<li>LLM-generated assertions may be redundant, incorrect, or require further refinement.</li>
+</ul></li>
+</ul>
+</section>
+<section id="evalgen-a-mixed-initiative-interface-for-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="evalgen-a-mixed-initiative-interface-for-evaluation">EvalGen: A Mixed Initiative Interface for Evaluation</h3>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2404.12272">Who Validates the Validators? Aligning LLM-Assisted Evaluation of LLM Outputs with Human Preferences</a></li>
+<li><strong>Motivation:</strong> Streamline the process of creating and refining assertions, making it more efficient and user-friendly.</li>
+<li><strong>Key Features:</strong>
+<ul>
+<li><strong>Minimize wait time:</strong> Provide rapid feedback and iteration cycles.</li>
+<li><strong>Human-in-the-loop:</strong> Allow users to edit, refine, and grade LLM outputs and criteria.</li>
+<li><strong>Interactive grading:</strong> Enable users to provide thumbs-up/thumbs-down feedback on LLM outputs.</li>
+<li><strong>Report card:</strong> Summarize evaluation results and highlight areas for improvement.</li>
+</ul></li>
+<li><strong>Qualitative Study Findings:</strong>
+<ul>
+<li><strong>Starting point:</strong> EvalGen provides a useful starting point for assertion development, even if initial suggestions require refinement.</li>
+<li><strong>Iterative process:</strong> Evaluation is an iterative process that benefits from ongoing human feedback.</li>
+<li><strong>Criteria drift:</strong> User definitions of “good” and “bad” output evolve over time and with exposure to more examples.</li>
+<li><strong>Code-based vs.&nbsp;LLM-based evals:</strong>
+<ul>
+<li>Users have different expectations and use cases for these two types of evaluations.</li>
+<li>Preferred for fuzzy criteria, dirty data, and situations where humans struggle to articulate clear rules.</li>
+</ul></li>
+</ul></li>
+<li><strong>EvalGen v2:</strong> Incorporates lessons learned from the study, including:
+<ul>
+<li>Dynamic criteria list for easier iteration.</li>
+<li>Natural language feedback for refining criteria.</li>
+<li>Support for per-criteria feedback.</li>
+</ul></li>
+</ul>
+</section>
+<section id="overall-takeaways" class="level3">
+<h3 class="anchored" data-anchor-id="overall-takeaways">Overall Takeaways</h3>
+<ul>
+<li><strong>Mistakes are inevitable:</strong> LLMs will make mistakes, especially at scale.</li>
+<li><strong>LLMs can assist in evaluation:</strong> By leveraging prompt history and human feedback, LLMs can help create effective evaluation metrics.</li>
+<li><strong>Evaluation is iterative:</strong> Continuous monitoring, feedback, and refinement are crucial for maintaining LLM accuracy and alignment with user expectations.</li>
+<li><strong>Evaluation assistants are valuable:</strong> Tools like EvalGen can significantly streamline the process of developing and refining LLM evaluations.</li>
+</ul>
+</section>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<section id="using-prompt-history-for-generating-assertions" class="level3">
+<h3 class="anchored" data-anchor-id="using-prompt-history-for-generating-assertions">Using Prompt History for Generating Assertions</h3>
+<ul>
+<li><strong>Benefit:</strong> Focusing LLM’s attention when generating evaluation criteria. Instead of designing a unit test for every sentence in a long prompt, providing prompt history helps focus on key criteria.</li>
+<li><strong>Focus on Iteration:</strong> Start with 2-3 criteria, refine them, and then add more, rather than starting with an overwhelming number.</li>
+<li><strong>Challenges in Writing Assertions:</strong> The difficulty lies in aligning assertions with what constitutes “good” or “bad” output. This definition evolves over time and requires analyzing model output and user feedback.</li>
+<li><strong>Value of Evaluation Assistants:</strong> Assist in drawing conclusions from data and defining “good” output, aiding in the continuous improvement process.</li>
+</ul>
+</section>
+<section id="generalizability-of-assertion-criteria" class="level3">
+<h3 class="anchored" data-anchor-id="generalizability-of-assertion-criteria">Generalizability of Assertion Criteria</h3>
+<ul>
+<li><strong>Generalization Across Models:</strong> Prompt edits and the way people interact with LLMs are similar across different models, regardless of the specific model used (Mistral, LLAMA2, ChatGPT, Claude).</li>
+</ul>
+</section>
+<section id="unit-tests-for-specific-llm-tasks" class="level3">
+<h3 class="anchored" data-anchor-id="unit-tests-for-specific-llm-tasks">Unit Tests for Specific LLM Tasks</h3>
+<ul>
+<li><strong>Applicability of Unit Tests:</strong> While straightforward for tasks with clear data structures (e.g., query validity), unit tests are less effective for general-purpose language models or tasks like text rewriting or summarization.</li>
+</ul>
+</section>
+<section id="temperature-parameter-in-open-source-llms" class="level3">
+<h3 class="anchored" data-anchor-id="temperature-parameter-in-open-source-llms">Temperature Parameter in Open-Source LLMs</h3>
+<ul>
+<li><strong>Open-Source LLMs and Temperature:</strong> Similar to OpenAI’s models, open-source LLMs have a temperature parameter. Setting it to zero ensures deterministic output, which is often desirable in production settings.</li>
+</ul>
+</section>
+<section id="importance-of-evaluation-methods" class="level3">
+<h3 class="anchored" data-anchor-id="importance-of-evaluation-methods">Importance of Evaluation Methods</h3>
+<ul>
+<li><strong>Iterative Approach to Evaluation:</strong> Start building the product without extensive upfront evaluation. Implement evaluations as you learn more about the task, identify edge cases, and seek improvements.</li>
+<li><strong>Don’t Let Evals Hinder Progress:</strong> Avoid evaluation paralysis. Focus on creating a minimal product and then iteratively refine it based on evaluations and user feedback.</li>
+</ul>
+</section>
+<section id="fine-tuning-llm-as-a-judge" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-llm-as-a-judge">Fine-tuning LLM as a Judge</h3>
+<ul>
+<li><strong>Using Off-The-Shelf Models:</strong> It is generally recommended to use publicly available, off-the-shelf LLMs as judges instead of fine-tuning separate judge models.</li>
+<li><strong>Complexity and Alignment:</strong> Fine-tuning judge models can lead to complexity and make it challenging to align them with human judgment.</li>
+</ul>
+</section>
+<section id="starting-the-data-flywheel" class="level3">
+<h3 class="anchored" data-anchor-id="starting-the-data-flywheel">Starting the Data Flywheel</h3>
+<ul>
+<li><strong>Start with a Prompt:</strong> Begin with a simple prompt and an off-the-shelf LLM to build a basic product and gather user data.</li>
+<li><strong>Leverage Synthetic Data:</strong> Utilize the LLM’s capabilities to generate synthetic data, enabling faster iteration and unblocking progress.</li>
+</ul>
+</section>
+<section id="do-sample-parameter-in-production" class="level3">
+<h3 class="anchored" data-anchor-id="do-sample-parameter-in-production">“Do Sample” Parameter in Production</h3>
+<ul>
+<li><strong>Deterministic vs.&nbsp;Varied Output:</strong> Setting <code>do_sample</code> to <code>false</code> (or using zero temperature) ensures deterministic, consistent output, often preferred for production systems requiring predictable behavior.</li>
+<li><strong>Use Case Dependency:</strong> For creative applications like character AI, where variety is desired, <code>do_sample</code> can be set to <code>true</code> or a non-zero temperature can be used.</li>
+</ul>
+</section>
+<section id="preparing-data-for-ab-testing-with-llms" class="level3">
+<h3 class="anchored" data-anchor-id="preparing-data-for-ab-testing-with-llms">Preparing Data for A/B Testing with LLMs</h3>
+<ul>
+<li><strong>Human Evaluation vs.&nbsp;LLM as Judge:</strong> While LLMs can potentially be used to choose between options, human evaluation is often more reliable.</li>
+<li><strong>Context-Specific Data Preparation:</strong> Data preparation depends heavily on the specific task and why an LLM is used for A/B testing.</li>
+</ul>
+</section>
+<section id="evaluating-retriever-performance-in-rag" class="level3">
+<h3 class="anchored" data-anchor-id="evaluating-retriever-performance-in-rag">Evaluating Retriever Performance in RAG</h3>
+<ul>
+<li><strong>Key Metrics:</strong>
+<ul>
+<li><strong>Recall@10:</strong> Measures how many relevant documents are retrieved within the top 10 results.</li>
+<li><strong>Ranking (NDCG):</strong> Evaluates if the most relevant documents are ranked higher.</li>
+<li><strong>Ability to Return Zero Results:</strong> Important for identifying queries with no relevant information in the index, preventing the LLM from generating incorrect responses based on irrelevant data.</li>
+</ul></li>
+<li><strong>Importance of Handling Irrelevant Data:</strong> Ensuring the retriever can effectively identify and handle queries with no relevant information is crucial for avoiding inaccurate or nonsensical responses from the LLM.</li>
+</ul>
+</section>
+<section id="filtering-documents-for-factuality-and-bias-in-rag" class="level3">
+<h3 class="anchored" data-anchor-id="filtering-documents-for-factuality-and-bias-in-rag">Filtering Documents for Factuality and Bias in RAG</h3>
+<ul>
+<li><strong>Challenges:</strong> Identifying factually incorrect or biased content within the document corpus is a complex challenge.</li>
+<li><strong>Content Moderation and Exclusion:</strong> Employ content moderation techniques to identify and exclude toxic, biased, or offensive content from the retrieval index.</li>
+<li><strong>Open Problem:</strong> Detecting subtle misinformation or bias remains an open research problem.</li>
+</ul>
+</section>
+<section id="running-unit-tests-during-cicd" class="level3">
+<h3 class="anchored" data-anchor-id="running-unit-tests-during-cicd">Running Unit Tests during CI/CD</h3>
+<ul>
+<li><strong>Local vs.&nbsp;CI/CD Execution:</strong> Running tests locally provides faster feedback during development, while integrating with CI/CD ensures consistent testing and prevents accidental deployments without proper testing.</li>
+<li><strong>Use Case Dependency:</strong> The choice depends on the purpose of the tests (quality assurance vs.&nbsp;safety checks) and the sensitivity of the application.</li>
+</ul>
+</section>
+<section id="checking-for-contamination-of-base-models" class="level3">
+<h3 class="anchored" data-anchor-id="checking-for-contamination-of-base-models">Checking for Contamination of Base Models</h3>
+<ul>
+<li><strong>Contextual Reasoning:</strong> Analyze the likelihood of overlap between the evaluation data and the base model’s training data based on the nature and recency of the data.</li>
+<li><strong>Performance Monitoring:</strong> Be wary of unexpectedly high performance, which could indicate data leakage.</li>
+<li><strong>No Foolproof Solution:</strong> Data contamination is a difficult problem with no universal solution. Careful consideration and context-specific analysis are essential.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
