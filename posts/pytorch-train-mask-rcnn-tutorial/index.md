@@ -141,7 +141,7 @@ Next, we'll install PyTorch. Run the appropriate command for your hardware and o
 
 ``` {.bash}
 # Install PyTorch with CUDA
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 ```
 
 ## Mac
@@ -401,7 +401,7 @@ I made a fork of the original repository with only the files needed for this tut
 
 ::: {.callout-tip title="Segmentation Annotation Format"}
 
-The segmentation masks for this dataset use the [LabelMe](https://github.com/labelmeai/labelme) annotation format. You can learn more about this format and how to work with such annotations in the tutorial linked below:
+The segmentation masks for this dataset uses the [LabelMe](https://github.com/labelmeai/labelme) annotation format. You can learn more about this format and how to work with such annotations in the tutorial linked below:
 
 * [Working with LabelMe Segmentation Annotations in Torchvision](/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)
 

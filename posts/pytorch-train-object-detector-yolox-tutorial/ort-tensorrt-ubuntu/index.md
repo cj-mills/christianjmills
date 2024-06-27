@@ -137,10 +137,10 @@ Run the following commands to install the libraries:
 
 ```bash
 # Install TensorRT packages
-pip install 'tensorrt==8.6.1' --extra-index-url https://pypi.nvidia.com
+pip install 'tensorrt==10.0.1' --extra-index-url https://pypi.nvidia.com
 
 # Install ONNX Runtime for CUDA 12
-pip install -U onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+pip install -U 'onnxruntime-gpu==1.18.0' --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 ```
 
 

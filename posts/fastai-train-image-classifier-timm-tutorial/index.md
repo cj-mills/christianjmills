@@ -72,7 +72,7 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 No matter your choice of environment, you'll be well-prepared to follow along with the rest of this tutorial. You can download the notebook from the tutorial's GitHub repository or open the notebook directly in Google Colab using the links below.
 
-::: {.callout-tip title="Tutorial Code" collapse="true"}
+::: {.callout-tip title="Tutorial Code" collapse="false"}
 
 | Platform     | Jupyter Notebook                                             |
 | ------------ | ------------------------------------------------------------ |

@@ -75,7 +75,7 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 
 
-::: {.callout-tip title="Tutorial Code" collapse="true"}
+::: {.callout-tip title="Tutorial Code" collapse="false"}
 
 | Platform     | Jupyter Notebook                                             |
 | ------------ | ------------------------------------------------------------ |

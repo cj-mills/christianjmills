@@ -60,7 +60,7 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 :::
 
-::: {.callout-tip title="Tutorial Code" collapse="true"}
+::: {.callout-tip title="Tutorial Code" collapse="false"}
 
 | Jupyter Notebook: | [GitHub Repository](https://github.com/cj-mills/torchvision-annotation-tutorials/blob/main/notebooks/cvat/torchvision-cvat-keypoint-annotations.ipynb) | [Open In Colab](https://colab.research.google.com/github/cj-mills/torchvision-annotation-tutorials/blob/main/notebooks/cvat/torchvision-cvat-keypoint-annotations.ipynb) |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
