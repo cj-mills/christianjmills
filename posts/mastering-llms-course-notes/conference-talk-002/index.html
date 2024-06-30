@@ -1,0 +1,3728 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-06-29">
+<meta name="description" content="This talk by Ankur Goyal from BrainTrust covers how to build evals for LLM systems by walking through a Text2SQL use case.">
+
+<title>Christian Mills - Conference Talk 2: LLM Eval For Text2SQL</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Conference Talk 2: LLM Eval For Text2SQL">
+<meta property="og:description" content="This talk by Ankur Goyal from BrainTrust covers how to build evals for LLM systems by walking through a Text2SQL use case.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Conference Talk 2: LLM Eval For Text2SQL">
+<meta name="twitter:description" content="This talk by Ankur Goyal from BrainTrust covers how to build evals for LLM systems by walking through a Text2SQL use case.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#importance-of-llm-evaluation" id="toc-importance-of-llm-evaluation" class="nav-link active" data-scroll-target="#importance-of-llm-evaluation">Importance of LLM Evaluation</a></li>
+  <li><a href="#building-effective-evaluations" id="toc-building-effective-evaluations" class="nav-link" data-scroll-target="#building-effective-evaluations">Building Effective Evaluations</a></li>
+  <li><a href="#llm-eval-for-text2sql-notebook" id="toc-llm-eval-for-text2sql-notebook" class="nav-link" data-scroll-target="#llm-eval-for-text2sql-notebook">LLM Eval For Text2SQL Notebook</a>
+  <ul>
+  <li><a href="#downloading-the-data" id="toc-downloading-the-data" class="nav-link" data-scroll-target="#downloading-the-data">Downloading the data</a></li>
+  <li><a href="#prototyping-text2sql" id="toc-prototyping-text2sql" class="nav-link" data-scroll-target="#prototyping-text2sql">Prototyping Text2SQL</a></li>
+  <li><a href="#initial-evals" id="toc-initial-evals" class="nav-link" data-scroll-target="#initial-evals">Initial evals</a>
+  <ul class="collapse">
+  <li><a href="#creating-an-initial-dataset" id="toc-creating-an-initial-dataset" class="nav-link" data-scroll-target="#creating-an-initial-dataset">Creating an initial dataset</a></li>
+  <li><a href="#task-function" id="toc-task-function" class="nav-link" data-scroll-target="#task-function">Task function</a></li>
+  <li><a href="#scores" id="toc-scores" class="nav-link" data-scroll-target="#scores">Scores</a></li>
+  <li><a href="#eval" id="toc-eval" class="nav-link" data-scroll-target="#eval">Eval</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#saving-good-data" id="toc-saving-good-data" class="nav-link" data-scroll-target="#saving-good-data">Saving Good Data</a></li>
+  <li><a href="#updating-the-eval" id="toc-updating-the-eval" class="nav-link" data-scroll-target="#updating-the-eval">Updating the eval</a></li>
+  <li><a href="#results-1" id="toc-results-1" class="nav-link" data-scroll-target="#results-1">Results</a></li>
+  </ul></li>
+  <li><a href="#generating-more-data" id="toc-generating-more-data" class="nav-link" data-scroll-target="#generating-more-data">Generating more data</a></li>
+  <li><a href="#trying-gpt-4" id="toc-trying-gpt-4" class="nav-link" data-scroll-target="#trying-gpt-4">Trying GPT-4</a>
+  <ul class="collapse">
+  <li><a href="#results-2" id="toc-results-2" class="nav-link" data-scroll-target="#results-2">Results</a></li>
+  <li><a href="#analyze-regressions" id="toc-analyze-regressions" class="nav-link" data-scroll-target="#analyze-regressions">Analyze Regressions</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#qa-session" id="toc-qa-session" class="nav-link" data-scroll-target="#qa-session">Q&amp;A Session</a></li>
+  <li><a href="#recommendations" id="toc-recommendations" class="nav-link" data-scroll-target="#recommendations">Recommendations</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Conference Talk 2: LLM Eval For Text2SQL</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    This talk by <strong>Ankur Goyal</strong> from BrainTrust covers how to build evals for LLM systems by walking through a Text2SQL use case.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 29, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#importance-of-llm-evaluation">Importance of LLM Evaluation</a></li>
+<li><a href="#building-effective-evaluations">Building Effective Evaluations</a></li>
+<li><a href="#llm-eval-for-text2sql-notebook">LLM Eval For Text2SQL Notebook</a></li>
+<li><a href="#qa-session">Q&amp;A Session</a></li>
+</ul>
+<section id="importance-of-llm-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="importance-of-llm-evaluation">Importance of LLM Evaluation</h2>
+<ul>
+<li><strong>Goals of Evaluation:</strong>
+<ul>
+<li>Determine if the system effectively solves the problem.</li>
+<li>Quickly identify improvements or regressions caused by changes.</li>
+<li>Analyze good and bad examples to understand model behavior.</li>
+<li>Identify and address regressions, avoiding a “whack-a-mole” scenario.</li>
+<li>Systematically improve the overall system quality.</li>
+</ul></li>
+</ul>
+</section>
+<section id="building-effective-evaluations" class="level2">
+<h2 class="anchored" data-anchor-id="building-effective-evaluations">Building Effective Evaluations</h2>
+<ul>
+<li><p><strong>Three Core Components:</strong></p>
+<ul>
+<li><strong>Data:</strong>
+<ul>
+<li>Start by hardcoding data representing various scenarios.</li>
+<li>Advanced methods like data generation and log sourcing can be incorporated later.</li>
+</ul></li>
+<li><strong>Task Function:</strong>
+<ul>
+<li>A function transforming input into output.</li>
+<li>Can be simple (single LLM call) or complex (multi-agent system).</li>
+<li>Example: A function converting natural language questions to SQL queries.</li>
+</ul></li>
+<li><strong>Scoring Functions:</strong>
+<ul>
+<li>Evaluate the quality of the output.</li>
+<li>Options include:
+<ul>
+<li>Handwritten heuristic functions.</li>
+<li>LLM-based comparisons between output and expected values.</li>
+<li>Human evaluation and feedback.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Simple Example:">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Simple Example:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> braintrust <span class="im">import</span> Eval</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> autoevals <span class="im">import</span> Factuality</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>Eval(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Say Hi Bot"</span>, <span class="co"># Replace with your project name</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span><span class="kw">lambda</span>: [</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>            <span class="st">"input"</span>: <span class="st">"David"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>            <span class="st">"expected"</span>: <span class="st">"Hi David"</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    ], <span class="co"># Replace with your eval dataset</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    task<span class="op">=</span><span class="kw">lambda</span> <span class="bu">input</span>: <span class="st">"Hi "</span> <span class="op">+</span> <span class="bu">input</span>, <span class="co"># Replace with your LLM call</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    scores<span class="op">=</span>[Factuality],</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div></li>
+<li><p><strong>Iterative Improvement:</strong></p>
+<ul>
+<li>If an evaluation reveals issues, focus on improving one of the three components:
+<ul>
+<li><strong>Data:</strong> Handwrite cases, generate cases, or obtain data from users.</li>
+<li><strong>Task Function:</strong> Optimize prompts or refine the workflow of LLM calls.</li>
+<li><strong>Scoring Functions:</strong> Improve heuristics, leverage LLM-based scoring, or integrate human evaluation.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="llm-eval-for-text2sql-notebook" class="level2">
+<h2 class="anchored" data-anchor-id="llm-eval-for-text2sql-notebook">LLM Eval For Text2SQL Notebook</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resources:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resources:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Notebook:</strong> <a href="https://github.com/braintrustdata/braintrust-cookbook/blob/main/examples/Text2SQL-Data/Text2SQL-Data.ipynb">LLM Eval For Text2SQL</a></li>
+<li><strong>Dataset:</strong> <a href="https://huggingface.co/datasets/suzyanil/nba-data">suzyanil/nba-data</a></li>
+<li><strong>Tools:</strong>
+<ul>
+<li><strong><a href="https://duckdb.org/">DuckDB</a>:</strong> Expressive SQL tool for running queries within the notebook.</li>
+<li><strong><a href="https://huggingface.co/docs/datasets/en/index">Hugging Face Datasets</a>:</strong> Provides easy access to the NBA dataset.</li>
+<li><strong><a href="https://platform.openai.com/docs/overview">OpenAI API</a>:</strong> Used for accessing GPT-4 and GPT-4o models.</li>
+<li><strong><a href="https://www.braintrustdata.com/docs/welcome">BrainTrust</a>:</strong> LLM evaluation platform for managing experiments, data, and results.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<section id="downloading-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="downloading-the-data">Downloading the data</h3>
+<ul>
+<li><strong>Data:</strong> NBA dataset from Hugging Face (2014-2018 seasons, one row per game).</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> duckdb</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> load_dataset(<span class="st">"suzyanil/nba-data"</span>)[<span class="st">"train"</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>conn <span class="op">=</span> duckdb.<span class="ex">connect</span>(database<span class="op">=</span><span class="st">":memory:"</span>, read_only<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>conn.register(<span class="st">"nba"</span>, data.to_pandas())</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>conn.query(<span class="st">"SELECT * FROM nba LIMIT 5"</span>).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+Unnamed: 0
+</th>
+<th>
+Team
+</th>
+<th>
+Game
+</th>
+<th>
+Date
+</th>
+<th>
+Home
+</th>
+<th>
+Opponent
+</th>
+<th>
+WINorLOSS
+</th>
+<th>
+TeamPoints
+</th>
+<th>
+OpponentPoints
+</th>
+<th>
+FieldGoals
+</th>
+<th>
+FieldGoalsAttempted
+</th>
+<th>
+FieldGoals.
+</th>
+<th>
+X3PointShots
+</th>
+<th>
+X3PointShotsAttempted
+</th>
+<th>
+X3PointShots.
+</th>
+<th>
+FreeThrows
+</th>
+<th>
+FreeThrowsAttempted
+</th>
+<th>
+FreeThrows.
+</th>
+<th>
+OffRebounds
+</th>
+<th>
+TotalRebounds
+</th>
+<th>
+Assists
+</th>
+<th>
+Steals
+</th>
+<th>
+Blocks
+</th>
+<th>
+Turnovers
+</th>
+<th>
+TotalFouls
+</th>
+<th>
+Opp.FieldGoals
+</th>
+<th>
+Opp.FieldGoalsAttempted
+</th>
+<th>
+Opp.FieldGoals.
+</th>
+<th>
+Opp.3PointShots
+</th>
+<th>
+Opp.3PointShotsAttempted
+</th>
+<th>
+Opp.3PointShots.
+</th>
+<th>
+Opp.FreeThrows
+</th>
+<th>
+Opp.FreeThrowsAttempted
+</th>
+<th>
+Opp.FreeThrows.
+</th>
+<th>
+Opp.OffRebounds
+</th>
+<th>
+Opp.TotalRebounds
+</th>
+<th>
+Opp.Assists
+</th>
+<th>
+Opp.Steals
+</th>
+<th>
+Opp.Blocks
+</th>
+<th>
+Opp.Turnovers
+</th>
+<th>
+Opp.TotalFouls
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+1
+</td>
+<td>
+ATL
+</td>
+<td>
+1
+</td>
+<td>
+10/29/14
+</td>
+<td>
+Away
+</td>
+<td>
+TOR
+</td>
+<td>
+L
+</td>
+<td>
+102
+</td>
+<td>
+109
+</td>
+<td>
+40
+</td>
+<td>
+80
+</td>
+<td>
+0.500
+</td>
+<td>
+13
+</td>
+<td>
+22
+</td>
+<td>
+0.591
+</td>
+<td>
+9
+</td>
+<td>
+17
+</td>
+<td>
+0.529
+</td>
+<td>
+10
+</td>
+<td>
+42
+</td>
+<td>
+26
+</td>
+<td>
+6
+</td>
+<td>
+8
+</td>
+<td>
+17
+</td>
+<td>
+24
+</td>
+<td>
+37
+</td>
+<td>
+90
+</td>
+<td>
+0.411
+</td>
+<td>
+8
+</td>
+<td>
+26
+</td>
+<td>
+0.308
+</td>
+<td>
+27
+</td>
+<td>
+33
+</td>
+<td>
+0.818
+</td>
+<td>
+16
+</td>
+<td>
+48
+</td>
+<td>
+26
+</td>
+<td>
+13
+</td>
+<td>
+9
+</td>
+<td>
+9
+</td>
+<td>
+22
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+2
+</td>
+<td>
+ATL
+</td>
+<td>
+2
+</td>
+<td>
+11/1/14
+</td>
+<td>
+Home
+</td>
+<td>
+IND
+</td>
+<td>
+W
+</td>
+<td>
+102
+</td>
+<td>
+92
+</td>
+<td>
+35
+</td>
+<td>
+69
+</td>
+<td>
+0.507
+</td>
+<td>
+7
+</td>
+<td>
+20
+</td>
+<td>
+0.350
+</td>
+<td>
+25
+</td>
+<td>
+33
+</td>
+<td>
+0.758
+</td>
+<td>
+3
+</td>
+<td>
+37
+</td>
+<td>
+26
+</td>
+<td>
+10
+</td>
+<td>
+6
+</td>
+<td>
+12
+</td>
+<td>
+20
+</td>
+<td>
+31
+</td>
+<td>
+81
+</td>
+<td>
+0.383
+</td>
+<td>
+12
+</td>
+<td>
+32
+</td>
+<td>
+0.375
+</td>
+<td>
+18
+</td>
+<td>
+21
+</td>
+<td>
+0.857
+</td>
+<td>
+11
+</td>
+<td>
+44
+</td>
+<td>
+25
+</td>
+<td>
+5
+</td>
+<td>
+5
+</td>
+<td>
+18
+</td>
+<td>
+26
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+3
+</td>
+<td>
+ATL
+</td>
+<td>
+3
+</td>
+<td>
+11/5/14
+</td>
+<td>
+Away
+</td>
+<td>
+SAS
+</td>
+<td>
+L
+</td>
+<td>
+92
+</td>
+<td>
+94
+</td>
+<td>
+38
+</td>
+<td>
+92
+</td>
+<td>
+0.413
+</td>
+<td>
+8
+</td>
+<td>
+25
+</td>
+<td>
+0.320
+</td>
+<td>
+8
+</td>
+<td>
+11
+</td>
+<td>
+0.727
+</td>
+<td>
+10
+</td>
+<td>
+37
+</td>
+<td>
+26
+</td>
+<td>
+14
+</td>
+<td>
+5
+</td>
+<td>
+13
+</td>
+<td>
+25
+</td>
+<td>
+31
+</td>
+<td>
+69
+</td>
+<td>
+0.449
+</td>
+<td>
+5
+</td>
+<td>
+17
+</td>
+<td>
+0.294
+</td>
+<td>
+27
+</td>
+<td>
+38
+</td>
+<td>
+0.711
+</td>
+<td>
+11
+</td>
+<td>
+50
+</td>
+<td>
+25
+</td>
+<td>
+7
+</td>
+<td>
+9
+</td>
+<td>
+19
+</td>
+<td>
+15
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+4
+</td>
+<td>
+ATL
+</td>
+<td>
+4
+</td>
+<td>
+11/7/14
+</td>
+<td>
+Away
+</td>
+<td>
+CHO
+</td>
+<td>
+L
+</td>
+<td>
+119
+</td>
+<td>
+122
+</td>
+<td>
+43
+</td>
+<td>
+93
+</td>
+<td>
+0.462
+</td>
+<td>
+13
+</td>
+<td>
+33
+</td>
+<td>
+0.394
+</td>
+<td>
+20
+</td>
+<td>
+26
+</td>
+<td>
+0.769
+</td>
+<td>
+7
+</td>
+<td>
+38
+</td>
+<td>
+28
+</td>
+<td>
+8
+</td>
+<td>
+3
+</td>
+<td>
+19
+</td>
+<td>
+33
+</td>
+<td>
+48
+</td>
+<td>
+97
+</td>
+<td>
+0.495
+</td>
+<td>
+6
+</td>
+<td>
+21
+</td>
+<td>
+0.286
+</td>
+<td>
+20
+</td>
+<td>
+27
+</td>
+<td>
+0.741
+</td>
+<td>
+11
+</td>
+<td>
+51
+</td>
+<td>
+31
+</td>
+<td>
+6
+</td>
+<td>
+7
+</td>
+<td>
+19
+</td>
+<td>
+30
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+5
+</td>
+<td>
+ATL
+</td>
+<td>
+5
+</td>
+<td>
+11/8/14
+</td>
+<td>
+Home
+</td>
+<td>
+NYK
+</td>
+<td>
+W
+</td>
+<td>
+103
+</td>
+<td>
+96
+</td>
+<td>
+33
+</td>
+<td>
+81
+</td>
+<td>
+0.407
+</td>
+<td>
+9
+</td>
+<td>
+22
+</td>
+<td>
+0.409
+</td>
+<td>
+28
+</td>
+<td>
+36
+</td>
+<td>
+0.778
+</td>
+<td>
+12
+</td>
+<td>
+41
+</td>
+<td>
+18
+</td>
+<td>
+10
+</td>
+<td>
+5
+</td>
+<td>
+8
+</td>
+<td>
+17
+</td>
+<td>
+40
+</td>
+<td>
+84
+</td>
+<td>
+0.476
+</td>
+<td>
+8
+</td>
+<td>
+21
+</td>
+<td>
+0.381
+</td>
+<td>
+8
+</td>
+<td>
+11
+</td>
+<td>
+0.727
+</td>
+<td>
+13
+</td>
+<td>
+44
+</td>
+<td>
+26
+</td>
+<td>
+2
+</td>
+<td>
+6
+</td>
+<td>
+15
+</td>
+<td>
+29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="prototyping-text2sql" class="level3">
+<h3 class="anchored" data-anchor-id="prototyping-text2sql">Prototyping Text2SQL</h3>
+<ul>
+<li><strong>Simple Approach:</strong> Directly use the OpenAI API client for interacting with the LLM.</li>
+<li><strong>Prompt:</strong> A basic prompt instructs the model to write a SQL query based on the provided context.</li>
+<li><strong>Initial Test:</strong> The prototype successfully generates a SQL query to find the team with the most wins, demonstrating basic functionality.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> textwrap <span class="im">import</span> dedent</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> braintrust</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> openai</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> braintrust.wrap_openai(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    openai.AsyncClient(</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        api_key<span class="op">=</span>os.environ[<span class="st">"OPENAI_API_KEY"</span>],</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        base_url<span class="op">=</span><span class="st">"https://braintrustproxy.com/v1"</span>,  <span class="co"># This is optional and allows us to cache responses</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>columns <span class="op">=</span> conn.query(<span class="st">"DESCRIBE nba"</span>).to_df().to_dict(orient<span class="op">=</span><span class="st">"records"</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>TASK_MODEL <span class="op">=</span> <span class="st">"gpt-4o"</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="at">@braintrust.traced</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> generate_query(<span class="bu">input</span>):</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> <span class="cf">await</span> client.chat.completions.create(</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span>TASK_MODEL,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        temperature<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>            {</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                <span class="st">"role"</span>: <span class="st">"system"</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>                <span class="st">"content"</span>: dedent(<span class="ss">f"""</span><span class="ch">\</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="ss">        You are a SQL expert, and you are given a single table named nba with the following columns:</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="ss">        </span><span class="sc">{</span><span class="st">", "</span><span class="sc">.</span>join(column[<span class="st">"column_name"</span>] <span class="op">+</span> <span class="st">": "</span> <span class="op">+</span> column[<span class="st">"column_type"</span>] <span class="cf">for</span> column <span class="kw">in</span> columns)<span class="sc">}</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="ss">        Write a SQL query corresponding to the user's request. Return just the query text, with no</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="ss">        formatting (backticks, markdown, etc.).</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="ss">"""</span>),</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>            },</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>            {</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>                <span class="st">"role"</span>: <span class="st">"user"</span>,</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>                <span class="st">"content"</span>: <span class="bu">input</span>,</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>            },</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>        ],</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="cf">await</span> generate_query(<span class="st">"Who won the most games?"</span>)</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(query)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> Team, <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> Wins</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> nba</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> WINorLOSS <span class="op">=</span> <span class="st">'W'</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> Team</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> Wins <span class="kw">DESC</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">LIMIT</span> <span class="dv">1</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> execute_query(query):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> conn.query(query).fetchdf().to_dict(orient<span class="op">=</span><span class="st">"records"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>execute_query(query)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span><span class="fu">{</span><span class="er">'Team'</span><span class="fu">:</span> <span class="er">'GSW'</span><span class="fu">,</span> <span class="er">'Wins'</span><span class="fu">:</span> <span class="dv">265</span><span class="fu">}</span><span class="ot">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="initial-evals" class="level3">
+<h3 class="anchored" data-anchor-id="initial-evals">Initial evals</h3>
+<ul>
+<li><strong>Goal:</strong> Evaluate the model’s ability to generate valid SQL queries, not necessarily correct answers.</li>
+<li><strong>Dataset:</strong> Five manually crafted questions related to the NBA dataset.</li>
+<li><strong>Task Function:</strong>
+<ul>
+<li>Takes a question as input.</li>
+<li>Generates a SQL query using the LLM.</li>
+<li>Executes the query using DuckDB.</li>
+<li>Returns the query and result, handling potential errors.</li>
+</ul></li>
+<li><strong>Scoring Function:</strong>
+<ul>
+<li>Simple binary scoring: “good” if the query executes without errors, “bad” otherwise.</li>
+</ul></li>
+<li><strong>Initial Results:</strong>
+<ul>
+<li>Three out of five queries execute successfully.</li>
+<li>BrainTrust UI helps visualize results and debug errors.</li>
+<li>Correct queries and their results are saved as “golden data” for future reference.</li>
+</ul></li>
+</ul>
+<section id="creating-an-initial-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="creating-an-initial-dataset">Creating an initial dataset</h4>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>questions <span class="op">=</span> [</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Which team won the most games?"</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Which team won the most games in 2015?"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Who led the league in 3 point shots?"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Which team had the biggest difference in records across two consecutive years?"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"What is the average number of free throws per year?"</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="task-function" class="level4">
+<h4 class="anchored" data-anchor-id="task-function">Task function</h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">@braintrust.traced</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> text2sql(question):</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    query <span class="op">=</span> <span class="cf">await</span> generate_query(question)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    error <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        results <span class="op">=</span> execute_query(query)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> duckdb.Error <span class="im">as</span> e:</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        error <span class="op">=</span> <span class="bu">str</span>(e)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"query"</span>: query,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        <span class="st">"results"</span>: results,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"error"</span>: error,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="scores" class="level4">
+<h4 class="anchored" data-anchor-id="scores">Scores</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> no_error(output):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> output[<span class="st">"error"</span>] <span class="kw">is</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="eval" class="level4">
+<h4 class="anchored" data-anchor-id="eval">Eval</h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> braintrust <span class="im">import</span> Eval</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>PROJECT_NAME <span class="op">=</span> <span class="st">"LLM Eval for Text2SQL"</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> Eval(</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    PROJECT_NAME,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    experiment_name<span class="op">=</span><span class="st">"Initial dataset"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>[{<span class="st">"input"</span>: q} <span class="cf">for</span> q <span class="kw">in</span> questions],</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    task<span class="op">=</span>text2sql,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    scores<span class="op">=</span>[no_error],</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Experiment Initial dataset is running at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/Initial%20dataset
+LLM Eval for Text2SQL [experiment_name=Initial dataset] (data): 5it [00:00, 53362.65it/s]
+
+LLM Eval for Text2SQL [experiment_name=Initial dataset] (tasks):   0%|          | 0/5 [00:00&lt;?, ?it/s]
+
+=========================SUMMARY=========================
+60.00% 'no_error' score
+
+See results for Initial dataset at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/Initial%20dataset
+
+EvalResultWithSummary(summary="...", results=[...])</code></pre>
+</section>
+<section id="results" class="level4">
+<h4 class="anchored" data-anchor-id="results">Results</h4>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+id
+</th>
+<th>
+_xact_id
+</th>
+<th>
+input
+</th>
+<th>
+output
+</th>
+<th>
+expected
+</th>
+<th>
+tags
+</th>
+<th>
+scores
+</th>
+<th>
+duration
+</th>
+<th>
+estimated_cost
+</th>
+<th>
+metadata
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+ad2710ff-4c62-486b-abf4-f7266f37e5d2
+</td>
+<td>
+1000193294528916736
+</td>
+<td>
+What is the average number of free throws per year?
+</td>
+<td>
+{‘error’: ‘Binder Error: Could not choose a best candidate function for the function call “strftime(STRING_LITERAL, VARCHAR)”. In order to select one, please add explicit type casts. Candidate functions: strftime(TIMESTAMP, VARCHAR) -&gt; VARCHAR strftime(TIMESTAMP WITH TIME ZONE, VARCHAR) -&gt; VARCHAR strftime(DATE, VARCHAR) -&gt; VARCHAR’, ‘query’: ‘SELECT strftime(’%Y’, Date) AS Year, AVG(FreeThrows) AS AverageFreeThrows FROM nba GROUP BY Year;‘, ’results’: None}
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+{‘no_error’: 0}
+</td>
+<td>
+1.728403
+</td>
+<td>
+0.002320
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+5ba5d8af-82d6-4fba-a66e-9ec5ebaeb578
+</td>
+<td>
+1000193294528916736
+</td>
+<td>
+Which team had the biggest difference in records across two consecutive years?
+</td>
+<td>
+{‘error’: ‘Binder Error: No function matches the given name and argument types ’year(VARCHAR)’. You might need to add explicit type casts. Candidate functions: year(DATE) -&gt; BIGINT year(TIMESTAMP) -&gt; BIGINT year(INTERVAL) -&gt; BIGINT year(TIMESTAMP WITH TIME ZONE) -&gt; BIGINT ‘, ’query’: ‘SELECT Team, ABS(SUM(CASE WHEN WINorLOSS = ’W’ THEN 1 ELSE 0 END) - LAG(SUM(CASE WHEN WINorLOSS = ‘W’ THEN 1 ELSE 0 END)) OVER (PARTITION BY Team ORDER BY Date)) AS WinDifference FROM nba GROUP BY Team, YEAR(Date) ORDER BY WinDifference DESC LIMIT 1;‘, ’results’: None}
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+{‘no_error’: 0}
+</td>
+<td>
+1.881156
+</td>
+<td>
+0.003005
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+99056cb3-a13d-4fd3-892f-b0e3fbc1dfb5
+</td>
+<td>
+1000193294529047808
+</td>
+<td>
+Who led the league in 3 point shots?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, SUM(X3PointShots) AS Total3PointShots FROM nba GROUP BY Team ORDER BY Total3PointShots DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘HOU’, ‘Total3PointShots’: 4248}]}
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+{‘no_error’: 1}
+</td>
+<td>
+3.824243
+</td>
+<td>
+0.002285
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+f82fc67a-8594-41bd-9869-74cd7894076b
+</td>
+<td>
+1000193294528916736
+</td>
+<td>
+Which team won the most games in 2015?
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ AND Date LIKE ‘2015%’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: []}
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+{‘no_error’: 1}
+</td>
+<td>
+1.992921
+</td>
+<td>
+0.002365
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+b9fea522-d53d-4b63-958b-12c9dac59a5a
+</td>
+<td>
+1000193294529047808
+</td>
+<td>
+Which team won the most games?
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}]}
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+{‘no_error’: 1}
+</td>
+<td>
+4.303131
+</td>
+<td>
+0.002240
+</td>
+<td>
+{}
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="saving-good-data" class="level4">
+<h4 class="anchored" data-anchor-id="saving-good-data">Saving Good Data</h4>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/add-to-dataset.gif" class="img-fluid figure-img"></p>
+<figcaption>add to dataset</figcaption>
+</figure>
+</div>
+</section>
+<section id="updating-the-eval" class="level4">
+<h4 class="anchored" data-anchor-id="updating-the-eval">Updating the eval</h4>
+<ul>
+<li><strong>Leveraging Golden Data:</strong>
+<ul>
+<li>Load golden data from BrainTrust.</li>
+<li>Use golden data to compare generated queries with expected answers.</li>
+</ul></li>
+<li><strong>Improved Prompt:</strong>
+<ul>
+<li>Include a sample row from the dataset in the prompt to provide context on data format.</li>
+</ul></li>
+<li><strong>Enhanced Scoring Functions:</strong>
+<ul>
+<li><strong><code>correct_result</code> Function:</strong> Compares the values returned by the generated query and the expected answer using <a href="https://www.braintrustdata.com/docs/reference/autoevals/python#jsondiff-objects">JSONDiff</a>.</li>
+<li><a href="https://www.braintrustdata.com/docs/reference/autoevals/python#sql-objects"><code>SQL</code></a> score (LLM-based): Uses an LLM to assess the semantic similarity between the generated query and the reference query.</li>
+</ul></li>
+<li><strong>Updated Results (During Talk):</strong>
+<ul>
+<li>No regression on previously correct queries.
+<ul>
+<li>Had 1 improvement and 1 regression when testing locally</li>
+</ul></li>
+<li>Improvement in generating valid SQL queries.</li>
+<li>Analysis of discrepancies between generated and expected answers reveals areas for improvement.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> braintrust <span class="im">import</span> init_dataset</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_data():</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    golden_data <span class="op">=</span> init_dataset(PROJECT_NAME, <span class="st">"Golden data"</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    golden_questions <span class="op">=</span> <span class="bu">set</span>(d[<span class="st">"input"</span>] <span class="cf">for</span> d <span class="kw">in</span> golden_data)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">list</span>(golden_data) <span class="op">+</span> [{<span class="st">"input"</span>: q} <span class="cf">for</span> q <span class="kw">in</span> questions <span class="cf">if</span> q <span class="kw">not</span> <span class="kw">in</span> golden_questions]</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(load_data())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+id
+</th>
+<th>
+_xact_id
+</th>
+<th>
+created
+</th>
+<th>
+project_id
+</th>
+<th>
+dataset_id
+</th>
+<th>
+input
+</th>
+<th>
+expected
+</th>
+<th>
+metadata
+</th>
+<th>
+tags
+</th>
+<th>
+span_id
+</th>
+<th>
+root_span_id
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+09e520a6-bb32-4110-9b80-e127771a66bd
+</td>
+<td>
+1000193294889891926
+</td>
+<td>
+2024-06-30T00:02:42.914Z
+</td>
+<td>
+05d79acf-0ae3-4953-bc2a-b4ccc803dcfa
+</td>
+<td>
+20dcbf52-2109-40c4-a941-1f2f792d09e0
+</td>
+<td>
+Who led the league in 3 point shots?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, SUM(X3PointShots) AS Total3PointShots FROM nba GROUP BY Team ORDER BY Total3PointShots DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘HOU’, ‘Total3PointShots’: 4248}]}
+</td>
+<td>
+{}
+</td>
+<td>
+[]
+</td>
+<td>
+09e520a6-bb32-4110-9b80-e127771a66bd
+</td>
+<td>
+09e520a6-bb32-4110-9b80-e127771a66bd
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+aa079536-bebd-402a-9a98-64c9003f7a22
+</td>
+<td>
+1000193294890547290
+</td>
+<td>
+2024-06-30T00:02:53.720Z
+</td>
+<td>
+05d79acf-0ae3-4953-bc2a-b4ccc803dcfa
+</td>
+<td>
+20dcbf52-2109-40c4-a941-1f2f792d09e0
+</td>
+<td>
+Which team won the most games?
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}]}
+</td>
+<td>
+{}
+</td>
+<td>
+[]
+</td>
+<td>
+aa079536-bebd-402a-9a98-64c9003f7a22
+</td>
+<td>
+aa079536-bebd-402a-9a98-64c9003f7a22
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+eca397d3-e2bb-46c3-8d84-3772506d0a11
+</td>
+<td>
+1000193294931441802
+</td>
+<td>
+2024-06-30T00:13:17.809Z
+</td>
+<td>
+05d79acf-0ae3-4953-bc2a-b4ccc803dcfa
+</td>
+<td>
+20dcbf52-2109-40c4-a941-1f2f792d09e0
+</td>
+<td>
+Which team won the most games in 2015?
+</td>
+<td>
+{‘error’: ’Parser Error: syntax error at or near “<code>"', 'query': '</code>sql SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ AND Date LIKE ‘%/15’ GROUP BY Team ORDER BY Wins DESC LIMIT 1; ```‘, ’results’: None}
+</td>
+<td>
+{}
+</td>
+<td>
+[]
+</td>
+<td>
+eca397d3-e2bb-46c3-8d84-3772506d0a11
+</td>
+<td>
+eca397d3-e2bb-46c3-8d84-3772506d0a11
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+Which team had the biggest difference in records across two consecutive years?
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+What is the average number of free throws per year?
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> conn.query(<span class="st">"SELECT * FROM nba LIMIT 1"</span>).to_df().to_dict(orient<span class="op">=</span><span class="st">"records"</span>)[<span class="dv">0</span>]</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="at">@braintrust.traced</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> generate_query(<span class="bu">input</span>):</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> <span class="cf">await</span> client.chat.completions.create(</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span>TASK_MODEL,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        temperature<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>            {</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                <span class="st">"role"</span>: <span class="st">"system"</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>                <span class="st">"content"</span>: dedent(<span class="ss">f"""</span><span class="ch">\</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="ss">        You are a SQL expert, and you are given a single table named nba with the following columns:</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="ss">        Column | Type | Example</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="ss">        -------|------|--------</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="ss">        </span><span class="sc">{</span><span class="st">"</span><span class="ch">\n</span><span class="st">"</span><span class="sc">.</span>join(<span class="ss">f"</span><span class="sc">{</span>column[<span class="st">'column_name'</span>]<span class="sc">}</span><span class="ss"> | </span><span class="sc">{</span>column[<span class="st">'column_type'</span>]<span class="sc">}</span><span class="ss"> | </span><span class="sc">{</span>samples[column[<span class="st">'column_name'</span>]]<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> column <span class="kw">in</span> columns)<span class="sc">}</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="ss">        Write a DuckDB SQL query corresponding to the user's request. Return just the query text, with no</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="ss">        formatting (backticks, markdown, etc.).</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="ss">"""</span>),</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>            },</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>            {</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>                <span class="st">"role"</span>: <span class="st">"user"</span>,</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>                <span class="st">"content"</span>: <span class="bu">input</span>,</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>            },</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        ],</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="cf">await</span> generate_query(<span class="st">"Which team won the most games in 2015?"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>```sql
+SELECT Team, COUNT(*) AS Wins
+FROM nba
+WHERE WINorLOSS = 'W' AND Date LIKE '%/15'
+GROUP BY Team
+ORDER BY Wins DESC
+LIMIT 1;
+```</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> autoevals <span class="im">import</span> JSONDiff, Sql</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> extract_values(results):</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [<span class="bu">list</span>(result.values()) <span class="cf">for</span> result <span class="kw">in</span> results]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> correct_result(output, expected):</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> expected <span class="kw">is</span> <span class="va">None</span> <span class="kw">or</span> expected.get(<span class="st">"results"</span>) <span class="kw">is</span> <span class="va">None</span> <span class="kw">or</span> output.get(<span class="st">"results"</span>) <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> JSONDiff()(output<span class="op">=</span>extract_values(output[<span class="st">"results"</span>]), expected<span class="op">=</span>extract_values(expected[<span class="st">"results"</span>])).score</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> correct_sql(<span class="bu">input</span>, output, expected):</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> expected <span class="kw">is</span> <span class="va">None</span> <span class="kw">or</span> expected.get(<span class="st">"query"</span>) <span class="kw">is</span> <span class="va">None</span> <span class="kw">or</span> output.get(<span class="st">"query"</span>) <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Sql()(<span class="bu">input</span><span class="op">=</span><span class="bu">input</span>, output<span class="op">=</span>output[<span class="st">"query"</span>], expected<span class="op">=</span>expected[<span class="st">"query"</span>]).score</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> Eval(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    PROJECT_NAME,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    experiment_name<span class="op">=</span><span class="st">"With samples"</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>load_data,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    task<span class="op">=</span>text2sql,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    scores<span class="op">=</span>[no_error, correct_result, correct_sql],</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Experiment With samples is running at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/With%20samples
+LLM Eval for Text2SQL [experiment_name=With samples] (data): 5it [00:00, 12905.55it/s]
+
+LLM Eval for Text2SQL [experiment_name=With samples] (tasks):   0%|          | 0/5 [00:00&lt;?, ?it/s]
+
+=========================SUMMARY=========================
+With samples compared to Initial dataset:
+60.00% (-) 'no_error'       score   (1 improvements, 1 regressions)
+100.00% 'correct_result' score
+100.00% 'correct_sql'    score
+
+See results for With samples at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/With%20samples
+
+EvalResultWithSummary(summary="...", results=[...])</code></pre>
+</section>
+<section id="results-1" class="level4">
+<h4 class="anchored" data-anchor-id="results-1">Results</h4>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+id
+</th>
+<th>
+_xact_id
+</th>
+<th>
+input
+</th>
+<th>
+output
+</th>
+<th>
+expected
+</th>
+<th>
+tags
+</th>
+<th>
+scores
+</th>
+<th>
+duration
+</th>
+<th>
+estimated_cost
+</th>
+<th>
+metadata
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+9d438233-8755-474e-90c9-39eaeab62639
+</td>
+<td>
+1000193294893627520
+</td>
+<td>
+Which team won the most games?
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}]}
+</td>
+<td>
+[]
+</td>
+<td>
+{‘correct_result’: 1, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+4.974092
+</td>
+<td>
+0.003600
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+1293e7ca-7800-4406-ba60-941adaa2f636
+</td>
+<td>
+1000193294893627520
+</td>
+<td>
+Who led the league in 3 point shots?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, SUM(X3PointShots) AS Total3PointShots FROM nba GROUP BY Team ORDER BY Total3PointShots DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘HOU’, ‘Total3PointShots’: 4248}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, SUM(X3PointShots) AS Total3PointShots FROM nba GROUP BY Team ORDER BY Total3PointShots DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘HOU’, ‘Total3PointShots’: 4248}]}
+</td>
+<td>
+[]
+</td>
+<td>
+{‘correct_result’: 1, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+5.561691
+</td>
+<td>
+0.003559
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+a9954383-301c-4303-b867-2c45d841593e
+</td>
+<td>
+1000193294893365376
+</td>
+<td>
+What is the average number of free throws per year?
+</td>
+<td>
+{‘error’: ‘Binder Error: Could not choose a best candidate function for the function call “strftime(STRING_LITERAL, VARCHAR)”. In order to select one, please add explicit type casts. Candidate functions: strftime(TIMESTAMP, VARCHAR) -&gt; VARCHAR strftime(TIMESTAMP WITH TIME ZONE, VARCHAR) -&gt; VARCHAR strftime(DATE, VARCHAR) -&gt; VARCHAR’, ‘query’: ‘SELECT strftime(’%Y’, Date) AS Year, AVG(FreeThrows) AS AvgFreeThrows FROM nba GROUP BY Year;‘, ’results’: None}
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: None, ‘correct_sql’: None, ‘no_error’: 0}
+</td>
+<td>
+1.647409
+</td>
+<td>
+0.002990
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+eca397d3-e2bb-46c3-8d84-3772506d0a11
+</td>
+<td>
+1000193294893299840
+</td>
+<td>
+Which team won the most games in 2015?
+</td>
+<td>
+{‘error’: ’Parser Error: syntax error at or near “<code>"', 'query': '</code>sql SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ AND Date LIKE ‘%/15’ GROUP BY Team ORDER BY Wins DESC LIMIT 1; ```‘, ’results’: None}
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: None, ‘correct_sql’: None, ‘no_error’: 0}
+</td>
+<td>
+0.235527
+</td>
+<td>
+0.003215
+</td>
+<td>
+{}
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+eab4f712-2f79-4f0c-8e56-c037a83579ea
+</td>
+<td>
+1000193294893430912
+</td>
+<td>
+Which team had the biggest difference in records across two consecutive years?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, ABS(SUM(CASE WHEN Date LIKE ’10/%’ THEN (CASE WHEN WINorLOSS = ‘W’ THEN 1 ELSE -1 END) ELSE 0 END) - SUM(CASE WHEN Date LIKE ‘11/%’ THEN (CASE WHEN WINorLOSS = ‘W’ THEN 1 ELSE -1 END) ELSE 0 END)) AS RecordDifference FROM nba GROUP BY Team ORDER BY RecordDifference DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘RecordDifference’: 41}]}
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: None, ‘correct_sql’: None, ‘no_error’: 1}
+</td>
+<td>
+2.400165
+</td>
+<td>
+0.004035
+</td>
+<td>
+{}
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/eval-2.png" class="img-fluid figure-img"></p>
+<figcaption>updated eval</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="generating-more-data" class="level3">
+<h3 class="anchored" data-anchor-id="generating-more-data">Generating more data</h3>
+<ul>
+<li><strong>Goal:</strong> Expand the evaluation dataset beyond manually crafted questions.</li>
+<li><strong>Method:</strong> Use the LLM itself to generate SQL queries and corresponding questions.</li>
+<li><strong>Process:</strong>
+<ul>
+<li>Use function calling to structure the LLM’s output (list of questions with SQL and natural language versions).</li>
+<li>Provide the database schema as context.</li>
+<li>Execute generated queries to obtain expected results.</li>
+<li>Add successfully executed queries and their data to the evaluation dataset.</li>
+</ul></li>
+<li><strong>Benefits:</strong>
+<ul>
+<li>Automates data generation, increasing coverage.</li>
+<li>Creates a diverse set of evaluation examples.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Question(BaseModel):</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    sql: <span class="bu">str</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    question: <span class="bu">str</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Questions(BaseModel):</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    questions: <span class="bu">list</span>[Question]</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> braintrust.init_logger(<span class="st">"question generator"</span>)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> <span class="cf">await</span> client.chat.completions.create(</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">"gpt-4o"</span>,</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    temperature<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>[</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">"role"</span>: <span class="st">"user"</span>,</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">"content"</span>: dedent(<span class="ss">f"""</span><span class="ch">\</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="ss">        You are a SQL expert, and you are given a single table named nba with the following columns:</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="ss">        Column | Type | Example</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="ss">        -------|------|--------</span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="ss">        </span><span class="sc">{</span><span class="st">"</span><span class="ch">\n</span><span class="st">"</span><span class="sc">.</span>join(<span class="ss">f"</span><span class="sc">{</span>column[<span class="st">'column_name'</span>]<span class="sc">}</span><span class="ss"> | </span><span class="sc">{</span>column[<span class="st">'column_type'</span>]<span class="sc">}</span><span class="ss"> | </span><span class="sc">{</span>samples[column[<span class="st">'column_name'</span>]]<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> column <span class="kw">in</span> columns)<span class="sc">}</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a><span class="ss">        Generate SQL queries that would be interesting to ask about this table. Return the SQL query as a string, as well as the</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a><span class="ss">        question that the query answers."""</span>),</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>    tools<span class="op">=</span>[</span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>            <span class="st">"type"</span>: <span class="st">"function"</span>,</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>            <span class="st">"function"</span>: {</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>                <span class="st">"name"</span>: <span class="st">"generate_questions"</span>,</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>                <span class="st">"description"</span>: <span class="st">"Generate SQL queries that would be interesting to ask about this table."</span>,</span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>                <span class="st">"parameters"</span>: Questions.model_json_schema(),</span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>            },</span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>    tool_choice<span class="op">=</span>{<span class="st">"type"</span>: <span class="st">"function"</span>, <span class="st">"function"</span>: {<span class="st">"name"</span>: <span class="st">"generate_questions"</span>}},</span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>generated_questions <span class="op">=</span> json.loads(response.choices[<span class="dv">0</span>].message.tool_calls[<span class="dv">0</span>].function.arguments)[<span class="st">"questions"</span>]</span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(generated_questions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+sql
+</th>
+<th>
+question
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+SELECT Team, COUNT(*) as Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC;
+</td>
+<td>
+Which team has the most wins?
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+SELECT Team, AVG(TeamPoints) as AvgPoints FROM nba GROUP BY Team ORDER BY AvgPoints DESC;
+</td>
+<td>
+Which team has the highest average points per game?
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+SELECT Team, AVG(FieldGoals.) as AvgFieldGoalPercentage FROM nba GROUP BY Team ORDER BY AvgFieldGoalPercentage DESC;
+</td>
+<td>
+Which team has the highest average field goal percentage?
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+SELECT Team, AVG(X3PointShots.) as Avg3PointPercentage FROM nba GROUP BY Team ORDER BY Avg3PointPercentage DESC;
+</td>
+<td>
+Which team has the highest average 3-point shooting percentage?
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+SELECT Team, AVG(TotalRebounds) as AvgRebounds FROM nba GROUP BY Team ORDER BY AvgRebounds DESC;
+</td>
+<td>
+Which team has the highest average total rebounds per game?
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+SELECT Team, AVG(Turnovers) as AvgTurnovers FROM nba GROUP BY Team ORDER BY AvgTurnovers ASC;
+</td>
+<td>
+Which team has the lowest average turnovers per game?
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+SELECT Team, AVG(Assists) as AvgAssists FROM nba GROUP BY Team ORDER BY AvgAssists DESC;
+</td>
+<td>
+Which team has the highest average assists per game?
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+SELECT Team, AVG(Steals) as AvgSteals FROM nba GROUP BY Team ORDER BY AvgSteals DESC;
+</td>
+<td>
+Which team has the highest average steals per game?
+</td>
+</tr>
+<tr>
+<th>
+8
+</th>
+<td>
+SELECT Team, AVG(Blocks) as AvgBlocks FROM nba GROUP BY Team ORDER BY AvgBlocks DESC;
+</td>
+<td>
+Which team has the highest average blocks per game?
+</td>
+</tr>
+<tr>
+<th>
+9
+</th>
+<td>
+SELECT Team, AVG(TotalFouls) as AvgFouls FROM nba GROUP BY Team ORDER BY AvgFouls ASC;
+</td>
+<td>
+Which team has the lowest average fouls per game?
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>generated_dataset <span class="op">=</span> []</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> q <span class="kw">in</span> generated_questions:</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> execute_query(q[<span class="st">"sql"</span>])</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        generated_dataset.append(</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>            {</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">"input"</span>: q[<span class="st">"question"</span>],</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                <span class="st">"expected"</span>: {</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"results"</span>: result,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"error"</span>: <span class="va">None</span>,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"query"</span>: q[<span class="st">"sql"</span>],</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>                },</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>                <span class="st">"metadata"</span>: {</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"category"</span>: <span class="st">"Generated"</span>,</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>                },</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> duckdb.Error <span class="im">as</span> e:</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Query failed: </span><span class="sc">{</span>q[<span class="st">'sql'</span>]<span class="sc">}</span><span class="ss">"</span>, e)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"Skipping..."</span>)</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(generated_dataset)<span class="co">#[0]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Query failed: SELECT Team, AVG(FieldGoals.) as AvgFieldGoalPercentage FROM nba GROUP BY Team ORDER BY AvgFieldGoalPercentage DESC; Parser Error: syntax error at or near ")"
+Skipping...
+Query failed: SELECT Team, AVG(X3PointShots.) as Avg3PointPercentage FROM nba GROUP BY Team ORDER BY Avg3PointPercentage DESC; Parser Error: syntax error at or near ")"
+Skipping...</code></pre>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+input
+</th>
+<th>
+expected
+</th>
+<th>
+metadata
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+Which team has the most wins?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}, {‘Team’: ‘SAS’, ‘Wins’: 230}, {‘Team’: ‘HOU’, ‘Wins’: 217}, {‘Team’: ‘TOR’, ‘Wins’: 215}, {‘Team’: ‘CLE’, ‘Wins’: 211}, {‘Team’: ‘LAC’, ‘Wins’: 202}, {‘Team’: ‘BOS’, ‘Wins’: 196}, {‘Team’: ‘OKC’, ‘Wins’: 195}, {‘Team’: ‘POR’, ‘Wins’: 185}, {‘Team’: ‘WAS’, ‘Wins’: 179}, {‘Team’: ‘UTA’, ‘Wins’: 177}, {‘Team’: ‘ATL’, ‘Wins’: 175}, {‘Team’: ‘IND’, ‘Wins’: 173}, {‘Team’: ‘MIA’, ‘Wins’: 170}, {‘Team’: ‘MEM’, ‘Wins’: 162}, {‘Team’: ‘CHI’, ‘Wins’: 160}, {‘Team’: ‘MIL’, ‘Wins’: 160}, {‘Team’: ‘NOP’, ‘Wins’: 157}, {‘Team’: ‘CHO’, ‘Wins’: 153}, {‘Team’: ‘DET’, ‘Wins’: 152}, {‘Team’: ‘DAL’, ‘Wins’: 149}, {‘Team’: ‘DEN’, ‘Wins’: 149}, {‘Team’: ‘MIN’, ‘Wins’: 123}, {‘Team’: ‘SAC’, ‘Wins’: 121}, {‘Team’: ‘ORL’, ‘Wins’: 114}, {‘Team’: ‘NYK’, ‘Wins’: 109}, {‘Team’: ‘PHI’, ‘Wins’: 108}, {‘Team’: ‘PHO’, ‘Wins’: 107}, {‘Team’: ‘BRK’, ‘Wins’: 107}, {‘Team’: ‘LAL’, ‘Wins’: 99}], ‘error’: None, ‘query’: ’SELECT Team, COUNT(*) as Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+Which team has the highest average points per game?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘GSW’, ‘AvgPoints’: 113.54878048780488}, {‘Team’: ‘HOU’, ‘AvgPoints’: 109.54268292682927}, {‘Team’: ‘LAC’, ‘AvgPoints’: 107.21951219512195}, {‘Team’: ‘CLE’, ‘AvgPoints’: 107.16463414634147}, {‘Team’: ‘OKC’, ‘AvgPoints’: 107.15548780487805}, {‘Team’: ‘TOR’, ‘AvgPoints’: 106.30182926829268}, {‘Team’: ‘DEN’, ‘AvgPoints’: 106.26829268292683}, {‘Team’: ‘POR’, ‘AvgPoints’: 105.375}, {‘Team’: ‘BOS’, ‘AvgPoints’: 104.77743902439025}, {‘Team’: ‘WAS’, ‘AvgPoints’: 104.60060975609755}, {‘Team’: ‘NOP’, ‘AvgPoints’: 104.53353658536585}, {‘Team’: ‘MIN’, ‘AvgPoints’: 103.8140243902439}, {‘Team’: ‘PHO’, ‘AvgPoints’: 103.72256097560975}, {‘Team’: ‘SAS’, ‘AvgPoints’: 103.6951219512195}, {‘Team’: ‘ATL’, ‘AvgPoints’: 102.97560975609755}, {‘Team’: ‘CHO’, ‘AvgPoints’: 102.66768292682927}, {‘Team’: ‘IND’, ‘AvgPoints’: 102.53658536585365}, {‘Team’: ‘SAC’, ‘AvgPoints’: 102.39024390243902}, {‘Team’: ‘BRK’, ‘AvgPoints’: 102.25914634146342}, {‘Team’: ‘LAL’, ‘AvgPoints’: 102.10975609756098}, {‘Team’: ‘CHI’, ‘AvgPoints’: 102.0579268292683}, {‘Team’: ‘DAL’, ‘AvgPoints’: 101.9359756097561}, {‘Team’: ‘MIL’, ‘AvgPoints’: 101.7469512195122}, {‘Team’: ‘DET’, ‘AvgPoints’: 101.39024390243902}, {‘Team’: ‘ORL’, ‘AvgPoints’: 100.5579268292683}, {‘Team’: ‘PHI’, ‘AvgPoints’: 100.40853658536585}, {‘Team’: ‘MIA’, ‘AvgPoints’: 100.32926829268293}, {‘Team’: ‘NYK’, ‘AvgPoints’: 99.76219512195122}, {‘Team’: ‘UTA’, ‘AvgPoints’: 99.41768292682927}, {‘Team’: ‘MEM’, ‘AvgPoints’: 99.3048780487805}], ‘error’: None, ‘query’: ‘SELECT Team, AVG(TeamPoints) as AvgPoints FROM nba GROUP BY Team ORDER BY AvgPoints DESC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+Which team has the highest average total rebounds per game?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘OKC’, ‘AvgRebounds’: 46.954268292682926}, {‘Team’: ‘CHI’, ‘AvgRebounds’: 45.75}, {‘Team’: ‘DET’, ‘AvgRebounds’: 45.15548780487805}, {‘Team’: ‘POR’, ‘AvgRebounds’: 45.11585365853659}, {‘Team’: ‘DEN’, ‘AvgRebounds’: 45.051829268292686}, {‘Team’: ‘GSW’, ‘AvgRebounds’: 44.71341463414634}, {‘Team’: ‘PHO’, ‘AvgRebounds’: 44.26829268292683}, {‘Team’: ‘CHO’, ‘AvgRebounds’: 44.25609756097561}, {‘Team’: ‘LAL’, ‘AvgRebounds’: 44.1859756097561}, {‘Team’: ‘SAS’, ‘AvgRebounds’: 43.91158536585366}, {‘Team’: ‘BOS’, ‘AvgRebounds’: 43.795731707317074}, {‘Team’: ‘HOU’, ‘AvgRebounds’: 43.64329268292683}, {‘Team’: ‘PHI’, ‘AvgRebounds’: 43.59146341463415}, {‘Team’: ‘NOP’, ‘AvgRebounds’: 43.52439024390244}, {‘Team’: ‘NYK’, ‘AvgRebounds’: 43.49085365853659}, {‘Team’: ‘UTA’, ‘AvgRebounds’: 43.420731707317074}, {‘Team’: ‘IND’, ‘AvgRebounds’: 43.35670731707317}, {‘Team’: ‘CLE’, ‘AvgRebounds’: 43.33841463414634}, {‘Team’: ‘BRK’, ‘AvgRebounds’: 43.271341463414636}, {‘Team’: ‘WAS’, ‘AvgRebounds’: 43.1219512195122}, {‘Team’: ‘TOR’, ‘AvgRebounds’: 43.051829268292686}, {‘Team’: ‘LAC’, ‘AvgRebounds’: 42.890243902439025}, {‘Team’: ‘SAC’, ‘AvgRebounds’: 42.60060975609756}, {‘Team’: ‘MIA’, ‘AvgRebounds’: 42.582317073170735}, {‘Team’: ‘ORL’, ‘AvgRebounds’: 42.48780487804878}, {‘Team’: ‘ATL’, ‘AvgRebounds’: 42.21646341463415}, {‘Team’: ‘MEM’, ‘AvgRebounds’: 41.8719512195122}, {‘Team’: ‘MIN’, ‘AvgRebounds’: 41.71341463414634}, {‘Team’: ‘DAL’, ‘AvgRebounds’: 41.292682926829265}, {‘Team’: ‘MIL’, ‘AvgRebounds’: 40.99390243902439}], ‘error’: None, ‘query’: ‘SELECT Team, AVG(TotalRebounds) as AvgRebounds FROM nba GROUP BY Team ORDER BY AvgRebounds DESC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+Which team has the lowest average turnovers per game?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘CHO’, ‘AvgTurnovers’: 11.579268292682928}, {‘Team’: ‘DAL’, ‘AvgTurnovers’: 11.972560975609756}, {‘Team’: ‘TOR’, ‘AvgTurnovers’: 12.21951219512195}, {‘Team’: ‘DET’, ‘AvgTurnovers’: 12.432926829268293}, {‘Team’: ‘LAC’, ‘AvgTurnovers’: 12.676829268292684}, {‘Team’: ‘SAS’, ‘AvgTurnovers’: 12.893292682926829}, {‘Team’: ‘NOP’, ‘AvgTurnovers’: 13.097560975609756}, {‘Team’: ‘MEM’, ‘AvgTurnovers’: 13.128048780487806}, {‘Team’: ‘BOS’, ‘AvgTurnovers’: 13.173780487804878}, {‘Team’: ‘CHI’, ‘AvgTurnovers’: 13.195121951219512}, {‘Team’: ‘CLE’, ‘AvgTurnovers’: 13.25}, {‘Team’: ‘MIA’, ‘AvgTurnovers’: 13.341463414634147}, {‘Team’: ‘POR’, ‘AvgTurnovers’: 13.36890243902439}, {‘Team’: ‘IND’, ‘AvgTurnovers’: 13.426829268292684}, {‘Team’: ‘MIN’, ‘AvgTurnovers’: 13.448170731707316}, {‘Team’: ‘NYK’, ‘AvgTurnovers’: 13.451219512195122}, {‘Team’: ‘ORL’, ‘AvgTurnovers’: 13.676829268292684}, {‘Team’: ‘UTA’, ‘AvgTurnovers’: 13.850609756097562}, {‘Team’: ‘LAL’, ‘AvgTurnovers’: 13.875}, {‘Team’: ‘WAS’, ‘AvgTurnovers’: 13.939024390243903}, {‘Team’: ‘DEN’, ‘AvgTurnovers’: 14.195121951219512}, {‘Team’: ‘MIL’, ‘AvgTurnovers’: 14.277439024390244}, {‘Team’: ‘OKC’, ‘AvgTurnovers’: 14.390243902439025}, {‘Team’: ‘BRK’, ‘AvgTurnovers’: 14.46951219512195}, {‘Team’: ‘ATL’, ‘AvgTurnovers’: 14.551829268292684}, {‘Team’: ‘GSW’, ‘AvgTurnovers’: 14.59451219512195}, {‘Team’: ‘SAC’, ‘AvgTurnovers’: 14.615853658536585}, {‘Team’: ‘HOU’, ‘AvgTurnovers’: 14.713414634146341}, {‘Team’: ‘PHO’, ‘AvgTurnovers’: 15.268292682926829}, {‘Team’: ‘PHI’, ‘AvgTurnovers’: 16.085365853658537}], ‘error’: None, ‘query’: ‘SELECT Team, AVG(Turnovers) as AvgTurnovers FROM nba GROUP BY Team ORDER BY AvgTurnovers ASC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+Which team has the highest average assists per game?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘GSW’, ‘AvgAssists’: 29.00609756097561}, {‘Team’: ‘ATL’, ‘AvgAssists’: 24.679878048780488}, {‘Team’: ‘WAS’, ‘AvgAssists’: 24.375}, {‘Team’: ‘BOS’, ‘AvgAssists’: 24.088414634146343}, {‘Team’: ‘SAS’, ‘AvgAssists’: 23.878048780487806}, {‘Team’: ‘DEN’, ‘AvgAssists’: 23.722560975609756}, {‘Team’: ‘MIL’, ‘AvgAssists’: 23.524390243902438}, {‘Team’: ‘NOP’, ‘AvgAssists’: 23.4390243902439}, {‘Team’: ‘PHI’, ‘AvgAssists’: 23.225609756097562}, {‘Team’: ‘LAC’, ‘AvgAssists’: 23.121951219512194}, {‘Team’: ‘MIN’, ‘AvgAssists’: 22.829268292682926}, {‘Team’: ‘HOU’, ‘AvgAssists’: 22.798780487804876}, {‘Team’: ‘CLE’, ‘AvgAssists’: 22.710365853658537}, {‘Team’: ‘CHI’, ‘AvgAssists’: 22.63719512195122}, {‘Team’: ‘ORL’, ‘AvgAssists’: 22.45731707317073}, {‘Team’: ‘SAC’, ‘AvgAssists’: 22.222560975609756}, {‘Team’: ‘BRK’, ‘AvgAssists’: 22.08231707317073}, {‘Team’: ‘DAL’, ‘AvgAssists’: 22.01829268292683}, {‘Team’: ‘IND’, ‘AvgAssists’: 21.83231707317073}, {‘Team’: ‘NYK’, ‘AvgAssists’: 21.725609756097562}, {‘Team’: ‘CHO’, ‘AvgAssists’: 21.625}, {‘Team’: ‘OKC’, ‘AvgAssists’: 21.448170731707318}, {‘Team’: ‘MEM’, ‘AvgAssists’: 21.295731707317074}, {‘Team’: ‘DET’, ‘AvgAssists’: 21.234756097560975}, {‘Team’: ‘MIA’, ‘AvgAssists’: 21.15548780487805}, {‘Team’: ‘POR’, ‘AvgAssists’: 20.972560975609756}, {‘Team’: ‘LAL’, ‘AvgAssists’: 20.908536585365855}, {‘Team’: ‘TOR’, ‘AvgAssists’: 20.576219512195124}, {‘Team’: ‘PHO’, ‘AvgAssists’: 20.448170731707318}, {‘Team’: ‘UTA’, ‘AvgAssists’: 20.35670731707317}], ‘error’: None, ‘query’: ‘SELECT Team, AVG(Assists) as AvgAssists FROM nba GROUP BY Team ORDER BY AvgAssists DESC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+Which team has the highest average steals per game?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘HOU’, ‘AvgSteals’: 9.045731707317072}, {‘Team’: ‘GSW’, ‘AvgSteals’: 8.817073170731707}, {‘Team’: ‘MIL’, ‘AvgSteals’: 8.685975609756097}, {‘Team’: ‘PHI’, ‘AvgSteals’: 8.667682926829269}, {‘Team’: ‘ATL’, ‘AvgSteals’: 8.539634146341463}, {‘Team’: ‘MEM’, ‘AvgSteals’: 8.201219512195122}, {‘Team’: ‘MIN’, ‘AvgSteals’: 8.13109756097561}, {‘Team’: ‘BOS’, ‘AvgSteals’: 8.070121951219512}, {‘Team’: ‘WAS’, ‘AvgSteals’: 8.070121951219512}, {‘Team’: ‘IND’, ‘AvgSteals’: 8.036585365853659}, {‘Team’: ‘SAS’, ‘AvgSteals’: 7.978658536585366}, {‘Team’: ‘OKC’, ‘AvgSteals’: 7.902439024390244}, {‘Team’: ‘LAC’, ‘AvgSteals’: 7.890243902439025}, {‘Team’: ‘PHO’, ‘AvgSteals’: 7.850609756097561}, {‘Team’: ‘TOR’, ‘AvgSteals’: 7.786585365853658}, {‘Team’: ‘SAC’, ‘AvgSteals’: 7.783536585365853}, {‘Team’: ‘ORL’, ‘AvgSteals’: 7.689024390243903}, {‘Team’: ‘UTA’, ‘AvgSteals’: 7.658536585365853}, {‘Team’: ‘NOP’, ‘AvgSteals’: 7.560975609756097}, {‘Team’: ‘LAL’, ‘AvgSteals’: 7.554878048780488}, {‘Team’: ‘DEN’, ‘AvgSteals’: 7.454268292682927}, {‘Team’: ‘DAL’, ‘AvgSteals’: 7.362804878048781}, {‘Team’: ‘MIA’, ‘AvgSteals’: 7.326219512195122}, {‘Team’: ‘DET’, ‘AvgSteals’: 7.310975609756097}, {‘Team’: ‘BRK’, ‘AvgSteals’: 7.036585365853658}, {‘Team’: ‘CHI’, ‘AvgSteals’: 6.945121951219512}, {‘Team’: ‘CLE’, ‘AvgSteals’: 6.935975609756097}, {‘Team’: ‘POR’, ‘AvgSteals’: 6.810975609756097}, {‘Team’: ‘CHO’, ‘AvgSteals’: 6.780487804878049}, {‘Team’: ‘NYK’, ‘AvgSteals’: 6.6310975609756095}], ‘error’: None, ‘query’: ‘SELECT Team, AVG(Steals) as AvgSteals FROM nba GROUP BY Team ORDER BY AvgSteals DESC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+Which team has the highest average blocks per game?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘GSW’, ‘AvgBlocks’: 6.588414634146342}, {‘Team’: ‘SAS’, ‘AvgBlocks’: 5.710365853658536}, {‘Team’: ‘PHI’, ‘AvgBlocks’: 5.554878048780488}, {‘Team’: ‘MIA’, ‘AvgBlocks’: 5.515243902439025}, {‘Team’: ‘NOP’, ‘AvgBlocks’: 5.4573170731707314}, {‘Team’: ‘OKC’, ‘AvgBlocks’: 5.3689024390243905}, {‘Team’: ‘MIL’, ‘AvgBlocks’: 5.3567073170731705}, {‘Team’: ‘UTA’, ‘AvgBlocks’: 5.317073170731708}, {‘Team’: ‘NYK’, ‘AvgBlocks’: 5.2560975609756095}, {‘Team’: ‘TOR’, ‘AvgBlocks’: 5.201219512195122}, {‘Team’: ‘CHO’, ‘AvgBlocks’: 5.027439024390244}, {‘Team’: ‘CHI’, ‘AvgBlocks’: 4.963414634146342}, {‘Team’: ‘ATL’, ‘AvgBlocks’: 4.911585365853658}, {‘Team’: ‘LAC’, ‘AvgBlocks’: 4.844512195121951}, {‘Team’: ‘POR’, ‘AvgBlocks’: 4.826219512195122}, {‘Team’: ‘HOU’, ‘AvgBlocks’: 4.820121951219512}, {‘Team’: ‘ORL’, ‘AvgBlocks’: 4.655487804878049}, {‘Team’: ‘IND’, ‘AvgBlocks’: 4.6189024390243905}, {‘Team’: ‘DEN’, ‘AvgBlocks’: 4.539634146341464}, {‘Team’: ‘PHO’, ‘AvgBlocks’: 4.469512195121951}, {‘Team’: ‘BRK’, ‘AvgBlocks’: 4.4176829268292686}, {‘Team’: ‘MEM’, ‘AvgBlocks’: 4.3810975609756095}, {‘Team’: ‘MIN’, ‘AvgBlocks’: 4.317073170731708}, {‘Team’: ‘LAL’, ‘AvgBlocks’: 4.301829268292683}, {‘Team’: ‘WAS’, ‘AvgBlocks’: 4.237804878048781}, {‘Team’: ‘SAC’, ‘AvgBlocks’: 4.134146341463414}, {‘Team’: ‘BOS’, ‘AvgBlocks’: 4.134146341463414}, {‘Team’: ‘DET’, ‘AvgBlocks’: 4.0060975609756095}, {‘Team’: ‘CLE’, ‘AvgBlocks’: 3.951219512195122}, {‘Team’: ‘DAL’, ‘AvgBlocks’: 3.9451219512195124}], ‘error’: None, ‘query’: ‘SELECT Team, AVG(Blocks) as AvgBlocks FROM nba GROUP BY Team ORDER BY AvgBlocks DESC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+Which team has the lowest average fouls per game?
+</td>
+<td>
+{‘results’: [{‘Team’: ‘CHO’, ‘AvgFouls’: 17.533536585365855}, {‘Team’: ‘SAS’, ‘AvgFouls’: 18.0}, {‘Team’: ‘CHI’, ‘AvgFouls’: 18.496951219512194}, {‘Team’: ‘DET’, ‘AvgFouls’: 18.570121951219512}, {‘Team’: ‘ATL’, ‘AvgFouls’: 18.670731707317074}, {‘Team’: ‘CLE’, ‘AvgFouls’: 18.85670731707317}, {‘Team’: ‘NOP’, ‘AvgFouls’: 19.216463414634145}, {‘Team’: ‘DAL’, ‘AvgFouls’: 19.463414634146343}, {‘Team’: ‘UTA’, ‘AvgFouls’: 19.484756097560975}, {‘Team’: ‘MIN’, ‘AvgFouls’: 19.536585365853657}, {‘Team’: ‘MIA’, ‘AvgFouls’: 19.713414634146343}, {‘Team’: ‘BRK’, ‘AvgFouls’: 19.722560975609756}, {‘Team’: ‘GSW’, ‘AvgFouls’: 19.878048780487806}, {‘Team’: ‘IND’, ‘AvgFouls’: 19.88719512195122}, {‘Team’: ‘ORL’, ‘AvgFouls’: 20.057926829268293}, {‘Team’: ‘POR’, ‘AvgFouls’: 20.15548780487805}, {‘Team’: ‘SAC’, ‘AvgFouls’: 20.359756097560975}, {‘Team’: ‘DEN’, ‘AvgFouls’: 20.442073170731707}, {‘Team’: ‘NYK’, ‘AvgFouls’: 20.53048780487805}, {‘Team’: ‘LAC’, ‘AvgFouls’: 20.60670731707317}, {‘Team’: ‘TOR’, ‘AvgFouls’: 20.774390243902438}, {‘Team’: ‘HOU’, ‘AvgFouls’: 20.804878048780488}, {‘Team’: ‘BOS’, ‘AvgFouls’: 20.847560975609756}, {‘Team’: ‘LAL’, ‘AvgFouls’: 20.850609756097562}, {‘Team’: ‘OKC’, ‘AvgFouls’: 21.003048780487806}, {‘Team’: ‘WAS’, ‘AvgFouls’: 21.054878048780488}, {‘Team’: ‘MIL’, ‘AvgFouls’: 21.100609756097562}, {‘Team’: ‘MEM’, ‘AvgFouls’: 21.615853658536587}, {‘Team’: ‘PHI’, ‘AvgFouls’: 21.841463414634145}, {‘Team’: ‘PHO’, ‘AvgFouls’: 22.679878048780488}], ‘error’: None, ‘query’: ‘SELECT Team, AVG(TotalFouls) as AvgFouls FROM nba GROUP BY Team ORDER BY AvgFouls ASC;’}
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_data():</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    golden_data <span class="op">=</span> init_dataset(PROJECT_NAME, <span class="st">"Golden data"</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    golden_questions <span class="op">=</span> <span class="bu">set</span>(d[<span class="st">"input"</span>] <span class="cf">for</span> d <span class="kw">in</span> golden_data)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>        [{<span class="op">**</span>x, <span class="st">"metadata"</span>: {<span class="st">"category"</span>: <span class="st">"Golden data"</span>}} <span class="cf">for</span> x <span class="kw">in</span> golden_data]</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> [</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"input"</span>: q, <span class="st">"metadata"</span>: {<span class="st">"category"</span>: <span class="st">"Handwritten question"</span>}}</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> q <span class="kw">in</span> questions</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> q <span class="kw">not</span> <span class="kw">in</span> golden_questions</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> [x <span class="cf">for</span> x <span class="kw">in</span> generated_dataset <span class="cf">if</span> x[<span class="st">"input"</span>] <span class="kw">not</span> <span class="kw">in</span> golden_questions]</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> Eval(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    PROJECT_NAME,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    experiment_name<span class="op">=</span><span class="st">"Generated data"</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>load_data,</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    task<span class="op">=</span>text2sql,</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    scores<span class="op">=</span>[no_error, correct_result, correct_sql],</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Experiment Generated data is running at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/Generated%20data
+LLM Eval for Text2SQL [experiment_name=Generated data] (data): 13it [00:00, 111962.94it/s]
+
+LLM Eval for Text2SQL [experiment_name=Generated data] (tasks):   0%|          | 0/13 [00:00&lt;?, ?it/s]
+
+=========================SUMMARY=========================
+Generated data compared to With samples:
+22.50% (-) 'correct_result' score   (0 improvements, 0 regressions)
+84.62% (-) 'no_error'       score   (0 improvements, 0 regressions)
+72.73% (-) 'correct_sql'    score   (0 improvements, 0 regressions)
+
+See results for Generated data at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/Generated%20data
+
+EvalResultWithSummary(summary="...", results=[...])</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/eval-3.png" class="img-fluid figure-img"></p>
+<figcaption>eval 3</figcaption>
+</figure>
+</div>
+</section>
+<section id="trying-gpt-4" class="level3">
+<h3 class="anchored" data-anchor-id="trying-gpt-4">Trying GPT-4</h3>
+<ul>
+<li><strong>Experiment:</strong> Replace GPT-4o with GPT-4 in the task function.</li>
+<li><strong>Results:</strong>
+<ul>
+<li>Regression in performance across all metrics, including on the golden dataset.</li>
+<li>Analysis suggests potential issues with date syntax and prompt formatting.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>TASK_MODEL <span class="op">=</span> <span class="st">"gpt-4"</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> Eval(</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    PROJECT_NAME,</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    experiment_name<span class="op">=</span><span class="st">"Try gpt-4"</span>,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>load_data,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    task<span class="op">=</span>text2sql,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    scores<span class="op">=</span>[no_error, correct_result, correct_sql],</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Experiment Try gpt-4 is running at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/Try%20gpt-4
+LLM Eval for Text2SQL [experiment_name=Try gpt-4] (data): 13it [00:00, 162764.04it/s]
+
+LLM Eval for Text2SQL [experiment_name=Try gpt-4] (tasks):   0%|          | 0/13 [00:00&lt;?, ?it/s]
+
+=========================SUMMARY=========================
+Try gpt-4 compared to Generated data:
+12.73% (-09.77%) 'correct_result' score (1 improvements, 1 regressions)
+81.82% (+09.09%) 'correct_sql'    score (3 improvements, 2 regressions)
+84.62% (-) 'no_error'       score   (1 improvements, 1 regressions)
+
+See results for Try gpt-4 at https://www.braintrust.dev/app/Christian%20J.%20Mills%20Consulting/p/LLM%20Eval%20for%20Text2SQL/experiments/Try%20gpt-4
+
+EvalResultWithSummary(summary="...", results=[...])</code></pre>
+<section id="results-2" class="level4">
+<h4 class="anchored" data-anchor-id="results-2">Results</h4>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+id
+</th>
+<th>
+_xact_id
+</th>
+<th>
+input
+</th>
+<th>
+output
+</th>
+<th>
+expected
+</th>
+<th>
+tags
+</th>
+<th>
+scores
+</th>
+<th>
+duration
+</th>
+<th>
+estimated_cost
+</th>
+<th>
+metadata
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+bc0a4372-24f7-441a-8b3f-f618dd7b378f
+</td>
+<td>
+1000193295096986240
+</td>
+<td>
+Who led the league in 3 point shots?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, MAX(X3PointShots) as Max_3PointShots FROM nba GROUP BY Team ORDER BY Max_3PointShots DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘CLE’, ‘Max_3PointShots’: 25}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, SUM(X3PointShots) AS Total3PointShots FROM nba GROUP BY Team ORDER BY Total3PointShots DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘HOU’, ‘Total3PointShots’: 4248}]}
+</td>
+<td>
+[]
+</td>
+<td>
+{‘correct_result’: 0.005850690381465001, ‘correct_sql’: 0, ‘no_error’: 1}
+</td>
+<td>
+7.480919
+</td>
+<td>
+0.018554
+</td>
+<td>
+{‘category’: ‘Golden data’}
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+54c91672-cba1-4e46-a85f-b9ed90b618a1
+</td>
+<td>
+1000193295097051776
+</td>
+<td>
+Which team has the highest average total rebounds per game?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(TotalRebounds) as AverageRebounds FROM nba GROUP BY Team ORDER BY AverageRebounds DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘OKC’, ‘AverageRebounds’: 46.954268292682926}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(TotalRebounds) as AvgRebounds FROM nba GROUP BY Team ORDER BY AvgRebounds DESC;’, ‘results’: [{‘Team’: ‘OKC’, ‘AvgRebounds’: 46.954268292682926}, {‘Team’: ‘CHI’, ‘AvgRebounds’: 45.75}, {‘Team’: ‘DET’, ‘AvgRebounds’: 45.15548780487805}, {‘Team’: ‘POR’, ‘AvgRebounds’: 45.11585365853659}, {‘Team’: ‘DEN’, ‘AvgRebounds’: 45.051829268292686}, {‘Team’: ‘GSW’, ‘AvgRebounds’: 44.71341463414634}, {‘Team’: ‘PHO’, ‘AvgRebounds’: 44.26829268292683}, {‘Team’: ‘CHO’, ‘AvgRebounds’: 44.25609756097561}, {‘Team’: ‘LAL’, ‘AvgRebounds’: 44.1859756097561}, {‘Team’: ‘SAS’, ‘AvgRebounds’: 43.91158536585366}, {‘Team’: ‘BOS’, ‘AvgRebounds’: 43.795731707317074}, {‘Team’: ‘HOU’, ‘AvgRebounds’: 43.64329268292683}, {‘Team’: ‘PHI’, ‘AvgRebounds’: 43.59146341463415}, {‘Team’: ‘NOP’, ‘AvgRebounds’: 43.52439024390244}, {‘Team’: ‘NYK’, ‘AvgRebounds’: 43.49085365853659}, {‘Team’: ‘UTA’, ‘AvgRebounds’: 43.420731707317074}, {‘Team’: ‘IND’, ‘AvgRebounds’: 43.35670731707317}, {‘Team’: ‘CLE’, ‘AvgRebounds’: 43.33841463414634}, {‘Team’: ‘BRK’, ‘AvgRebounds’: 43.271341463414636}, {‘Team’: ‘WAS’, ‘AvgRebounds’: 43.1219512195122}, {‘Team’: ‘TOR’, ‘AvgRebounds’: 43.051829268292686}, {‘Team’: ‘LAC’, ‘AvgRebounds’: 42.890243902439025}, {‘Team’: ‘SAC’, ‘AvgRebounds’: 42.60060975609756}, {‘Team’: ‘MIA’, ‘AvgRebounds’: 42.582317073170735}, {‘Team’: ‘ORL’, ‘AvgRebounds’: 42.48780487804878}, {‘Team’: ‘ATL’, ‘AvgRebounds’: 42.21646341463415}, {‘Team’: ‘MEM’, ‘AvgRebounds’: 41.8719512195122}, {‘Team’: ‘MIN’, ‘AvgRebounds’: 41.71341463414634}, {‘Team’: ‘DAL’, ‘AvgRebounds’: 41.292682926829265}, {‘Team’: ‘MIL’, ‘AvgRebounds’: 40.99390243902439}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 0, ‘no_error’: 1}
+</td>
+<td>
+8.128142
+</td>
+<td>
+0.018371
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+ef818ada-cbf7-4dab-a6c8-8bca01d340d1
+</td>
+<td>
+1000193295096986240
+</td>
+<td>
+Which team has the lowest average fouls per game?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(TotalFouls) as AverageFouls FROM nba GROUP BY Team ORDER BY AverageFouls ASC LIMIT 1;’, ‘results’: [{‘Team’: ‘CHO’, ‘AverageFouls’: 17.533536585365855}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(TotalFouls) as AvgFouls FROM nba GROUP BY Team ORDER BY AvgFouls ASC;’, ‘results’: [{‘Team’: ‘CHO’, ‘AvgFouls’: 17.533536585365855}, {‘Team’: ‘SAS’, ‘AvgFouls’: 18}, {‘Team’: ‘CHI’, ‘AvgFouls’: 18.496951219512194}, {‘Team’: ‘DET’, ‘AvgFouls’: 18.570121951219512}, {‘Team’: ‘ATL’, ‘AvgFouls’: 18.670731707317074}, {‘Team’: ‘CLE’, ‘AvgFouls’: 18.85670731707317}, {‘Team’: ‘NOP’, ‘AvgFouls’: 19.216463414634145}, {‘Team’: ‘DAL’, ‘AvgFouls’: 19.463414634146343}, {‘Team’: ‘UTA’, ‘AvgFouls’: 19.484756097560975}, {‘Team’: ‘MIN’, ‘AvgFouls’: 19.536585365853657}, {‘Team’: ‘MIA’, ‘AvgFouls’: 19.713414634146343}, {‘Team’: ‘BRK’, ‘AvgFouls’: 19.722560975609756}, {‘Team’: ‘GSW’, ‘AvgFouls’: 19.878048780487806}, {‘Team’: ‘IND’, ‘AvgFouls’: 19.88719512195122}, {‘Team’: ‘ORL’, ‘AvgFouls’: 20.057926829268293}, {‘Team’: ‘POR’, ‘AvgFouls’: 20.15548780487805}, {‘Team’: ‘SAC’, ‘AvgFouls’: 20.359756097560975}, {‘Team’: ‘DEN’, ‘AvgFouls’: 20.442073170731707}, {‘Team’: ‘NYK’, ‘AvgFouls’: 20.53048780487805}, {‘Team’: ‘LAC’, ‘AvgFouls’: 20.60670731707317}, {‘Team’: ‘TOR’, ‘AvgFouls’: 20.774390243902438}, {‘Team’: ‘HOU’, ‘AvgFouls’: 20.804878048780488}, {‘Team’: ‘BOS’, ‘AvgFouls’: 20.847560975609756}, {‘Team’: ‘LAL’, ‘AvgFouls’: 20.850609756097562}, {‘Team’: ‘OKC’, ‘AvgFouls’: 21.003048780487806}, {‘Team’: ‘WAS’, ‘AvgFouls’: 21.054878048780488}, {‘Team’: ‘MIL’, ‘AvgFouls’: 21.100609756097562}, {‘Team’: ‘MEM’, ‘AvgFouls’: 21.615853658536587}, {‘Team’: ‘PHI’, ‘AvgFouls’: 21.841463414634145}, {‘Team’: ‘PHO’, ‘AvgFouls’: 22.679878048780488}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+6.661695
+</td>
+<td>
+0.018478
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+80a3d921-c5c9-4ebc-97f2-4923069cb327
+</td>
+<td>
+1000193295096920704
+</td>
+<td>
+Which team has the highest average blocks per game?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Blocks) as AverageBlocks FROM nba GROUP BY Team ORDER BY AverageBlocks DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘GSW’, ‘AverageBlocks’: 6.588414634146342}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Blocks) as AvgBlocks FROM nba GROUP BY Team ORDER BY AvgBlocks DESC;’, ‘results’: [{‘Team’: ‘GSW’, ‘AvgBlocks’: 6.588414634146342}, {‘Team’: ‘SAS’, ‘AvgBlocks’: 5.710365853658536}, {‘Team’: ‘PHI’, ‘AvgBlocks’: 5.554878048780488}, {‘Team’: ‘MIA’, ‘AvgBlocks’: 5.515243902439025}, {‘Team’: ‘NOP’, ‘AvgBlocks’: 5.4573170731707314}, {‘Team’: ‘OKC’, ‘AvgBlocks’: 5.3689024390243905}, {‘Team’: ‘MIL’, ‘AvgBlocks’: 5.35670731707317}, {‘Team’: ‘UTA’, ‘AvgBlocks’: 5.3170731707317085}, {‘Team’: ‘NYK’, ‘AvgBlocks’: 5.256097560975609}, {‘Team’: ‘TOR’, ‘AvgBlocks’: 5.201219512195122}, {‘Team’: ‘CHO’, ‘AvgBlocks’: 5.027439024390244}, {‘Team’: ‘CHI’, ‘AvgBlocks’: 4.963414634146342}, {‘Team’: ‘ATL’, ‘AvgBlocks’: 4.911585365853658}, {‘Team’: ‘LAC’, ‘AvgBlocks’: 4.844512195121951}, {‘Team’: ‘POR’, ‘AvgBlocks’: 4.826219512195122}, {‘Team’: ‘HOU’, ‘AvgBlocks’: 4.820121951219512}, {‘Team’: ‘ORL’, ‘AvgBlocks’: 4.6554878048780495}, {‘Team’: ‘IND’, ‘AvgBlocks’: 4.6189024390243905}, {‘Team’: ‘DEN’, ‘AvgBlocks’: 4.539634146341464}, {‘Team’: ‘PHO’, ‘AvgBlocks’: 4.469512195121951}, {‘Team’: ‘BRK’, ‘AvgBlocks’: 4.417682926829268}, {‘Team’: ‘MEM’, ‘AvgBlocks’: 4.381097560975609}, {‘Team’: ‘MIN’, ‘AvgBlocks’: 4.3170731707317085}, {‘Team’: ‘LAL’, ‘AvgBlocks’: 4.301829268292683}, {‘Team’: ‘WAS’, ‘AvgBlocks’: 4.237804878048781}, {‘Team’: ‘SAC’, ‘AvgBlocks’: 4.134146341463414}, {‘Team’: ‘BOS’, ‘AvgBlocks’: 4.134146341463414}, {‘Team’: ‘DET’, ‘AvgBlocks’: 4.006097560975609}, {‘Team’: ‘CLE’, ‘AvgBlocks’: 3.951219512195122}, {‘Team’: ‘DAL’, ‘AvgBlocks’: 3.945121951219512}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+6.120250
+</td>
+<td>
+0.017907
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+43822081-8065-4914-9163-392e325c5af5
+</td>
+<td>
+1000193295096920704
+</td>
+<td>
+Which team has the highest average steals per game?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Steals) as AverageSteals FROM nba GROUP BY Team ORDER BY AverageSteals DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘HOU’, ‘AverageSteals’: 9.045731707317072}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Steals) as AvgSteals FROM nba GROUP BY Team ORDER BY AvgSteals DESC;’, ‘results’: [{‘Team’: ‘HOU’, ‘AvgSteals’: 9.045731707317072}, {‘Team’: ‘GSW’, ‘AvgSteals’: 8.817073170731707}, {‘Team’: ‘MIL’, ‘AvgSteals’: 8.685975609756097}, {‘Team’: ‘PHI’, ‘AvgSteals’: 8.667682926829269}, {‘Team’: ‘ATL’, ‘AvgSteals’: 8.539634146341463}, {‘Team’: ‘MEM’, ‘AvgSteals’: 8.201219512195122}, {‘Team’: ‘MIN’, ‘AvgSteals’: 8.13109756097561}, {‘Team’: ‘WAS’, ‘AvgSteals’: 8.070121951219512}, {‘Team’: ‘BOS’, ‘AvgSteals’: 8.070121951219512}, {‘Team’: ‘IND’, ‘AvgSteals’: 8.036585365853659}, {‘Team’: ‘SAS’, ‘AvgSteals’: 7.978658536585366}, {‘Team’: ‘OKC’, ‘AvgSteals’: 7.902439024390244}, {‘Team’: ‘LAC’, ‘AvgSteals’: 7.890243902439025}, {‘Team’: ‘PHO’, ‘AvgSteals’: 7.850609756097561}, {‘Team’: ‘TOR’, ‘AvgSteals’: 7.786585365853658}, {‘Team’: ‘SAC’, ‘AvgSteals’: 7.783536585365853}, {‘Team’: ‘ORL’, ‘AvgSteals’: 7.689024390243903}, {‘Team’: ‘UTA’, ‘AvgSteals’: 7.658536585365853}, {‘Team’: ‘NOP’, ‘AvgSteals’: 7.560975609756097}, {‘Team’: ‘LAL’, ‘AvgSteals’: 7.554878048780488}, {‘Team’: ‘DEN’, ‘AvgSteals’: 7.454268292682927}, {‘Team’: ‘DAL’, ‘AvgSteals’: 7.362804878048781}, {‘Team’: ‘MIA’, ‘AvgSteals’: 7.326219512195122}, {‘Team’: ‘DET’, ‘AvgSteals’: 7.310975609756097}, {‘Team’: ‘BRK’, ‘AvgSteals’: 7.036585365853658}, {‘Team’: ‘CHI’, ‘AvgSteals’: 6.945121951219512}, {‘Team’: ‘CLE’, ‘AvgSteals’: 6.935975609756097}, {‘Team’: ‘POR’, ‘AvgSteals’: 6.810975609756097}, {‘Team’: ‘CHO’, ‘AvgSteals’: 6.7804878048780495}, {‘Team’: ‘NYK’, ‘AvgSteals’: 6.6310975609756095}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+6.062654
+</td>
+<td>
+0.018146
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+7d0561af-0571-4b65-baba-25f3d0a97472
+</td>
+<td>
+1000193295096920704
+</td>
+<td>
+Which team has the highest average assists per game?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Assists) as AverageAssists FROM nba GROUP BY Team ORDER BY AverageAssists DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘GSW’, ‘AverageAssists’: 29.00609756097561}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Assists) as AvgAssists FROM nba GROUP BY Team ORDER BY AvgAssists DESC;’, ‘results’: [{‘Team’: ‘GSW’, ‘AvgAssists’: 29.00609756097561}, {‘Team’: ‘ATL’, ‘AvgAssists’: 24.679878048780488}, {‘Team’: ‘WAS’, ‘AvgAssists’: 24.375}, {‘Team’: ‘BOS’, ‘AvgAssists’: 24.088414634146343}, {‘Team’: ‘SAS’, ‘AvgAssists’: 23.878048780487806}, {‘Team’: ‘DEN’, ‘AvgAssists’: 23.722560975609756}, {‘Team’: ‘MIL’, ‘AvgAssists’: 23.524390243902438}, {‘Team’: ‘NOP’, ‘AvgAssists’: 23.4390243902439}, {‘Team’: ‘PHI’, ‘AvgAssists’: 23.225609756097562}, {‘Team’: ‘LAC’, ‘AvgAssists’: 23.121951219512194}, {‘Team’: ‘MIN’, ‘AvgAssists’: 22.829268292682926}, {‘Team’: ‘HOU’, ‘AvgAssists’: 22.798780487804876}, {‘Team’: ‘CLE’, ‘AvgAssists’: 22.710365853658537}, {‘Team’: ‘CHI’, ‘AvgAssists’: 22.63719512195122}, {‘Team’: ‘ORL’, ‘AvgAssists’: 22.45731707317073}, {‘Team’: ‘SAC’, ‘AvgAssists’: 22.222560975609756}, {‘Team’: ‘BRK’, ‘AvgAssists’: 22.08231707317073}, {‘Team’: ‘DAL’, ‘AvgAssists’: 22.01829268292683}, {‘Team’: ‘IND’, ‘AvgAssists’: 21.83231707317073}, {‘Team’: ‘NYK’, ‘AvgAssists’: 21.725609756097562}, {‘Team’: ‘CHO’, ‘AvgAssists’: 21.625}, {‘Team’: ‘OKC’, ‘AvgAssists’: 21.448170731707318}, {‘Team’: ‘MEM’, ‘AvgAssists’: 21.295731707317074}, {‘Team’: ‘DET’, ‘AvgAssists’: 21.234756097560975}, {‘Team’: ‘MIA’, ‘AvgAssists’: 21.15548780487805}, {‘Team’: ‘POR’, ‘AvgAssists’: 20.972560975609756}, {‘Team’: ‘LAL’, ‘AvgAssists’: 20.908536585365855}, {‘Team’: ‘TOR’, ‘AvgAssists’: 20.576219512195124}, {‘Team’: ‘PHO’, ‘AvgAssists’: 20.448170731707318}, {‘Team’: ‘UTA’, ‘AvgAssists’: 20.35670731707317}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+6.208672
+</td>
+<td>
+0.018167
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+ec89db77-9bc6-4204-8083-e5bc0f71c3eb
+</td>
+<td>
+1000193295096986240
+</td>
+<td>
+Which team has the lowest average turnovers per game?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Turnovers) as AverageTurnovers FROM nba GROUP BY Team ORDER BY AverageTurnovers ASC LIMIT 1;’, ‘results’: [{‘Team’: ‘CHO’, ‘AverageTurnovers’: 11.579268292682928}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(Turnovers) as AvgTurnovers FROM nba GROUP BY Team ORDER BY AvgTurnovers ASC;’, ‘results’: [{‘Team’: ‘CHO’, ‘AvgTurnovers’: 11.579268292682928}, {‘Team’: ‘DAL’, ‘AvgTurnovers’: 11.972560975609756}, {‘Team’: ‘TOR’, ‘AvgTurnovers’: 12.21951219512195}, {‘Team’: ‘DET’, ‘AvgTurnovers’: 12.432926829268293}, {‘Team’: ‘LAC’, ‘AvgTurnovers’: 12.676829268292684}, {‘Team’: ‘SAS’, ‘AvgTurnovers’: 12.893292682926829}, {‘Team’: ‘NOP’, ‘AvgTurnovers’: 13.097560975609756}, {‘Team’: ‘MEM’, ‘AvgTurnovers’: 13.128048780487806}, {‘Team’: ‘BOS’, ‘AvgTurnovers’: 13.173780487804878}, {‘Team’: ‘CHI’, ‘AvgTurnovers’: 13.195121951219512}, {‘Team’: ‘CLE’, ‘AvgTurnovers’: 13.25}, {‘Team’: ‘MIA’, ‘AvgTurnovers’: 13.341463414634147}, {‘Team’: ‘POR’, ‘AvgTurnovers’: 13.36890243902439}, {‘Team’: ‘IND’, ‘AvgTurnovers’: 13.426829268292684}, {‘Team’: ‘MIN’, ‘AvgTurnovers’: 13.448170731707316}, {‘Team’: ‘NYK’, ‘AvgTurnovers’: 13.451219512195122}, {‘Team’: ‘ORL’, ‘AvgTurnovers’: 13.676829268292684}, {‘Team’: ‘UTA’, ‘AvgTurnovers’: 13.850609756097562}, {‘Team’: ‘LAL’, ‘AvgTurnovers’: 13.875}, {‘Team’: ‘WAS’, ‘AvgTurnovers’: 13.939024390243903}, {‘Team’: ‘DEN’, ‘AvgTurnovers’: 14.195121951219512}, {‘Team’: ‘MIL’, ‘AvgTurnovers’: 14.277439024390244}, {‘Team’: ‘OKC’, ‘AvgTurnovers’: 14.390243902439025}, {‘Team’: ‘BRK’, ‘AvgTurnovers’: 14.46951219512195}, {‘Team’: ‘ATL’, ‘AvgTurnovers’: 14.551829268292684}, {‘Team’: ‘GSW’, ‘AvgTurnovers’: 14.59451219512195}, {‘Team’: ‘SAC’, ‘AvgTurnovers’: 14.615853658536585}, {‘Team’: ‘HOU’, ‘AvgTurnovers’: 14.713414634146341}, {‘Team’: ‘PHO’, ‘AvgTurnovers’: 15.268292682926829}, {‘Team’: ‘PHI’, ‘AvgTurnovers’: 16.085365853658537}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+6.859579
+</td>
+<td>
+0.018256
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+b0297b56-c7be-48e4-972b-80d831eee171
+</td>
+<td>
+1000193295096855168
+</td>
+<td>
+Which team has the highest average points per game?
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(TeamPoints) as AveragePoints FROM nba GROUP BY Team ORDER BY AveragePoints DESC LIMIT 1;’, ‘results’: [{‘Team’: ‘GSW’, ‘AveragePoints’: 113.54878048780488}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ‘SELECT Team, AVG(TeamPoints) as AvgPoints FROM nba GROUP BY Team ORDER BY AvgPoints DESC;’, ‘results’: [{‘Team’: ‘GSW’, ‘AvgPoints’: 113.54878048780488}, {‘Team’: ‘HOU’, ‘AvgPoints’: 109.54268292682927}, {‘Team’: ‘LAC’, ‘AvgPoints’: 107.21951219512195}, {‘Team’: ‘CLE’, ‘AvgPoints’: 107.16463414634147}, {‘Team’: ‘OKC’, ‘AvgPoints’: 107.15548780487805}, {‘Team’: ‘TOR’, ‘AvgPoints’: 106.30182926829268}, {‘Team’: ‘DEN’, ‘AvgPoints’: 106.26829268292683}, {‘Team’: ‘POR’, ‘AvgPoints’: 105.375}, {‘Team’: ‘BOS’, ‘AvgPoints’: 104.77743902439025}, {‘Team’: ‘WAS’, ‘AvgPoints’: 104.60060975609755}, {‘Team’: ‘NOP’, ‘AvgPoints’: 104.53353658536585}, {‘Team’: ‘MIN’, ‘AvgPoints’: 103.8140243902439}, {‘Team’: ‘PHO’, ‘AvgPoints’: 103.72256097560975}, {‘Team’: ‘SAS’, ‘AvgPoints’: 103.6951219512195}, {‘Team’: ‘ATL’, ‘AvgPoints’: 102.97560975609755}, {‘Team’: ‘CHO’, ‘AvgPoints’: 102.66768292682927}, {‘Team’: ‘IND’, ‘AvgPoints’: 102.53658536585365}, {‘Team’: ‘SAC’, ‘AvgPoints’: 102.39024390243902}, {‘Team’: ‘BRK’, ‘AvgPoints’: 102.25914634146342}, {‘Team’: ‘LAL’, ‘AvgPoints’: 102.10975609756098}, {‘Team’: ‘CHI’, ‘AvgPoints’: 102.0579268292683}, {‘Team’: ‘DAL’, ‘AvgPoints’: 101.9359756097561}, {‘Team’: ‘MIL’, ‘AvgPoints’: 101.7469512195122}, {‘Team’: ‘DET’, ‘AvgPoints’: 101.39024390243902}, {‘Team’: ‘ORL’, ‘AvgPoints’: 100.5579268292683}, {‘Team’: ‘PHI’, ‘AvgPoints’: 100.40853658536585}, {‘Team’: ‘MIA’, ‘AvgPoints’: 100.32926829268293}, {‘Team’: ‘NYK’, ‘AvgPoints’: 99.76219512195122}, {‘Team’: ‘UTA’, ‘AvgPoints’: 99.41768292682927}, {‘Team’: ‘MEM’, ‘AvgPoints’: 99.3048780487805}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+5.232591
+</td>
+<td>
+0.018000
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+8
+</th>
+<td>
+50206d55-2463-4e18-8f59-6caebf735759
+</td>
+<td>
+1000193295097051776
+</td>
+<td>
+Which team has the most wins?
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) as Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) as Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}, {‘Team’: ‘SAS’, ‘Wins’: 230}, {‘Team’: ‘HOU’, ‘Wins’: 217}, {‘Team’: ‘TOR’, ‘Wins’: 215}, {‘Team’: ‘CLE’, ‘Wins’: 211}, {‘Team’: ‘LAC’, ‘Wins’: 202}, {‘Team’: ‘BOS’, ‘Wins’: 196}, {‘Team’: ‘OKC’, ‘Wins’: 195}, {‘Team’: ‘POR’, ‘Wins’: 185}, {‘Team’: ‘WAS’, ‘Wins’: 179}, {‘Team’: ‘UTA’, ‘Wins’: 177}, {‘Team’: ‘ATL’, ‘Wins’: 175}, {‘Team’: ‘IND’, ‘Wins’: 173}, {‘Team’: ‘MIA’, ‘Wins’: 170}, {‘Team’: ‘MEM’, ‘Wins’: 162}, {‘Team’: ‘CHI’, ‘Wins’: 160}, {‘Team’: ‘MIL’, ‘Wins’: 160}, {‘Team’: ‘NOP’, ‘Wins’: 157}, {‘Team’: ‘CHO’, ‘Wins’: 153}, {‘Team’: ‘DET’, ‘Wins’: 152}, {‘Team’: ‘DEN’, ‘Wins’: 149}, {‘Team’: ‘DAL’, ‘Wins’: 149}, {‘Team’: ‘MIN’, ‘Wins’: 123}, {‘Team’: ‘SAC’, ‘Wins’: 121}, {‘Team’: ‘ORL’, ‘Wins’: 114}, {‘Team’: ‘NYK’, ‘Wins’: 109}, {‘Team’: ‘PHI’, ‘Wins’: 108}, {‘Team’: ‘PHO’, ‘Wins’: 107}, {‘Team’: ‘BRK’, ‘Wins’: 107}, {‘Team’: ‘LAL’, ‘Wins’: 99}]}
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: 0.033333333333333, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+7.731482
+</td>
+<td>
+0.018153
+</td>
+<td>
+{‘category’: ‘Generated’}
+</td>
+</tr>
+<tr>
+<th>
+9
+</th>
+<td>
+80396d4b-0cba-490c-b8cb-aad792edef6d
+</td>
+<td>
+1000193295096986240
+</td>
+<td>
+Which team won the most games?
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) as Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}]}
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: [{‘Team’: ‘GSW’, ‘Wins’: 265}]}
+</td>
+<td>
+[]
+</td>
+<td>
+{‘correct_result’: 1, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+7.293730
+</td>
+<td>
+0.018269
+</td>
+<td>
+{‘category’: ‘Golden data’}
+</td>
+</tr>
+<tr>
+<th>
+10
+</th>
+<td>
+81ab8f36-c7b9-4598-9ee9-10552bfebd86
+</td>
+<td>
+1000193295096920704
+</td>
+<td>
+Which team won the most games in 2015?
+</td>
+<td>
+{‘error’: None, ‘query’: ’SELECT Team, COUNT(*) as Wins FROM nba WHERE WINorLOSS = ‘W’ AND Date LIKE ‘2015%’ GROUP BY Team ORDER BY Wins DESC LIMIT 1;‘, ’results’: []}
+</td>
+<td>
+{‘error’: ’Parser Error: syntax error at or near “<code>"', 'query': '</code>sql SELECT Team, COUNT(*) AS Wins FROM nba WHERE WINorLOSS = ‘W’ AND Date LIKE ‘%/15’ GROUP BY Team ORDER BY Wins DESC LIMIT 1; ```‘, ’results’: None}
+</td>
+<td>
+[]
+</td>
+<td>
+{‘correct_result’: None, ‘correct_sql’: 1, ‘no_error’: 1}
+</td>
+<td>
+6.607797
+</td>
+<td>
+0.018675
+</td>
+<td>
+{‘category’: ‘Golden data’}
+</td>
+</tr>
+<tr>
+<th>
+11
+</th>
+<td>
+b4931e7a-e5c4-450d-82bb-78a81b40fbf5
+</td>
+<td>
+1000193295096920704
+</td>
+<td>
+What is the average number of free throws per year?
+</td>
+<td>
+<p>{‘error’: ‘Parser Error: syntax error at or near “To”’, ‘query’: ‘To answer this question, we first need to convert the ’Date’ column from VARCHAR to DATE type. However, DuckDB SQL does not support date conversion directly. Therefore, we need to use a workaround to extract the year from the ‘Date’ column.</p>
+<p>Here is the SQL query:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    SUBSTRING(<span class="dt">Date</span>, <span class="dv">7</span>, <span class="dv">4</span>) <span class="kw">AS</span> <span class="dt">Year</span>, </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(FreeThrows) <span class="kw">AS</span> AverageFreeThrows</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> </span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    nba</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Year</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+This query first extracts the year from the ‘Date’ column, then calculates the average number of free throws for each year.’, ‘results’: None}
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: None, ‘correct_sql’: None, ‘no_error’: 0}
+</td>
+<td>
+5.591774
+</td>
+<td>
+0.023460
+</td>
+<td>
+{‘category’: ‘Handwritten question’}
+</td>
+</tr>
+<tr>
+<th>
+12
+</th>
+<td>
+0cd008a6-53d3-4940-8022-ecbe9e77bdc9
+</td>
+<td>
+1000193295097182848
+</td>
+<td>
+Which team had the biggest difference in records across two consecutive years?
+</td>
+<td>
+<p>{‘error’: ‘Parser Error: syntax error at or near “To”’, ‘query’: ’To answer this question, we first need to calculate the win-loss record for each team for each year. However, the provided table schema does not include a year column. Assuming the Date column is in the format MM/DD/YY, we can extract the year from the Date column. Then, we can calculate the win-loss record for each team for each year. Finally, we can calculate the difference in records across two consecutive years and find the team with the biggest difference.</p>
+<p>Here is the SQL query:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> yearly_records <span class="kw">AS</span> (</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>        Team, </span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">SUBSTR</span>(<span class="dt">Date</span>, <span class="dv">7</span>, <span class="dv">2</span>) <span class="kw">AS</span> <span class="dt">Year</span>, </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">FILTER</span> (<span class="kw">WHERE</span> WINorLOSS <span class="op">=</span> <span class="st">'W'</span>) <span class="kw">AS</span> Wins, </span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">FILTER</span> (<span class="kw">WHERE</span> WINorLOSS <span class="op">=</span> <span class="st">'L'</span>) <span class="kw">AS</span> Losses</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> </span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>        nba </span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">GROUP</span> <span class="kw">BY</span> </span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>        Team, <span class="dt">Year</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>), yearly_diff <span class="kw">AS</span> (</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> </span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>        Team, </span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ABS</span>((Wins <span class="op">-</span> Losses) <span class="op">-</span> <span class="fu">LAG</span>(Wins <span class="op">-</span> Losses) <span class="kw">OVER</span> (<span class="kw">PARTITION</span> <span class="kw">BY</span> Team <span class="kw">ORDER</span> <span class="kw">BY</span> <span class="dt">Year</span>)) <span class="kw">AS</span> Record_Difference</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> </span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        yearly_records</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>    Team </span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> </span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    yearly_diff </span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> </span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>    Record_Difference <span class="kw">DESC</span> </span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a><span class="kw">LIMIT</span> <span class="dv">1</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+This query first calculates the number of wins and losses for each team for each year. Then, it calculates the difference in records (wins - losses) across two consecutive years for each team. Finally, it returns the team with the biggest difference in records.’, ‘results’: None}
+</td>
+<td>
+None
+</td>
+<td>
+None
+</td>
+<td>
+{‘correct_result’: None, ‘correct_sql’: None, ‘no_error’: 0}
+</td>
+<td>
+10.472002
+</td>
+<td>
+0.034380
+</td>
+<td>
+{‘category’: ‘Handwritten question’}
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="analyze-regressions" class="level4">
+<h4 class="anchored" data-anchor-id="analyze-regressions">Analyze Regressions</h4>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/analyze-regressions.gif" class="img-fluid figure-img"></p>
+<figcaption>diff</figcaption>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<ul>
+<li><strong>Specialized Functionality for Text2SQL and Other Tasks</strong>
+<ul>
+<li>Braintrust prioritizes quality over quantity in scoring functions.</li>
+<li>Provides ~20 scoring functions optimized for tasks like retrieval augmented generation (RAG).</li>
+<li>Includes an implementation of the RAGAS metrics with improvements.</li>
+<li>Offers tools for evaluating tool call outputs, particularly relevant for agentic workflows.</li>
+<li>Provides building blocks like list-of-strings comparators with various comparison methods.</li>
+</ul></li>
+<li><strong>Using Open-Source or Open-Weight Models</strong>
+<ul>
+<li>Braintrust is agnostic to the underlying LLM.</li>
+<li>Data generation and scoring functions are independent of the LLM used.</li>
+<li>The task function can interface with any model via API; OpenAI compatibility is not required.</li>
+<li>Open-weight models hosted on platforms like Together often have OpenAI-compatible APIs.</li>
+<li>Braintrust’s proxy allows for local model hosting and integration.</li>
+</ul></li>
+<li><strong>Notebook Sharing</strong>
+<ul>
+<li>The notebook used in the presentation will be shared in the Discord channel and the “Cookbook” section on the Braintrust website.</li>
+</ul></li>
+<li><strong>Task Suitability and Limitations</strong>
+<ul>
+<li>Braintrust might not be ideal for classical machine learning tasks involving large datasets and reliance on aggregate statistics.</li>
+<li>The platform’s strength lies in facilitating analysis of individual examples, which is less relevant in those scenarios.</li>
+</ul></li>
+<li><strong>Braintrust for Model Development and Deployment</strong>
+<ul>
+<li>Braintrust supports both offline evaluations (during development) and online evaluations/observability (post-deployment).</li>
+<li>Tight integration between logs and evaluations allows for capturing user feedback and incorporating it into the development process.</li>
+<li>The platform provides tools for rendering various output formats, including HTML and images.</li>
+</ul></li>
+<li><strong>Handling Complex Databases with Limited Schema Knowledge</strong>
+<ul>
+<li><strong>Start with Instrumentation:</strong> Log user questions, system responses, and capture user feedback from the beginning.</li>
+<li><strong>Develop a Taxonomy:</strong> Categorize questions based on their nature or the specific areas of the database they target.</li>
+<li><strong>Focus on Subcategories:</strong> Identify question types the system handles well and those it struggles with.</li>
+<li><strong>Iterate and Improve:</strong>
+<ul>
+<li>Concentrate on improving performance for specific question categories.</li>
+<li>Consider schema modifications or view creation to simplify data access for the LLM.</li>
+</ul></li>
+<li><strong>Leverage User Feedback:</strong> Use thumbs-up/thumbs-down ratings or more detailed feedback to guide improvement efforts.</li>
+</ul></li>
+</ul>
+</section>
+<section id="recommendations" class="level2">
+<h2 class="anchored" data-anchor-id="recommendations">Recommendations</h2>
+<ul>
+<li><strong>Adopt the three-component framework</strong> (data, task function, scoring) when building your LLM evaluations.</li>
+<li><strong>Don’t overcomplicate initial evaluations.</strong> Start with hardcoded data and progressively enhance complexity.</li>
+<li><strong>Actively use logs and user feedback</strong> to drive iterative improvements, especially when dealing with complex, unfamiliar databases.</li>
+<li><strong>Explore the Braintrust platform</strong> and its features, including the cookbook and shared notebook, for practical implementation guidance.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
