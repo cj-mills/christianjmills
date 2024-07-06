@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-07-06">
+<meta name="description" content="In this talk, J.J. Allaire walks through the core concepts and design of the Inspect framework and demonstrate its use for a variety of evaluation tasks.">
+
+<title>Christian Mills - Conference Talk 4: Inspect - An OSS Framework for LLM Evals</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Conference Talk 4: Inspect - An OSS Framework for LLM Evals">
+<meta property="og:description" content="In this talk, J.J. Allaire walks through the core concepts and design of the Inspect framework and demonstrate its use for a variety of evaluation tasks.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Conference Talk 4: Inspect - An OSS Framework for LLM Evals">
+<meta name="twitter:description" content="In this talk, J.J. Allaire walks through the core concepts and design of the Inspect framework and demonstrate its use for a variety of evaluation tasks.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#inspect-ai-a-framework-for-evaluating-llms" id="toc-inspect-ai-a-framework-for-evaluating-llms" class="nav-link active" data-scroll-target="#inspect-ai-a-framework-for-evaluating-llms">Inspect AI: A Framework for Evaluating LLMs</a></li>
+  <li><a href="#hello-world-example" id="toc-hello-world-example" class="nav-link" data-scroll-target="#hello-world-example">Hello World Example</a></li>
+  <li><a href="#core-concepts" id="toc-core-concepts" class="nav-link" data-scroll-target="#core-concepts">Core Concepts</a></li>
+  <li><a href="#honeycomb-dataset-example" id="toc-honeycomb-dataset-example" class="nav-link" data-scroll-target="#honeycomb-dataset-example">Honeycomb Dataset Example</a>
+  <ul>
+  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a></li>
+  <li><a href="#solver" id="toc-solver" class="nav-link" data-scroll-target="#solver">Solver</a>
+  <ul class="collapse">
+  <li><a href="#solver-prompt_with_schema" id="toc-solver-prompt_with_schema" class="nav-link" data-scroll-target="#solver-prompt_with_schema">Solver: <code>prompt_with_schema()</code></a></li>
+  </ul></li>
+  <li><a href="#scorer" id="toc-scorer" class="nav-link" data-scroll-target="#scorer">Scorer</a>
+  <ul class="collapse">
+  <li><a href="#scorer-validate_scorer" id="toc-scorer-validate_scorer" class="nav-link" data-scroll-target="#scorer-validate_scorer">Scorer: <code>validate_scorer()</code></a></li>
+  </ul></li>
+  <li><a href="#validate-task" id="toc-validate-task" class="nav-link" data-scroll-target="#validate-task">Validate Task</a>
+  <ul class="collapse">
+  <li><a href="#honeycomb-eval-validate" id="toc-honeycomb-eval-validate" class="nav-link" data-scroll-target="#honeycomb-eval-validate">Honeycomb Eval: <code>validate()</code></a></li>
+  </ul></li>
+  <li><a href="#eval-view" id="toc-eval-view" class="nav-link" data-scroll-target="#eval-view">Eval View</a></li>
+  <li><a href="#critique-task" id="toc-critique-task" class="nav-link" data-scroll-target="#critique-task">Critique Task</a>
+  <ul class="collapse">
+  <li><a href="#scorer-critique_scorer" id="toc-scorer-critique_scorer" class="nav-link" data-scroll-target="#scorer-critique_scorer">Scorer: <code>critique_scorer()</code></a></li>
+  <li><a href="#honeycomb-eval-critique" id="toc-honeycomb-eval-critique" class="nav-link" data-scroll-target="#honeycomb-eval-critique">Honeycomb Eval: <code>critique()</code></a></li>
+  </ul></li>
+  <li><a href="#critique-eval-view" id="toc-critique-eval-view" class="nav-link" data-scroll-target="#critique-eval-view">Critique Eval View</a></li>
+  </ul></li>
+  <li><a href="#composition" id="toc-composition" class="nav-link" data-scroll-target="#composition">Composition</a>
+  <ul>
+  <li><a href="#example-jailbreaking-with-sheppard" id="toc-example-jailbreaking-with-sheppard" class="nav-link" data-scroll-target="#example-jailbreaking-with-sheppard">Example: Jailbreaking with <code>sheppard</code></a></li>
+  </ul></li>
+  <li><a href="#tool-use" id="toc-tool-use" class="nav-link" data-scroll-target="#tool-use">Tool Use</a>
+  <ul>
+  <li><a href="#example-biology-qa-with-web-search" id="toc-example-biology-qa-with-web-search" class="nav-link" data-scroll-target="#example-biology-qa-with-web-search">Example: Biology QA with Web Search</a></li>
+  </ul></li>
+  <li><a href="#agents-and-tools" id="toc-agents-and-tools" class="nav-link" data-scroll-target="#agents-and-tools">Agents and Tools</a>
+  <ul>
+  <li><a href="#agent-capture-the-flag" id="toc-agent-capture-the-flag" class="nav-link" data-scroll-target="#agent-capture-the-flag">Agent: Capture the Flag</a></li>
+  <li><a href="#agent-langchain" id="toc-agent-langchain" class="nav-link" data-scroll-target="#agent-langchain">Agent: LangChain</a></li>
+  </ul></li>
+  <li><a href="#logging" id="toc-logging" class="nav-link" data-scroll-target="#logging">Logging</a>
+  <ul>
+  <li><a href="#evallog" id="toc-evallog" class="nav-link" data-scroll-target="#evallog">EvalLog</a></li>
+  </ul></li>
+  <li><a href="#models" id="toc-models" class="nav-link" data-scroll-target="#models">Models</a></li>
+  <li><a href="#workflow" id="toc-workflow" class="nav-link" data-scroll-target="#workflow">Workflow</a>
+  <ul>
+  <li><a href="#interactive-development" id="toc-interactive-development" class="nav-link" data-scroll-target="#interactive-development">Interactive Development:</a></li>
+  <li><a href="#task-parameters" id="toc-task-parameters" class="nav-link" data-scroll-target="#task-parameters">Task Parameters:</a></li>
+  <li><a href="#eval-suites" id="toc-eval-suites" class="nav-link" data-scroll-target="#eval-suites">Eval Suites:</a></li>
+  <li><a href="#resiliency" id="toc-resiliency" class="nav-link" data-scroll-target="#resiliency">Resiliency:</a></li>
+  <li><a href="#provenance" id="toc-provenance" class="nav-link" data-scroll-target="#provenance">Provenance:</a></li>
+  </ul></li>
+  <li><a href="#qa-session" id="toc-qa-session" class="nav-link" data-scroll-target="#qa-session">Q&amp;A Session</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Conference Talk 4: Inspect - An OSS Framework for LLM Evals</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this talk, <strong>J.J. Allaire</strong> walks through the core concepts and design of the Inspect framework and demonstrate its use for a variety of evaluation tasks.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 6, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#inspect-ai-a-framework-for-evaluating-llms">Inspect AI: A Framework for Evaluating LLMs</a></li>
+<li><a href="#hello-world-example">Hello World Example</a></li>
+<li><a href="#core-concepts">Core Concepts</a></li>
+<li><a href="#honeycomb-dataset-example">Honeycomb Dataset Example</a></li>
+<li><a href="#composition">Composition</a></li>
+<li><a href="#tool-use">Tool Use</a></li>
+<li><a href="#agents-and-tools">Agents and Tools</a></li>
+<li><a href="#logging">Logging</a></li>
+<li><a href="#models">Models</a></li>
+<li><a href="#workflow">Workflow</a></li>
+<li><a href="#qa-session">Q&amp;A Session</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Resources">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Presentation Resources
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/jjallaire/inspect-llm-workshop">inspect-llm-workshop</a></li>
+<li><strong>Slides:</strong> <a href="https://raw.githubusercontent.com/jjallaire/inspect-llm-workshop/main/slides/intro-to-inspect.pdf">Intro to Inspect</a></li>
+</ul>
+</div>
+</div>
+<section id="inspect-ai-a-framework-for-evaluating-llms" class="level2">
+<h2 class="anchored" data-anchor-id="inspect-ai-a-framework-for-evaluating-llms">Inspect AI: A Framework for Evaluating LLMs</h2>
+<ul>
+<li>Inspect AI is a Python package for creating LLM evaluations developed through a collaboration between J.J. Allaire and the <a href="https://www.aisi.gov.uk/">UK AI Safety Institute</a>.</li>
+<li>Designed to address the limitations of existing evaluation tools for developing more complex evals.</li>
+<li>Focuses on providing a great experience for developing evals that can be reproducibly run at scale.</li>
+<li><strong>Github Repository:</strong> <a href="https://github.com/UKGovernmentBEIS/inspect_ai">UKGovernmentBEIS/inspect_ai</a></li>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai">https://ukgovernmentbeis.github.io/inspect_ai</a></li>
+<li><strong>Installation:</strong>
+<ul>
+<li><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">pip</span> install inspect-ai</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><strong>VS Code Extension:</strong>
+<ul>
+<li><strong>Marketplace:</strong> <a href="https://marketplace.visualstudio.com/items?itemName=ukaisi.inspect-ai">Inspect AI</a></li>
+<li><strong>Source Code:</strong> <a href="https://github.com/UKGovernmentBEIS/inspect_ai/tree/main/tools/vscode">inspect-vscode</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="hello-world-example" class="level2">
+<h2 class="anchored" data-anchor-id="hello-world-example">Hello World Example</h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/#sec-hello-inspect">Hello, Inspect</a></li>
+</ul>
+<div class="sourceCode" id="annotated-cell-1"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai <span class="im">import</span> Task, <span class="bu">eval</span>, task</span>
+<span id="annotated-cell-1-2"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.dataset <span class="im">import</span> example_dataset</span>
+<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.scorer <span class="im">import</span> model_graded_fact</span>
+<span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.solver <span class="im">import</span> (               </span>
+<span id="annotated-cell-1-5"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>  chain_of_thought, generate, self_critique   </span>
+<span id="annotated-cell-1-6"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>)                                             </span>
+<span id="annotated-cell-1-7"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-1-8"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="annotated-cell-1-9"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> theory_of_mind():</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-10" class="code-annotation-target"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Task(</span>
+<span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>        dataset<span class="op">=</span>example_dataset(<span class="st">"theory_of_mind"</span>), </span>
+<span id="annotated-cell-1-12"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a>        plan<span class="op">=</span>[</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-13" class="code-annotation-target"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>          chain_of_thought(),</span>
+<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a>          generate(),</span>
+<span id="annotated-cell-1-15"><a href="#annotated-cell-1-15" aria-hidden="true" tabindex="-1"></a>          self_critique()</span>
+<span id="annotated-cell-1-16"><a href="#annotated-cell-1-16" aria-hidden="true" tabindex="-1"></a>        ],</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-17" class="code-annotation-target"><a href="#annotated-cell-1-17" aria-hidden="true" tabindex="-1"></a>        scorer<span class="op">=</span>model_graded_fact()</span>
+<span id="annotated-cell-1-18"><a href="#annotated-cell-1-18" aria-hidden="true" tabindex="-1"></a>    )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="10" data-code-annotation="1">The <code>Task</code> object brings together the dataset, solvers, and scorer, and is then evaluated using a model.</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="13,14,15" data-code-annotation="2">In this example we are chaining together three standard solver components. It’s also possible to create a more complex custom solver that manages state and interactions internally.</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="17" data-code-annotation="3">Since the output is likely to have pretty involved language, we use a model for scoring.</span>
+</dd>
+</dl>
+</section>
+<section id="core-concepts" class="level2">
+<h2 class="anchored" data-anchor-id="core-concepts">Core Concepts</h2>
+<ul>
+<li><strong>Dataset:</strong> List of inputs for the LLM
+<ul>
+<li>Usually includes targets (e.g., correct answers)</li>
+</ul></li>
+<li><strong>Solvers:</strong> Pipelines that execute the evaluation
+<ul>
+<li>Includes functions that transform the dataset inputs, call the model, and act on the model output</li>
+<li>Can include things like prompt engineering and multi-turn dialogue</li>
+<li>Can be composed together as layers, or can be a single layer with higher internal complexity</li>
+</ul></li>
+<li><strong>Scores:</strong> Evaluates the output of solvers
+<ul>
+<li>Ranges from simple text comparisons to model-graded assessments using custom rubrics.</li>
+</ul></li>
+</ul>
+</section>
+<section id="honeycomb-dataset-example" class="level2">
+<h2 class="anchored" data-anchor-id="honeycomb-dataset-example">Honeycomb Dataset Example</h2>
+<ul>
+<li><strong>Jupyter Notebook:</strong> <a href="https://github.com/jjallaire/inspect-llm-workshop/blob/main/honeycomb/queries.ipynb">honeycomb/queries.ipynb</a></li>
+<li><strong>Dataset:</strong> <a href="https://github.com/jjallaire/inspect-llm-workshop/blob/main/honeycomb/queries.csv">queries.csv</a>
+<ul>
+<li>~2,300 example queries (along with per-query column schemas generated offline via RAG)</li>
+</ul></li>
+<li><strong>Scoring Methods:</strong>
+<ul>
+<li><strong>validate:</strong> score using the validity checker: <a href="https://github.com/jjallaire/inspect-llm-workshop/blob/main/honeycomb/utils.py">utils.py</a></li>
+<li><strong>critique:</strong> score using the critique prompt: <a href="https://github.com/jjallaire/inspect-llm-workshop/blob/main/honeycomb/critique.txt">critique.txt</a></li>
+</ul></li>
+<li><strong>Process:</strong>
+<ol type="1">
+<li>Load the dataset.</li>
+<li>Define a pipeline that includes prompt engineering, model calling, and evaluation.</li>
+<li>Apply a scoring function.</li>
+</ol></li>
+</ul>
+<section id="dataset" class="level3">
+<h3 class="anchored" data-anchor-id="dataset">Dataset</h3>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/datasets.html">Datasets</a></li>
+<li>Inspect uses a standard schema for Datasets
+<ul>
+<li>We map the raw data into that schema when reading it</li>
+</ul></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>“columns” are saved as metadata so we can use them for prompt engineering</li>
+</ul>
+</div>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.dataset <span class="im">import</span> csv_dataset, FieldSpec</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> csv_dataset(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    csv_file<span class="op">=</span><span class="st">"queries.csv"</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    sample_fields<span class="op">=</span>FieldSpec(<span class="bu">input</span><span class="op">=</span><span class="st">"user_input"</span>, metadata<span class="op">=</span>[<span class="st">"columns"</span>]),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    shuffle<span class="op">=</span><span class="va">True</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="solver" class="level3">
+<h3 class="anchored" data-anchor-id="solver">Solver</h3>
+<ul>
+<li><p><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/solvers.html">Solver</a></p></li>
+<li><p>Functions that manipulate the <a href="https://ukgovernmentbeis.github.io/inspect_ai/solvers.html#task-states"><code>TaskState</code></a> (message history and model output) to perform actions like:</p>
+<ul>
+<li>Calling the model to generate text.</li>
+<li>Engineering prompts.</li>
+<li>Applying critique mechanisms.</li>
+</ul></li>
+<li><p><a href="https://ukgovernmentbeis.github.io/inspect_ai/solvers.html#built-in-solvers"><strong>Built-In Solvers</strong></a><strong>:</strong></p>
+<ul>
+<li><code>generate()</code>: Calls the model, appends the assistant message, and updates the model output</li>
+<li><code>chain_of_thought()</code>: Basic chain-of-thought implementation.</li>
+<li><code>prompt_template()</code>: Modifies the existing prompt by passing it through a template</li>
+<li><code>multiple_choice()</code>: Handles multiple-choice questions, including shuffling options, calling the model, and unshuffling to determine the chosen answer.</li>
+<li><code>self_critique()</code>
+<ul>
+<li>Performs self-critique by:
+<ol type="1">
+<li>Running a critique model on the initial output.</li>
+<li>Appending the critique to the message history.</li>
+<li>Calling the model again to generate a revised answer.</li>
+</ol></li>
+</ul></li>
+</ul></li>
+</ul>
+<section id="solver-prompt_with_schema" class="level4">
+<h4 class="anchored" data-anchor-id="solver-prompt_with_schema">Solver: <code>prompt_with_schema()</code></h4>
+<ul>
+<li>Simple prompt template that substitutes the user query and the RAG-generated column schema.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.solver <span class="im">import</span> solver</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.util <span class="im">import</span> resource</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">@solver</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prompt_with_schema():</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    prompt_template <span class="op">=</span> resource(<span class="st">"prompt.txt"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="kw">def</span> solve(state, generate):</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># build the prompt</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        state.user_prompt.text <span class="op">=</span> prompt_template.replace(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">"</span><span class="sc">{{</span><span class="st">prompt</span><span class="sc">}}</span><span class="st">"</span>, state.user_prompt.text</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        ).replace(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">"</span><span class="sc">{{</span><span class="st">columns</span><span class="sc">}}</span><span class="st">"</span>, state.metadata[<span class="st">"columns"</span>]</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> state</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> solve</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="scorer" class="level3">
+<h3 class="anchored" data-anchor-id="scorer">Scorer</h3>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/scorers.html">Scorer</a>
+<ul>
+<li>Evaluates whether solvers were successful in finding the right <code>output</code> for the <code>target</code> defined in the dataset, and in what measure</li>
+<li>Pluggable (i.e.&nbsp;provided from other packages)</li>
+</ul></li>
+<li><strong><a href="https://ukgovernmentbeis.github.io/inspect_ai/scorers.html#built-in-scorers">Built-In Scorers</a>:</strong>
+<ul>
+<li>Pattern matching</li>
+<li>Template matching</li>
+<li>Model grading</li>
+<li>Human scoring</li>
+</ul></li>
+<li><strong>Example: Math Benchmark with Expression Equivalence</strong>
+<ul>
+<li><strong>Source Code:</strong> <a href="https://github.com/jjallaire/inspect-llm-workshop/blob/main/benchmarks/mathematics.py">benchmarks/mathematics.py</a></li>
+<li>Uses a custom scorer <code>expression_equivalance</code> to evaluate mathematical expressions for logical equivalence, accounting for variations in formatting or simplification.</li>
+<li><strong>Scorer: <a href="https://github.com/jjallaire/inspect-llm-workshop/blob/86d00ca6d79b4754266ba36c10be6d5a108a1695/benchmarks/mathematics.py#L56C5-L56C27"><code>expression_equivalance()</code></a></strong>
+<ul>
+<li>Extracts the model’s answer using regular expressions.</li>
+<li>Employs a few-shot prompting technique to train a model for assessing the equivalence of mathematical expressions.</li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Code">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">@scorer</span>(metrics<span class="op">=</span>[accuracy(), bootstrap_std()])</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> expression_equivalance():</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="kw">def</span> score(state: TaskState, target: Target):</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># extract answer</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        match <span class="op">=</span> re.search(AnswerPattern.LINE, state.output.completion)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> match:</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ask the model to judge equivalance</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            answer <span class="op">=</span> match.group(<span class="dv">1</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            prompt <span class="op">=</span> EQUIVALANCE_TEMPLATE <span class="op">%</span> (</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                {<span class="st">"expression1"</span>: target.text, <span class="st">"expression2"</span>: answer}</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> <span class="cf">await</span> get_model().generate(prompt)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>            <span class="co"># return the score</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>            correct <span class="op">=</span> result.completion.lower() <span class="op">==</span> <span class="st">"yes"</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Score(</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                value<span class="op">=</span>CORRECT <span class="cf">if</span> correct <span class="cf">else</span> INCORRECT,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>                answer<span class="op">=</span>answer,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                explanation<span class="op">=</span>state.output.completion,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Score(</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                value<span class="op">=</span>INCORRECT,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>                explanation<span class="op">=</span><span class="st">"Answer not found in model output: "</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>                <span class="op">+</span> <span class="ss">f"</span><span class="sc">{</span>state<span class="sc">.</span>output<span class="sc">.</span>completion<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> score</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div></li>
+</ul></li>
+</ul></li>
+</ul>
+<section id="scorer-validate_scorer" class="level4">
+<h4 class="anchored" data-anchor-id="scorer-validate_scorer">Scorer: <code>validate_scorer()</code></h4>
+<ul>
+<li>Extracts and cleans JSON output from the model.</li>
+<li>Calls the <code>is_valid()</code> function with the column schema to determine if a valid query was generated.</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.scorer <span class="im">import</span> accuracy, scorer, Score, CORRECT, INCORRECT</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> utils <span class="im">import</span> is_valid, json_completion</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">@scorer</span>(metrics<span class="op">=</span>[accuracy()])</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> validate_scorer():</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="kw">def</span> score(state, target):</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># check for valid query</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        query <span class="op">=</span> json_completion(state.output.completion)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> is_valid(query, state.metadata[<span class="st">"columns"</span>]):</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            value<span class="op">=</span>CORRECT</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>: </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>            value<span class="op">=</span>INCORRECT</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># return score w/ query that was extracted</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Score(value<span class="op">=</span>value, answer<span class="op">=</span>query)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> score</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>The <a href="https://github.com/jjallaire/inspect-llm-workshop/blob/86d00ca6d79b4754266ba36c10be6d5a108a1695/honeycomb/utils.py#L7"><code>json_completion()</code></a> function takes care of some details around extracting JSON from a model completion (e.g.&nbsp;removing sorrounding backtick code block emitted by some models)</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="validate-task" class="level3">
+<h3 class="anchored" data-anchor-id="validate-task">Validate Task</h3>
+<ul>
+<li><a href="https://github.com/UKGovernmentBEIS/inspect_ai/blob/53fe15a44d83400ad2847cb2f917ac282cba126d/src/inspect_ai/_eval/task/task.py#L17"><code>Task</code></a>:
+<ul>
+<li>The basis for defining and running evaluations</li>
+<li>Parameterized with a dataset, a scorer, and metrics.</li>
+<li>May optionally provide a default plan for execution.</li>
+</ul></li>
+</ul>
+<section id="honeycomb-eval-validate" class="level4">
+<h4 class="anchored" data-anchor-id="honeycomb-eval-validate">Honeycomb Eval: <code>validate()</code></h4>
+<ul>
+<li>Combines the dataset, solver, and scorer defined above into a <code>Task</code>.</li>
+<li>Uses a predefined system message and prompt template.</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai <span class="im">import</span> <span class="bu">eval</span>, task, Task</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.solver <span class="im">import</span> system_message, generate</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> validate():</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Task(</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        dataset<span class="op">=</span>dataset,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        plan<span class="op">=</span>[</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            system_message(<span class="st">"Honeycomb AI suggests queries based on user input."</span>),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>            prompt_with_schema(),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            generate()</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        ],</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        scorer<span class="op">=</span>validate_scorer()</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Run the <code>Task</code> using Inspect’s <code>eval()</code> function (limiting to 100 samples):</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">'__main__'</span>:</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">eval</span>(validate, model<span class="op">=</span><span class="st">"openai/gpt-4-turbo"</span>, limit<span class="op">=</span><span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/validate-task-1.png" class="img-fluid figure-img"></p>
+<figcaption>validate-task-1</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>The <code>__name__ == '__main__'</code> conditional indicates that we only want to run this cell in interactive contexts.
+<ul>
+<li>Allows us to also use the notebook as a module callable from <code>inspect eval</code>:</li>
+<li><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">$</span> inspect eval queries.ipynb@validate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="eval-view" class="level3">
+<h3 class="anchored" data-anchor-id="eval-view">Eval View</h3>
+<ul>
+<li><div class="sourceCode" id="cb9"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">inspect</span> view</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<pre class="text"><code>$ inspect view
+Inspect view running at http://localhost:7575/</code></pre>
+</div>
+</div></li>
+</ul></li>
+<li><p>Provides an overview of evaluation results.</p></li>
+<li><p>Allows drilling down into individual samples to examine message history, inputs, and model outputs for debugging.</p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/inspect-view-validate-task.png" class="img-fluid figure-img"></p>
+<figcaption>inspect-view-validate-task</figcaption>
+</figure>
+</div>
+</section>
+<section id="critique-task" class="level3">
+<h3 class="anchored" data-anchor-id="critique-task">Critique Task</h3>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/models.html">Models</a></li>
+</ul>
+<section id="scorer-critique_scorer" class="level4">
+<h4 class="anchored" data-anchor-id="scorer-critique_scorer">Scorer: <code>critique_scorer()</code></h4>
+<ul>
+<li>Allows using different models (e.g., GPT-4 Turbo) to critique the generated queries.</li>
+<li>Builds a critique prompt using a predefined template and the model’s output to have the critique model indicate whether the generated query is “good” or “bad”.</li>
+<li>Returns a score based on the critique model’s assessment.</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.model <span class="im">import</span> get_model</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="at">@scorer</span>(metrics<span class="op">=</span>[accuracy()])</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> critique_scorer(model <span class="op">=</span> <span class="st">"anthropic/claude-3-5-sonnet-20240620"</span>):</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="kw">def</span> score(state, target):</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># build the critic prompt</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        query <span class="op">=</span> state.output.completion.strip()</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        critic_prompt <span class="op">=</span> resource(<span class="st">"critique.txt"</span>).replace(</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">"</span><span class="sc">{{</span><span class="st">prompt</span><span class="sc">}}</span><span class="st">"</span>, state.user_prompt.text</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        ).replace(</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">"</span><span class="sc">{{</span><span class="st">columns</span><span class="sc">}}</span><span class="st">"</span>, state.metadata[<span class="st">"columns"</span>]</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        ).replace(</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">"</span><span class="sc">{{</span><span class="st">query</span><span class="sc">}}</span><span class="st">"</span>, query</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># run the critique</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="cf">await</span> get_model(model).generate(critic_prompt)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>            parsed <span class="op">=</span> json.loads(json_completion(result.completion))</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>            value <span class="op">=</span> CORRECT <span class="cf">if</span> parsed[<span class="st">"outcome"</span>] <span class="op">==</span> <span class="st">"good"</span> <span class="cf">else</span> INCORRECT</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>            explanation <span class="op">=</span> parsed[<span class="st">"critique"</span>]</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> (json.JSONDecodeError, <span class="pp">KeyError</span>):</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>            value <span class="op">=</span> INCORRECT</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>            explanation <span class="op">=</span> <span class="ss">f"JSON parsing error:</span><span class="ch">\n</span><span class="sc">{</span>result<span class="sc">.</span>completion<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># return value and explanation (critique text)</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Score(value<span class="op">=</span>value, explanation<span class="op">=</span>explanation)</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> score</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="honeycomb-eval-critique" class="level4">
+<h4 class="anchored" data-anchor-id="honeycomb-eval-critique">Honeycomb Eval: <code>critique()</code></h4>
+<ul>
+<li>Utilizes the same dataset and plan as <code>validate()</code> but employs a critique model for scoring.</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> critique():</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Task(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        dataset<span class="op">=</span>dataset,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        plan<span class="op">=</span>[</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>            system_message(<span class="st">"Honeycomb AI suggests queries based on user input."</span>),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>            prompt_with_schema(),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>            generate()</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        ],</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        scorer<span class="op">=</span>critique_scorer()</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Run the task using <code>eval()</code> (limiting to 25 samples):</li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">'__main__'</span>:</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">eval</span>(critique, model<span class="op">=</span><span class="st">"openai/gpt-4-turbo"</span>, limit<span class="op">=</span><span class="dv">25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/critique-task-1.png" class="img-fluid figure-img"></p>
+<figcaption>critique-task-1</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="critique-eval-view" class="level3">
+<h3 class="anchored" data-anchor-id="critique-eval-view">Critique Eval View</h3>
+<ul>
+<li><div class="sourceCode" id="cb14"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">inspect</span> view</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li>Displays critique-based evaluation results.</li>
+<li>Provides insights into the critique model’s explanations for incorrect answers, aiding in prompt or model improvement.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/inspect-view-critique-task.png" class="img-fluid figure-img"></p>
+<figcaption>inspect-view-critique-task</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="composition" class="level2">
+<h2 class="anchored" data-anchor-id="composition">Composition</h2>
+<ul>
+<li>Inspect AI encourages composing evaluations by combining solvers and scorers from different sources.</li>
+<li>Custom solvers and scorers can be made available in a Python package to re-use across many evals.</li>
+</ul>
+<section id="example-jailbreaking-with-sheppard" class="level3">
+<h3 class="anchored" data-anchor-id="example-jailbreaking-with-sheppard">Example: Jailbreaking with <code>sheppard</code></h3>
+<ul>
+<li><p><code>sheppard</code>: An internal package that integrates jailbreak solvers to elicit responses from models they might otherwise refuse to provide.</p></li>
+<li><table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Solver</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>encode()</code></td>
+<td><a href="https://arxiv.org/abs/2406.08754v1">Message obfuscation jailbreak</a></td>
+</tr>
+<tr class="even">
+<td><code>pap_jailbreak()</code></td>
+<td><a href="https://arxiv.org/abs/2401.06373">Persuasion Adversarial Prompt (PAP)</a></td>
+</tr>
+<tr class="odd">
+<td><code>payload_splitting()</code></td>
+<td><a href="https://arxiv.org/abs/2302.05733">Payload splitting jailbreak</a></td>
+</tr>
+<tr class="even">
+<td><code>cr_jailbreak()</code></td>
+<td>Content reinforcement</td>
+</tr>
+</tbody>
+</table></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example: Using sheppard to provide jailbreaks for a security eval:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example: Using sheppard to provide jailbreaks for a security eval:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<pre class="text"><code></code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai <span class="im">import</span> Task, <span class="bu">eval</span>, task</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.scorer <span class="im">import</span> model_graded_fact</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> inspect_ai.solver <span class="im">import</span> generate, system_message</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sheppard <span class="im">import</span> pap_jailbreak</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> security_guide():</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Task(</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        dataset<span class="op">=</span>example_dataset(<span class="st">"security_guide"</span>),</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        plan<span class="op">=</span>[</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>          system_message(<span class="st">"system.txt"</span>), </span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>          pap_jailbreak(),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>          generate()</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        ],</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        scorer<span class="op">=</span>model_graded_fact(model<span class="op">=</span><span class="st">"openai/gpt-4"</span>),</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></li>
+</ul>
+</section>
+</section>
+<section id="tool-use" class="level2">
+<h2 class="anchored" data-anchor-id="tool-use">Tool Use</h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/tools.html">Tools</a>
+<ul>
+<li>Python functions that can be made accessible to the model during evaluation.</li>
+<li>Allow for more complex interactions, like web search or database lookups.</li>
+<li><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>  <span class="kw">class</span> TaskState:</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>      messages: <span class="bu">list</span>[ChatMessage]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>      tools: <span class="bu">list</span>[ToolDef]</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>      tool_choice: ToolChoice</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>      output: ModelOutput</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>      ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul>
+<section id="example-biology-qa-with-web-search" class="level3">
+<h3 class="anchored" data-anchor-id="example-biology-qa-with-web-search">Example: Biology QA with Web Search</h3>
+<ul>
+<li>Provides a web search tool to the model, enabling it to answer obscure biology questions.</li>
+<li><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> Task(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>      dataset<span class="op">=</span>example_dataset(<span class="st">"biology_qa"</span>),</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>      plan<span class="op">=</span>[</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>          use_tools(web_search()), </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>          generate()</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>      ],</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>      scorer<span class="op">=</span>model_graded_qa(template<span class="op">=</span>GRADER_TEMPLATE),</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</section>
+</section>
+<section id="agents-and-tools" class="level2">
+<h2 class="anchored" data-anchor-id="agents-and-tools">Agents and Tools</h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/agents.html">Agents</a>
+<ul>
+<li>Solvers that use tools to perform tasks.</li>
+<li>Can use bespoke agent logic inside a solver (swapping various tools in and out)</li>
+<li>Can integrate existing agent libraries like Langchain as solvers.</li>
+</ul></li>
+</ul>
+<section id="agent-capture-the-flag" class="level3">
+<h3 class="anchored" data-anchor-id="agent-capture-the-flag">Agent: Capture the Flag</h3>
+<ul>
+<li>Example of a custom agent designed for cybersecurity evaluations, where the model interacts with tools to solve capture-the-flag challenges within a Docker environment.</li>
+<li><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>  Plan(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>      steps<span class="op">=</span>[</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>          init_challenge(),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>          use_tools([</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>              command_exec(), create_file(),</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>              decompile(), disassemble(),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>              check_flag(),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>          ]),</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>          system_message(<span class="st">"prompts/system.txt"</span>),</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>          initial_user_message(),</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>          generate(),</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>          check_for_flag_or_continue()</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>      ],</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>      cleanup<span class="op">=</span>exit_challenge()</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</section>
+<section id="agent-langchain" class="level3">
+<h3 class="anchored" data-anchor-id="agent-langchain">Agent: LangChain</h3>
+<ul>
+<li><strong>Project Folder:</strong> <a href="https://github.com/jjallaire/inspect-llm-workshop/tree/main/langchain">inspect-llm-workshop/langchain</a>
+<ul>
+<li>Uses <a href="https://tavily.com/">tavily</a>, a search engine optimized for LLMs and RAG</li>
+</ul></li>
+<li>Demonstrates integrating a Langchain agent into Inspect AI using a higher-order function.</li>
+<li>Allows leveraging existing agent frameworks within Inspect AI’s evaluation pipeline.</li>
+<li><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="at">@solver</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> wikipedia_search() <span class="op">-&gt;</span> Solver:</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    tavily_api <span class="op">=</span> TavilySearchAPIWrapper() </span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    tools <span class="op">=</span> ([TavilySearchResults(api_wrapper<span class="op">=</span>tavily_api)] <span class="op">+</span> </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>        load_tools([<span class="st">"wikipedia"</span>]))</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="kw">def</span> agent(llm: BaseChatModel, <span class="bu">input</span>: <span class="bu">dict</span>[<span class="bu">str</span>, Any]):</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        tools_agent <span class="op">=</span> create_openai_tools_agent(llm, tools, prompt)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        agent_executor <span class="op">=</span> AgentExecutor.from_agent_and_tools(</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>            agent<span class="op">=</span>tools_agent,</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>            tools<span class="op">=</span>tools</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="cf">await</span> agent_executor.ainvoke(<span class="bu">input</span>)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result[<span class="st">"output"</span>]</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> langchain_solver(agent)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</section>
+</section>
+<section id="logging" class="level2">
+<h2 class="anchored" data-anchor-id="logging">Logging</h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/eval-logs.html">Eval Logs</a></li>
+<li>Logging is crucial for debugging, analysis, and reproducibility.</li>
+<li>Capture all context required to debug, analyse, and reproduce evaluations</li>
+<li><strong>Inspect AI Logging:</strong>
+<ul>
+<li>Provides a rich Python API and JSON representation of the evaluation process.</li>
+<li>Offers a log viewer for interactive exploration.</li>
+<li>Enables programmatic access to logs for analysis and comparison.</li>
+</ul></li>
+</ul>
+<section id="evallog" class="level3">
+<h3 class="anchored" data-anchor-id="evallog">EvalLog</h3>
+<ul>
+<li><p><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/eval-logs.html#evallog">EvalLog</a></p></li>
+<li><p>Returned from <code>eval()</code></p></li>
+<li><p>Provides programmatic interface to the contents of log files</p></li>
+<li><table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 24%">
+<col style="width: 65%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>status</code></td>
+<td><code>str</code></td>
+<td>Status of evaluation</td>
+</tr>
+<tr class="even">
+<td><code>eval</code></td>
+<td><code>EvalSpec</code></td>
+<td>Top level eval details including task, model, creation time, etc.</td>
+</tr>
+<tr class="odd">
+<td><code>plan</code></td>
+<td><code>EvalPlan</code></td>
+<td>List of solvers and model generation config used for the eval.</td>
+</tr>
+<tr class="even">
+<td><code>samples</code></td>
+<td><code>list[EvalSample]</code></td>
+<td>Each sample evaluated, including its input, output, target, and score.</td>
+</tr>
+<tr class="odd">
+<td><code>results</code></td>
+<td><code>EvalResults</code></td>
+<td>Aggregated scorer results</td>
+</tr>
+<tr class="even">
+<td><code>stats</code></td>
+<td><code>EvalStats</code></td>
+<td>Model token usage stats</td>
+</tr>
+<tr class="odd">
+<td><code>logging</code></td>
+<td><code>list[LoggingMessage]</code></td>
+<td>Logging messages (e.g.&nbsp;from <code>log.info()</code>, <code>log.debug()</code>, etc.</td>
+</tr>
+<tr class="even">
+<td><code>error</code></td>
+<td><code>EvalError</code></td>
+<td>Error information</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</section>
+</section>
+<section id="models" class="level2">
+<h2 class="anchored" data-anchor-id="models">Models</h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/models.html">Models</a></li>
+<li><table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Provider</th>
+<th>Model Name</th>
+<th>Docs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OpenAI</td>
+<td><code>openai/gpt-3.5-turbo</code></td>
+<td><a href="https://platform.openai.com/docs/models/overview">OpenAI Models</a></td>
+</tr>
+<tr class="even">
+<td>Anthropic</td>
+<td><code>anthropic/claude-3-sonnet-20240229</code></td>
+<td><a href="https://docs.anthropic.com/claude/docs/models-overview">Anthropic Models</a></td>
+</tr>
+<tr class="odd">
+<td>Google</td>
+<td><code>google/gemini-1.0-pro</code></td>
+<td><a href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models">Google Models</a></td>
+</tr>
+<tr class="even">
+<td>Mistral</td>
+<td><code>mistral/mistral-large-latest</code></td>
+<td><a href="https://docs.mistral.ai/platform/endpoints/">Mistral Models</a></td>
+</tr>
+<tr class="odd">
+<td>Hugging Face</td>
+<td><code>hf/openai-community/gpt2</code></td>
+<td><a href="https://huggingface.co/models?pipeline_tag=text-generation&amp;sort=trending">Hugging Face Models</a></td>
+</tr>
+<tr class="even">
+<td>Ollama</td>
+<td><code>ollama/llama3</code></td>
+<td><a href="https://ollama.com/library">Ollama Models</a></td>
+</tr>
+<tr class="odd">
+<td>TogetherAI</td>
+<td><code>together/lmsys/vicuna-13b-v1.5</code></td>
+<td><a href="https://docs.together.ai/docs/inference-models#chat-models">TogetherAI Models</a></td>
+</tr>
+<tr class="even">
+<td>AWS Bedrock</td>
+<td><code>bedrock/meta.llama2-70b-chat-v1</code></td>
+<td><a href="https://aws.amazon.com/bedrock/">AWS Bedrock Models</a></td>
+</tr>
+<tr class="odd">
+<td>Azure AI</td>
+<td><code>azureai/azure-deployment-name</code></td>
+<td><a href="https://ai.azure.com/explore/models">Azure AI Models</a></td>
+</tr>
+<tr class="even">
+<td>Cloudflare</td>
+<td><code>cf/meta/llama-2-7b-chat-fp16</code></td>
+<td><a href="https://developers.cloudflare.com/workers-ai/models/#text-generation">Cloudflare Models</a></td>
+</tr>
+</tbody>
+</table></li>
+<li>Allows custom model providers.</li>
+<li>Inspect AI remains agnostic to specific model implementations, allowing flexibility and future compatibility.</li>
+</ul>
+</section>
+<section id="workflow" class="level2">
+<h2 class="anchored" data-anchor-id="workflow">Workflow</h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/workflow.html">Workflow</a></li>
+</ul>
+<section id="interactive-development" class="level3">
+<h3 class="anchored" data-anchor-id="interactive-development">Interactive Development:</h3>
+<ul>
+<li>Designed for iterative development within notebooks.</li>
+<li>Provides tools for exploration, such as grid search over parameters.</li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Ad-hoc exploration of an eval in a Notebook/REPL">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ad-hoc exploration of an eval in a Notebook/REPL
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>   <span class="st">"system"</span>: [<span class="st">"devops.txt"</span>, <span class="st">"researcher.txt"</span>],</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>   <span class="st">"grader"</span>: [<span class="st">"hacker.txt"</span>, <span class="st">"expert.txt"</span>],</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>   <span class="st">"grader_model"</span>: [<span class="st">"openai/gpt-4"</span>, <span class="st">"google/gemini-1.0-pro"</span>]</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> <span class="bu">list</span>(product(<span class="op">*</span>(params[name] <span class="cf">for</span> name <span class="kw">in</span> params)))</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>tasks <span class="op">=</span> [Task(</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    dataset<span class="op">=</span>json_dataset(<span class="st">"security_guide.jsonl"</span>),</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    plan<span class="op">=</span>[system_message(system), generate()],</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    scorer<span class="op">=</span>model_graded_fact(template<span class="op">=</span>grader, model<span class="op">=</span>grader_model)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>) <span class="cf">for</span> system, grader, grader_model <span class="kw">in</span> params]</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>logs <span class="op">=</span> <span class="bu">eval</span>(tasks, model <span class="op">=</span> <span class="st">"mistral/mistral-large-latest"</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>plot_results(logs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="task-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="task-parameters">Task Parameters:</h3>
+<ul>
+<li>Allows defining tasks with configurable parameters.</li>
+<li>Enables running evaluations with varying settings from external scripts or notebooks.</li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Formalise variation with a parameterised @task function:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Formalise variation with a parameterised <span class="citation" data-cites="task">@task</span> function:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> security_guide(system<span class="op">=</span><span class="st">"devops.txt"</span>, grader<span class="op">=</span><span class="st">"expert.txt"</span>):</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>   <span class="cf">return</span> Task(</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>      dataset <span class="op">=</span> json_dataset(<span class="st">"security_guide.jsonl"</span>),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>      plan<span class="op">=</span>[system_message(system), generate()],</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>      scorer<span class="op">=</span>model_graded_fact(template<span class="op">=</span>grader, model<span class="op">=</span><span class="st">"openai/gpt-4"</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>   )</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> {</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>   <span class="st">"system"</span>: [<span class="st">"devops.txt"</span>, <span class="st">"researcher.txt"</span>],</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>   <span class="st">"grader"</span>: [<span class="st">"hacker.txt"</span>, <span class="st">"expert.txt"</span>]</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> <span class="bu">list</span>(product(<span class="op">*</span>(params[name] <span class="cf">for</span> name <span class="kw">in</span> params)))</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span>([security_guide(system,grader) <span class="cf">for</span> system, grader <span class="kw">in</span> params],</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>     model <span class="op">=</span> <span class="st">"mistral/mistral-large-latest"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></li>
+<li><code>@task</code> functions are registered and addressable by external driver programs (step one in development =&gt; production)
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> security_guide(system<span class="op">=</span><span class="st">"devops.txt"</span>, grader<span class="op">=</span><span class="st">"expert.txt"</span>):</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Task(</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        dataset <span class="op">=</span> json_dataset(<span class="st">"security_guide.jsonl"</span>),</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        plan<span class="op">=</span>[system_message(system), generate()],</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>        scorer<span class="op">=</span>model_graded_fact(</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>            template<span class="op">=</span>grader, </span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span><span class="st">"openai/gpt-4"</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> inspect eval security_guide.py <span class="at">-T</span> system=devops.txt </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> inspect eval security_guide.py <span class="at">-T</span> grader=hacker.txt </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> inspect eval security_guide.ipynb <span class="at">-T</span> system=devops.txt </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> inspect eval security_guide.ipynb <span class="at">-T</span> grader=hacker.txt </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> security_guide(system, grader<span class="op">=</span><span class="st">"expert.txt"</span>):</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>   <span class="cf">return</span> Task(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>      dataset <span class="op">=</span> json_dataset(<span class="st">"security_guide.jsonl"</span>),</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>      plan<span class="op">=</span>[system_message(system), generate()],</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>      scorer<span class="op">=</span>model_graded_fact(template<span class="op">=</span>grader, model<span class="op">=</span><span class="st">"openai/gpt-4"</span>)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>   )</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> devops()</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>   <span class="cf">return</span> security_guide(<span class="st">"devops.txt"</span>)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="at">@task</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> researcher()</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>   <span class="cf">return</span> security_guide(<span class="st">"researcher.txt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> inspect eval security_guide.py@devops</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> inspect eval security_guide.py@researcher</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></li>
+</ul></li>
+</ul>
+</section>
+<section id="eval-suites" class="level3">
+<h3 class="anchored" data-anchor-id="eval-suites">Eval Suites:</h3>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ukgovernmentbeis.github.io/inspect_ai/eval-suites.html">Eval Suites</a></li>
+<li>Supports organizing and running multiple evaluations as suites.</li>
+</ul>
+</section>
+<section id="resiliency" class="level3">
+<h3 class="anchored" data-anchor-id="resiliency">Resiliency:</h3>
+<ul>
+<li>Encourages running evaluations in production environments (e.g., CI) with features like log storage and retry mechanisms.</li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Simplified Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Simplified Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># setup log context</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"INSPECT_LOG_DIR"</span>] <span class="op">=</span> <span class="st">"./security-suite_04-07-2024"</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co"># run the eval suite</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>tasks <span class="op">=</span> list_tasks(<span class="st">"security"</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span>(tasks, model<span class="op">=</span><span class="st">"mistral/mistral-large-latest"</span>)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ...later, in another process that also has INSPECT_LOG_DIR</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>error_logs <span class="op">=</span> list_eval_logs(status <span class="op">==</span> <span class="st">"error"</span>)</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>eval_retry(error_logs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="provenance" class="level3">
+<h3 class="anchored" data-anchor-id="provenance">Provenance:</h3>
+<ul>
+<li>Ensures reproducibility by storing Git repository information within the log file.</li>
+<li>Allows recreating the evaluation environment and parameters from the log.</li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read the log and extract the origin and commit</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>log <span class="op">=</span> read_eval_log(<span class="st">"security-log.json"</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>origin <span class="op">=</span> log.spec.revision.origin</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>commit <span class="op">=</span> log.spec.revision.commit</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="co"># clone the repo, checkout the commit, install deps, and run</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>run([<span class="st">"git"</span>, <span class="st">"clone"</span>, revision.origin, <span class="st">"eval-dir"</span>])</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> chdir(<span class="st">"eval-dir"</span>):</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>   run([<span class="st">"git"</span>, <span class="st">"checkout"</span>, revision.commit])</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>   run([<span class="st">"pip"</span>, <span class="st">"install"</span>, <span class="st">"-r"</span>, <span class="st">"requirements.txt"</span>])</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>   <span class="bu">eval</span>(log) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></li>
+</ul>
+</section>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<ul>
+<li><strong>Integration with Posit Products:</strong> Inspect AI is not a Posit project and currently has no plans for integration.</li>
+<li><strong>Evaluating Past LLM Interactions:</strong> Inspect AI can evaluate past interactions by using message history as input.</li>
+<li><strong>Expanding Evaluation Metrics:</strong> The Inspect AI team plans to expand the list of built-in metrics based on community needs.</li>
+<li><strong>Future Development and Direction:</strong> Long-term development is prioritized, with a focus on community collaboration and supporting a wide range of evaluation scenarios.</li>
+<li><strong>Log Sources Beyond Files:</strong> Currently, logs are primarily file-based, but future development may include database logging capabilities.</li>
+<li><strong>Shareable Security Tests:</strong> The Inspect AI team anticipates the creation and sharing of security test suites within the community.</li>
+<li><strong>Integration with Weights &amp; Biases:</strong> Integration with Weights &amp; Biases is planned to streamline metric tracking and visualization.</li>
+<li><strong>Design Philosophy:</strong> Inspired by principles of cleanliness, simplicity, and composability.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
