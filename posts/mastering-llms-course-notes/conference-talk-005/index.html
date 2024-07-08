@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-07-07">
+<meta name="description" content="In this talk, Jonathan Whitaker from answer.ai shows how to build intuition around training performance with a focus on GPU-poor fine tuning.">
+
+<title>Christian Mills - Conference Talk 5: Napkin Math For Fine Tuning with Johno Whitaker</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Conference Talk 5: Napkin Math For Fine Tuning with Johno Whitaker">
+<meta property="og:description" content="In this talk, Jonathan Whitaker from answer.ai shows how to build intuition around training performance with a focus on GPU-poor fine tuning.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Conference Talk 5: Napkin Math For Fine Tuning with Johno Whitaker">
+<meta name="twitter:description" content="In this talk, Jonathan Whitaker from answer.ai shows how to build intuition around training performance with a focus on GPU-poor fine tuning.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#good-news-bad-news" id="toc-good-news-bad-news" class="nav-link" data-scroll-target="#good-news-bad-news">Good News &amp; Bad News</a></li>
+  <li><a href="#training-neural-networks" id="toc-training-neural-networks" class="nav-link" data-scroll-target="#training-neural-networks">Training Neural Networks</a>
+  <ul>
+  <li><a href="#training-loop" id="toc-training-loop" class="nav-link" data-scroll-target="#training-loop">Training Loop</a></li>
+  <li><a href="#on-computers" id="toc-on-computers" class="nav-link" data-scroll-target="#on-computers">On Computers</a></li>
+  <li><a href="#training-neural-networks-1" id="toc-training-neural-networks-1" class="nav-link" data-scroll-target="#training-neural-networks-1">Training Neural Networks</a></li>
+  <li><a href="#what-takes-up-time" id="toc-what-takes-up-time" class="nav-link" data-scroll-target="#what-takes-up-time">What takes up time?</a></li>
+  </ul></li>
+  <li><a href="#why-are-we-copying-data-around" id="toc-why-are-we-copying-data-around" class="nav-link" data-scroll-target="#why-are-we-copying-data-around">Why are we copying data around?</a></li>
+  <li><a href="#goal-keep-the-gpu-fed" id="toc-goal-keep-the-gpu-fed" class="nav-link" data-scroll-target="#goal-keep-the-gpu-fed">Goal: Keep the GPU Fed</a>
+  <ul>
+  <li><a href="#tricks-to-improve-memory-efficiency" id="toc-tricks-to-improve-memory-efficiency" class="nav-link" data-scroll-target="#tricks-to-improve-memory-efficiency">Tricks to improve memory efficiency</a></li>
+  </ul></li>
+  <li><a href="#napkin-math-understanding-memory-usage" id="toc-napkin-math-understanding-memory-usage" class="nav-link" data-scroll-target="#napkin-math-understanding-memory-usage">Napkin Math: Understanding Memory Usage</a>
+  <ul>
+  <li><a href="#full-fine-tuning" id="toc-full-fine-tuning" class="nav-link" data-scroll-target="#full-fine-tuning">Full Fine-Tuning</a></li>
+  <li><a href="#lora-low-rank-adaptation" id="toc-lora-low-rank-adaptation" class="nav-link" data-scroll-target="#lora-low-rank-adaptation">LoRA (Low-Rank Adaptation)</a></li>
+  <li><a href="#quantization" id="toc-quantization" class="nav-link" data-scroll-target="#quantization">Quantization</a></li>
+  <li><a href="#cpu-offloading-illustration" id="toc-cpu-offloading-illustration" class="nav-link" data-scroll-target="#cpu-offloading-illustration">CPU Offloading Illustration</a></li>
+  <li><a href="#llm-context-length-considerations" id="toc-llm-context-length-considerations" class="nav-link" data-scroll-target="#llm-context-length-considerations">LLM Context Length Considerations</a></li>
+  </ul></li>
+  <li><a href="#napkin-math-code-demo" id="toc-napkin-math-code-demo" class="nav-link" data-scroll-target="#napkin-math-code-demo">Napkin Math Code Demo</a>
+  <ul>
+  <li><a href="#measuring-memory" id="toc-measuring-memory" class="nav-link" data-scroll-target="#measuring-memory">Measuring Memory</a></li>
+  <li><a href="#memory-history" id="toc-memory-history" class="nav-link" data-scroll-target="#memory-history">Memory History</a>
+  <ul class="collapse">
+  <li><a href="#benefits-of-memory-history-analysis" id="toc-benefits-of-memory-history-analysis" class="nav-link" data-scroll-target="#benefits-of-memory-history-analysis">Benefits of Memory History Analysis:</a></li>
+  <li><a href="#real-world-examples" id="toc-real-world-examples" class="nav-link" data-scroll-target="#real-world-examples">Real-World Examples</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#optimizing-llm-training-for-different-hardware" id="toc-optimizing-llm-training-for-different-hardware" class="nav-link" data-scroll-target="#optimizing-llm-training-for-different-hardware">Optimizing LLM Training for Different Hardware</a>
+  <ul>
+  <li><a href="#gpu-limitations-data-transfer-bottleneck" id="toc-gpu-limitations-data-transfer-bottleneck" class="nav-link" data-scroll-target="#gpu-limitations-data-transfer-bottleneck">GPU Limitations &amp; Data Transfer Bottleneck</a></li>
+  <li><a href="#optimizing-for-memory-bound-scenarios" id="toc-optimizing-for-memory-bound-scenarios" class="nav-link" data-scroll-target="#optimizing-for-memory-bound-scenarios">Optimizing for Memory-Bound Scenarios</a></li>
+  <li><a href="#impact-of-hardware-on-optimization-strategies" id="toc-impact-of-hardware-on-optimization-strategies" class="nav-link" data-scroll-target="#impact-of-hardware-on-optimization-strategies">Impact of Hardware on Optimization Strategies</a></li>
+  <li><a href="#adapting-to-hardware-limitations" id="toc-adapting-to-hardware-limitations" class="nav-link" data-scroll-target="#adapting-to-hardware-limitations">Adapting to Hardware Limitations</a></li>
+  </ul></li>
+  <li><a href="#qa-session" id="toc-qa-session" class="nav-link" data-scroll-target="#qa-session">Q&amp;A Session</a>
+  <ul>
+  <li><a href="#cpu-offloading" id="toc-cpu-offloading" class="nav-link" data-scroll-target="#cpu-offloading">CPU Offloading</a></li>
+  <li><a href="#quantization-sweet-spot" id="toc-quantization-sweet-spot" class="nav-link" data-scroll-target="#quantization-sweet-spot">Quantization Sweet Spot</a></li>
+  <li><a href="#gradient-accumulation" id="toc-gradient-accumulation" class="nav-link" data-scroll-target="#gradient-accumulation">Gradient Accumulation</a></li>
+  <li><a href="#multiple-loras" id="toc-multiple-loras" class="nav-link" data-scroll-target="#multiple-loras">Multiple LoRAs</a></li>
+  </ul></li>
+  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Conference Talk 5: Napkin Math For Fine Tuning with Johno Whitaker</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this talk, <strong>Jonathan Whitaker</strong> from answer.ai shows how to build intuition around training performance with a focus on GPU-poor fine tuning.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 7, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#good-news-bad-news">Good News &amp; Bad News</a></li>
+<li><a href="#training-neural-networks">Training Neural Networks</a></li>
+<li><a href="#why-are-we-copying-data-around">Why are we copying data around?</a></li>
+<li><a href="#goal-keep-the-gpu-fed">Goal: Keep the GPU Fed</a></li>
+<li><a href="#napkin-math-understanding-memory-usage">Napkin Math: Understanding Memory Usage</a></li>
+<li><a href="#napkin-math-code-demo">Napkin Math Code Demo</a></li>
+<li><a href="#optimizing-llm-training-for-different-hardware">Optimizing LLM Training for Different Hardware</a></li>
+<li><a href="#qa-session">Q&amp;A Session</a></li>
+<li><a href="#recap">Recap</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Resources">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Presentation Resources
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/1Ye_6zeatCWkq-fx8A--yK34uwU8oC2YQtMSTV1DgkSI/">Napkin Math For Finetuning</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><strong>Goal:</strong> To provide insights into the factors influencing fine-tuning performance, enabling better decision-making in training models.</li>
+<li><strong>Target audience:</strong> Individuals new to training models, particularly by fine-tuning existing large language models.</li>
+<li><strong>Key questions addressed:</strong>
+<ul>
+<li>Factors affecting model performance.</li>
+<li>Strategies for improving performance.</li>
+<li>Reasons for memory limitations and slow training times.</li>
+<li>Understanding and adjusting various parameters in configuration files.</li>
+</ul></li>
+<li><strong>Approach:</strong> Utilizing a “napkin math” approach to provide a general understanding of the concepts without delving into intricate mathematical details.</li>
+<li><strong>Disclaimer:</strong> Emphasizes that the information presented is simplified for clarity and may not be entirely accurate due to the constantly evolving nature of AI implementations.</li>
+</ul>
+</section>
+<section id="good-news-bad-news" class="level2">
+<h2 class="anchored" data-anchor-id="good-news-bad-news">Good News &amp; Bad News</h2>
+<ul>
+<li><strong>Good news:</strong> The mathematical operations underlying model training are well-understood, enabling analysis and experimentation.</li>
+<li><strong>Bad news:</strong>
+<ul>
+<li>Discrepancies can exist between research papers, code implementations, and framework-specific implementations.</li>
+<li>The complexity of the underlying processes can be daunting.</li>
+<li>Keeping track of all the details and nuances is challenging.</li>
+<li>Multi-GPU setups introduce additional complexity</li>
+</ul></li>
+<li><strong>Key takeaway:</strong> While a simplified approach can be helpful, acknowledging the inherent complexities is essential for accurate analysis and problem-solving.</li>
+</ul>
+</section>
+<section id="training-neural-networks" class="level2">
+<h2 class="anchored" data-anchor-id="training-neural-networks">Training Neural Networks</h2>
+<section id="training-loop" class="level4">
+<h4 class="anchored" data-anchor-id="training-loop">Training Loop</h4>
+<ul>
+<li><strong>The core cycle:</strong> Load data, feed it through the model, generate an answer, evaluate its quality, and update the model accordingly.</li>
+<li><strong>Language model context:</strong> The correct answer typically refers to the next word in a sequence, and predictions are represented as probabilities for potential next words.</li>
+<li><strong>Fine-tuning data:</strong> Datasets used for fine-tuning contain instruction-response pairs, allowing the model to learn from desired output patterns.</li>
+</ul>
+</section>
+<section id="on-computers" class="level4">
+<h4 class="anchored" data-anchor-id="on-computers">On Computers</h4>
+<ul>
+<li><strong>Hardware components:</strong> Understanding the roles of CPU, GPU, RAM, and their interconnectivity is crucial for performance analysis.</li>
+<li><strong>Memory hierarchy:</strong> Different memory types (e.g., CPU cache, RAM, hard drive) have varying access speeds, influencing data transfer times.</li>
+</ul>
+</section>
+<section id="training-neural-networks-1" class="level4">
+<h4 class="anchored" data-anchor-id="training-neural-networks-1">Training Neural Networks</h4>
+<ul>
+<li><strong>Factors affecting performance:</strong>
+<ul>
+<li><strong>Data loading:</strong> Reading data from storage.</li>
+<li><strong>Model computation:</strong> Performing mathematical operations within the model’s layers.</li>
+<li><strong>Parameter storage:</strong> Memory required to store model parameters (weights and biases).</li>
+<li><strong>Gradient calculation and storage:</strong> Computing and storing gradients for model updates.</li>
+<li><strong>Optimizer operations:</strong> Additional storage and computations for parameter optimization.</li>
+</ul></li>
+<li><strong>Key takeaway:</strong> Each step in the training loop incurs computational costs and memory demands, understanding these factors is crucial for optimization.</li>
+</ul>
+</section>
+<section id="what-takes-up-time" class="level4">
+<h4 class="anchored" data-anchor-id="what-takes-up-time">What takes up time?</h4>
+<ul>
+<li><strong>Computation:</strong> The number of mathematical operations performed.</li>
+<li><strong>Memory management:</strong> Data transfer and storage within the memory hierarchy.</li>
+</ul>
+</section>
+</section>
+<section id="why-are-we-copying-data-around" class="level2">
+<h2 class="anchored" data-anchor-id="why-are-we-copying-data-around">Why are we copying data around?</h2>
+<ul>
+<li><strong>Memory hierarchy and data transfer:</strong>
+<ul>
+<li><strong>Different memory types:</strong> CPU cache, RAM, GPU RAM, hard drives, etc., have varying speeds.</li>
+<li><strong>Data movement:</strong> Copying data between these memory locations consumes time, impacting performance.</li>
+</ul></li>
+<li><strong>Optimizing data flow:</strong> Minimizing unnecessary data transfers and utilizing faster memory options are crucial for optimization.</li>
+<li><strong>Multi-GPU and distributed training:</strong>
+<ul>
+<li><strong>Inter-GPU communication:</strong> Sharing data between GPUs can introduce latency.</li>
+<li><strong>Network communication:</strong> In multi-node setups, communication over the network becomes a bottleneck.</li>
+</ul></li>
+</ul>
+</section>
+<section id="goal-keep-the-gpu-fed" class="level2">
+<h2 class="anchored" data-anchor-id="goal-keep-the-gpu-fed">Goal: Keep the GPU Fed</h2>
+<ul>
+<li><strong>Goal:</strong> Continuously provide the GPU with data and instructions to avoid downtime.</li>
+<li><strong>Ideal:</strong> Fit the entire model and data within the GPU RAM for fastest processing.</li>
+<li><strong>Bottleneck:</strong> Large models and limited GPU memory can cause frequent data loading from slower memory, slowing down the training process.</li>
+</ul>
+<section id="tricks-to-improve-memory-efficiency" class="level3">
+<h3 class="anchored" data-anchor-id="tricks-to-improve-memory-efficiency">Tricks to improve memory efficiency</h3>
+<ul>
+<li><strong>Techniques for keeping data closer to the GPU:</strong>
+<ul>
+<li><strong>Flash Attention and Fused Kernels:</strong> These reduce memory footprints and data transfers by changing how computations are performed.</li>
+<li><strong>Gradient Checkpointing (Activation Checkpointing):</strong> Trades a small increase in compute time for significant memory savings by selectively recomputing activations during backpropagation.</li>
+<li><strong>CPU Offloading:</strong> Leverages larger CPU RAM by temporarily storing parts of the model or data that are not actively being used on the GPU.</li>
+<li><strong>LoRA (Low-Rank Adaptation):</strong>
+<ul>
+<li>Freeze most model parameters and train only a small set of adapter parameters.</li>
+<li>Reduces memory requirements for gradients and optimizer states.</li>
+</ul></li>
+<li><strong>Quantization:</strong>
+<ul>
+<li>Represent model weights using fewer bits (e.g., 8-bit instead of 32-bit).</li>
+<li>Reduces memory footprint, allowing for larger models or larger batch sizes.</li>
+<li>Needs a little computation to dequantize</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="napkin-math-understanding-memory-usage" class="level2">
+<h2 class="anchored" data-anchor-id="napkin-math-understanding-memory-usage">Napkin Math: Understanding Memory Usage</h2>
+<section id="full-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="full-fine-tuning">Full Fine-Tuning</h3>
+<ul>
+<li><strong>Problem:</strong> Full fine-tuning requires storing model parameters, gradients, and optimizer states, leading to high memory consumption.</li>
+<li><strong>Explanation:</strong>
+<ul>
+<li>Each parameter in a model requires multiple bits (e.g., 32 bits) to represent its numeric value.</li>
+<li>Gradients for each parameter are stored during training, consuming the same amount of memory as the parameters.</li>
+<li>Optimizers like Adam store additional states (e.g., momentum), further increasing memory usage.</li>
+</ul></li>
+<li><strong>Example:</strong> A model with 100 million parameters using 32 bits per parameter consumes 400MB.
+<ul>
+<li>Considering gradients and optimizer states, the total memory usage can be 1.2GB or higher.</li>
+</ul></li>
+</ul>
+</section>
+<section id="lora-low-rank-adaptation" class="level3">
+<h3 class="anchored" data-anchor-id="lora-low-rank-adaptation">LoRA (Low-Rank Adaptation)</h3>
+<ul>
+<li><strong>Solution:</strong> LoRA reduces memory usage by only training a small subset of parameters while keeping the rest frozen.
+<ul>
+<li><strong>Example:</strong> For every <code>1000 x 1000</code> matrix, add a <code>1000 x 32</code> matrix</li>
+</ul></li>
+<li><strong>Explanation:</strong>
+<ul>
+<li>Only trainable parameters require gradients and optimizer state storage.</li>
+<li>LoRA adds a small number of trainable parameters (e.g., 1% of the model size) to each large matrix in the model.</li>
+</ul></li>
+<li><strong>Benefit:</strong> LoRA significantly reduces memory requirements, enabling training on larger models without fitting the entire model and its associated data into GPU memory.</li>
+</ul>
+</section>
+<section id="quantization" class="level3">
+<h3 class="anchored" data-anchor-id="quantization">Quantization</h3>
+<ul>
+<li><strong>Solution:</strong> Quantization reduces memory usage by representing model parameters with fewer bits.</li>
+<li><strong>Explanation:</strong>
+<ul>
+<li>Instead of using 32 bits, quantization uses 8 bits or even 4 bits per parameter.</li>
+</ul></li>
+<li><strong>Benefit:</strong> Quantization shrinks the memory footprint of the model, allowing for larger model training or fitting on memory-constrained devices.</li>
+<li><strong>Combination with LoRA (QLoRA):</strong> Quantize the frozen base model weights while keeping the LoRA parameters in higher precision for accurate training.</li>
+</ul>
+</section>
+<section id="cpu-offloading-illustration" class="level3">
+<h3 class="anchored" data-anchor-id="cpu-offloading-illustration">CPU Offloading Illustration</h3>
+<ul>
+<li><strong>Solution:</strong> Utilize CPU RAM to store model components and offload computations when GPU memory is insufficient.</li>
+<li><strong>Explanation:</strong> Load and process one layer of the model on the GPU at a time, storing the remaining layers and intermediate data in CPU memory.</li>
+<li><strong>Trade-off:</strong> While enabling larger model training, CPU offloading introduces latency due to data transfer between CPU and GPU.</li>
+</ul>
+</section>
+<section id="llm-context-length-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="llm-context-length-considerations">LLM Context Length Considerations</h3>
+<ul>
+<li><strong>Problem:</strong> Large context lengths lead to increased memory consumption for storing activations.</li>
+<li><strong>Explanation:</strong>
+<ul>
+<li>Each layer’s output activations need to be stored for gradient calculations, and these activations accumulate with longer input sequences.</li>
+</ul></li>
+<li><strong>Impact:</strong> Training LLMs with long context lengths requires careful memory management and might necessitate techniques like gradient checkpointing to reduce activation memory footprint.</li>
+</ul>
+</section>
+</section>
+<section id="napkin-math-code-demo" class="level2">
+<h2 class="anchored" data-anchor-id="napkin-math-code-demo">Napkin Math Code Demo</h2>
+<ul>
+<li>Demonstrates using PyTorch’s memory tracking tools to analyze memory usage during training.</li>
+</ul>
+<section id="measuring-memory" class="level3">
+<h3 class="anchored" data-anchor-id="measuring-memory">Measuring Memory</h3>
+<ul>
+<li><strong>Challenge:</strong> Limited GPU RAM restricts the size of models and batch sizes during training.</li>
+<li><strong>Solution:</strong> Use PyTorch’s memory tracking capabilities to understand and optimize memory consumption.
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.cuda.max_memory_allocated.html"><code>torch.cuda.max_memory_allocated</code></a>: Provides a more accurate measure of actively used memory.</li>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.cuda.max_memory_reserved.html"><code>torch.cuda.max_memory_reserved</code></a>: Reflects total memory held by PyTorch, including pre-allocated space.</li>
+</ul></li>
+<li><strong>Key Takeaway:</strong> Actively monitor memory usage to make informed decisions about model size, batch size, and other hyperparameters.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch, gc, inspect, transformers</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoModelForCausalLM, BitsAndBytesConfig</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> accelerate.utils <span class="im">import</span> set_seed</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> peft <span class="im">import</span> prepare_model_for_kbit_training</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> peft <span class="im">import</span> LoraConfig, get_peft_model</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>transformers.logging.set_verbosity_warning()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">"cuda"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cleanup():</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Free up memory and reset stats"""</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    gc.collect()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    torch.cuda.empty_cache()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    torch.cuda.reset_peak_memory_stats(device)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>cleanup()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> print_memory_stats():</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Print two different measures of GPU memory usage"""</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Max memory allocated: </span><span class="sc">{</span>torch<span class="sc">.</span>cuda<span class="sc">.</span>max_memory_allocated(device)<span class="op">/</span><span class="fl">1e9</span><span class="sc">:.2f}</span><span class="ss">GB"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># reserved (aka 'max_memory_cached') is ~the allocated memory plus pre-cached memory</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Max memory reserved: </span><span class="sc">{</span>torch<span class="sc">.</span>cuda<span class="sc">.</span>max_memory_reserved(device)<span class="op">/</span><span class="fl">1e9</span><span class="sc">:.2f}</span><span class="ss">GB"</span>) </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>print_memory_stats()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Max memory allocated: 0.00GB
+Max memory reserved: 0.00GB</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># QLoRA Forward + Backward pass</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>cleanup() <span class="co"># Clean slate each time</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Quantization config for QLoRA versions</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>bnb_config <span class="op">=</span> BitsAndBytesConfig(</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    load_in_4bit<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    bnb_4bit_compute_dtype<span class="op">=</span>torch.bfloat16</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForCausalLM.from_pretrained(</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    low_cpu_mem_usage<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    quantization_config<span class="op">=</span>bnb_config,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    use_cache<span class="op">=</span><span class="va">False</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="co"># This function has caused me lots of pain!</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> prepare_model_for_kbit_training(model)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Add LoRA</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>config <span class="op">=</span> LoraConfig(</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    r<span class="op">=</span><span class="dv">16</span>,</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    lora_alpha<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    lora_dropout<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    bias<span class="op">=</span><span class="st">"none"</span>,</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    task_type<span class="op">=</span><span class="st">"CAUSAL_LM"</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> get_peft_model(model, config)</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Move to GPU</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>model.to(device)</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare the data</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>bs, ctx <span class="op">=</span> <span class="dv">1</span>, <span class="dv">1200</span> <span class="co"># batch size and context length</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> torch.randint(<span class="dv">0</span>, <span class="dv">10000</span>, (bs, ctx), device<span class="op">=</span>device)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Forward pass</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>output <span class="op">=</span> model(data, labels<span class="op">=</span>data)</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Backward pass</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>output.loss.backward()</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Print max memory stats</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>print_memory_stats()</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Cleanup</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> model, output, data</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>cleanup()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Max memory allocated: 6.42GB
+Max memory reserved: 7.09GB</code></pre>
+</section>
+<section id="memory-history" class="level3">
+<h3 class="anchored" data-anchor-id="memory-history">Memory History</h3>
+<ul>
+<li><strong>Challenge:</strong> Identifying specific memory bottlenecks within the training process.</li>
+<li><strong>Solution:</strong> PyTorch’s <code>record_memory_history</code> function helps visualize memory usage over time.</li>
+<li><strong>Tool:</strong> Upload the generated pickle file to Pytorch’s Memory Visualizer for a detailed graphical representation.
+<ul>
+<li><strong>Link:</strong> <a href="https://pytorch.org/memory_viz">https://pytorch.org/memory_viz</a></li>
+</ul></li>
+<li><strong>Documentation:</strong> <a href="https://pytorch.org/docs/stable/torch_cuda_memory.html">Understanding CUDA Memory Usage</a></li>
+<li><strong>Tutorial:</strong> <a href="https://pytorch.org/tutorials/intermediate/optimizer_step_in_backward_tutorial.html">How to save memory by fusing the optimizer step into the backward pass</a></li>
+</ul>
+<section id="benefits-of-memory-history-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="benefits-of-memory-history-analysis">Benefits of Memory History Analysis:</h4>
+<ul>
+<li><strong>Identify memory spikes:</strong> pinpoint operations causing significant memory increases.</li>
+<li><strong>Understand memory allocation patterns:</strong> Visualize how memory usage evolves throughout the training process (forward pass, backward pass, gradient updates).</li>
+<li><strong>Evaluate optimization strategies:</strong> Observe the impact of techniques like gradient checkpointing and quantization on memory consumption.</li>
+</ul>
+</section>
+<section id="real-world-examples" class="level4">
+<h4 class="anchored" data-anchor-id="real-world-examples">Real-World Examples</h4>
+<ul>
+<li><strong>Bug Detection:</strong> Unusually high memory spikes revealed incorrect implementations or unintended use of trainable parameters.</li>
+<li><strong>Memory Leak Identification:</strong> Gradual memory escalation over multiple training steps pointed to issues with gradient or loss clearing.</li>
+<li><strong>Kernel Optimization:</strong> Analysis highlighted inefficiencies in HuggingFace’s Transformers library, prompting a switch back to a more memory-efficient attention kernel.</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>cleanup()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForCausalLM.from_pretrained(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    low_cpu_mem_usage<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    quantization_config<span class="op">=</span>bnb_config,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    use_cache<span class="op">=</span><span class="va">False</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> prepare_model_for_kbit_training(model)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> get_peft_model(model, config)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>model.to(device)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Prep the data</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> torch.randint(<span class="dv">0</span>, <span class="dv">10000</span>, (<span class="dv">1</span>, <span class="dv">1000</span>), device<span class="op">=</span>device)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Start recording</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>torch.cuda.memory._record_memory_history()</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co"># FOrward and backwards pass</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>output <span class="op">=</span> model(data, labels<span class="op">=</span>data)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>output.loss.backward()</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the snapshot and stop recording</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>torch.cuda.memory._dump_snapshot(<span class="st">"memory_snapshot.pickle"</span>)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>torch.cuda.memory._record_memory_history(enabled<span class="op">=</span><span class="va">None</span>) </span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean up</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> model, output, data</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>cleanup()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Viewing the results in <a href="https://pytorch.org/memory_viz">https://pytorch.org/memory_viz</a> looks something like this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/image.png" class="img-fluid figure-img"></p>
+<figcaption>image.png</figcaption>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="optimizing-llm-training-for-different-hardware" class="level2">
+<h2 class="anchored" data-anchor-id="optimizing-llm-training-for-different-hardware">Optimizing LLM Training for Different Hardware</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="Benchmarking QLoRA+FSDP">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Benchmarking QLoRA+FSDP
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Case Study:</strong> <a href="https://github.com/AnswerDotAI/fsdp_qlora/blob/main/benchmarks_03_2024.md">A Dual 3090 ‘Basement Rig’</a></li>
+</ul>
+</div>
+</div>
+<section id="gpu-limitations-data-transfer-bottleneck" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-limitations-data-transfer-bottleneck">GPU Limitations &amp; Data Transfer Bottleneck</h3>
+<ul>
+<li>Training LLMs often involves frequent data transfers between CPU memory and GPU memory.</li>
+<li>In systems with limited GPU memory or slow interconnects, these transfers become a significant bottleneck.</li>
+<li>Each layer of the model might require loading weights onto the GPU, performing computations, and then repeating the process for the next layer.</li>
+</ul>
+</section>
+<section id="optimizing-for-memory-bound-scenarios" class="level3">
+<h3 class="anchored" data-anchor-id="optimizing-for-memory-bound-scenarios">Optimizing for Memory-Bound Scenarios</h3>
+<ul>
+<li><strong>Goal:</strong> Minimize data transfer cycles by maximizing computation done per load.
+<ul>
+<li><strong>Example:</strong> Using a larger batch size allows processing more samples per load, reducing the total number of loads required.</li>
+</ul></li>
+<li><strong>Techniques:</strong>
+<ul>
+<li><strong>Quantization:</strong> Reduces the precision of model weights, making them faster to transfer and process.</li>
+<li><strong>QLoRa:</strong> A memory-efficient training method that further reduces memory footprint compared to standard LoRa.</li>
+</ul></li>
+<li><strong>Example:</strong> The “3090 basement rig” showed significant speed improvements when using these techniques due to a larger achievable batch size.</li>
+</ul>
+</section>
+<section id="impact-of-hardware-on-optimization-strategies" class="level3">
+<h3 class="anchored" data-anchor-id="impact-of-hardware-on-optimization-strategies">Impact of Hardware on Optimization Strategies</h3>
+<ul>
+<li><p><strong>Memory Bandwidth Constraints:</strong> On slower machines or those with limited interconnect bandwidth, optimizing for memory bandwidth is crucial. Techniques like quantization and larger batch sizes yield significant gains.</p></li>
+<li><p><strong>High-End Systems:</strong></p>
+<ul>
+<li>Systems like the H100 with fast NVLink interconnects and ample GPU memory minimize the data transfer bottleneck.</li>
+<li>Model weights can reside in fast GPU memory, even across multiple GPUs, allowing for rapid loading.</li>
+<li>Computation becomes the limiting factor, not memory bandwidth.</li>
+</ul></li>
+<li><p><strong>Example:</strong> In tests on an H100, increasing batch size or using quantization didn’t significantly impact runtime. The bottleneck was compute speed, not data transfer.</p></li>
+</ul>
+</section>
+<section id="adapting-to-hardware-limitations" class="level3">
+<h3 class="anchored" data-anchor-id="adapting-to-hardware-limitations">Adapting to Hardware Limitations</h3>
+<ul>
+<li><strong>Understand Your Hardware:</strong> Identify whether your system is memory-bound or compute-bound.</li>
+<li><strong>Optimize Accordingly:</strong>
+<ul>
+<li><strong>Memory-Bound:</strong> Prioritize techniques like quantization, QLoRa, and increasing batch size to minimize data transfer.</li>
+<li><strong>Compute-Bound:</strong> Focus on maximizing computational efficiency, as data transfer is less of a concern.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<section id="cpu-offloading" class="level3">
+<h3 class="anchored" data-anchor-id="cpu-offloading">CPU Offloading</h3>
+<ul>
+<li><p><strong>Question:</strong> Is CPU offloading useful for training or just inference?</p></li>
+<li><p><strong>Answer:</strong> CPU offloading can be beneficial for training large models that exceed single GPU memory, even with multiple GPUs. It allows for larger batch sizes by storing model weights on the CPU and copying them to the GPU as needed. However, it’s less effective with smaller models or abundant GPU memory.</p></li>
+<li><p><strong>Recommendation:</strong> Start with default settings and gradually introduce optimizations like quantization, batch size increases, data parallelism, and sharding, evaluating performance gains at each step.</p></li>
+</ul>
+</section>
+<section id="quantization-sweet-spot" class="level3">
+<h3 class="anchored" data-anchor-id="quantization-sweet-spot">Quantization Sweet Spot</h3>
+<ul>
+<li><p><strong>Question:</strong> How to find the optimal balance between compression and accuracy with quantization?</p></li>
+<li><p><strong>Answer:</strong> Quantization below 4 bits can negatively impact accuracy. Combining 4-bit quantization with LoRA (adapters) often maintains performance comparable to no quantization.</p></li>
+<li><p><strong>Recommendation:</strong> Use 4-bit quantization with LoRA as a starting point. Keep the LoRA in higher precision.</p></li>
+</ul>
+</section>
+<section id="gradient-accumulation" class="level3">
+<h3 class="anchored" data-anchor-id="gradient-accumulation">Gradient Accumulation</h3>
+<ul>
+<li><p><strong>Question:</strong> Clarification on gradient accumulation and micro batch size.</p></li>
+<li><p><strong>Answer:</strong> Gradient accumulation simulates larger batch sizes by accumulating gradients over multiple smaller “micro batches” before updating model weights. This is useful when target batch sizes exceed GPU memory.</p></li>
+<li><p><strong>Example:</strong> To achieve an effective batch size of 32 with a GPU limited to 8 samples, run 4 micro batches of 8 samples each before updating.</p></li>
+<li><p><strong>Recommendation:</strong> Use gradient accumulation to reach a reasonable effective batch size (16, 32, 64), particularly when training with small batch sizes (1 or 2).</p></li>
+</ul>
+</section>
+<section id="multiple-loras" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-loras">Multiple LoRAs</h3>
+<ul>
+<li><p><strong>Question:</strong> Do multiple LoRAs update the same or different model parameters?</p></li>
+<li><p><strong>Answer:</strong> Typically, multiple LoRAs update the same weights. Each LoRA targets specific layers defined in its configuration.</p></li>
+</ul>
+</section>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<ul>
+<li><strong>Balancing Act:</strong> Fine-tuning involves minimizing data movement and maximizing computation efficiency.</li>
+<li><strong>Memory Management:</strong>
+<ul>
+<li><strong>LoRA:</strong> Reduces memory by training a smaller set of parameters.</li>
+<li><strong>Quantization:</strong> Stores weights using fewer bits.</li>
+<li><strong>Experimentation:</strong> Key to finding the right trade-offs between memory, speed, and accuracy.</li>
+</ul></li>
+<li><strong>Memory Allocation:</strong>
+<ul>
+<li><strong>Model Size:</strong> Larger models require more memory for weights and gradients.</li>
+<li><strong>Batch Size and Context Length:</strong> Increasing either requires more memory for activations and intermediate values.</li>
+</ul></li>
+<li><strong>Memory Optimization Strategies:</strong>
+<ul>
+<li>Reduce context length if possible.</li>
+<li>Quantize weights.</li>
+<li>Offload to CPU.</li>
+</ul></li>
+<li><strong>Practical Estimation:</strong> Instead of complex formulas, estimate memory requirements based on measurements from a single layer and extrapolate for the entire model.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
