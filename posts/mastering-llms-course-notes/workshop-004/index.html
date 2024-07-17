@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-07-17">
+<meta name="description" content="Workshop #4 focuses on the practical aspects of deploying fine-tuned LLMs, covering various deployment patterns, performance optimization techniques, and platform considerations.">
+
+<title>Christian Mills - Workshop 4: Instrumenting &amp; Evaluating LLMs</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Workshop 4: Instrumenting &amp; Evaluating LLMs">
+<meta property="og:description" content="Workshop #4 focuses on the practical aspects of deploying fine-tuned LLMs, covering various deployment patterns, performance optimization techniques, and platform considerations.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Workshop 4: Instrumenting &amp; Evaluating LLMs">
+<meta name="twitter:description" content="Workshop #4 focuses on the practical aspects of deploying fine-tuned LLMs, covering various deployment patterns, performance optimization techniques, and platform considerations.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#serving-overview" id="toc-serving-overview" class="nav-link active" data-scroll-target="#serving-overview">Serving Overview</a>
+  <ul>
+  <li><a href="#recap-on-loras" id="toc-recap-on-loras" class="nav-link" data-scroll-target="#recap-on-loras">Recap on LoRAs</a></li>
+  <li><a href="#performance-vs-costs" id="toc-performance-vs-costs" class="nav-link" data-scroll-target="#performance-vs-costs">Performance vs Costs</a></li>
+  <li><a href="#many-applications-arent-real-time" id="toc-many-applications-arent-real-time" class="nav-link" data-scroll-target="#many-applications-arent-real-time">Many Applications Aren’t Real-Time</a></li>
+  <li><a href="#real-time-vs-batchoffline" id="toc-real-time-vs-batchoffline" class="nav-link" data-scroll-target="#real-time-vs-batchoffline">Real-Time vs Batch/Offline</a></li>
+  <li><a href="#merging-lora-to-base" id="toc-merging-lora-to-base" class="nav-link" data-scroll-target="#merging-lora-to-base">Merging LoRA to Base</a></li>
+  <li><a href="#push-model-files-to-hf-hub" id="toc-push-model-files-to-hf-hub" class="nav-link" data-scroll-target="#push-model-files-to-hf-hub">Push Model Files to HF Hub</a></li>
+  </ul></li>
+  <li><a href="#model-deployment-patterns" id="toc-model-deployment-patterns" class="nav-link" data-scroll-target="#model-deployment-patterns">Model Deployment Patterns</a>
+  <ul>
+  <li><a href="#the-many-faces-of-deployments" id="toc-the-many-faces-of-deployments" class="nav-link" data-scroll-target="#the-many-faces-of-deployments">The Many Faces of Deployments</a></li>
+  <li><a href="#simple-model-serving" id="toc-simple-model-serving" class="nav-link" data-scroll-target="#simple-model-serving">Simple Model Serving</a></li>
+  <li><a href="#advanced-model-serving" id="toc-advanced-model-serving" class="nav-link" data-scroll-target="#advanced-model-serving">Advanced Model Serving</a></li>
+  <li><a href="#kinds-of-model-serving" id="toc-kinds-of-model-serving" class="nav-link" data-scroll-target="#kinds-of-model-serving">Kinds of Model Serving</a></li>
+  <li><a href="#gpu-poor-benchmark-wrong-but-useful" id="toc-gpu-poor-benchmark-wrong-but-useful" class="nav-link" data-scroll-target="#gpu-poor-benchmark-wrong-but-useful">GPU Poor Benchmark (Wrong, but useful)</a></li>
+  </ul></li>
+  <li><a href="#case-study-honeycomb---replicate" id="toc-case-study-honeycomb---replicate" class="nav-link" data-scroll-target="#case-study-honeycomb---replicate">Case Study: Honeycomb - Replicate</a>
+  <ul>
+  <li><a href="#why-replicate" id="toc-why-replicate" class="nav-link" data-scroll-target="#why-replicate">Why Replicate?</a></li>
+  <li><a href="#show-me-the-code" id="toc-show-me-the-code" class="nav-link" data-scroll-target="#show-me-the-code">Show Me the Code</a></li>
+  </ul></li>
+  <li><a href="#deploying-large-language-models" id="toc-deploying-large-language-models" class="nav-link" data-scroll-target="#deploying-large-language-models">Deploying Large Language Models</a>
+  <ul>
+  <li><a href="#deploying-llms" id="toc-deploying-llms" class="nav-link" data-scroll-target="#deploying-llms">Deploying LLMs</a>
+  <ul class="collapse">
+  <li><a href="#challenges-in-deploying-llms" id="toc-challenges-in-deploying-llms" class="nav-link" data-scroll-target="#challenges-in-deploying-llms">Challenges in Deploying LLMs</a></li>
+  <li><a href="#llm-performance-bottlenecks" id="toc-llm-performance-bottlenecks" class="nav-link" data-scroll-target="#llm-performance-bottlenecks">LLM Performance Bottlenecks</a></li>
+  <li><a href="#techniques-for-optimizing-llm-performance" id="toc-techniques-for-optimizing-llm-performance" class="nav-link" data-scroll-target="#techniques-for-optimizing-llm-performance">Techniques for Optimizing LLM Performance</a></li>
+  <li><a href="#continuous-batching" id="toc-continuous-batching" class="nav-link" data-scroll-target="#continuous-batching">Continuous Batching</a></li>
+  <li><a href="#inference-servers" id="toc-inference-servers" class="nav-link" data-scroll-target="#inference-servers">Inference Servers</a></li>
+  <li><a href="#performance-tuning" id="toc-performance-tuning" class="nav-link" data-scroll-target="#performance-tuning">Performance Tuning</a></li>
+  </ul></li>
+  <li><a href="#simplifying-llm-deployment" id="toc-simplifying-llm-deployment" class="nav-link" data-scroll-target="#simplifying-llm-deployment">Simplifying LLM Deployment</a>
+  <ul class="collapse">
+  <li><a href="#prioritize-modularity" id="toc-prioritize-modularity" class="nav-link" data-scroll-target="#prioritize-modularity">Prioritize Modularity</a></li>
+  </ul></li>
+  <li><a href="#simplify-llm-deployment-with-replicate" id="toc-simplify-llm-deployment-with-replicate" class="nav-link" data-scroll-target="#simplify-llm-deployment-with-replicate">Simplify LLM Deployment with Replicate</a>
+  <ul class="collapse">
+  <li><a href="#replicate-features-and-workflow" id="toc-replicate-features-and-workflow" class="nav-link" data-scroll-target="#replicate-features-and-workflow">Replicate Features and Workflow</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#lessons-from-building-a-serverless-platform---predibase" id="toc-lessons-from-building-a-serverless-platform---predibase" class="nav-link" data-scroll-target="#lessons-from-building-a-serverless-platform---predibase">Lessons from Building A Serverless Platform - Predibase</a>
+  <ul>
+  <li><a href="#predibase-overview" id="toc-predibase-overview" class="nav-link" data-scroll-target="#predibase-overview">Predibase Overview</a></li>
+  <li><a href="#the-case-for-fine-tuned-llms" id="toc-the-case-for-fine-tuned-llms" class="nav-link" data-scroll-target="#the-case-for-fine-tuned-llms">The Case for Fine-Tuned LLMs</a></li>
+  <li><a href="#deploying-your-fine-tuned-model-practical-considerations" id="toc-deploying-your-fine-tuned-model-practical-considerations" class="nav-link" data-scroll-target="#deploying-your-fine-tuned-model-practical-considerations">Deploying Your Fine-Tuned Model: Practical Considerations</a>
+  <ul class="collapse">
+  <li><a href="#merging-adapters-pros-and-cons" id="toc-merging-adapters-pros-and-cons" class="nav-link" data-scroll-target="#merging-adapters-pros-and-cons">Merging Adapters: Pros and Cons</a></li>
+  <li><a href="#quantization-for-training-and-inference" id="toc-quantization-for-training-and-inference" class="nav-link" data-scroll-target="#quantization-for-training-and-inference">Quantization for Training and Inference</a></li>
+  </ul></li>
+  <li><a href="#performance-tuning-1" id="toc-performance-tuning-1" class="nav-link" data-scroll-target="#performance-tuning-1">Performance Tuning</a>
+  <ul class="collapse">
+  <li><a href="#gathering-requirements" id="toc-gathering-requirements" class="nav-link" data-scroll-target="#gathering-requirements">Gathering Requirements</a></li>
+  <li><a href="#deployment-requirements" id="toc-deployment-requirements" class="nav-link" data-scroll-target="#deployment-requirements">Deployment Requirements</a></li>
+  <li><a href="#key-questions-for-choosing-deployment-options" id="toc-key-questions-for-choosing-deployment-options" class="nav-link" data-scroll-target="#key-questions-for-choosing-deployment-options">Key Questions for Choosing Deployment Options</a></li>
+  <li><a href="#serverless-vs.-dedicated-deployment" id="toc-serverless-vs.-dedicated-deployment" class="nav-link" data-scroll-target="#serverless-vs.-dedicated-deployment">Serverless vs.&nbsp;Dedicated Deployment</a></li>
+  </ul></li>
+  <li><a href="#fine-tuning-for-throughput" id="toc-fine-tuning-for-throughput" class="nav-link" data-scroll-target="#fine-tuning-for-throughput">Fine-Tuning for Throughput</a>
+  <ul class="collapse">
+  <li><a href="#addressing-performance-differences" id="toc-addressing-performance-differences" class="nav-link" data-scroll-target="#addressing-performance-differences">Addressing Performance Differences:</a></li>
+  <li><a href="#speculative-decoding---the-medusa-approach" id="toc-speculative-decoding---the-medusa-approach" class="nav-link" data-scroll-target="#speculative-decoding---the-medusa-approach">Speculative Decoding - The Medusa Approach:</a></li>
+  <li><a href="#combining-quality-and-performance-with-lookahead-lora" id="toc-combining-quality-and-performance-with-lookahead-lora" class="nav-link" data-scroll-target="#combining-quality-and-performance-with-lookahead-lora">Combining Quality and Performance with Lookahead LoRA:</a></li>
+  </ul></li>
+  <li><a href="#demonstration" id="toc-demonstration" class="nav-link" data-scroll-target="#demonstration">Demonstration</a></li>
+  </ul></li>
+  <li><a href="#batch-vs-real-time-and-modal" id="toc-batch-vs-real-time-and-modal" class="nav-link" data-scroll-target="#batch-vs-real-time-and-modal">Batch vs Real Time and Modal</a>
+  <ul>
+  <li><a href="#throughput-vs.-latency" id="toc-throughput-vs.-latency" class="nav-link" data-scroll-target="#throughput-vs.-latency">Throughput vs.&nbsp;Latency</a></li>
+  <li><a href="#latency-lags-throughput" id="toc-latency-lags-throughput" class="nav-link" data-scroll-target="#latency-lags-throughput">Latency Lags Throughput</a>
+  <ul class="collapse">
+  <li><a href="#gpus-are-inherently-throughput-oriented." id="toc-gpus-are-inherently-throughput-oriented." class="nav-link" data-scroll-target="#gpus-are-inherently-throughput-oriented.">GPUs are inherently throughput-oriented.</a></li>
+  <li><a href="#llm-inference-challenges" id="toc-llm-inference-challenges" class="nav-link" data-scroll-target="#llm-inference-challenges">LLM Inference Challenges</a></li>
+  </ul></li>
+  <li><a href="#costs-are-high-but-falling." id="toc-costs-are-high-but-falling." class="nav-link" data-scroll-target="#costs-are-high-but-falling.">Costs are high but falling.</a></li>
+  <li><a href="#deploying-llms-on-modal" id="toc-deploying-llms-on-modal" class="nav-link" data-scroll-target="#deploying-llms-on-modal">Deploying LLMs on Modal</a></li>
+  <li><a href="#modal-is-for-more-than-gpus" id="toc-modal-is-for-more-than-gpus" class="nav-link" data-scroll-target="#modal-is-for-more-than-gpus">Modal is for more than GPUs</a></li>
+  <li><a href="#demos" id="toc-demos" class="nav-link" data-scroll-target="#demos">Demos</a></li>
+  </ul></li>
+  <li><a href="#qa-session" id="toc-qa-session" class="nav-link" data-scroll-target="#qa-session">Q&amp;A Session</a>
+  <ul>
+  <li><a href="#awq-in-honeycomb-example" id="toc-awq-in-honeycomb-example" class="nav-link" data-scroll-target="#awq-in-honeycomb-example">AWQ in Honeycomb Example</a></li>
+  <li><a href="#pricing-fine-tuning-projects-for-enterprises" id="toc-pricing-fine-tuning-projects-for-enterprises" class="nav-link" data-scroll-target="#pricing-fine-tuning-projects-for-enterprises">Pricing Fine-Tuning Projects for Enterprises</a></li>
+  <li><a href="#gpu-optimization-in-modal-with-vllms-async-engine" id="toc-gpu-optimization-in-modal-with-vllms-async-engine" class="nav-link" data-scroll-target="#gpu-optimization-in-modal-with-vllms-async-engine">GPU Optimization in Modal with vLLM’s Async Engine</a></li>
+  <li><a href="#hiding-api-endpoints-in-model-serving-web-apps" id="toc-hiding-api-endpoints-in-model-serving-web-apps" class="nav-link" data-scroll-target="#hiding-api-endpoints-in-model-serving-web-apps">Hiding API Endpoints in Model-Serving Web Apps</a></li>
+  <li><a href="#impact-of-input-prompt-size-on-speed" id="toc-impact-of-input-prompt-size-on-speed" class="nav-link" data-scroll-target="#impact-of-input-prompt-size-on-speed">Impact of Input Prompt Size on Speed</a></li>
+  <li><a href="#resources-for-learning-continuous-batching" id="toc-resources-for-learning-continuous-batching" class="nav-link" data-scroll-target="#resources-for-learning-continuous-batching">Resources for Learning Continuous Batching</a></li>
+  <li><a href="#request-caching-layer-in-hugging-face-and-modal" id="toc-request-caching-layer-in-hugging-face-and-modal" class="nav-link" data-scroll-target="#request-caching-layer-in-hugging-face-and-modal">Request Caching Layer in Hugging Face and Modal</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Workshop 4: Instrumenting &amp; Evaluating LLMs</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Workshop #4 focuses on the practical aspects of deploying fine-tuned LLMs, covering various deployment patterns, performance optimization techniques, and platform considerations.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 17, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#serving-overview">Serving Overview</a></li>
+<li><a href="#model-deployment-patterns">Model Deployment Patterns</a></li>
+<li><a href="#case-study-honeycomb---replicate">Case Study: Honeycomb - Replicate</a></li>
+<li><a href="#deploying-large-language-models">Deploying Large Language Models</a></li>
+<li><a href="#lessons-from-building-a-serverless-platform---predibase">Lessons from Building A Serverless Platform - Predibase</a></li>
+<li><a href="#batch-vs-real-time-and-modal">Batch vs Real Time and Modal</a></li>
+<li><a href="#qa-session">Q&amp;A Session</a></li>
+</ul>
+<section id="serving-overview" class="level2">
+<h2 class="anchored" data-anchor-id="serving-overview">Serving Overview</h2>
+<section id="recap-on-loras" class="level3">
+<h3 class="anchored" data-anchor-id="recap-on-loras">Recap on LoRAs</h3>
+<ul>
+<li><strong>LoRA (Low-Rank Adaptation)</strong>: A parameter-efficient fine-tuning technique that introduces small adapter matrices into the model’s layers, significantly reducing the number of trainable parameters compared to full fine-tuning.</li>
+<li><strong>Benefits of LoRA</strong>: Reduced memory requirements during training and deployment, enabling fine-tuning on consumer-grade hardware and efficient serving of multiple adapters.</li>
+<li><strong>Deployment Options</strong>:
+<ul>
+<li><strong>Keep LoRA separate</strong>: Store LoRA weights in a separate file and load them during inference.</li>
+<li><strong>Merge LoRA with base model</strong>: Combine the learned LoRA weights with the original model weights into a single file.</li>
+<li><strong>Hot-swapping adapters</strong>: Dynamically load and unload adapters on demand, sharing the base model among multiple adapters.</li>
+</ul></li>
+</ul>
+</section>
+<section id="performance-vs-costs" class="level3">
+<h3 class="anchored" data-anchor-id="performance-vs-costs">Performance vs Costs</h3>
+<ul>
+<li><strong>Key Trade-off</strong>: Balancing performance (latency and throughput) with cost (GPU usage and idle time).</li>
+<li><strong>Factors Influencing Performance and Cost</strong>:
+<ul>
+<li><strong>GPU speed:</strong> More powerful GPUs offer lower latency but are more expensive.</li>
+<li><strong>Model size:</strong> Larger models generally perform better but require more resources and time.</li>
+<li><strong>Engineering optimizations:</strong> Platform-level optimizations can improve efficiency.</li>
+<li><strong>Cold start vs.&nbsp;idle time:</strong> Loading models onto GPUs takes time (cold start), but keeping them loaded incurs idle time cost.</li>
+</ul></li>
+<li><strong>Hot-swapping adapters</strong>: A strategy to mitigate the cold start vs.&nbsp;idle time trade-off by serving multiple LoRAs on the same GPU, ensuring consistent traffic and reducing idle time.</li>
+</ul>
+</section>
+<section id="many-applications-arent-real-time" class="level3">
+<h3 class="anchored" data-anchor-id="many-applications-arent-real-time">Many Applications Aren’t Real-Time</h3>
+<ul>
+<li><strong>Real-time vs.&nbsp;batch/offline processing</strong>: Many LLM applications do not require real-time responses, allowing for batch processing and reducing cost by scaling down GPUs when not in use.</li>
+<li><strong>Examples of batch/offline use cases</strong>:
+<ul>
+<li>Generating alt text for images</li>
+<li>Extracting information from documents</li>
+<li>Editing text</li>
+<li>Analytics tools</li>
+</ul></li>
+</ul>
+</section>
+<section id="real-time-vs-batchoffline" class="level3">
+<h3 class="anchored" data-anchor-id="real-time-vs-batchoffline">Real-Time vs Batch/Offline</h3>
+<ul>
+<li><strong>Real-time use cases</strong>: Applications like chatbots and code assistants require low latency responses.</li>
+<li><strong>Batch/offline use cases</strong>: Tasks like data analysis, text summarization, and content generation can be processed in batches.</li>
+</ul>
+</section>
+<section id="merging-lora-to-base" class="level3">
+<h3 class="anchored" data-anchor-id="merging-lora-to-base">Merging LoRA to Base</h3>
+<ul>
+<li><p><strong>Workflow example</strong>:</p>
+<ol type="1">
+<li><p>Train a LoRA model and save the adapter weights.</p></li>
+<li><p>Merge the LoRA weights with the base model weights into a single file (potentially sharded for large models).</p>
+<ul>
+<li><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">root@724562262aec:/workspace/demo#</span> ls outputs/qlora-out/</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">README.md</span>         checkpoint-1         checkpoint-4         tokenizer.json</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">adapter_config.json</span>    checkpoint-2         config.json          tokenizer_config.json</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">adapter_model.bin</span>     checkpoint-3         special_tokens_map.json</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><code>adapter_model.bin</code> size: 168 MB</li>
+</ul></li>
+<li><div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">root@724562262aec:/workspace/demo#</span> python3 <span class="at">-m</span> axolotl.cli.merge_lora ./qlora.yml <span class="at">--dora_model_dir</span><span class="op">=</span><span class="st">"./outputs/qlora-out"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><div class="sourceCode" id="cb3"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">root@724562262aec:/workspace/demo#</span> ls outputs/qlora-out/merged</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">config.json</span>             pytorch_model-00003-of-00004.bin   tokenizer.json</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">generation_config.json</span>        pytorch_model-00004-of-00004.bin   tokenizer_config.json</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">pytorch_model-00001-of-00004.bin</span>   pytorch_model.bin.index.json</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">pytorch_model-00002-of-00004.bin</span>   special_tokens_map.json        </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>merged <code>.bin</code> files: 16 GB</li>
+</ul></li>
+</ul></li>
+<li><p>Push the merged model files to a platform like HuggingFace Hub.</p></li>
+</ol></li>
+</ul>
+</section>
+<section id="push-model-files-to-hf-hub" class="level3">
+<h3 class="anchored" data-anchor-id="push-model-files-to-hf-hub">Push Model Files to HF Hub</h3>
+<ul>
+<li><strong>HuggingFace inference endpoints</strong>: A platform for serving models with options for automatic scaling and GPU selection.</li>
+<li><strong>Workflow example</strong>:
+<ol type="1">
+<li><p>Create a HuggingFace repository.</p>
+<ul>
+<li><div class="sourceCode" id="cb4"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">pip</span> install <span class="at">-U</span> <span class="st">"huggingface_hub[cli]"</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">huggingface-cli</span> repo create conference-demo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p>Copy the merged model files to the repository.</p>
+<ul>
+<li><div class="sourceCode" id="cb5"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cp</span> ./outputs/qlora-out/merged/<span class="pp">*</span> conference-demo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p>Use Git LFS to track large files.</p>
+<ul>
+<li><div class="sourceCode" id="cb6"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">git</span> lfs track <span class="st">"*.bin"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p>Push the repository to HuggingFace Hub.</p>
+<ul>
+<li><div class="sourceCode" id="cb7"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">git</span> add <span class="pp">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p>Deploy the model using HuggingFace inference endpoints, choosing appropriate scaling and GPU options.</p>
+<ul>
+<li><div class="sourceCode" id="cb8"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">git</span> commit <span class="at">-am</span> <span class="st">"Push merged files"</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">git</span> push origin main</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><strong>HuggingFace Hub:</strong> <a href="https://huggingface.co/dansbecker/conference-demo/tree/main">dansbecker/conference-demo</a></li>
+</ul></li>
+</ol></li>
+</ul>
+</section>
+</section>
+<section id="model-deployment-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="model-deployment-patterns">Model Deployment Patterns</h2>
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://outerbounds.com/blog/the-many-ways-to-deploy-a-model/">The Many Ways to Deploy a Model</a></li>
+</ul>
+<section id="the-many-faces-of-deployments" class="level3">
+<h3 class="anchored" data-anchor-id="the-many-faces-of-deployments">The Many Faces of Deployments</h3>
+<ul>
+<li><table class="caption-top table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 40%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Factors</th>
+<th>Simple, lots of tools</th>
+<th>Some tools, customization may be needed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Speed (time to response)</strong></td>
+<td>Slow: Results needed in minutes e.g.&nbsp;portfolio optimization</td>
+<td>Fast: Results needed in milliseconds e.g.&nbsp;high-frequency trading</td>
+</tr>
+<tr class="even">
+<td><strong>Scale (requests/second)</strong></td>
+<td>Low: 10 request/sec or less e.g.&nbsp;an internal dashboard</td>
+<td>High: 10k requests / sec or more e.g.&nbsp;a popular e-commerce site</td>
+</tr>
+<tr class="odd">
+<td><strong>Pace of improvement</strong></td>
+<td>Low: Updates infrequently e.g.&nbsp;a stable, marginal model</td>
+<td>High: Constant iteration needed e.g.&nbsp;an innovative, important model</td>
+</tr>
+<tr class="even">
+<td><strong>Real-time inputs needed?</strong></td>
+<td>No real-time inputs e.g.&nbsp;analyze past data</td>
+<td>Yes, real-time inputs e.g.&nbsp;targeted travel ads</td>
+</tr>
+<tr class="odd">
+<td><strong>Reliability requirement</strong></td>
+<td>Low: Ok to fail occasionally e.g.&nbsp;a proof of concept</td>
+<td>High: Must not fail e.g.&nbsp;a fraud detection model</td>
+</tr>
+<tr class="even">
+<td><strong>Model complexity</strong></td>
+<td>Simple models e.g.&nbsp;linear regression</td>
+<td>Complex models e.g.&nbsp;LLMs</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</section>
+<section id="simple-model-serving" class="level3">
+<h3 class="anchored" data-anchor-id="simple-model-serving">Simple Model Serving</h3>
+<ul>
+<li><strong>Direct interface with model library</strong>: Using frameworks like <a href="https://fastapi.tiangolo.com/">FastAPI</a> to serve models with minimal overhead.</li>
+<li><strong>Suitable for</strong>: Proof of concepts, small-scale applications with low performance demands.</li>
+</ul>
+</section>
+<section id="advanced-model-serving" class="level3">
+<h3 class="anchored" data-anchor-id="advanced-model-serving">Advanced Model Serving</h3>
+<ul>
+<li><strong>Complex architectures</strong>: Auto-scaling clusters, load balancers, specialized components for pre- and post-processing.</li>
+<li><strong>Example</strong>: <a href="https://kubernetes.io/">Kubernetes</a> with <a href="https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html">Triton Inference Server</a> and <a href="https://github.com/NVIDIA/TensorRT-LLM">TensorRT-LLM</a>.</li>
+</ul>
+</section>
+<section id="kinds-of-model-serving" class="level3">
+<h3 class="anchored" data-anchor-id="kinds-of-model-serving">Kinds of Model Serving</h3>
+<ul>
+<li><strong>Decision Tree</strong>:</li>
+</ul>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 793.93 732.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 728)">
+<title>Decision Tree</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-728 789.93,-728 789.93,4 -4,4"></polygon>
+<!-- A -->
+<g id="node1" class="node">
+<title>A</title>
+<path fill="ghostwhite" stroke="ghostwhite" d="M295.35,-724C295.35,-724 12.22,-724 12.22,-724 6.22,-724 0.22,-718 0.22,-712 0.22,-712 0.22,-668 0.22,-668 0.22,-662 6.22,-656 12.22,-656 12.22,-656 295.35,-656 295.35,-656 301.35,-656 307.35,-662 307.35,-668 307.35,-668 307.35,-712 307.35,-712 307.35,-718 301.35,-724 295.35,-724"></path>
+<text text-anchor="middle" x="153.78" y="-697.5" font-family="sans-serif:bold" font-size="25.00">Is there a finite enough set of</text>
+<text text-anchor="middle" x="153.78" y="-667.5" font-family="sans-serif:bold" font-size="25.00">inputs known in advance?</text>
+</g>
+<!-- B -->
+<g id="node2" class="node">
+<title>B</title>
+<path fill="#9bcd9b" stroke="#9bcd9b" d="M178.69,-590C178.69,-590 66.87,-590 66.87,-590 60.87,-590 54.87,-584 54.87,-578 54.87,-578 54.87,-534 54.87,-534 54.87,-528 60.87,-522 66.87,-522 66.87,-522 178.69,-522 178.69,-522 184.69,-522 190.69,-528 190.69,-534 190.69,-534 190.69,-578 190.69,-578 190.69,-584 184.69,-590 178.69,-590"></path>
+<text text-anchor="middle" x="122.78" y="-563.5" font-family="sans-serif:bold" font-size="25.00">Precompute</text>
+<text text-anchor="middle" x="122.78" y="-533.5" font-family="sans-serif:bold" font-size="25.00">responses</text>
+</g>
+<!-- A&#45;&gt;B -->
+<g id="edge1" class="edge">
+<title>A-&gt;B</title>
+<path fill="none" stroke="black" d="M145.96,-655.69C141.26,-635.68 135.3,-610.31 130.6,-590.3"></path>
+<text text-anchor="middle" x="161.22" y="-615.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
+</g>
+<!-- C -->
+<g id="node3" class="node">
+<title>C</title>
+<path fill="ghostwhite" stroke="ghostwhite" d="M491.41,-590C491.41,-590 220.16,-590 220.16,-590 214.16,-590 208.16,-584 208.16,-578 208.16,-578 208.16,-534 208.16,-534 208.16,-528 214.16,-522 220.16,-522 220.16,-522 491.41,-522 491.41,-522 497.41,-522 503.41,-528 503.41,-534 503.41,-534 503.41,-578 503.41,-578 503.41,-584 497.41,-590 491.41,-590"></path>
+<text text-anchor="middle" x="355.78" y="-563.5" font-family="sans-serif:bold" font-size="25.00">Is it ok to return responses</text>
+<text text-anchor="middle" x="355.78" y="-533.5" font-family="sans-serif:bold" font-size="25.00">asynchronously in minutes?</text>
+</g>
+<!-- A&#45;&gt;C -->
+<g id="edge2" class="edge">
+<title>A-&gt;C</title>
+<path fill="none" stroke="black" d="M204.49,-655.86C235.23,-635.78 274.31,-610.24 305.05,-590.15"></path>
+<text text-anchor="middle" x="289.06" y="-615.5" font-family="sans-serif:bold" font-size="25.00">No</text>
+</g>
+<!-- D -->
+<g id="node4" class="node">
+<title>D</title>
+<path fill="#9bcd9b" stroke="#9bcd9b" d="M385.74,-441C385.74,-441 171.82,-441 171.82,-441 165.82,-441 159.82,-435 159.82,-429 159.82,-429 159.82,-385 159.82,-385 159.82,-379 165.82,-373 171.82,-373 171.82,-373 385.74,-373 385.74,-373 391.74,-373 397.74,-379 397.74,-385 397.74,-385 397.74,-429 397.74,-429 397.74,-435 391.74,-441 385.74,-441"></path>
+<text text-anchor="middle" x="278.78" y="-414.5" font-family="sans-serif:bold" font-size="25.00">Trigger a workflow to</text>
+<text text-anchor="middle" x="278.78" y="-384.5" font-family="sans-serif:bold" font-size="25.00">compute responses</text>
+</g>
+<!-- C&#45;&gt;D -->
+<g id="edge3" class="edge">
+<title>C-&gt;D</title>
+<path fill="none" stroke="black" d="M338.31,-521.64C325.71,-497.59 308.77,-465.25 296.19,-441.22"></path>
+<text text-anchor="middle" x="348.22" y="-481.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
+</g>
+<!-- E -->
+<g id="node5" class="node">
+<title>E</title>
+<path fill="gold" stroke="gold" d="M628.03,-456C628.03,-456 427.53,-456 427.53,-456 421.53,-456 415.53,-450 415.53,-444 415.53,-444 415.53,-370 415.53,-370 415.53,-364 421.53,-358 427.53,-358 427.53,-358 628.03,-358 628.03,-358 634.03,-358 640.03,-364 640.03,-370 640.03,-370 640.03,-444 640.03,-444 640.03,-450 634.03,-456 628.03,-456"></path>
+<text text-anchor="middle" x="527.78" y="-429.5" font-family="sans-serif:bold" font-size="25.00">Are you comfortable</text>
+<text text-anchor="middle" x="527.78" y="-399.5" font-family="sans-serif:bold" font-size="25.00">operating services</text>
+<text text-anchor="middle" x="527.78" y="-369.5" font-family="sans-serif:bold" font-size="25.00">by yourself?</text>
+</g>
+<!-- C&#45;&gt;E -->
+<g id="edge4" class="edge">
+<title>C-&gt;E</title>
+<path fill="none" stroke="black" d="M394.81,-521.64C417.41,-502.33 446.25,-477.68 471.29,-456.28"></path>
+<text text-anchor="middle" x="463.06" y="-481.5" font-family="sans-serif:bold" font-size="25.00">No</text>
+</g>
+<!-- F -->
+<g id="node6" class="node">
+<title>F</title>
+<path fill="gold" stroke="gold" d="M429.55,-262C429.55,-262 174.01,-262 174.01,-262 168.01,-262 162.01,-256 162.01,-250 162.01,-250 162.01,-206 162.01,-206 162.01,-200 168.01,-194 174.01,-194 174.01,-194 429.55,-194 429.55,-194 435.55,-194 441.55,-200 441.55,-206 441.55,-206 441.55,-250 441.55,-250 441.55,-256 435.55,-262 429.55,-262"></path>
+<text text-anchor="middle" x="301.78" y="-235.5" font-family="sans-serif:bold" font-size="25.00">Do you require large scale</text>
+<text text-anchor="middle" x="301.78" y="-205.5" font-family="sans-serif:bold" font-size="25.00">or low latency?</text>
+</g>
+<!-- E&#45;&gt;F -->
+<g id="edge5" class="edge">
+<title>E-&gt;F</title>
+<path fill="none" stroke="black" d="M466.33,-357.87C427.5,-327.46 378.36,-288.97 343.92,-262"></path>
+<text text-anchor="middle" x="461.22" y="-317.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
+</g>
+<!-- I -->
+<g id="node9" class="node">
+<title>I</title>
+<path fill="#9bcd9b" stroke="#9bcd9b" d="M774.09,-292C774.09,-292 471.48,-292 471.48,-292 465.48,-292 459.48,-286 459.48,-280 459.48,-280 459.48,-176 459.48,-176 459.48,-170 465.48,-164 471.48,-164 471.48,-164 774.09,-164 774.09,-164 780.09,-164 786.09,-170 786.09,-176 786.09,-176 786.09,-280 786.09,-280 786.09,-286 780.09,-292 774.09,-292"></path>
+<text text-anchor="middle" x="622.78" y="-265.5" font-family="sans-serif:bold" font-size="25.00">Use a managed model</text>
+<text text-anchor="middle" x="622.78" y="-235.5" font-family="sans-serif:bold" font-size="25.00">hosting service:</text>
+<text text-anchor="middle" x="622.78" y="-175.5" font-family="sans-serif:bold" font-size="25.00">Amazon SageMaker, Anyscale</text>
+</g>
+<!-- E&#45;&gt;I -->
+<g id="edge6" class="edge">
+<title>E-&gt;I</title>
+<path fill="none" stroke="black" d="M553.74,-357.63C564.56,-337.47 577.28,-313.78 588.83,-292.26"></path>
+<text text-anchor="middle" x="594.06" y="-317.5" font-family="sans-serif:bold" font-size="25.00">No</text>
+</g>
+<!-- G -->
+<g id="node7" class="node">
+<title>G</title>
+<path fill="#9bcd9b" stroke="#9bcd9b" d="M285.92,-98C285.92,-98 25.64,-98 25.64,-98 19.64,-98 13.64,-92 13.64,-86 13.64,-86 13.64,-12 13.64,-12 13.64,-6 19.64,0 25.64,0 25.64,0 285.92,0 285.92,0 291.92,0 297.92,-6 297.92,-12 297.92,-12 297.92,-86 297.92,-86 297.92,-92 291.92,-98 285.92,-98"></path>
+<text text-anchor="middle" x="155.78" y="-71.5" font-family="sans-serif:bold" font-size="25.00">Deploy an advanced stack:</text>
+<text text-anchor="middle" x="155.78" y="-11.5" font-family="sans-serif:bold" font-size="25.00">NVIDIA</text>
+</g>
+<!-- F&#45;&gt;G -->
+<g id="edge7" class="edge">
+<title>F-&gt;G</title>
+<path fill="none" stroke="black" d="M274.32,-193.71C252.1,-166.77 220.51,-128.47 195.53,-98.18"></path>
+<text text-anchor="middle" x="253.22" y="-123.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
+</g>
+<!-- H -->
+<g id="node8" class="node">
+<title>H</title>
+<path fill="#9bcd9b" stroke="#9bcd9b" d="M567.62,-83C567.62,-83 327.94,-83 327.94,-83 321.94,-83 315.94,-77 315.94,-71 315.94,-71 315.94,-27 315.94,-27 315.94,-21 321.94,-15 327.94,-15 327.94,-15 567.62,-15 567.62,-15 573.62,-15 579.62,-21 579.62,-27 579.62,-27 579.62,-71 579.62,-71 579.62,-77 573.62,-83 567.62,-83"></path>
+<text text-anchor="middle" x="447.78" y="-56.5" font-family="sans-serif:bold" font-size="25.00">Deploy a simple service:</text>
+<text text-anchor="middle" x="447.78" y="-26.5" font-family="sans-serif:bold" font-size="25.00">OpenLLM, FastAPI</text>
+</g>
+<!-- F&#45;&gt;H -->
+<g id="edge8" class="edge">
+<title>F-&gt;H</title>
+<path fill="none" stroke="black" d="M329.24,-193.71C355.35,-162.06 394.38,-114.74 420.44,-83.14"></path>
+<text text-anchor="middle" x="408.06" y="-123.5" font-family="sans-serif:bold" font-size="25.00">No</text>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="gpu-poor-benchmark-wrong-but-useful" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-poor-benchmark-wrong-but-useful">GPU Poor Benchmark (Wrong, but useful)</h3>
+<ul>
+<li><strong>Benchmarking inference servers</strong>: Experiment with different servers to find the best fit for your use case.</li>
+<li><strong>Observations</strong>:
+<ul>
+<li><a href="https://github.com/vllm-project/vllm">vLLM</a>: Easy to use, good performance trade-offs.</li>
+<li>NVIDIA stack (<a href="https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html">Triton + TensorRT</a>): High performance but complex to use.</li>
+<li><strong>Quantization</strong>: Can significantly impact performance, but evaluate quality trade-offs.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="case-study-honeycomb---replicate" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-honeycomb---replicate">Case Study: Honeycomb - Replicate</h2>
+<ul>
+<li><p><strong><a href="https://replicate.com/">Replicate</a>:</strong> Run AI with an API</p></li>
+<li><p><a href="https://replicate.com/hamelsmu/honeycomb-4-awq">hamelsmu/honeycomb-4-awq</a>: Honeycomb NLQ Generator hosted with vLLM + AWQ Quantized</p></li>
+<li><p><strong>HoneyComb Model:</strong> <a href="https://huggingface.co/parlance-labs/hc-mistral-alpaca-merged-awq">parlance-labs/hc-mistral-alpaca-merged-awq</a></p></li>
+</ul>
+<section id="why-replicate" class="level3">
+<h3 class="anchored" data-anchor-id="why-replicate">Why Replicate?</h3>
+<ul>
+<li><strong>Real-time Use Case:</strong> The Honeycomb example demands real-time responses within the Honeycomb interface, making a platform like Replicate ideal.</li>
+<li><strong>User-Friendly Playground:</strong> Replicate provides a playground environment with structured input, beneficial for non-technical users to interact with the model.</li>
+<li><strong>Permalink Functionality:</strong> Replicate generates permalinks for predictions, which simplifies debugging and sharing specific scenarios with collaborators.</li>
+<li><strong>Built-in Documentation and API:</strong> Replicate automatically generates documentation and API endpoints for easy integration and sharing.</li>
+<li><strong>Example Saving:</strong> The platform allows users to save specific examples for future reference and testing.</li>
+</ul>
+</section>
+<section id="show-me-the-code" class="level3">
+<h3 class="anchored" data-anchor-id="show-me-the-code">Show Me the Code</h3>
+<ul>
+<li><strong>GitHub:</strong> <a href="https://github.com/parlance-labs/ftcourse/tree/master/replicate-examples/mistral-vllm-awq">ftcourse/replicate-examples/mistral-vllm-awq</a></li>
+<li><strong><a href="https://cog.run/">Cog</a>:</strong> Containers for machine learning</li>
+</ul>
+<p><strong>Files:</strong></p>
+<ul>
+<li><code>cog.yaml</code>: Defines the Docker environment and specifies the entry point (<code>predict.py</code>).</li>
+<li><code>predict.py</code>: Contains the model loading, setup, and prediction logic.</li>
+</ul>
+<p><strong>Steps:</strong> 1. <strong>Environment Setup:</strong> - Install Cog (a Docker wrapper that simplifies CUDA management). - Download the model weights from Hugging Face Hub (optional, for local testing). 2. <strong>Code Structure:</strong> - <code>cog.yaml</code>: - Specifies the base Docker image and dependencies. - Defines the <code>predict.py</code> file as the entry point. - ```yaml # Configuration for Cog ⚙️ # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md</p>
+<pre><code>      build:
+       # set to true if your model requires a GPU
+       gpu: true
+       cuda: "12.1"
+      
+       # python version in the form '3.8' or '3.8.12'
+       python_version: "3.11"
+      
+       # a list of packages in the format &lt;package-name&gt;==&lt;version&gt;
+       python_packages:
+        - "hf_transfer==0.1.4"
+        - "aiohttp[speedups]"
+        - "torch==2.1.2"
+      
+       # commands run after the environment is setup
+       run:
+        - pip install "pydantic&lt;2.0.0"
+        - CUDA_HOME=/usr/local/cuda pip install --ignore-installed vllm==0.3.0
+        - pip install https://r2.drysys.workers.dev/tmp/cog-0.10.0a6-py3-none-any.whl
+        - bash -c 'ln -s /usr/local/lib/python3.11/site-packages/torch/lib/lib{nv,cu}* /usr/lib'
+        - pip install scipy==1.11.4 sentencepiece==0.1.99 protobuf==4.23.4
+        - ln -sf $(which echo) $(which pip)
+      
+      predict: "predict.py:Predictor"
+      ```
+- `predict.py`:
+    - **Prompt Template:** Sets the structure for interacting with the LLM.
+    - **Setup:**
+        - Defines a `Predictor` class.
+        - Loads the quantized model from Hugging Face Hub during initialization.
+    - **Predict Function:**
+        - Takes the natural language query and schema as input.
+        - Processes the input through the LLM using vLLM.
+        - Returns the generated Honeycomb query.
+    
+    - ```python
+        import os
+        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+        import torch
+        from cog import BasePredictor
+        from vllm import LLM, SamplingParams
+        
+        
+        MODEL_ID = 'parlance-labs/hc-mistral-alpaca-merged-awq'
+        MAX_TOKENS=2500
+        
+        PROMPT_TEMPLATE = """Honeycomb is an observability platform that allows you to write queries to inspect trace data. You are an assistant that takes a natural language query (NLQ) and a list of valid columns and produce a Honeycomb query.
+        
+        ### Instruction:
+        
+        NLQ: "{nlq}"
+        
+        Columns: {cols}
+        
+        ### Response:
+        """
+        
+        class Predictor(BasePredictor):
+            
+          def setup(self):
+            n_gpus = torch.cuda.device_count()
+            self.sampling_params = SamplingParams(stop_token_ids=[2], temperature=0, ignore_eos=True, max_tokens=2500)
+        
+            self.llm = LLM(model='parlance-labs/hc-mistral-alpaca-merged-awq', 
+                    tensor_parallel_size=n_gpus, quantization="AWQ")
+        
+          def predict(self, nlq: str, cols: str) -&gt; str:    
+            _p = PROMPT_TEMPLATE.format(nlq=nlq, cols=cols)
+            out = self.llm.generate(_p, sampling_params=self.sampling_params, use_tqdm=False)
+            return out[0].outputs[0].text.strip().strip('"')
+        ```</code></pre>
+<ol start="3" type="1">
+<li><strong>Local Testing:</strong>
+<ul>
+<li><strong>Run Cog Server:</strong> <code>cog run</code> starts a local web server for interacting with the model.
+<ul>
+<li><div class="sourceCode" id="cb10"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cog</span> run <span class="at">-e</span> CUDA_VISIBLE_DEVICES=0 <span class="at">-p</span> 5000 python <span class="at">-m</span> cog.server.http</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><strong>Direct Prediction:</strong> <code>cog predict -i input1=value1 input2=value2</code> allows for direct prediction using command-line arguments.
+<ul>
+<li><div class="sourceCode" id="cb11"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cog</span> predict <span class="at">-e</span> CUDA_VISIBLE_DEVICES=0 <span class="at">-i</span> nlq=<span class="st">"EMISSING slowest traces"</span> <span class="at">-i</span> cols=<span class="st">"['sli.latency', 'duration_ms', 'net.transport', 'http.method', 'error', 'http.target', 'http.route', 'rpc.method', 'ip', 'http.request_content_length', 'rpc.service', 'apdex', 'name', 'message.type', 'http.host', 'service.name', 'rpc.system', 'http.scheme', 'sli.platform-time', 'type', 'http.flavor', 'span.kind', 'dc.platform-time', 'library.version', 'status_code', 'net.host.port', 'net.host.ip', 'app.request_id', 'bucket_duration_ms', 'library.name', 'sli_product', 'message.uncompressed_size', 'rpc.grpc.status_code', 'net.peer.port', 'log10_duration_ms', 'http.status_code', 'status_message', 'http.user_agent', 'net.host.name', 'span.num_links', 'message.id', 'parent_name', 'app.cart_total', 'num_products', 'product_availability', 'revenue_at_risk', 'trace.trace_id', 'trace.span_id', 'ingest_timestamp', 'http.server_name', 'trace.parent_id']"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul></li>
+<li><strong>Deployment to Replicate:</strong>
+<ul>
+<li><strong>Create a Model on Replicate:</strong>
+<ul>
+<li>Choose a descriptive name.</li>
+<li>Select appropriate hardware based on memory and GPU requirements.</li>
+<li>Choose “Custom Cog Model” as the model type.</li>
+</ul></li>
+<li><strong>Login to Cog:</strong> <code>cog login</code></li>
+<li><strong>Push to Replicate:</strong> <code>cog push r8.im/hamelsmu/honeycomb-4-awq</code></li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="deploying-large-language-models" class="level2">
+<h2 class="anchored" data-anchor-id="deploying-large-language-models">Deploying Large Language Models</h2>
+<section id="deploying-llms" class="level3">
+<h3 class="anchored" data-anchor-id="deploying-llms">Deploying LLMs</h3>
+<ul>
+<li>Deploying LLMs is challenging, even in 2024, due to the multidimensional and zero-sum nature of performance optimization and the constant evolution of technology.</li>
+</ul>
+<section id="challenges-in-deploying-llms" class="level4">
+<h4 class="anchored" data-anchor-id="challenges-in-deploying-llms">Challenges in Deploying LLMs</h4>
+<ul>
+<li><strong>Multidimensional and Zero-Sum Performance:</strong> LLM performance involves trade-offs between various factors like speed, cost, and accuracy. Prioritizing one dimension often negatively impacts others.
+<ul>
+<li><strong>Example:</strong> Increasing batch size improves throughput (total tokens per second) but reduces single-stream performance (tokens per second for a single request), impacting user experience.</li>
+</ul></li>
+<li><strong>Rapid Technology Evolution:</strong> The field is constantly evolving with new serving frameworks and optimization techniques emerging frequently. Keeping up with these changes while maintaining a performant and cost-effective deployment is demanding.</li>
+</ul>
+</section>
+<section id="llm-performance-bottlenecks" class="level4">
+<h4 class="anchored" data-anchor-id="llm-performance-bottlenecks">LLM Performance Bottlenecks</h4>
+<p>Two primary factors contribute to slow LLM inference:</p>
+<ul>
+<li><strong>Memory Bandwidth:</strong> Transformers require frequent data transfers between slow device memory and faster memory caches on GPUs.</li>
+<li><strong>Software Overhead:</strong> Launching and scheduling each operation in a model’s forward pass involves communication between CPU and GPU, creating overhead.</li>
+</ul>
+</section>
+<section id="techniques-for-optimizing-llm-performance" class="level4">
+<h4 class="anchored" data-anchor-id="techniques-for-optimizing-llm-performance">Techniques for Optimizing LLM Performance</h4>
+<ul>
+<li><strong>Memory Bandwidth Optimization:</strong>
+<ul>
+<li><strong>CUDA Kernel Optimization:</strong> Techniques like kernel fusion aim to minimize data transfer by combining multiple kernels into one.</li>
+<li><strong>Flash Attention:</strong> Improves efficiency by minimizing data movement during attention calculations.</li>
+<li><strong>Paged Attention:</strong> Optimizes data storage and transfer for increased efficiency.</li>
+<li><strong>Quantization:</strong> Reduces model size by using lower-precision data types, allowing for faster data transfer.</li>
+<li><strong>Speculative Decoding:</strong> Generates multiple tokens in parallel, discarding incorrect ones, to potentially reduce latency.
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2405.19325">Nearest Neighbor Speculative Decoding for LLM Generation and Attribution</a></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/feifeibear/LLMSpeculativeSampling">feifeibear/LLMSpeculativeSampling</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Software Overhead Reduction:</strong>
+<ul>
+<li><strong>CUDA Kernel Optimization:</strong> Fewer, more efficient kernels lead to fewer kernel launches.</li>
+<li><strong>CUDA Graphs:</strong> Traces and combines all kernel launches in a forward pass into a single unit, reducing CPU-GPU communication.</li>
+</ul></li>
+<li><strong>Runtime Optimizations:</strong>
+<ul>
+<li><strong>Continuous Batching:</strong> Enables efficient processing of requests with varying lengths by continuously adding and removing them from batches during inference.</li>
+<li><strong>KV Caching:</strong> Stores key-value embeddings during inference, avoiding redundant calculations for repeated inputs.</li>
+<li><strong>Hardware Upgrades:</strong> Using more powerful GPUs directly improves performance.</li>
+<li><strong>Input/Output Length Optimization:</strong> Shorter inputs and outputs reduce the number of tokens processed, potentially improving latency.</li>
+</ul></li>
+</ul>
+</section>
+<section id="continuous-batching" class="level4">
+<h4 class="anchored" data-anchor-id="continuous-batching">Continuous Batching</h4>
+<ul>
+<li><p>Continuous batching is a significant advancement in LLM serving that addresses limitations of traditional micro-batching.</p></li>
+<li><p><strong>Blog Post:</strong> <a href="https://www.anyscale.com/blog/continuous-batching-llm-inference">How continuous batching enables 23x throughput in LLM inference while reducing p50 latency</a></p></li>
+<li><p><strong>How it Works:</strong> Processes requests as a stream of individual token generation steps, allowing for dynamic addition and removal of requests within a batch.</p></li>
+<li><p><strong>Benefits:</strong></p>
+<ul>
+<li>Eliminates the need to wait for a complete batch before processing, reducing latency.</li>
+<li>Enables efficient handling of requests with varying lengths.</li>
+</ul></li>
+<li><p><strong>Consequences:</strong></p>
+<ul>
+<li>Results in dynamic batch sizes, making performance less predictable.</li>
+<li>Requires careful consideration of performance SLAs and user experience.</li>
+</ul></li>
+</ul>
+</section>
+<section id="inference-servers" class="level4">
+<h4 class="anchored" data-anchor-id="inference-servers">Inference Servers</h4>
+<p>Various inference servers are available, each with its own strengths and weaknesses:</p>
+<ul>
+<li><strong>Examples:</strong> <a href="https://github.com/vllm-project/vllm">vLLM</a>, <a href="https://huggingface.co/docs/text-generation-inference/en/index">TGI</a>, <a href="https://fastgen.com/">FastGen</a>, <a href="https://github.com/NVIDIA/TensorRT-LLM">TensorRT-LLM</a>, <a href="https://github.com/sgl-project/sglang">SGLang</a>, <a href="https://ollama.com/">Ollama</a>, <a href="https://github.com/ggerganov/llama.cpp">Llama.cpp</a>, <a href="https://github.com/turboderp/exllama">Exllama</a>, <a href="https://github.com/mlc-ai/mlc-llm">MLC</a>, <a href="https://github.com/predibase/lorax">LoRAX</a></li>
+<li><strong>Common Features:</strong> Continuous batching, specialized kernels, support for different optimization techniques.</li>
+</ul>
+</section>
+<section id="performance-tuning" class="level4">
+<h4 class="anchored" data-anchor-id="performance-tuning">Performance Tuning</h4>
+<p>Understanding and tuning for different performance metrics is crucial:</p>
+<ul>
+<li><strong>Total Tokens Per Second (Throughput):</strong> Measures the overall token generation rate across all requests.</li>
+<li><strong>Single Stream Tokens Per Second (Latency):</strong> Measures the token generation rate for a single request, reflecting user experience.</li>
+<li><strong>Requests Per Second:</strong> Measures how many requests can be completed per second.</li>
+</ul>
+<p><strong>Key Considerations:</strong></p>
+<ul>
+<li>Increasing batch size generally improves throughput but reduces single-stream performance.</li>
+<li>Finding the right balance between these metrics depends on the specific use case and desired user experience.</li>
+<li>Clearly define performance SLOs and consider both throughput and latency when evaluating performance.</li>
+</ul>
+</section>
+</section>
+<section id="simplifying-llm-deployment" class="level3">
+<h3 class="anchored" data-anchor-id="simplifying-llm-deployment">Simplifying LLM Deployment</h3>
+<section id="prioritize-modularity" class="level4">
+<h4 class="anchored" data-anchor-id="prioritize-modularity">Prioritize Modularity</h4>
+<p>Building a modular LLM serving stack is essential for navigating the challenges of the rapidly evolving technology landscape.</p>
+<ul>
+<li><strong>Benefits of Modularity:</strong>
+<ul>
+<li><strong>Flexibility:</strong> Easily switch between different serving frameworks as needed to leverage new features or optimizations.</li>
+<li><strong>Experimentation:</strong> Enables efficient testing and comparison of different frameworks and configurations.</li>
+</ul></li>
+<li><strong>Challenges:</strong>
+<ul>
+<li><strong>Compatibility Issues:</strong> Features and optimizations from different frameworks may not always work together seamlessly.</li>
+<li><strong>Lack of Documentation:</strong> New features and their interactions may not be well-documented, requiring experimentation and debugging.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="simplify-llm-deployment-with-replicate" class="level3">
+<h3 class="anchored" data-anchor-id="simplify-llm-deployment-with-replicate">Simplify LLM Deployment with Replicate</h3>
+<p>Replicate is a serverless infrastructure that aims to simplify LLM deployment and experimentation.</p>
+<section id="replicate-features-and-workflow" class="level4">
+<h4 class="anchored" data-anchor-id="replicate-features-and-workflow">Replicate Features and Workflow</h4>
+<ul>
+<li><strong><a href="https://cog.run/">COG</a>:</strong> Open-source tool for packaging models and serving code, providing control over the serving framework.
+<ul>
+<li><a href="https://github.com/replicate/cog-vllm">Cog-vLLM</a>: Run vLLM on Replicate</li>
+</ul></li>
+<li><strong>Hugging Face Integration:</strong> Streamlined workflow for pulling and deploying models from Hugging Face.</li>
+<li><strong>Performance Optimizations:</strong> Caching mechanisms and other optimizations to improve model download and cold boot times.</li>
+<li><strong>Open Source Approach:</strong> Replicate’s model serving infrastructure is open source, allowing for customization and contributions.</li>
+</ul>
+<p><strong>Workflow Example:</strong></p>
+<ol type="1">
+<li><strong>Create a Training:</strong> Specify the model, Hugging Face ID, and other configurations through Replicate’s web interface.</li>
+<li><strong>Transfer Weights:</strong> Replicate downloads weights from Hugging Face and pushes them to its optimized storage.</li>
+<li><strong>Deploy and Access Model:</strong> Once the training is complete, the model is deployed and accessible through Replicate’s API or client libraries.</li>
+<li><strong>Customize with COG:</strong> Utilize COG to customize the serving environment, experiment with different frameworks, and add features.</li>
+</ol>
+<p><strong>Key Advantages:</strong></p>
+<ul>
+<li><strong>Simplified Deployment:</strong> Replicate abstracts away infrastructure complexities, making it easy to deploy and serve models.</li>
+<li><strong>Framework Flexibility:</strong> Supports multiple serving frameworks like vLLM and TRT-LLM, allowing for experimentation and optimization.</li>
+<li><strong>Open Source and Customizable:</strong> Provides transparency and control over the serving environment.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="lessons-from-building-a-serverless-platform---predibase" class="level2">
+<h2 class="anchored" data-anchor-id="lessons-from-building-a-serverless-platform---predibase">Lessons from Building A Serverless Platform - Predibase</h2>
+<section id="predibase-overview" class="level3">
+<h3 class="anchored" data-anchor-id="predibase-overview">Predibase Overview</h3>
+<ul>
+<li><a href="https://predibase.com/">Predibase</a> is a managed platform for fine-tuning and serving LLMs.</li>
+<li>It offers an end-to-end solution for prompting, fine-tuning, and deploying LLMs serverlessly or in dedicated environments.</li>
+</ul>
+</section>
+<section id="the-case-for-fine-tuned-llms" class="level3">
+<h3 class="anchored" data-anchor-id="the-case-for-fine-tuned-llms">The Case for Fine-Tuned LLMs</h3>
+<ul>
+<li><strong>General Intelligence vs.&nbsp;Task Specificity:</strong> General-purpose LLMs like ChatGPT are powerful but inefficient for specific tasks. Fine-tuning allows for models tailored to specific business needs, reducing cost and latency.</li>
+<li><strong>Cost of Serving Multiple Models:</strong> Serving numerous fine-tuned models on dedicated deployments becomes expensive.</li>
+<li><strong><a href="https://github.com/predibase/lorax">LoRAX</a> - A Solution for Efficient Serving:</strong>
+<ul>
+<li>Lorax is an open-source framework built on HuggingFace’s TGI, designed for efficient fine-tuned LLM inference.</li>
+<li>It enables serving multiple fine-tuned models concurrently on a single deployment by sharing base model parameters and using heterogeneous batching of LoRA adapters.</li>
+<li>This approach results in significant cost savings compared to dedicated deployments or fine-tuning via OpenAI’s API.</li>
+</ul></li>
+</ul>
+</section>
+<section id="deploying-your-fine-tuned-model-practical-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="deploying-your-fine-tuned-model-practical-considerations">Deploying Your Fine-Tuned Model: Practical Considerations</h3>
+<section id="merging-adapters-pros-and-cons" class="level4">
+<h4 class="anchored" data-anchor-id="merging-adapters-pros-and-cons">Merging Adapters: Pros and Cons</h4>
+<ul>
+<li><strong>Merging:</strong>
+<ul>
+<li><strong>Pros:</strong> Better baseline performance by eliminating the overhead of processing LoRA layers at runtime.</li>
+<li><strong>Cons:</strong> Limits flexibility in serving multiple fine-tunes, incompatibility with certain adapters (e.g., DORA, speculative decoding), potential quantization challenges, increased disk space.</li>
+</ul></li>
+<li><strong>Not Merging:</strong>
+<ul>
+<li><strong>Pros:</strong> Allows serving multiple fine-tuned models and the base model on a single deployment, facilitates A/B testing and rapid iteration, compatibility with various adapter types.</li>
+<li><strong>Cons:</strong> Potential performance overhead due to processing LoRA layers at runtime.</li>
+</ul></li>
+<li><strong>Decision:</strong> Whether to merge depends on individual needs and constraints.</li>
+</ul>
+</section>
+<section id="quantization-for-training-and-inference" class="level4">
+<h4 class="anchored" data-anchor-id="quantization-for-training-and-inference">Quantization for Training and Inference</h4>
+<ul>
+<li><strong>Challenge:</strong> Models trained with QLoRA (quantized) often show performance degradation when served using FP16 (full precision). Serving with QLoRA is slow.</li>
+<li><strong>Solution:</strong> Dequantize the QLoRA weights to FP16 for inference. This maintains numerical equivalence with the quantized weights while enabling faster inference.</li>
+</ul>
+</section>
+</section>
+<section id="performance-tuning-1" class="level3">
+<h3 class="anchored" data-anchor-id="performance-tuning-1">Performance Tuning</h3>
+<section id="gathering-requirements" class="level4">
+<h4 class="anchored" data-anchor-id="gathering-requirements">Gathering Requirements</h4>
+<ul>
+<li><strong>Factors:</strong> Queries per second, input/output token distribution, number of adapters.</li>
+<li><strong>Impact:</strong> These factors influence ideal batch size, target throughput, and latency.</li>
+<li><strong>SLOs:</strong> Define service level objectives for peak throughput, latency, and cost.</li>
+</ul>
+</section>
+<section id="deployment-requirements" class="level4">
+<h4 class="anchored" data-anchor-id="deployment-requirements">Deployment Requirements</h4>
+<ul>
+<li><strong>VRAM Estimation:</strong> Allocate at least 1.5x the model weights for serving, considering activations, adapters, and KV cache.</li>
+</ul>
+</section>
+<section id="key-questions-for-choosing-deployment-options" class="level4">
+<h4 class="anchored" data-anchor-id="key-questions-for-choosing-deployment-options">Key Questions for Choosing Deployment Options</h4>
+<ul>
+<li>VRAM needs</li>
+<li>Requests per second</li>
+<li>Request distribution</li>
+<li>Maximum acceptable latency</li>
+<li>Willingness to sacrifice quality for cost</li>
+<li>Number of tasks</li>
+</ul>
+</section>
+<section id="serverless-vs.-dedicated-deployment" class="level4">
+<h4 class="anchored" data-anchor-id="serverless-vs.-dedicated-deployment">Serverless vs.&nbsp;Dedicated Deployment</h4>
+<ul>
+<li><strong>Serverless:</strong> Suitable for low to medium, uniformly distributed requests with latency tolerance on the order of seconds.</li>
+<li><strong>Dedicated:</strong> More appropriate for high, spiky request volumes, batch processing, or when strict latency and throughput SLOs are critical.</li>
+</ul>
+</section>
+</section>
+<section id="fine-tuning-for-throughput" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-for-throughput">Fine-Tuning for Throughput</h3>
+<ul>
+<li><strong>Shifting the Paradigm:</strong> Move beyond focusing solely on quality and leverage fine-tuning for performance improvements.</li>
+</ul>
+<section id="addressing-performance-differences" class="level4">
+<h4 class="anchored" data-anchor-id="addressing-performance-differences">Addressing Performance Differences:</h4>
+<ul>
+<li>Fine-tuned models with adapters often show slower throughput compared to base models.</li>
+</ul>
+</section>
+<section id="speculative-decoding---the-medusa-approach" class="level4">
+<h4 class="anchored" data-anchor-id="speculative-decoding---the-medusa-approach">Speculative Decoding - The Medusa Approach:</h4>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2401.10774">MEDUSA: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads</a></li>
+<li>Fine-tune additional projections to predict future tokens, improving throughput by reducing the number of forward passes.</li>
+<li>Implement verification steps to ensure only correct tokens are accepted.</li>
+</ul>
+</section>
+<section id="combining-quality-and-performance-with-lookahead-lora" class="level4">
+<h4 class="anchored" data-anchor-id="combining-quality-and-performance-with-lookahead-lora">Combining Quality and Performance with Lookahead LoRA:</h4>
+<ul>
+<li>Fine-tune adapters to predict multiple tokens ahead (lookahead) while maintaining task-specific accuracy.</li>
+<li>This approach has shown significant throughput improvements (2-3x) compared to base models and standard LoRA adapters.</li>
+</ul>
+</section>
+</section>
+<section id="demonstration" class="level3">
+<h3 class="anchored" data-anchor-id="demonstration">Demonstration</h3>
+<ul>
+<li>A live demo showcased the throughput differences between a base Medusa model, a fine-tuned Medusa model, and a model using lookahead LoRA for a code generation task.</li>
+<li>The lookahead LoRA model achieved significantly higher throughput, highlighting the potential of this technique.</li>
+</ul>
+</section>
+</section>
+<section id="batch-vs-real-time-and-modal" class="level2">
+<h2 class="anchored" data-anchor-id="batch-vs-real-time-and-modal">Batch vs Real Time and Modal</h2>
+<section id="throughput-vs.-latency" class="level3">
+<h3 class="anchored" data-anchor-id="throughput-vs.-latency">Throughput vs.&nbsp;Latency</h3>
+<ul>
+<li><strong>Defining “Slow”</strong>: A system can be slow due to low throughput (handling few requests per unit time) or high latency (taking long to process a single request).</li>
+<li><strong>Throughput</strong>: Measured in requests completed per unit time.
+<ul>
+<li>Relevant for batch tasks like recommendation systems, evaluations, and CI/CD.</li>
+<li>Constraints often stem from upstream/downstream systems.</li>
+</ul></li>
+<li><strong>Latency</strong>: Measured in time taken to complete a single request.
+<ul>
+<li>Crucial for real-time applications like chatbots, copilots, and guardrails.</li>
+<li>Human perception is the primary constraint (target ~200ms total system latency).</li>
+</ul></li>
+<li><strong>Cost</strong>: The hidden factor influencing throughput and latency. More resources generally improve both but at a cost.</li>
+</ul>
+</section>
+<section id="latency-lags-throughput" class="level3">
+<h3 class="anchored" data-anchor-id="latency-lags-throughput">Latency Lags Throughput</h3>
+<ul>
+<li><strong>Paper:</strong> <a href="https://dl.acm.org/doi/pdf/10.1145/1022594.1022596">Latency Lags Bandwidth</a></li>
+<li><strong>Latency Improvements Are Hard</strong>: Historically, improving bandwidth has been easier than reducing latency due to fundamental engineering and physical limitations (e.g., speed of light).
+<ul>
+<li><strong>GPUs Exemplify This</strong>: GPUs are optimized for throughput with large areas dedicated to processing, while CPUs prioritize latency with a focus on caching and control flow.</li>
+</ul></li>
+</ul>
+<section id="gpus-are-inherently-throughput-oriented." class="level4">
+<h4 class="anchored" data-anchor-id="gpus-are-inherently-throughput-oriented.">GPUs are inherently throughput-oriented.</h4>
+<ul>
+<li><strong>Textbook:</strong> <a href="https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/">Programming Massively Parallel Processors: A Hands-on Approach</a></li>
+<li>GPUs have much larger areas dedicated to processing units (ALUs) compared to CPUs, which prioritize caching and control flow for lower latency.</li>
+<li>This design difference allows GPUs to achieve significantly higher memory throughput, making them suitable for high-throughput tasks like LLM inference.</li>
+</ul>
+</section>
+<section id="llm-inference-challenges" class="level4">
+<h4 class="anchored" data-anchor-id="llm-inference-challenges">LLM Inference Challenges</h4>
+<ul>
+<li><strong>Throughput</strong>: Easily scalable by increasing batch size (with some latency tradeoffs).</li>
+<li><strong>Latency</strong>: Much harder to optimize.
+<ul>
+<li><strong>Techniques for Improvement</strong>: Quantization, model distillation, truncation, faster hardware, and highly optimized software (e.g., CUDA kernels).</li>
+<li><strong>Extreme Latency Optimization</strong>: Running models entirely on cache memory (SRAM), as done by <a href="https://wow.groq.com/lpu-inference-engine/">Groq’s LPU</a>, significantly reduces latency but may impact throughput per dollar.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="costs-are-high-but-falling." class="level3">
+<h3 class="anchored" data-anchor-id="costs-are-high-but-falling.">Costs are high but falling.</h3>
+<ul>
+<li><strong>Good News</strong>: LLM inference costs are decreasing faster than Moore’s law due to hardware, algorithmic, and R&amp;D advancements.
+<ul>
+<li><strong>Cognitive Capability for Fixed Price</strong>: $20/megatoken now buys GPT-4 level output, significantly higher capability than what was possible a year ago.</li>
+<li><strong>Falling Costs for Fixed Capability</strong>: Achieving chatGPT-level performance is now possible at a fraction of the cost compared to two years ago.</li>
+</ul></li>
+<li><strong>Implication</strong>: Holding onto a fixed budget and waiting for capabilities to improve is a viable strategy.</li>
+</ul>
+</section>
+<section id="deploying-llms-on-modal" class="level3">
+<h3 class="anchored" data-anchor-id="deploying-llms-on-modal">Deploying LLMs on Modal</h3>
+<ul>
+<li><strong>Modal’s Value Proposition</strong>:
+<ul>
+<li><strong>High Throughput</strong>: Easy scaling to hundreds of A100s for large-scale fine-tuning and batch inference.</li>
+<li><strong>Manageable Latency</strong>: Balancing latency and cost is achievable for models up to 13B parameters, suitable for certain latency-sensitive applications.</li>
+<li><strong>Competitive Cost</strong>: Offers competitive GPU pricing with potential for high utilization savings, especially for spiky workloads.</li>
+</ul></li>
+<li><strong>Beyond GPUs</strong>: Modal provides a complete serverless runtime with storage, compute, and web service capabilities, enabling tasks beyond just LLM inference.</li>
+</ul>
+</section>
+<section id="modal-is-for-more-than-gpus" class="level3">
+<h3 class="anchored" data-anchor-id="modal-is-for-more-than-gpus">Modal is for more than GPUs</h3>
+<ul>
+<li>Modal is not just a serverless GPU platform; it’s a complete runtime environment.</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li><strong>Storage</strong>: Distributed file system, queues, dictionaries, and the ability to mount local and web data.</li>
+<li><strong>Compute</strong>: Functions, GPU acceleration, and other serverless compute options.</li>
+<li><strong>Web Services</strong>: Web endpoints and server capabilities for deploying applications.</li>
+</ul></li>
+</ul>
+</section>
+<section id="demos" class="level3">
+<h3 class="anchored" data-anchor-id="demos">Demos</h3>
+<ul>
+<li><strong>Code:</strong> <a href="https://modal.com/docs/examples">https://modal.com/docs/examples</a></li>
+<li><strong>Abliteration LLM</strong>: Demonstrated an LLM modified to remove certain responses (e.g., refusing harmful requests). This demo encountered technical difficulties.
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://huggingface.co/blog/mlabonne/abliteration">Uncensor any LLM with abliteration</a></li>
+</ul></li>
+<li><strong>Batch Inference with TRT LLM</strong>: Showcased running batch inference on Llama-3 8B using TRT LLM, achieving high throughput.</li>
+<li><strong>Hot Reloading Development Server</strong>: Demonstrated the ability to make code changes locally and have them automatically redeployed on Modal.</li>
+<li><strong>OpenAI Compatible Endpoint</strong>: Showcased running an OpenAI compatible endpoint on Modal using vLLM, allowing integration with tools like Instructor.</li>
+</ul>
+</section>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<section id="awq-in-honeycomb-example" class="level3">
+<h3 class="anchored" data-anchor-id="awq-in-honeycomb-example">AWQ in Honeycomb Example</h3>
+<ul>
+<li><strong>Question:</strong> Clarification sought on the mention of AWQ in the Honeycomb example.</li>
+<li><strong>Answer:</strong> AWQ (quantization technique) is highlighted as a tool for model quantization, compatible and easily integrable with vLLM. The speaker shares their preference for using default or documented settings for quantization without delving into extensive customization.
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2306.00978">AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="pricing-fine-tuning-projects-for-enterprises" class="level3">
+<h3 class="anchored" data-anchor-id="pricing-fine-tuning-projects-for-enterprises">Pricing Fine-Tuning Projects for Enterprises</h3>
+<ul>
+<li><strong>Question:</strong> Advice sought on determining pricing for enterprise fine-tuning projects.</li>
+<li><strong>Answer:</strong> Advises against hourly rates and recommends a value-based approach, which involves:
+<ul>
+<li>Understanding the client’s problem and its importance.</li>
+<li>Identifying key metrics the client aims to improve.</li>
+<li>Collaborating to determine the project’s value to the client.
+<ul>
+<li>If the client does not know, should probably not take the project</li>
+</ul></li>
+<li>Proposing a reasonable fraction of that value as the price.</li>
+</ul></li>
+</ul>
+</section>
+<section id="gpu-optimization-in-modal-with-vllms-async-engine" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-optimization-in-modal-with-vllms-async-engine">GPU Optimization in Modal with vLLM’s Async Engine</h3>
+<ul>
+<li><strong>Question:</strong> Inquiry about optimizing GPU usage in Modal when using vLLM’s asynchronous engine and limiting concurrent requests instead of batch size.</li>
+<li><strong>Answer:</strong> Charles Frye emphasizes the importance of measuring actual GPU behavior:
+<ul>
+<li><strong>CUDA Kernel Utilization:</strong> Monitor using tools like NVIDIA SMI to understand GPU activity.</li>
+<li><strong>FLOPs Utilization:</strong> Measure and compare the achieved floating-point operations per second against the system’s theoretical maximum.</li>
+<li><strong>Wattage Consumption:</strong> Observe GPU power draw as a proxy for actual workload and potential bottlenecks.</li>
+</ul></li>
+</ul>
+</section>
+<section id="hiding-api-endpoints-in-model-serving-web-apps" class="level3">
+<h3 class="anchored" data-anchor-id="hiding-api-endpoints-in-model-serving-web-apps">Hiding API Endpoints in Model-Serving Web Apps</h3>
+<ul>
+<li><strong>Question:</strong> Strategies sought for concealing API endpoints in a web application to prevent exposure through browser inspection tools.</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Proxy Server:</strong> Routing requests through a proxy to mask internal endpoints and implement protections.</li>
+<li><strong>Accepting Limitations:</strong> Recognizing that completely hiding data flow from the client-side is challenging.</li>
+</ul></li>
+</ul>
+</section>
+<section id="impact-of-input-prompt-size-on-speed" class="level3">
+<h3 class="anchored" data-anchor-id="impact-of-input-prompt-size-on-speed">Impact of Input Prompt Size on Speed</h3>
+<ul>
+<li><strong>Question:</strong> Clarification sought on how reducing input prompt size affects processing speed, given that the entire prompt is read at once.</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Prefill Impact:</strong> Smaller prompts reduce the initial encoding time (prefill), which can be significant for very large inputs.</li>
+<li><strong>Attention Calculation:</strong> Shorter sequences lead to faster attention calculations due to the quadratic complexity of attention mechanisms.</li>
+<li><strong>Practical Considerations:</strong> The impact might be negligible for moderately sized prompts but becomes increasingly relevant for very large inputs like books or lengthy PDFs.</li>
+</ul></li>
+</ul>
+</section>
+<section id="resources-for-learning-continuous-batching" class="level3">
+<h3 class="anchored" data-anchor-id="resources-for-learning-continuous-batching">Resources for Learning Continuous Batching</h3>
+<ul>
+<li><strong>Question:</strong> Recommendation requested for resources to learn about continuous batching.</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Orca Paper:</strong> Referring to the original research paper on continuous batching.</li>
+<li><strong>AnyScale Blog Post:</strong> <a href="https://www.anyscale.com/blog/continuous-batching-llm-inference">How continuous batching enables 23x throughput in LLM inference while reducing p50 latency</a></li>
+<li><strong>Practical Experimentation:</strong> Emphasizing the value of hands-on experience, benchmarking, and analyzing performance variations.</li>
+</ul></li>
+</ul>
+</section>
+<section id="request-caching-layer-in-hugging-face-and-modal" class="level3">
+<h3 class="anchored" data-anchor-id="request-caching-layer-in-hugging-face-and-modal">Request Caching Layer in Hugging Face and Modal</h3>
+<ul>
+<li><strong>Question:</strong> Inquiry about the availability of a request caching layer in Hugging Face and Modal.</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>KV Caching:</strong> The speakers clarify that some frameworks, like TRT-LLM and vLLM, offer KV caching, which can improve performance for requests sharing similar prefixes or chat history.</li>
+<li><strong>Higher-Level Caching:</strong> Expanding on the concept, they discuss the possibility of centralized KV cache databases and even caching complete requests and responses for deterministic scenarios.</li>
+<li><strong>Replicate’s Approach:</strong> Joe Hoover states that Replicate doesn’t currently provide explicit features for request caching but acknowledges it as a potential future consideration.</li>
+</ul></li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
