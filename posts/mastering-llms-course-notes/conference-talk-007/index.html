@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-07-18">
+<meta name="description" content="In this talk, Sophia Yang from Mistal AI covers best practices for fine-tuning Mistral language models. It covers Mistral’s capabilities, the benefits of fine-tuning over prompting, and provides practical demos using the Mistral Fine-tuning API and open-source codebase.">
+
+<title>Christian Mills - Conference Talk 7: Best Practices For Fine Tuning Mistral</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Conference Talk 7: Best Practices For Fine Tuning Mistral">
+<meta property="og:description" content="In this talk, Sophia Yang from Mistal AI covers best practices for fine-tuning Mistral language models. It covers Mistral’s capabilities, the benefits of fine-tuning over prompting, and provides practical demos using the Mistral Fine-tuning API and open-source codebase.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Conference Talk 7: Best Practices For Fine Tuning Mistral">
+<meta name="twitter:description" content="In this talk, Sophia Yang from Mistal AI covers best practices for fine-tuning Mistral language models. It covers Mistral’s capabilities, the benefits of fine-tuning over prompting, and provides practical demos using the Mistral Fine-tuning API and open-source codebase.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#mistral-overview" id="toc-mistral-overview" class="nav-link active" data-scroll-target="#mistral-overview">Mistral Overview</a></li>
+  <li><a href="#customization" id="toc-customization" class="nav-link" data-scroll-target="#customization">Customization</a>
+  <ul>
+  <li><a href="#benefits-of-prompting" id="toc-benefits-of-prompting" class="nav-link" data-scroll-target="#benefits-of-prompting">Benefits of Prompting</a></li>
+  <li><a href="#benefits-of-fine-tuning" id="toc-benefits-of-fine-tuning" class="nav-link" data-scroll-target="#benefits-of-fine-tuning">Benefits of Fine-Tuning</a></li>
+  </ul></li>
+  <li><a href="#demos" id="toc-demos" class="nav-link" data-scroll-target="#demos">Demos</a>
+  <ul>
+  <li><a href="#mistral-api" id="toc-mistral-api" class="nav-link" data-scroll-target="#mistral-api">Mistral API</a></li>
+  <li><a href="#abstract-generator-demo" id="toc-abstract-generator-demo" class="nav-link" data-scroll-target="#abstract-generator-demo">Abstract Generator Demo</a></li>
+  <li><a href="#medical-chatbot-demo" id="toc-medical-chatbot-demo" class="nav-link" data-scroll-target="#medical-chatbot-demo">Medical Chatbot Demo</a></li>
+  <li><a href="#news-article-stylist-economist-style-guide-demo" id="toc-news-article-stylist-economist-style-guide-demo" class="nav-link" data-scroll-target="#news-article-stylist-economist-style-guide-demo">News Article Stylist (Economist Style Guide) Demo</a></li>
+  <li><a href="#mistral-fine-tune-api-walkthrough" id="toc-mistral-fine-tune-api-walkthrough" class="nav-link" data-scroll-target="#mistral-fine-tune-api-walkthrough">Mistral Fine-tune API Walkthrough</a></li>
+  <li><a href="#getting-started-fine-tuning-mistral-7b-local" id="toc-getting-started-fine-tuning-mistral-7b-local" class="nav-link" data-scroll-target="#getting-started-fine-tuning-mistral-7b-local">Getting Started Fine-Tuning Mistral 7B (Local)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Conference Talk 7: Best Practices For Fine Tuning Mistral</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this talk, <strong>Sophia Yang</strong> from Mistal AI covers best practices for fine-tuning Mistral language models. It covers Mistral’s capabilities, the benefits of fine-tuning over prompting, and provides practical demos using the Mistral Fine-tuning API and open-source codebase.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 18, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#mistral-overview">Mistral Overview</a></li>
+<li><a href="#customization">Customization</a></li>
+<li><a href="#demos">Demos</a></li>
+</ul>
+<section id="mistral-overview" class="level2">
+<h2 class="anchored" data-anchor-id="mistral-overview">Mistral Overview</h2>
+<ul>
+<li><strong><a href="https://mistral.ai/">Mistral AI</a>:</strong> Paris-based team (50+ people) specializing in large language models (LLMs).</li>
+<li><strong>Model Timeline:</strong>
+<ul>
+<li><strong>Sept 2023:</strong> Mistral 7b released
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/announcing-mistral-7b/">Mistral 7B</a></li>
+</ul></li>
+<li><strong>Dec 2023:</strong> Mistral 8x7b, Mistral Medium (commercial), API platform launched
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/mixtral-of-experts/">Mixtral of experts</a></li>
+</ul></li>
+<li><strong>Feb 2024:</strong> Mistral Small and Mistral Large (flagship) released
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/mistral-large/">Au Large</a></li>
+</ul></li>
+<li><strong>Feb 2024:</strong> Le Chat - free conversational AI interface launched
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/le-chat-mistral/">Le Chat</a></li>
+</ul></li>
+<li><strong>Apr 2024:</strong> Open-source 8x22b model released
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/mixtral-8x22b/">Cheaper, Better, Faster, Stronger</a></li>
+</ul></li>
+<li><strong>May 2024:</strong> Codestral - specialized model for code generation (80+ languages)
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/codestral/">Codestral: Hello, World!</a></li>
+<li><strong>LangChain Tutorial:</strong> <a href="https://www.youtube.com/watch?v=zXFxmI9f06M">Self-correcting code assistants with Codestral</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Model Offerings:</strong>
+<ul>
+<li><strong>Open-source (Apache 2 License):</strong> Mistral 7b, 8x7b, 8x22b
+<ul>
+<li><strong>Homepage:</strong> <a href="https://mistral.ai/technology/#models">Open source models</a></li>
+<li><strong>Docs:</strong> <a href="https://docs.mistral.ai/getting-started/open_weight_models/">Open-weight models</a></li>
+</ul></li>
+<li><strong>Enterprise-Grade:</strong> Mistral Small, Mistral Large (supports fine-tuning)</li>
+<li><strong>Specialized:</strong> Codestral for coding, Embedding model</li>
+</ul></li>
+<li><strong>Fine-Tuning:</strong>
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/customization/">My Tailor is Mistral</a></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/mistralai/mistral-finetune">mistral-finetune</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="customization" class="level2">
+<h2 class="anchored" data-anchor-id="customization">Customization</h2>
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://mistral.ai/news/customization/">My Tailor is Mistral</a></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/mistralai/mistral-finetune">mistral-finetune</a></li>
+<li><strong>Documentation:</strong> <a href="https://docs.mistral.ai/getting-started/customization/">Model customization</a></li>
+<li><strong>Developer Examples:</strong> <a href="https://docs.mistral.ai/getting-started/stories/">Model customization</a></li>
+</ul>
+<section id="benefits-of-prompting" class="level3">
+<h3 class="anchored" data-anchor-id="benefits-of-prompting">Benefits of Prompting</h3>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://docs.mistral.ai/guides/prompting_capabilities/">Prompting Capabilities</a></li>
+<li><strong>Out-of-the-box functionality:</strong> No data or training required.</li>
+<li><strong>Easy updates:</strong> Adaptable to new workflows and prototyping.</li>
+</ul>
+</section>
+<section id="benefits-of-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="benefits-of-fine-tuning">Benefits of Fine-Tuning</h3>
+<ul>
+<li><strong>Guide:</strong> <a href="https://docs.mistral.ai/guides/finetuning/">Fine-tuning</a></li>
+<li><strong>Performance:</strong> Often outperforms prompting and even larger models.</li>
+<li><strong>Efficiency:</strong> Faster and cheaper than using large prompts.</li>
+<li><strong>Task Alignment:</strong> Tailored to specific tasks and behaviors.</li>
+<li><strong>Knowledge Integration:</strong> Ability to teach new facts and information.</li>
+</ul>
+</section>
+</section>
+<section id="demos" class="level2">
+<h2 class="anchored" data-anchor-id="demos">Demos</h2>
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/mistralai/cookbook">Mistral Cookbook</a></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/mistralai/mistral-inference">Mistral Inference</a></li>
+</ul>
+<section id="mistral-api" class="level3">
+<h3 class="anchored" data-anchor-id="mistral-api">Mistral API</h3>
+<ul>
+<li><p><strong>GitHub Repository:</strong> <a href="https://github.com/mistralai/client-python">mistralai/client-python</a></p></li>
+<li><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">pip</span> install <span class="at">-U</span> mistral-api<span class="op">&gt;</span>=0.4.2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Model Name Structure">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Model Name Structure
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Fine-tuned model names have a specific structure:</p>
+<ul>
+<li><pre class="text"><code>  ft:open-mistral-7b:b6e34a5e:20240531:a29e61db</code></pre></li>
+</ul></li>
+<li><p><code>ft</code>: Indicates a fine-tuned model.</p></li>
+<li><p><code>open-mistral-7b</code>: Specifies the base model used.</p></li>
+<li><p><code>b6e34a5e:20240531:a29e61db</code>: Represents the specific fine-tuned version.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="abstract-generator-demo" class="level3">
+<h3 class="anchored" data-anchor-id="abstract-generator-demo">Abstract Generator Demo</h3>
+<ul>
+<li><p>Generates abstracts based on inputted research paper titles.</p></li>
+<li><p>It was trained on title-abstract pairs from <a href="https://arxiv.org/">arxiv.org</a>.</p></li>
+<li><p>Highlights how effective fine-tuning can be for specific tasks.</p></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>client.chat(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  model<span class="op">=</span><span class="st">'ft:mistral-small-latest:8e2706f0:20240604:d861257a'</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  messages<span class="op">=</span>[</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="st">"Fine-tuning is all you need"</span>}</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  temperature<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>).choices[<span class="dv">0</span>].message.content</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'Fine-tuning is a common practice in deep learning, where a pre-trained model is fine-tuned on a downstream task.\nIn this paper, we show that fine-tuning is all you need for a wide range of tasks.\nWe propose a simple yet effective fine-tuning recipe that works well for both vision and language tasks.\nOur recipe includes a learning rate warmup stage, a cosine learning rate decay schedule, and a stochastic weight averaging (SWA) stage.\nWe show that our recipe can significantly improve the performance of fine-tuning on a wide range of tasks, including image classification, object detection, instance segmentation, semantic segmentation, and language understanding.\nWe also show that our recipe can improve the performance of fine-tuning on small datasets, where the performance of fine-tuning is usually worse than training from scratch.\nOur recipe is simple and easy to implement, and we hope it will be useful for the deep learning community.'</code></pre>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="medical-chatbot-demo" class="level3">
+<h3 class="anchored" data-anchor-id="medical-chatbot-demo">Medical Chatbot Demo</h3>
+<ul>
+<li>Trained on the HuggingFace dataset for AI medical chatbots.
+<ul>
+<li><strong>HuggingFace Dataset:</strong> <a href="https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot">ruslanmv/ai-medical-chatbot</a></li>
+</ul></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>client.chat(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  model<span class="op">=</span><span class="st">'ft:open-mistral-7b:b6e34a5e:20240531:a29e61db'</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  messages<span class="op">=</span>[</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="st">"Hello doctor, My reverse elbow armpits have developed a darker (my skin color is fair) pigmentation. This pigmentation has also affected the whole of my ..."</span>}</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  temperature<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>).choices[<span class="dv">0</span>].message.content</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>'Hi, It seems that you might be having some fungal infection. Apply clotrimazole cream locally. Take tablet fluconazole 150 mg once a week for three weeks. Keep local part clean and dry. Avoid oily and spicy food. Ok and take care.'</code></pre>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="news-article-stylist-economist-style-guide-demo" class="level3">
+<h3 class="anchored" data-anchor-id="news-article-stylist-economist-style-guide-demo">News Article Stylist (Economist Style Guide) Demo</h3>
+<ul>
+<li><p>Showcases how to generate training data using a larger model (e.g., Mistral Large) when you don’t have an existing dataset.</p></li>
+<li><p><strong>Process:</strong></p>
+<ol type="1">
+<li><p><strong>Define Prompt:</strong> “You are a news article stylist following the Economist style guide.”</p></li>
+<li><p><strong>Generate Data:</strong> Use Mistral Large to rewrite news articles in the Economist style, providing guidelines and examples.</p></li>
+<li><p><strong>Fine-tune:</strong> Train a smaller model (e.g., Mistral 7B) on the generated data.</p></li>
+</ol></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>news <span class="op">=</span> <span class="st">"Incoming Florida Senate President Bill Galvano named the Naples Republican the Senate's majority leader for the upcoming legislative session. Kathleen Passidomo was unimpressed ..."</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.chat(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  model<span class="op">=</span><span class="st">'ft:mistral-small-latest:b6e34a5e:20240604:ee1ab18b'</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  messages<span class="op">=</span>[</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: news}</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  temperature<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(response.choices[<span class="dv">0</span>].message.content)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Kathleen Passidomo, a Naples Republican, has been named the Senate's majority leader for the upcoming legislative session by incoming Florida Senate President Bill Galvano. Passidomo was impressed with the appointment because of her good rapport with both Senate Republicans and Democrats and her ability to build consensus. Passidomo agrees that her people skills will be key in shaping the Senate agenda for the coming session, which begins on March 5. Committee meetings will start on December 11. Although the legislative priorities will be the same as last year, including water quality and mental health. In a message to other senators, Galvano praised Passidomo's ability to not only extract favorable consideration from other senators but to maintain the respect of the members. Committee chairmen recognize leadership's ability to guide the Senate to a top spot now sets Passidomo up for even greater things in the future. Assuming she keeps her seat in the 2022 election and Republicans maintain control of the Senate in ...</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>prompt <span class="op">=</span> <span class="st">"Please carefully review the provided news article and identify all stylistic issues that detract from its clarity, precision, and sophistication. To ensure the accuracy of your analysis, quote the specific text and explain the reason for your suggested improvement."</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.chat(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  model<span class="op">=</span><span class="st">'ft:mistral-small-latest:b6e34a5e:20240604:ee1ab18b'</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  messages<span class="op">=</span>[</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: prompt<span class="op">+</span>news}</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  temperature<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(response.choices[<span class="dv">0</span>].message.content)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>1. The article starts with a repetitive sentence, "Incoming Florida Senate President Bill Galvano named the Naples Republican the Senate's majority leader for the upcoming legislative session." This can be simplified to avoid repetition.
+2. The use of informal language, such as "you can put my office in the men's room for all I care," detracts from the article's professional tone.
+3. The article uses indirect speech in some instances, such as "What he was saying is that he was naming her senate majority leader," which can be replaced with direct speech for clarity and conciseness.
+4. The sentence "Galvano says he picked Passidomo for the post because she has a good rapport with both Senate Republicans and Democrats and is a consensus builder" can be rephrased to avoid redundancy.
+5. The use of parentheses in the sentence "Most of it (the job) is member relations, helping members get their bills heard" can be avoided by rephrasing the sentence.
+6. The sentence "The Senate majority leader only gets one vote, just like other senators, so what's the upside for constituents?" can be rephrased to avoid the use of a question and make it more assertive.
+7. The sentence "That table includes the Senate president, president pro tempore, in this case Sen. David Simmons, Passidomo as majority leader and perhaps one or two others" can be rephrased for clarity.
+8. The sentence "Traditionally, legislators in leadership positions don't file as many bills as rank and file members" can be rephrased to avoid the use of "don't" and make it more assertive.
+9. The sentence "Some recent predecessors in the post haven't filed any" can be rephrased to avoid the use of "haven't" and make it more assertive.
+10. The sentence "In a message to other senators, Galvano praised Passidomo's efforts on the latter" can be rephrased to avoid the use of "the latter" and make it more precise.
+11. The sentence "The role of the Senate majority leader isn't to extract favorable consideration from other senators" can be rephrased to avoid the use of "isn't" and make it more assertive.
+12. The sentence "Being named to a top spot now sets Passidomo up for even greater things in the future" can be rephrased to avoid the use of "sets up" and make it more assertive.
+13. The sentence "Assuming she keeps her seat in the 2022 election and Republicans maintain control of the Senate in 2022 and beyond, she could be Senate president herself in the session that follows" can be rephrased for clarity and conciseness.
+14. The sentence "Passidomo said she was taken by surprise by her sudden promotion" can be rephrased to avoid the use of "was taken by surprise" and make it more assertive.
+15. The sentence "Third floor, to be exact" can be avoided as it does not add any significant information to the article.</code></pre>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="mistral-fine-tune-api-walkthrough" class="level3">
+<h3 class="anchored" data-anchor-id="mistral-fine-tune-api-walkthrough">Mistral Fine-tune API Walkthrough</h3>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://docs.mistral.ai/guides/finetuning/">https://docs.mistral.ai/guides/finetuning/</a></li>
+<li><strong>Jupyter Notebook:</strong> <a href="https://github.com/mistralai/cookbook/blob/main/mistral/fine_tune/mistral_finetune_api.ipynb">mistral/fine_tune/mistral_finetune_api.ipynb</a></li>
+</ul>
+<ol type="1">
+<li><strong>Data Preparation:</strong>
+<ul>
+<li><strong>Format:</strong> Data should be in JSON format.
+<ul>
+<li><strong>Size Limits:</strong>
+<ul>
+<li>Training data: Each file &lt;= 512 MB (multiple files allowed).</li>
+<li>Evaluation data: Total size &lt;= 1 MB.</li>
+</ul></li>
+</ul></li>
+<li><strong>Reformatting:</strong> Use provided scripts to adapt data from sources like HuggingFace.
+<ul>
+<li><strong>GitHub:</strong> <a href="https://github.com/mistralai/mistral-finetune/blob/main/utils/reformat_data.py">mistral-finetune/utils/reformat_data.py</a></li>
+</ul></li>
+<li><strong>Validation:</strong> The <code>mistral-finetune</code> repository includes a data validation script.
+<ul>
+<li><strong>GitHub:</strong> <a href="https://github.com/mistralai/mistral-finetune/blob/main/utils/validate_data.py">mistral-finetune/utils/validate_data.py</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Uploading Data:</strong>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://docs.mistral.ai/guides/finetuning/#upload-dataset">Upload dataset</a></li>
+<li>Use the <code>files.create</code> function, specifying file name and purpose (“fine-tune”).</li>
+</ul></li>
+<li><strong>Creating a Fine-tuning Job:</strong>
+<ul>
+<li>Provide file IDs for training and evaluation data.</li>
+<li>Choose the base model (Mistral 7B or Mistral Small).</li>
+<li>Set hyperparameters (e.g., learning rate, number of steps).</li>
+</ul></li>
+<li><strong>Monitoring Progress:</strong>
+<ul>
+<li>Retrieve job status and metrics using the job ID.</li>
+</ul></li>
+<li><strong>Using the Fine-tuned Model:</strong>
+<ul>
+<li>Access the fine-tuned model using the provided model name (retrieved from the completed job).</li>
+</ul></li>
+<li><strong>Weight &amp; Biases Integration (Optional)</strong>:
+<ul>
+<li>Configure API key for tracking metrics and visualizations.</li>
+</ul></li>
+</ol>
+</section>
+<section id="getting-started-fine-tuning-mistral-7b-local" class="level3">
+<h3 class="anchored" data-anchor-id="getting-started-fine-tuning-mistral-7b-local">Getting Started Fine-Tuning Mistral 7B (Local)</h3>
+<ul>
+<li><p><strong>Jupyter Notebook:</strong> <a href="tutorials/mistral_finetune_7b.ipynb">tutorials/mistral_finetune_7b.ipynb</a></p></li>
+<li><p>Covers fine-tuning Mistral 7B</p></li>
+</ul>
+<p><strong>Steps:</strong></p>
+<ol type="1">
+<li><strong>Clone Repository:</strong> <code>git clone https://github.com/mistralai/mistral-finetune.git</code></li>
+<li><strong>Install Dependencies:</strong> Follow <a href="https://github.com/mistralai/mistral-finetune?tab=readme-ov-file#mistral-finetune">instructions</a> in the repository.</li>
+<li><strong>Download Model:</strong> Download the desired Mistral model (e.g., 7Bv3).</li>
+<li><strong>Prepare Data:</strong> Similar to the API walkthrough.</li>
+<li><strong>Configure Training:</strong>
+<ul>
+<li>Use a configuration file (<code>.yaml</code>) to specify data paths, model parameters, and hyperparameters.</li>
+<li>Adjust sequence length based on available GPU memory.</li>
+</ul></li>
+<li><strong>Start Training:</strong> Execute the training script.</li>
+<li><strong>Inference:</strong>
+<ul>
+<li><p>Utilize the <code>mistral-inference</code> package.</p>
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/mistralai/mistral-inference">mistral-inference</a></li>
+<li><div class="sourceCode" id="cb11"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>  <span class="ex">pip</span> install mistral-inference</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p>Load the tokenizer, base model, and fine-tuned LoRA weights.</p></li>
+<li><p>Generate text.</p></li>
+</ul></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
