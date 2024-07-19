@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-07-18">
+<meta name="description" content="In this talk, Daniel van Strien from 🤗 outlines key considerations and techniques for creating high-quality datasets for fine-tuning LLMs.">
+
+<title>Christian Mills - Conference Talk 8: Creating, curating, and cleaning data for LLMs</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Conference Talk 8: Creating, curating, and cleaning data for LLMs">
+<meta property="og:description" content="In this talk, Daniel van Strien from 🤗 outlines key considerations and techniques for creating high-quality datasets for fine-tuning LLMs.">
+<meta property="og:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Conference Talk 8: Creating, curating, and cleaning data for LLMs">
+<meta name="twitter:description" content="In this talk, Daniel van Strien from 🤗 outlines key considerations and techniques for creating high-quality datasets for fine-tuning LLMs.">
+<meta name="twitter:image" content="christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#reusing-existing-datasets" id="toc-reusing-existing-datasets" class="nav-link active" data-scroll-target="#reusing-existing-datasets">Reusing Existing Datasets</a></li>
+  <li><a href="#creating-your-own-dataset" id="toc-creating-your-own-dataset" class="nav-link" data-scroll-target="#creating-your-own-dataset">Creating Your Own Dataset</a></li>
+  <li><a href="#common-dataset-genres" id="toc-common-dataset-genres" class="nav-link" data-scroll-target="#common-dataset-genres">Common Dataset Genres</a></li>
+  <li><a href="#synthetic-data" id="toc-synthetic-data" class="nav-link" data-scroll-target="#synthetic-data">Synthetic Data</a>
+  <ul>
+  <li><a href="#basic-taxonomy-of-synthetic-data-uses" id="toc-basic-taxonomy-of-synthetic-data-uses" class="nav-link" data-scroll-target="#basic-taxonomy-of-synthetic-data-uses">Basic Taxonomy of Synthetic Data Uses</a></li>
+  <li><a href="#challenges" id="toc-challenges" class="nav-link" data-scroll-target="#challenges">Challenges</a></li>
+  <li><a href="#tools" id="toc-tools" class="nav-link" data-scroll-target="#tools">Tools</a></li>
+  </ul></li>
+  <li><a href="#improving-data" id="toc-improving-data" class="nav-link" data-scroll-target="#improving-data">Improving Data</a>
+  <ul>
+  <li><a href="#ensuring-sufficient-quantity" id="toc-ensuring-sufficient-quantity" class="nav-link" data-scroll-target="#ensuring-sufficient-quantity">Ensuring sufficient quantity</a></li>
+  <li><a href="#deduplication" id="toc-deduplication" class="nav-link" data-scroll-target="#deduplication">Deduplication</a></li>
+  <li><a href="#rule-based" id="toc-rule-based" class="nav-link" data-scroll-target="#rule-based">Rule based</a></li>
+  <li><a href="#quality" id="toc-quality" class="nav-link" data-scroll-target="#quality">Quality</a></li>
+  </ul></li>
+  <li><a href="#human-annotation" id="toc-human-annotation" class="nav-link" data-scroll-target="#human-annotation">Human Annotation</a></li>
+  <li><a href="#example-datasets" id="toc-example-datasets" class="nav-link" data-scroll-target="#example-datasets">Example Datasets</a></li>
+  <li><a href="#case-study-llm-summarizer" id="toc-case-study-llm-summarizer" class="nav-link" data-scroll-target="#case-study-llm-summarizer">Case Study: LLM Summarizer</a>
+  <ul>
+  <li><a href="#the-distilabel-pipeline" id="toc-the-distilabel-pipeline" class="nav-link" data-scroll-target="#the-distilabel-pipeline">The distilabel pipeline</a></li>
+  </ul></li>
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
+  <li><a href="#qa" id="toc-qa" class="nav-link" data-scroll-target="#qa">Q&amp;A</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Conference Talk 8: Creating, curating, and cleaning data for LLMs</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this talk, <strong>Daniel van Strien</strong> from 🤗 outlines key considerations and techniques for creating high-quality datasets for fine-tuning LLMs.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 18, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#reusing-existing-datasets">Reusing Existing Datasets</a></li>
+<li><a href="#creating-your-own-dataset">Creating Your Own Dataset</a></li>
+<li><a href="#common-dataset-genres">Common Dataset Genres</a></li>
+<li><a href="#synthetic-data">Synthetic Data</a></li>
+<li><a href="#improving-data">Improving Data</a></li>
+<li><a href="#human-annotation">Human Annotation</a></li>
+<li><a href="#example-datasets">Example Datasets</a></li>
+<li><a href="#case-study-llm-summarizer">Case Study: LLM Summarizer</a></li>
+<li><a href="#resources">Resources</a></li>
+<li><a href="#qa">Q&amp;A</a></li>
+</ul>
+<section id="reusing-existing-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="reusing-existing-datasets">Reusing Existing Datasets</h2>
+<ul>
+<li><strong>🤗 Datasets:</strong> <a href="https://huggingface.co/datasets">https://huggingface.co/datasets</a></li>
+<li><strong>What kind of existing dataset?</strong>
+<ul>
+<li><strong>Consider the use case:</strong> Datasets like <code>fineweb</code> are designed for pre-training, not fine-tuning.
+<ul>
+<li><strong>🤗 Dataset:</strong> <a href="HuggingFaceFW/fineweb">HuggingFaceFW/fineweb</a></li>
+</ul></li>
+<li><strong>Look beyond research datasets:</strong> Community-contributed datasets can offer unique and valuable data.</li>
+</ul></li>
+<li><strong>Browsing datasets</strong>
+<ul>
+<li><strong>Use tags:</strong> Filter datasets based on specific formats or tasks (e.g., DPO datasets).
+<ul>
+<li><a href="https://huggingface.co/datasets?other=dpo">🤗 DPO Datasets</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Searching for datasets</strong>
+<ul>
+<li><strong>Full-text search:</strong> Useful if dataset names are not descriptive enough.</li>
+</ul></li>
+<li><strong>Reviewing if a dataset is suitable: Vibe checks</strong>
+<ul>
+<li><strong>Dataset viewer:</strong> Provides a preview of the data, including metadata and example rows.</li>
+<li><strong>Analyze conversation length and content:</strong> Assess if the dataset aligns with your target application.</li>
+</ul></li>
+</ul>
+</section>
+<section id="creating-your-own-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="creating-your-own-dataset">Creating Your Own Dataset</h2>
+<ul>
+<li><p><strong>Adapt existing NLP datasets:</strong> Restructure data from classic NLP tasks for LLM fine-tuning.</p></li>
+<li><p><strong>Leverage user feedback:</strong> Analyze existing user interactions (e.g., thumbs up/down) for preference data.</p></li>
+<li><p><strong>Synthetic data:</strong> A powerful method for jumpstarting dataset creation.</p></li>
+<li><p><strong>Getting data?</strong></p>
+<ul>
+<li><p><strong>Data format:</strong> Ensure the data format closely resembles the intended use case for the LLM.</p></li>
+<li><p><strong>Preprocessing:</strong> The effort invested in data preparation will benefit the deployment stage.</p></li>
+</ul></li>
+<li><p><strong>What kind of dataset do you need for fine-tuning</strong></p>
+<ul>
+<li><p><strong>Specificity over diversity:</strong> Focus on data relevant to your specific use case, even if it means the model loses some general abilities.</p></li>
+<li><p><strong>Data diversity should reflect the target application:</strong> Don’t aim for broad diversity if your application is narrow.</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="common-dataset-genres" class="level2">
+<h2 class="anchored" data-anchor-id="common-dataset-genres">Common Dataset Genres</h2>
+<ul>
+<li><strong>SFT (Supervised Fine Tuning)</strong>
+<ul>
+<li><strong>Structure:</strong> Question and answer pairs.</li>
+</ul></li>
+<li><strong>RLHF (Reinforcement Learning by Human Feedback)</strong>
+<ul>
+<li><strong>Structure:</strong> Similar to SFT, but with additional preference information.</li>
+</ul></li>
+<li><strong>DPO (Direct Preference Optimization)</strong>
+<ul>
+<li><strong>Structure:</strong> Input, chosen response, and rejected response.</li>
+<li><strong>Flexibility:</strong> “Chosen” and “rejected” can be generated creatively (e.g., using human-written text as “chosen” and model-generated text as “rejected”).</li>
+</ul></li>
+<li><strong>KTO (Kahneman-Tversky Optimization)</strong>
+<ul>
+<li><strong>argilla’s Collections:</strong> <a href="https://huggingface.co/collections/argilla/preference-datasets-for-kto-65f98314d7c1b04ab54d41a7">Preference Datasets for KTO</a></li>
+<li><strong>Structure:</strong> Model response and a binary preference (thumbs up/down).</li>
+<li><strong>Easy to collect:</strong> Users can readily provide simple preference feedback.</li>
+</ul></li>
+<li><strong>SPIN/ORPO</strong>
+<ul>
+<li><strong>HuggingFaceH4’s Collections:</strong> <a href="https://huggingface.co/collections/HuggingFaceH4/awesome-sft-datasets-65788b571bf8e371c4e4241a">Awesome SFT datasets</a></li>
+<li><strong>SPIN:</strong> Iterative approach to reduce data requirements by synthetically generating responses.</li>
+<li><strong>ORPO:</strong> Similar to DPO but doesn’t require a separate supervised fine-tuning step, making it more efficient.</li>
+</ul></li>
+</ul>
+</section>
+<section id="synthetic-data" class="level2">
+<h2 class="anchored" data-anchor-id="synthetic-data">Synthetic Data</h2>
+<ul>
+<li><strong>Definition:</strong> Data generated by LLMs, often used for fine-tuning other LLMs.</li>
+<li><strong>Methods:</strong>
+<ul>
+<li>Generating prompts and completions from scratch.</li>
+<li>Rephrasing existing prompts to improve quality and diversity.</li>
+<li>AI feedback: Using LLMs to judge the quality of other LLM outputs.</li>
+</ul></li>
+</ul>
+<section id="basic-taxonomy-of-synthetic-data-uses" class="level3">
+<h3 class="anchored" data-anchor-id="basic-taxonomy-of-synthetic-data-uses">Basic Taxonomy of Synthetic Data Uses</h3>
+<ul>
+<li><p><strong>Blog Post:</strong> <a href="https://www.interconnects.ai/p/llm-synthetic-data">Synthetic data: Anthropic’s CAI, from fine-tuning to pretraining, OpenAI’s Superalignment, tips, types, and open examples</a></p></li>
+<li><p><strong>Instructions</strong></p>
+<ul>
+<li><strong>Generated text for SFT / IFT</strong></li>
+<li><strong>Completions</strong>
+<ul>
+<li><code>Prompt</code> ➡️ :robot: ➡️ <code>instruction</code></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Self-Instruct Bootstrapping</strong></p>
+<ul>
+<li><strong>Process</strong>
+<ul>
+<li><code>Prompt</code> ➡️ :robot: ➡️ <code>More prompts</code> ➡️ :robot: ➡️ <code>instruction</code> :arrow_right: Filtering :repeat:</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Using LLM to Generate Corrected Sample</strong></p>
+<ul>
+<li><strong>Process</strong>
+<ul>
+<li><code>principles</code> + <code>instruction</code> ➡️ :robot: ➡️ <code>corrected instruction</code> :arrow_right: Repeat to filter :repeat:</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Preferences</strong></p>
+<ul>
+<li><strong>Scoring / Choosing Response for RM / RLHF Training</strong>
+<ul>
+<li><code>instruction-1</code>…<code>instruction-N</code> :arrow_right: :robot: ➡️ <code>scores</code> or <code>chosen/rejected</code> :arrow_right: Filtering :repeat:</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Critiques</strong></p>
+<ul>
+<li><strong>Initial Instruction</strong>
+<ul>
+<li>(rejected response)</li>
+</ul></li>
+<li><strong>Using LLM Principles to Generate Pairwise Completions</strong>
+<ul>
+<li><code>initial instruction</code> + <code>principles</code> ➡️ :robot: ➡️ <code>corrected instruction</code> (chosen response) :arrow_right: Filtering :repeat:</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="challenges" class="level3">
+<h3 class="anchored" data-anchor-id="challenges">Challenges</h3>
+<ul>
+<li><strong>Alpaca 7B model:</strong> Trained on synthetic data generated by prompting a language model with instructions.
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://crfm.stanford.edu/2023/03/13/alpaca.html">Alpaca: A Strong, Replicable Instruction-Following Model</a></li>
+<li><strong>Challenges:</strong> Synthetic data can contain hallucinations, toxicity, and biases inherited from the generating model.
+<ul>
+<li><strong>Example:</strong> Alpaca 7B exhibiting hallucinations and inaccurate claims.</li>
+</ul></li>
+</ul></li>
+<li><strong>Ultrafeedback paper:</strong> Used multiple models and GPT-4 for judging synthetic data quality based on multiple criteria.
+<ul>
+<li><strong>Paper:</strong> UltraFeedback: Boosting Language Models with Scaled AI Feedback</li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/OpenBMB/UltraFeedback">https://github.com/OpenBMB/UltraFeedback</a></li>
+<li><strong>Challenges:</strong> Coding errors, API failures, and data handling issues can severely impact data quality, even with advanced models.
+<ul>
+<li><strong>Example:</strong> Errors in the Ultrafeedback dataset highlighted the importance of human review and data cleaning.</li>
+</ul></li>
+</ul></li>
+<li><strong>Scaling challenges:</strong> Generating high-quality synthetic data at scale requires careful consideration of cost, vendor lock-in, and data quality.</li>
+</ul>
+</section>
+<section id="tools" class="level3">
+<h3 class="anchored" data-anchor-id="tools">Tools</h3>
+<ul>
+<li><strong>Outlines:</strong>
+<ul>
+<li>Enables structured text generation in various formats (JSON, Regex, etc.) by modifying token sampling.</li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/outlines-dev/outlines">https://github.com/outlines-dev/outlines</a></li>
+</ul></li>
+<li><strong>DSPy:</strong>
+<ul>
+<li>Focuses on “programming” LLM behavior through a defined signature, optimizing prompts and fine-tuning for specific tasks.</li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/stanfordnlp/dspy">https://github.com/stanfordnlp/dspy</a></li>
+<li><strong>Blog Post:</strong> <a href="https://hamel.dev/blog/posts/prompt/index.html">Fuck You, Show Me The Prompt.</a></li>
+</ul></li>
+<li><strong>distilabel:</strong>
+<ul>
+<li>A pipeline framework for synthetic data generation and AI feedback, emphasizing scalability and dataset engineer workflows.</li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/argilla-io/distilabel">https://github.com/argilla-io/distilabel</a></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="improving-data" class="level2">
+<h2 class="anchored" data-anchor-id="improving-data">Improving Data</h2>
+<section id="ensuring-sufficient-quantity" class="level3">
+<h3 class="anchored" data-anchor-id="ensuring-sufficient-quantity">Ensuring sufficient quantity</h3>
+<ul>
+<li>More ≠ better</li>
+<li>Be okay with “throwing away” annotations and data</li>
+<li><strong>Data Requirements</strong> (based on paper reported numbers)
+<ul>
+<li><strong>SFT:</strong> <code>10K</code></li>
+<li><strong>ORPO:</strong> <code>7K</code></li>
+<li><strong>DPO:</strong> <code>3K</code></li>
+<li><strong>SPIN:</strong> <code>2K</code></li>
+</ul></li>
+<li>Data requirements will be higher for more diverse inputs + outputs (would you have used BERT a few years ago to do this task?)</li>
+<li><strong>Blog Post:</strong> https://argilla.io/blog/mantisnlp-rlhf-part-9/</li>
+</ul>
+</section>
+<section id="deduplication" class="level3">
+<h3 class="anchored" data-anchor-id="deduplication">Deduplication</h3>
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1">FineWeb: decanting the web for the finest text data at scale</a></li>
+<li><strong>Challenges:</strong> Deduplication pipelines are often not reproducible or well-documented.</li>
+<li><strong>Approaches:</strong>
+<ul>
+<li>Intuitive rules and metadata filtering.</li>
+<li>Topic-wise deduplication.</li>
+<li>Custom metadata and feature engineering.</li>
+<li>Embedding similarity and exemplar selection.</li>
+</ul></li>
+</ul>
+</section>
+<section id="rule-based" class="level3">
+<h3 class="anchored" data-anchor-id="rule-based">Rule based</h3>
+<ul>
+<li><strong>Regex:</strong> Useful for simple rule-based cleaning (e.g., removing unwanted phrases or patterns).</li>
+</ul>
+</section>
+<section id="quality" class="level3">
+<h3 class="anchored" data-anchor-id="quality">Quality</h3>
+<ul>
+<li><strong>Tutorial:</strong> <a href="https://hlasse.github.io/TextDescriptives/tutorials/filter_corpus_using_quality.html">Filtering corpora using Quality</a></li>
+<li><strong>Techniques:</strong>
+<ul>
+<li>Basic heuristics</li>
+<li>Topic modeling</li>
+<li>Embeddings</li>
+<li>Classifiers (don’t dismiss these even if you have $$$)
+<ul>
+<li><strong>Model:</strong> <a href="https://huggingface.co/MoritzLaurer/deberta-v3-large-zeroshot-v2.0">MoritzLaurer/deberta-v3-large-zeroshot-v2.0</a></li>
+<li><strong>Model:</strong> <a href="https://huggingface.co/HuggingFaceFW/fineweb-edu-classifier">HuggingFaceFW/fineweb-edu-classifier</a></li>
+</ul></li>
+<li>LLM as judge/juries/rationalizers</li>
+<li>Human annotation</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="human-annotation" class="level2">
+<h2 class="anchored" data-anchor-id="human-annotation">Human Annotation</h2>
+<ul>
+<li><strong>Finding the right balance:</strong> Choose tools and approaches that fit your needs and budget, from simple spreadsheets to fully customized solutions.</li>
+<li><strong>Custom</strong>
+<ul>
+<li><strong>Example:</strong> Vincent D. Warmerdon’s bulk annotation tool using Bokeh and Pandas for interactive data exploration and annotation.
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="koaning/bulk">koaning/bulk</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Notebooks</strong>
+<ul>
+<li><strong>Example:</strong> ipyannotations for in-notebook annotation with customizable callbacks for post-processing and active learning.
+<ul>
+<li><strong>Documentation:</strong> <a href="https://ipyannotations.readthedocs.io/en/latest/">ipyannotations</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Apps</strong>
+<ul>
+<li><strong>Example:</strong> Gradio, Streamlit, and Shiny for building custom web apps with intuitive UIs for annotation tasks.</li>
+</ul></li>
+<li><strong>Lilac</strong>
+<ul>
+<li><strong>Website:</strong> <a href="https://www.lilacml.com/">https://www.lilacml.com/</a></li>
+<li><strong>Features:</strong> Dataset overview, semantic search, and integrated annotation tools.</li>
+</ul></li>
+<li><strong>Argilla</strong>
+<ul>
+<li><strong>Website:</strong> <a href="https://argilla.io/">https://argilla.io/</a></li>
+<li><strong>Features:</strong> Similar to Lilac, with a focus on dataset management and annotation workflows.</li>
+</ul></li>
+</ul>
+</section>
+<section id="example-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="example-datasets">Example Datasets</h2>
+<ul>
+<li><p><strong>distilabel Orca Pairs for DPO</strong></p>
+<ul>
+<li><strong>Dataset:</strong> <a href="argilla/distilabel-intel-orca-dpo-pairs">argilla/distilabel-intel-orca-dpo-pairs</a></li>
+<li><strong>Why it’s cool and what you can learn:</strong>
+<ul>
+<li>Filtering: less is more</li>
+<li>Choosing the “stronger” model as always chosen doesn’t always work</li>
+<li>Doing some data focused work using humans can make a big impact on model performance</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Gutenberg DPO</strong></p>
+<ul>
+<li><strong>Dataset:</strong> <a href="jondurbin/gutenberg-dpo-v0.1">jondurbin/gutenberg-dpo-v0.1</a></li>
+<li><strong>Approach:</strong> Uses human-written books and LLM-generated summaries to create a DPO dataset for improving LLM writing ability.</li>
+</ul></li>
+<li><p><strong>PlatVR KTO Dataset</strong></p>
+<ul>
+<li><strong>Dataset:</strong> <a href="ITG/PlatVR-kto">ITG/PlatVR-kto</a></li>
+<li><strong>Approach:</strong> Collects thumbs up/down ratings on model outputs to create a KTO dataset for a vision-language task.</li>
+<li><strong>Why it’s cool and what you can learn:</strong>
+<ul>
+<li>Example of how KTO datasets can work well as a data flywheel</li>
+<li>Users submit a prompt. They get a response they 👍/👎 that response</li>
+<li>Cheap to collect and can be useful data even if you don’t end up using KTO</li>
+</ul></li>
+<li><strong>Disclaimer:</strong> The creation process was done using a crowdsourcing methodology. Therefore, the preferences in the data align with the user group that participated in the process (i.e., these are real preference data).</li>
+</ul></li>
+</ul>
+</section>
+<section id="case-study-llm-summarizer" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-llm-summarizer">Case Study: LLM Summarizer</h2>
+<ul>
+<li><strong>Goal:</strong> Build an LLM-based summarizer for data set cards on Hugging Face.</li>
+<li><strong>Approach:</strong> Uses a Distilabel pipeline to generate and judge summaries, incorporating both model and human feedback.</li>
+</ul>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 293.81 399.20" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 395.2)">
+<title>LLM Summarizer</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-395.2 289.81,-395.2 289.81,4 -4,4"></polygon>
+<!-- Load dataset card in markdown format -->
+<g id="node1" class="node">
+<title>Load dataset card in markdown format</title>
+<polygon fill="none" stroke="black" points="259.71,-391.2 26.1,-391.2 26.1,-355.2 259.71,-355.2 259.71,-391.2"></polygon>
+<text text-anchor="middle" x="142.9" y="-369" font-family="Times,serif" font-size="14.00">Load dataset card in markdown format</text>
+</g>
+<!-- Parse out YAML and remove unwanted content -->
+<g id="node2" class="node">
+<title>Parse out YAML and remove unwanted content</title>
+<polygon fill="none" stroke="black" points="285.17,-302.4 0.64,-302.4 0.64,-266.4 285.17,-266.4 285.17,-302.4"></polygon>
+<text text-anchor="middle" x="142.9" y="-280.2" font-family="Times,serif" font-size="14.00">Parse out YAML and remove unwanted content</text>
+</g>
+<!-- Load dataset card in markdown format&#45;&gt;Parse out YAML and remove unwanted content -->
+<g id="edge1" class="edge">
+<title>Load dataset card in markdown format-&gt;Parse out YAML and remove unwanted content</title>
+<path fill="none" stroke="black" d="M142.9,-355.05C142.9,-342.92 142.9,-326.42 142.9,-312.52"></path>
+<polygon fill="black" stroke="black" points="146.4,-312.51 142.9,-302.51 139.4,-312.51 146.4,-312.51"></polygon>
+<text text-anchor="middle" x="160.6" y="-324.6" font-family="Times,serif" font-size="14.00">Step 1</text>
+</g>
+<!-- Pass reduced text to LLM -->
+<g id="node3" class="node">
+<title>Pass reduced text to LLM</title>
+<polygon fill="none" stroke="black" points="223.04,-213.6 62.77,-213.6 62.77,-177.6 223.04,-177.6 223.04,-213.6"></polygon>
+<text text-anchor="middle" x="142.9" y="-191.4" font-family="Times,serif" font-size="14.00">Pass reduced text to LLM</text>
+</g>
+<!-- Parse out YAML and remove unwanted content&#45;&gt;Pass reduced text to LLM -->
+<g id="edge2" class="edge">
+<title>Parse out YAML and remove unwanted content-&gt;Pass reduced text to LLM</title>
+<path fill="none" stroke="black" d="M142.9,-266.25C142.9,-254.12 142.9,-237.62 142.9,-223.72"></path>
+<polygon fill="black" stroke="black" points="146.4,-223.71 142.9,-213.71 139.4,-223.71 146.4,-223.71"></polygon>
+<text text-anchor="middle" x="160.6" y="-235.8" font-family="Times,serif" font-size="14.00">Step 2</text>
+</g>
+<!-- Get summary of dataset card -->
+<g id="node4" class="node">
+<title>Get summary of dataset card</title>
+<polygon fill="none" stroke="black" points="231.34,-124.8 54.47,-124.8 54.47,-88.8 231.34,-88.8 231.34,-124.8"></polygon>
+<text text-anchor="middle" x="142.9" y="-102.6" font-family="Times,serif" font-size="14.00">Get summary of dataset card</text>
+</g>
+<!-- Pass reduced text to LLM&#45;&gt;Get summary of dataset card -->
+<g id="edge3" class="edge">
+<title>Pass reduced text to LLM-&gt;Get summary of dataset card</title>
+<path fill="none" stroke="black" d="M142.9,-177.45C142.9,-165.32 142.9,-148.82 142.9,-134.92"></path>
+<polygon fill="black" stroke="black" points="146.4,-134.91 142.9,-124.91 139.4,-134.91 146.4,-134.91"></polygon>
+<text text-anchor="middle" x="160.6" y="-147" font-family="Times,serif" font-size="14.00">Step 3</text>
+</g>
+<!-- Get feedback from users about summary quality -->
+<g id="node5" class="node">
+<title>Get feedback from users about summary quality</title>
+<polygon fill="none" stroke="black" points="285.71,-36 0.1,-36 0.1,0 285.71,0 285.71,-36"></polygon>
+<text text-anchor="middle" x="142.9" y="-13.8" font-family="Times,serif" font-size="14.00">Get feedback from users about summary quality</text>
+</g>
+<!-- Get summary of dataset card&#45;&gt;Get feedback from users about summary quality -->
+<g id="edge4" class="edge">
+<title>Get summary of dataset card-&gt;Get feedback from users about summary quality</title>
+<path fill="none" stroke="black" d="M142.9,-88.65C142.9,-76.52 142.9,-60.02 142.9,-46.12"></path>
+<polygon fill="black" stroke="black" points="146.4,-46.11 142.9,-36.11 139.4,-46.11 146.4,-46.11"></polygon>
+<text text-anchor="middle" x="160.6" y="-58.2" font-family="Times,serif" font-size="14.00">Step 4</text>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="the-distilabel-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="the-distilabel-pipeline">The distilabel pipeline</h3>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 693.68 742.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 738)">
+<title>G</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-738 689.68,-738 689.68,4 -4,4"></polygon>
+<!-- llama_summary -->
+<g id="node1" class="node">
+<title>llama_summary</title>
+<polygon fill="lightblue" stroke="black" points="269.47,-408 92.33,-408 92.33,-370 269.47,-370 269.47,-408"></polygon>
+<text text-anchor="middle" x="180.9" y="-381.5" font-family="sans-serif:bold" font-size="25.00">llama_summary</text>
+</g>
+<!-- combine_columns -->
+<g id="node13" class="node">
+<title>combine_columns</title>
+<path fill="none" stroke="black" d="M374.7,-334C374.7,-334 199.1,-334 199.1,-334 193.1,-334 187.1,-328 187.1,-322 187.1,-322 187.1,-308 187.1,-308 187.1,-302 193.1,-296 199.1,-296 199.1,-296 374.7,-296 374.7,-296 380.7,-296 386.7,-302 386.7,-308 386.7,-308 386.7,-322 386.7,-322 386.7,-328 380.7,-334 374.7,-334"></path>
+<text text-anchor="middle" x="286.9" y="-307.5" font-family="sans-serif:bold" font-size="25.00">combine_columns</text>
+</g>
+<!-- llama_summary&#45;&gt;combine_columns -->
+<g id="edge9" class="edge">
+<title>llama_summary-&gt;combine_columns</title>
+<path fill="none" stroke="black" d="M207.65,-369.83C220.96,-360.79 237.22,-349.75 251.54,-340.02"></path>
+<polygon fill="black" stroke="black" points="253.86,-342.68 260.16,-334.16 249.92,-336.89 253.86,-342.68"></polygon>
+</g>
+<!-- mistral_summary -->
+<g id="node2" class="node">
+<title>mistral_summary</title>
+<polygon fill="lightpink" stroke="black" points="478.38,-408 287.42,-408 287.42,-370 478.38,-370 478.38,-408"></polygon>
+<text text-anchor="middle" x="382.9" y="-381.5" font-family="sans-serif:bold" font-size="25.00">mistral_summary</text>
+</g>
+<!-- mistral_summary&#45;&gt;combine_columns -->
+<g id="edge10" class="edge">
+<title>mistral_summary-&gt;combine_columns</title>
+<path fill="none" stroke="black" d="M358.68,-369.83C346.74,-360.88 332.17,-349.96 319.29,-340.3"></path>
+<polygon fill="black" stroke="black" points="321.22,-337.36 311.12,-334.16 317.02,-342.96 321.22,-337.36"></polygon>
+</g>
+<!-- zephyr_summary -->
+<g id="node3" class="node">
+<title>zephyr_summary</title>
+<polygon fill="lightgreen" stroke="black" points="685.46,-408 496.34,-408 496.34,-370 685.46,-370 685.46,-408"></polygon>
+<text text-anchor="middle" x="590.9" y="-381.5" font-family="sans-serif:bold" font-size="25.00">zephyr_summary</text>
+</g>
+<!-- zephyr_summary&#45;&gt;combine_columns -->
+<g id="edge11" class="edge">
+<title>zephyr_summary-&gt;combine_columns</title>
+<path fill="none" stroke="black" d="M514.58,-369.92C471.49,-359.72 417.52,-346.94 372.93,-336.38"></path>
+<polygon fill="black" stroke="black" points="373.53,-332.92 362.99,-334.02 371.91,-339.73 373.53,-332.92"></polygon>
+</g>
+<!-- llama_3_70_b -->
+<g id="node4" class="node">
+<title>llama_3_70_b</title>
+<polygon fill="lightblue" stroke="black" points="198.08,-512 47.72,-512 47.72,-444 198.08,-444 198.08,-512"></polygon>
+<text text-anchor="middle" x="122.9" y="-485.5" font-family="sans-serif:bold" font-size="25.00">llama-3-70-B</text>
+<text text-anchor="middle" x="122.9" y="-455.5" font-family="sans-serif:bold" font-size="25.00">Instruct</text>
+</g>
+<!-- llama_3_70_b&#45;&gt;llama_summary -->
+<g id="edge7" class="edge">
+<title>llama_3_70_b-&gt;llama_summary</title>
+<path fill="none" stroke="black" d="M145.16,-443.61C151.13,-434.65 157.51,-425.08 163.2,-416.55"></path>
+<polygon fill="black" stroke="black" points="166.2,-418.35 168.84,-408.09 160.38,-414.47 166.2,-418.35"></polygon>
+</g>
+<!-- ultrafeedback -->
+<g id="node5" class="node">
+<title>ultrafeedback</title>
+<polygon fill="lightblue" stroke="black" points="203.92,-260 51.88,-260 51.88,-222 203.92,-222 203.92,-260"></polygon>
+<text text-anchor="middle" x="127.9" y="-233.5" font-family="sans-serif:bold" font-size="25.00">ultrafeedback</text>
+</g>
+<!-- llama_3_70_b&#45;&gt;ultrafeedback -->
+<g id="edge8" class="edge">
+<title>llama_3_70_b-&gt;ultrafeedback</title>
+<path fill="none" stroke="black" d="M98.97,-443.83C92.44,-432.94 86.24,-420.44 82.9,-408 69.77,-359.18 93.69,-302.34 111.39,-269.43"></path>
+<polygon fill="black" stroke="black" points="114.6,-270.86 116.41,-260.42 108.49,-267.45 114.6,-270.86"></polygon>
+</g>
+<!-- remove_bad_ratings -->
+<g id="node14" class="node">
+<title>remove_bad_ratings</title>
+<path fill="none" stroke="black" d="M226,-186C226,-186 29.8,-186 29.8,-186 23.8,-186 17.8,-180 17.8,-174 17.8,-174 17.8,-160 17.8,-160 17.8,-154 23.8,-148 29.8,-148 29.8,-148 226,-148 226,-148 232,-148 238,-154 238,-160 238,-160 238,-174 238,-174 238,-180 232,-186 226,-186"></path>
+<text text-anchor="middle" x="127.9" y="-159.5" font-family="sans-serif:bold" font-size="25.00">remove_bad_ratings</text>
+</g>
+<!-- ultrafeedback&#45;&gt;remove_bad_ratings -->
+<g id="edge13" class="edge">
+<title>ultrafeedback-&gt;remove_bad_ratings</title>
+<path fill="none" stroke="black" d="M127.9,-221.83C127.9,-214.13 127.9,-204.97 127.9,-196.42"></path>
+<polygon fill="black" stroke="black" points="131.4,-196.41 127.9,-186.41 124.4,-196.41 131.4,-196.41"></polygon>
+</g>
+<!-- to_argilla -->
+<g id="node6" class="node">
+<title>to_argilla</title>
+<polygon fill="white" stroke="black" points="111.7,-112 0.1,-112 0.1,-74 111.7,-74 111.7,-112"></polygon>
+<text text-anchor="middle" x="55.9" y="-85.5" font-family="sans-serif:bold" font-size="25.00">to_argilla</text>
+</g>
+<!-- end -->
+<g id="node9" class="node">
+<title>end</title>
+<text text-anchor="middle" x="127.9" y="-11.5" font-family="sans-serif:bold" font-size="25.00">🤗</text>
+</g>
+<!-- to_argilla&#45;&gt;end -->
+<g id="edge17" class="edge">
+<title>to_argilla-&gt;end</title>
+<path fill="none" stroke="black" d="M74.07,-73.83C82.62,-65.28 92.96,-54.94 102.28,-45.62"></path>
+<polygon fill="black" stroke="black" points="104.89,-47.96 109.49,-38.41 99.94,-43.01 104.89,-47.96"></polygon>
+</g>
+<!-- push_to_hub -->
+<g id="node7" class="node">
+<title>push_to_hub</title>
+<polygon fill="white" stroke="black" points="269.53,-112 130.27,-112 130.27,-74 269.53,-74 269.53,-112"></polygon>
+<text text-anchor="middle" x="199.9" y="-85.5" font-family="sans-serif:bold" font-size="25.00">Push to Hub</text>
+</g>
+<!-- push_to_hub&#45;&gt;end -->
+<g id="edge16" class="edge">
+<title>push_to_hub-&gt;end</title>
+<path fill="none" stroke="black" d="M181.73,-73.83C173.19,-65.28 162.84,-54.94 153.52,-45.62"></path>
+<polygon fill="black" stroke="black" points="155.86,-43.01 146.31,-38.41 150.91,-47.96 155.86,-43.01"></polygon>
+</g>
+<!-- start -->
+<g id="node8" class="node">
+<title>start</title>
+<text text-anchor="middle" x="382.9" y="-707.5" font-family="sans-serif:bold" font-size="25.00">🤗</text>
+</g>
+<!-- load_dataset -->
+<g id="node10" class="node">
+<title>load_dataset</title>
+<path fill="none" stroke="black" d="M441.35,-660C441.35,-660 324.45,-660 324.45,-660 318.45,-660 312.45,-654 312.45,-648 312.45,-648 312.45,-634 312.45,-634 312.45,-628 318.45,-622 324.45,-622 324.45,-622 441.35,-622 441.35,-622 447.35,-622 453.35,-628 453.35,-634 453.35,-634 453.35,-648 453.35,-648 453.35,-654 447.35,-660 441.35,-660"></path>
+<text text-anchor="middle" x="382.9" y="-633.5" font-family="sans-serif:bold" font-size="25.00">load_dataset</text>
+</g>
+<!-- start&#45;&gt;load_dataset -->
+<g id="edge1" class="edge">
+<title>start-&gt;load_dataset</title>
+<path fill="none" stroke="black" d="M382.9,-695.83C382.9,-688.13 382.9,-678.97 382.9,-670.42"></path>
+<polygon fill="black" stroke="black" points="386.4,-670.41 382.9,-660.41 379.4,-670.41 386.4,-670.41"></polygon>
+</g>
+<!-- card_filter -->
+<g id="node11" class="node">
+<title>card_filter</title>
+<path fill="none" stroke="black" d="M431,-586C431,-586 334.8,-586 334.8,-586 328.8,-586 322.8,-580 322.8,-574 322.8,-574 322.8,-560 322.8,-560 322.8,-554 328.8,-548 334.8,-548 334.8,-548 431,-548 431,-548 437,-548 443,-554 443,-560 443,-560 443,-574 443,-574 443,-580 437,-586 431,-586"></path>
+<text text-anchor="middle" x="382.9" y="-559.5" font-family="sans-serif:bold" font-size="25.00">card_filter</text>
+</g>
+<!-- load_dataset&#45;&gt;card_filter -->
+<g id="edge2" class="edge">
+<title>load_dataset-&gt;card_filter</title>
+<path fill="none" stroke="black" d="M382.9,-621.83C382.9,-614.13 382.9,-604.97 382.9,-596.42"></path>
+<polygon fill="black" stroke="black" points="386.4,-596.41 382.9,-586.41 379.4,-596.41 386.4,-596.41"></polygon>
+</g>
+<!-- format_input_card -->
+<g id="node12" class="node">
+<title>format_input_card</title>
+<path fill="none" stroke="black" d="M471.95,-497C471.95,-497 293.85,-497 293.85,-497 287.85,-497 281.85,-491 281.85,-485 281.85,-485 281.85,-471 281.85,-471 281.85,-465 287.85,-459 293.85,-459 293.85,-459 471.95,-459 471.95,-459 477.95,-459 483.95,-465 483.95,-471 483.95,-471 483.95,-485 483.95,-485 483.95,-491 477.95,-497 471.95,-497"></path>
+<text text-anchor="middle" x="382.9" y="-470.5" font-family="sans-serif:bold" font-size="25.00">format_input_card</text>
+</g>
+<!-- card_filter&#45;&gt;format_input_card -->
+<g id="edge3" class="edge">
+<title>card_filter-&gt;format_input_card</title>
+<path fill="none" stroke="black" d="M382.9,-547.97C382.9,-536.19 382.9,-520.56 382.9,-507.16"></path>
+<polygon fill="black" stroke="black" points="386.4,-507 382.9,-497 379.4,-507 386.4,-507"></polygon>
+</g>
+<!-- format_input_card&#45;&gt;llama_summary -->
+<g id="edge4" class="edge">
+<title>format_input_card-&gt;llama_summary</title>
+<path fill="none" stroke="black" d="M341.05,-458.97C309.36,-445.33 265.67,-426.51 231.94,-411.98"></path>
+<polygon fill="black" stroke="black" points="233.27,-408.74 222.7,-408 230.5,-415.17 233.27,-408.74"></polygon>
+</g>
+<!-- format_input_card&#45;&gt;mistral_summary -->
+<g id="edge5" class="edge">
+<title>format_input_card-&gt;mistral_summary</title>
+<path fill="none" stroke="black" d="M382.9,-458.97C382.9,-447.19 382.9,-431.56 382.9,-418.16"></path>
+<polygon fill="black" stroke="black" points="386.4,-418 382.9,-408 379.4,-418 386.4,-418"></polygon>
+</g>
+<!-- format_input_card&#45;&gt;zephyr_summary -->
+<g id="edge6" class="edge">
+<title>format_input_card-&gt;zephyr_summary</title>
+<path fill="none" stroke="black" d="M426,-458.97C458.63,-445.33 503.61,-426.51 538.35,-411.98"></path>
+<polygon fill="black" stroke="black" points="539.98,-415.09 547.86,-408 537.28,-408.63 539.98,-415.09"></polygon>
+</g>
+<!-- combine_columns&#45;&gt;ultrafeedback -->
+<g id="edge12" class="edge">
+<title>combine_columns-&gt;ultrafeedback</title>
+<path fill="none" stroke="black" d="M246.78,-295.83C225.61,-286.24 199.45,-274.4 177.07,-264.27"></path>
+<polygon fill="black" stroke="black" points="178.29,-260.97 167.73,-260.04 175.4,-267.35 178.29,-260.97"></polygon>
+</g>
+<!-- remove_bad_ratings&#45;&gt;to_argilla -->
+<g id="edge14" class="edge">
+<title>remove_bad_ratings-&gt;to_argilla</title>
+<path fill="none" stroke="black" d="M109.73,-147.83C101.19,-139.28 90.84,-128.94 81.52,-119.62"></path>
+<polygon fill="black" stroke="black" points="83.86,-117.01 74.31,-112.41 78.91,-121.96 83.86,-117.01"></polygon>
+</g>
+<!-- remove_bad_ratings&#45;&gt;push_to_hub -->
+<g id="edge15" class="edge">
+<title>remove_bad_ratings-&gt;push_to_hub</title>
+<path fill="none" stroke="black" d="M146.07,-147.83C154.62,-139.28 164.96,-128.94 174.28,-119.62"></path>
+<polygon fill="black" stroke="black" points="176.89,-121.96 181.49,-112.41 171.94,-117.01 176.89,-121.96"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Key steps:</strong>
+<ul>
+<li>Data loading and filtering.</li>
+<li>Prompt formatting.</li>
+<li>Summary generation using multiple models.</li>
+<li>LLM-based judging using Ultrafeedback and Lama three.</li>
+<li>Human review and annotation using Argilla.</li>
+</ul></li>
+<li><strong>Iterative process:</strong> Experiment with different prompts, models, and judging criteria to optimize the pipeline.</li>
+</ul>
+</section>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<ul>
+<li><strong>GitHub repository:</strong> <a href="davanstrien/data-for-fine-tuning-llms">davanstrien/data-for-fine-tuning-llms</a>
+<ul>
+<li>Contains notebooks with code examples for deduplication, data checks, and synthetic data generation.</li>
+</ul></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/davanstrien/awesome-synthetic-datasets">davanstrien/awesome-synthetic-datasets</a>
+<ul>
+<li>Organizes resources focused on helping people get started with building synthetic datasets.</li>
+</ul></li>
+</ul>
+</section>
+<section id="qa" class="level2">
+<h2 class="anchored" data-anchor-id="qa">Q&amp;A</h2>
+<ul>
+<li><strong>Question:</strong> How to generate synthetic data when fine-tuning on proprietary data and human annotation is expensive?</li>
+<li><strong>Answer:</strong> The decision to use synthetic data vs.&nbsp;proprietary data involves trade-offs related to data ownership, privacy, and control over the model.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
