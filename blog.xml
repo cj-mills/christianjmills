@@ -17,7 +17,509 @@
 <width>144</width>
 </image>
 <generator>quarto-1.4.555</generator>
-<lastBuildDate>Sat, 20 Jul 2024 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 24 Jul 2024 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Conference Talk 12: Slaying OOMs with PyTorch FSDP and torchao</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>christianjmills.com/posts/mastering-llms-course-notes/conference-talk-012/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li>Introduction</li>
+<li>Understanding Model Memory</li>
+<li>Optimizing Memory Usage</li>
+<li>Model Parallelism with FSDP</li>
+<li>Benchmarking FSDP2</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Resources">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Presentation Resources
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="https://drive.google.com/drive/u/0/folders/1HmGNC4v4L5nXhtdDMVCpUBrme1ELp-2C">Slaying OOMs</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li>OOM errors are a common challenge when working with large PyTorch models.</li>
+<li>Traditional solutions like reducing batch size or model size are limited in effectiveness.</li>
+</ul>
+</section>
+<section id="understanding-model-memory" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-model-memory">Understanding Model Memory</h2>
+<ul>
+<li><strong>VRAM Constraint:</strong> Modern GPUs have limited VRAM (e.g., 24GB for 3090s and 4090s), leading to challenges when training large models.</li>
+<li><strong>Model Memory Components:</strong>
+<ul>
+<li><strong>Parameters:</strong> Model weights, typically stored in FP16 (2 bytes per parameter). For a 7B parameter LLaMa model, this translates to 14GB.</li>
+<li><strong>Gradients:</strong> Calculated during backpropagation, require the same storage size as parameters (another 14GB for LLaMa 7B).</li>
+<li><strong>Optimizer State:</strong> Optimizers like Adam store additional information, often twice the size of parameters (28GB for LLaMa 7B).</li>
+<li><strong>Activations:</strong> Intermediate outputs of model layers.
+<ul>
+<li>The size is harder to estimate and depends on factors like batch size and context length.</li>
+<li>Activations tend to dominate memory usage at larger batch sizes and context lengths.</li>
+</ul></li>
+</ul></li>
+<li><strong>Example:</strong> A full fine-tuning of a 7B parameter LLaMa model can easily exceed 56GB (14GB parameters + 14GB gradients + 28GB optimizer state), exceeding the VRAM capacity of most consumer GPUs.</li>
+<li><strong>Forum Post:</strong> <a href="https://dev-discuss.pytorch.org/t/how-to-measure-memory-usage-from-your-model-without-running-it/2024/1">How to measure memory usage from your model without running it?</a></li>
+</ul>
+</section>
+<section id="optimizing-memory-usage" class="level2">
+<h2 class="anchored" data-anchor-id="optimizing-memory-usage">Optimizing Memory Usage</h2>
+<section id="optimizer-memory" class="level3">
+<h3 class="anchored" data-anchor-id="optimizer-memory">Optimizer Memory</h3>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/1412.6980">Adam: A Method for Stochastic Optimization</a></li>
+<li>While alternative optimizers like SGD might seem appealing due to their lower memory overhead, Adam remains dominant in practice due to its effectiveness.</li>
+<li>Replacing Adam is challenging and might not yield significant memory savings.</li>
+</ul>
+</section>
+<section id="parameter-quantization" class="level3">
+<h3 class="anchored" data-anchor-id="parameter-quantization">Parameter Quantization</h3>
+<ul>
+<li><p><strong>4-bit Quantization:</strong> Reduces the precision of model parameters from FP16 to INT4 (half a byte per parameter).</p></li>
+<li><p>This technique can significantly reduce memory footprint, for example, bringing the size of a 7B parameter LLaMa model down from 14GB to 3.5GB.</p></li>
+<li><p><strong>Torch Compile:</strong> This tool can be leveraged to create efficient quantization kernels directly from Python code, eliminating the need for custom CUDA kernels.</p>
+<ul>
+<li><p>Decorate <code>quantize_tensor</code> and <code>dequantize_tensor</code> functions with <code>@torch.compile()</code></p></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb1-2">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"TORCH_LOGS"</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"output_code"</span></span>
+<span id="cb1-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb1-4"></span>
+<span id="cb1-5"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@torch.compile</span>()</span>
+<span id="cb1-6"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> quantize_tensor(x_fp32):</span>
+<span id="cb1-7">    absmax <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">max</span>(torch.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">abs</span>(x_fp32))</span>
+<span id="cb1-8">    c <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">127.0</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> absmax</span>
+<span id="cb1-9">    x_int8 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">round</span>(c <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x_fp32).to(torch.int8)</span>
+<span id="cb1-10">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> x_int8, c</span>
+<span id="cb1-11"></span>
+<span id="cb1-12"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@torch.compile</span>()</span>
+<span id="cb1-13"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> dequantize_tensor(x_int8, c):</span>
+<span id="cb1-14">    x_fp32 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x_int8.to(torch.float32) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> c</span>
+<span id="cb1-15">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> x_fp32</span>
+<span id="cb1-16"></span>
+<span id="cb1-17">x_int8, c <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> quantize_tensor(torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, device<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cuda"</span>))</span>
+<span id="cb1-18">x_fp32 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dequantize_tensor(x_int8, c)</span></code></pre></div>
+</div>
+</div></li>
+<li><p><strong>Docs:</strong> <a href="https://pytorch.org/docs/stable/generated/torch.compile.html">https://pytorch.org/docs/stable/generated/torch.compile.html</a></p></li>
+<li><p><strong>Tutorial:</strong> <a href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">Introduction to <code>torch.compile</code></a></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="gradient-optimization-with-lora" class="level3">
+<h3 class="anchored" data-anchor-id="gradient-optimization-with-lora">Gradient Optimization with LoRA</h3>
+<ul>
+<li>Directly quantizing gradients to 4-bit negatively impacts convergence.</li>
+<li><strong>Low-Rank Adaptation (LoRA):</strong> Circumvents this issue by training only a small subset of parameters (adapters) while keeping the majority frozen.</li>
+<li><strong>QLoRA:</strong> This technique combines LoRA with parameter quantization to achieve significant memory savings without compromising accuracy.</li>
+</ul>
+</section>
+<section id="challenges-and-solutions-with-qlora" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-and-solutions-with-qlora">Challenges and Solutions with QLoRA</h3>
+<ul>
+<li><p>QLoRA implementation can be complex, often requiring custom CUDA kernels (e.g., the original implementation by Tim Detmers consists of 4,000 lines of CUDA code).</p>
+<ul>
+<li>Weights aren’t in int4 but NF4 which is closer to a normal distribution</li>
+<li>Can’t matrix multiply NF4 tensors
+<ul>
+<li>need to dequantize and matmul</li>
+</ul></li>
+<li>Can’t use the same max for everything otherwise you’re too sensitive to outliers</li>
+<li>Quantization typically done in blocks with independent scales</li>
+<li>QLoRA quantizes the scales (double quantization)</li>
+</ul></li>
+<li><p><strong>Simplified Implementation with Torch Compile:</strong> <a href="https://github.com/drisspg">Driss Guessous</a>, a PyTorch developer, implemented QLoRA in approximately 900 lines of Python code using Torch Compile.</p>
+<ul>
+<li><strong>Code:</strong> <a href="https://www.github.com/torchao/dtypes/nf4tensor.py">torchao/dtypes/nf4tensor.py</a></li>
+</ul></li>
+<li><p><strong>Tensor Subclasses:</strong> PyTorch’s tensor subclassing feature enables the creation of custom data types like NF4 (used in QLoRA), allowing for more efficient representation and manipulation of quantized tensors.</p>
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> F.linear(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">input</span>, weight.to(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">input</span>.dtype))</span></code></pre></div>
+</div>
+</div></li>
+<li><p><strong>Docs:</strong> <a href="https://pytorch.org/docs/stable/tensors.html"><code>torch.Tensor</code></a></p></li>
+<li><p><strong><a href="https://github.com/albanD/subclass_zoo/">subclass_zoo</a>:</strong> Contains a number of examples of Tensor subclasses in PyTorch</p></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="model-parallelism-with-fsdp" class="level2">
+<h2 class="anchored" data-anchor-id="model-parallelism-with-fsdp">Model Parallelism with FSDP</h2>
+<section id="data-parallism" class="level3">
+<h3 class="anchored" data-anchor-id="data-parallism">Data Parallism</h3>
+<ul>
+<li><strong>Data parallelism:</strong> Split batches across multipls devices and keep a copy of the gradients, model params, and optimizer state on each device</li>
+<li>Data parallelism alone, while helpful, might not be sufficient for extremely large models.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/mastering-llms-course-notes/conference-talk-012/images/oom-with-data-parallelism.png" class="img-fluid figure-img"></p>
+<figcaption>OOM With Data Parallelism - Slaying OOMs: Slide 19</figcaption>
+</figure>
+</div>
+</section>
+<section id="fsdp" class="level3">
+<h3 class="anchored" data-anchor-id="fsdp">FSDP</h3>
+<ul>
+<li><strong>Fully Sharded Data Parallel (FSDP):</strong> Distributes model parameters (and by consequence the gradients, and optimizer states) across multiple GPUs, allowing for training models that exceed the memory capacity of a single device.
+<ul>
+<li>Memory corresponding to the layer getting processed will be freed when the layer is done.</li>
+</ul></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/mastering-llms-course-notes/conference-talk-012/images/fsdp-memory-step.png" class="img-fluid figure-img"></p>
+<figcaption>FSDP Memory - Slaying OOMs: Slide 21</figcaption>
+</figure>
+</div>
+<ul>
+<li><p><strong>Sharding:</strong> Dividing model components into smaller chunks (shards) that can be placed on different GPUs.</p></li>
+<li><p><strong>All Gather Operations:</strong> Used to gather necessary data from different GPUs during model training.</p></li>
+<li><p><strong>Layers</strong>:</p>
+<ul>
+<li>Every PyTorch <code>nn</code> module is a tree of more <code>nn</code> modules.</li>
+<li>The user’s wrapping policy determines what gets treated as its own “layer”.</li>
+<li>What you decided to wrap influences memory usage
+<ul>
+<li>Smaller blobs = less memory needs to be all-gathered at a time.</li>
+</ul></li>
+</ul></li>
+<li><p><strong>CPU Offloading:</strong></p>
+<ul>
+<li><p>Can keep parameters on the CPU and move them to the GPU when computing forward + backward.</p></li>
+<li><p>The optimizer update will be done on CPU, so the optim state lives there too.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/mastering-llms-course-notes/conference-talk-012/images/fsdp-memory-step-cpu-offloading.png" class="img-fluid figure-img"></p>
+<figcaption>FSDP CPU Offloading - Slaying OOMs: Slide 25</figcaption>
+</figure>
+</div></li>
+</ul></li>
+</ul>
+</section>
+<section id="fsdp1-vs.-fsdp2" class="level3">
+<h3 class="anchored" data-anchor-id="fsdp1-vs.-fsdp2">FSDP1 vs.&nbsp;FSDP2</h3>
+<ul>
+<li><p><strong>Goal:</strong> Make all-gather efficient</p></li>
+<li><p><strong>Constraint:</strong> <a href="https://developer.nvidia.com/nccl">NCCL</a> (NVIDIA Collective Communications Library) requires each GPU contribute same-size Tensors</p></li>
+<li><p><strong>FSDP1:</strong></p>
+<ul>
+<li><p>Flattens and concatenates all tensors before sharding, potentially leading to type and metadata conflicts.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/mastering-llms-course-notes/conference-talk-012/images/flatparam-fsdp-1.png" class="img-fluid figure-img"></p>
+<figcaption>FlatParam FSDP - Slaying OOMs: Slide 28</figcaption>
+</figure>
+</div>
+<ul>
+<li><code>t1</code> and the first part of <code>t2</code> get combined into a single tensor</li>
+<li>The second part of <code>t2</code> gets combined with <code>t3</code> into a single tensor</li>
+<li><code>t2</code> gets split between GPUs</li>
+<li>Forces <code>t1</code>, <code>t2</code>, and <code>t3</code> to all have the same d-type and other metadata</li>
+</ul></li>
+<li><p>Can lead to non-deterministic memory spikes, making memory management challenging.</p></li>
+</ul></li>
+<li><p><strong>FSDP2 (Per-Parameter FSDP):</strong></p>
+<ul>
+<li><p>Introduces distributed tensors (D-tensors) that allow for sharding individual tensors, preserving their original data types and metadata.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="christianjmills.com/posts/mastering-llms-course-notes/conference-talk-012/images/per-parameter-fsdp-2.png" class="img-fluid figure-img"></p>
+<figcaption>Per-Parameter FSDP - Slaying OOMs: Slide 30</figcaption>
+</figure>
+</div></li>
+<li><p>Offers better memory determinism, ensuring more predictable and manageable memory usage.</p></li>
+<li><p>Enables more flexible and efficient training scenarios, especially when combined with techniques like QLoRA.</p></li>
+<li><p>Requires extra copies during all-gather compared to FSDP1</p></li>
+<li><p><strong>Forum Post:</strong> <a href="https://dev-discuss.pytorch.org/t/fsdp-cudacachingallocator-an-outsider-newb-perspective/1486/1">FSDP &amp; CUDACachingAllocator: an outsider newb perspective</a></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="cpu-offloading" class="level3">
+<h3 class="anchored" data-anchor-id="cpu-offloading">CPU Offloading</h3>
+<ul>
+<li>Leverages CPU memory to store parameters and optimizer states, further reducing the memory load on GPUs.</li>
+<li>Offloads the optimizer step to the CPU, allowing GPUs to focus on computationally intensive forward and backward passes.</li>
+</ul>
+</section>
+</section>
+<section id="benchmarking-fsdp2" class="level2">
+<h2 class="anchored" data-anchor-id="benchmarking-fsdp2">Benchmarking FSDP2</h2>
+<section id="benchmarking-plan" class="level3">
+<h3 class="anchored" data-anchor-id="benchmarking-plan">Benchmarking Plan</h3>
+<ul>
+<li><strong>Goal:</strong> Run benchmarks, identify performance gaps between FSDP2 and the baseline (FSDP1 &amp; bnb), and explore ways to improve FSDP2’s speed.</li>
+<li><strong>Hardware:</strong> Two NVIDIA 3090 GPUs (consumer-grade, 24GB VRAM each) acquired from Vast AI.</li>
+<li><strong>Baseline:</strong> Answer.ai’s train.py with FSDP1 and bnb, using a batch size of 8.</li>
+</ul>
+</section>
+<section id="initial-benchmarking-and-discrepancies" class="level3">
+<h3 class="anchored" data-anchor-id="initial-benchmarking-and-discrepancies">Initial Benchmarking and Discrepancies</h3>
+<ul>
+<li><p><strong>Benchmarking Environments:</strong></p>
+<ul>
+<li><p><a href="https://github.com/AnswerDotAI/fsdp_qLoRA/blob/main/train.py">Answer.ai’s train.py</a> (command-line configuration)</p>
+<ul>
+<li><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">python</span> train.py <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--model_name</span> meta-llama/Llama-2-7b-hf <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--batch_size</span> 8 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--context_length</span> 2048 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--train_type</span></span>
+<span id="cb3-2">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">qLoRA</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--use_gradient_checkpointing</span> True <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--reentrant_checkpointing</span> True <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--dataset</span> dummy <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--dataset_samples</span></span>
+<span id="cb3-3">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">48</span></span></code></pre></div></li>
+</ul></li>
+<li><p><a href="https://github.com/pytorch/torchtune/blob/1fa1f04baf124c074dcd93831fa38c8b657af1e9/recipes/configs/dev/llama2/7B_qLoRA_fsdp2.yaml">TorchTune recipe</a> (YAML configuration)</p></li>
+</ul></li>
+<li><p><strong>Initial Findings:</strong></p>
+<ul>
+<li><table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>batch size</th>
+<th>peak memory</th>
+<th>runtime for a step</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>train.py</td>
+<td>8</td>
+<td>12.88 GiB</td>
+<td>14.0s</td>
+</tr>
+<tr class="even">
+<td>torchtune</td>
+<td>8</td>
+<td>12.60 GiB</td>
+<td>16.5s</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>FSDP2 showed better peak memory usage.</p></li>
+<li><p>FSDP2 was slower in runtime.</p></li>
+</ul></li>
+<li><p><strong>Tracing Analysis (Perfetto):</strong></p>
+<ul>
+<li><strong>Blog Posts:</strong>
+<ul>
+<li><a href="https://pytorch.org/blog/understanding-gpu-memory-1/">Understanding GPU Memory 1: Visualizing All Allocations over Time</a></li>
+<li><a href="https://pytorch.org/blog/understanding-gpu-memory-2/">Understanding GPU Memory 2: Finding and Removing Reference Cycles</a></li>
+</ul></li>
+<li><strong>Traces:</strong>
+<ul>
+<li><strong>Google Drive:</strong> <a href="https://drive.google.com/file/d/1ObfUUySBwuaCSLMXRxFiM1w7XYMebxvB/view">answer.ai train.py</a></li>
+<li><strong>Google Drive:</strong> <a href="https://drive.google.com/file/d/1BpdlZZ55746IHcifho2u2okJQ1ihr8dY/view">torchtune</a></li>
+</ul></li>
+<li><strong><a href="https://ui.perfetto.dev/">Perfetto</a>:</strong> A production-grade open-source stack for performance instrumentation and trace analysis</li>
+<li><strong>Significant difference in the number of optimizer steps:</strong> The optimizer took much longer in FSDP2.</li>
+<li><strong>Double the number of operations:</strong> Indicating FSDP2 might be training on more parameters than the baseline.</li>
+</ul></li>
+</ul>
+</section>
+<section id="identifying-the-root-causes" class="level3">
+<h3 class="anchored" data-anchor-id="identifying-the-root-causes">Identifying the Root Causes</h3>
+<ul>
+<li><strong>Root Cause 1: Configuration Discrepancy</strong>
+<ul>
+<li>TorchTune recipe LoRA-fied to the output projection (adding two low rank adapters per layer), resulting in 64 additional parameters compared to train.py.</li>
+</ul></li>
+<li><strong>Root Cause 2: Tensor Subclass Dispatch Overhead</strong>
+<ul>
+<li>Distributed tensors (D-tensors) introduce overhead due to metadata unwrapping during kernel calls.</li>
+<li>This overhead was amplified by the increased number of parameters, making the optimizer step significantly slower in FSDP2.</li>
+</ul></li>
+</ul>
+</section>
+<section id="addressing-the-discrepancies-and-further-benchmarking" class="level3">
+<h3 class="anchored" data-anchor-id="addressing-the-discrepancies-and-further-benchmarking">Addressing the Discrepancies and Further Benchmarking</h3>
+<ul>
+<li><strong>Ensuring Apples-to-Apples Comparison:</strong>
+<ul>
+<li>Standardized the dataset, parameter count, and wrapping policy across benchmarks.</li>
+</ul></li>
+<li><strong>Results After Standardization:</strong>
+<ul>
+<li>Still slower runtime for FSDP2.</li>
+<li>Significantly improved peak memory usage.</li>
+</ul></li>
+<li><strong>Further Analysis:</strong>
+<ul>
+<li>Focused on forward pass, backward pass, and optimizer as the main culprits for the remaining performance gap.</li>
+</ul></li>
+</ul>
+</section>
+<section id="deep-dive-into-performance-gaps" class="level3">
+<h3 class="anchored" data-anchor-id="deep-dive-into-performance-gaps">Deep Dive into Performance Gaps</h3>
+<ul>
+<li><strong>Gap 1: Optimizer Step Slowdown</strong>
+<ul>
+<li><strong>Problem:</strong> D-tensor overhead resulted in a 3x slower optimizer step.</li>
+<li><strong>Solution:</strong> Collaborated with Intel to develop a fused Adam optimizer kernel for single dispatch and vectorization, leading to an 8x speedup.</li>
+</ul></li>
+<li><strong>Gap 2: Larger All Gather Operations</strong>
+<ul>
+<li><strong>Problem 1:</strong> FSDP2 packed more data (scalars and quantization factors) into the all gather operation, unlike the baseline.</li>
+<li><strong>Problem 2:</strong> Output projection wasn’t quantized in FSDP2 when opting out of LoRA, leading to a 4x larger size compared to the baseline.</li>
+<li><strong>Solution:</strong>
+<ul>
+<li>Problem 1 is expected behavior.</li>
+<li>Problem 2 will be addressed by TorchTune in future releases.</li>
+</ul></li>
+</ul></li>
+<li><strong>Gap 3: Overhead from Dequantization</strong>
+<ul>
+<li><strong>Problem:</strong> FSDP2’s dequantization process from NF4 to BF16 for CUDA kernels was less efficient than the specialized implementation used in the baseline.</li>
+<li><strong>Solution:</strong> Explore using Torch Compile, custom Torch kernels, or Triton kernels for faster dequantization.</li>
+</ul></li>
+<li><strong>Gap 4: Different Rope Algorithms</strong>
+<ul>
+<li><strong>Problem:</strong> TorchTune and the baseline employed different Rope algorithms, leading to different operations before the SDPA.</li>
+<li><strong>Solution:</strong> TorchTune to offer a wider selection of Rope algorithms.</li>
+</ul></li>
+<li><strong>Gap 5: Overlapping Communication and Computation</strong>
+<ul>
+<li><strong>Problem:</strong> FSDP2’s stricter memory management exposed inefficiencies in overlapping CPU offloading with computation. The computation tasks were much smaller than the communication tasks, leading to idle time.</li>
+<li><strong>Solution:</strong> Adjusted the wrapping policy to group layers differently, enabling better overlap and reducing idle time. This solution is only feasible with FSDP2 due to its ability to handle mixed precision within a layer.</li>
+</ul></li>
+</ul>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>llms</category>
+  <guid>christianjmills.com/posts/mastering-llms-course-notes/conference-talk-012/</guid>
+  <pubDate>Wed, 24 Jul 2024 07:00:00 GMT</pubDate>
+  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Conference Talk 10: Systematically Improving RAG Applications</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -15532,2540 +16034,6 @@ font-style: inherit;">--gradio</span></span></code></pre></div></li>
   <category>llms</category>
   <guid>christianjmills.com/posts/mastering-llms-course-notes/workshop-002/</guid>
   <pubDate>Sun, 09 Jun 2024 07:00:00 GMT</pubDate>
-  <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>CUDA MODE Lecture 2 : Ch.1-3 PMPP Book</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>christianjmills.com/posts/cuda-mode-notes/lecture-002/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
-</ul>
-</div>
-</div>
-<ul>
-<li>Lecture Information</li>
-<li>Ch.1: Introduction</li>
-<li>Ch.2: Heterogeneous Data Parallel Computing</li>
-<li>Ch.3: Multidimensional Grids and Data</li>
-</ul>
-<section id="lecture-information" class="level2">
-<h2 class="anchored" data-anchor-id="lecture-information">Lecture Information</h2>
-<p><strong>Speaker:</strong> Andreas Kopf</p>
-<p><strong>Topic:</strong> PMPP Book Ch. 1-3</p>
-<p><strong>Resources:</strong></p>
-<ul>
-<li><strong>Lecture Slides:</strong> <a href="https://docs.google.com/presentation/d/1deqvEHdqEC4LHUpStO6z3TT77Dt84fNAvTIAxBJgDck/edit#slide=id.g2b1444253e5_1_75">CUDA Mode: Lecture 2</a></li>
-<li><strong>Textbook:</strong> <a href="https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/">Programming Massively Parallel Processors</a></li>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/cuda-mode/lectures/tree/main/lecture_002">CUDA MODE Lecture 2</a></li>
-<li><strong>Discord Channel:</strong> <a href="https://discord.gg/cudamode">CUDA MODE</a></li>
-<li><strong>YouTube Channel:</strong> <a href="https://www.youtube.com/@CUDAMODE">CUDA MODE</a></li>
-</ul>
-</section>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<ul>
-<li>Timestamp: <a href="https://youtu.be/NQ-0D5Ti2dc?si=59R0B3U5I8SLKY8K&amp;t=60">1:00</a></li>
-</ul>
-<section id="motivation" class="level3">
-<h3 class="anchored" data-anchor-id="motivation">Motivation</h3>
-<ul>
-<li><p>Optimize GPU performance as much as possible</p></li>
-<li><p>Applications:</p>
-<ul>
-<li>simulate and model worlds
-<ul>
-<li>games</li>
-<li>weather</li>
-<li>proteins</li>
-<li>robotics</li>
-</ul></li>
-</ul></li>
-<li><p>Bigger models are smarter</p>
-<ul>
-<li>speed and size improvements can have a significant impact on useability</li>
-</ul></li>
-<li><p>GPUs are the backbon of modern deep learning</p></li>
-</ul>
-</section>
-<section id="history" class="level3">
-<h3 class="anchored" data-anchor-id="history">History</h3>
-<ul>
-<li>Classic software uses sequential programs
-<ul>
-<li>executed one step at a time</li>
-<li>relied on higher CPU clock rates for improved performance</li>
-</ul></li>
-<li>Higher clock rate trend for CPUs slowed in 2003 due to energy consumption and heat dissipation challenges
-<ul>
-<li>Increasing frequency would make the chip to hot to cool feasibly</li>
-</ul></li>
-<li>Multi-core CPU came up
-<ul>
-<li>Developers had to learn multi-threading
-<ul>
-<li>New challenges such as deadlocks and race conditions</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="rise-of-cuda" class="level3">
-<h3 class="anchored" data-anchor-id="rise-of-cuda">Rise of CUDA</h3>
-<ul>
-<li>Compute Unified Device Architecture</li>
-<li>CUDA is all about parallel programs
-<ul>
-<li>divide work among threads</li>
-</ul></li>
-<li>GPUs have much higher peak FLOPS than multi-core CPUs
-<ul>
-<li>Benefits highly parallelized programs</li>
-<li>Not suitable for largely sequential programs</li>
-</ul></li>
-<li>CPU+GPU
-<ul>
-<li>Run sequential parts on CPU and numerically intensive parts on GPU</li>
-</ul></li>
-<li>GPGPU
-<ul>
-<li>Before CUDA tricks were used to compute with graphics APIs like OpenGL and Direct3D</li>
-</ul></li>
-<li>GPU programming is now attractive to developers due to massive availability</li>
-</ul>
-</section>
-<section id="amdahls-law" class="level3">
-<h3 class="anchored" data-anchor-id="amdahls-law">Amdahl’s Law</h3>
-<ul>
-<li><p><img src="https://latex.codecogs.com/png.latex?%0Aspeedup%20=%20(%20Slow%20%5C%20System%20%5C%20Time%20)/(Fast%20%5C%20System%20%5C%20Time)%0A"></p></li>
-<li><p>achievable speedup is limited by the parallelizable portion of <img src="https://latex.codecogs.com/png.latex?p"></p></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?%0Aspeedup%20%3C%20%5Cfrac%7B1%7D%7B1-p%7D%0A"></p>
-<ul>
-<li>If <img src="https://latex.codecogs.com/png.latex?p"> is <img src="https://latex.codecogs.com/png.latex?90%5C%25">, <img src="https://latex.codecogs.com/png.latex?speedup%20%3C%2010X"></li>
-</ul></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?p%20%3E%2099%5C%25"> for many real applications</p>
-<ul>
-<li>especially for large datasets</li>
-<li>speedups <img src="https://latex.codecogs.com/png.latex?%3E%20100X"> are attainable</li>
-</ul></li>
-</ul>
-</section>
-<section id="challenges" class="level3">
-<h3 class="anchored" data-anchor-id="challenges">Challenges</h3>
-<ul>
-<li>“If you do not care about performance, parallel programming is very easy”</li>
-<li>In practice, designing parallel algorithms is harder than sequential algorithms
-<ul>
-<li>Parallelizing recurrent computations requires nonintuitive thinking
-<ul>
-<li>prefix sum
-<ul>
-<li><a href="https://en.wikipedia.org/wiki/Prefix_sum">Wikipedia Page</a></li>
-</ul></li>
-</ul></li>
-</ul></li>
-<li>Speed is often limited by memory latency/throughput (memory bound)
-<ul>
-<li>Often need to read something to the GPU, perform some computation, and the write back the result
-<ul>
-<li>LLM inference generates token by token</li>
-</ul></li>
-</ul></li>
-<li>Input data characteristics can significantly influence performance of parallel programs
-<ul>
-<li>LLMs short or large sequences</li>
-<li>Might need different kernels optimized for different input shapes</li>
-</ul></li>
-<li>Not all applications are “embarrassingly parallel”
-<ul>
-<li>Synchronization imposes overhead
-<ul>
-<li>Need to wait for GPU operations to complete</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="main-goals-of-the-book" class="level3">
-<h3 class="anchored" data-anchor-id="main-goals-of-the-book">Main Goals of the Book</h3>
-<ol type="1">
-<li>Parallel programming &amp; computational thinking
-<ul>
-<li>Aims to build a foundation for parallel programming in general</li>
-<li>Uses GPUs as a learning vehicle
-<ul>
-<li>Techniques apply to other accelerators</li>
-<li>Concepts are introduced through hands-on CUDA examples</li>
-</ul></li>
-</ul></li>
-<li>Correct &amp; reliable parallel programing
-<ul>
-<li>Debugging both functions and performance</li>
-<li>Understanding where things are fast and slow and how to improve the slow parts</li>
-</ul></li>
-<li>Scalability
-<ul>
-<li>Regularize and localize memory access</li>
-<li>How to organize memory</li>
-</ul></li>
-</ol>
-</section>
-</section>
-<section id="heterogeneous-data-parallel-computing" class="level2">
-<h2 class="anchored" data-anchor-id="heterogeneous-data-parallel-computing">Heterogeneous Data Parallel Computing</h2>
-<ul>
-<li><p>Timestamp: <a href="https://youtu.be/NQ-0D5Ti2dc?si=ZeFGj3WVYDF_TI96&amp;t=511">8:31</a></p></li>
-<li><p>heterogeneous: CPU + GPU</p></li>
-<li><p>data parallelism: break work down into computations that can be executed independently</p></li>
-</ul>
-<section id="cuda-c" class="level3">
-<h3 class="anchored" data-anchor-id="cuda-c">CUDA C</h3>
-<ul>
-<li>extends ANSI C with minimal new syntax</li>
-<li>Terminology
-<ul>
-<li>CPU=host</li>
-<li>GPU=device</li>
-<li>Kernels: device code functions</li>
-</ul></li>
-<li>CUDA C source can be a mixture of host &amp; device code</li>
-<li>grid of threads
-<ul>
-<li>Many threads are launched to execute a kernel</li>
-</ul></li>
-<li>CPU &amp; GPU code runs concurrently (overlapped)
-<ul>
-<li>Kernels launch and run on GPU asynchronously</li>
-<li>Need to wait for the kernels to finish before copying data back to CPU</li>
-</ul></li>
-<li>Don’t be afraid to launch many threads on GPU
-<ul>
-<li>One thread per output tensor is fine</li>
-</ul></li>
-</ul>
-</section>
-<section id="cuda-essentials-memory-allocation" class="level3">
-<h3 class="anchored" data-anchor-id="cuda-essentials-memory-allocation">CUDA Essentials: Memory Allocation</h3>
-<ul>
-<li><p>NVIDIA devices come with their own DRAM (device) global memory</p></li>
-<li><p><code>cudaMalloc</code> &amp; <code>cudaFree</code>:</p>
-<ul>
-<li><p><code>cudaMalloc</code>: Allocate device global memory</p></li>
-<li><p><code>cudaFree</code>: Free device global memory</p></li>
-<li><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb1-1">  <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span>A_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb1-2">  <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">size_t</span> size <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> n <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> <span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">sizeof</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// size in bytes</span></span>
-<span id="cb1-3">  cudaMalloc<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">((</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">void</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">**)&amp;</span>A_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> size<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// pointer to pointer</span></span>
-<span id="cb1-4">  <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">...</span></span>
-<span id="cb1-5">  cudaFree<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>A_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span></code></pre></div></li>
-<li><p>Code convention</p>
-<ul>
-<li><code>_d</code> for device pointer</li>
-<li><code>_h</code> for host</li>
-</ul></li>
-<li><p><code>cudaMemcpy</code></p>
-<ul>
-<li><p>Copy data from CPU memory to GPU memory and vice versa</p></li>
-<li><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb2-1">  <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// copy input vectors to device (host -&gt; device)</span></span>
-<span id="cb2-2">  cudaMemcpy<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>A_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> A_h<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> size<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> cudaMemcpyHostToDevice<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb2-3">  cudaMemcpy<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>B_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> B_h<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> size<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> cudaMemcpyHostToDevice<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb2-4">  <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">...</span></span>
-<span id="cb2-5">  <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// transfer result back to CPU memory (device -&gt; host)</span></span>
-<span id="cb2-6">  cudaMemcpy<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>C_h<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> C_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> size<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> cudaMemcpyDeviceToHost<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span></code></pre></div></li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="cuda-error-handling" class="level3">
-<h3 class="anchored" data-anchor-id="cuda-error-handling">CUDA Error Handling</h3>
-<ul>
-<li>CUDA functions return <code>cudaError_t</code>
-<ul>
-<li><code>cudaSuccess</code> for successful operation</li>
-</ul></li>
-<li>Always check returned error status</li>
-</ul>
-</section>
-<section id="kernel-functions-fn" class="level3">
-<h3 class="anchored" data-anchor-id="kernel-functions-fn">Kernel functions <code>fn&lt;&lt;&gt;&gt;</code></h3>
-<ul>
-<li>Launching kernel
-<ul>
-<li>grid of threads is launched</li>
-</ul></li>
-<li>All threads execute the same code
-<ul>
-<li>SPMD: Single Program Multiple Data</li>
-</ul></li>
-<li>Threads are hierarchically organized into grid blocks &amp; thread blocks
-<ul>
-<li>Up to 1024 threads in a thread block</li>
-</ul></li>
-</ul>
-</section>
-<section id="kernel-coordinates" class="level3">
-<h3 class="anchored" data-anchor-id="kernel-coordinates">Kernel Coordinates</h3>
-<ul>
-<li><p>Built-in variables available inside the kernel</p>
-<ul>
-<li><code>blockIdx</code>: the area code for a telephone
-<ul>
-<li>Note: Blocks are a logical organization of threads, not physical</li>
-</ul></li>
-<li><code>threadIdx</code>: the local phone number</li>
-<li>These are ‘coordinates’ that allow threads to identify which portion of the data to process</li>
-<li>Can use <code>blockIdx</code> and <code>threadIdx</code> to uniquely identify threads</li>
-<li><code>blockDim</code>: tells us the number of threads in a block</li>
-</ul></li>
-<li><p>For vector addition, we can calculate the array index of the thread</p>
-<ul>
-<li><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb3-1">  <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> i <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span></code></pre></div></li>
-</ul></li>
-<li><p>All threads in a grid execute the same kernel code</p></li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/book-figure-2-9.png" class="img-fluid figure-img"></p>
-<figcaption>Programming Massively Parallel Processors - Figure 2.9</figcaption>
-</figure>
-</div>
-</section>
-<section id="cuda-c-keywords-for-function-declaration" class="level3">
-<h3 class="anchored" data-anchor-id="cuda-c-keywords-for-function-declaration">CUDA C keywords for function declaration</h3>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 27%">
-<col style="width: 21%">
-<col style="width: 15%">
-<col style="width: 35%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Qualifier Keyword</th>
-<th>Callable From</th>
-<th>Executed On</th>
-<th>Executed By</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>__host__</code> (default)</td>
-<td>Host</td>
-<td>Host</td>
-<td>Caller host thread</td>
-</tr>
-<tr class="even">
-<td><code>__global__</code></td>
-<td>Host (or Device)</td>
-<td>Device</td>
-<td>New grid of device threads</td>
-</tr>
-<tr class="odd">
-<td><code>__device__</code></td>
-<td>Device</td>
-<td>Device</td>
-<td>Caller device thread</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li><p><code>__global__</code> &amp; <code>__host__</code></p>
-<ul>
-<li>Tell the compiler whether the function should live on the device or host</li>
-<li>Declare a kernel function with <code>__global__</code>
-<ul>
-<li>Calling a <code>__global__</code> function launches new grid of CUDA threads</li>
-</ul></li>
-</ul></li>
-<li><p>Functions declared with <code>__device__</code> can be called from within CUDA thread</p>
-<ul>
-<li>Does not launch a new thread</li>
-<li>Only accessible from within kernels</li>
-</ul></li>
-<li><p>If both <code>__host__</code> and <code>__device__</code> are used in a function declaration</p>
-<ul>
-<li>CPU and GPU versions will be compiled</li>
-</ul></li>
-</ul>
-</section>
-<section id="calling-kernels" class="level3">
-<h3 class="anchored" data-anchor-id="calling-kernels">Calling Kernels</h3>
-<ul>
-<li><p>Kernel configuration is specified between <code>&lt;&lt;&lt;</code> and <code>&gt;&gt;&gt;</code></p></li>
-<li><p>Number of blocks, number of threads in each block</p></li>
-<li><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Define the number of threads per block.</span></span>
-<span id="cb4-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Each block will have 256 threads.</span></span>
-<span id="cb4-3">dim3 numThreads<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">256</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb4-4"></span>
-<span id="cb4-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Calculate the number of blocks needed to cover the entire vector.</span></span>
-<span id="cb4-6"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Use ceiling division to ensure that the number of blocks is sufficient</span></span>
-<span id="cb4-7"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// to handle all elements of the vector 'n'.</span></span>
-<span id="cb4-8"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// The formula (n + numThreads.x - 1) / numThreads.x ensures this.</span></span>
-<span id="cb4-9">dim3 numBlocks<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">((</span>n <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> numThreads<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span> numThreads<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb4-10"></span>
-<span id="cb4-11"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Launch the vector addition kernel with the calculated number of blocks and threads.</span></span>
-<span id="cb4-12"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// This will execute the vecAddKernel function on the GPU with 'numBlocks' blocks,</span></span>
-<span id="cb4-13"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// each containing 'numThreads.x' threads.</span></span>
-<span id="cb4-14">vecAddKernel<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;&lt;&lt;</span>numBlocks<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> numThreads<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;&gt;&gt;(</span>A_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> B_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> C_d<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> n<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span></code></pre></div></li>
-</ul>
-</section>
-<section id="compiler" class="level3">
-<h3 class="anchored" data-anchor-id="compiler">Compiler</h3>
-<ul>
-<li>nvcc
-<ul>
-<li>NVIDIA C Compiler</li>
-<li>Use to compiler kernels into PTX (CUDA assembly)</li>
-</ul></li>
-<li>PTX
-<ul>
-<li>Parallel Thread Execution</li>
-<li>Low-level VM &amp; instruction set</li>
-</ul></li>
-<li>Grahics driver translates PTX into executable binary code (SASS)
-<ul>
-<li>SASS is the low-level assembly language that compiles to binary microcode, which executes natively on NVIDIA GPU hardware.</li>
-</ul></li>
-</ul>
-</section>
-<section id="code-example-vector-addition" class="level3">
-<h3 class="anchored" data-anchor-id="code-example-vector-addition">Code Example: Vector addition</h3>
-<ul>
-<li><p>main concept: replace loop with a grid of threads</p></li>
-<li><p>easily parallelizable</p>
-<ul>
-<li>all additions can be computed independently</li>
-</ul></li>
-<li><p>Naive GPU vector addition</p>
-<ol type="1">
-<li>Allocate device memory for vectors</li>
-<li>Transfer inputs from host to device</li>
-<li>Launch kernel and perform addition operations</li>
-<li>Copy outputs from device to host</li>
-<li>Free device memory</li>
-</ol>
-<ul>
-<li>The ratio of data transfer vs compute is not very good
-<ul>
-<li>Normally keep data on the GPU as long as possible to asynchronously schedule many kernel launches</li>
-</ul></li>
-</ul></li>
-<li><p>Figure from slide 13:</p>
-<ul>
-<li>One thread per vector element</li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/slide-13-figure.png" class="img-fluid figure-img"></p>
-<figcaption>slide-13-figure</figcaption>
-</figure>
-</div></li>
-<li><p>Data sizes might not be perfectly divisible by block sizes</p>
-<ul>
-<li>always check bounds</li>
-</ul></li>
-<li><p>Prevent threads of boundary block to read/write outside allocated memory</p></li>
-<li><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/**</span></span>
-<span id="cb5-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@brief</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> CUDA kernel to compute the element-wise sum of two vectors.</span></span>
-<span id="cb5-3"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> *</span></span>
-<span id="cb5-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * This kernel function performs the pair-wise addition of elements from</span></span>
-<span id="cb5-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * vectors A and B, and stores the result in vector C.</span></span>
-<span id="cb5-6"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> *</span></span>
-<span id="cb5-7"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">A</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> Pointer to the first input vector (array) in device memory.</span></span>
-<span id="cb5-8"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">B</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> Pointer to the second input vector (array) in device memory.</span></span>
-<span id="cb5-9"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">C</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> Pointer to the output vector (array) in device memory.</span></span>
-<span id="cb5-10"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">n</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> The number of elements in the vectors.</span></span>
-<span id="cb5-11"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> */</span></span>
-<span id="cb5-12">__global__</span>
-<span id="cb5-13"><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">void</span> vecAddKernel<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> A<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> B<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> C<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> n<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb5-14">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Calculate the unique index for the thread</span></span>
-<span id="cb5-15">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> i <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb5-16"></span>
-<span id="cb5-17">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Check if the index is within the bounds of the arrays</span></span>
-<span id="cb5-18">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>i <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> n<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb5-19">        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Perform the element-wise addition</span></span>
-<span id="cb5-20">        C<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>i<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> A<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>i<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> B<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>i<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">];</span></span>
-<span id="cb5-21">    <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb5-22"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span></code></pre></div></li>
-</ul>
-</section>
-<section id="code-example-kernel-to-convert-an-rgb-image-to-grayscale" class="level3">
-<h3 class="anchored" data-anchor-id="code-example-kernel-to-convert-an-rgb-image-to-grayscale">Code Example: Kernel to convert an RGB image to grayscale</h3>
-<ul>
-<li><p>Each RGB pixel can be converted individually</p></li>
-<li><p><img src="https://latex.codecogs.com/png.latex?%0ALuminance%20=%20r%5Ccdot%7B0.21%7D%20+%20g%5Ccdot%7B0.72%7D%20+%20b%5Ccdot%7B0.07%7D%0A"></p></li>
-<li><p>Simple weighted sum</p></li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/book-figure-2-2.png" class="img-fluid figure-img"></p>
-<figcaption>Programming Massively Parallel Processors - Figure 2.2</figcaption>
-</figure>
-</div>
-</section>
-</section>
-<section id="multidimensional-grids-and-data" class="level2">
-<h2 class="anchored" data-anchor-id="multidimensional-grids-and-data">Multidimensional Grids and Data</h2>
-<ul>
-<li>Timestamp: <a href="https://youtu.be/NQ-0D5Ti2dc?si=k2a0vvryolFT8AsZ&amp;t=1495">24:55</a></li>
-</ul>
-<section id="cuda-grid" class="level3">
-<h3 class="anchored" data-anchor-id="cuda-grid">CUDA Grid</h3>
-<ul>
-<li><p>2-level hierarchy</p>
-<ul>
-<li>Blocks and threads</li>
-</ul></li>
-<li><p>Idea: Map threads to multi-dimensional data (e.g., an image)</p></li>
-<li><p>All threads in a grid execute the same kernel</p></li>
-<li><p>Threads in the same block can access the same shared memory</p></li>
-<li><p>Max block size: 1024</p></li>
-<li><p>Built-in 3D coordinates of a thread</p>
-<ul>
-<li><code>blockIdx</code> and <code>threadIdx</code> identify which portion of the data to process</li>
-</ul></li>
-<li><p>shape of grid &amp; blocks</p>
-<ul>
-<li><code>gridDim</code>: number of blocks in the grid</li>
-<li><code>blockDim</code>: number of threads in a block</li>
-</ul></li>
-<li><p>A multidimensional example of CUDA grid organization:</p></li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/book-figure-3-1.png" class="img-fluid figure-img" style="width:67.0%"></p>
-<figcaption>Programming Massively Parallel Processors - Figure 3.1</figcaption>
-</figure>
-</div>
-<ul>
-<li><p>Grid can be different for each kernel launch</p>
-<ul>
-<li>Normally dependent on data shapes</li>
-</ul></li>
-<li><p>Typical grids contain thousands to millions of threads</p></li>
-<li><p>Simple Strategy</p>
-<ul>
-<li>One thread per output element
-<ul>
-<li>One thread per pixel</li>
-<li>One thread per tensor element</li>
-</ul></li>
-</ul></li>
-<li><p>Threads can be scheduled in any order</p>
-<ul>
-<li>A larger thread index does not necessarily indicate the thread is running after a thread with a lower index</li>
-</ul></li>
-<li><p>Can use fewer than 3 dims (set others to 1)</p>
-<ul>
-<li><p>1D for sequences, 2D for images, etc.</p></li>
-<li><div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb6-1">  dim3 grid<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">32</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb6-2">  dim3 block<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">128</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb6-3">  kernelFunction<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;&lt;&lt;</span>grid<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> block<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;&gt;&gt;(..);</span></span>
-<span id="cb6-4">  <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Number of threads: 128*32 = 4096</span></span></code></pre></div></li>
-</ul></li>
-</ul>
-</section>
-<section id="built-in-variables" class="level3">
-<h3 class="anchored" data-anchor-id="built-in-variables">Built-in Variables</h3>
-<ul>
-<li><p>Built-in variables inside kernels:</p>
-<ul>
-<li><div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb7-1">  blockIdx <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// dim3 block coordinate</span></span>
-<span id="cb7-2">  threadIdx <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// dim3 thread coordinate</span></span>
-<span id="cb7-3">  blockDim <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// number of threads in a block</span></span>
-<span id="cb7-4">  gridDim <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// number of blocks in a grid</span></span></code></pre></div></li>
-<li><code>blockDim</code> and <code>gridDim</code> have the same values in all threads</li>
-</ul></li>
-</ul>
-</section>
-<section id="nd-arrays-in-memory" class="level3">
-<h3 class="anchored" data-anchor-id="nd-arrays-in-memory">nd-Arrays in Memory</h3>
-<ul>
-<li>memory of multi-dim arrays under the hood is a flat 1-dimensional array</li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/slide-28-actual-layout.png" class="img-fluid figure-img"></p>
-<figcaption>Slide 28: Actual layout in memory</figcaption>
-</figure>
-</div>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/slide-28-logical-layout.png" class="img-fluid figure-img"></p>
-<figcaption>Slide 28: Logical view of data</figcaption>
-</figure>
-</div>
-<ul>
-<li><p>2d array can be linearized in different ways</p>
-<ul>
-<li><pre class="text"><code>  A B C D E F G H I</code></pre></li>
-<li><p>row-major</p>
-<ul>
-<li><pre class="text"><code>  A B C
-  D E F
-  G H I</code></pre></li>
-<li>Most common</li>
-</ul></li>
-<li><p>column-major</p>
-<ul>
-<li><pre class="text"><code>  A D G
-  B E H
-  C F I</code></pre></li>
-<li>Used in fortran</li>
-</ul></li>
-</ul></li>
-<li><p>PyTorch tensors and numpy arrays use strides to specify how elements are laid out in memory</p>
-<ul>
-<li>For a <img src="https://latex.codecogs.com/png.latex?4%20%5Ctimes%204"> matrix, the stride would be <img src="https://latex.codecogs.com/png.latex?4"> to get to the next row.
-<ul>
-<li>After four elements, you end up in the next row.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="code-example-image-blur" class="level3">
-<h3 class="anchored" data-anchor-id="code-example-image-blur">Code Example: Image Blur</h3>
-<ul>
-<li><p>mean filter example <code>blurKernel</code>:</p>
-<ul>
-<li><div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// CUDA kernel to perform a simple box blur on an input image</span></span>
-<span id="cb11-2">__global__</span>
-<span id="cb11-3"><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">void</span> blurKernel<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span>in<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span>out<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> w<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> h<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb11-4">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Calculate the column and row index of the pixel this thread is processing</span></span>
-<span id="cb11-5">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb11-6">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb11-7"></span>
-<span id="cb11-8">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Ensure the thread is within the image bounds</span></span>
-<span id="cb11-9">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> w <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> h<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb11-10">        <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> pixVal <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Variable to accumulate the sum of pixel values</span></span>
-<span id="cb11-11">        <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> pixels <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Variable to count the number of valid pixels in the blur region</span></span>
-<span id="cb11-12"></span>
-<span id="cb11-13">        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Loop over the surrounding pixels within the blur region</span></span>
-<span id="cb11-14">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">for</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> blurRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>BLUR_SIZE<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> blurRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;=</span> BLUR_SIZE<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">++</span>blurRow<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb11-15">            <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">for</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> blurCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>BLUR_SIZE<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> blurCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;=</span> BLUR_SIZE<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">++</span>blurCol<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb11-16">                <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> blurRow<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Current row index in the blur region</span></span>
-<span id="cb11-17">                <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> curCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> blurCol<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Current column index in the blur region</span></span>
-<span id="cb11-18"></span>
-<span id="cb11-19">                <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Check if the current pixel is within the image bounds</span></span>
-<span id="cb11-20">                <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> h <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> curCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> curCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> w<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb11-21">                    pixVal <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> in<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> w <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> curCol<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">];</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Accumulate the pixel value</span></span>
-<span id="cb11-22">                    <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">++</span>pixels<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Increment the count of valid pixels</span></span>
-<span id="cb11-23">                <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb11-24">            <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb11-25">        <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb11-26"></span>
-<span id="cb11-27">        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Calculate the average pixel value and store it in the output image</span></span>
-<span id="cb11-28">        out<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> w <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> col<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)(</span>pixVal <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span> pixels<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb11-29">    <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb11-30"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span></code></pre></div></li>
-</ul></li>
-<li><p>each thread writes one output element, read multiple values</p></li>
-<li><p>single plane in book, can be easily extended to multi-channel</p></li>
-<li><p>shows row-major pixel memory access (in &amp; out pointers)</p></li>
-<li><p>track of how many pixel values are summed</p></li>
-<li><p>Handling boundary conditions for pixels near the edges of the image:</p></li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/book-figure-3-9.png" class="img-fluid figure-img"></p>
-<figcaption>Programming Massively Parallel Processors - Figure 3.9</figcaption>
-</figure>
-</div>
-<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> pathlib <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Path</span>
-<span id="cb12-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">as</span> np</span>
-<span id="cb12-3"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> PIL <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Image</span>
-<span id="cb12-4"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> torch</span>
-<span id="cb12-5"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> torch.utils.cpp_extension <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> load_inline</span></code></pre></div>
-<div class="callout callout-style-default callout-note callout-titled" title="CUDA Code">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-CUDA Code
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<pre class="text"><code></code></pre>
-<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb14-1"><span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">#include </span><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">&lt;torch/types.h&gt;</span></span>
-<span id="cb14-2"><span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">#include </span><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">&lt;cuda.h&gt;</span></span>
-<span id="cb14-3"><span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">#include </span><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">&lt;cuda_runtime.h&gt;</span></span>
-<span id="cb14-4"></span>
-<span id="cb14-5"><span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">#include </span><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">&lt;c10/cuda/CUDAException.h&gt;</span></span>
-<span id="cb14-6"><span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">#include </span><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">&lt;c10/cuda/CUDAStream.h&gt;</span></span>
-<span id="cb14-7"></span>
-<span id="cb14-8"></span>
-<span id="cb14-9"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// CUDA kernel for applying a mean filter to an image</span></span>
-<span id="cb14-10">__global__</span>
-<span id="cb14-11"><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">void</span> mean_filter_kernel<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> output<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> input<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> height<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> radius<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb14-12">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Calculate the column, row, and channel this thread is responsible for</span></span>
-<span id="cb14-13">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-14">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-15">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> channel <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>z<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-16"></span>
-<span id="cb14-17">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Base offset for the current channel</span></span>
-<span id="cb14-18">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> baseOffset <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> channel <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> height <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-19"></span>
-<span id="cb14-20">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Ensure the thread is within image bounds</span></span>
-<span id="cb14-21">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> width <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> height<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb14-22">        <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> pixVal <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Accumulator for the pixel values</span></span>
-<span id="cb14-23">        <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> pixels <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Counter for the number of pixels summed</span></span>
-<span id="cb14-24"></span>
-<span id="cb14-25">        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Iterate over the kernel window</span></span>
-<span id="cb14-26">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">for</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> blurRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>radius<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> blurRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;=</span> radius<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> blurRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb14-27">            <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">for</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> blurCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span>radius<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> blurCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;=</span> radius<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> blurCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb14-28">                <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> blurRow<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-29">                <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> curCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> blurCol<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-30"></span>
-<span id="cb14-31">                <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Check if the current position is within image bounds</span></span>
-<span id="cb14-32">                <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> height <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> curCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> curCol <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb14-33">                    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Accumulate pixel value and count the number of pixels</span></span>
-<span id="cb14-34">                    pixVal <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> input<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>baseOffset <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> curRow <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> width <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> curCol<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">];</span></span>
-<span id="cb14-35">                    pixels <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-36">                <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb14-37">            <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb14-38">        <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb14-39"></span>
-<span id="cb14-40">        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Write the averaged value to the output image</span></span>
-<span id="cb14-41">        output<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>baseOffset <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> width <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> col<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)(</span>pixVal <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span> pixels<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-42">    <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb14-43"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb14-44"></span>
-<span id="cb14-45"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Helper function for ceiling unsigned integer division</span></span>
-<span id="cb14-46"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">inline</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> cdiv<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> a<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> b<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb14-47">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">return</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>a <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> b <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span> b<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-48"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb14-49"></span>
-<span id="cb14-50"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Main function to apply the mean filter to an image using CUDA</span></span>
-<span id="cb14-51">torch<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span>Tensor mean_filter<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>torch<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span>Tensor image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> radius<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb14-52">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Ensure the input image is on the GPU, is of byte type, and radius is positive</span></span>
-<span id="cb14-53">    <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">assert</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>device<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">().</span>type<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">()</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">==</span> torch<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span>kCUDA<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-54">    <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">assert</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>dtype<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">()</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">==</span> torch<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span>kByte<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-55">    <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">assert</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>radius <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-56"></span>
-<span id="cb14-57">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Get image dimensions and number of channels</span></span>
-<span id="cb14-58">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">const</span> <span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">auto</span> channels <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>size<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-59">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">const</span> <span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">auto</span> height <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>size<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-60">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">const</span> <span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">auto</span> width <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>size<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-61"></span>
-<span id="cb14-62">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Create an empty tensor to store the result</span></span>
-<span id="cb14-63">    <span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">auto</span> result <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span>empty_like<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-64"></span>
-<span id="cb14-65">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Define the number of threads per block and number of blocks</span></span>
-<span id="cb14-66">    dim3 threads_per_block<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">16</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">16</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> channels<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-67">    dim3 number_of_blocks<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span></span>
-<span id="cb14-68">        cdiv<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> threads_per_block<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">),</span></span>
-<span id="cb14-69">        cdiv<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>height<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> threads_per_block<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span></span>
-<span id="cb14-70">    <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-71"></span>
-<span id="cb14-72">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Launch the CUDA kernel</span></span>
-<span id="cb14-73">    mean_filter_kernel<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;&lt;&lt;</span>number_of_blocks<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> threads_per_block<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> torch<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span>cuda<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span>getCurrentCUDAStream<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">()&gt;&gt;&gt;(</span></span>
-<span id="cb14-74">        result<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>data_ptr<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;(),</span></span>
-<span id="cb14-75">        image<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>data_ptr<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">unsigned</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">char</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;(),</span></span>
-<span id="cb14-76">        width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb14-77">        height<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb14-78">        radius</span>
-<span id="cb14-79">    <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">);</span></span>
-<span id="cb14-80"></span>
-<span id="cb14-81">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Check for any CUDA errors (calls cudaGetLastError())</span></span>
-<span id="cb14-82">    C10_CUDA_KERNEL_LAUNCH_CHECK<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">();</span></span>
-<span id="cb14-83"></span>
-<span id="cb14-84">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Return the filtered image</span></span>
-<span id="cb14-85">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">return</span> result<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb14-86"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span></code></pre></div>
-</div>
-</div>
-</div>
-<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Define the CUDA kernel and C++ wrapper</span></span>
-<span id="cb15-2">cuda_source <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'''</span></span>
-<span id="cb15-3"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">#include &lt;c10/cuda/CUDAException.h&gt;</span></span>
-<span id="cb15-4"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">#include &lt;c10/cuda/CUDAStream.h&gt;</span></span>
-<span id="cb15-5"></span>
-<span id="cb15-6"></span>
-<span id="cb15-7"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">// CUDA kernel for applying a mean filter to an image</span></span>
-<span id="cb15-8"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">__global__</span></span>
-<span id="cb15-9"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">void mean_filter_kernel(unsigned char* output, unsigned char* input, int width, int height, int radius) {</span></span>
-<span id="cb15-10"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Calculate the column, row, and channel this thread is responsible for</span></span>
-<span id="cb15-11"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    int col = blockIdx.x * blockDim.x + threadIdx.x;</span></span>
-<span id="cb15-12"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    int row = blockIdx.y * blockDim.y + threadIdx.y;</span></span>
-<span id="cb15-13"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    int channel = threadIdx.z;</span></span>
-<span id="cb15-14"></span>
-<span id="cb15-15"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Base offset for the current channel</span></span>
-<span id="cb15-16"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    int baseOffset = channel * height * width;</span></span>
-<span id="cb15-17"></span>
-<span id="cb15-18"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Ensure the thread is within image bounds</span></span>
-<span id="cb15-19"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    if (col &lt; width &amp;&amp; row &lt; height) {</span></span>
-<span id="cb15-20"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        int pixVal = 0; // Accumulator for the pixel values</span></span>
-<span id="cb15-21"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        int pixels = 0; // Counter for the number of pixels summed</span></span>
-<span id="cb15-22"></span>
-<span id="cb15-23"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        // Iterate over the kernel window</span></span>
-<span id="cb15-24"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        for (int blurRow = -radius; blurRow &lt;= radius; blurRow += 1) {</span></span>
-<span id="cb15-25"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            for (int blurCol = -radius; blurCol &lt;= radius; blurCol += 1) {</span></span>
-<span id="cb15-26"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                int curRow = row + blurRow;</span></span>
-<span id="cb15-27"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                int curCol = col + blurCol;</span></span>
-<span id="cb15-28"></span>
-<span id="cb15-29"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                // Check if the current position is within image bounds</span></span>
-<span id="cb15-30"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                if (curRow &gt;= 0 &amp;&amp; curRow &lt; height &amp;&amp; curCol &gt;= 0 &amp;&amp; curCol &lt; width) {</span></span>
-<span id="cb15-31"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                    // Accumulate pixel value and count the number of pixels</span></span>
-<span id="cb15-32"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                    pixVal += input[baseOffset + curRow * width + curCol];</span></span>
-<span id="cb15-33"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                    pixels += 1;</span></span>
-<span id="cb15-34"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">                }</span></span>
-<span id="cb15-35"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">            }</span></span>
-<span id="cb15-36"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        }</span></span>
-<span id="cb15-37"></span>
-<span id="cb15-38"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        // Write the averaged value to the output image</span></span>
-<span id="cb15-39"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        output[baseOffset + row * width + col] = (unsigned char)(pixVal / pixels);</span></span>
-<span id="cb15-40"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    }</span></span>
-<span id="cb15-41"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb15-42"></span>
-<span id="cb15-43"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">// Helper function for ceiling unsigned integer division</span></span>
-<span id="cb15-44"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">inline unsigned int cdiv(unsigned int a, unsigned int b) {</span></span>
-<span id="cb15-45"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    return (a + b - 1) / b;</span></span>
-<span id="cb15-46"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb15-47"></span>
-<span id="cb15-48"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">// Main function to apply the mean filter to an image using CUDA</span></span>
-<span id="cb15-49"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">torch::Tensor mean_filter(torch::Tensor image, int radius) {</span></span>
-<span id="cb15-50"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Ensure the input image is on the GPU, is of byte type, and radius is positive</span></span>
-<span id="cb15-51"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    assert(image.device().type() == torch::kCUDA);</span></span>
-<span id="cb15-52"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    assert(image.dtype() == torch::kByte);</span></span>
-<span id="cb15-53"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    assert(radius &gt; 0);</span></span>
-<span id="cb15-54"></span>
-<span id="cb15-55"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Get image dimensions and number of channels</span></span>
-<span id="cb15-56"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    const auto channels = image.size(0);</span></span>
-<span id="cb15-57"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    const auto height = image.size(1);</span></span>
-<span id="cb15-58"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    const auto width = image.size(2);</span></span>
-<span id="cb15-59"></span>
-<span id="cb15-60"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Create an empty tensor to store the result</span></span>
-<span id="cb15-61"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    auto result = torch::empty_like(image);</span></span>
-<span id="cb15-62"></span>
-<span id="cb15-63"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Define the number of threads per block and number of blocks</span></span>
-<span id="cb15-64"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    dim3 threads_per_block(16, 16, channels);</span></span>
-<span id="cb15-65"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    dim3 number_of_blocks(</span></span>
-<span id="cb15-66"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        cdiv(width, threads_per_block.x),</span></span>
-<span id="cb15-67"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        cdiv(height, threads_per_block.y)</span></span>
-<span id="cb15-68"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    );</span></span>
-<span id="cb15-69"></span>
-<span id="cb15-70"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Launch the CUDA kernel</span></span>
-<span id="cb15-71"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    mean_filter_kernel&lt;&lt;&lt;number_of_blocks, threads_per_block, 0, torch::cuda::getCurrentCUDAStream()&gt;&gt;&gt;(</span></span>
-<span id="cb15-72"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        result.data_ptr&lt;unsigned char&gt;(),</span></span>
-<span id="cb15-73"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        image.data_ptr&lt;unsigned char&gt;(),</span></span>
-<span id="cb15-74"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        width,</span></span>
-<span id="cb15-75"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        height,</span></span>
-<span id="cb15-76"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">        radius</span></span>
-<span id="cb15-77"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    );</span></span>
-<span id="cb15-78"></span>
-<span id="cb15-79"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Check for any CUDA errors (calls cudaGetLastError())</span></span>
-<span id="cb15-80"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
-<span id="cb15-81"></span>
-<span id="cb15-82"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    // Return the filtered image</span></span>
-<span id="cb15-83"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">    return result;</span></span>
-<span id="cb15-84"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb15-85"><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'''</span></span>
-<span id="cb15-86"></span>
-<span id="cb15-87">cpp_source <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"torch::Tensor mean_filter(torch::Tensor image, int radius);"</span></span></code></pre></div>
-<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1">build_dir <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Path(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'./load_inline_cuda'</span>)</span>
-<span id="cb16-2">build_dir.mkdir(exist_ok<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Load the defined C++/CUDA extension as a PyTorch extension.</span></span>
-<span id="cb17-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># This enables using the `mean_filter` function as if it were a native PyTorch function.</span></span>
-<span id="cb17-3">mean_filter_extension <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> load_inline(</span>
-<span id="cb17-4">    name<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'mean_filter_extension'</span>,   <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Unique name for the extension</span></span>
-<span id="cb17-5">    cpp_sources<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>cpp_source,           <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># C++ source code containing the CPU implementation</span></span>
-<span id="cb17-6">    cuda_sources<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>cuda_source,         <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># CUDA source code for GPU implementation</span></span>
-<span id="cb17-7">    functions<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'mean_filter'</span>],      <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># List of functions to expose to Python</span></span>
-<span id="cb17-8">    with_cuda<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,                   <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Enable CUDA support</span></span>
-<span id="cb17-9">    extra_cuda_cflags<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"-O2"</span>],        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Compiler flags for optimizing the CUDA code</span></span>
-<span id="cb17-10">    build_directory<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">str</span>(build_dir),   <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Directory to store the compiled extension</span></span>
-<span id="cb17-11">)</span></code></pre></div>
-<div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Define the path to the image file</span></span>
-<span id="cb18-2">img_path <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Path(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'./Grace_Hopper.jpg'</span>)</span>
-<span id="cb18-3"></span>
-<span id="cb18-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Open the image using PIL (Python Imaging Library)</span></span>
-<span id="cb18-5">test_img <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Image.<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">open</span>(img_path)</span>
-<span id="cb18-6">test_img</span></code></pre></div>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/output_6_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Convert the image to a NumPy array, then to a PyTorch tensor</span></span>
-<span id="cb19-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Rearrange the tensor dimensions from (H, W, C) to (C, H, W) and move it to GPU</span></span>
-<span id="cb19-3">x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.tensor(np.array(test_img)).permute(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>).contiguous().cuda()</span>
-<span id="cb19-4"></span>
-<span id="cb19-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Apply the mean filter to the tensor using a kernel size of 8</span></span>
-<span id="cb19-6">y <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> mean_filter_extension.mean_filter(x, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">8</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Convert the filtered tensor back to a NumPy array, rearrange dimensions back to (H, W, C)</span></span>
-<span id="cb20-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># and create an image from the array using PIL</span></span>
-<span id="cb20-3">output_img <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Image.fromarray(y.cpu().permute(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>).numpy())</span>
-<span id="cb20-4">output_img</span></code></pre></div>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/output_8_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-</section>
-<section id="matrix-multiplication" class="level3">
-<h3 class="anchored" data-anchor-id="matrix-multiplication">Matrix Multiplication</h3>
-<ul>
-<li><p>Staple of science, engineering, and deep learning</p></li>
-<li><p>Computer inner-products of rows and columns</p></li>
-<li><p>Strategy: 1 thread per output matrix element</p></li>
-<li><p>Example: Multiplying square matrices (rows == cols)</p>
-<ul>
-<li><div class="sourceCode" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb21-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/**</span></span>
-<span id="cb21-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@brief</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> Matrix multiplication kernel function.</span></span>
-<span id="cb21-3"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> *</span></span>
-<span id="cb21-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * This kernel performs the multiplication of two matrices M and N, storing the result in matrix P.</span></span>
-<span id="cb21-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> *</span></span>
-<span id="cb21-6"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">M</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> Pointer to the first input matrix.</span></span>
-<span id="cb21-7"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">N</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> Pointer to the second input matrix.</span></span>
-<span id="cb21-8"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">P</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> Pointer to the output matrix.</span></span>
-<span id="cb21-9"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> * </span><span class="an" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">@param</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> </span><span class="cv" style="color: #5E5E5E;
-background-color: null;
-font-style: italic;">Width</span><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> The width of the input and output matrices (assuming square matrices).</span></span>
-<span id="cb21-10"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"> */</span></span>
-<span id="cb21-11">__global__ <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">void</span> MatrixMulKernel<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> M<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> N<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> P<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span> <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> Width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb21-12">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Calculate the row index of the P matrix element and M matrix element</span></span>
-<span id="cb21-13">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>y<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb21-14">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Calculate the column index of the P matrix element and N matrix element</span></span>
-<span id="cb21-15">    <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> blockIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> blockDim<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> threadIdx<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>x<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb21-16"></span>
-<span id="cb21-17">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Ensure that row and column indices are within bounds</span></span>
-<span id="cb21-18">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">if</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">((</span>row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> Width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&amp;&amp;</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span>col <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> Width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">))</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb21-19">        <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">float</span> Pvalue <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Initialize the output value for element P[row][col]</span></span>
-<span id="cb21-20"></span>
-<span id="cb21-21">        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Perform the dot product of the row of M and column of N</span></span>
-<span id="cb21-22">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">for</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">(</span><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">int</span> k <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> k <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span> Width<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">++</span>k<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">)</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb21-23">            Pvalue <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+=</span> M<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> Width <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> k<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> N<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>k <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> Width <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> col<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">];</span></span>
-<span id="cb21-24">        <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb21-25"></span>
-<span id="cb21-26">        <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">// Store the result in the P matrix</span></span>
-<span id="cb21-27">        P<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">[</span>row <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> Width <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> col<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">]</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> Pvalue<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span>
-<span id="cb21-28">    <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span>
-<span id="cb21-29"><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">}</span></span></code></pre></div></li>
-</ul></li>
-<li><p>Matrix multiplication using multiple blocks by tiling P:</p></li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="christianjmills.com/posts/cuda-mode-notes/lecture-002/images/book-figure-3-10.png" class="img-fluid figure-img" style="width:85.0%"></p>
-<figcaption>Programming Massively Parallel Processors - Figure 3.10</figcaption>
-</figure>
-</div>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>cuda</category>
-  <category>pytorch</category>
-  <guid>christianjmills.com/posts/cuda-mode-notes/lecture-002/</guid>
-  <pubDate>Thu, 06 Jun 2024 07:00:00 GMT</pubDate>
   <media:content url="christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
