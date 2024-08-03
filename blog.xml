@@ -17,7 +17,1773 @@
 <width>144</width>
 </image>
 <generator>quarto-1.4.555</generator>
-<lastBuildDate>Thu, 25 Jul 2024 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 02 Aug 2024 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Conference Talk 14: Explaining the Basics of Retrieval Augmented Generation</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-014/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li>Google AI Landscape and Gemini</li>
+<li>Understanding Context Windows</li>
+<li>Fine-tuning vs.&nbsp;Prompting vs.&nbsp;Retrieval</li>
+<li>Prompting Strategies and Examples</li>
+<li>Retrieval Augmented Generation</li>
+<li>Fine-tuning Considerations and Gemma</li>
+</ul>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p><a href="https://ben.clavie.eu/">Ben Clavié</a> deconstructs the concept of Retrieval-Augmented Generation (RAG) and guides the audience through building a robust, basic RAG pipeline. He emphasizes that RAG is not a standalone technology, but a pipeline combining retrieval and generation, and each component needs individual attention for optimization. Ben advocates for a “MVP++” approach, incorporating essential elements like bi-encoders, re-ranking, keyword search (TF-IDF/BM25), and metadata filtering for a well-rounded system.</p>
+</section>
+<section id="demystifying-rag" class="level2">
+<h2 class="anchored" data-anchor-id="demystifying-rag">Demystifying RAG</h2>
+<ul>
+<li><strong>RAG: Overused and Misunderstood</strong>
+<ul>
+<li>The term “RAG” is often used incorrectly to represent an end-to-end system, creating confusion.</li>
+</ul></li>
+<li><strong>RAG as a Pipeline: Retrieval + Generation</strong>
+<ul>
+<li>RAG simply combines retrieval (finding relevant information) and generation (creating text) using Large Language Models (LLMs).</li>
+<li>It’s not a single technology, but a pipeline requiring optimization at each stage: retrieval, generation, and their connection.</li>
+</ul></li>
+<li><strong>Importance of Identifying Specific RAG Issues</strong>
+<ul>
+<li>“My RAG doesn’t work” is too broad. Pinpointing the failing component (retrieval, LLM utilization) is crucial for debugging.</li>
+</ul></li>
+</ul>
+</section>
+<section id="the-compact-mvp-a-simple-rag-implementation" class="level2">
+<h2 class="anchored" data-anchor-id="the-compact-mvp-a-simple-rag-implementation">The Compact MVP: A Simple RAG Implementation</h2>
+<ul>
+<li><strong>Basic Pipeline Components and Flow</strong>
+<ul>
+<li>Query embedding</li>
+<li>Document embedding</li>
+<li>Cosine similarity search for relevant documents</li>
+</ul></li>
+</ul>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 478.00 336.80" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 332.8)">
+<title>bencoder_approach</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-332.8 474,-332.8 474,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+<title>cluster_0</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M20,-136C20,-136 450,-136 450,-136 456,-136 462,-142 462,-148 462,-148 462,-272.8 462,-272.8 462,-278.8 456,-284.8 450,-284.8 450,-284.8 20,-284.8 20,-284.8 14,-284.8 8,-278.8 8,-272.8 8,-272.8 8,-148 8,-148 8,-142 14,-136 20,-136"></path>
+<text text-anchor="middle" x="235" y="-268.2" font-family="Times,serif" font-size="14.00" fill="red">This is called a 'bi-encoder' approach</text>
+</g>
+<!-- Query -->
+<g id="node1" class="node">
+<title>Query</title>
+<path fill="#a4d8ff" stroke="black" d="M136,-328.8C136,-328.8 106,-328.8 106,-328.8 100,-328.8 94,-322.8 94,-316.8 94,-316.8 94,-304.8 94,-304.8 94,-298.8 100,-292.8 106,-292.8 106,-292.8 136,-292.8 136,-292.8 142,-292.8 148,-298.8 148,-304.8 148,-304.8 148,-316.8 148,-316.8 148,-322.8 142,-328.8 136,-328.8"></path>
+<text text-anchor="middle" x="121" y="-306.6" font-family="Times,serif" font-size="14.00">Query</text>
+</g>
+<!-- Query_Embedding_Model -->
+<g id="node3" class="node">
+<title>Query_Embedding_Model</title>
+<path fill="#ffc9c9" stroke="black" d="M169.1,-252C169.1,-252 72.9,-252 72.9,-252 66.9,-252 60.9,-246 60.9,-240 60.9,-240 60.9,-228 60.9,-228 60.9,-222 66.9,-216 72.9,-216 72.9,-216 169.1,-216 169.1,-216 175.1,-216 181.1,-222 181.1,-228 181.1,-228 181.1,-240 181.1,-240 181.1,-246 175.1,-252 169.1,-252"></path>
+<text text-anchor="middle" x="121" y="-229.8" font-family="Times,serif" font-size="14.00">Embedding Model</text>
+</g>
+<!-- Query&#45;&gt;Query_Embedding_Model -->
+<g id="edge1" class="edge">
+<title>Query-&gt;Query_Embedding_Model</title>
+<path fill="none" stroke="black" d="M121,-292.45C121,-283.58 121,-272.56 121,-262.56"></path>
+<polygon fill="black" stroke="black" points="124.5,-262.25 121,-252.25 117.5,-262.25 124.5,-262.25"></polygon>
+</g>
+<!-- Documents -->
+<g id="node2" class="node">
+<title>Documents</title>
+<path fill="#feec98" stroke="black" d="M376.77,-328.8C376.77,-328.8 321.23,-328.8 321.23,-328.8 315.23,-328.8 309.23,-322.8 309.23,-316.8 309.23,-316.8 309.23,-304.8 309.23,-304.8 309.23,-298.8 315.23,-292.8 321.23,-292.8 321.23,-292.8 376.77,-292.8 376.77,-292.8 382.77,-292.8 388.77,-298.8 388.77,-304.8 388.77,-304.8 388.77,-316.8 388.77,-316.8 388.77,-322.8 382.77,-328.8 376.77,-328.8"></path>
+<text text-anchor="middle" x="349" y="-306.6" font-family="Times,serif" font-size="14.00">Documents</text>
+</g>
+<!-- Document_Embedding_Model -->
+<g id="node5" class="node">
+<title>Document_Embedding_Model</title>
+<path fill="#ffc9c9" stroke="black" d="M397.1,-252C397.1,-252 300.9,-252 300.9,-252 294.9,-252 288.9,-246 288.9,-240 288.9,-240 288.9,-228 288.9,-228 288.9,-222 294.9,-216 300.9,-216 300.9,-216 397.1,-216 397.1,-216 403.1,-216 409.1,-222 409.1,-228 409.1,-228 409.1,-240 409.1,-240 409.1,-246 403.1,-252 397.1,-252"></path>
+<text text-anchor="middle" x="349" y="-229.8" font-family="Times,serif" font-size="14.00">Embedding Model</text>
+</g>
+<!-- Documents&#45;&gt;Document_Embedding_Model -->
+<g id="edge3" class="edge">
+<title>Documents-&gt;Document_Embedding_Model</title>
+<path fill="none" stroke="black" d="M349,-292.45C349,-283.58 349,-272.56 349,-262.56"></path>
+<polygon fill="black" stroke="black" points="352.5,-262.25 349,-252.25 345.5,-262.25 352.5,-262.25"></polygon>
+</g>
+<!-- Query_Embedding_Pooling -->
+<g id="node4" class="node">
+<title>Query_Embedding_Pooling</title>
+<path fill="#ffc9c9" stroke="black" d="M214.41,-180C214.41,-180 27.59,-180 27.59,-180 21.59,-180 15.59,-174 15.59,-168 15.59,-168 15.59,-156 15.59,-156 15.59,-150 21.59,-144 27.59,-144 27.59,-144 214.41,-144 214.41,-144 220.41,-144 226.41,-150 226.41,-156 226.41,-156 226.41,-168 226.41,-168 226.41,-174 220.41,-180 214.41,-180"></path>
+<text text-anchor="middle" x="121" y="-157.8" font-family="Times,serif" font-size="14.00">Embedding pooling (into 1 vector)</text>
+</g>
+<!-- Query_Embedding_Model&#45;&gt;Query_Embedding_Pooling -->
+<g id="edge2" class="edge">
+<title>Query_Embedding_Model-&gt;Query_Embedding_Pooling</title>
+<path fill="none" stroke="black" d="M121,-215.7C121,-207.98 121,-198.71 121,-190.11"></path>
+<polygon fill="black" stroke="black" points="124.5,-190.1 121,-180.1 117.5,-190.1 124.5,-190.1"></polygon>
+</g>
+<!-- Cosine_Similarity_Search -->
+<g id="node7" class="node">
+<title>Cosine_Similarity_Search</title>
+<path fill="#b2f3bb" stroke="black" d="M298.8,-108C298.8,-108 171.2,-108 171.2,-108 165.2,-108 159.2,-102 159.2,-96 159.2,-96 159.2,-84 159.2,-84 159.2,-78 165.2,-72 171.2,-72 171.2,-72 298.8,-72 298.8,-72 304.8,-72 310.8,-78 310.8,-84 310.8,-84 310.8,-96 310.8,-96 310.8,-102 304.8,-108 298.8,-108"></path>
+<text text-anchor="middle" x="235" y="-85.8" font-family="Times,serif" font-size="14.00">Cosine similarity search</text>
+</g>
+<!-- Query_Embedding_Pooling&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge5" class="edge">
+<title>Query_Embedding_Pooling-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M148.89,-143.88C163.79,-134.72 182.33,-123.34 198.38,-113.48"></path>
+<polygon fill="black" stroke="black" points="200.31,-116.41 207.01,-108.19 196.65,-110.44 200.31,-116.41"></polygon>
+</g>
+<!-- Document_Embedding_Pooling -->
+<g id="node6" class="node">
+<title>Document_Embedding_Pooling</title>
+<path fill="#ffc9c9" stroke="black" d="M442.41,-180C442.41,-180 255.59,-180 255.59,-180 249.59,-180 243.59,-174 243.59,-168 243.59,-168 243.59,-156 243.59,-156 243.59,-150 249.59,-144 255.59,-144 255.59,-144 442.41,-144 442.41,-144 448.41,-144 454.41,-150 454.41,-156 454.41,-156 454.41,-168 454.41,-168 454.41,-174 448.41,-180 442.41,-180"></path>
+<text text-anchor="middle" x="349" y="-157.8" font-family="Times,serif" font-size="14.00">Embedding pooling (into 1 vector)</text>
+</g>
+<!-- Document_Embedding_Model&#45;&gt;Document_Embedding_Pooling -->
+<g id="edge4" class="edge">
+<title>Document_Embedding_Model-&gt;Document_Embedding_Pooling</title>
+<path fill="none" stroke="black" d="M349,-215.7C349,-207.98 349,-198.71 349,-190.11"></path>
+<polygon fill="black" stroke="black" points="352.5,-190.1 349,-180.1 345.5,-190.1 352.5,-190.1"></polygon>
+</g>
+<!-- Document_Embedding_Pooling&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge6" class="edge">
+<title>Document_Embedding_Pooling-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M321.11,-143.88C306.21,-134.72 287.67,-123.34 271.62,-113.48"></path>
+<polygon fill="black" stroke="black" points="273.35,-110.44 262.99,-108.19 269.69,-116.41 273.35,-110.44"></polygon>
+</g>
+<!-- Results -->
+<g id="node8" class="node">
+<title>Results</title>
+<path fill="#b2f3bb" stroke="black" d="M251.73,-36C251.73,-36 218.27,-36 218.27,-36 212.27,-36 206.27,-30 206.27,-24 206.27,-24 206.27,-12 206.27,-12 206.27,-6 212.27,0 218.27,0 218.27,0 251.73,0 251.73,0 257.73,0 263.73,-6 263.73,-12 263.73,-12 263.73,-24 263.73,-24 263.73,-30 257.73,-36 251.73,-36"></path>
+<text text-anchor="middle" x="235" y="-13.8" font-family="Times,serif" font-size="14.00">Results</text>
+</g>
+<!-- Cosine_Similarity_Search&#45;&gt;Results -->
+<g id="edge7" class="edge">
+<title>Cosine_Similarity_Search-&gt;Results</title>
+<path fill="none" stroke="black" d="M235,-71.7C235,-63.98 235,-54.71 235,-46.11"></path>
+<polygon fill="black" stroke="black" points="238.5,-46.1 235,-36.1 231.5,-46.1 238.5,-46.1"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Code Example: Vector Search with NumPy">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code Example: Vector Search with NumPy
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Demonstrates a basic RAG pipeline without a vector database, emphasizing simplicity.</li>
+<li>Uses NumPy for cosine similarity search for demonstration purposes.</li>
+</ul>
+<div class="sourceCode" id="annotated-cell-2" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the embedding model</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-2" class="code-annotation-target"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sentence_transformers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> SentenceTransformer</span>
+<span id="annotated-cell-2-3">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> SentenceTransformer(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Alibaba-NLP/gte-base-en-v1.5"</span>)</span>
+<span id="annotated-cell-2-4"></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-5" class="code-annotation-target"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Fetch some text content...</span></span>
+<span id="annotated-cell-2-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> wikipediaapi <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Wikipedia</span>
+<span id="annotated-cell-2-7">wiki <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Wikipedia(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'RAGBot/0.0'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'en'</span>)</span>
+<span id="annotated-cell-2-8">doc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> wiki.page(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Hayao_Miyazaki'</span>).text</span>
+<span id="annotated-cell-2-9">paragraphs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> doc.split(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span>
+<span id="annotated-cell-2-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ...And embed it.</span></span>
+<span id="annotated-cell-2-11">docs_embed <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.encode(paragraphs, normalize_embeddings<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="annotated-cell-2-12"></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-2-13" class="code-annotation-target"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Embed the query</span></span>
+<span id="annotated-cell-2-14">query <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"What was Studio Ghibli's first film?"</span></span>
+<span id="annotated-cell-2-15">query_embed <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.encode(query, normalize_embeddings<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="annotated-cell-2-16"></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-2-17" class="code-annotation-target"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Find the 3 closest paragraphs to the query</span></span>
+<span id="annotated-cell-2-18"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="annotated-cell-2-19">similarities <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.dot(docs_embed, query_embed.T)</span>
+<span id="annotated-cell-2-20">top_3_idx <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> similarities.topk(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>).indices.tolist()</span>
+<span id="annotated-cell-2-21">most_similar_documents <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [paragraphs[idx] <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> idx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> top_3_idx]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="2,3" data-code-annotation="1">Load Bi-Encoder</span>
+</dd>
+<dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="5,6,7,8,9,10,11" data-code-annotation="2">Embed Documents</span>
+</dd>
+<dt data-target-cell="annotated-cell-2" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="13,14,15" data-code-annotation="3">Embed Query</span>
+</dd>
+<dt data-target-cell="annotated-cell-2" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-2" data-code-lines="17,18,19,20,21" data-code-annotation="4">Cosine Similarity Search</span>
+</dd>
+</dl>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="understanding-bi-encoders-in-vector-search" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-bi-encoders-in-vector-search">Understanding Bi-Encoders in Vector Search</h2>
+<ul>
+<li><p><strong>Vector Databases: When and Why?</strong></p>
+<ul>
+<li>Useful for efficiently searching large document sets using Approximate Search techniques
+<ul>
+<li><strong>HNSW</strong>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/1603.09320">Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs</a></li>
+<li><strong>Article:</strong> <a href="https://www.pinecone.io/learn/series/faiss/hnsw/">Hierarchical Navigable Small Worlds (HNSW)</a></li>
+</ul></li>
+<li><strong>IVFPQ</strong>
+<ul>
+<li><strong>Article:</strong> <a href="https://www.pinecone.io/learn/series/faiss/product-quantization/">Product Quantization: Compressing high-dimensional vectors by 97%</a></li>
+</ul></li>
+</ul></li>
+<li>Not necessary for small datasets (e.g., 500 documents)
+<ul>
+<li>Modern CPU can search through hundreds of vectors in milliseconds</li>
+</ul></li>
+</ul></li>
+</ul>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 478.00 351.80" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 347.8)">
+<title>bencoder_approach</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-347.8 474,-347.8 474,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+<title>cluster_0</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M20,-153.8C20,-153.8 450,-153.8 450,-153.8 456,-153.8 462,-159.8 462,-165.8 462,-165.8 462,-266.8 462,-266.8 462,-272.8 456,-278.8 450,-278.8 450,-278.8 20,-278.8 20,-278.8 14,-278.8 8,-272.8 8,-266.8 8,-266.8 8,-165.8 8,-165.8 8,-159.8 14,-153.8 20,-153.8"></path>
+</g>
+<!-- Query -->
+<g id="node1" class="node">
+<title>Query</title>
+<path fill="#a4d8ff" stroke="black" d="M136,-343.8C136,-343.8 106,-343.8 106,-343.8 100,-343.8 94,-337.8 94,-331.8 94,-331.8 94,-319.8 94,-319.8 94,-313.8 100,-307.8 106,-307.8 106,-307.8 136,-307.8 136,-307.8 142,-307.8 148,-313.8 148,-319.8 148,-319.8 148,-331.8 148,-331.8 148,-337.8 142,-343.8 136,-343.8"></path>
+<text text-anchor="middle" x="121" y="-321.6" font-family="Times,serif" font-size="14.00">Query</text>
+</g>
+<!-- Query_Embedding_Model -->
+<g id="node3" class="node">
+<title>Query_Embedding_Model</title>
+<path fill="#fddde6" stroke="black" d="M169.1,-270.8C169.1,-270.8 72.9,-270.8 72.9,-270.8 66.9,-270.8 60.9,-264.8 60.9,-258.8 60.9,-258.8 60.9,-246.8 60.9,-246.8 60.9,-240.8 66.9,-234.8 72.9,-234.8 72.9,-234.8 169.1,-234.8 169.1,-234.8 175.1,-234.8 181.1,-240.8 181.1,-246.8 181.1,-246.8 181.1,-258.8 181.1,-258.8 181.1,-264.8 175.1,-270.8 169.1,-270.8"></path>
+<text text-anchor="middle" x="121" y="-248.6" font-family="Times,serif" font-size="14.00">Embedding Model</text>
+</g>
+<!-- Query&#45;&gt;Query_Embedding_Model -->
+<g id="edge1" class="edge">
+<title>Query-&gt;Query_Embedding_Model</title>
+<path fill="none" stroke="black" d="M121,-307.61C121,-299.59 121,-289.85 121,-280.87"></path>
+<polygon fill="black" stroke="black" points="124.5,-280.83 121,-270.83 117.5,-280.83 124.5,-280.83"></polygon>
+</g>
+<!-- Documents -->
+<g id="node2" class="node">
+<title>Documents</title>
+<path fill="#feec98" stroke="black" d="M376.77,-343.8C376.77,-343.8 321.23,-343.8 321.23,-343.8 315.23,-343.8 309.23,-337.8 309.23,-331.8 309.23,-331.8 309.23,-319.8 309.23,-319.8 309.23,-313.8 315.23,-307.8 321.23,-307.8 321.23,-307.8 376.77,-307.8 376.77,-307.8 382.77,-307.8 388.77,-313.8 388.77,-319.8 388.77,-319.8 388.77,-331.8 388.77,-331.8 388.77,-337.8 382.77,-343.8 376.77,-343.8"></path>
+<text text-anchor="middle" x="349" y="-321.6" font-family="Times,serif" font-size="14.00">Documents</text>
+</g>
+<!-- Document_Embedding_Model -->
+<g id="node5" class="node">
+<title>Document_Embedding_Model</title>
+<path fill="#fddde6" stroke="black" d="M397.1,-270.8C397.1,-270.8 300.9,-270.8 300.9,-270.8 294.9,-270.8 288.9,-264.8 288.9,-258.8 288.9,-258.8 288.9,-246.8 288.9,-246.8 288.9,-240.8 294.9,-234.8 300.9,-234.8 300.9,-234.8 397.1,-234.8 397.1,-234.8 403.1,-234.8 409.1,-240.8 409.1,-246.8 409.1,-246.8 409.1,-258.8 409.1,-258.8 409.1,-264.8 403.1,-270.8 397.1,-270.8"></path>
+<text text-anchor="middle" x="349" y="-248.6" font-family="Times,serif" font-size="14.00">Embedding Model</text>
+</g>
+<!-- Documents&#45;&gt;Document_Embedding_Model -->
+<g id="edge3" class="edge">
+<title>Documents-&gt;Document_Embedding_Model</title>
+<path fill="none" stroke="black" d="M349,-307.61C349,-299.59 349,-289.85 349,-280.87"></path>
+<polygon fill="black" stroke="black" points="352.5,-280.83 349,-270.83 345.5,-280.83 352.5,-280.83"></polygon>
+</g>
+<!-- Query_Embedding_Pooling -->
+<g id="node4" class="node">
+<title>Query_Embedding_Pooling</title>
+<path fill="#fddde6" stroke="black" d="M214.41,-197.8C214.41,-197.8 27.59,-197.8 27.59,-197.8 21.59,-197.8 15.59,-191.8 15.59,-185.8 15.59,-185.8 15.59,-173.8 15.59,-173.8 15.59,-167.8 21.59,-161.8 27.59,-161.8 27.59,-161.8 214.41,-161.8 214.41,-161.8 220.41,-161.8 226.41,-167.8 226.41,-173.8 226.41,-173.8 226.41,-185.8 226.41,-185.8 226.41,-191.8 220.41,-197.8 214.41,-197.8"></path>
+<text text-anchor="middle" x="121" y="-175.6" font-family="Times,serif" font-size="14.00">Embedding pooling (into 1 vector)</text>
+</g>
+<!-- Query_Embedding_Model&#45;&gt;Query_Embedding_Pooling -->
+<g id="edge2" class="edge">
+<title>Query_Embedding_Model-&gt;Query_Embedding_Pooling</title>
+<path fill="none" stroke="black" d="M121,-234.61C121,-226.59 121,-216.85 121,-207.87"></path>
+<polygon fill="black" stroke="black" points="124.5,-207.83 121,-197.83 117.5,-207.83 124.5,-207.83"></polygon>
+</g>
+<!-- Cosine_Similarity_Search -->
+<g id="node7" class="node">
+<title>Cosine_Similarity_Search</title>
+<path fill="#b2f3bb" stroke="black" d="M297.8,-109C297.8,-109 170.2,-109 170.2,-109 164.2,-109 158.2,-103 158.2,-97 158.2,-97 158.2,-85 158.2,-85 158.2,-79 164.2,-73 170.2,-73 170.2,-73 297.8,-73 297.8,-73 303.8,-73 309.8,-79 309.8,-85 309.8,-85 309.8,-97 309.8,-97 309.8,-103 303.8,-109 297.8,-109"></path>
+<text text-anchor="middle" x="234" y="-86.8" font-family="Times,serif" font-size="14.00">Cosine similarity search</text>
+</g>
+<!-- Query_Embedding_Pooling&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge5" class="edge">
+<title>Query_Embedding_Pooling-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M143.33,-161.65C160.58,-148.4 184.65,-129.91 203.66,-115.31"></path>
+<polygon fill="black" stroke="black" points="205.92,-117.98 211.72,-109.11 201.66,-112.43 205.92,-117.98"></polygon>
+</g>
+<!-- Document_Embedding_Pooling -->
+<g id="node6" class="node">
+<title>Document_Embedding_Pooling</title>
+<path fill="#fddde6" stroke="black" d="M442.41,-197.8C442.41,-197.8 255.59,-197.8 255.59,-197.8 249.59,-197.8 243.59,-191.8 243.59,-185.8 243.59,-185.8 243.59,-173.8 243.59,-173.8 243.59,-167.8 249.59,-161.8 255.59,-161.8 255.59,-161.8 442.41,-161.8 442.41,-161.8 448.41,-161.8 454.41,-167.8 454.41,-173.8 454.41,-173.8 454.41,-185.8 454.41,-185.8 454.41,-191.8 448.41,-197.8 442.41,-197.8"></path>
+<text text-anchor="middle" x="349" y="-175.6" font-family="Times,serif" font-size="14.00">Embedding pooling (into 1 vector)</text>
+</g>
+<!-- Document_Embedding_Model&#45;&gt;Document_Embedding_Pooling -->
+<g id="edge4" class="edge">
+<title>Document_Embedding_Model-&gt;Document_Embedding_Pooling</title>
+<path fill="none" stroke="black" d="M349,-234.61C349,-226.59 349,-216.85 349,-207.87"></path>
+<polygon fill="black" stroke="black" points="352.5,-207.83 349,-197.83 345.5,-207.83 352.5,-207.83"></polygon>
+</g>
+<!-- Document_Embedding_Pooling&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge6" class="edge">
+<title>Document_Embedding_Pooling-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M326.28,-161.65C308.72,-148.4 284.22,-129.91 264.88,-115.31"></path>
+<polygon fill="black" stroke="black" points="266.76,-112.34 256.67,-109.11 262.55,-117.93 266.76,-112.34"></polygon>
+<text text-anchor="middle" x="359.9" y="-131.2" font-family="Times,serif" font-size="14.00">Vector DB goes here</text>
+</g>
+<!-- Results -->
+<g id="node8" class="node">
+<title>Results</title>
+<path fill="#b2f3bb" stroke="black" d="M250.73,-36C250.73,-36 217.27,-36 217.27,-36 211.27,-36 205.27,-30 205.27,-24 205.27,-24 205.27,-12 205.27,-12 205.27,-6 211.27,0 217.27,0 217.27,0 250.73,0 250.73,0 256.73,0 262.73,-6 262.73,-12 262.73,-12 262.73,-24 262.73,-24 262.73,-30 256.73,-36 250.73,-36"></path>
+<text text-anchor="middle" x="234" y="-13.8" font-family="Times,serif" font-size="14.00">Results</text>
+</g>
+<!-- Cosine_Similarity_Search&#45;&gt;Results -->
+<g id="edge7" class="edge">
+<title>Cosine_Similarity_Search-&gt;Results</title>
+<path fill="none" stroke="black" d="M234,-72.81C234,-64.79 234,-55.05 234,-46.07"></path>
+<polygon fill="black" stroke="black" points="237.5,-46.03 234,-36.03 230.5,-46.03 237.5,-46.03"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<ul>
+<li><p><strong>Bi-Encoders: Separate Encoding for Queries and Documents</strong></p>
+<ul>
+<li>Encode documents and queries independently.</li>
+<li>Pre-computed document representations allow for efficient inference, as only the query needs encoding at runtime.</li>
+<li>Comes with retrieval performance tradeoffs</li>
+</ul></li>
+</ul>
+</section>
+<section id="improving-retrieval-with-re-ranking" class="level2">
+<h2 class="anchored" data-anchor-id="improving-retrieval-with-re-ranking">Improving Retrieval with Re-ranking</h2>
+<ul>
+<li><strong>Bi-Encoder Limitations: Context Unawareness</strong>
+<ul>
+<li>Bi-encoders encode documents and queries separately, potentially missing nuanced relationships between them.</li>
+</ul></li>
+<li><strong>Cross-Encoders: Joint Encoding for Better Relevance Scoring</strong>
+<ul>
+<li>Encode query-document pairs together, allowing for a more context-aware relevance score.</li>
+<li>Effectively a binary classifier
+<ul>
+<li>Uses the probability of being the positive class as the similarity score.</li>
+</ul></li>
+<li>Computationally expensive for large datasets.</li>
+</ul></li>
+</ul>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 406.00 244.80" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 240.8)">
+<title>bi_encoder</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-240.8 402,-240.8 402,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+<title>cluster_0</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M20,-8C20,-8 378,-8 378,-8 384,-8 390,-14 390,-20 390,-20 390,-216.8 390,-216.8 390,-222.8 384,-228.8 378,-228.8 378,-228.8 20,-228.8 20,-228.8 14,-228.8 8,-222.8 8,-216.8 8,-216.8 8,-20 8,-20 8,-14 14,-8 20,-8"></path>
+<text text-anchor="middle" x="199" y="-212.2" font-family="Times,serif" font-size="14.00">Bi-Encoder</text>
+</g>
+<!-- Query -->
+<g id="node1" class="node">
+<title>Query</title>
+<path fill="#a4d8ff" stroke="black" d="M310,-196C310,-196 280,-196 280,-196 274,-196 268,-190 268,-184 268,-184 268,-172 268,-172 268,-166 274,-160 280,-160 280,-160 310,-160 310,-160 316,-160 322,-166 322,-172 322,-172 322,-184 322,-184 322,-190 316,-196 310,-196"></path>
+<text text-anchor="middle" x="295" y="-173.8" font-family="Times,serif" font-size="14.00">Query</text>
+</g>
+<!-- Query_Bi_Encoder -->
+<g id="node3" class="node">
+<title>Query_Bi_Encoder</title>
+<path fill="#fddde6" stroke="black" d="M369.58,-124C369.58,-124 220.42,-124 220.42,-124 214.42,-124 208.42,-118 208.42,-112 208.42,-112 208.42,-100 208.42,-100 208.42,-94 214.42,-88 220.42,-88 220.42,-88 369.58,-88 369.58,-88 375.58,-88 381.58,-94 381.58,-100 381.58,-100 381.58,-112 381.58,-112 381.58,-118 375.58,-124 369.58,-124"></path>
+<text text-anchor="middle" x="295" y="-101.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Query&#45;&gt;Query_Bi_Encoder -->
+<g id="edge1" class="edge">
+<title>Query-&gt;Query_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M295,-159.7C295,-151.98 295,-142.71 295,-134.11"></path>
+<polygon fill="black" stroke="black" points="298.5,-134.1 295,-124.1 291.5,-134.1 298.5,-134.1"></polygon>
+</g>
+<!-- Documents -->
+<g id="node2" class="node">
+<title>Documents</title>
+<path fill="#feec98" stroke="black" d="M130.77,-196C130.77,-196 75.23,-196 75.23,-196 69.23,-196 63.23,-190 63.23,-184 63.23,-184 63.23,-172 63.23,-172 63.23,-166 69.23,-160 75.23,-160 75.23,-160 130.77,-160 130.77,-160 136.77,-160 142.77,-166 142.77,-172 142.77,-172 142.77,-184 142.77,-184 142.77,-190 136.77,-196 130.77,-196"></path>
+<text text-anchor="middle" x="103" y="-173.8" font-family="Times,serif" font-size="14.00">Documents</text>
+</g>
+<!-- Document_Bi_Encoder -->
+<g id="node4" class="node">
+<title>Document_Bi_Encoder</title>
+<path fill="#fddde6" stroke="black" d="M177.58,-124C177.58,-124 28.42,-124 28.42,-124 22.42,-124 16.42,-118 16.42,-112 16.42,-112 16.42,-100 16.42,-100 16.42,-94 22.42,-88 28.42,-88 28.42,-88 177.58,-88 177.58,-88 183.58,-88 189.58,-94 189.58,-100 189.58,-100 189.58,-112 189.58,-112 189.58,-118 183.58,-124 177.58,-124"></path>
+<text text-anchor="middle" x="103" y="-101.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Documents&#45;&gt;Document_Bi_Encoder -->
+<g id="edge2" class="edge">
+<title>Documents-&gt;Document_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M103,-159.7C103,-151.98 103,-142.71 103,-134.11"></path>
+<polygon fill="black" stroke="black" points="106.5,-134.1 103,-124.1 99.5,-134.1 106.5,-134.1"></polygon>
+</g>
+<!-- Cosine_Similarity_Search -->
+<g id="node5" class="node">
+<title>Cosine_Similarity_Search</title>
+<path fill="#b2f3bb" stroke="black" d="M262.8,-52C262.8,-52 135.2,-52 135.2,-52 129.2,-52 123.2,-46 123.2,-40 123.2,-40 123.2,-28 123.2,-28 123.2,-22 129.2,-16 135.2,-16 135.2,-16 262.8,-16 262.8,-16 268.8,-16 274.8,-22 274.8,-28 274.8,-28 274.8,-40 274.8,-40 274.8,-46 268.8,-52 262.8,-52"></path>
+<text text-anchor="middle" x="199" y="-29.8" font-family="Times,serif" font-size="14.00">Cosine similarity search</text>
+</g>
+<!-- Query_Bi_Encoder&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge3" class="edge">
+<title>Query_Bi_Encoder-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M271.27,-87.7C259.06,-78.8 244.01,-67.82 230.82,-58.2"></path>
+<polygon fill="black" stroke="black" points="232.6,-55.17 222.46,-52.1 228.48,-60.82 232.6,-55.17"></polygon>
+</g>
+<!-- Document_Bi_Encoder&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge4" class="edge">
+<title>Document_Bi_Encoder-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M126.73,-87.7C138.94,-78.8 153.99,-67.82 167.18,-58.2"></path>
+<polygon fill="black" stroke="black" points="169.52,-60.82 175.54,-52.1 165.4,-55.17 169.52,-60.82"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 192.00 244.80" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 240.8)">
+<title>cross_encoder</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-240.8 188,-240.8 188,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M20,-8C20,-8 164,-8 164,-8 170,-8 176,-14 176,-20 176,-20 176,-216.8 176,-216.8 176,-222.8 170,-228.8 164,-228.8 164,-228.8 20,-228.8 20,-228.8 14,-228.8 8,-222.8 8,-216.8 8,-216.8 8,-20 8,-20 8,-14 14,-8 20,-8"></path>
+<text text-anchor="middle" x="92" y="-212.2" font-family="Times,serif" font-size="14.00">Cross-Encoder</text>
+</g>
+<!-- Query_2 -->
+<g id="node1" class="node">
+<title>Query_2</title>
+<path fill="#a4d8ff" stroke="black" d="M156,-196C156,-196 126,-196 126,-196 120,-196 114,-190 114,-184 114,-184 114,-172 114,-172 114,-166 120,-160 126,-160 126,-160 156,-160 156,-160 162,-160 168,-166 168,-172 168,-172 168,-184 168,-184 168,-190 162,-196 156,-196"></path>
+<text text-anchor="middle" x="141" y="-173.8" font-family="Times,serif" font-size="14.00">Query</text>
+</g>
+<!-- Cross_Encoder -->
+<g id="node3" class="node">
+<title>Cross_Encoder</title>
+<path fill="#fed8a7" stroke="black" d="M129.7,-124C129.7,-124 54.3,-124 54.3,-124 48.3,-124 42.3,-118 42.3,-112 42.3,-112 42.3,-100 42.3,-100 42.3,-94 48.3,-88 54.3,-88 54.3,-88 129.7,-88 129.7,-88 135.7,-88 141.7,-94 141.7,-100 141.7,-100 141.7,-112 141.7,-112 141.7,-118 135.7,-124 129.7,-124"></path>
+<text text-anchor="middle" x="92" y="-101.8" font-family="Times,serif" font-size="14.00">Cross-Encoder</text>
+</g>
+<!-- Query_2&#45;&gt;Cross_Encoder -->
+<g id="edge1" class="edge">
+<title>Query_2-&gt;Cross_Encoder</title>
+<path fill="none" stroke="black" d="M128.89,-159.7C123.13,-151.47 116.14,-141.48 109.79,-132.42"></path>
+<polygon fill="black" stroke="black" points="112.58,-130.29 103.97,-124.1 106.84,-134.3 112.58,-130.29"></polygon>
+</g>
+<!-- Documents_2 -->
+<g id="node2" class="node">
+<title>Documents_2</title>
+<path fill="#feec98" stroke="black" d="M83.77,-196C83.77,-196 28.23,-196 28.23,-196 22.23,-196 16.23,-190 16.23,-184 16.23,-184 16.23,-172 16.23,-172 16.23,-166 22.23,-160 28.23,-160 28.23,-160 83.77,-160 83.77,-160 89.77,-160 95.77,-166 95.77,-172 95.77,-172 95.77,-184 95.77,-184 95.77,-190 89.77,-196 83.77,-196"></path>
+<text text-anchor="middle" x="56" y="-173.8" font-family="Times,serif" font-size="14.00">Documents</text>
+</g>
+<!-- Documents_2&#45;&gt;Cross_Encoder -->
+<g id="edge2" class="edge">
+<title>Documents_2-&gt;Cross_Encoder</title>
+<path fill="none" stroke="black" d="M64.9,-159.7C69,-151.73 73.95,-142.1 78.49,-133.26"></path>
+<polygon fill="black" stroke="black" points="81.74,-134.6 83.2,-124.1 75.52,-131.4 81.74,-134.6"></polygon>
+</g>
+<!-- Similarity_Score -->
+<g id="node4" class="node">
+<title>Similarity_Score</title>
+<path fill="#b2f3bb" stroke="black" d="M133.88,-52C133.88,-52 50.12,-52 50.12,-52 44.12,-52 38.12,-46 38.12,-40 38.12,-40 38.12,-28 38.12,-28 38.12,-22 44.12,-16 50.12,-16 50.12,-16 133.88,-16 133.88,-16 139.88,-16 145.88,-22 145.88,-28 145.88,-28 145.88,-40 145.88,-40 145.88,-46 139.88,-52 133.88,-52"></path>
+<text text-anchor="middle" x="92" y="-29.8" font-family="Times,serif" font-size="14.00">Similarity Score</text>
+</g>
+<!-- Cross_Encoder&#45;&gt;Similarity_Score -->
+<g id="edge3" class="edge">
+<title>Cross_Encoder-&gt;Similarity_Score</title>
+<path fill="none" stroke="black" d="M92,-87.7C92,-79.98 92,-70.71 92,-62.11"></path>
+<polygon fill="black" stroke="black" points="95.5,-62.1 92,-52.1 88.5,-62.1 95.5,-62.1"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<ul>
+<li><p><strong>Re-ranking in Practice: Addressing Computational Costs</strong></p>
+<ul>
+<li>Leverage a powerful but computationally expensive model (like cross-encoders) to score a subset of your documents, previously retrieved by more efficient model</li>
+<li><strong>Examples of other re-ranking approaches:</strong>
+<ul>
+<li><strong><a href="https://github.com/sunnweiwei/RankGPT">RankGPT</a>:</strong> LLMs as Re-Ranking Agent</li>
+<li><strong><a href="https://github.com/castorini/rank_llm">RankLLM</a>:</strong> Repository for prompt-decoding using LLMs</li>
+</ul></li>
+</ul></li>
+<li><p><strong><a href="https://github.com/AnswerDotAI/rerankers">rerankers</a>:</strong> A lightweight unified API for various reranking models.</p></li>
+</ul>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 406.00 372.80" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 368.8)">
+<title>reranking</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-368.8 402,-368.8 402,4 -4,4"></polygon>
+<text text-anchor="middle" x="199" y="-348.2" font-family="Times,serif" font-size="14.00">Compact Pipeline + Reranking</text>
+<g id="clust1" class="cluster">
+<title>cluster_0</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M20,-208C20,-208 378,-208 378,-208 384,-208 390,-214 390,-220 390,-220 390,-248 390,-248 390,-254 384,-260 378,-260 378,-260 20,-260 20,-260 14,-260 8,-254 8,-248 8,-248 8,-220 8,-220 8,-214 14,-208 20,-208"></path>
+</g>
+<!-- Query -->
+<g id="node1" class="node">
+<title>Query</title>
+<path fill="#a4d8ff" stroke="black" d="M118,-324C118,-324 88,-324 88,-324 82,-324 76,-318 76,-312 76,-312 76,-300 76,-300 76,-294 82,-288 88,-288 88,-288 118,-288 118,-288 124,-288 130,-294 130,-300 130,-300 130,-312 130,-312 130,-318 124,-324 118,-324"></path>
+<text text-anchor="middle" x="103" y="-301.8" font-family="Times,serif" font-size="14.00">Query</text>
+</g>
+<!-- Query_Bi_Encoder -->
+<g id="node3" class="node">
+<title>Query_Bi_Encoder</title>
+<path fill="#ffc9c9" stroke="black" d="M177.58,-252C177.58,-252 28.42,-252 28.42,-252 22.42,-252 16.42,-246 16.42,-240 16.42,-240 16.42,-228 16.42,-228 16.42,-222 22.42,-216 28.42,-216 28.42,-216 177.58,-216 177.58,-216 183.58,-216 189.58,-222 189.58,-228 189.58,-228 189.58,-240 189.58,-240 189.58,-246 183.58,-252 177.58,-252"></path>
+<text text-anchor="middle" x="103" y="-229.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Query&#45;&gt;Query_Bi_Encoder -->
+<g id="edge1" class="edge">
+<title>Query-&gt;Query_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M103,-287.7C103,-279.98 103,-270.71 103,-262.11"></path>
+<polygon fill="black" stroke="black" points="106.5,-262.1 103,-252.1 99.5,-262.1 106.5,-262.1"></polygon>
+</g>
+<!-- Documents -->
+<g id="node2" class="node">
+<title>Documents</title>
+<path fill="#feec98" stroke="black" d="M322.77,-324C322.77,-324 267.23,-324 267.23,-324 261.23,-324 255.23,-318 255.23,-312 255.23,-312 255.23,-300 255.23,-300 255.23,-294 261.23,-288 267.23,-288 267.23,-288 322.77,-288 322.77,-288 328.77,-288 334.77,-294 334.77,-300 334.77,-300 334.77,-312 334.77,-312 334.77,-318 328.77,-324 322.77,-324"></path>
+<text text-anchor="middle" x="295" y="-301.8" font-family="Times,serif" font-size="14.00">Documents</text>
+</g>
+<!-- Document_Bi_Encoder -->
+<g id="node4" class="node">
+<title>Document_Bi_Encoder</title>
+<path fill="#ffc9c9" stroke="black" d="M369.58,-252C369.58,-252 220.42,-252 220.42,-252 214.42,-252 208.42,-246 208.42,-240 208.42,-240 208.42,-228 208.42,-228 208.42,-222 214.42,-216 220.42,-216 220.42,-216 369.58,-216 369.58,-216 375.58,-216 381.58,-222 381.58,-228 381.58,-228 381.58,-240 381.58,-240 381.58,-246 375.58,-252 369.58,-252"></path>
+<text text-anchor="middle" x="295" y="-229.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Documents&#45;&gt;Document_Bi_Encoder -->
+<g id="edge2" class="edge">
+<title>Documents-&gt;Document_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M295,-287.7C295,-279.98 295,-270.71 295,-262.11"></path>
+<polygon fill="black" stroke="black" points="298.5,-262.1 295,-252.1 291.5,-262.1 298.5,-262.1"></polygon>
+</g>
+<!-- Cosine_Similarity_Search -->
+<g id="node5" class="node">
+<title>Cosine_Similarity_Search</title>
+<path fill="#b2f3bb" stroke="black" d="M262.8,-180C262.8,-180 135.2,-180 135.2,-180 129.2,-180 123.2,-174 123.2,-168 123.2,-168 123.2,-156 123.2,-156 123.2,-150 129.2,-144 135.2,-144 135.2,-144 262.8,-144 262.8,-144 268.8,-144 274.8,-150 274.8,-156 274.8,-156 274.8,-168 274.8,-168 274.8,-174 268.8,-180 262.8,-180"></path>
+<text text-anchor="middle" x="199" y="-157.8" font-family="Times,serif" font-size="14.00">Cosine similarity search</text>
+</g>
+<!-- Query_Bi_Encoder&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge3" class="edge">
+<title>Query_Bi_Encoder-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M126.73,-215.7C138.94,-206.8 153.99,-195.82 167.18,-186.2"></path>
+<polygon fill="black" stroke="black" points="169.52,-188.82 175.54,-180.1 165.4,-183.17 169.52,-188.82"></polygon>
+</g>
+<!-- Document_Bi_Encoder&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge4" class="edge">
+<title>Document_Bi_Encoder-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M271.27,-215.7C259.06,-206.8 244.01,-195.82 230.82,-186.2"></path>
+<polygon fill="black" stroke="black" points="232.6,-183.17 222.46,-180.1 228.48,-188.82 232.6,-183.17"></polygon>
+</g>
+<!-- Reranking -->
+<g id="node7" class="node">
+<title>Reranking</title>
+<path fill="#fed8a7" stroke="black" d="M224.32,-108C224.32,-108 173.68,-108 173.68,-108 167.68,-108 161.68,-102 161.68,-96 161.68,-96 161.68,-84 161.68,-84 161.68,-78 167.68,-72 173.68,-72 173.68,-72 224.32,-72 224.32,-72 230.32,-72 236.32,-78 236.32,-84 236.32,-84 236.32,-96 236.32,-96 236.32,-102 230.32,-108 224.32,-108"></path>
+<text text-anchor="middle" x="199" y="-85.8" font-family="Times,serif" font-size="14.00">Reranking</text>
+</g>
+<!-- Cosine_Similarity_Search&#45;&gt;Reranking -->
+<g id="edge5" class="edge">
+<title>Cosine_Similarity_Search-&gt;Reranking</title>
+<path fill="none" stroke="black" d="M199,-143.7C199,-135.98 199,-126.71 199,-118.11"></path>
+<polygon fill="black" stroke="black" points="202.5,-118.1 199,-108.1 195.5,-118.1 202.5,-118.1"></polygon>
+</g>
+<!-- Results -->
+<g id="node6" class="node">
+<title>Results</title>
+<path fill="#b2f3bb" stroke="black" d="M215.73,-36C215.73,-36 182.27,-36 182.27,-36 176.27,-36 170.27,-30 170.27,-24 170.27,-24 170.27,-12 170.27,-12 170.27,-6 176.27,0 182.27,0 182.27,0 215.73,0 215.73,0 221.73,0 227.73,-6 227.73,-12 227.73,-12 227.73,-24 227.73,-24 227.73,-30 221.73,-36 215.73,-36"></path>
+<text text-anchor="middle" x="199" y="-13.8" font-family="Times,serif" font-size="14.00">Results</text>
+</g>
+<!-- Reranking&#45;&gt;Results -->
+<g id="edge6" class="edge">
+<title>Reranking-&gt;Results</title>
+<path fill="none" stroke="black" d="M199,-71.7C199,-63.98 199,-54.71 199,-46.11"></path>
+<polygon fill="black" stroke="black" points="202.5,-46.1 199,-36.1 195.5,-46.1 202.5,-46.1"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="keyword-search" class="level2">
+<h2 class="anchored" data-anchor-id="keyword-search">Keyword Search</h2>
+<ul>
+<li><p>Also called “full-text search”</p></li>
+<li><p><strong>Embeddings Are Not Enough: Lossy Compression and Jargon</strong></p>
+<ul>
+<li>Embeddings compress information, potentially losing details crucial for accurate retrieval, especially with domain-specific jargon and acronyms.</li>
+</ul></li>
+<li><p><strong>TF-IDF and BM25</strong></p>
+<ul>
+<li>Emphasizes the importance of incorporating traditional keyword search alongside embedding-based methods.</li>
+<li><strong>TF-IDF (Term Frequency-Inverse Document Frequency)</strong>
+<ul>
+<li>Assigns a weight to words or groups of words based on their rarity</li>
+<li><strong>Stanford IR Book:</strong> <a href="https://nlp.stanford.edu/IR-book/html/htmledition/inverse-document-frequency-1.html">Inverse document frequency</a></li>
+</ul></li>
+<li><strong>BM25 (Best-Matching 25)</strong>
+<ul>
+<li><strong>Wikipedia:</strong> <a href="https://en.wikipedia.org/wiki/Okapi_BM25">Okapi BM25</a></li>
+<li><strong>Stanford IR Book:</strong> <a href="https://nlp.stanford.edu/IR-book/html/htmledition/okapi-bm25-a-non-binary-model-1.html">Okapi BM25: a non-binary model</a></li>
+</ul></li>
+</ul></li>
+<li><p><strong>BM25 Performance and Relevance in Modern Pipelines</strong></p>
+<ul>
+<li>Highlights BM25’s continued relevance and effectiveness, often outperforming or complementing more complex methods.
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Results Table">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Results Table
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="overflow-x:auto; max-height:500px">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 4%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model (→) Dataset (↓)</th>
+<th>BM25</th>
+<th>DeepCT</th>
+<th>SPARTA</th>
+<th>docT5query</th>
+<th>DPR</th>
+<th>ANCE</th>
+<th>TAS-B</th>
+<th>GenQ</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MS MARCO</td>
+<td>0.228</td>
+<td>0.296‡</td>
+<td>0.351‡</td>
+<td>0.338‡</td>
+<td>0.177</td>
+<td>0.388‡</td>
+<td>0.408‡</td>
+<td>0.408‡</td>
+</tr>
+<tr class="even">
+<td>TREC-COVID</td>
+<td>0.656</td>
+<td>0.406</td>
+<td>0.538</td>
+<td>0.713</td>
+<td>0.332</td>
+<td>0.654</td>
+<td>0.481</td>
+<td>0.619</td>
+</tr>
+<tr class="odd">
+<td>BioASQ</td>
+<td>0.465</td>
+<td>0.407</td>
+<td>0.351</td>
+<td>0.431</td>
+<td>0.127</td>
+<td>0.306</td>
+<td>0.383</td>
+<td>0.398</td>
+</tr>
+<tr class="even">
+<td>NFCorpus</td>
+<td>0.325</td>
+<td>0.283</td>
+<td>0.301</td>
+<td>0.328</td>
+<td>0.189</td>
+<td>0.237</td>
+<td>0.319</td>
+<td>0.319</td>
+</tr>
+<tr class="odd">
+<td>NQ</td>
+<td>0.329</td>
+<td>0.188</td>
+<td>0.398</td>
+<td>0.399</td>
+<td>0.474‡</td>
+<td>0.446</td>
+<td>0.463</td>
+<td>0.358</td>
+</tr>
+<tr class="even">
+<td>HotpotQA</td>
+<td>0.603</td>
+<td>0.503</td>
+<td>0.492</td>
+<td>0.580</td>
+<td>0.391</td>
+<td>0.456</td>
+<td>0.584</td>
+<td>0.534</td>
+</tr>
+<tr class="odd">
+<td>FiQA-2018</td>
+<td>0.236</td>
+<td>0.191</td>
+<td>0.198</td>
+<td>0.291</td>
+<td>0.112</td>
+<td>0.295</td>
+<td>0.300</td>
+<td>0.308</td>
+</tr>
+<tr class="even">
+<td>Signal-1M (RT)</td>
+<td>0.330</td>
+<td>0.269</td>
+<td>0.252</td>
+<td>0.307</td>
+<td>0.155</td>
+<td>0.249</td>
+<td>0.289</td>
+<td>0.281</td>
+</tr>
+<tr class="odd">
+<td>TREC-NEWS</td>
+<td>0.398</td>
+<td>0.220</td>
+<td>0.258</td>
+<td>0.420</td>
+<td>0.161</td>
+<td>0.382</td>
+<td>0.377</td>
+<td>0.396</td>
+</tr>
+<tr class="even">
+<td>Robust04</td>
+<td>0.408</td>
+<td>0.287</td>
+<td>0.276</td>
+<td>0.437</td>
+<td>0.252</td>
+<td>0.392</td>
+<td>0.427</td>
+<td>0.362</td>
+</tr>
+<tr class="odd">
+<td>ArguAna</td>
+<td>0.315</td>
+<td>0.309</td>
+<td>0.279</td>
+<td>0.349</td>
+<td>0.175</td>
+<td>0.415</td>
+<td>0.429</td>
+<td>0.493</td>
+</tr>
+<tr class="even">
+<td>Touché-2020</td>
+<td>0.367</td>
+<td>0.156</td>
+<td>0.175</td>
+<td>0.347</td>
+<td>0.131</td>
+<td>0.240</td>
+<td>0.162</td>
+<td>0.182</td>
+</tr>
+<tr class="odd">
+<td>CQADupStack</td>
+<td>0.299</td>
+<td>0.268</td>
+<td>0.257</td>
+<td>0.325</td>
+<td>0.153</td>
+<td>0.296</td>
+<td>0.314</td>
+<td>0.347</td>
+</tr>
+<tr class="even">
+<td>Quora</td>
+<td>0.789</td>
+<td>0.691</td>
+<td>0.630</td>
+<td>0.802</td>
+<td>0.248</td>
+<td>0.852</td>
+<td>0.835</td>
+<td>0.830</td>
+</tr>
+<tr class="odd">
+<td>DBPedia</td>
+<td>0.313</td>
+<td>0.177</td>
+<td>0.314</td>
+<td>0.331</td>
+<td>0.263</td>
+<td>0.281</td>
+<td>0.384</td>
+<td>0.328</td>
+</tr>
+<tr class="even">
+<td>SCIDOCS</td>
+<td>0.158</td>
+<td>0.124</td>
+<td>0.126</td>
+<td>0.162</td>
+<td>0.077</td>
+<td>0.122</td>
+<td>0.149</td>
+<td>0.143</td>
+</tr>
+<tr class="odd">
+<td>FEVER</td>
+<td>0.753</td>
+<td>0.353</td>
+<td>0.596</td>
+<td>0.714</td>
+<td>0.562</td>
+<td>0.669</td>
+<td>0.700</td>
+<td>0.669</td>
+</tr>
+<tr class="even">
+<td>Climate-FEVER</td>
+<td>0.213</td>
+<td>0.066</td>
+<td>0.082</td>
+<td>0.201</td>
+<td>0.148</td>
+<td>0.198</td>
+<td>0.228</td>
+<td>0.175</td>
+</tr>
+<tr class="odd">
+<td>SciFact</td>
+<td>0.665</td>
+<td>0.630</td>
+<td>0.582</td>
+<td>0.675</td>
+<td>0.318</td>
+<td>0.507</td>
+<td>0.643</td>
+<td>0.644</td>
+</tr>
+<tr class="even">
+<td><strong>Avg. Performance vs.&nbsp;BM25</strong></td>
+<td></td>
+<td><strong>- 27.9%</strong></td>
+<td><strong>- 20.3%</strong></td>
+<td><strong>+ 1.6%</strong></td>
+<td><strong>- 47.7%</strong></td>
+<td><strong>- 7.4%</strong></td>
+<td><strong>- 2.8%</strong></td>
+<td><strong>- 3.6%</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div></li>
+<li><strong>Source:</strong> <a href="https://arxiv.org/abs/2104.08663">BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models</a></li>
+</ul></li>
+<li>Especially powerful on longer documents and documents containing a lot of domain-specific jargon</li>
+<li>Virtually unnoticeable inference-time compute overhead</li>
+</ul></li>
+</ul>
+<section id="the-tf-idf-mvp" class="level3">
+<h3 class="anchored" data-anchor-id="the-tf-idf-mvp">The TF-IDF MVP++</h3>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 760.00 404.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 400)">
+<title>tfidf_mvp_plusplus</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-400 756,-400 756,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+<title>cluster_0</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M20,-280C20,-280 378,-280 378,-280 384,-280 390,-286 390,-292 390,-292 390,-320 390,-320 390,-326 384,-332 378,-332 378,-332 20,-332 20,-332 14,-332 8,-326 8,-320 8,-320 8,-292 8,-292 8,-286 14,-280 20,-280"></path>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M410,-280C410,-280 732,-280 732,-280 738,-280 744,-286 744,-292 744,-292 744,-320 744,-320 744,-326 738,-332 732,-332 732,-332 410,-332 410,-332 404,-332 398,-326 398,-320 398,-320 398,-292 398,-292 398,-286 404,-280 410,-280"></path>
+</g>
+<!-- Query -->
+<g id="node1" class="node">
+<title>Query</title>
+<path fill="#a4d8ff" stroke="black" d="M335,-396C335,-396 305,-396 305,-396 299,-396 293,-390 293,-384 293,-384 293,-372 293,-372 293,-366 299,-360 305,-360 305,-360 335,-360 335,-360 341,-360 347,-366 347,-372 347,-372 347,-384 347,-384 347,-390 341,-396 335,-396"></path>
+<text text-anchor="middle" x="320" y="-373.8" font-family="Times,serif" font-size="14.00">Query</text>
+</g>
+<!-- Query_Bi_Encoder -->
+<g id="node3" class="node">
+<title>Query_Bi_Encoder</title>
+<path fill="#ffc9c9" stroke="black" d="M177.58,-324C177.58,-324 28.42,-324 28.42,-324 22.42,-324 16.42,-318 16.42,-312 16.42,-312 16.42,-300 16.42,-300 16.42,-294 22.42,-288 28.42,-288 28.42,-288 177.58,-288 177.58,-288 183.58,-288 189.58,-294 189.58,-300 189.58,-300 189.58,-312 189.58,-312 189.58,-318 183.58,-324 177.58,-324"></path>
+<text text-anchor="middle" x="103" y="-301.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Query&#45;&gt;Query_Bi_Encoder -->
+<g id="edge1" class="edge">
+<title>Query-&gt;Query_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M292.96,-368.28C261.23,-358.04 207.6,-340.74 165.41,-327.13"></path>
+<polygon fill="black" stroke="black" points="166.36,-323.76 155.77,-324.02 164.21,-330.42 166.36,-323.76"></polygon>
+</g>
+<!-- Query_tfidf -->
+<g id="node5" class="node">
+<title>Query_tfidf</title>
+<path fill="#cfbffe" stroke="black" d="M550.34,-324C550.34,-324 417.66,-324 417.66,-324 411.66,-324 405.66,-318 405.66,-312 405.66,-312 405.66,-300 405.66,-300 405.66,-294 411.66,-288 417.66,-288 417.66,-288 550.34,-288 550.34,-288 556.34,-288 562.34,-294 562.34,-300 562.34,-300 562.34,-312 562.34,-312 562.34,-318 556.34,-324 550.34,-324"></path>
+<text text-anchor="middle" x="484" y="-301.8" font-family="Times,serif" font-size="14.00">tf-idf (weighted full text)</text>
+</g>
+<!-- Query&#45;&gt;Query_tfidf -->
+<g id="edge3" class="edge">
+<title>Query-&gt;Query_tfidf</title>
+<path fill="none" stroke="black" d="M347.08,-365.44C370.79,-355.32 405.82,-340.37 434.52,-328.12"></path>
+<polygon fill="black" stroke="black" points="436.16,-331.23 443.98,-324.08 433.41,-324.79 436.16,-331.23"></polygon>
+</g>
+<!-- Documents -->
+<g id="node2" class="node">
+<title>Documents</title>
+<path fill="#feec98" stroke="black" d="M485.77,-396C485.77,-396 430.23,-396 430.23,-396 424.23,-396 418.23,-390 418.23,-384 418.23,-384 418.23,-372 418.23,-372 418.23,-366 424.23,-360 430.23,-360 430.23,-360 485.77,-360 485.77,-360 491.77,-360 497.77,-366 497.77,-372 497.77,-372 497.77,-384 497.77,-384 497.77,-390 491.77,-396 485.77,-396"></path>
+<text text-anchor="middle" x="458" y="-373.8" font-family="Times,serif" font-size="14.00">Documents</text>
+</g>
+<!-- Document_Bi_Encoder -->
+<g id="node4" class="node">
+<title>Document_Bi_Encoder</title>
+<path fill="#ffc9c9" stroke="black" d="M369.58,-324C369.58,-324 220.42,-324 220.42,-324 214.42,-324 208.42,-318 208.42,-312 208.42,-312 208.42,-300 208.42,-300 208.42,-294 214.42,-288 220.42,-288 220.42,-288 369.58,-288 369.58,-288 375.58,-288 381.58,-294 381.58,-300 381.58,-300 381.58,-312 381.58,-312 381.58,-318 375.58,-324 369.58,-324"></path>
+<text text-anchor="middle" x="295" y="-301.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Documents&#45;&gt;Document_Bi_Encoder -->
+<g id="edge2" class="edge">
+<title>Documents-&gt;Document_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M418.13,-359.88C395.84,-350.31 367.88,-338.3 344.24,-328.15"></path>
+<polygon fill="black" stroke="black" points="345.31,-324.8 334.74,-324.07 342.55,-331.23 345.31,-324.8"></polygon>
+</g>
+<!-- Document_tfidf -->
+<g id="node6" class="node">
+<title>Document_tfidf</title>
+<path fill="#cfbffe" stroke="black" d="M724.34,-324C724.34,-324 591.66,-324 591.66,-324 585.66,-324 579.66,-318 579.66,-312 579.66,-312 579.66,-300 579.66,-300 579.66,-294 585.66,-288 591.66,-288 591.66,-288 724.34,-288 724.34,-288 730.34,-288 736.34,-294 736.34,-300 736.34,-300 736.34,-312 736.34,-312 736.34,-318 730.34,-324 724.34,-324"></path>
+<text text-anchor="middle" x="658" y="-301.8" font-family="Times,serif" font-size="14.00">tf-idf (weighted full text)</text>
+</g>
+<!-- Documents&#45;&gt;Document_tfidf -->
+<g id="edge4" class="edge">
+<title>Documents-&gt;Document_tfidf</title>
+<path fill="none" stroke="black" d="M497.99,-363C527.15,-352.8 567.1,-338.82 599.79,-327.37"></path>
+<polygon fill="black" stroke="black" points="600.96,-330.67 609.24,-324.07 598.64,-324.07 600.96,-330.67"></polygon>
+</g>
+<!-- Cosine_Similarity_Search -->
+<g id="node7" class="node">
+<title>Cosine_Similarity_Search</title>
+<path fill="#b2f3bb" stroke="black" d="M358.8,-252C358.8,-252 231.2,-252 231.2,-252 225.2,-252 219.2,-246 219.2,-240 219.2,-240 219.2,-228 219.2,-228 219.2,-222 225.2,-216 231.2,-216 231.2,-216 358.8,-216 358.8,-216 364.8,-216 370.8,-222 370.8,-228 370.8,-228 370.8,-240 370.8,-240 370.8,-246 364.8,-252 358.8,-252"></path>
+<text text-anchor="middle" x="295" y="-229.8" font-family="Times,serif" font-size="14.00">Cosine similarity search</text>
+</g>
+<!-- Query_Bi_Encoder&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge5" class="edge">
+<title>Query_Bi_Encoder-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M149.97,-287.88C176.68,-278.14 210.32,-265.87 238.47,-255.61"></path>
+<polygon fill="black" stroke="black" points="239.99,-258.78 248.18,-252.07 237.59,-252.21 239.99,-258.78"></polygon>
+</g>
+<!-- Document_Bi_Encoder&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge6" class="edge">
+<title>Document_Bi_Encoder-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M295,-287.7C295,-279.98 295,-270.71 295,-262.11"></path>
+<polygon fill="black" stroke="black" points="298.5,-262.1 295,-252.1 291.5,-262.1 298.5,-262.1"></polygon>
+</g>
+<!-- BM25 -->
+<g id="node10" class="node">
+<title>BM25</title>
+<path fill="#eebefa" stroke="black" d="M546.46,-252C546.46,-252 421.54,-252 421.54,-252 415.54,-252 409.54,-246 409.54,-240 409.54,-240 409.54,-228 409.54,-228 409.54,-222 415.54,-216 421.54,-216 421.54,-216 546.46,-216 546.46,-216 552.46,-216 558.46,-222 558.46,-228 558.46,-228 558.46,-240 558.46,-240 558.46,-246 552.46,-252 546.46,-252"></path>
+<text text-anchor="middle" x="484" y="-229.8" font-family="Times,serif" font-size="14.00">BM25 (full-text) search</text>
+</g>
+<!-- Query_tfidf&#45;&gt;BM25 -->
+<g id="edge8" class="edge">
+<title>Query_tfidf-&gt;BM25</title>
+<path fill="none" stroke="black" d="M484,-287.7C484,-279.98 484,-270.71 484,-262.11"></path>
+<polygon fill="black" stroke="black" points="487.5,-262.1 484,-252.1 480.5,-262.1 487.5,-262.1"></polygon>
+</g>
+<!-- Document_tfidf&#45;&gt;BM25 -->
+<g id="edge9" class="edge">
+<title>Document_tfidf-&gt;BM25</title>
+<path fill="none" stroke="black" d="M615.43,-287.88C591.44,-278.22 561.27,-266.09 535.9,-255.88"></path>
+<polygon fill="black" stroke="black" points="537.01,-252.55 526.43,-252.07 534.4,-259.05 537.01,-252.55"></polygon>
+</g>
+<!-- Combine_Scores -->
+<g id="node11" class="node">
+<title>Combine_Scores</title>
+<path fill="#95f2d7" stroke="black" d="M440.42,-180C440.42,-180 337.58,-180 337.58,-180 331.58,-180 325.58,-174 325.58,-168 325.58,-168 325.58,-156 325.58,-156 325.58,-150 331.58,-144 337.58,-144 337.58,-144 440.42,-144 440.42,-144 446.42,-144 452.42,-150 452.42,-156 452.42,-156 452.42,-168 452.42,-168 452.42,-174 446.42,-180 440.42,-180"></path>
+<text text-anchor="middle" x="389" y="-157.8" font-family="Times,serif" font-size="14.00">Combine the scores</text>
+</g>
+<!-- Cosine_Similarity_Search&#45;&gt;Combine_Scores -->
+<g id="edge11" class="edge">
+<title>Cosine_Similarity_Search-&gt;Combine_Scores</title>
+<path fill="none" stroke="black" d="M318.24,-215.7C330.19,-206.8 344.92,-195.82 357.85,-186.2"></path>
+<polygon fill="black" stroke="black" points="360.1,-188.88 366.03,-180.1 355.92,-183.27 360.1,-188.88"></polygon>
+</g>
+<!-- Results -->
+<g id="node8" class="node">
+<title>Results</title>
+<path fill="#b2f3bb" stroke="black" d="M405.73,-36C405.73,-36 372.27,-36 372.27,-36 366.27,-36 360.27,-30 360.27,-24 360.27,-24 360.27,-12 360.27,-12 360.27,-6 366.27,0 372.27,0 372.27,0 405.73,0 405.73,0 411.73,0 417.73,-6 417.73,-12 417.73,-12 417.73,-24 417.73,-24 417.73,-30 411.73,-36 405.73,-36"></path>
+<text text-anchor="middle" x="389" y="-13.8" font-family="Times,serif" font-size="14.00">Results</text>
+</g>
+<!-- Reranking -->
+<g id="node9" class="node">
+<title>Reranking</title>
+<path fill="#fed8a7" stroke="black" d="M414.32,-108C414.32,-108 363.68,-108 363.68,-108 357.68,-108 351.68,-102 351.68,-96 351.68,-96 351.68,-84 351.68,-84 351.68,-78 357.68,-72 363.68,-72 363.68,-72 414.32,-72 414.32,-72 420.32,-72 426.32,-78 426.32,-84 426.32,-84 426.32,-96 426.32,-96 426.32,-102 420.32,-108 414.32,-108"></path>
+<text text-anchor="middle" x="389" y="-85.8" font-family="Times,serif" font-size="14.00">Reranking</text>
+</g>
+<!-- Reranking&#45;&gt;Results -->
+<g id="edge7" class="edge">
+<title>Reranking-&gt;Results</title>
+<path fill="none" stroke="black" d="M389,-71.7C389,-63.98 389,-54.71 389,-46.11"></path>
+<polygon fill="black" stroke="black" points="392.5,-46.1 389,-36.1 385.5,-46.1 392.5,-46.1"></polygon>
+</g>
+<!-- BM25&#45;&gt;Combine_Scores -->
+<g id="edge10" class="edge">
+<title>BM25-&gt;Combine_Scores</title>
+<path fill="none" stroke="black" d="M460.52,-215.7C448.44,-206.8 433.55,-195.82 420.48,-186.2"></path>
+<polygon fill="black" stroke="black" points="422.34,-183.22 412.21,-180.1 418.19,-188.85 422.34,-183.22"></polygon>
+</g>
+<!-- Combine_Scores&#45;&gt;Reranking -->
+<g id="edge12" class="edge">
+<title>Combine_Scores-&gt;Reranking</title>
+<path fill="none" stroke="black" d="M389,-143.7C389,-135.98 389,-126.71 389,-118.11"></path>
+<polygon fill="black" stroke="black" points="392.5,-118.1 389,-108.1 385.5,-118.1 392.5,-118.1"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="leveraging-metadata-for-targeted-retrieval" class="level2">
+<h2 class="anchored" data-anchor-id="leveraging-metadata-for-targeted-retrieval">Leveraging Metadata for Targeted Retrieval</h2>
+<ul>
+<li><strong>Real-World Data Has Context: Metadata Matters</strong>
+<ul>
+<li>Real-world documents often possess valuable metadata (e.g., author, date, department) that can significantly improve retrieval accuracy.</li>
+<li>Pure Semantic or Keyword Search can struggle with metadata
+<ul>
+<li><strong>Example Query:</strong> “Can you get me the cruise division financial report for Q4 2022?”
+<ul>
+<li>Model must accurately represent all of “ﬁnancial report”, “cruise division”, “Q4” and “2022”, into a single vector
+<ul>
+<li>Otherwise it will fetch documents that look relevant but aren’t meeting one or more of those criteria.</li>
+</ul></li>
+<li>If the number of documents you search for (“k”) is set too high, you will be passing irrelevant ﬁnancial reports to your LLM</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><strong>Entity Detection and Metadata Filtering: A Practical Example</strong>
+<ul>
+<li>Use entity detection models like GLiNER to automatically extract relevant metadata (e.g., document type, time period, department).</li>
+<li><strong>GLiNER</strong>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2311.08526">GLiNER: Generalist Model for Named Entity Recognition using Bidirectional Transformer</a></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/urchade/GLiNER">GLiNER</a></li>
+<li><strong>:hugs: Spaces Demo:</strong> <a href="https://huggingface.co/spaces/tomaarsen/gliner_medium-v2.1">GLiNER-medium-v2.1, zero-shot NER</a></li>
+</ul></li>
+<li>Filter documents based on extracted metadata to ensure relevance and reduce noise.</li>
+</ul></li>
+<li><strong>Storing and Using Metadata for Pre-filtering</strong>
+<ul>
+<li>Store metadata alongside documents in the database.</li>
+<li>During retrieval, pre-filter documents based on query-specific metadata to narrow down the search space.</li>
+</ul></li>
+</ul>
+</section>
+<section id="putting-it-all-together-the-complete-mvp-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="putting-it-all-together-the-complete-mvp-pipeline">Putting it All Together: The Complete MVP++ Pipeline</h2>
+<section id="the-final-compact-mvp" class="level3">
+<h3 class="anchored" data-anchor-id="the-final-compact-mvp">The Final Compact MVP++</h3>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 760.00 476.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 472)">
+<title>tfidf_mvp_plusplus</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-472 756,-472 756,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+<title>cluster_0</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M20,-352C20,-352 378,-352 378,-352 384,-352 390,-358 390,-364 390,-364 390,-392 390,-392 390,-398 384,-404 378,-404 378,-404 20,-404 20,-404 14,-404 8,-398 8,-392 8,-392 8,-364 8,-364 8,-358 14,-352 20,-352"></path>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M410,-352C410,-352 732,-352 732,-352 738,-352 744,-358 744,-364 744,-364 744,-392 744,-392 744,-398 738,-404 732,-404 732,-404 410,-404 410,-404 404,-404 398,-398 398,-392 398,-392 398,-364 398,-364 398,-358 404,-352 410,-352"></path>
+</g>
+<!-- Query -->
+<g id="node1" class="node">
+<title>Query</title>
+<path fill="#a4d8ff" stroke="black" d="M335,-468C335,-468 305,-468 305,-468 299,-468 293,-462 293,-456 293,-456 293,-444 293,-444 293,-438 299,-432 305,-432 305,-432 335,-432 335,-432 341,-432 347,-438 347,-444 347,-444 347,-456 347,-456 347,-462 341,-468 335,-468"></path>
+<text text-anchor="middle" x="320" y="-445.8" font-family="Times,serif" font-size="14.00">Query</text>
+</g>
+<!-- Query_Bi_Encoder -->
+<g id="node3" class="node">
+<title>Query_Bi_Encoder</title>
+<path fill="#ffc9c9" stroke="black" d="M177.58,-396C177.58,-396 28.42,-396 28.42,-396 22.42,-396 16.42,-390 16.42,-384 16.42,-384 16.42,-372 16.42,-372 16.42,-366 22.42,-360 28.42,-360 28.42,-360 177.58,-360 177.58,-360 183.58,-360 189.58,-366 189.58,-372 189.58,-372 189.58,-384 189.58,-384 189.58,-390 183.58,-396 177.58,-396"></path>
+<text text-anchor="middle" x="103" y="-373.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Query&#45;&gt;Query_Bi_Encoder -->
+<g id="edge1" class="edge">
+<title>Query-&gt;Query_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M292.96,-440.28C261.23,-430.04 207.6,-412.74 165.41,-399.13"></path>
+<polygon fill="black" stroke="black" points="166.36,-395.76 155.77,-396.02 164.21,-402.42 166.36,-395.76"></polygon>
+</g>
+<!-- Query_tfidf -->
+<g id="node5" class="node">
+<title>Query_tfidf</title>
+<path fill="#cfbffe" stroke="black" d="M550.34,-396C550.34,-396 417.66,-396 417.66,-396 411.66,-396 405.66,-390 405.66,-384 405.66,-384 405.66,-372 405.66,-372 405.66,-366 411.66,-360 417.66,-360 417.66,-360 550.34,-360 550.34,-360 556.34,-360 562.34,-366 562.34,-372 562.34,-372 562.34,-384 562.34,-384 562.34,-390 556.34,-396 550.34,-396"></path>
+<text text-anchor="middle" x="484" y="-373.8" font-family="Times,serif" font-size="14.00">tf-idf (weighted full text)</text>
+</g>
+<!-- Query&#45;&gt;Query_tfidf -->
+<g id="edge3" class="edge">
+<title>Query-&gt;Query_tfidf</title>
+<path fill="none" stroke="black" d="M347.08,-437.44C370.79,-427.32 405.82,-412.37 434.52,-400.12"></path>
+<polygon fill="black" stroke="black" points="436.16,-403.23 443.98,-396.08 433.41,-396.79 436.16,-403.23"></polygon>
+</g>
+<!-- Documents -->
+<g id="node2" class="node">
+<title>Documents</title>
+<path fill="#feec98" stroke="black" d="M485.77,-468C485.77,-468 430.23,-468 430.23,-468 424.23,-468 418.23,-462 418.23,-456 418.23,-456 418.23,-444 418.23,-444 418.23,-438 424.23,-432 430.23,-432 430.23,-432 485.77,-432 485.77,-432 491.77,-432 497.77,-438 497.77,-444 497.77,-444 497.77,-456 497.77,-456 497.77,-462 491.77,-468 485.77,-468"></path>
+<text text-anchor="middle" x="458" y="-445.8" font-family="Times,serif" font-size="14.00">Documents</text>
+</g>
+<!-- Document_Bi_Encoder -->
+<g id="node4" class="node">
+<title>Document_Bi_Encoder</title>
+<path fill="#ffc9c9" stroke="black" d="M369.58,-396C369.58,-396 220.42,-396 220.42,-396 214.42,-396 208.42,-390 208.42,-384 208.42,-384 208.42,-372 208.42,-372 208.42,-366 214.42,-360 220.42,-360 220.42,-360 369.58,-360 369.58,-360 375.58,-360 381.58,-366 381.58,-372 381.58,-372 381.58,-384 381.58,-384 381.58,-390 375.58,-396 369.58,-396"></path>
+<text text-anchor="middle" x="295" y="-373.8" font-family="Times,serif" font-size="14.00">Bi-Encoder (Embed + Pool)</text>
+</g>
+<!-- Documents&#45;&gt;Document_Bi_Encoder -->
+<g id="edge2" class="edge">
+<title>Documents-&gt;Document_Bi_Encoder</title>
+<path fill="none" stroke="black" d="M418.13,-431.88C395.84,-422.31 367.88,-410.3 344.24,-400.15"></path>
+<polygon fill="black" stroke="black" points="345.31,-396.8 334.74,-396.07 342.55,-403.23 345.31,-396.8"></polygon>
+</g>
+<!-- Document_tfidf -->
+<g id="node6" class="node">
+<title>Document_tfidf</title>
+<path fill="#cfbffe" stroke="black" d="M724.34,-396C724.34,-396 591.66,-396 591.66,-396 585.66,-396 579.66,-390 579.66,-384 579.66,-384 579.66,-372 579.66,-372 579.66,-366 585.66,-360 591.66,-360 591.66,-360 724.34,-360 724.34,-360 730.34,-360 736.34,-366 736.34,-372 736.34,-372 736.34,-384 736.34,-384 736.34,-390 730.34,-396 724.34,-396"></path>
+<text text-anchor="middle" x="658" y="-373.8" font-family="Times,serif" font-size="14.00">tf-idf (weighted full text)</text>
+</g>
+<!-- Documents&#45;&gt;Document_tfidf -->
+<g id="edge4" class="edge">
+<title>Documents-&gt;Document_tfidf</title>
+<path fill="none" stroke="black" d="M497.99,-435C527.15,-424.8 567.1,-410.82 599.79,-399.37"></path>
+<polygon fill="black" stroke="black" points="600.96,-402.67 609.24,-396.07 598.64,-396.07 600.96,-402.67"></polygon>
+</g>
+<!-- Cosine_Similarity_Search -->
+<g id="node9" class="node">
+<title>Cosine_Similarity_Search</title>
+<path fill="#b2f3bb" stroke="black" d="M358.8,-252C358.8,-252 231.2,-252 231.2,-252 225.2,-252 219.2,-246 219.2,-240 219.2,-240 219.2,-228 219.2,-228 219.2,-222 225.2,-216 231.2,-216 231.2,-216 358.8,-216 358.8,-216 364.8,-216 370.8,-222 370.8,-228 370.8,-228 370.8,-240 370.8,-240 370.8,-246 364.8,-252 358.8,-252"></path>
+<text text-anchor="middle" x="295" y="-229.8" font-family="Times,serif" font-size="14.00">Cosine similarity search</text>
+</g>
+<!-- Query_Bi_Encoder&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge7" class="edge">
+<title>Query_Bi_Encoder-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M118.05,-359.77C135.33,-340.66 165.15,-309.68 195,-288 211.23,-276.21 230.42,-265.4 247.63,-256.65"></path>
+<polygon fill="black" stroke="black" points="249.56,-259.6 256.95,-252.02 246.44,-253.34 249.56,-259.6"></polygon>
+</g>
+<!-- Metadata_Filtering -->
+<g id="node7" class="node">
+<title>Metadata_Filtering</title>
+<path fill="#d2bab0" stroke="black" d="M373.62,-324C373.62,-324 216.38,-324 216.38,-324 210.38,-324 204.38,-318 204.38,-312 204.38,-312 204.38,-300 204.38,-300 204.38,-294 210.38,-288 216.38,-288 216.38,-288 373.62,-288 373.62,-288 379.62,-288 385.62,-294 385.62,-300 385.62,-300 385.62,-312 385.62,-312 385.62,-318 379.62,-324 373.62,-324"></path>
+<text text-anchor="middle" x="295" y="-301.8" font-family="Times,serif" font-size="14.00">Metadata Document Filtering</text>
+</g>
+<!-- Document_Bi_Encoder&#45;&gt;Metadata_Filtering -->
+<g id="edge5" class="edge">
+<title>Document_Bi_Encoder-&gt;Metadata_Filtering</title>
+<path fill="none" stroke="black" d="M295,-359.7C295,-351.98 295,-342.71 295,-334.11"></path>
+<polygon fill="black" stroke="black" points="298.5,-334.1 295,-324.1 291.5,-334.1 298.5,-334.1"></polygon>
+</g>
+<!-- BM25 -->
+<g id="node12" class="node">
+<title>BM25</title>
+<path fill="#eebefa" stroke="black" d="M546.46,-252C546.46,-252 421.54,-252 421.54,-252 415.54,-252 409.54,-246 409.54,-240 409.54,-240 409.54,-228 409.54,-228 409.54,-222 415.54,-216 421.54,-216 421.54,-216 546.46,-216 546.46,-216 552.46,-216 558.46,-222 558.46,-228 558.46,-228 558.46,-240 558.46,-240 558.46,-246 552.46,-252 546.46,-252"></path>
+<text text-anchor="middle" x="484" y="-229.8" font-family="Times,serif" font-size="14.00">BM25 (full-text) search</text>
+</g>
+<!-- Query_tfidf&#45;&gt;BM25 -->
+<g id="edge10" class="edge">
+<title>Query_tfidf-&gt;BM25</title>
+<path fill="none" stroke="black" d="M484,-359.87C484,-335.67 484,-291.21 484,-262.39"></path>
+<polygon fill="black" stroke="black" points="487.5,-262.19 484,-252.19 480.5,-262.19 487.5,-262.19"></polygon>
+</g>
+<!-- Metadata_Filtering_2 -->
+<g id="node8" class="node">
+<title>Metadata_Filtering_2</title>
+<path fill="#d2bab0" stroke="black" d="M708.62,-324C708.62,-324 551.38,-324 551.38,-324 545.38,-324 539.38,-318 539.38,-312 539.38,-312 539.38,-300 539.38,-300 539.38,-294 545.38,-288 551.38,-288 551.38,-288 708.62,-288 708.62,-288 714.62,-288 720.62,-294 720.62,-300 720.62,-300 720.62,-312 720.62,-312 720.62,-318 714.62,-324 708.62,-324"></path>
+<text text-anchor="middle" x="630" y="-301.8" font-family="Times,serif" font-size="14.00">Metadata Document Filtering</text>
+</g>
+<!-- Document_tfidf&#45;&gt;Metadata_Filtering_2 -->
+<g id="edge6" class="edge">
+<title>Document_tfidf-&gt;Metadata_Filtering_2</title>
+<path fill="none" stroke="black" d="M651.08,-359.7C647.93,-351.81 644.12,-342.3 640.62,-333.55"></path>
+<polygon fill="black" stroke="black" points="643.81,-332.09 636.84,-324.1 637.31,-334.69 643.81,-332.09"></polygon>
+</g>
+<!-- Metadata_Filtering&#45;&gt;Cosine_Similarity_Search -->
+<g id="edge8" class="edge">
+<title>Metadata_Filtering-&gt;Cosine_Similarity_Search</title>
+<path fill="none" stroke="black" d="M295,-287.7C295,-279.98 295,-270.71 295,-262.11"></path>
+<polygon fill="black" stroke="black" points="298.5,-262.1 295,-252.1 291.5,-262.1 298.5,-262.1"></polygon>
+</g>
+<!-- Metadata_Filtering_2&#45;&gt;BM25 -->
+<g id="edge11" class="edge">
+<title>Metadata_Filtering_2-&gt;BM25</title>
+<path fill="none" stroke="black" d="M594.28,-287.88C574.5,-278.39 549.73,-266.51 528.67,-256.42"></path>
+<polygon fill="black" stroke="black" points="530.13,-253.24 519.6,-252.07 527.1,-259.55 530.13,-253.24"></polygon>
+</g>
+<!-- Combine_Scores -->
+<g id="node13" class="node">
+<title>Combine_Scores</title>
+<path fill="#95f2d7" stroke="black" d="M440.42,-180C440.42,-180 337.58,-180 337.58,-180 331.58,-180 325.58,-174 325.58,-168 325.58,-168 325.58,-156 325.58,-156 325.58,-150 331.58,-144 337.58,-144 337.58,-144 440.42,-144 440.42,-144 446.42,-144 452.42,-150 452.42,-156 452.42,-156 452.42,-168 452.42,-168 452.42,-174 446.42,-180 440.42,-180"></path>
+<text text-anchor="middle" x="389" y="-157.8" font-family="Times,serif" font-size="14.00">Combine the scores</text>
+</g>
+<!-- Cosine_Similarity_Search&#45;&gt;Combine_Scores -->
+<g id="edge13" class="edge">
+<title>Cosine_Similarity_Search-&gt;Combine_Scores</title>
+<path fill="none" stroke="black" d="M318.24,-215.7C330.19,-206.8 344.92,-195.82 357.85,-186.2"></path>
+<polygon fill="black" stroke="black" points="360.1,-188.88 366.03,-180.1 355.92,-183.27 360.1,-188.88"></polygon>
+</g>
+<!-- Results -->
+<g id="node10" class="node">
+<title>Results</title>
+<path fill="#b2f3bb" stroke="black" d="M405.73,-36C405.73,-36 372.27,-36 372.27,-36 366.27,-36 360.27,-30 360.27,-24 360.27,-24 360.27,-12 360.27,-12 360.27,-6 366.27,0 372.27,0 372.27,0 405.73,0 405.73,0 411.73,0 417.73,-6 417.73,-12 417.73,-12 417.73,-24 417.73,-24 417.73,-30 411.73,-36 405.73,-36"></path>
+<text text-anchor="middle" x="389" y="-13.8" font-family="Times,serif" font-size="14.00">Results</text>
+</g>
+<!-- Reranking -->
+<g id="node11" class="node">
+<title>Reranking</title>
+<path fill="#fed8a7" stroke="black" d="M414.32,-108C414.32,-108 363.68,-108 363.68,-108 357.68,-108 351.68,-102 351.68,-96 351.68,-96 351.68,-84 351.68,-84 351.68,-78 357.68,-72 363.68,-72 363.68,-72 414.32,-72 414.32,-72 420.32,-72 426.32,-78 426.32,-84 426.32,-84 426.32,-96 426.32,-96 426.32,-102 420.32,-108 414.32,-108"></path>
+<text text-anchor="middle" x="389" y="-85.8" font-family="Times,serif" font-size="14.00">Reranking</text>
+</g>
+<!-- Reranking&#45;&gt;Results -->
+<g id="edge9" class="edge">
+<title>Reranking-&gt;Results</title>
+<path fill="none" stroke="black" d="M389,-71.7C389,-63.98 389,-54.71 389,-46.11"></path>
+<polygon fill="black" stroke="black" points="392.5,-46.1 389,-36.1 385.5,-46.1 392.5,-46.1"></polygon>
+</g>
+<!-- BM25&#45;&gt;Combine_Scores -->
+<g id="edge12" class="edge">
+<title>BM25-&gt;Combine_Scores</title>
+<path fill="none" stroke="black" d="M460.52,-215.7C448.44,-206.8 433.55,-195.82 420.48,-186.2"></path>
+<polygon fill="black" stroke="black" points="422.34,-183.22 412.21,-180.1 418.19,-188.85 422.34,-183.22"></polygon>
+</g>
+<!-- Combine_Scores&#45;&gt;Reranking -->
+<g id="edge14" class="edge">
+<title>Combine_Scores-&gt;Reranking</title>
+<path fill="none" stroke="black" d="M389,-143.7C389,-135.98 389,-126.71 389,-118.11"></path>
+<polygon fill="black" stroke="black" points="392.5,-118.1 389,-108.1 385.5,-118.1 392.5,-118.1"></polygon>
+</g>
+</g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="code-example-implementing-the-mvp-with-lancedb" class="level3">
+<h3 class="anchored" data-anchor-id="code-example-implementing-the-mvp-with-lancedb">Code Example: Implementing the MVP++ with LanceDB</h3>
+<ul>
+<li>Uses LanceDB for its ease of use and built-in components.</li>
+<li><strong>Vector Databases</strong>
+<ul>
+<li><a href="https://lancedb.com/">LanceDB</a></li>
+<li><a href="https://weaviate.io/">Weaviate</a></li>
+<li><a href="https://www.trychroma.com/">Chroma</a></li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Fetch some text content in two different categories</span></span>
+<span id="cb1-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> wikipediaapi <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Wikipedia</span>
+<span id="cb1-3">wiki <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Wikipedia(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'RAGBot/0.0'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'en'</span>)</span>
+<span id="cb1-4">docs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"text"</span>: x,</span>
+<span id="cb1-5">         <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"category"</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"person"</span>}</span>
+<span id="cb1-6">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> x <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> wiki.page(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Hayao_Miyazaki'</span>).text.split(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)]</span>
+<span id="cb1-7">docs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+=</span> [{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"text"</span>: x,</span>
+<span id="cb1-8">          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"category"</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"film"</span>}</span>
+<span id="cb1-9">         <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> x <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> wiki.page(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Spirited_Away'</span>).text.split(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)]</span>
+<span id="cb1-10"></span>
+<span id="cb1-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Enter LanceDB</span></span>
+<span id="cb1-12"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> lancedb</span>
+<span id="cb1-13"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> lancedb.pydantic <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> LanceModel, Vector</span>
+<span id="cb1-14"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> lancedb.embedding <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> get_registry</span>
+<span id="cb1-15"></span>
+<span id="cb1-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Initialise the embedding model</span></span>
+<span id="cb1-17">model_registry <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_registry().get(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sentence-transformers"</span>)</span>
+<span id="cb1-18">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model_registry.create(name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"BAAI/bge-small-en-v1.5"</span>)</span>
+<span id="cb1-19"></span>
+<span id="cb1-20"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create a Model to store attributes for filtering</span></span>
+<span id="cb1-21"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">class</span> Document(LanceModel):                    </span>
+<span id="cb1-22">    text: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.SourceField()</span>
+<span id="cb1-23">    vector: Vector(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">384</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.VectorField()</span>
+<span id="cb1-24">    category: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span></span>
+<span id="cb1-25"></span>
+<span id="cb1-26">db <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> lancedb.<span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">connect</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".my_db"</span>)</span>
+<span id="cb1-27">tbl <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> db.create_table(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"my_table"</span>, schema<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>Document)</span>
+<span id="cb1-28"></span>
+<span id="cb1-29"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Embed the documents and store them in the database</span></span>
+<span id="cb1-30">tbl.add(docs)                                        </span>
+<span id="cb1-31"></span>
+<span id="cb1-32"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Generate the full-text (tf-idf) search index</span></span>
+<span id="cb1-33">tbl.create_fts_index(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"text"</span>)                         </span>
+<span id="cb1-34"></span>
+<span id="cb1-35"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Initialise a reranker -- here, Cohere's API one</span></span>
+<span id="cb1-36"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> lancedb.rerankers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> CohereReranker</span>
+<span id="cb1-37"></span>
+<span id="cb1-38">reranker <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> CohereReranker()                        </span>
+<span id="cb1-39"></span>
+<span id="cb1-40">query <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"What is Chihiro's new name given to her by the witch?"</span></span>
+<span id="cb1-41"></span>
+<span id="cb1-42">results <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (tbl.search(query, query_type<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"hybrid"</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Hybrid means text + vector</span></span>
+<span id="cb1-43">           .where(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"category = 'film'"</span>, prefilter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Restrict to only docs in the 'film' category</span></span>
+<span id="cb1-44">           .limit(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Get 10 results from first-pass retrieval</span></span>
+<span id="cb1-45">           .rerank(reranker<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>reranker) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># For the reranker to compute the final ranking</span></span>
+<span id="cb1-46">          )</span></code></pre></div>
+</section>
+</section>
+<section id="beyond-the-basics-future-exploration-and-resources" class="level2">
+<h2 class="anchored" data-anchor-id="beyond-the-basics-future-exploration-and-resources">Beyond the Basics: Future Exploration and Resources</h2>
+<ul>
+<li><strong><a href="https://github.com/AnswerDotAI/RAGatouille">RAGatouille</a>:</strong> Easily use and train state of the art late-interaction retrieval methods (ColBERT) in any RAG pipeline.</li>
+<li><strong><a href="https://github.com/AnswerDotAI/rerankers">rerankers</a>:</strong> A lightweight unified API for various reranking models.</li>
+<li><strong>Video Tutorial:</strong> <a href="https://www.youtube.com/watch?v=jkrNMKz9pWU">A Hackers’ Guide to Language Models</a></li>
+<li><strong>ColBERT</strong>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2004.12832">ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT</a></li>
+<li><strong>HuggingFace Hub:</strong> <a href="https://huggingface.co/colbert-ir/colbertv2.0">colbert-ir/colbertv2.0</a></li>
+</ul></li>
+<li><strong>Sparse Vectors:</strong> <a href="https://docs.pinecone.io/guides/data/understanding-hybrid-search">Understanding hybrid search</a></li>
+<li><strong>Multi-vector Retrievers:</strong> <a href="https://blog.langchain.dev/semi-structured-multi-modal-rag/">Multi-Vector Retriever for RAG on tables, text, and images</a></li>
+</ul>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<section id="fine-tuning-bi-encoders-and-cross-encoders" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-bi-encoders-and-cross-encoders">Fine-tuning Bi-Encoders and Cross-Encoders</h3>
+<ul>
+<li><p><strong>Q:</strong> Does the fine-tuning approach for bi-encoder models impact the fine-tuning of cross-encoder models and vice versa?</p></li>
+<li><p><strong>A:</strong> While domain-specific, generally aim for complementarity. Fine-tune bi-encoders for broader retrieval, capturing potential candidates. Rely on cross-encoders (re-rankers) for precise filtering and ranking.</p></li>
+</ul>
+</section>
+<section id="combining-bi-encoder-and-tf-idf-scores" class="level3">
+<h3 class="anchored" data-anchor-id="combining-bi-encoder-and-tf-idf-scores">Combining Bi-Encoder and TF-IDF Scores</h3>
+<ul>
+<li><p><strong>Q:</strong> What are the advantages and disadvantages of using a weighted average of bi-encoder and TF-IDF scores for selecting re-ranker questions compared to taking the top X from each ranker?</p></li>
+<li><p><strong>A:</strong> Both methods are valid and depend on the data. Weighted averages can be effective, but in domains like biomedicine, where document specificity is crucial, taking the top X from both ensures representation for potentially poorly embedded queries.</p></li>
+</ul>
+</section>
+<section id="rags-future-with-million-token-context-lengths" class="level3">
+<h3 class="anchored" data-anchor-id="rags-future-with-million-token-context-lengths">RAG’s Future with Million-Token Context Lengths</h3>
+<ul>
+<li><p><strong>Q:</strong> How will the emergence of million-token context lengths impact the relevance of RAG in the future?</p></li>
+<li><p><strong>A:</strong> RAG remains relevant even with extended context windows. Just as RAM doesn’t replace hard drives, large context windows won’t replace the need for efficient retrieval from vast external knowledge stores. Long context windows provide more flexibility in retrieval speed and allow for incorporating longer documents.</p></li>
+</ul>
+</section>
+<section id="chunking-strategies" class="level3">
+<h3 class="anchored" data-anchor-id="chunking-strategies">Chunking Strategies</h3>
+<ul>
+<li><p><strong>Q:</strong> What are your thoughts on different chunking strategies?</p></li>
+<li><p><strong>A:</strong> While LLMs for pre-chunking are promising but currently immature, maintaining semantic continuity within chunks is vital. The recommended approach is 300 tokens per chunk, avoiding sentence interruptions and including overlapping context (50 tokens) between consecutive chunks.</p></li>
+</ul>
+</section>
+<section id="fine-tuning-bi-encoders" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-bi-encoders">Fine-tuning Bi-Encoders</h3>
+<ul>
+<li><p><strong>Q:</strong> Should bi-encoders always be fine-tuned with labeled data or is it acceptable to use them off-the-shelf and rely on a re-ranker?</p></li>
+<li><p><strong>A:</strong> Fine-tuning encoders (both bi- and cross-) with labeled data consistently improves results. If data and resources are available, fine-tuning is highly recommended. However, for MVPs with limited resources, leveraging pre-trained models with re-ranking is a viable option.</p></li>
+</ul>
+</section>
+<section id="colbert-clarification-and-discussion" class="level3">
+<h3 class="anchored" data-anchor-id="colbert-clarification-and-discussion">Colbert Clarification and Discussion</h3>
+<ul>
+<li><p><strong>Discussion:</strong> Clarifying the role of ColBERT in RAG pipelines.</p>
+<ul>
+<li><p><strong>ColBERT as a First-Stage Retriever:</strong> Ideally replaces the bi-encoder in new pipelines, not used as a re-ranker.</p></li>
+<li><p><strong>ColBERT as a Re-Ranker:</strong> Can be used when pipeline changes are not feasible, but less optimal.</p></li>
+<li><p><strong>ColBERT Overview:</strong> A bi-encoder variant where documents and queries are represented as bags of embeddings (one per token). This approach enhances out-of-domain performance due to its multi-vector representation, capturing more granular information.</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="tools-for-fine-tuning-embeddings" class="level3">
+<h3 class="anchored" data-anchor-id="tools-for-fine-tuning-embeddings">Tools for Fine-tuning Embeddings</h3>
+<ul>
+<li><p><strong>Q:</strong> Recommendations for tools to fine-tune embeddings for retrieval.</p></li>
+<li><p><strong>A:</strong> <a href="https://sbert.net/">Sentence Transformers</a>, particularly version 3.0, is highly recommended for its user-friendliness and comprehensive implementation of essential features.</p></li>
+</ul>
+</section>
+<section id="fine-tuning-embeddings-workflow" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-embeddings-workflow">Fine-tuning Embeddings Workflow</h3>
+<ul>
+<li><p><strong>Q:</strong> Can you describe the workflow for fine-tuning an embedding model?</p></li>
+<li><p><strong>A:</strong></p>
+<ol type="1">
+<li><strong>Gather Data:</strong> Obtain queries and their corresponding relevant and non-relevant documents.</li>
+<li><strong>Define Loss Function:</strong> Use a suitable loss function like <a href="https://doordash.engineering/2021/09/08/using-twin-neural-networks-to-train-catalog-item-embeddings/">triplet loss</a>, which leverages positive and negative examples to guide the model.</li>
+<li><strong>Consider Hard Negatives:</strong> Enhance training by retrieving hard negatives—documents similar to positive examples but irrelevant to the query.</li>
+<li><strong>Data Analysis and Generation:</strong> Thoroughly analyze existing queries or generate synthetic ones using LLMs to augment training data.</li>
+</ol></li>
+</ul>
+</section>
+<section id="impact-of-long-context-windows-on-rag" class="level3">
+<h3 class="anchored" data-anchor-id="impact-of-long-context-windows-on-rag">Impact of Long Context Windows on RAG</h3>
+<ul>
+<li><p><strong>Q:</strong> How do long context windows change the strategies and possibilities within RAG?</p></li>
+<li><p><strong>A:</strong> Long context windows enable:</p>
+<ul>
+<li><p><strong>Longer Documents:</strong> Incorporating longer documents or concatenated chunks into the context.</p></li>
+<li><p><strong>Reduced Retrieval Overhead:</strong> Relaxing the reliance on highly precise retrieval (e.g., Recall@3) as more documents can fit within the context window. This allows for faster, less resource-intensive retrieval methods.</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="fine-tuning-encoder-tutorials" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-encoder-tutorials">Fine-tuning Encoder Tutorials</h3>
+<ul>
+<li><p><strong>Q:</strong> Recommendations for tutorials on fine-tuning encoders.</p></li>
+<li><p><strong>A:</strong> The <a href="https://www.sbert.net/docs/sentence_transformer/training_overview.html">Sentence Transformers documentation</a> is a valuable resource but can be challenging for beginners.</p></li>
+</ul>
+</section>
+<section id="go-to-embedding-models" class="level3">
+<h3 class="anchored" data-anchor-id="go-to-embedding-models">Go-to Embedding Models</h3>
+<ul>
+<li><p><strong>Q:</strong> Go-to embedding models for different scenarios.</p></li>
+<li><p><strong>A:</strong></p>
+<ul>
+<li><p><strong>Demos:</strong> <a href="https://cohere.com/">Cohere</a>’s embedding models due to their API accessibility, performance, and affordability.</p></li>
+<li><p><strong>Production:</strong> Multi-vector models like ColBERT are preferred.</p></li>
+</ul></li>
+<li><p><strong>General Recommendations:</strong></p>
+<ul>
+<li><p><strong>Model Size:</strong> Stick to models with parameters between 100 million and 1 billion; larger LLMs as encoders often have unfavorable latency-performance trade-offs.</p></li>
+<li><p><strong>Avoid Overly Large Models:</strong> Using excessively large LLMs for embedding can lead to diminishing returns in performance and increased latency.</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="using-elasticsearch-for-rag" class="level3">
+<h3 class="anchored" data-anchor-id="using-elasticsearch-for-rag">Using Elasticsearch for RAG</h3>
+<ul>
+<li><p><strong>Q:</strong> Can Elasticsearch, a widely used search engine, be integrated into RAG pipelines, especially for organizations already invested in it?</p></li>
+<li><p><strong>A:</strong></p>
+<ul>
+<li><p><strong>Hybrid Approach:</strong> Use Elasticsearch’s BM25 capabilities for initial retrieval and integrate a separate re-ranking pipeline (potentially using a cross-encoder).</p></li>
+<li><p><strong>Vector Database Integration:</strong> Leverage Elasticsearch’s vector database offerings to incorporate semantic search capabilities.</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="bm25-score-in-re-ranking" class="level3">
+<h3 class="anchored" data-anchor-id="bm25-score-in-re-ranking">BM25 Score in Re-ranking</h3>
+<ul>
+<li><p><strong>Q:</strong> Is it beneficial to incorporate BM25 similarity scores during the re-ranking stage?</p></li>
+<li><p><strong>A:</strong> No, BM25 scores are primarily used for candidate retrieval and are not typically required by cross-encoders during re-ranking.</p></li>
+</ul>
+</section>
+<section id="strategies-for-chunks-exceeding-context-window" class="level3">
+<h3 class="anchored" data-anchor-id="strategies-for-chunks-exceeding-context-window">Strategies for Chunks Exceeding Context Window</h3>
+<ul>
+<li><p><strong>Q:</strong> Strategies for handling situations where document chunks exceed the context window size.</p></li>
+<li><p><strong>A:</strong> Solutions depend on the specific constraints:</p>
+<ul>
+<li><p><strong>Latency Tolerance:</strong> User experience dictates acceptable processing time.</p></li>
+<li><p><strong>Document Length and Diversity Requirements:</strong></p></li>
+<li><p><strong>Precomputed Summaries:</strong> Maintain a separate database mapping documents to their summaries, generated offline. Retrieve relevant chunks and feed summaries into the context window to provide concise context.</p></li>
+</ul></li>
+</ul>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>llms</category>
+  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-014/</guid>
+  <pubDate>Fri, 02 Aug 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Conference Talk 13: When to Fine-Tune with Paige Bailey</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -14112,367 +15878,6 @@ font-style: inherit;">}</span></span></code></pre></div>
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-001/</guid>
   <pubDate>Tue, 11 Jun 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Conference Talk 1: Ten Commandments to Deploy Fine-Tuned Models in Production</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-001/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<ul>
-<li>1: Thou Shalt Not Fine-Tune</li>
-<li>2: Thou Shalt Write a Freaking Prompt</li>
-<li>3: Thou Shalt Review Thy Freaking Data</li>
-<li>4: Thou Shalt Use Thy Actual Freaking Data</li>
-<li>5: Thou Shalt Reserve a Test Set</li>
-<li>6: Thou Shalt Choose an Appropriate Model</li>
-<li>7: Thou Shalt Write Fast Evals</li>
-<li>8: Also, Thou Shalt Write Slow Evals</li>
-<li>9: Thou Shalt Not Fire and Forget</li>
-<li>10: Thou Shalt Not Take the Commandments Too Seriously</li>
-<li>Q&amp;A Highlights</li>
-</ul>
-<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Slides">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Presentation Slides
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="https://docs.google.com/presentation/d/1IIRrTED0w716OsU_-PL5bONL0Pq_7E8alewvcJO1BCE/">Ten Commandments to Deploy Fine-Tuned Models in Prod</a></li>
-</ul>
-</div>
-</div>
-<section id="thou-shalt-not-fine-tune" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-not-fine-tune">Thou Shalt Not Fine-Tune</h2>
-<ul>
-<li><strong>Start with Prompting:</strong> Focus on crafting effective prompts and leverage techniques like few-shot learning before considering fine-tuning.</li>
-<li><strong>Reasons to Fine-Tune:</strong> Only fine-tune if prompting cannot achieve desired outcomes due to:
-<ul>
-<li><strong>Quality:</strong> Prompting alone cannot meet the required performance standards.</li>
-<li><strong>Latency:</strong> Fine-tuning allows the use of smaller, faster models for real-time applications.</li>
-<li><strong>Cost:</strong> Fine-tuning enables the use of smaller, more cost-effective models at scale.</li>
-</ul></li>
-</ul>
-</section>
-<section id="thou-shalt-write-a-freaking-prompt" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-write-a-freaking-prompt">Thou Shalt Write a Freaking Prompt</h2>
-<ul>
-<li><strong>Establish a Baseline:</strong> A well-crafted prompt provides a performance baseline for comparison with fine-tuned models.</li>
-<li><strong>Assess Task Feasibility:</strong> Trying to solve the problem with prompting reveals whether the task is achievable with the available data and model capabilities.</li>
-<li><strong>Check Data Quality:</strong>
-<ul>
-<li>Successful prompting suggests your data has enough signal for effective model learning.</li>
-<li>Failed prompting often indicates data issues like inconsistencies or insufficient information.</li>
-</ul></li>
-</ul>
-<section id="example-logistics-company-item-valuation" class="level3">
-<h3 class="anchored" data-anchor-id="example-logistics-company-item-valuation">Example: Logistics Company &amp; Item Valuation</h3>
-<ul>
-<li><strong>Goal:</strong> Predict item values from descriptions.</li>
-<li><strong>Assumption:</strong> That descriptions contained enough information for a model to infer value.</li>
-<li><strong>Outcome:</strong> Prompting revealed that the descriptions lacked sufficient detail.</li>
-</ul>
-</section>
-<section id="heuristic-prompting-success-predicts-fine-tuning-success" class="level3">
-<h3 class="anchored" data-anchor-id="heuristic-prompting-success-predicts-fine-tuning-success">Heuristic: Prompting Success Predicts Fine-tuning Success</h3>
-<ul>
-<li>If you can achieve reasonable performance with a well-crafted prompt, there’s a high probability (90%+) that fine-tuning will yield further improvements in latency, quality, or cost.</li>
-<li>If prompting proves ineffective, successfully fine-tuning the model becomes less certain and significantly more challenging.</li>
-</ul>
-</section>
-<section id="recommended-workflow-prototype-to-production" class="level3">
-<h3 class="anchored" data-anchor-id="recommended-workflow-prototype-to-production">Recommended Workflow: Prototype to Production</h3>
-<ol type="1">
-<li><strong>Prototype with GPT-4:</strong> During the initial stages, focus on rapid iteration and validation of your application’s core concept. Utilize GPT-4 and prompting to experiment and refine your approach.</li>
-<li><strong>Transition to Fine-tuning:</strong> Once you have a working prototype that demonstrates value and scalability, consider incorporating fine-tuning to optimize performance further.</li>
-</ol>
-</section>
-</section>
-<section id="thou-shalt-review-thy-freaking-data" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-review-thy-freaking-data">Thou Shalt Review Thy Freaking Data</h2>
-<section id="importance-of-data-review" class="level3">
-<h3 class="anchored" data-anchor-id="importance-of-data-review">Importance of Data Review</h3>
-<ul>
-<li><strong>Evaluate Model Performance:</strong> See how well the prompt guides the model to generate desired outputs in real-world scenarios.</li>
-<li><strong>Understand User Behavior:</strong> Gain insights into how users interact with the prompt and the types of inputs they provide. This is crucial for:
-<ul>
-<li><strong>Refining Assumptions:</strong> Avoid making inaccurate assumptions about user needs and use cases.</li>
-<li><strong>Improving Prompt Design:</strong> Tailor the prompt to better align with actual usage patterns.</li>
-<li><strong>Developing Targeted Tests:</strong> Create more effective tests based on real-world input data.</li>
-</ul></li>
-</ul>
-</section>
-<section id="how-to-review-data" class="level3">
-<h3 class="anchored" data-anchor-id="how-to-review-data">How to Review Data</h3>
-<ul>
-<li><strong>Utilize Existing UI:</strong> If your system has a user interface (e.g., chat interface, classification system), leverage it to observe input-output pairs in context.</li>
-<li><strong>Employ Specialized Tools:</strong> If a dedicated UI is unavailable, utilize tools like OpenPipe to visualize and analyze input and output data in a structured format.</li>
-</ul>
-</section>
-<section id="what-to-look-for" class="level3">
-<h3 class="anchored" data-anchor-id="what-to-look-for">What to Look For</h3>
-<ul>
-<li><strong>Input Distribution:</strong> Pay close attention to the variety, complexity, and common patterns within user inputs.</li>
-<li><strong>Output Quality:</strong> Assess the relevance, accuracy, and overall quality of model outputs in response to real-world inputs.</li>
-</ul>
-</section>
-</section>
-<section id="thou-shalt-use-thy-actual-freaking-data" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-use-thy-actual-freaking-data">Thou Shalt Use Thy Actual Freaking Data</h2>
-<section id="the-importance-of-using-your-actual-data" class="level3">
-<h3 class="anchored" data-anchor-id="the-importance-of-using-your-actual-data">The Importance of Using Your Actual Data</h3>
-<ul>
-<li><strong>Don’t exclude “bad” data:</strong>
-<ul>
-<li>Removing data points where the base model performs poorly can lead to a model that excels in a limited domain while failing in real-world scenarios.<br>
-</li>
-<li>The “bad” data likely represents real-world inputs your model needs to handle.</li>
-</ul></li>
-<li><strong>Example:</strong> If your model struggles with a specific class of data and you exclude it, the fine-tuned model will likely repeat the mistake in production.</li>
-</ul>
-</section>
-<section id="addressing-poor-performance" class="level3">
-<h3 class="anchored" data-anchor-id="addressing-poor-performance">Addressing Poor Performance</h3>
-<ul>
-<li><strong>Diagnose the issue:</strong> Instead of removing “bad” data, analyze why the model struggles.
-<ul>
-<li>Is there a pattern in the input space where it fails?</li>
-<li>Can you improve the instructions to guide the model better?</li>
-</ul></li>
-<li><strong>Solutions:</strong>
-<ul>
-<li><strong>Manually relabel data:</strong> Use a relabeling UI to correct outputs.</li>
-<li><strong>Refine instructions:</strong> Experiment with different prompts and instructions to improve performance.</li>
-</ul></li>
-</ul>
-</section>
-<section id="when-imperfect-data-can-be-useful" class="level3">
-<h3 class="anchored" data-anchor-id="when-imperfect-data-can-be-useful">When Imperfect Data Can Be Useful</h3>
-<ul>
-<li><strong>Generalization and regularization:</strong>
-<ul>
-<li>Large LLMs are surprisingly good at generalizing from imperfect data.</li>
-<li>The training process itself acts as a form of regularization, allowing the model to learn from both correct and incorrect examples.</li>
-</ul></li>
-<li><strong>Training on model outputs:</strong>
-<ul>
-<li>Fine-tuning on the outputs of a larger model (e.g., GPT-4) can lead to a smaller model that outperforms the original due to this regularization effect.
-<ul>
-<li>The smaller model learns from the larger model’s successes and avoids repeating its occasional errors.</li>
-</ul></li>
-</ul></li>
-<li><strong>Caveat:</strong> This applies mainly to larger LLMs (4B+ parameters) where errors are relatively random. If there’s a consistent pattern of errors, address it directly.</li>
-</ul>
-</section>
-</section>
-<section id="thou-shalt-reserve-a-test-set" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-reserve-a-test-set">Thou Shalt Reserve a Test Set</h2>
-<ul>
-<li><p><strong>Importance of a Test Set:</strong> A dedicated test set, separate from the training data, is essential to evaluate the true performance of a fine-tuned language model.</p></li>
-<li><p><strong>Common Pitfalls:</strong></p>
-<ul>
-<li><strong>Non-representative Test Sets:</strong> Test sets with hand-picked examples, often based on perceived poor performance or customer complaints, are often not representative of the overall input data and can lead to misleading results.</li>
-<li><strong>Exclusively Using Non-Random Test Sets:</strong> Relying solely on a set a specific corner cases can give a false sense of performance as the model might not generalize well to unseen data.</li>
-</ul></li>
-<li><p><strong>Recommendations:</strong></p>
-<ul>
-<li><strong>Create a Randomly Sampled Test Set:</strong> Reserve 5-10% of your data randomly as a test set. This ensures that the model’s performance is evaluated on data representative of the overall distribution.</li>
-<li><strong>Maintain Separate Test Sets:</strong> Use both a randomly sampled test set for general performance evaluation and a separate set for targeted testing of specific corner cases or challenging examples.</li>
-</ul></li>
-</ul>
-</section>
-<section id="thou-shalt-choose-an-appropriate-model" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-choose-an-appropriate-model">Thou Shalt Choose an Appropriate Model</h2>
-<section id="choosing-a-model" class="level3">
-<h3 class="anchored" data-anchor-id="choosing-a-model">Choosing a Model</h3>
-<ul>
-<li><p><strong>Experimentation is Key:</strong> The cost of fine-tuning runs is relatively low, allowing for trying different models with your data.</p></li>
-<li><p><strong>Dataset Size Matters:</strong></p>
-<ul>
-<li><strong>Small Datasets (Dozens):</strong> Larger models like Llama2 70B can often match GPT-4’s performance.</li>
-<li><strong>Medium Datasets (Thousands):</strong> Llama2 7B-8B or Mistral 7B offer a good balance.</li>
-<li><strong>Task Dependency:</strong> Some tasks may never reach GPT-4’s level regardless of training data.</li>
-</ul></li>
-<li><p><strong>Sweet Spot:</strong> 7B-8B parameter models are recommended for most production use cases due to:</p>
-<ul>
-<li><p><strong>Sufficient Performance:</strong> Achievable with around 1,000-5,000 training examples.</p></li>
-<li><p><strong>Cost Savings:</strong> Significantly cheaper inference costs compared to GPT-4 (around 15-20 cents per million tokens vs.&nbsp;GPT-4’s much higher cost).</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-001/images/model-chart.png" class="img-fluid figure-img"></p>
-<figcaption><a href="https://docs.google.com/presentation/d/1IIRrTED0w716OsU_-PL5bONL0Pq_7E8alewvcJO1BCE/edit#slide=id.g2720912eb0c_0_9">Ten Commandments to Deploy Fine-Tuned Models in Prod - Slide 17</a></figcaption>
-</figure>
-</div></li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="thou-shalt-write-fast-evals" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-write-fast-evals">Thou Shalt Write Fast Evals</h2>
-<section id="fast-evaluations" class="level3">
-<h3 class="anchored" data-anchor-id="fast-evaluations">Fast Evaluations:</h3>
-<ul>
-<li>Can be integrated into the training loop or prompt engineering workflow.</li>
-<li>Quick and inexpensive to run.</li>
-<li>Provide immediate feedback on model performance.</li>
-</ul>
-</section>
-<section id="llm-as-judge" class="level3">
-<h3 class="anchored" data-anchor-id="llm-as-judge">LLM as Judge</h3>
-<ul>
-<li><strong>Default Recommendation:</strong> Use an LLM (e.g., GPT-4) to evaluate the quality of outputs.</li>
-<li><strong>Method:</strong> Present the LLM judge with the input task and outputs from different models. Ask the judge to compare and rate the quality.</li>
-<li><strong>Considerations:</strong>
-<ul>
-<li><strong>Randomization:</strong> Randomize the order of presented outputs to avoid bias towards the first option.</li>
-<li><strong>Self-Preference:</strong> Be aware that LLMs tend to prefer their own outputs if evaluated on themselves.</li>
-</ul></li>
-<li><strong>Tools and Libraries:</strong> Utilize existing libraries (some suggested on OpenPipe) that streamline this process.</li>
-</ul>
-</section>
-<section id="benefits-of-fast-evaluations" class="level3">
-<h3 class="anchored" data-anchor-id="benefits-of-fast-evaluations">Benefits of Fast Evaluations</h3>
-<ul>
-<li><strong>Rapid Iteration:</strong> Quickly test changes to prompts, fine-tuning, etc., and get immediate feedback.</li>
-<li><strong>Direction Confirmation:</strong> Ensure that development efforts are moving in the right direction.</li>
-<li><strong>Faster Feedback Cycle:</strong> Avoid the long delays associated with slower, production-level evaluations.</li>
-</ul>
-</section>
-</section>
-<section id="also-thou-shalt-write-slow-evals" class="level2">
-<h2 class="anchored" data-anchor-id="also-thou-shalt-write-slow-evals">Also, Thou Shalt Write Slow Evals</h2>
-<section id="the-need-for-slow-evaluations" class="level3">
-<h3 class="anchored" data-anchor-id="the-need-for-slow-evaluations">The Need for Slow Evaluations</h3>
-<ul>
-<li><strong>Fast vs.&nbsp;Slow Evaluations:</strong> Fast evaluations are quick checks of model performance in isolation, while slow evaluations assess the model’s impact in a real-world setting.</li>
-<li><strong>Importance of Real-World Impact:</strong> Even if a model performs well in isolation, other system interactions or deployment factors (like quantization) can lead to unexpected results. Slow evaluations capture this.</li>
-<li><strong>Outcome-Driven Evaluation:</strong> Design evaluations based on the desired business or product outcome. For example, if building a customer support chatbot, measure customer satisfaction with problem resolution.</li>
-</ul>
-</section>
-<section id="examples-from-openais-chatgpt" class="level3">
-<h3 class="anchored" data-anchor-id="examples-from-openais-chatgpt">Examples from OpenAI’s ChatGPT</h3>
-<ul>
-<li><strong>User Engagement Metrics:</strong> OpenAI tracks metrics like how often users regenerate responses or give “thumbs down” as indicators of model performance.</li>
-<li><strong>Side-by-Side Comparisons:</strong> While less frequent, OpenAI sometimes presents users with two responses side-by-side, allowing them to choose the better one. This provides direct comparative feedback.</li>
-</ul>
-</section>
-</section>
-<section id="thou-shalt-not-fire-and-forget" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-not-fire-and-forget">Thou Shalt Not Fire and Forget</h2>
-<section id="continuous-evaluation-is-crucial" class="level3">
-<h3 class="anchored" data-anchor-id="continuous-evaluation-is-crucial">Continuous Evaluation is Crucial</h3>
-<ul>
-<li>After deploying a fine-tuned model, it is essential to continuously evaluate its performance using objective metrics and real-world data. This helps detect any degradation in accuracy.</li>
-</ul>
-</section>
-<section id="data-drift" class="level3">
-<h3 class="anchored" data-anchor-id="data-drift">Data Drift</h3>
-<ul>
-<li>The world is constantly changing, and so is the data that models encounter.</li>
-<li>Data drift occurs when the input data starts to differ from the data the model was originally trained on, leading to decreased performance.</li>
-</ul>
-</section>
-<section id="real-world-example" class="level3">
-<h3 class="anchored" data-anchor-id="real-world-example">Real-World Example</h3>
-<ul>
-<li><strong>Problem:</strong> A customer using a fine-tuned model for extracting data from call logs experienced a decline in accuracy.
-<ul>
-<li>The training data only contained examples from 2023, leading the model to always use the year 2023 when extracting dates even for calls made in 2024.</li>
-</ul></li>
-<li><strong>Solution:</strong> The problem was solved by retraining the model with a small set of examples from 2024, demonstrating the importance of keeping the training data up-to-date.</li>
-</ul>
-</section>
-</section>
-<section id="thou-shalt-not-take-the-commandments-too-seriously" class="level2">
-<h2 class="anchored" data-anchor-id="thou-shalt-not-take-the-commandments-too-seriously">Thou Shalt Not Take the Commandments Too Seriously</h2>
-<ul>
-<li>The above recommendations are only guidelines, not hard requirements.</li>
-<li>Tailor your approach based on the specific requirements of your project and data.</li>
-</ul>
-</section>
-<section id="qa-highlights" class="level2">
-<h2 class="anchored" data-anchor-id="qa-highlights">Q&amp;A Highlights</h2>
-<ul>
-<li><strong>Data Quality vs.&nbsp;Effort:</strong> While higher-quality data generally leads to better results, strive for a balance between data refinement and the overall time investment.</li>
-<li><strong>When to Fine-Tune:</strong> Fine-tuning is more beneficial when the task is highly specific and diverges from the capabilities of a general-purpose chatbot.</li>
-<li><strong>Low-Resource Languages:</strong>
-<ul>
-<li>Fine-tuning for low-resource languages can be effective with sufficient data.</li>
-<li>Consider pre-trained multilingual models as a starting point.</li>
-</ul></li>
-<li><strong>Evaluation During Training:</strong>
-<ul>
-<li>Fine-tune on an initial dataset.</li>
-<li>If evaluation results are unsatisfactory, increase the dataset size and re-evaluate.</li>
-</ul></li>
-<li><strong>Deployment and Inference Optimization:</strong>
-<ul>
-<li><strong>Low-Rank Adaptation (LoRA):</strong>
-<ul>
-<li>Fine-tunes a smaller set of parameters, resulting in faster training and reduced inference costs.</li>
-<li>Allows for loading multiple LoRA models simultaneously in VLM or TRT LLM, maximizing GPU utilization.</li>
-</ul></li>
-<li><strong>Serverless Endpoints:</strong> Services like OpenPipe, Fireworks, and OctoAI provide cost-effective deployment options by handling infrastructure and utilizing timesharing among users.</li>
-</ul></li>
-<li><strong>Reasoning Chains:</strong>
-<ul>
-<li><strong>Challenges:</strong> Complex reasoning tasks may pose difficulties for fine-tuned models, even if they can be solved by larger models like GPT-4.</li>
-<li><strong>Factors Influencing Success:</strong>
-<ul>
-<li>Reproducibility of reasoning patterns.</li>
-<li>Availability of sufficient training data covering diverse scenarios within the reasoning chain.</li>
-</ul></li>
-<li><strong>Recommendations:</strong>
-<ul>
-<li>Log the entire reasoning chain during data collection.</li>
-<li>Ensure data freshness by updating traces if function definitions or other components change.</li>
-<li>Consider generating synthetic data to augment the dataset and cover a wider range of scenarios, especially for complex chains.</li>
-</ul></li>
-</ul></li>
-<li><strong>JSON Extraction and Evaluation:</strong>
-<ul>
-<li><strong>Tracing:</strong> Tracing all LLM calls for JSON extraction is recommended, as storage is relatively inexpensive and should not significantly impact latency in a well-designed system.</li>
-<li><strong>Evaluation with Larger Models:</strong> Using a larger model like GPT-4 for evaluating extractions is acceptable. Random sampling can be used to manage costs if necessary.</li>
-</ul></li>
-<li><strong>Fine-Tuning for Classification with Decoder Models:</strong> While encoder models are theoretically advantageous for classification, there’s a lack of readily available, high-quality, open-source encoder models, especially for long context scenarios.</li>
-<li><strong>Relabeling UI Recommendations:</strong> Explore tools like Argilla or consider building custom solutions tailored to your specific needs.</li>
-<li><strong>Fine-Tuning Techniques Comparison (LoRa, QLoRa, DoRa):</strong> Start with LoRa for its efficiency and regularization benefits. Consider full fine-tuning or DoRa if LoRa’s performance is insufficient.</li>
-<li><strong>Multimodal Scenarios:</strong> While production use cases for vision-language models are still emerging, advancements in open-source models are expected to drive adoption.</li>
-<li><strong>Models on the Efficient Frontier:</strong> Current techniques may have reached a saturation point for model efficiency in smaller model sizes.</li>
-</ul>
-
-
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-001/</guid>
-  <pubDate>Mon, 10 Jun 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
