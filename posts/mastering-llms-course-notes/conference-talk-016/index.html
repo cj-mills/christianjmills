@@ -73,6 +73,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../../styles.css">
 <meta property="og:title" content="Christian Mills - Conference Talk 16: A Deep Dive on LLM Evaluation">
@@ -324,18 +353,24 @@ This post is part of the following series:
 <section id="log-likelihoods-assessing-the-probability-of-expected-outputs" class="level4">
 <h4 class="anchored" data-anchor-id="log-likelihoods-assessing-the-probability-of-expected-outputs">1. Log Likelihoods: Assessing the Probability of Expected Outputs</h4>
 <ul>
-<li><strong>Background:</strong>
+<li><p><strong>Background:</strong></p>
 <ul>
 <li>LLMs output a probability distribution over vocabulary for each possible next token.</li>
 <li>This distribution represents the model’s confidence in different words following the given input.</li>
 </ul></li>
-<li><strong>How It Works:</strong>
+<li><p><strong>How It Works:</strong></p>
 <ul>
-<li><strong>Input:</strong> A prompt (X) and a potential output (Y).</li>
-<li><strong>Process:</strong> Calculate the probability of the model generating Y given X. This involves summing the log probabilities of each token in Y, conditioned on the preceding tokens in X and Y.</li>
-<li><strong>Example:</strong> For the prompt “The cow jumped over the,” calculate the probability of the model generating “moon” versus other words.</li>
+<li><p><strong>Input:</strong> A prompt (X) and a potential output (Y).</p></li>
+<li><p><strong>Process:</strong> Calculate the probability of the model generating Y given X. This involves summing the log probabilities of each token in Y, conditioned on the preceding tokens in X and Y.</p>
+<ul>
+<li><p><span class="math display">\[
+\log P(y|x) = \sum_{i=0}^{m-1} \log p(y_i | x, y_0, \ldots, y_{i-1}) = \sum_{i=0}^{m-1} l(n+i, y_{i})
+\]</span></p></li>
+<li><p>where <span class="math inline">\(\log p(y_i | x, y_0, \ldots, y_{i-1})\)</span> is the log probability of the <span class="math inline">\(i\)</span>-th target token conditioned on the full input <span class="math inline">\(x\)</span> and the preceding target tokens. (and where <span class="math inline">\(x, y_0, \ldots, y_{i-1}\)</span> denotes conditioning on only <span class="math inline">\(x\)</span>.).</p></li>
 </ul></li>
-<li><strong>Use Case: Multiple Choice Question Answering</strong>
+<li><p><strong>Example:</strong> For the prompt “The cow jumped over the,” calculate the probability of the model generating “moon” versus other words.</p></li>
+</ul></li>
+<li><p><strong>Use Case: Multiple Choice Question Answering</strong></p>
 <ul>
 <li><strong>Advantages:</strong>
 <ul>
@@ -350,7 +385,7 @@ This post is part of the following series:
 <li>Cannot evaluate chain-of-thought reasoning.</li>
 </ul></li>
 </ul></li>
-<li><strong>Challenges with Log Likelihoods and Perplexity:</strong>
+<li><p><strong>Challenges with Log Likelihoods and Perplexity:</strong></p>
 <ul>
 <li><strong>Tokenizer Sensitivity:</strong> Metrics are affected by the specific tokenizer used, making comparisons between models with different tokenizers difficult.
 <ul>
@@ -363,10 +398,15 @@ This post is part of the following series:
 <section id="perplexity-measuring-how-well-a-model-fits-a-data-distribution" class="level4">
 <h4 class="anchored" data-anchor-id="perplexity-measuring-how-well-a-model-fits-a-data-distribution">2. Perplexity: Measuring How Well a Model Fits a Data Distribution</h4>
 <ul>
-<li><strong>Concept:</strong> Quantifies how well a language model predicts a given text, indicating its familiarity with the data distribution.</li>
-<li><strong>Calculation:</strong> Based on the average per-token log probability of the text, with lower perplexity indicating a better fit to the data.</li>
-<li><strong>Use Case:</strong> Evaluating a model’s understanding of a specific text corpus (e.g., Wikipedia).</li>
-<li><strong>Limitations:</strong>
+<li><p><strong>Concept:</strong> Quantifies how well a language model predicts a given text, indicating its familiarity with the data distribution.</p></li>
+<li><p><strong>Calculation:</strong> Based on the average per-token log probability of the text, with lower perplexity indicating a better fit to the data.</p>
+<ul>
+<li><span class="math display">\[
+\text{PPL} = \exp \left( -\frac{1}{\sum_{j=1}^{|D|} N_j} \sum_{j=1}^{|D|} \sum_{i=1}^{N_j} \log P(y_{ji} | y_{j1}, \ldots, y_{ji-1}) \right)
+\]</span></li>
+</ul></li>
+<li><p><strong>Use Case:</strong> Evaluating a model’s understanding of a specific text corpus (e.g., Wikipedia).</p></li>
+<li><p><strong>Limitations:</strong></p>
 <ul>
 <li><strong>Domain Specificity:</strong> Perplexity on one dataset (e.g., Wikipedia) may not generalize to other domains or tasks.</li>
 <li><strong>Limited Insight into Downstream Performance:</strong> A low perplexity doesn’t guarantee good performance in real-world applications like chatbots or question answering.</li>
