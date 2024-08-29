@@ -17,7 +17,274 @@
 <width>144</width>
 </image>
 <generator>quarto-1.4.555</generator>
-<lastBuildDate>Wed, 28 Aug 2024 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Thu, 29 Aug 2024 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Conference Talk 16: A Deep Dive on LLM Evaluation</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-016/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><strong>Speaker:</strong> Hailey Schoelkopf, Research Scientist at Eleuther AI</li>
+<li><strong>Topic:</strong> Deep dive into the challenges and best practices of Large Language Model (LLM) evaluation.</li>
+</ul>
+<section id="about-the-speaker" class="level3">
+<h3 class="anchored" data-anchor-id="about-the-speaker">About the Speaker</h3>
+<ul>
+<li><strong>Hailey Schoelkopf:</strong>
+<ul>
+<li>Research Scientist at Eleuther AI.</li>
+<li>Maintainer of the <strong>LM Evaluation Harness</strong>, a widely used open-source library for evaluating LLMs.</li>
+</ul></li>
+</ul>
+</section>
+<section id="about-eleuther-ai" class="level3">
+<h3 class="anchored" data-anchor-id="about-eleuther-ai">About Eleuther AI:</h3>
+<ul>
+<li><strong>Website:</strong> <a href="https://eleuther.ai/">https://eleuther.ai/</a></li>
+<li><strong>Project Page:</strong> <a href="https://www.eleuther.ai/projects/large-language-model-evaluation">Evaluating LLMs</a></li>
+<li><strong>Non-profit research lab</strong> known for:
+<ul>
+<li>Releasing open-source LLMs like GPT-J and GPT-NeoX-20B.</li>
+<li>Research on:
+<ul>
+<li>Model Interpretability</li>
+<li>Datasets</li>
+<li>Distributed Training</li>
+<li>LLM Evaluation</li>
+</ul></li>
+<li>Building and maintaining tools for the open-source AI ecosystem.</li>
+</ul></li>
+</ul>
+</section>
+<section id="lm-evaluation-harness" class="level3">
+<h3 class="anchored" data-anchor-id="lm-evaluation-harness">LM Evaluation Harness</h3>
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/EleutherAI/lm-evaluation-harness">https://github.com/EleutherAI/lm-evaluation-harness</a></li>
+<li><strong>Purpose:</strong>
+<ul>
+<li>Originally created to reproduce and track the evaluations from the GPT-3 paper.</li>
+<li>Evolved into a comprehensive library for evaluating LLMs.</li>
+</ul></li>
+<li><strong>Usage:</strong>
+<ul>
+<li>Widely used by researchers and practitioners.</li>
+<li>Powers the backend for the OpenLLM Leaderboard.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="challenges-in-llm-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="challenges-in-llm-evaluation">Challenges in LLM Evaluation</h2>
+<section id="scoring-difficulties" class="level4">
+<h4 class="anchored" data-anchor-id="scoring-difficulties">1. Scoring Difficulties</h4>
+<ul>
+<li><strong>Core Issue:</strong> Reliably evaluating the correctness of LLM responses in natural language.</li>
+<li><strong>Challenges:</strong>
+<ul>
+<li><strong>Subjectivity of Language:</strong> What constitutes a “correct” response can be subjective and context-dependent.</li>
+<li><strong>Hallucination:</strong> LLMs can generate plausible-sounding but incorrect information, making it challenging to determine accuracy based on surface-level analysis.</li>
+<li><strong>Lack of Standardized Metrics:</strong> Absence of universally agreed-upon metrics for evaluating LLM performance across different tasks and domains.</li>
+</ul></li>
+</ul>
+</section>
+<section id="reproducibility-issues" class="level4">
+<h4 class="anchored" data-anchor-id="reproducibility-issues">2. Reproducibility Issues</h4>
+<ul>
+<li><strong>Importance:</strong> Ensuring that evaluation results are consistent and replicable.</li>
+<li><strong>Challenges:</strong>
+<ul>
+<li><strong>Sensitivity to Implementation Details:</strong> LLM performance can vary significantly based on seemingly minor differences in implementation, such as tokenization, prompt formatting, and hyperparameters.</li>
+<li><strong>Lack of Transparency:</strong> Limited sharing of evaluation code and detailed methodologies makes it difficult for others to reproduce results.</li>
+<li><strong>Data Set Variability:</strong> Differences in data set composition and quality can lead to inconsistent evaluations.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="common-llm-evaluation-methods" class="level2">
+<h2 class="anchored" data-anchor-id="common-llm-evaluation-methods">Common LLM Evaluation Methods</h2>
+<section id="log-likelihoods-assessing-the-probability-of-expected-outputs" class="level4">
+<h4 class="anchored" data-anchor-id="log-likelihoods-assessing-the-probability-of-expected-outputs">1. Log Likelihoods: Assessing the Probability of Expected Outputs</h4>
+<ul>
+<li><strong>Background:</strong>
+<ul>
+<li>LLMs output a probability distribution over vocabulary for each possible next token.</li>
+<li>This distribution represents the model’s confidence in different words following the given input.</li>
+</ul></li>
+<li><strong>How It Works:</strong>
+<ul>
+<li><strong>Input:</strong> A prompt (X) and a potential output (Y).</li>
+<li><strong>Process:</strong> Calculate the probability of the model generating Y given X. This involves summing the log probabilities of each token in Y, conditioned on the preceding tokens in X and Y.</li>
+<li><strong>Example:</strong> For the prompt “The cow jumped over the,” calculate the probability of the model generating “moon” versus other words.</li>
+</ul></li>
+<li><strong>Use Case: Multiple Choice Question Answering</strong>
+<ul>
+<li><strong>Advantages:</strong>
+<ul>
+<li>Computationally cheaper than generation-based evaluation.</li>
+<li>Avoids issues with parsing errors in generated text.</li>
+<li>Suitable for evaluating smaller LLMs or those in early training stages.</li>
+</ul></li>
+<li><strong>Disadvantages:</strong>
+<ul>
+<li>Limited real-world applicability compared to open-ended generation.</li>
+<li>Doesn’t assess a model’s ability to formulate its own answers.</li>
+<li>Cannot evaluate chain-of-thought reasoning.</li>
+</ul></li>
+</ul></li>
+<li><strong>Challenges with Log Likelihoods and Perplexity:</strong>
+<ul>
+<li><strong>Tokenizer Sensitivity:</strong> Metrics are affected by the specific tokenizer used, making comparisons between models with different tokenizers difficult.
+<ul>
+<li><strong>Solution:</strong> Implement normalization techniques to account for tokenizer variations.</li>
+</ul></li>
+<li><strong>Limited Information:</strong> Log likelihoods only consider the probability of a given output, not its overall quality, coherence, or factual accuracy.</li>
+</ul></li>
+</ul>
+</section>
+<section id="perplexity-measuring-how-well-a-model-fits-a-data-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="perplexity-measuring-how-well-a-model-fits-a-data-distribution">2. Perplexity: Measuring How Well a Model Fits a Data Distribution</h4>
+<ul>
+<li><strong>Concept:</strong> Quantifies how well a language model predicts a given text, indicating its familiarity with the data distribution.</li>
+<li><strong>Calculation:</strong> Based on the average per-token log probability of the text, with lower perplexity indicating a better fit to the data.</li>
+<li><strong>Use Case:</strong> Evaluating a model’s understanding of a specific text corpus (e.g., Wikipedia).</li>
+<li><strong>Limitations:</strong>
+<ul>
+<li><strong>Domain Specificity:</strong> Perplexity on one dataset (e.g., Wikipedia) may not generalize to other domains or tasks.</li>
+<li><strong>Limited Insight into Downstream Performance:</strong> A low perplexity doesn’t guarantee good performance in real-world applications like chatbots or question answering.</li>
+</ul></li>
+</ul>
+</section>
+<section id="text-generation-evaluating-real-world-output-but-facing-scoring-challenges" class="level4">
+<h4 class="anchored" data-anchor-id="text-generation-evaluating-real-world-output-but-facing-scoring-challenges">3. Text Generation: Evaluating Real-World Output but Facing Scoring Challenges</h4>
+<ul>
+<li><strong>Importance:</strong> Crucial for assessing LLMs in tasks involving text generation (e.g., chatbots, story writing).</li>
+<li><strong>Challenges:</strong>
+<ul>
+<li><strong>Scoring Free-Form Text:</strong> Determining the correctness and quality of generated text is difficult.
+<ul>
+<li>Simple heuristics (e.g., keyword matching) are unreliable and prone to gaming.</li>
+<li>Human evaluation is expensive and time-consuming.</li>
+<li>LLM-based judges introduce their own biases and limitations.</li>
+</ul></li>
+<li><strong>Sensitivity to Prompt Details:</strong> Minor variations in prompts (e.g., trailing whitespace) can drastically impact results, hindering reproducibility.
+<ul>
+<li><strong>Example:</strong> In code generation, a trailing tab in the prompt can create syntax errors for models that generate code with specific formatting, leading to artificially lower performance scores.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="the-need-for-reproducibility-and-best-practices" class="level2">
+<h2 class="anchored" data-anchor-id="the-need-for-reproducibility-and-best-practices">The Need for Reproducibility and Best Practices</h2>
+<ul>
+<li><strong>Reproducibility is Crucial:</strong> Ensuring that evaluation results can be independently verified is essential for:
+<ul>
+<li><strong>Fair Model Comparisons:</strong> Accurately assessing the relative performance of different LLMs.</li>
+<li><strong>Meaningful Progress Tracking:</strong> Tracking improvements in model development and evaluation methods.</li>
+</ul></li>
+<li><strong>Challenges to Reproducibility:</strong>
+<ul>
+<li>Lack of standardized evaluation practices and metrics.</li>
+<li>Incomplete reporting of evaluation details (e.g., prompts, code, evaluation settings).</li>
+</ul></li>
+<li><strong>Best Practices for Reproducible LLM Evaluation:</strong>
+<ul>
+<li><strong>Share Evaluation Code:</strong> Publicly release code used for evaluation to allow for scrutiny and replication of results.</li>
+<li><strong>Detailed Reporting:</strong> Provide comprehensive information about evaluation procedures, including:
+<ul>
+<li>Specific prompts and instructions given to models.</li>
+<li>Data preprocessing steps and evaluation datasets used.</li>
+<li>Evaluation metrics and their calculation.</li>
+</ul></li>
+<li><strong>Use Standardized Evaluation Frameworks:</strong> Leverage libraries like the <code>lm-evaluation-harness</code> or other tools (Helm, OpenCompass) to promote consistency and reduce implementation discrepancies.
+<ul>
+<li><strong><code>lm-evaluation-harness</code>:</strong> <a href="https://github.com/EleutherAI/lm-evaluation-harness">GitHub Repository</a></li>
+<li><strong><code>helm</code>:</strong> <a href="https://github.com/stanford-crfm/helm">GitHub Repository</a></li>
+<li><strong><code>opencompass</code>:</strong> <a href="https://github.com/open-compass/opencompass">GitHub Repository</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Distinction Between Model Evals and Downstream Evals:</strong>
+<ul>
+<li><strong>Model Evals (e.g., MMLU benchmark):</strong> Measure general language understanding and capabilities across diverse tasks.</li>
+<li><strong>Downstream Evals:</strong> Focus on performance in a specific application or domain (e.g., chatbot for customer support).</li>
+<li>Prioritize Downstream Evals whenever possible for production settings, as they directly reflect real-world performance needs.</li>
+<li><strong>OpenLLM Leaderboard:</strong> <a href="https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard">https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard</a></li>
+<li><strong>MMLU Benchmark:</strong> <a href="https://paperswithcode.com/dataset/mmlu">https://paperswithcode.com/dataset/mmlu</a></li>
+<li><strong>HellaSwag Benchmark:</strong> <a href="https://paperswithcode.com/dataset/hellaswag">https://paperswithcode.com/dataset/hellaswag</a></li>
+<li><strong>ARC Benchmark:</strong> <a href="https://paperswithcode.com/dataset/arc">https://paperswithcode.com/dataset/arc</a>
+<ul>
+<li>ARC focuses on generalization and multi-step reasoning, making it more challenging than benchmarks that rely heavily on memorization.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<ul>
+<li><strong>Implementation Details Matter:</strong> LLMs are highly sensitive to minor variations in evaluation procedures.</li>
+<li><strong>Transparency and Standardization are Key:</strong> Sharing code, detailed reporting, and using standardized frameworks are crucial for reproducible LLM evaluation.</li>
+<li><strong>Prioritize Downstream Evaluations:</strong> Focus on evaluations that directly measure performance in your specific application context.</li>
+<li><strong>For Further Exploration:</strong>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2405.14782"><em>Lessons from the Trenches on Reproducible Evaluation of Language Models</em></a> (Eleuther AI)</li>
+<li><strong>Library:</strong> <a href="https://github.com/EleutherAI/lm-evaluation-harness"><code>lm-evaluation-harness</code></a> (Eleuther AI)</li>
+</ul></li>
+</ul>
+<section id="qa-highlights" class="level3">
+<h3 class="anchored" data-anchor-id="qa-highlights">Q&amp;A Highlights:</h3>
+<ul>
+<li><strong>Dataset Quality:</strong> Errors or biases in benchmark datasets can significantly affect evaluation results and limit the usefulness of benchmarks.</li>
+<li><strong>Overfitting to Evaluations:</strong> Repeatedly optimizing for a specific benchmark can lead to overfitting, where models excel on the benchmark but fail to generalize to other tasks or data.</li>
+<li><strong>Measurement Validity:</strong> It’s essential to ensure that evaluation metrics accurately measure the desired aspects of LLM performance (e.g., factual accuracy, reasoning, coherence).</li>
+<li><strong>LLMs as Judges:</strong>
+<ul>
+<li><strong>Benefits:</strong> LLMs can potentially automate the evaluation of tasks requiring nuanced understanding and reasoning, which are difficult to assess with simple heuristics.</li>
+<li><strong>Considerations:</strong>
+<ul>
+<li><strong>Judge Model Selection:</strong> Carefully choose an LLM judge that possesses the necessary capabilities for the task being evaluated.</li>
+<li><strong>Judge Model Limitations:</strong> Be aware of the judge model’s own biases and limitations, as these can influence the evaluation outcomes.</li>
+</ul></li>
+</ul></li>
+<li><strong>Reliable Multiple-Choice Answers Without Additional Text:</strong>
+<ul>
+<li><strong>Structured Generation:</strong> Use techniques that constrain the model’s output to specific formats.</li>
+<li><strong>System Prompts:</strong> Provide clear instructions to the model to only output the answer.</li>
+<li><strong>Log Likelihoods:</strong> Rely on log likelihood-based multiple-choice evaluations if structured generation isn’t possible.</li>
+</ul></li>
+</ul>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>llms</category>
+  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-016/</guid>
+  <pubDate>Thu, 29 Aug 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Chip War Book Notes</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -21227,287 +21494,6 @@ This post is part of the following series:
   <category>notes</category>
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-005/</guid>
-  <pubDate>Sat, 06 Jul 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Office Hours 4: Modal with Charles Frye</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-004/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<section id="understanding-modal" class="level2">
-<h2 class="anchored" data-anchor-id="understanding-modal">Understanding Modal</h2>
-<ul>
-<li><strong>ELI5:</strong> Modal allows users to run their Python code in the cloud effortlessly.</li>
-<li><strong>In-depth:</strong> Modal is a remote procedure call (RPC) framework designed for Python, particularly excelling in data-intensive workloads like those involving large models or datasets.</li>
-<li><strong>Advantages over Traditional Cloud Functions (AWS Lambda, Google Cloud Functions):</strong>
-<ul>
-<li><strong>Focus:</strong> Handles compute-heavy and data-intensive tasks more effectively.</li>
-<li><strong>Simplicity:</strong> Removes the need for server management.</li>
-<li><strong>Scalability:</strong> Scales resources dynamically based on demand.</li>
-</ul></li>
-<li><strong>Key Features:</strong>
-<ul>
-<li>Seamless local development with automatic code deployment to the cloud.</li>
-<li>Simplified parallel processing and scaling.</li>
-<li>Integration with popular frameworks like <a href="https://fastapi.tiangolo.com/">FastAPI</a>.</li>
-</ul></li>
-<li><strong>Founders’ Vision:</strong> Address common infrastructure challenges faced by data scientists and ML practitioners, emphasizing rapid development cycles and feedback loops.</li>
-</ul>
-</section>
-<section id="startup-times-and-optimization" class="level2">
-<h2 class="anchored" data-anchor-id="startup-times-and-optimization">Startup Times and Optimization</h2>
-<ul>
-<li><strong>Concern:</strong> Modal’s startup time compared to traditional server-based solutions.</li>
-<li><strong>Modal’s Performance:</strong>
-<ul>
-<li>Container startup (Docker run): 1-2 seconds (50th percentile startup time).</li>
-<li>Slowdown occurs when environment setup requires loading large elements into memory (e.g., language model weights).</li>
-</ul></li>
-<li><strong>Solutions for Faster Startup:</strong>
-<ul>
-<li><strong>Keep Warm:</strong> Leave applications running for minimal latency, especially crucial for GPU-bound tasks. (Trade-off: potentially higher cost for idle resources).
-<ul>
-<li><a href="https://modal.com/docs/guide/cold-start#keep-containers-warm-for-longer-with-container_idle_timeout">Keep containers warm for longer with <code>container_idle_timeout</code></a></li>
-</ul></li>
-<li><strong>CUDA Checkpointing:</strong> New feature under integration, expected to accelerate subsequent invocations.
-<ul>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/NVIDIA/cuda-checkpoint">cuda-checkpoint</a></li>
-</ul></li>
-<li><strong>CPU Tasks:</strong> Easily sliced and diced, making them cost-effective in keep-warm mode due to minimal resource consumption during idle periods.</li>
-<li><strong>Optimization Potential:</strong> The LLM fine-tuning repo hasn’t been fully optimized for boot times; improvements are possible.
-<ul>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/modal-labs/llm-finetuning">llm-finetuning</a></li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="local-development-and-modal-integration" class="level2">
-<h2 class="anchored" data-anchor-id="local-development-and-modal-integration">Local Development and Modal Integration</h2>
-<ul>
-<li><strong>Challenge:</strong> Integrating a complex FastAPI application with local databases and debugging tools, then deploying it seamlessly to Modal.</li>
-<li><strong>Thin Client Approach:</strong>
-<ul>
-<li>Modal examples typically employ a thin client architecture for simplicity in dependency management.</li>
-<li>Local development within the thin client can be limited due to the absence of specific dependencies.</li>
-</ul></li>
-<li><strong>Solutions:</strong>
-<ul>
-<li><strong>Modal’s Remote Development Tools:</strong> Shell access, VS Code integration, and JupyterLab instances within Modal’s environment.
-<ul>
-<li><a href="https://modal.com/docs/reference/cli/launch#modal-launch"><code>modal launch</code></a>: Open a serverless app instance on Modal.
-<ul>
-<li><a href="https://modal.com/docs/reference/cli/launch#modal-launch-jupyter"><code>modal launch jupyter</code></a>: Start Jupyter Lab on Modal.</li>
-<li><a href="https://modal.com/docs/reference/cli/launch#modal-launch-jupyter"><code>modal launch vscode</code></a>: Start Visual Studio Code on Modal.</li>
-</ul></li>
-<li><a href="https://modal.com/docs/reference/cli/shell#modal-shell"><code>modal shell</code></a>: Run an interactive shell inside a Modal image.</li>
-</ul></li>
-<li><strong>Thick Client Architecture:</strong>
-<ul>
-<li>Build a local environment mirroring the Modal environment.</li>
-<li>Utilize tools like Dockerfiles, requirements.txt, poetry, or conda for consistent dependency management.</li>
-</ul></li>
-<li><strong>Resource:</strong> Explore the <code>awesome-modal</code> repository on GitHub for production-ready examples, some utilizing a thicker client approach.
-<ul>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/modal-labs/awesome-modal">awesome-modal</a></li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="iterative-development-workflow" class="level2">
-<h2 class="anchored" data-anchor-id="iterative-development-workflow">Iterative Development Workflow</h2>
-<ul>
-<li><strong>Challenge:</strong> Fine-tuning models locally on a small scale with debugging and then scaling up on Modal with a full dataset and larger models.</li>
-<li><strong>Recommendations:</strong>
-<ul>
-<li><strong><a href="https://modal.com/docs/reference/modal.Image"><code>modal.Image</code></a> Class:</strong>
-<ul>
-<li>Base class for container images to run functions in.</li>
-<li>Utilize for environment definition, ensuring consistency between local and remote setups.</li>
-<li><strong>Guide:</strong> <a href="https://modal.com/docs/guide/custom-container">Custom containers</a></li>
-</ul></li>
-<li><strong>Dependency Management:</strong> Leverage tools like <code>pip freeze</code> and poetry for tighter control over environments.</li>
-<li><strong>Hardware Considerations:</strong> Be mindful of potential discrepancies between local and Modal GPUs.</li>
-</ul></li>
-</ul>
-</section>
-<section id="modal-for-cpu-intensive-workloads" class="level2">
-<h2 class="anchored" data-anchor-id="modal-for-cpu-intensive-workloads">Modal for CPU-Intensive Workloads</h2>
-<ul>
-<li><strong>Question:</strong> Is Modal suitable for parallel CPU-bound tasks rather than just GPU acceleration?</li>
-<li><strong>Answer:</strong> Yes, Modal is highly recommended for CPU-intensive and parallelizable tasks.</li>
-<li><strong>Reasons:</strong>
-<ul>
-<li><strong>Cost-Effectiveness:</strong> CPUs are cheaper on Modal due to efficient time-slicing and readily available resources.</li>
-<li><strong>Simplified Parallelization:</strong> Modal’s architecture and tools streamline the execution of parallel CPU workloads.</li>
-</ul></li>
-</ul>
-</section>
-<section id="cost-comparison-and-value-proposition" class="level2">
-<h2 class="anchored" data-anchor-id="cost-comparison-and-value-proposition">Cost Comparison and Value Proposition</h2>
-<ul>
-<li><strong>Concern:</strong> Fine-tuning on Modal appears more expensive than platforms like Jarvis Labs.</li>
-<li><strong>Modal’s Pricing:</strong>
-<ul>
-<li>Transparent, based on underlying cloud provider costs.</li>
-<li>No hidden fees or inflated pricing strategies.</li>
-</ul></li>
-<li><strong>When Modal Wins:</strong>
-<ul>
-<li><strong>High Operational Overhead:</strong> Modal excels when the effort of managing servers (spinning up, down, utilization tracking) outweighs the raw compute cost.</li>
-<li><strong>Unpredictable Workloads:</strong> Serverless nature shines when demand fluctuates, and predicting utilization is challenging.</li>
-<li><strong>Scalability Needs:</strong> Modal simplifies scaling to thousands of GPUs, surpassing the limitations of individual users or smaller organizations.</li>
-<li><strong>GPU Accessibility:</strong> Modal offers readily available GPUs, circumventing the challenges of procurement and allocation.</li>
-<li><strong>Developer Experience:</strong> Streamlined workflow and reduced operational burden can justify a potential price premium for some users.</li>
-</ul></li>
-</ul>
-</section>
-<section id="understanding-modals-cost-structure" class="level2">
-<h2 class="anchored" data-anchor-id="understanding-modals-cost-structure">Understanding Modal’s Cost Structure</h2>
-<ul>
-<li><strong>Question:</strong> How can a keep-warm FastAPI app on Modal cost only 30 cents per month when CPU core pricing suggests a much higher cost?</li>
-<li><strong>Explanation:</strong>
-<ul>
-<li><strong>Time-Slicing:</strong> CPUs are shared efficiently, and Modal only charges for actual usage, not idle time.</li>
-<li><strong>Low Utilization:</strong> Web apps typically have low average CPU utilization, further reducing costs.</li>
-<li><strong>RAM-Based Pricing:</strong> During idle periods, charges are primarily determined by RAM usage, which is often minimal for lightweight apps.</li>
-</ul></li>
-</ul>
-</section>
-<section id="streaming-output-from-llms" class="level2">
-<h2 class="anchored" data-anchor-id="streaming-output-from-llms">Streaming Output from LLMs</h2>
-<ul>
-<li><strong>Question:</strong> Availability of examples showcasing streamed output from LLMs in FastAPI apps.</li>
-<li><strong>Answer:</strong>
-<ul>
-<li>Examples for streaming and FastAPI integration are available in the documentation:
-<ul>
-<li><a href="https://modal.com/docs/examples/vllm_mixtral">Fast inference with vLLM (Mixtral 8x7B)</a></li>
-<li><a href="https://modal.com/docs/examples/llm-voice-chat">QuiLLMan: Voice Chat with LLMs</a></li>
-</ul></li>
-</ul></li>
-<li><strong>Modal’s Async Support:</strong> Modal simplifies asynchronous programming, making streaming implementations easier.
-<ul>
-<li><strong>Guide:</strong> <a href="https://modal.com/docs/guide/async">Asynchronous API usage</a></li>
-</ul></li>
-</ul>
-</section>
-<section id="code-portability-and-modal-dependency" class="level2">
-<h2 class="anchored" data-anchor-id="code-portability-and-modal-dependency">Code Portability and Modal Dependency</h2>
-<ul>
-<li><strong>Concern:</strong> Modal’s decorators might hinder code portability to other environments.</li>
-<li><strong>Response:</strong>
-<ul>
-<li>While Modal promotes a specific architecture for performance and cost optimization, code can be written to minimize tight coupling.</li>
-<li>Decorators can be removed or bypassed if needed to port code to different environments.</li>
-<li>Achieving portability often involves trade-offs in performance and cost-effectiveness.</li>
-</ul></li>
-</ul>
-</section>
-<section id="data-privacy" class="level2">
-<h2 class="anchored" data-anchor-id="data-privacy">Data Privacy</h2>
-<ul>
-<li><strong>Question:</strong> Modal’s policy on data privacy and potential use of user data for model training.</li>
-<li><strong>Answer:</strong>
-<ul>
-<li><strong>Commitment to Security:</strong> Modal is <a href="https://modal.com/blog/soc2">SOC 2 compliant</a> and working towards SOC 2 Type 2 certification, demonstrating a high standard of data security.</li>
-<li><strong>User Data Protection:</strong> Modal treats user application data as confidential. Permission is sought before reviewing data, even for support purposes.</li>
-<li><strong>No User Data Training:</strong> Modal, as an infrastructure company, doesn’t use customer data for training internal models.</li>
-</ul></li>
-</ul>
-</section>
-<section id="running-databases-on-modal" class="level2">
-<h2 class="anchored" data-anchor-id="running-databases-on-modal">Running Databases on Modal</h2>
-<ul>
-<li><strong>Question:</strong> Feasibility of running a key-value store (e.g., <a href="https://github.com/google/leveldb">LevelDB</a>) on Modal for a development web endpoint.</li>
-<li><strong>Recommendations:</strong>
-<ul>
-<li><strong>Modal’s Built-in Solutions:</strong>
-<ul>
-<li><a href="https://modal.com/docs/reference/cli/dict"><code>modal.Dict</code></a>: Offers a persistent, distributed key-value store accessible to all Modal functions.</li>
-<li><a href="https://modal.com/docs/reference/cli/queue"><code>modal.Queue</code></a>: Provides a distributed queue system similar to <a href="https://redis.io/">Redis</a>.</li>
-</ul></li>
-<li><strong>Alternative Approach for Analytic Databases:</strong>
-<ul>
-<li>Host databases externally (not ideal on Modal).</li>
-<li>Mount cloud storage (e.g., S3) containing data in formats like Parquet or Arrow to Modal functions.</li>
-<li>Utilize libraries like <a href="https://duckdb.org/">DuckDB</a> for efficient querying within the Modal environment.</li>
-<li><strong>Example:</strong> <a href="https://modal.com/docs/examples/s3_bucket_mount#analyze-nyc-yellow-taxi-data-with-duckdb-on-parquet-files-from-s3">Analyze NYC yellow taxi data with DuckDB on Parquet files from S3</a></li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="balancing-cost-and-uptime-for-gpu-inference" class="level2">
-<h2 class="anchored" data-anchor-id="balancing-cost-and-uptime-for-gpu-inference">Balancing Cost and Uptime for GPU Inference</h2>
-<ul>
-<li><strong>Question:</strong> Finding the sweet spot between cost and uptime for GPU inference when needing varying levels of availability.</li>
-<li><strong>Rule of Thumb:</strong>
-<ul>
-<li>Modal tends to be more cost-effective when utilization is 60% or lower.</li>
-<li>Consider factors like acceptable latency and workload characteristics (batch jobs vs.&nbsp;real-time requests).</li>
-</ul></li>
-</ul>
-</section>
-<section id="local-vs.-cloud-workload-distribution" class="level2">
-<h2 class="anchored" data-anchor-id="local-vs.-cloud-workload-distribution">Local vs.&nbsp;Cloud Workload Distribution</h2>
-<ul>
-<li><strong>Question:</strong> Deciding when to utilize a local GPU (e.g., RTX 4090) versus offloading to Modal, considering cost and time efficiency.</li>
-<li><strong>Workload Breakdown:</strong>
-<ul>
-<li><strong>Inference:</strong> Local GPUs are well-suited due to typically small batch sizes, making VRAM less of a constraint.</li>
-<li><strong>Evaluations:</strong> Larger eval sets might benefit from cloud GPUs for faster throughput, especially when running multiple evaluations concurrently.</li>
-<li><strong>Fine-tuning:</strong> Often memory-intensive due to gradients and optimizer states. Cloud GPUs provide ample VRAM and simplify the use of techniques like sharding or larger batch sizes.</li>
-</ul></li>
-<li><strong>Don’t undervalue your time:</strong> Spending a little more on faster cloud compute can save a significant amount of time versus trying to run everything locally on a single GPU.</li>
-</ul>
-</section>
-<section id="quick-qa" class="level2">
-<h2 class="anchored" data-anchor-id="quick-qa">Quick Q&amp;A</h2>
-<ul>
-<li><strong>Autoscaling:</strong> Modal supports autoscaling with configurable parameters.
-<ul>
-<li><strong>Explanation:</strong> <a href="https://modal.com/docs/guide/concurrent-inputs#how-does-autoscaling-work-on-modal">How does autoscaling work on Modal?</a></li>
-<li><strong>Auto-scaling LLM inference endpoints:</strong> <a href="https://modal.com/docs/examples/text_generation_inference">Hosting any LLaMA 3 model with Text Generation Inference (TGI)</a></li>
-</ul></li>
-<li><strong>Docker Image Access:</strong> Downloading built Docker images is not currently supported. Users can build and provide their own images.</li>
-<li><strong>Inference Serving:</strong>
-<ul>
-<li><a href="https://github.com/vllm-project/vllm">vLLM</a> for its ease of use and rapid development</li>
-<li><a href="https://github.com/NVIDIA/TensorRT-LLM">TensorRT-LLM</a> is a potentially faster but more involved alternative.</li>
-</ul></li>
-<li><strong>Demo Preparation:</strong> “Hello World” and “TRT LLM” examples are good starting points.
-<ul>
-<li><strong>Example:</strong> <a href="https://modal.com/docs/examples/hello_world">Hello, world!</a></li>
-<li><strong>Example:</strong> <a href="https://modal.com/docs/examples/trtllm_llama">Serverless TensorRT-LLM (LLaMA 3 8B)</a></li>
-</ul></li>
-</ul>
-
-
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-004/</guid>
   <pubDate>Sat, 06 Jul 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
