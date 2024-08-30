@@ -19,6 +19,489 @@
 <generator>quarto-1.4.555</generator>
 <lastBuildDate>Thu, 29 Aug 2024 07:00:00 GMT</lastBuildDate>
 <item>
+  <title>Office Hours 8: Predibase</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-008/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<section id="lorax-benefits-over-vllm-and-other-libraries" class="level3">
+<h3 class="anchored" data-anchor-id="lorax-benefits-over-vllm-and-other-libraries">Lorax Benefits over vLLM and Other Libraries</h3>
+<ul>
+<li><strong><a href="https://github.com/predibase/lorax">lorax</a>:</strong> Multi-LoRA inference server that scales to 1000s of fine-tuned LLMs</li>
+</ul>
+<section id="performance-optimization" class="level4">
+<h4 class="anchored" data-anchor-id="performance-optimization">Performance Optimization</h4>
+<ul>
+<li><p>Lorax uses <a href="https://github.com/punica-ai/punica/tree/master/csrc/sgmv"><strong>SGMV (segmented gathered matrix vector multiplication)</strong> kernel</a> for pre-fill (compute-bound) operations, while vLLM uses <a href="https://github.com/punica-ai/punica/tree/master/csrc/bgmv"><strong>BGMV</strong> kernel</a>.</p>
+<ul>
+<li><p>SGMV is optimized for pre-fill computation profiles.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-008/images/sgmv.png" class="img-fluid figure-img"></p>
+<figcaption>Punica: Multi-Tenant LoRA Serving - Figure 3</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Paper:</strong> <a href="https://arxiv.org/abs/2310.18547">Punica: Multi-Tenant LoRA Serving</a></p></li>
+</ul></li>
+<li><p>Lorax uses both kernels (SGMV for pre-fill, BGMV for decode) depending on the generation process stage, while vLLM uses only BGMV.</p></li>
+</ul>
+</section>
+<section id="dynamic-adapter-loading" class="level4">
+<h4 class="anchored" data-anchor-id="dynamic-adapter-loading">Dynamic Adapter Loading</h4>
+<ul>
+<li>Lorax is currently the only library offering <strong>dynamic adapter loading</strong>, eliminating the need to pre-specify adapters and simplifying memory management.</li>
+</ul>
+</section>
+<section id="scheduler-component" class="level4">
+<h4 class="anchored" data-anchor-id="scheduler-component">Scheduler Component</h4>
+<ul>
+<li>Lorax’s scheduler intelligently manages:
+<ul>
+<li>Adapter residency on GPU and host memory.</li>
+<li>Batching of requests.</li>
+<li>Trade-off between latency and throughput for optimal processing.</li>
+</ul></li>
+</ul>
+</section>
+<section id="support-for-various-adapters" class="level4">
+<h4 class="anchored" data-anchor-id="support-for-various-adapters">Support for Various Adapters</h4>
+<ul>
+<li>Supports <strong>LoRa switching</strong> (most popular) and other adapter types.
+<ul>
+<li><strong>Speculative decoding</strong>, allowing combination with LoRa, is unique to Lorax.</li>
+<li>Exploration of other adapter types like <a href="https://arxiv.org/abs/2404.03592">ReFT</a> (representation fine-tuning) and <a href="https://arxiv.org/abs/2402.09353">DoRA</a>.</li>
+</ul></li>
+</ul>
+</section>
+<section id="additional-features" class="level4">
+<h4 class="anchored" data-anchor-id="additional-features">Additional Features</h4>
+<ul>
+<li>Adding support for:
+<ul>
+<li>Embedding models.</li>
+<li>Training adapters specifically for embedding models.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="data-requirements-and-sourcing-for-quality-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="data-requirements-and-sourcing-for-quality-fine-tuning">Data Requirements and Sourcing for Quality Fine-Tuning</h3>
+<section id="data-volume-vs.-quality" class="level4">
+<h4 class="anchored" data-anchor-id="data-volume-vs.-quality">Data Volume vs.&nbsp;Quality</h4>
+<ul>
+<li><strong>High-quality data is more important than high volume.</strong>
+<ul>
+<li>Large datasets often contain irrelevant information, hindering effective learning.</li>
+</ul></li>
+<li>Start with a <strong>smaller dataset (hundreds of examples) and a larger base model (e.g., Llama 3 70B).</strong>
+<ul>
+<li>Larger models perform better with smaller datasets but are more expensive to train and use for inference.</li>
+</ul></li>
+<li>As the dataset grows, transition to smaller models for cost efficiency.</li>
+</ul>
+</section>
+<section id="synthetic-data-generation" class="level4">
+<h4 class="anchored" data-anchor-id="synthetic-data-generation">Synthetic Data Generation</h4>
+<ul>
+<li><strong>Significantly increases performance</strong>, especially for smaller datasets (hundreds to low thousands of examples).</li>
+<li>Gains decrease with larger datasets (hundreds of thousands).</li>
+</ul>
+</section>
+<section id="case-study-metas-less-is-more-for-alignment" class="level4">
+<h4 class="anchored" data-anchor-id="case-study-metas-less-is-more-for-alignment">Case Study: Meta’s “Less is More for Alignment”</h4>
+<ul>
+<li>Demonstrated strong performance using only <strong>2,000 samples</strong> for training Llama 2 70B (older generation).</li>
+</ul>
+</section>
+<section id="dataset-creation-challenges" class="level4">
+<h4 class="anchored" data-anchor-id="dataset-creation-challenges">Dataset Creation Challenges</h4>
+<ul>
+<li>Users often expect to directly transfer knowledge from closed-source APIs (e.g., OpenAI) to open-source models, leading to ineffective QA pairs.</li>
+<li>Solution: Reformulate tasks as RAG problems or use embedding/generator models with appropriate data corpus indexing and training.</li>
+</ul>
+</section>
+<section id="dataset-preparation-support" class="level4">
+<h4 class="anchored" data-anchor-id="dataset-preparation-support">Dataset Preparation Support</h4>
+<ul>
+<li>Predibase provides guidance on dataset creation but does not offer specific data preparation tools.</li>
+<li>Consulting companies can assist with data preparation and synthetic data generation.</li>
+<li>Collaboration with companies like <a href="https://gretel.ai/">Gretel</a> for synthetic data as a service is being explored.</li>
+</ul>
+</section>
+<section id="dataset-complexity" class="level4">
+<h4 class="anchored" data-anchor-id="dataset-complexity">Dataset Complexity</h4>
+<ul>
+<li>Simpler for traditional supervised ML tasks (e.g., classification, NER, summarization) due to straightforward input-output relationships.</li>
+</ul>
+</section>
+</section>
+<section id="platform-choice-predibase-vs.-self-hosting-lorax" class="level3">
+<h3 class="anchored" data-anchor-id="platform-choice-predibase-vs.-self-hosting-lorax">Platform Choice: Predibase vs.&nbsp;Self-Hosting Lorax</h3>
+<section id="considerations-for-self-hosting" class="level4">
+<h4 class="anchored" data-anchor-id="considerations-for-self-hosting">Considerations for Self-Hosting</h4>
+<ul>
+<li>Suitable for companies where ML infrastructure is a core competency or differentiator.</li>
+<li>Requires a dedicated team for platform development, maintenance, and updates.</li>
+</ul>
+</section>
+<section id="cost-benefit-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="cost-benefit-analysis">Cost-Benefit Analysis</h4>
+<ul>
+<li><strong>Self-hosting:</strong> High upfront and ongoing costs.</li>
+<li><strong>Predibase:</strong> Predictable subscription fee, freeing up resources for other priorities.</li>
+</ul>
+</section>
+<section id="recommendation" class="level4">
+<h4 class="anchored" data-anchor-id="recommendation">Recommendation</h4>
+<ul>
+<li>Predibase is generally more cost-effective for companies whose core competencies lie elsewhere, allowing them to focus on product development or model creation.</li>
+</ul>
+</section>
+</section>
+<section id="lorax-adoption-and-engagement-expectations" class="level3">
+<h3 class="anchored" data-anchor-id="lorax-adoption-and-engagement-expectations">Lorax Adoption and Engagement Expectations</h3>
+<section id="comparison-to-previous-open-source-projects" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-to-previous-open-source-projects">Comparison to Previous Open-Source Projects</h4>
+<ul>
+<li><strong><a href="https://github.com/horovod/horovod">Horovod</a> (distributed training framework):</strong> Significant buy-in from large companies building ML platforms.</li>
+<li><strong><a href="https://github.com/ludwig-ai/ludwig">Ludwig</a> (low-code ML framework):</strong> High user adoption but limited contributions due to its abstract nature.</li>
+</ul>
+</section>
+<section id="lorax-adoption-pattern" class="level4">
+<h4 class="anchored" data-anchor-id="lorax-adoption-pattern">Lorax Adoption Pattern</h4>
+<ul>
+<li>Similar to Horovod, attracting technical users building internal ML infrastructure.</li>
+<li>Active contributions from self-hosting users, indicating strong engagement and “dogfooding.”</li>
+</ul>
+</section>
+</section>
+<section id="future-plans-for-the-fine-tuning-index" class="level3">
+<h3 class="anchored" data-anchor-id="future-plans-for-the-fine-tuning-index">Future Plans for the Fine-Tuning Index</h3>
+<ul>
+<li><strong>Homepage:</strong> <a href="https://predibase.com/fine-tuning-index">The Fine-tuning Index</a></li>
+</ul>
+<section id="current-state" class="level4">
+<h4 class="anchored" data-anchor-id="current-state">Current State</h4>
+<ul>
+<li>Static artifact averaging performance over 31 diverse tasks.</li>
+</ul>
+</section>
+<section id="short-term-goals" class="level4">
+<h4 class="anchored" data-anchor-id="short-term-goals">Short-Term Goals</h4>
+<ul>
+<li>Transition to a <strong>living artifact</strong> with regular updates as new models are released.</li>
+<li>Implement tooling for <strong>easier model addition and UI integration with a database.</strong></li>
+</ul>
+</section>
+<section id="long-term-vision" class="level4">
+<h4 class="anchored" data-anchor-id="long-term-vision">Long-Term Vision</h4>
+<ul>
+<li>Achieve the <strong>freshness and openness of platforms like LMSYS Leaderboard and Hugging Face Leaderboards.</strong></li>
+</ul>
+</section>
+<section id="additional-improvements" class="level4">
+<h4 class="anchored" data-anchor-id="additional-improvements">Additional Improvements</h4>
+<ul>
+<li>Introduce <strong>Elo scores</strong> for more accurate model ranking.</li>
+</ul>
+</section>
+</section>
+<section id="handling-large-scale-text-classification-with-sensitive-data" class="level3">
+<h3 class="anchored" data-anchor-id="handling-large-scale-text-classification-with-sensitive-data">Handling Large-Scale Text Classification with Sensitive Data</h3>
+<section id="scenario" class="level4">
+<h4 class="anchored" data-anchor-id="scenario">Scenario</h4>
+<ul>
+<li>1-2 million free-form text snippets per month requiring 5-10 binary (yes/no) questions.</li>
+<li>GPT-4 performance is desired but cost-prohibitive.</li>
+<li>Data is sensitive and based in the EU.</li>
+</ul>
+</section>
+<section id="solution" class="level4">
+<h4 class="anchored" data-anchor-id="solution">Solution</h4>
+<ul>
+<li><strong>GPT-4 Distillation:</strong>
+<ul>
+<li>Use GPT-4 to generate label data for a smaller, more cost-effective model.</li>
+<li>Consider OpenAI’s terms of service when using GPT-4 for data generation.</li>
+</ul></li>
+<li><strong>Adapter Structure:</strong>
+<ul>
+<li><strong>Multiple Adapters:</strong> Suitable if the specific adapter to use for each request is unknown beforehand.</li>
+<li><strong>One Adapter with Multiple Label Outputs:</strong> Preferable if the adapter selection can be determined based on request information.</li>
+<li><strong>Routing Architectures:</strong> Explore if dynamically determining the appropriate adapter is necessary.</li>
+</ul></li>
+<li><strong>GDPR Compliance:</strong>
+<ul>
+<li>Predibase is working with EU-based, GDPR-compliant cloud providers.</li>
+<li>Contact Predibase for options and discussions on EU data center deployments.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="on-device-lorax-and-lookahead-loras" class="level3">
+<h3 class="anchored" data-anchor-id="on-device-lorax-and-lookahead-loras">On-Device Lorax and Lookahead LoRAs</h3>
+<section id="on-device-potential" class="level4">
+<h4 class="anchored" data-anchor-id="on-device-potential">On-Device Potential</h4>
+<ul>
+<li>Highly appealing for running smaller language models on edge devices (e.g., phones) with task-specific LoRAs.</li>
+<li>Aligned with the trend of sparse activation for efficient model execution.</li>
+</ul>
+</section>
+<section id="challenges" class="level4">
+<h4 class="anchored" data-anchor-id="challenges">Challenges</h4>
+<ul>
+<li><strong>Hardware Compatibility:</strong> Lorax is currently optimized for NVIDIA GPUs, which are not common on edge devices.
+<ul>
+<li>Optimizations like flash attention, page attention, and SG&amp;B kernels are CUDA-based.</li>
+<li>Porting to different hardware architectures (e.g., Qualcomm’s AI chips) would require significant code rewriting.</li>
+<li>Optimization techniques might not translate well to specialized ASICs used in edge devices.</li>
+</ul></li>
+</ul>
+</section>
+<section id="lookahead-loras-and-speculative-decoding" class="level4">
+<h4 class="anchored" data-anchor-id="lookahead-loras-and-speculative-decoding">Lookahead LoRAs and Speculative Decoding</h4>
+<ul>
+<li><strong>Lookahead LoRAs:</strong> Fine-tuned for both performance and inference speed (low-rank acceleration).</li>
+<li><strong>Speculative Decoding:</strong> Works best for narrow tasks (e.g., summarization, structured generation) where predictions can be made based on limited context.
+<ul>
+<li>Effectiveness increases with narrower task definitions.</li>
+<li>Aligns with the trend of using LLMs for specialized tasks with task-specific LoRAs.</li>
+</ul></li>
+<li><strong>Hardware Trends:</strong> NVIDIA’s newer GPUs (e.g., L40S) prioritize increased FLOPs over memory bandwidth, favoring compute-intensive techniques like speculative decoding.</li>
+</ul>
+</section>
+<section id="speculative-decoding-in-practice" class="level4">
+<h4 class="anchored" data-anchor-id="speculative-decoding-in-practice">Speculative Decoding in Practice</h4>
+<ul>
+<li><strong>Performance:</strong> Expected to work well in practice due to its suitability for narrow tasks.</li>
+<li><strong>High QPS:</strong> Ensuring efficient operation at high query per second (QPS) is a current challenge being addressed.</li>
+<li><strong>Fine-Tuning:</strong> Speculative decoding components should be fine-tuned alongside the LoRA for seamless integration.</li>
+</ul>
+</section>
+</section>
+<section id="synthetic-data-generation-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="synthetic-data-generation-for-fine-tuning">Synthetic Data Generation for Fine-Tuning</h3>
+<section id="process" class="level4">
+<h4 class="anchored" data-anchor-id="process">Process</h4>
+<ul>
+<li>Use a large language model (e.g., Llama 3 70B) with a small dataset for initial fine-tuning.</li>
+<li>Generate synthetic data using the fine-tuned model.</li>
+<li>Fine-tune a smaller model using the generated synthetic data.</li>
+</ul>
+</section>
+<section id="effectiveness" class="level4">
+<h4 class="anchored" data-anchor-id="effectiveness">Effectiveness</h4>
+<ul>
+<li>Significant performance improvements observed.</li>
+<li>Each 2x increase in data leads to approximately a 5% performance lift.</li>
+</ul>
+</section>
+<section id="model-family-considerations" class="level4">
+<h4 class="anchored" data-anchor-id="model-family-considerations">Model Family Considerations</h4>
+<ul>
+<li>Use the same model family for both the initial large model and the final smaller model (e.g., Llama) for optimal distillation.</li>
+<li>Cross-family distillation might not be as effective due to differences in data distributions.</li>
+</ul>
+</section>
+<section id="alternative-approach" class="level4">
+<h4 class="anchored" data-anchor-id="alternative-approach">Alternative Approach</h4>
+<ul>
+<li>Use GPT-3.5 or GPT-4 to generate synthetic data based on the small input dataset.</li>
+<li>Fine-tune a smaller model using the GPT-generated synthetic data.</li>
+</ul>
+</section>
+<section id="ensemble-techniques-for-synthetic-data-generation" class="level4">
+<h4 class="anchored" data-anchor-id="ensemble-techniques-for-synthetic-data-generation">Ensemble Techniques for Synthetic Data Generation</h4>
+<ul>
+<li>Explore generating synthetic data using multiple model families to enhance diversity and capture different data aspects.</li>
+<li>Fine-tune the final model on the ensemble of predictions from different models, similar to ensembling techniques in traditional ML.</li>
+<li>This approach could potentially outperform fine-tuning on synthetic data generated from a single model family.</li>
+</ul>
+</section>
+<section id="data-programming-and-weak-labeling" class="level4">
+<h4 class="anchored" data-anchor-id="data-programming-and-weak-labeling">Data Programming and Weak Labeling</h4>
+<ul>
+<li>Data programming techniques (e.g., <a href="https://www.snorkel.org/">Snorkel</a>) can be used to combine predictions from multiple “weak” experts (models) to generate more accurate labels.</li>
+<li>Distilling on the logits or probabilities, rather than the final labels, captures the uncertainty and agreement levels among different models, improving label quality.</li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/1605.07723">Data Programming: Creating Large Training Sets, Quickly</a></li>
+</ul>
+</section>
+</section>
+<section id="fine-tuning-adapters-vs.-gpt-4-for-qa-over-internal-documentation" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-adapters-vs.-gpt-4-for-qa-over-internal-documentation">Fine-Tuning Adapters vs.&nbsp;GPT-4 for Q&amp;A over Internal Documentation</h3>
+<section id="long-term-vision-1" class="level4">
+<h4 class="anchored" data-anchor-id="long-term-vision-1">Long-Term Vision</h4>
+<ul>
+<li>Fine-tuning could potentially replace RAG entirely for domain adaptation, allowing models to directly answer questions based on internal data.</li>
+</ul>
+</section>
+<section id="current-state-1" class="level4">
+<h4 class="anchored" data-anchor-id="current-state-1">Current State</h4>
+<ul>
+<li>Fine-tuning is not yet a complete replacement for RAG.</li>
+</ul>
+</section>
+<section id="fine-tuning-applications-within-rag" class="level4">
+<h4 class="anchored" data-anchor-id="fine-tuning-applications-within-rag">Fine-Tuning Applications within RAG</h4>
+<ul>
+<li>Improve individual RAG components:
+<ul>
+<li><strong>Embedder:</strong> Enhance document retrieval accuracy.</li>
+<li><strong>Re-ranker:</strong> Improve relevance ranking of retrieved documents.</li>
+<li><strong>Generator:</strong> Enhance answer generation quality.</li>
+</ul></li>
+<li>Jointly fine-tune multiple components for optimal performance.</li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2403.18295">Dual Instruction Tuning with Large Language Models for Mathematical Reasoning</a></li>
+</ul>
+</section>
+<section id="benefits-of-fine-tuning-for-rag" class="level4">
+<h4 class="anchored" data-anchor-id="benefits-of-fine-tuning-for-rag">Benefits of Fine-Tuning for RAG</h4>
+<ul>
+<li>Addresses limitations of pre-trained models by tailoring them to specific domains and tasks.</li>
+<li>Improves accuracy, relevance, and quality of RAG system outputs.</li>
+</ul>
+</section>
+<section id="considerations" class="level4">
+<h4 class="anchored" data-anchor-id="considerations">Considerations</h4>
+<ul>
+<li><strong>Freshness:</strong> Keeping fine-tuned models up-to-date with changing data can be challenging.</li>
+<li><strong>Metadata Filtering:</strong> RAG allows for flexible filtering based on document metadata, which might not be easily replicated with fine-tuning alone.</li>
+</ul>
+</section>
+<section id="recommendations" class="level4">
+<h4 class="anchored" data-anchor-id="recommendations">Recommendations</h4>
+<ul>
+<li>Start with a baseline RAG system using pre-trained models.</li>
+<li>Identify performance bottlenecks and target fine-tuning efforts accordingly.</li>
+<li>Consider joint fine-tuning of multiple components for optimal results.</li>
+</ul>
+</section>
+</section>
+<section id="catastrophic-forgetting-with-lora-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="catastrophic-forgetting-with-lora-fine-tuning">Catastrophic Forgetting with LoRA Fine-Tuning</h3>
+<ul>
+<li>Still possible, even with LoRA, if the LoRA’s output leads to model collapse (e.g., producing NaNs or zeros).</li>
+<li>Less prevalent with LoRA compared to full fine-tuning.
+<ul>
+<li>Learns less, forgets less</li>
+</ul></li>
+<li>LoRA is better suited for structuring outputs and narrow tasks, where catastrophic forgetting is less likely.</li>
+</ul>
+<section id="lora-fine-tuning-benefits" class="level4">
+<h4 class="anchored" data-anchor-id="lora-fine-tuning-benefits">LoRA Fine-Tuning Benefits</h4>
+<ul>
+<li>Consistent performance improvements observed for suitable tasks.</li>
+<li>Reduced risk of catastrophic forgetting compared to full fine-tuning.</li>
+</ul>
+</section>
+</section>
+<section id="multiple-loras-and-parameter-updates" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-loras-and-parameter-updates">Multiple LoRAs and Parameter Updates</h3>
+<ul>
+<li>Multiple LoRAs can update different subsets of model parameters</li>
+<li>Punica project kernels modified to allow sparse segmented matrix multiplication</li>
+<li>Heterogeneous setups (LoRAs targeting different layers) can be batched together</li>
+</ul>
+</section>
+<section id="lora-rank-and-parameter-count" class="level3">
+<h3 class="anchored" data-anchor-id="lora-rank-and-parameter-count">LoRA Rank and Parameter Count</h3>
+<section id="rank-selection" class="level4">
+<h4 class="anchored" data-anchor-id="rank-selection">Rank Selection</h4>
+<ul>
+<li>Experimentation with ranks from 8 to 128.</li>
+<li><strong>8:</strong> Good starting point, default in some libraries.</li>
+<li><strong>16:</strong> Generally provides strong performance and is widely used in the industry.</li>
+<li><strong>64:</strong> Performance tends to plateau or decline beyond this rank.</li>
+<li><strong>LoRA Alpha:</strong> Consider adjusting this parameter, which controls the contribution of base model weights, when using higher ranks.</li>
+</ul>
+</section>
+<section id="parameter-scaling" class="level4">
+<h4 class="anchored" data-anchor-id="parameter-scaling">Parameter Scaling</h4>
+<ul>
+<li>Primarily scales with the LoRA rank, not the training data size.</li>
+<li>2x increase in rank results in a 2x increase in trainable parameters.</li>
+<li>Increasing rank beyond a certain point leads to diminishing returns and increased training costs.</li>
+</ul>
+</section>
+<section id="layer-targeting" class="level4">
+<h4 class="anchored" data-anchor-id="layer-targeting">Layer Targeting</h4>
+<ul>
+<li>Explore targeting specific layers for LoRA application beyond the default QKV or QV layers.</li>
+<li><strong>Generative Use Cases:</strong> Targeting all linear layers, embedding, and LM head can be beneficial.</li>
+</ul>
+</section>
+</section>
+<section id="fine-tuning-for-question-answering-and-verbatim-quoting" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-for-question-answering-and-verbatim-quoting">Fine-Tuning for Question Answering and Verbatim Quoting</h3>
+<section id="scenario-1" class="level4">
+<h4 class="anchored" data-anchor-id="scenario-1">Scenario</h4>
+<ul>
+<li>Fine-tuning a model on a corpus of books for question answering and verbatim quoting.</li>
+</ul>
+</section>
+<section id="recommendations-1" class="level4">
+<h4 class="anchored" data-anchor-id="recommendations-1">Recommendations</h4>
+<ul>
+<li><strong>RAG for Verbatim Quoting:</strong> Use RAG to retrieve and cite specific passages from the books verbatim.</li>
+<li><strong>Fine-Tuning for Question Answering:</strong> Fine-tune the model to improve its ability to answer questions based on the corpus.</li>
+<li><strong>Hybrid Approach:</strong> Combine RAG and fine-tuning to leverage the strengths of both approaches.</li>
+</ul>
+</section>
+</section>
+<section id="fine-tuning-for-function-calling-lora-per-function-type-vs.-multi-skill-lora" class="level3">
+<h3 class="anchored" data-anchor-id="fine-tuning-for-function-calling-lora-per-function-type-vs.-multi-skill-lora">Fine-Tuning for Function Calling: LoRA per Function Type vs.&nbsp;Multi-Skill LoRA</h3>
+<section id="recommendation-1" class="level4">
+<h4 class="anchored" data-anchor-id="recommendation-1">Recommendation</h4>
+<ul>
+<li>Use a LoRA per function type if the function type can be determined at request time.
+<ul>
+<li>Leverages the principle of narrower tasks leading to better fine-tuning performance.</li>
+</ul></li>
+<li>If function type is unknown beforehand, consider a multi-skill LoRA or explore alternative approaches.</li>
+</ul>
+</section>
+<section id="granularity" class="level4">
+<h4 class="anchored" data-anchor-id="granularity">Granularity</h4>
+<ul>
+<li>Determine the appropriate level of granularity for LoRA specialization based on available request metadata.</li>
+</ul>
+</section>
+<section id="further-exploration" class="level4">
+<h4 class="anchored" data-anchor-id="further-exploration">Further Exploration</h4>
+<ul>
+<li>Attend the upcoming session on fine-tuning for function calling for more in-depth insights and recommendations.</li>
+</ul>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>llms</category>
+  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-008/</guid>
+  <pubDate>Thu, 29 Aug 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
+<item>
   <title>Conference Talk 17: Language Models on the Command-Line</title>
   <dc:creator>Christian Mills</dc:creator>
   <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-017/</link>
@@ -21080,744 +21563,6 @@ This post is part of the following series:
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-006/</guid>
   <pubDate>Thu, 11 Jul 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Conference Talk 5: Napkin Math For Fine Tuning with Johno Whitaker</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-005/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<ul>
-<li>Introduction</li>
-<li>Good News &amp; Bad News</li>
-<li>Training Neural Networks</li>
-<li>Why are we copying data around?</li>
-<li>Goal: Keep the GPU Fed</li>
-<li>Napkin Math: Understanding Memory Usage</li>
-<li>Napkin Math Code Demo</li>
-<li>Optimizing LLM Training for Different Hardware</li>
-<li>Q&amp;A Session</li>
-<li>Recap</li>
-</ul>
-<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Resources">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Presentation Resources
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/1Ye_6zeatCWkq-fx8A--yK34uwU8oC2YQtMSTV1DgkSI/">Napkin Math For Finetuning</a></li>
-</ul>
-</div>
-</div>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<ul>
-<li><strong>Goal:</strong> To provide insights into the factors influencing fine-tuning performance, enabling better decision-making in training models.</li>
-<li><strong>Target audience:</strong> Individuals new to training models, particularly by fine-tuning existing large language models.</li>
-<li><strong>Key questions addressed:</strong>
-<ul>
-<li>Factors affecting model performance.</li>
-<li>Strategies for improving performance.</li>
-<li>Reasons for memory limitations and slow training times.</li>
-<li>Understanding and adjusting various parameters in configuration files.</li>
-</ul></li>
-<li><strong>Approach:</strong> Utilizing a “napkin math” approach to provide a general understanding of the concepts without delving into intricate mathematical details.</li>
-<li><strong>Disclaimer:</strong> Emphasizes that the information presented is simplified for clarity and may not be entirely accurate due to the constantly evolving nature of AI implementations.</li>
-</ul>
-</section>
-<section id="good-news-bad-news" class="level2">
-<h2 class="anchored" data-anchor-id="good-news-bad-news">Good News &amp; Bad News</h2>
-<ul>
-<li><strong>Good news:</strong> The mathematical operations underlying model training are well-understood, enabling analysis and experimentation.</li>
-<li><strong>Bad news:</strong>
-<ul>
-<li>Discrepancies can exist between research papers, code implementations, and framework-specific implementations.</li>
-<li>The complexity of the underlying processes can be daunting.</li>
-<li>Keeping track of all the details and nuances is challenging.</li>
-<li>Multi-GPU setups introduce additional complexity</li>
-</ul></li>
-<li><strong>Key takeaway:</strong> While a simplified approach can be helpful, acknowledging the inherent complexities is essential for accurate analysis and problem-solving.</li>
-</ul>
-</section>
-<section id="training-neural-networks" class="level2">
-<h2 class="anchored" data-anchor-id="training-neural-networks">Training Neural Networks</h2>
-<section id="training-loop" class="level4">
-<h4 class="anchored" data-anchor-id="training-loop">Training Loop</h4>
-<ul>
-<li><strong>The core cycle:</strong> Load data, feed it through the model, generate an answer, evaluate its quality, and update the model accordingly.</li>
-<li><strong>Language model context:</strong> The correct answer typically refers to the next word in a sequence, and predictions are represented as probabilities for potential next words.</li>
-<li><strong>Fine-tuning data:</strong> Datasets used for fine-tuning contain instruction-response pairs, allowing the model to learn from desired output patterns.</li>
-</ul>
-</section>
-<section id="on-computers" class="level4">
-<h4 class="anchored" data-anchor-id="on-computers">On Computers</h4>
-<ul>
-<li><strong>Hardware components:</strong> Understanding the roles of CPU, GPU, RAM, and their interconnectivity is crucial for performance analysis.</li>
-<li><strong>Memory hierarchy:</strong> Different memory types (e.g., CPU cache, RAM, hard drive) have varying access speeds, influencing data transfer times.</li>
-</ul>
-</section>
-<section id="training-neural-networks-1" class="level4">
-<h4 class="anchored" data-anchor-id="training-neural-networks-1">Training Neural Networks</h4>
-<ul>
-<li><strong>Factors affecting performance:</strong>
-<ul>
-<li><strong>Data loading:</strong> Reading data from storage.</li>
-<li><strong>Model computation:</strong> Performing mathematical operations within the model’s layers.</li>
-<li><strong>Parameter storage:</strong> Memory required to store model parameters (weights and biases).</li>
-<li><strong>Gradient calculation and storage:</strong> Computing and storing gradients for model updates.</li>
-<li><strong>Optimizer operations:</strong> Additional storage and computations for parameter optimization.</li>
-</ul></li>
-<li><strong>Key takeaway:</strong> Each step in the training loop incurs computational costs and memory demands, understanding these factors is crucial for optimization.</li>
-</ul>
-</section>
-<section id="what-takes-up-time" class="level4">
-<h4 class="anchored" data-anchor-id="what-takes-up-time">What takes up time?</h4>
-<ul>
-<li><strong>Computation:</strong> The number of mathematical operations performed.</li>
-<li><strong>Memory management:</strong> Data transfer and storage within the memory hierarchy.</li>
-</ul>
-</section>
-</section>
-<section id="why-are-we-copying-data-around" class="level2">
-<h2 class="anchored" data-anchor-id="why-are-we-copying-data-around">Why are we copying data around?</h2>
-<ul>
-<li><strong>Memory hierarchy and data transfer:</strong>
-<ul>
-<li><strong>Different memory types:</strong> CPU cache, RAM, GPU RAM, hard drives, etc., have varying speeds.</li>
-<li><strong>Data movement:</strong> Copying data between these memory locations consumes time, impacting performance.</li>
-</ul></li>
-<li><strong>Optimizing data flow:</strong> Minimizing unnecessary data transfers and utilizing faster memory options are crucial for optimization.</li>
-<li><strong>Multi-GPU and distributed training:</strong>
-<ul>
-<li><strong>Inter-GPU communication:</strong> Sharing data between GPUs can introduce latency.</li>
-<li><strong>Network communication:</strong> In multi-node setups, communication over the network becomes a bottleneck.</li>
-</ul></li>
-</ul>
-</section>
-<section id="goal-keep-the-gpu-fed" class="level2">
-<h2 class="anchored" data-anchor-id="goal-keep-the-gpu-fed">Goal: Keep the GPU Fed</h2>
-<ul>
-<li><strong>Goal:</strong> Continuously provide the GPU with data and instructions to avoid downtime.</li>
-<li><strong>Ideal:</strong> Fit the entire model and data within the GPU RAM for fastest processing.</li>
-<li><strong>Bottleneck:</strong> Large models and limited GPU memory can cause frequent data loading from slower memory, slowing down the training process.</li>
-</ul>
-<section id="tricks-to-improve-memory-efficiency" class="level3">
-<h3 class="anchored" data-anchor-id="tricks-to-improve-memory-efficiency">Tricks to improve memory efficiency</h3>
-<ul>
-<li><strong>Techniques for keeping data closer to the GPU:</strong>
-<ul>
-<li><strong>Flash Attention and Fused Kernels:</strong> These reduce memory footprints and data transfers by changing how computations are performed.</li>
-<li><strong>Gradient Checkpointing (Activation Checkpointing):</strong> Trades a small increase in compute time for significant memory savings by selectively recomputing activations during backpropagation.</li>
-<li><strong>CPU Offloading:</strong> Leverages larger CPU RAM by temporarily storing parts of the model or data that are not actively being used on the GPU.</li>
-<li><strong>LoRA (Low-Rank Adaptation):</strong>
-<ul>
-<li>Freeze most model parameters and train only a small set of adapter parameters.</li>
-<li>Reduces memory requirements for gradients and optimizer states.</li>
-</ul></li>
-<li><strong>Quantization:</strong>
-<ul>
-<li>Represent model weights using fewer bits (e.g., 8-bit instead of 32-bit).</li>
-<li>Reduces memory footprint, allowing for larger models or larger batch sizes.</li>
-<li>Needs a little computation to dequantize</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="napkin-math-understanding-memory-usage" class="level2">
-<h2 class="anchored" data-anchor-id="napkin-math-understanding-memory-usage">Napkin Math: Understanding Memory Usage</h2>
-<section id="full-fine-tuning" class="level3">
-<h3 class="anchored" data-anchor-id="full-fine-tuning">Full Fine-Tuning</h3>
-<ul>
-<li><strong>Problem:</strong> Full fine-tuning requires storing model parameters, gradients, and optimizer states, leading to high memory consumption.</li>
-<li><strong>Explanation:</strong>
-<ul>
-<li>Each parameter in a model requires multiple bits (e.g., 32 bits) to represent its numeric value.</li>
-<li>Gradients for each parameter are stored during training, consuming the same amount of memory as the parameters.</li>
-<li>Optimizers like Adam store additional states (e.g., momentum), further increasing memory usage.</li>
-</ul></li>
-<li><strong>Example:</strong> A model with 100 million parameters using 32 bits per parameter consumes 400MB.
-<ul>
-<li>Considering gradients and optimizer states, the total memory usage can be 1.2GB or higher.</li>
-</ul></li>
-</ul>
-</section>
-<section id="lora-low-rank-adaptation" class="level3">
-<h3 class="anchored" data-anchor-id="lora-low-rank-adaptation">LoRA (Low-Rank Adaptation)</h3>
-<ul>
-<li><strong>Solution:</strong> LoRA reduces memory usage by only training a small subset of parameters while keeping the rest frozen.
-<ul>
-<li><strong>Example:</strong> For every <code>1000 x 1000</code> matrix, add a <code>1000 x 32</code> matrix</li>
-</ul></li>
-<li><strong>Explanation:</strong>
-<ul>
-<li>Only trainable parameters require gradients and optimizer state storage.</li>
-<li>LoRA adds a small number of trainable parameters (e.g., 1% of the model size) to each large matrix in the model.</li>
-</ul></li>
-<li><strong>Benefit:</strong> LoRA significantly reduces memory requirements, enabling training on larger models without fitting the entire model and its associated data into GPU memory.</li>
-</ul>
-</section>
-<section id="quantization" class="level3">
-<h3 class="anchored" data-anchor-id="quantization">Quantization</h3>
-<ul>
-<li><strong>Solution:</strong> Quantization reduces memory usage by representing model parameters with fewer bits.</li>
-<li><strong>Explanation:</strong>
-<ul>
-<li>Instead of using 32 bits, quantization uses 8 bits or even 4 bits per parameter.</li>
-</ul></li>
-<li><strong>Benefit:</strong> Quantization shrinks the memory footprint of the model, allowing for larger model training or fitting on memory-constrained devices.</li>
-<li><strong>Combination with LoRA (QLoRA):</strong> Quantize the frozen base model weights while keeping the LoRA parameters in higher precision for accurate training.</li>
-</ul>
-</section>
-<section id="cpu-offloading-illustration" class="level3">
-<h3 class="anchored" data-anchor-id="cpu-offloading-illustration">CPU Offloading Illustration</h3>
-<ul>
-<li><strong>Solution:</strong> Utilize CPU RAM to store model components and offload computations when GPU memory is insufficient.</li>
-<li><strong>Explanation:</strong> Load and process one layer of the model on the GPU at a time, storing the remaining layers and intermediate data in CPU memory.</li>
-<li><strong>Trade-off:</strong> While enabling larger model training, CPU offloading introduces latency due to data transfer between CPU and GPU.</li>
-</ul>
-</section>
-<section id="llm-context-length-considerations" class="level3">
-<h3 class="anchored" data-anchor-id="llm-context-length-considerations">LLM Context Length Considerations</h3>
-<ul>
-<li><strong>Problem:</strong> Large context lengths lead to increased memory consumption for storing activations.</li>
-<li><strong>Explanation:</strong>
-<ul>
-<li>Each layer’s output activations need to be stored for gradient calculations, and these activations accumulate with longer input sequences.</li>
-</ul></li>
-<li><strong>Impact:</strong> Training LLMs with long context lengths requires careful memory management and might necessitate techniques like gradient checkpointing to reduce activation memory footprint.</li>
-</ul>
-</section>
-</section>
-<section id="napkin-math-code-demo" class="level2">
-<h2 class="anchored" data-anchor-id="napkin-math-code-demo">Napkin Math Code Demo</h2>
-<ul>
-<li>Demonstrates using PyTorch’s memory tracking tools to analyze memory usage during training.</li>
-</ul>
-<section id="measuring-memory" class="level3">
-<h3 class="anchored" data-anchor-id="measuring-memory">Measuring Memory</h3>
-<ul>
-<li><strong>Challenge:</strong> Limited GPU RAM restricts the size of models and batch sizes during training.</li>
-<li><strong>Solution:</strong> Use PyTorch’s memory tracking capabilities to understand and optimize memory consumption.
-<ul>
-<li><a href="https://pytorch.org/docs/stable/generated/torch.cuda.max_memory_allocated.html"><code>torch.cuda.max_memory_allocated</code></a>: Provides a more accurate measure of actively used memory.</li>
-<li><a href="https://pytorch.org/docs/stable/generated/torch.cuda.max_memory_reserved.html"><code>torch.cuda.max_memory_reserved</code></a>: Reflects total memory held by PyTorch, including pre-allocated space.</li>
-</ul></li>
-<li><strong>Key Takeaway:</strong> Actively monitor memory usage to make informed decisions about model size, batch size, and other hyperparameters.</li>
-</ul>
-<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> torch, gc, inspect, transformers</span>
-<span id="cb1-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> transformers <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> AutoModelForCausalLM, BitsAndBytesConfig</span>
-<span id="cb1-3"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> accelerate.utils <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> set_seed</span>
-<span id="cb1-4"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> peft <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> prepare_model_for_kbit_training</span>
-<span id="cb1-5"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> peft <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> LoraConfig, get_peft_model</span>
-<span id="cb1-6"></span>
-<span id="cb1-7">transformers.logging.set_verbosity_warning()</span></code></pre></div>
-<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1">device <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"cuda"</span></span></code></pre></div>
-<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">def</span> cleanup():</span>
-<span id="cb3-2">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">"""Free up memory and reset stats"""</span></span>
-<span id="cb3-3">    gc.collect()</span>
-<span id="cb3-4">    torch.cuda.empty_cache()</span>
-<span id="cb3-5">    torch.cuda.reset_peak_memory_stats(device)</span>
-<span id="cb3-6">cleanup()</span></code></pre></div>
-<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">def</span> print_memory_stats():</span>
-<span id="cb4-2">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">"""Print two different measures of GPU memory usage"""</span></span>
-<span id="cb4-3">    <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"Max memory allocated: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>torch<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>cuda<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>max_memory_allocated(device)<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1e9</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">GB"</span>)</span>
-<span id="cb4-4">    <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># reserved (aka 'max_memory_cached') is ~the allocated memory plus pre-cached memory</span></span>
-<span id="cb4-5">    <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">f"Max memory reserved: </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">{</span>torch<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>cuda<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">.</span>max_memory_reserved(device)<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1e9</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">GB"</span>) </span>
-<span id="cb4-6">print_memory_stats()</span></code></pre></div>
-<pre class="text"><code>Max memory allocated: 0.00GB
-Max memory reserved: 0.00GB</code></pre>
-<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># QLoRA Forward + Backward pass</span></span>
-<span id="cb6-2"></span>
-<span id="cb6-3">cleanup() <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Clean slate each time</span></span>
-<span id="cb6-4"></span>
-<span id="cb6-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Quantization config for QLoRA versions</span></span>
-<span id="cb6-6">bnb_config <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> BitsAndBytesConfig(</span>
-<span id="cb6-7">    load_in_4bit<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,</span>
-<span id="cb6-8">    bnb_4bit_compute_dtype<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>torch.bfloat16</span>
-<span id="cb6-9">)</span>
-<span id="cb6-10"></span>
-<span id="cb6-11"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Load the model</span></span>
-<span id="cb6-12">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> AutoModelForCausalLM.from_pretrained(</span>
-<span id="cb6-13">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>,</span>
-<span id="cb6-14">    low_cpu_mem_usage<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,</span>
-<span id="cb6-15">    quantization_config<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>bnb_config,</span>
-<span id="cb6-16">    use_cache<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span></span>
-<span id="cb6-17">)</span>
-<span id="cb6-18"></span>
-<span id="cb6-19"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># This function has caused me lots of pain!</span></span>
-<span id="cb6-20">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> prepare_model_for_kbit_training(model)</span>
-<span id="cb6-21"></span>
-<span id="cb6-22"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Add LoRA</span></span>
-<span id="cb6-23">config <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> LoraConfig(</span>
-<span id="cb6-24">    r<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">16</span>,</span>
-<span id="cb6-25">    lora_alpha<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">32</span>,</span>
-<span id="cb6-26">    lora_dropout<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.05</span>,</span>
-<span id="cb6-27">    bias<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"none"</span>,</span>
-<span id="cb6-28">    task_type<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"CAUSAL_LM"</span></span>
-<span id="cb6-29">)</span>
-<span id="cb6-30">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> get_peft_model(model, config)</span>
-<span id="cb6-31"></span>
-<span id="cb6-32"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Move to GPU</span></span>
-<span id="cb6-33">model.to(device)</span>
-<span id="cb6-34"></span>
-<span id="cb6-35"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Prepare the data</span></span>
-<span id="cb6-36">bs, ctx <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1200</span> <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># batch size and context length</span></span>
-<span id="cb6-37">data <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.randint(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">10000</span>, (bs, ctx), device<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>device)</span>
-<span id="cb6-38"></span>
-<span id="cb6-39"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Forward pass</span></span>
-<span id="cb6-40">output <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model(data, labels<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>data)</span>
-<span id="cb6-41"></span>
-<span id="cb6-42"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Backward pass</span></span>
-<span id="cb6-43">output.loss.backward()</span>
-<span id="cb6-44"></span>
-<span id="cb6-45"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Print max memory stats</span></span>
-<span id="cb6-46">print_memory_stats()</span>
-<span id="cb6-47"></span>
-<span id="cb6-48"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Cleanup</span></span>
-<span id="cb6-49"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">del</span> model, output, data</span>
-<span id="cb6-50">cleanup()</span></code></pre></div>
-<pre class="text"><code>Max memory allocated: 6.42GB
-Max memory reserved: 7.09GB</code></pre>
-</section>
-<section id="memory-history" class="level3">
-<h3 class="anchored" data-anchor-id="memory-history">Memory History</h3>
-<ul>
-<li><strong>Challenge:</strong> Identifying specific memory bottlenecks within the training process.</li>
-<li><strong>Solution:</strong> PyTorch’s <code>record_memory_history</code> function helps visualize memory usage over time.</li>
-<li><strong>Tool:</strong> Upload the generated pickle file to Pytorch’s Memory Visualizer for a detailed graphical representation.
-<ul>
-<li><strong>Link:</strong> <a href="https://pytorch.org/memory_viz">https://pytorch.org/memory_viz</a></li>
-</ul></li>
-<li><strong>Documentation:</strong> <a href="https://pytorch.org/docs/stable/torch_cuda_memory.html">Understanding CUDA Memory Usage</a></li>
-<li><strong>Tutorial:</strong> <a href="https://pytorch.org/tutorials/intermediate/optimizer_step_in_backward_tutorial.html">How to save memory by fusing the optimizer step into the backward pass</a></li>
-</ul>
-<section id="benefits-of-memory-history-analysis" class="level4">
-<h4 class="anchored" data-anchor-id="benefits-of-memory-history-analysis">Benefits of Memory History Analysis:</h4>
-<ul>
-<li><strong>Identify memory spikes:</strong> pinpoint operations causing significant memory increases.</li>
-<li><strong>Understand memory allocation patterns:</strong> Visualize how memory usage evolves throughout the training process (forward pass, backward pass, gradient updates).</li>
-<li><strong>Evaluate optimization strategies:</strong> Observe the impact of techniques like gradient checkpointing and quantization on memory consumption.</li>
-</ul>
-</section>
-<section id="real-world-examples" class="level4">
-<h4 class="anchored" data-anchor-id="real-world-examples">Real-World Examples</h4>
-<ul>
-<li><strong>Bug Detection:</strong> Unusually high memory spikes revealed incorrect implementations or unintended use of trainable parameters.</li>
-<li><strong>Memory Leak Identification:</strong> Gradual memory escalation over multiple training steps pointed to issues with gradient or loss clearing.</li>
-<li><strong>Kernel Optimization:</strong> Analysis highlighted inefficiencies in HuggingFace’s Transformers library, prompting a switch back to a more memory-efficient attention kernel.</li>
-</ul>
-<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">cleanup()</span>
-<span id="cb8-2"></span>
-<span id="cb8-3"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Load the model</span></span>
-<span id="cb8-4">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> AutoModelForCausalLM.from_pretrained(</span>
-<span id="cb8-5">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>,</span>
-<span id="cb8-6">    low_cpu_mem_usage<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>,</span>
-<span id="cb8-7">    quantization_config<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>bnb_config,</span>
-<span id="cb8-8">    use_cache<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">False</span></span>
-<span id="cb8-9">)</span>
-<span id="cb8-10">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> prepare_model_for_kbit_training(model)</span>
-<span id="cb8-11">model <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> get_peft_model(model, config)</span>
-<span id="cb8-12">model.to(device)</span>
-<span id="cb8-13"></span>
-<span id="cb8-14"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Prep the data</span></span>
-<span id="cb8-15">data <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.randint(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">10000</span>, (<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1000</span>), device<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>device)</span>
-<span id="cb8-16"></span>
-<span id="cb8-17"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Start recording</span></span>
-<span id="cb8-18">torch.cuda.memory._record_memory_history()</span>
-<span id="cb8-19"></span>
-<span id="cb8-20"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># FOrward and backwards pass</span></span>
-<span id="cb8-21">output <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model(data, labels<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>data)</span>
-<span id="cb8-22">output.loss.backward()</span>
-<span id="cb8-23"></span>
-<span id="cb8-24"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Save the snapshot and stop recording</span></span>
-<span id="cb8-25">torch.cuda.memory._dump_snapshot(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"memory_snapshot.pickle"</span>)</span>
-<span id="cb8-26">torch.cuda.memory._record_memory_history(enabled<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">None</span>) </span>
-<span id="cb8-27"></span>
-<span id="cb8-28"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Clean up</span></span>
-<span id="cb8-29"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">del</span> model, output, data</span>
-<span id="cb8-30">cleanup()</span></code></pre></div>
-<p>Results viewed in <a href="https://pytorch.org/memory_viz">https://pytorch.org/memory_viz</a>:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-005/images/image.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-</section>
-</section>
-</section>
-<section id="optimizing-llm-training-for-different-hardware" class="level2">
-<h2 class="anchored" data-anchor-id="optimizing-llm-training-for-different-hardware">Optimizing LLM Training for Different Hardware</h2>
-<div class="callout callout-style-default callout-note callout-titled" title="Benchmarking QLoRA+FSDP">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Benchmarking QLoRA+FSDP
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><strong>Case Study:</strong> <a href="https://github.com/AnswerDotAI/fsdp_qlora/blob/main/benchmarks_03_2024.md">A Dual 3090 ‘Basement Rig’</a></li>
-</ul>
-</div>
-</div>
-<section id="gpu-limitations-data-transfer-bottleneck" class="level3">
-<h3 class="anchored" data-anchor-id="gpu-limitations-data-transfer-bottleneck">GPU Limitations &amp; Data Transfer Bottleneck</h3>
-<ul>
-<li>Training LLMs often involves frequent data transfers between CPU memory and GPU memory.</li>
-<li>In systems with limited GPU memory or slow interconnects, these transfers become a significant bottleneck.</li>
-<li>Each layer of the model might require loading weights onto the GPU, performing computations, and then repeating the process for the next layer.</li>
-</ul>
-</section>
-<section id="optimizing-for-memory-bound-scenarios" class="level3">
-<h3 class="anchored" data-anchor-id="optimizing-for-memory-bound-scenarios">Optimizing for Memory-Bound Scenarios</h3>
-<ul>
-<li><strong>Goal:</strong> Minimize data transfer cycles by maximizing computation done per load.
-<ul>
-<li><strong>Example:</strong> Using a larger batch size allows processing more samples per load, reducing the total number of loads required.</li>
-</ul></li>
-<li><strong>Techniques:</strong>
-<ul>
-<li><strong>Quantization:</strong> Reduces the precision of model weights, making them faster to transfer and process.</li>
-<li><strong>QLoRa:</strong> A memory-efficient training method that further reduces memory footprint compared to standard LoRa.</li>
-</ul></li>
-<li><strong>Example:</strong> The “3090 basement rig” showed significant speed improvements when using these techniques due to a larger achievable batch size.</li>
-</ul>
-</section>
-<section id="impact-of-hardware-on-optimization-strategies" class="level3">
-<h3 class="anchored" data-anchor-id="impact-of-hardware-on-optimization-strategies">Impact of Hardware on Optimization Strategies</h3>
-<ul>
-<li><p><strong>Memory Bandwidth Constraints:</strong> On slower machines or those with limited interconnect bandwidth, optimizing for memory bandwidth is crucial. Techniques like quantization and larger batch sizes yield significant gains.</p></li>
-<li><p><strong>High-End Systems:</strong></p>
-<ul>
-<li>Systems like the H100 with fast NVLink interconnects and ample GPU memory minimize the data transfer bottleneck.</li>
-<li>Model weights can reside in fast GPU memory, even across multiple GPUs, allowing for rapid loading.</li>
-<li>Computation becomes the limiting factor, not memory bandwidth.</li>
-</ul></li>
-<li><p><strong>Example:</strong> In tests on an H100, increasing batch size or using quantization didn’t significantly impact runtime. The bottleneck was compute speed, not data transfer.</p></li>
-</ul>
-</section>
-<section id="adapting-to-hardware-limitations" class="level3">
-<h3 class="anchored" data-anchor-id="adapting-to-hardware-limitations">Adapting to Hardware Limitations</h3>
-<ul>
-<li><strong>Understand Your Hardware:</strong> Identify whether your system is memory-bound or compute-bound.</li>
-<li><strong>Optimize Accordingly:</strong>
-<ul>
-<li><strong>Memory-Bound:</strong> Prioritize techniques like quantization, QLoRa, and increasing batch size to minimize data transfer.</li>
-<li><strong>Compute-Bound:</strong> Focus on maximizing computational efficiency, as data transfer is less of a concern.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="qa-session" class="level2">
-<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
-<section id="cpu-offloading" class="level3">
-<h3 class="anchored" data-anchor-id="cpu-offloading">CPU Offloading</h3>
-<ul>
-<li><p><strong>Question:</strong> Is CPU offloading useful for training or just inference?</p></li>
-<li><p><strong>Answer:</strong> CPU offloading can be beneficial for training large models that exceed single GPU memory, even with multiple GPUs. It allows for larger batch sizes by storing model weights on the CPU and copying them to the GPU as needed. However, it’s less effective with smaller models or abundant GPU memory.</p></li>
-<li><p><strong>Recommendation:</strong> Start with default settings and gradually introduce optimizations like quantization, batch size increases, data parallelism, and sharding, evaluating performance gains at each step.</p></li>
-</ul>
-</section>
-<section id="quantization-sweet-spot" class="level3">
-<h3 class="anchored" data-anchor-id="quantization-sweet-spot">Quantization Sweet Spot</h3>
-<ul>
-<li><p><strong>Question:</strong> How to find the optimal balance between compression and accuracy with quantization?</p></li>
-<li><p><strong>Answer:</strong> Quantization below 4 bits can negatively impact accuracy. Combining 4-bit quantization with LoRA (adapters) often maintains performance comparable to no quantization.</p></li>
-<li><p><strong>Recommendation:</strong> Use 4-bit quantization with LoRA as a starting point. Keep the LoRA in higher precision.</p></li>
-</ul>
-</section>
-<section id="gradient-accumulation" class="level3">
-<h3 class="anchored" data-anchor-id="gradient-accumulation">Gradient Accumulation</h3>
-<ul>
-<li><p><strong>Question:</strong> Clarification on gradient accumulation and micro batch size.</p></li>
-<li><p><strong>Answer:</strong> Gradient accumulation simulates larger batch sizes by accumulating gradients over multiple smaller “micro batches” before updating model weights. This is useful when target batch sizes exceed GPU memory.</p></li>
-<li><p><strong>Example:</strong> To achieve an effective batch size of 32 with a GPU limited to 8 samples, run 4 micro batches of 8 samples each before updating.</p></li>
-<li><p><strong>Recommendation:</strong> Use gradient accumulation to reach a reasonable effective batch size (16, 32, 64), particularly when training with small batch sizes (1 or 2).</p></li>
-</ul>
-</section>
-<section id="multiple-loras" class="level3">
-<h3 class="anchored" data-anchor-id="multiple-loras">Multiple LoRAs</h3>
-<ul>
-<li><p><strong>Question:</strong> Do multiple LoRAs update the same or different model parameters?</p></li>
-<li><p><strong>Answer:</strong> Typically, multiple LoRAs update the same weights. Each LoRA targets specific layers defined in its configuration.</p></li>
-</ul>
-</section>
-</section>
-<section id="recap" class="level2">
-<h2 class="anchored" data-anchor-id="recap">Recap</h2>
-<ul>
-<li><strong>Balancing Act:</strong> Fine-tuning involves minimizing data movement and maximizing computation efficiency.</li>
-<li><strong>Memory Management:</strong>
-<ul>
-<li><strong>LoRA:</strong> Reduces memory by training a smaller set of parameters.</li>
-<li><strong>Quantization:</strong> Stores weights using fewer bits.</li>
-<li><strong>Experimentation:</strong> Key to finding the right trade-offs between memory, speed, and accuracy.</li>
-</ul></li>
-<li><strong>Memory Allocation:</strong>
-<ul>
-<li><strong>Model Size:</strong> Larger models require more memory for weights and gradients.</li>
-<li><strong>Batch Size and Context Length:</strong> Increasing either requires more memory for activations and intermediate values.</li>
-</ul></li>
-<li><strong>Memory Optimization Strategies:</strong>
-<ul>
-<li>Reduce context length if possible.</li>
-<li>Quantize weights.</li>
-<li>Offload to CPU.</li>
-</ul></li>
-<li><strong>Practical Estimation:</strong> Instead of complex formulas, estimate memory requirements based on measurements from a single layer and extrapolate for the entire model.</li>
-</ul>
-
-
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-005/</guid>
-  <pubDate>Sun, 07 Jul 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
