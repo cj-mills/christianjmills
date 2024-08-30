@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-08-30">
+<meta name="description" content="In this talk, Pawell Garbacki from Fireworks.ai covers the process and best practices of finetuning an LLM for function/tool use.">
+
+<title>Christian Mills - Conference Talk 19: Fine Tuning LLMs for Function Calling</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Conference Talk 19: Fine Tuning LLMs for Function Calling">
+<meta property="og:description" content="In this talk, Pawell Garbacki from Fireworks.ai covers the process and best practices of finetuning an LLM for function/tool use.">
+<meta property="og:image" content="https://christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Conference Talk 19: Fine Tuning LLMs for Function Calling">
+<meta name="twitter:description" content="In this talk, Pawell Garbacki from Fireworks.ai covers the process and best practices of finetuning an LLM for function/tool use.">
+<meta name="twitter:image" content="https://christianjmills.com/posts/mastering-llms-course-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#understanding-functiontool-calling" id="toc-understanding-functiontool-calling" class="nav-link" data-scroll-target="#understanding-functiontool-calling">Understanding Function/Tool Calling</a></li>
+  <li><a href="#key-decisions-in-fine-tuning-for-function-calling" id="toc-key-decisions-in-fine-tuning-for-function-calling" class="nav-link" data-scroll-target="#key-decisions-in-fine-tuning-for-function-calling">Key Decisions in Fine-Tuning for Function Calling</a>
+  <ul>
+  <li><a href="#objective-selection" id="toc-objective-selection" class="nav-link" data-scroll-target="#objective-selection">1. Objective Selection:</a></li>
+  <li><a href="#function-call-token" id="toc-function-call-token" class="nav-link" data-scroll-target="#function-call-token">2. Function Call Token:</a></li>
+  <li><a href="#syntax-for-function-calling" id="toc-syntax-for-function-calling" class="nav-link" data-scroll-target="#syntax-for-function-calling">3. Syntax for Function Calling:</a></li>
+  <li><a href="#preserving-existing-model-capabilities" id="toc-preserving-existing-model-capabilities" class="nav-link" data-scroll-target="#preserving-existing-model-capabilities">4. Preserving Existing Model Capabilities:</a></li>
+  <li><a href="#full-weight-tuning-vs.-lora-tuning" id="toc-full-weight-tuning-vs.-lora-tuning" class="nav-link" data-scroll-target="#full-weight-tuning-vs.-lora-tuning">5. Full-Weight Tuning vs.&nbsp;LoRA Tuning:</a></li>
+  <li><a href="#constraint-generation" id="toc-constraint-generation" class="nav-link" data-scroll-target="#constraint-generation">6. Constraint Generation:</a></li>
+  </ul></li>
+  <li><a href="#general-recommendations-and-considerations" id="toc-general-recommendations-and-considerations" class="nav-link" data-scroll-target="#general-recommendations-and-considerations">General Recommendations and Considerations</a></li>
+  <li><a href="#fireworks-ais-fire-function-models" id="toc-fireworks-ais-fire-function-models" class="nav-link" data-scroll-target="#fireworks-ais-fire-function-models">Fireworks AI’s Fire Function Models</a></li>
+  <li><a href="#challenges-in-fine-tuning-for-function-calling" id="toc-challenges-in-fine-tuning-for-function-calling" class="nav-link" data-scroll-target="#challenges-in-fine-tuning-for-function-calling">Challenges in Fine-tuning for Function Calling</a></li>
+  <li><a href="#prompt-templates-for-fine-tuning" id="toc-prompt-templates-for-fine-tuning" class="nav-link" data-scroll-target="#prompt-templates-for-fine-tuning">Prompt Templates for Fine-tuning</a></li>
+  <li><a href="#successful-fine-tuning-examples" id="toc-successful-fine-tuning-examples" class="nav-link" data-scroll-target="#successful-fine-tuning-examples">Successful Fine-tuning Examples</a></li>
+  <li><a href="#function-calling-data-sets-and-evaluation" id="toc-function-calling-data-sets-and-evaluation" class="nav-link" data-scroll-target="#function-calling-data-sets-and-evaluation">Function Calling Data Sets and Evaluation</a></li>
+  <li><a href="#base-models-for-fine-tuning" id="toc-base-models-for-fine-tuning" class="nav-link" data-scroll-target="#base-models-for-fine-tuning">Base Models for Fine-tuning</a></li>
+  <li><a href="#memory-retention-in-long-chains-of-calls" id="toc-memory-retention-in-long-chains-of-calls" class="nav-link" data-scroll-target="#memory-retention-in-long-chains-of-calls">Memory Retention in Long Chains of Calls</a></li>
+  <li><a href="#multi-agent-systems-and-function-calling" id="toc-multi-agent-systems-and-function-calling" class="nav-link" data-scroll-target="#multi-agent-systems-and-function-calling">Multi-Agent Systems and Function Calling</a></li>
+  <li><a href="#comparison-with-gorilla-project" id="toc-comparison-with-gorilla-project" class="nav-link" data-scroll-target="#comparison-with-gorilla-project">Comparison with Gorilla Project</a></li>
+  <li><a href="#smallest-model-for-local-smart-home-assistant" id="toc-smallest-model-for-local-smart-home-assistant" class="nav-link" data-scroll-target="#smallest-model-for-local-smart-home-assistant">Smallest Model for Local Smart Home Assistant</a></li>
+  <li><a href="#function-calling-with-graphql" id="toc-function-calling-with-graphql" class="nav-link" data-scroll-target="#function-calling-with-graphql">Function Calling with GraphQL</a></li>
+  <li><a href="#handling-api-changes" id="toc-handling-api-changes" class="nav-link" data-scroll-target="#handling-api-changes">Handling API Changes</a></li>
+  <li><a href="#synthetic-data-generation-best-practices" id="toc-synthetic-data-generation-best-practices" class="nav-link" data-scroll-target="#synthetic-data-generation-best-practices">Synthetic Data Generation Best Practices</a></li>
+  <li><a href="#importance-of-data-vs.-hyperparameters-vs.-base-model" id="toc-importance-of-data-vs.-hyperparameters-vs.-base-model" class="nav-link" data-scroll-target="#importance-of-data-vs.-hyperparameters-vs.-base-model">Importance of Data vs.&nbsp;Hyperparameters vs.&nbsp;Base Model</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Conference Talk 19: Fine Tuning LLMs for Function Calling</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this talk, <strong>Pawell Garbacki</strong> from <strong>Fireworks.ai</strong> covers the process and best practices of finetuning an LLM for function/tool use.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 30, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">Introduction</h3>
+<ul>
+<li><strong>Pawell</strong>, from <strong><a href="https://fireworks.ai/">Fireworks AI</a></strong>, discusses fine-tuning LLMs for function calling, covering key decisions, challenges, and solutions.</li>
+<li><strong>Documentation:</strong> <a href="https://docs.fireworks.ai/guides/function-calling">Using function-calling</a></li>
+<li><strong>Documentation:</strong> <a href="https://docs.fireworks.ai/fine-tuning/fine-tuning-models">Fine-tuning models</a></li>
+<li><strong>Documentation:</strong> <a href="https://docs.fireworks.ai/structured-responses/structured-output-grammar-based">Using grammar mode</a></li>
+</ul>
+</section>
+<section id="understanding-functiontool-calling" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-functiontool-calling">Understanding Function/Tool Calling</h3>
+<ul>
+<li><strong>Definition:</strong> Giving LLMs the ability to interact with the external world.</li>
+<li><strong>Use Cases:</strong>
+<ul>
+<li><strong>Accessing real-time or unavailable information:</strong> E.g., retrieving current stock prices.</li>
+<li><strong>Orchestrating multi-agent systems:</strong> LLMs can access and utilize multiple tools to assist users.</li>
+</ul></li>
+</ul>
+</section>
+<section id="key-decisions-in-fine-tuning-for-function-calling" class="level3">
+<h3 class="anchored" data-anchor-id="key-decisions-in-fine-tuning-for-function-calling">Key Decisions in Fine-Tuning for Function Calling</h3>
+<section id="objective-selection" class="level4">
+<h4 class="anchored" data-anchor-id="objective-selection">1. Objective Selection:</h4>
+<ul>
+<li><strong>Impact:</strong> The objective significantly impacts data preparation, training data volume, fine-tuning complexity, and model usage.</li>
+<li><strong>Recommendation:</strong> Choose the simplest objective that meets the use case requirements.</li>
+<li><strong>Common Objectives:</strong>
+<ul>
+<li><strong>Single-Turn Forced Call (Routing Use Case):</strong>
+<ul>
+<li>User provides a single instruction.</li>
+<li>Model maps the instruction to one of several pre-defined functions and its parameters.</li>
+<li><strong>Forced Call:</strong> The model is constrained to respond with a function call, not natural language.</li>
+<li><strong>Example:</strong> User requests the current stock price of Nvidia, the model identifies the appropriate function and its parameters.
+<ul>
+<li><pre class="text"><code>User: What is the stock price of Nvidia?
+
+Assistant: {
+  "name": "get_stock_price",
+  "arguments": {"ticker": "NVDA"}
+}</code></pre></li>
+</ul></li>
+</ul></li>
+<li><strong>Parallel Function Calling:</strong>
+<ul>
+<li>Similar to single-turn forced call, but the model can call multiple independent functions in parallel.</li>
+<li><strong>Example:</strong> Retrieving stock prices for multiple companies simultaneously.
+<ul>
+<li><pre class="text"><code>User: What is the stock price of Nvidia and Apple?
+
+Assistant: [
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "NVDA"}
+  },
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "AAPL"}
+  }
+]</code></pre></li>
+</ul></li>
+</ul></li>
+<li><strong>Nested Function Calls:</strong>
+<ul>
+<li>Model calls functions sequentially, with the output of one function feeding into the next.</li>
+<li><strong>Example:</strong> Retrieving stock prices and then using those prices to generate a plot.
+<ul>
+<li><pre class="text"><code>User: Plot the stock price of Nvidia and Apple over the last two weeks
+
+Assistant: [
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "NVDA", "start_time": "2 weeks ago"}
+  },
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "AAPL", "start_time": "2 weeks ago"}
+  }
+]
+
+Tool: {"NVDA": [120, 121, …],"AAPL": [192, 190, …]}
+
+Assistant: {
+  "name": "plot",
+  "arguments": {"NVDA": [120, 121, …],"AAPL": [192, 190, …]}
+}</code></pre></li>
+</ul></li>
+<li><strong>Implementation:</strong>
+<ul>
+<li><strong>User Role:</strong> Client interacting with the model.</li>
+<li><strong>Assistant Role:</strong> The LLM generating function calls.</li>
+<li><strong>Tool Role:</strong> Client-side component that executes function calls and returns results to the model.</li>
+</ul></li>
+</ul></li>
+<li><strong>Multi-Turn Chat with Optional Function Calling:</strong>
+<ul>
+<li>Most complex objective, combining natural language conversation with optional function calls.</li>
+<li><strong>Example:</strong> User asks for news, model fetches trending news, summarizes them, and engages in further conversation.
+<ul>
+<li><pre class="text"><code>User: What's in the news today?
+
+Assistant: {"name": "trending_news"}
+
+Tool: {
+  "headlines": [
+    "Nvidia market cap surpasses Apple", …
+  ]
+}
+
+Assistant: Nvidia is now more valuable than Apple
+
+User: What is Nvidia stock price?
+
+Assistant: {
+  "name": "get_stock_price",
+  "arguments": {"ticker": "NVDA"}
+}</code></pre></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="function-call-token" class="level4">
+<h4 class="anchored" data-anchor-id="function-call-token">2. Function Call Token:</h4>
+<ul>
+<li><strong>Purpose:</strong>
+<ul>
+<li>Indicate to the client when the model is switching to function call mode.</li>
+<li>Enable efficient parsing of model responses, especially in mixed natural language and function call outputs.</li>
+</ul></li>
+<li><strong>Implementation:</strong> Introduce a special token to prefix function calls.
+<ul>
+<li><pre class="text"><code>  Assistant: &lt;function_call_token&gt;{
+    "name": "get_stock_price",
+    "arguments": {"ticker": "NVDA"}
+  }</code></pre></li>
+</ul></li>
+<li><strong>Benefits:</strong>
+<ul>
+<li>Easier parsing of model responses.</li>
+<li>Improved <strong>streaming generation</strong> by enabling the client to wait for the entire function call signature before processing.</li>
+<li>Facilitates <strong>constraint generation</strong>, ensuring the model adheres to predefined function schemas.</li>
+</ul></li>
+</ul>
+</section>
+<section id="syntax-for-function-calling" class="level4">
+<h4 class="anchored" data-anchor-id="syntax-for-function-calling">3. Syntax for Function Calling:</h4>
+<ul>
+<li><strong>Options:</strong>
+<ul>
+<li><strong>Python Syntax:</strong> Generate function calls using Python function call signature syntax.</li>
+<li><strong>JSON Schema:</strong> Generate JSON structures describing the function name and parameters.</li>
+</ul></li>
+<li><strong>Trade-offs:</strong>
+<ul>
+<li><strong>Python Syntax:</strong>
+<ul>
+<li><strong>Advantages:</strong> Easier for LLMs to generate due to extensive training on Python code.</li>
+<li><strong>Disadvantages:</strong> Less natural for representing complex, nested parameter structures within a single-line invocation.</li>
+</ul></li>
+<li><strong>JSON Schema:</strong>
+<ul>
+<li><strong>Advantages:</strong> Better suited for complex, nested parameter types; easier to enforce schema with constraint generation; compatible with OpenAI APIs.</li>
+<li><strong>Disadvantages:</strong> Potentially more challenging for LLMs to generate compared to Python syntax.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="preserving-existing-model-capabilities" class="level4">
+<h4 class="anchored" data-anchor-id="preserving-existing-model-capabilities">4. Preserving Existing Model Capabilities:</h4>
+<ul>
+<li><strong>Challenge:</strong> Fine-tuning for function calling can inadvertently degrade pre-existing instruction following and general language capabilities.</li>
+<li><strong>Recommendations:</strong>
+<ul>
+<li><strong>Fine-tune on Instruction-Tuned Models:</strong> Use the “Instruct” version of the base model instead of the “Base” version when mixing general chat with function calling.
+<ul>
+<li>Using the “Base” version is fine for forced function calling.</li>
+</ul></li>
+<li><strong>Reduce Training Data:</strong> Minimize the amount of training data to reduce the risk of overwriting existing capabilities.</li>
+<li><strong>High-Quality Data:</strong> Use a smaller volume of carefully curated, high-quality training data.</li>
+</ul></li>
+</ul>
+</section>
+<section id="full-weight-tuning-vs.-lora-tuning" class="level4">
+<h4 class="anchored" data-anchor-id="full-weight-tuning-vs.-lora-tuning">5. Full-Weight Tuning vs.&nbsp;LoRA Tuning:</h4>
+<ul>
+<li><strong>Recommendation:</strong> LoRA tuning is generally sufficient and preferable for function calling, particularly in low-data regimes.</li>
+<li><strong>Advantages of LoRA:</strong>
+<ul>
+<li>Fewer parameters to converge, leading to faster training and better results with limited data.</li>
+<li>Faster iteration cycles, enabling more experimentation.</li>
+<li>Lower hosting and experimentation costs, especially with efficient LoRA serving solutions like Fireworks AI’s platform.</li>
+</ul></li>
+</ul>
+</section>
+<section id="constraint-generation" class="level4">
+<h4 class="anchored" data-anchor-id="constraint-generation">6. Constraint Generation:</h4>
+<ul>
+<li><strong>Purpose:</strong> Reduce hallucinations in model-generated function calls by leveraging the known schema of available functions.</li>
+<li><strong>Implementation:</strong>
+<ul>
+<li>Provide the model with the schema of the functions (e.g., function name, parameter names and types).</li>
+<li>Use a constraint generation mechanism (like a <a href="https://web.stanford.edu/class/archive/cs/cs103/cs103.1164/lectures/18/Small18.pdf">context-free grammar</a>) to guide the model’s output and enforce adherence to the schema.</li>
+</ul></li>
+<li><strong>Benefits:</strong>
+<ul>
+<li><strong>Reduced Hallucinations:</strong> Significantly minimizes or even eliminates hallucinations in function call outputs.</li>
+<li><strong>Faster Generation:</strong> Enables short-circuiting generation by autocompleting predictable tokens based on the grammar, improving inference speed.</li>
+</ul></li>
+<li><strong>Fireworks AI:</strong> Offers constraint generation support for function calling, requiring users to provide the function schemas.</li>
+</ul>
+</section>
+</section>
+<section id="general-recommendations-and-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="general-recommendations-and-considerations">General Recommendations and Considerations</h3>
+<ul>
+<li><strong>Work Smart:</strong> Utilize existing open-source function-calling models whenever possible, as they are often sufficient for many use cases.</li>
+<li><strong>Fine-Tuning Effort:</strong> Be prepared for an iterative and potentially time-consuming process when fine-tuning for complex function-calling objectives.</li>
+</ul>
+</section>
+<section id="fireworks-ais-fire-function-models" class="level3">
+<h3 class="anchored" data-anchor-id="fireworks-ais-fire-function-models">Fireworks AI’s Fire Function Models</h3>
+<ul>
+<li><p><strong>Playground:</strong> <a href="https://fireworks.ai/models/fireworks/firefunction-v2">Firefunction V2</a></p></li>
+<li><p><strong>Blog Post:</strong> <a href="https://fireworks.ai/blog/firefunction-v2-launch-post">Firefunction-v2: Function calling capability on par with GPT4o at 2.5x the speed and 10% of the cost</a></p></li>
+<li><p><strong>Fire Function V2:</strong></p>
+<ul>
+<li>Based on LLaMa 3 70B (Instruct variant).</li>
+<li>Outperforms GPT-4 on the Gorilla benchmark.</li>
+<li>Designed to approximate GPT-4’s conversational capabilities mixed with function calling.</li>
+<li>Addresses limitations of existing datasets by leveraging:
+<ul>
+<li>Naturally occurring function-calling conversations.</li>
+<li>Open-source multi-agent system data (e.g., AutoGPT).</li>
+<li>Synthetic datasets with complex instructions and system prompts.</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Benchmark Comparison:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Firefunction v2</th>
+<th>Gpt-4o</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gorilla simple</td>
+<td><strong>0.94</strong></td>
+<td>0.88</td>
+</tr>
+<tr class="even">
+<td>Gorilla multiple_function</td>
+<td>0.91</td>
+<td>0.91</td>
+</tr>
+<tr class="odd">
+<td>Gorilla parallel_function</td>
+<td>0.89</td>
+<td>0.89</td>
+</tr>
+<tr class="even">
+<td>Gorilla parallel_multiple_function</td>
+<td>0.79</td>
+<td>0.72</td>
+</tr>
+<tr class="odd">
+<td>Nexus parallel</td>
+<td>0.53</td>
+<td>0.47</td>
+</tr>
+<tr class="even">
+<td>Mtbench</td>
+<td>0.84</td>
+<td><strong>0.93</strong></td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</section>
+<section id="challenges-in-fine-tuning-for-function-calling" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-in-fine-tuning-for-function-calling">Challenges in Fine-tuning for Function Calling</h3>
+<ul>
+<li><strong>Data Scarcity:</strong> Unlike general language modeling, readily available datasets for function calling are limited.
+<ul>
+<li>Existing datasets often focus on specific use cases (e.g., GPT-4 conversations or a limited number of functions).</li>
+<li><strong>Solution:</strong> Invest in building custom datasets.</li>
+</ul></li>
+<li><strong>Data Set Design:</strong>
+<ul>
+<li><strong>Define Data Categories:</strong> Consider types of function calls (parallel, nested), number of turns, and number of functions supported.
+<ul>
+<li><strong>Parallel function calling:</strong> Multiple functions are called simultaneously.</li>
+<li><strong>Nested function calling:</strong> Functions are called within other functions.</li>
+<li><strong>Turn-based conversations:</strong> Single-turn or multi-turn interactions (e.g., exceeding 10 turns).</li>
+<li><strong>Number of functions supported:</strong> Fine-tuning for a small set of functions (e.g., 5) is different from tuning for a larger set (e.g., 50).</li>
+</ul></li>
+<li><strong>Objective Alignment:</strong> Ensure the dataset represents the model’s intended use cases and boundary conditions.</li>
+<li><strong>Leverage Existing Resources:</strong> Explore open-source datasets (e.g., Glaive) and multi-agent systems (e.g., Autogen) for inspiration and data.
+<ul>
+<li><a href="https://github.com/microsoft/autogen"><strong>Autogen</strong></a>, a multi-agent system, can be a good data source, especially for scenarios with multiple agents and complex prompts.</li>
+</ul></li>
+</ul></li>
+<li><strong>Complex System Prompts:</strong> Real-world applications often require intricate instructions for function selection, which are difficult to find in existing datasets.
+<ul>
+<li><strong>Solution:</strong> Invest in generating synthetic datasets with complex instructions.</li>
+</ul></li>
+<li><strong>Security Concerns:</strong> Allowing arbitrary function calls raises security risks, especially with functions that modify data.
+<ul>
+<li><strong>Mitigation:</strong>
+<ul>
+<li>Focus on read-only functions.</li>
+<li>Include precise instructions in system prompts.</li>
+</ul></li>
+<li><strong>Ongoing Research:</strong> This area requires further exploration as function calling and multi-agent systems become more prevalent.</li>
+</ul></li>
+</ul>
+</section>
+<section id="prompt-templates-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="prompt-templates-for-fine-tuning">Prompt Templates for Fine-tuning</h3>
+<ul>
+<li><strong>System prompts</strong> provide context and instructions to the model.</li>
+<li><strong>General Guidelines:</strong>
+<ul>
+<li><strong>Preserve Instruct Model Capabilities:</strong> When fine-tuning on top of existing instruct models, maintain the prompt format to retain existing capabilities.</li>
+<li><strong>Clear Role Prefixes:</strong> Use distinct prefixes for different roles (e.g., system, user, assistant, tool) in multi-turn conversations.</li>
+</ul></li>
+<li><strong>Message Format:</strong>
+<ul>
+<li><strong>Parsability:</strong> Ensure the format allows easy parsing of function calls by the client.</li>
+<li><strong>Mixed Output Handling:</strong> Use special tokens to delineate between natural language and function call sections in assistant responses.</li>
+</ul></li>
+</ul>
+</section>
+<section id="successful-fine-tuning-examples" class="level3">
+<h3 class="anchored" data-anchor-id="successful-fine-tuning-examples">Successful Fine-tuning Examples</h3>
+<ul>
+<li><strong>GPT-4 Limitations:</strong> Fine-tuning can overcome limitations in existing models, such as character limits in function descriptions.</li>
+<li><strong>Complex Instructions:</strong> Fine-tuning is particularly effective for scenarios with complex instructions on when to call specific functions, even with relatively simple functions.</li>
+</ul>
+</section>
+<section id="function-calling-data-sets-and-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="function-calling-data-sets-and-evaluation">Function Calling Data Sets and Evaluation</h3>
+<ul>
+<li><strong>Datasets:</strong>
+<ul>
+<li><a href="https://huggingface.co/datasets/glaiveai/glaive-function-calling-v2"><strong>Glaive</strong></a><strong>:</strong> High-quality but limited coverage of use cases.</li>
+<li><a href="https://gorilla.cs.berkeley.edu/blogs/7_open_functions_v2.html"><strong>Gorilla</strong></a><strong>:</strong> Simple functions, Python syntax focus.</li>
+<li><a href="https://github.com/nexusflowai/NexusRaven-V2"><strong>Nexus Raven</strong></a><strong>:</strong> More complex parameters, Python focus.</li>
+</ul></li>
+<li><strong>Evaluation:</strong>
+<ul>
+<li><strong><a href="https://gorilla.cs.berkeley.edu/leaderboard.html">Gorilla Leaderboard</a>:</strong> Useful for initial assessment, but consider its limitations (e.g., focus on Python syntax).</li>
+<li><strong><a href="https://huggingface.co/Nexusflow">Nexus Benchmarks</a>:</strong> More challenging than Gorilla.</li>
+<li><strong>Empty Bench:</strong> Evaluates general instruction following without function calling.</li>
+<li><strong>Evaluation Challenges:</strong>
+<ul>
+<li><strong>Real-World Use Case Mismatch:</strong> Benchmarks may not fully capture the complexities of real-world scenarios, such as those requiring precise system prompting and multi-turn conversations.</li>
+</ul></li>
+</ul></li>
+<li><strong>Recommendations:</strong>
+<ul>
+<li><strong>Benchmark Selection:</strong> Start with publicly available benchmarks to get a general idea of the model’s capabilities.</li>
+<li><strong>Real-World Testing:</strong> It’s essential to test and evaluate models on the specific use cases they are intended for.</li>
+<li><strong>Model Selection:</strong> Don’t rely solely on benchmark scores; try out the top-performing models on your own data and use case to determine the best fit.</li>
+</ul></li>
+</ul>
+</section>
+<section id="base-models-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="base-models-for-fine-tuning">Base Models for Fine-tuning</h3>
+<ul>
+<li><strong>Llama 3 &amp; Llama 3.1:</strong> Strong general-purpose models.
+<ul>
+<li><strong>FireFunction V1:</strong> Based on Mistral.</li>
+<li><strong>FireFunction V2:</strong> Based on Llama, showed significant improvement.</li>
+</ul></li>
+<li><strong>Coding Models:</strong> Consider coding-focused models (e.g., Llama 2 Python code generation model) for single-turn, Python-based function calling.</li>
+<li><strong><a href="https://huggingface.co/Qwen">Qwen Models</a>:</strong> Show promise but require further exploration.</li>
+<li><strong>Phi (Microsoft):</strong> Smaller models that perform well for their size and can potentially run without a GPU.</li>
+<li><strong>Model Selection:</strong> Consider the specific objective (e.g., forced function calling, Python syntax) when choosing a base model.</li>
+</ul>
+</section>
+<section id="memory-retention-in-long-chains-of-calls" class="level3">
+<h3 class="anchored" data-anchor-id="memory-retention-in-long-chains-of-calls">Memory Retention in Long Chains of Calls</h3>
+<ul>
+<li><strong>Longer Context Models:</strong> Opt for models with larger context windows (e.g., beyond Llama 3’s 8K context) for extended conversations.
+<ul>
+<li><a href="https://llama.meta.com/">Llama 3.1</a> has 128K content window</li>
+</ul></li>
+<li><strong>Dataset Representation:</strong> Include sufficient long conversation examples in the training data.</li>
+<li><strong>Intelligent Conversation Pruning:</strong>
+<ul>
+<li>Develop algorithms to selectively retain the most relevant messages from previous turns when the conversation exceeds the context window.</li>
+<li>Explore semantic matching techniques to identify relevant past messages.</li>
+</ul></li>
+<li><strong>Whiteboard Approach:</strong>
+<ul>
+<li>Have the model summarize the key aspects of the conversation at the end of each turn.</li>
+<li>Pass only the summary to the model in subsequent turns, effectively resetting the context while retaining essential information.</li>
+</ul></li>
+</ul>
+</section>
+<section id="multi-agent-systems-and-function-calling" class="level3">
+<h3 class="anchored" data-anchor-id="multi-agent-systems-and-function-calling">Multi-Agent Systems and Function Calling</h3>
+<ul>
+<li><p><strong>Function as Agent:</strong> A function can be considered an agent within a multi-agent system, interacting with other agents (potentially other functions or models) to complete tasks.</p></li>
+<li><p><strong>Orchestration:</strong> Multi-agent frameworks like Autogen provide tools for defining agents, extracting function schemas, routing messages, and executing function calls based on model responses.</p></li>
+<li><p><strong>Agent Team Creation:</strong></p>
+<ul>
+<li><strong>Identify Strengths and Weaknesses:</strong> Analyze individual models to understand their capabilities and limitations.</li>
+<li><strong>Define Agent Roles:</strong> Assign roles and responsibilities to each agent based on their strengths.</li>
+<li><strong>Routing Layer:</strong> Design a system for efficiently routing messages and tasks to the appropriate agents.</li>
+<li><strong>Context Management:</strong> Implement mechanisms for sharing and summarizing context between agents, especially in long conversations.</li>
+</ul></li>
+<li><p><strong>Merging Models:</strong> Explore techniques like <strong><a href="https://github.com/arcee-ai/mergekit">MergeKit</a></strong> to combine layers from multiple models, potentially creating more capable composite models.</p></li>
+<li><p><strong>Cost and Latency Optimization:</strong> Consider using smaller, specialized models for specific tasks to reduce cost and latency.</p></li>
+</ul>
+</section>
+<section id="comparison-with-gorilla-project" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-with-gorilla-project">Comparison with Gorilla Project</h3>
+<ul>
+<li><strong>Gorilla:</strong>
+<ul>
+<li>Focuses on single-turn, forced function calling with Python signature generation.</li>
+<li>Supports various function calling scenarios (single, parallel, nested).</li>
+<li>Primarily designed for functions with simple parameters.</li>
+</ul></li>
+<li><strong>FireFunction:</strong>
+<ul>
+<li>Addresses real-world use cases involving complex system prompts and mixed conversations with function calling.</li>
+<li>Handles functions with more complex parameters and instructions.</li>
+</ul></li>
+<li><strong>Benchmarks:</strong> Gorilla leaderboard lacks tasks for complex system prompts and mixed conversation scenarios.</li>
+</ul>
+</section>
+<section id="smallest-model-for-local-smart-home-assistant" class="level3">
+<h3 class="anchored" data-anchor-id="smallest-model-for-local-smart-home-assistant">Smallest Model for Local Smart Home Assistant</h3>
+<ul>
+<li><strong>Challenges:</strong> Running a model locally with hundreds of functions on a resource-constrained device.</li>
+<li><strong>Potential Solutions:</strong>
+<ul>
+<li><strong>Pre-populate KV Cache:</strong> Pre-load function definitions into the model’s KV cache to reduce inference time.</li>
+<li><strong>Function Retrieval with RAG:</strong> Use retrieval augmented generation (RAG) to dynamically select relevant functions based on user input, reducing the number of functions in the prompt.</li>
+<li><strong>Smaller Models:</strong> Explore smaller models like Phi or Qwen2 (2 billion parameters) that can potentially run without a GPU.</li>
+</ul></li>
+</ul>
+</section>
+<section id="function-calling-with-graphql" class="level3">
+<h3 class="anchored" data-anchor-id="function-calling-with-graphql">Function Calling with GraphQL</h3>
+<ul>
+<li><strong>GraphQL as Structured Data:</strong> GraphQL can be treated as a structured data format similar to function call schemas.</li>
+<li><strong>Leveraging Function Calling Models:</strong> Explore using existing function calling models to generate or complete GraphQL queries by defining GraphQL operations as functions.</li>
+<li><strong><a href="https://docs.fireworks.ai/structured-responses/structured-output-grammar-based">Grammar Mode</a>:</strong> Leverage the grammar enforcement capabilities of function calling models to ensure syntactically correct GraphQL queries.</li>
+</ul>
+</section>
+<section id="handling-api-changes" class="level3">
+<h3 class="anchored" data-anchor-id="handling-api-changes">Handling API Changes</h3>
+<ul>
+<li><strong>Canonical Data Format:</strong> Store data in a format that can be easily translated to different API syntaxes.</li>
+<li><strong>Client-Side Translation:</strong> Implement a wrapper around the API to handle syntax conversions, allowing the model to remain agnostic to specific API changes.</li>
+<li><strong>Prompt-Based Function Definitions:</strong> Consider defining functions within the prompt itself. This approach allows for easier updates when APIs change, eliminating the need for retraining.</li>
+</ul>
+</section>
+<section id="synthetic-data-generation-best-practices" class="level3">
+<h3 class="anchored" data-anchor-id="synthetic-data-generation-best-practices">Synthetic Data Generation Best Practices</h3>
+<ul>
+<li><strong>High-Quality Prompt and Seed Data:</strong> Start with well-crafted prompts and a small, high-quality seed dataset.</li>
+<li><strong>Good Generation Model:</strong> Utilize a capable language model for generation, balancing the legal constraints of using closed-source models with the effort required for filtering outputs from open-source models.</li>
+<li><strong>Data Variety over Quantity:</strong> Prioritize diverse use cases and scenarios over a large number of examples for a single case.</li>
+<li><strong>Few-Shot Examples in Prompts:</strong> Include examples of desired outputs in the prompts to guide the generation process.</li>
+<li><strong>Temperature Variation:</strong> Experiment with different temperature settings to encourage creativity and diversity in generated samples.</li>
+<li><strong>Post-Filtering:</strong> Implement filtering mechanisms to remove low-quality or incorrect samples.</li>
+<li><strong>DPO Alignment (Optional):</strong> Use DPO to refine the model’s behavior, especially for complex system prompts, by providing examples of both desired and undesired outputs.</li>
+</ul>
+</section>
+<section id="importance-of-data-vs.-hyperparameters-vs.-base-model" class="level3">
+<h3 class="anchored" data-anchor-id="importance-of-data-vs.-hyperparameters-vs.-base-model">Importance of Data vs.&nbsp;Hyperparameters vs.&nbsp;Base Model</h3>
+<ul>
+<li><strong>Data Quality:</strong> As models become more intelligent and training data becomes smaller, the quality of the data becomes increasingly crucial.</li>
+<li><strong>Hyperparameter Sensitivity:</strong> Smaller datasets often lead to increased sensitivity to hyperparameters, requiring careful tuning.</li>
+<li><strong>Base Model:</strong> The choice of base model significantly impacts performance, especially for specialized tasks like Python code generation.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

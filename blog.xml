@@ -17,7 +17,526 @@
 <width>144</width>
 </image>
 <generator>quarto-1.4.555</generator>
-<lastBuildDate>Thu, 29 Aug 2024 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 30 Aug 2024 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Conference Talk 19: Fine Tuning LLMs for Function Calling</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-019/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">Introduction</h3>
+<ul>
+<li><strong>Pawell</strong>, from <strong><a href="https://fireworks.ai/">Fireworks AI</a></strong>, discusses fine-tuning LLMs for function calling, covering key decisions, challenges, and solutions.</li>
+<li><strong>Documentation:</strong> <a href="https://docs.fireworks.ai/guides/function-calling">Using function-calling</a></li>
+<li><strong>Documentation:</strong> <a href="https://docs.fireworks.ai/fine-tuning/fine-tuning-models">Fine-tuning models</a></li>
+<li><strong>Documentation:</strong> <a href="https://docs.fireworks.ai/structured-responses/structured-output-grammar-based">Using grammar mode</a></li>
+</ul>
+</section>
+<section id="understanding-functiontool-calling" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-functiontool-calling">Understanding Function/Tool Calling</h3>
+<ul>
+<li><strong>Definition:</strong> Giving LLMs the ability to interact with the external world.</li>
+<li><strong>Use Cases:</strong>
+<ul>
+<li><strong>Accessing real-time or unavailable information:</strong> E.g., retrieving current stock prices.</li>
+<li><strong>Orchestrating multi-agent systems:</strong> LLMs can access and utilize multiple tools to assist users.</li>
+</ul></li>
+</ul>
+</section>
+<section id="key-decisions-in-fine-tuning-for-function-calling" class="level3">
+<h3 class="anchored" data-anchor-id="key-decisions-in-fine-tuning-for-function-calling">Key Decisions in Fine-Tuning for Function Calling</h3>
+<section id="objective-selection" class="level4">
+<h4 class="anchored" data-anchor-id="objective-selection">1. Objective Selection:</h4>
+<ul>
+<li><strong>Impact:</strong> The objective significantly impacts data preparation, training data volume, fine-tuning complexity, and model usage.</li>
+<li><strong>Recommendation:</strong> Choose the simplest objective that meets the use case requirements.</li>
+<li><strong>Common Objectives:</strong>
+<ul>
+<li><strong>Single-Turn Forced Call (Routing Use Case):</strong>
+<ul>
+<li>User provides a single instruction.</li>
+<li>Model maps the instruction to one of several pre-defined functions and its parameters.</li>
+<li><strong>Forced Call:</strong> The model is constrained to respond with a function call, not natural language.</li>
+<li><strong>Example:</strong> User requests the current stock price of Nvidia, the model identifies the appropriate function and its parameters.
+<ul>
+<li><pre class="text"><code>User: What is the stock price of Nvidia?
+
+Assistant: {
+  "name": "get_stock_price",
+  "arguments": {"ticker": "NVDA"}
+}</code></pre></li>
+</ul></li>
+</ul></li>
+<li><strong>Parallel Function Calling:</strong>
+<ul>
+<li>Similar to single-turn forced call, but the model can call multiple independent functions in parallel.</li>
+<li><strong>Example:</strong> Retrieving stock prices for multiple companies simultaneously.
+<ul>
+<li><pre class="text"><code>User: What is the stock price of Nvidia and Apple?
+
+Assistant: [
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "NVDA"}
+  },
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "AAPL"}
+  }
+]</code></pre></li>
+</ul></li>
+</ul></li>
+<li><strong>Nested Function Calls:</strong>
+<ul>
+<li>Model calls functions sequentially, with the output of one function feeding into the next.</li>
+<li><strong>Example:</strong> Retrieving stock prices and then using those prices to generate a plot.
+<ul>
+<li><pre class="text"><code>User: Plot the stock price of Nvidia and Apple over the last two weeks
+
+Assistant: [
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "NVDA", "start_time": "2 weeks ago"}
+  },
+  {
+    "name": "get_stock_price",
+    "arguments": {"ticker": "AAPL", "start_time": "2 weeks ago"}
+  }
+]
+
+Tool: {"NVDA": [120, 121, …],"AAPL": [192, 190, …]}
+
+Assistant: {
+  "name": "plot",
+  "arguments": {"NVDA": [120, 121, …],"AAPL": [192, 190, …]}
+}</code></pre></li>
+</ul></li>
+<li><strong>Implementation:</strong>
+<ul>
+<li><strong>User Role:</strong> Client interacting with the model.</li>
+<li><strong>Assistant Role:</strong> The LLM generating function calls.</li>
+<li><strong>Tool Role:</strong> Client-side component that executes function calls and returns results to the model.</li>
+</ul></li>
+</ul></li>
+<li><strong>Multi-Turn Chat with Optional Function Calling:</strong>
+<ul>
+<li>Most complex objective, combining natural language conversation with optional function calls.</li>
+<li><strong>Example:</strong> User asks for news, model fetches trending news, summarizes them, and engages in further conversation.
+<ul>
+<li><pre class="text"><code>User: What's in the news today?
+
+Assistant: {"name": "trending_news"}
+
+Tool: {
+  "headlines": [
+    "Nvidia market cap surpasses Apple", …
+  ]
+}
+
+Assistant: Nvidia is now more valuable than Apple
+
+User: What is Nvidia stock price?
+
+Assistant: {
+  "name": "get_stock_price",
+  "arguments": {"ticker": "NVDA"}
+}</code></pre></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="function-call-token" class="level4">
+<h4 class="anchored" data-anchor-id="function-call-token">2. Function Call Token:</h4>
+<ul>
+<li><strong>Purpose:</strong>
+<ul>
+<li>Indicate to the client when the model is switching to function call mode.</li>
+<li>Enable efficient parsing of model responses, especially in mixed natural language and function call outputs.</li>
+</ul></li>
+<li><strong>Implementation:</strong> Introduce a special token to prefix function calls.
+<ul>
+<li><pre class="text"><code>  Assistant: &lt;function_call_token&gt;{
+    "name": "get_stock_price",
+    "arguments": {"ticker": "NVDA"}
+  }</code></pre></li>
+</ul></li>
+<li><strong>Benefits:</strong>
+<ul>
+<li>Easier parsing of model responses.</li>
+<li>Improved <strong>streaming generation</strong> by enabling the client to wait for the entire function call signature before processing.</li>
+<li>Facilitates <strong>constraint generation</strong>, ensuring the model adheres to predefined function schemas.</li>
+</ul></li>
+</ul>
+</section>
+<section id="syntax-for-function-calling" class="level4">
+<h4 class="anchored" data-anchor-id="syntax-for-function-calling">3. Syntax for Function Calling:</h4>
+<ul>
+<li><strong>Options:</strong>
+<ul>
+<li><strong>Python Syntax:</strong> Generate function calls using Python function call signature syntax.</li>
+<li><strong>JSON Schema:</strong> Generate JSON structures describing the function name and parameters.</li>
+</ul></li>
+<li><strong>Trade-offs:</strong>
+<ul>
+<li><strong>Python Syntax:</strong>
+<ul>
+<li><strong>Advantages:</strong> Easier for LLMs to generate due to extensive training on Python code.</li>
+<li><strong>Disadvantages:</strong> Less natural for representing complex, nested parameter structures within a single-line invocation.</li>
+</ul></li>
+<li><strong>JSON Schema:</strong>
+<ul>
+<li><strong>Advantages:</strong> Better suited for complex, nested parameter types; easier to enforce schema with constraint generation; compatible with OpenAI APIs.</li>
+<li><strong>Disadvantages:</strong> Potentially more challenging for LLMs to generate compared to Python syntax.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="preserving-existing-model-capabilities" class="level4">
+<h4 class="anchored" data-anchor-id="preserving-existing-model-capabilities">4. Preserving Existing Model Capabilities:</h4>
+<ul>
+<li><strong>Challenge:</strong> Fine-tuning for function calling can inadvertently degrade pre-existing instruction following and general language capabilities.</li>
+<li><strong>Recommendations:</strong>
+<ul>
+<li><strong>Fine-tune on Instruction-Tuned Models:</strong> Use the “Instruct” version of the base model instead of the “Base” version when mixing general chat with function calling.
+<ul>
+<li>Using the “Base” version is fine for forced function calling.</li>
+</ul></li>
+<li><strong>Reduce Training Data:</strong> Minimize the amount of training data to reduce the risk of overwriting existing capabilities.</li>
+<li><strong>High-Quality Data:</strong> Use a smaller volume of carefully curated, high-quality training data.</li>
+</ul></li>
+</ul>
+</section>
+<section id="full-weight-tuning-vs.-lora-tuning" class="level4">
+<h4 class="anchored" data-anchor-id="full-weight-tuning-vs.-lora-tuning">5. Full-Weight Tuning vs.&nbsp;LoRA Tuning:</h4>
+<ul>
+<li><strong>Recommendation:</strong> LoRA tuning is generally sufficient and preferable for function calling, particularly in low-data regimes.</li>
+<li><strong>Advantages of LoRA:</strong>
+<ul>
+<li>Fewer parameters to converge, leading to faster training and better results with limited data.</li>
+<li>Faster iteration cycles, enabling more experimentation.</li>
+<li>Lower hosting and experimentation costs, especially with efficient LoRA serving solutions like Fireworks AI’s platform.</li>
+</ul></li>
+</ul>
+</section>
+<section id="constraint-generation" class="level4">
+<h4 class="anchored" data-anchor-id="constraint-generation">6. Constraint Generation:</h4>
+<ul>
+<li><strong>Purpose:</strong> Reduce hallucinations in model-generated function calls by leveraging the known schema of available functions.</li>
+<li><strong>Implementation:</strong>
+<ul>
+<li>Provide the model with the schema of the functions (e.g., function name, parameter names and types).</li>
+<li>Use a constraint generation mechanism (like a <a href="https://web.stanford.edu/class/archive/cs/cs103/cs103.1164/lectures/18/Small18.pdf">context-free grammar</a>) to guide the model’s output and enforce adherence to the schema.</li>
+</ul></li>
+<li><strong>Benefits:</strong>
+<ul>
+<li><strong>Reduced Hallucinations:</strong> Significantly minimizes or even eliminates hallucinations in function call outputs.</li>
+<li><strong>Faster Generation:</strong> Enables short-circuiting generation by autocompleting predictable tokens based on the grammar, improving inference speed.</li>
+</ul></li>
+<li><strong>Fireworks AI:</strong> Offers constraint generation support for function calling, requiring users to provide the function schemas.</li>
+</ul>
+</section>
+</section>
+<section id="general-recommendations-and-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="general-recommendations-and-considerations">General Recommendations and Considerations</h3>
+<ul>
+<li><strong>Work Smart:</strong> Utilize existing open-source function-calling models whenever possible, as they are often sufficient for many use cases.</li>
+<li><strong>Fine-Tuning Effort:</strong> Be prepared for an iterative and potentially time-consuming process when fine-tuning for complex function-calling objectives.</li>
+</ul>
+</section>
+<section id="fireworks-ais-fire-function-models" class="level3">
+<h3 class="anchored" data-anchor-id="fireworks-ais-fire-function-models">Fireworks AI’s Fire Function Models</h3>
+<ul>
+<li><p><strong>Playground:</strong> <a href="https://fireworks.ai/models/fireworks/firefunction-v2">Firefunction V2</a></p></li>
+<li><p><strong>Blog Post:</strong> <a href="https://fireworks.ai/blog/firefunction-v2-launch-post">Firefunction-v2: Function calling capability on par with GPT4o at 2.5x the speed and 10% of the cost</a></p></li>
+<li><p><strong>Fire Function V2:</strong></p>
+<ul>
+<li>Based on LLaMa 3 70B (Instruct variant).</li>
+<li>Outperforms GPT-4 on the Gorilla benchmark.</li>
+<li>Designed to approximate GPT-4’s conversational capabilities mixed with function calling.</li>
+<li>Addresses limitations of existing datasets by leveraging:
+<ul>
+<li>Naturally occurring function-calling conversations.</li>
+<li>Open-source multi-agent system data (e.g., AutoGPT).</li>
+<li>Synthetic datasets with complex instructions and system prompts.</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Benchmark Comparison:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Firefunction v2</th>
+<th>Gpt-4o</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gorilla simple</td>
+<td><strong>0.94</strong></td>
+<td>0.88</td>
+</tr>
+<tr class="even">
+<td>Gorilla multiple_function</td>
+<td>0.91</td>
+<td>0.91</td>
+</tr>
+<tr class="odd">
+<td>Gorilla parallel_function</td>
+<td>0.89</td>
+<td>0.89</td>
+</tr>
+<tr class="even">
+<td>Gorilla parallel_multiple_function</td>
+<td>0.79</td>
+<td>0.72</td>
+</tr>
+<tr class="odd">
+<td>Nexus parallel</td>
+<td>0.53</td>
+<td>0.47</td>
+</tr>
+<tr class="even">
+<td>Mtbench</td>
+<td>0.84</td>
+<td><strong>0.93</strong></td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</section>
+<section id="challenges-in-fine-tuning-for-function-calling" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-in-fine-tuning-for-function-calling">Challenges in Fine-tuning for Function Calling</h3>
+<ul>
+<li><strong>Data Scarcity:</strong> Unlike general language modeling, readily available datasets for function calling are limited.
+<ul>
+<li>Existing datasets often focus on specific use cases (e.g., GPT-4 conversations or a limited number of functions).</li>
+<li><strong>Solution:</strong> Invest in building custom datasets.</li>
+</ul></li>
+<li><strong>Data Set Design:</strong>
+<ul>
+<li><strong>Define Data Categories:</strong> Consider types of function calls (parallel, nested), number of turns, and number of functions supported.
+<ul>
+<li><strong>Parallel function calling:</strong> Multiple functions are called simultaneously.</li>
+<li><strong>Nested function calling:</strong> Functions are called within other functions.</li>
+<li><strong>Turn-based conversations:</strong> Single-turn or multi-turn interactions (e.g., exceeding 10 turns).</li>
+<li><strong>Number of functions supported:</strong> Fine-tuning for a small set of functions (e.g., 5) is different from tuning for a larger set (e.g., 50).</li>
+</ul></li>
+<li><strong>Objective Alignment:</strong> Ensure the dataset represents the model’s intended use cases and boundary conditions.</li>
+<li><strong>Leverage Existing Resources:</strong> Explore open-source datasets (e.g., Glaive) and multi-agent systems (e.g., Autogen) for inspiration and data.
+<ul>
+<li><a href="https://github.com/microsoft/autogen"><strong>Autogen</strong></a>, a multi-agent system, can be a good data source, especially for scenarios with multiple agents and complex prompts.</li>
+</ul></li>
+</ul></li>
+<li><strong>Complex System Prompts:</strong> Real-world applications often require intricate instructions for function selection, which are difficult to find in existing datasets.
+<ul>
+<li><strong>Solution:</strong> Invest in generating synthetic datasets with complex instructions.</li>
+</ul></li>
+<li><strong>Security Concerns:</strong> Allowing arbitrary function calls raises security risks, especially with functions that modify data.
+<ul>
+<li><strong>Mitigation:</strong>
+<ul>
+<li>Focus on read-only functions.</li>
+<li>Include precise instructions in system prompts.</li>
+</ul></li>
+<li><strong>Ongoing Research:</strong> This area requires further exploration as function calling and multi-agent systems become more prevalent.</li>
+</ul></li>
+</ul>
+</section>
+<section id="prompt-templates-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="prompt-templates-for-fine-tuning">Prompt Templates for Fine-tuning</h3>
+<ul>
+<li><strong>System prompts</strong> provide context and instructions to the model.</li>
+<li><strong>General Guidelines:</strong>
+<ul>
+<li><strong>Preserve Instruct Model Capabilities:</strong> When fine-tuning on top of existing instruct models, maintain the prompt format to retain existing capabilities.</li>
+<li><strong>Clear Role Prefixes:</strong> Use distinct prefixes for different roles (e.g., system, user, assistant, tool) in multi-turn conversations.</li>
+</ul></li>
+<li><strong>Message Format:</strong>
+<ul>
+<li><strong>Parsability:</strong> Ensure the format allows easy parsing of function calls by the client.</li>
+<li><strong>Mixed Output Handling:</strong> Use special tokens to delineate between natural language and function call sections in assistant responses.</li>
+</ul></li>
+</ul>
+</section>
+<section id="successful-fine-tuning-examples" class="level3">
+<h3 class="anchored" data-anchor-id="successful-fine-tuning-examples">Successful Fine-tuning Examples</h3>
+<ul>
+<li><strong>GPT-4 Limitations:</strong> Fine-tuning can overcome limitations in existing models, such as character limits in function descriptions.</li>
+<li><strong>Complex Instructions:</strong> Fine-tuning is particularly effective for scenarios with complex instructions on when to call specific functions, even with relatively simple functions.</li>
+</ul>
+</section>
+<section id="function-calling-data-sets-and-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="function-calling-data-sets-and-evaluation">Function Calling Data Sets and Evaluation</h3>
+<ul>
+<li><strong>Datasets:</strong>
+<ul>
+<li><a href="https://huggingface.co/datasets/glaiveai/glaive-function-calling-v2"><strong>Glaive</strong></a><strong>:</strong> High-quality but limited coverage of use cases.</li>
+<li><a href="https://gorilla.cs.berkeley.edu/blogs/7_open_functions_v2.html"><strong>Gorilla</strong></a><strong>:</strong> Simple functions, Python syntax focus.</li>
+<li><a href="https://github.com/nexusflowai/NexusRaven-V2"><strong>Nexus Raven</strong></a><strong>:</strong> More complex parameters, Python focus.</li>
+</ul></li>
+<li><strong>Evaluation:</strong>
+<ul>
+<li><strong><a href="https://gorilla.cs.berkeley.edu/leaderboard.html">Gorilla Leaderboard</a>:</strong> Useful for initial assessment, but consider its limitations (e.g., focus on Python syntax).</li>
+<li><strong><a href="https://huggingface.co/Nexusflow">Nexus Benchmarks</a>:</strong> More challenging than Gorilla.</li>
+<li><strong>Empty Bench:</strong> Evaluates general instruction following without function calling.</li>
+<li><strong>Evaluation Challenges:</strong>
+<ul>
+<li><strong>Real-World Use Case Mismatch:</strong> Benchmarks may not fully capture the complexities of real-world scenarios, such as those requiring precise system prompting and multi-turn conversations.</li>
+</ul></li>
+</ul></li>
+<li><strong>Recommendations:</strong>
+<ul>
+<li><strong>Benchmark Selection:</strong> Start with publicly available benchmarks to get a general idea of the model’s capabilities.</li>
+<li><strong>Real-World Testing:</strong> It’s essential to test and evaluate models on the specific use cases they are intended for.</li>
+<li><strong>Model Selection:</strong> Don’t rely solely on benchmark scores; try out the top-performing models on your own data and use case to determine the best fit.</li>
+</ul></li>
+</ul>
+</section>
+<section id="base-models-for-fine-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="base-models-for-fine-tuning">Base Models for Fine-tuning</h3>
+<ul>
+<li><strong>Llama 3 &amp; Llama 3.1:</strong> Strong general-purpose models.
+<ul>
+<li><strong>FireFunction V1:</strong> Based on Mistral.</li>
+<li><strong>FireFunction V2:</strong> Based on Llama, showed significant improvement.</li>
+</ul></li>
+<li><strong>Coding Models:</strong> Consider coding-focused models (e.g., Llama 2 Python code generation model) for single-turn, Python-based function calling.</li>
+<li><strong><a href="https://huggingface.co/Qwen">Qwen Models</a>:</strong> Show promise but require further exploration.</li>
+<li><strong>Phi (Microsoft):</strong> Smaller models that perform well for their size and can potentially run without a GPU.</li>
+<li><strong>Model Selection:</strong> Consider the specific objective (e.g., forced function calling, Python syntax) when choosing a base model.</li>
+</ul>
+</section>
+<section id="memory-retention-in-long-chains-of-calls" class="level3">
+<h3 class="anchored" data-anchor-id="memory-retention-in-long-chains-of-calls">Memory Retention in Long Chains of Calls</h3>
+<ul>
+<li><strong>Longer Context Models:</strong> Opt for models with larger context windows (e.g., beyond Llama 3’s 8K context) for extended conversations.
+<ul>
+<li><a href="https://llama.meta.com/">Llama 3.1</a> has 128K content window</li>
+</ul></li>
+<li><strong>Dataset Representation:</strong> Include sufficient long conversation examples in the training data.</li>
+<li><strong>Intelligent Conversation Pruning:</strong>
+<ul>
+<li>Develop algorithms to selectively retain the most relevant messages from previous turns when the conversation exceeds the context window.</li>
+<li>Explore semantic matching techniques to identify relevant past messages.</li>
+</ul></li>
+<li><strong>Whiteboard Approach:</strong>
+<ul>
+<li>Have the model summarize the key aspects of the conversation at the end of each turn.</li>
+<li>Pass only the summary to the model in subsequent turns, effectively resetting the context while retaining essential information.</li>
+</ul></li>
+</ul>
+</section>
+<section id="multi-agent-systems-and-function-calling" class="level3">
+<h3 class="anchored" data-anchor-id="multi-agent-systems-and-function-calling">Multi-Agent Systems and Function Calling</h3>
+<ul>
+<li><p><strong>Function as Agent:</strong> A function can be considered an agent within a multi-agent system, interacting with other agents (potentially other functions or models) to complete tasks.</p></li>
+<li><p><strong>Orchestration:</strong> Multi-agent frameworks like Autogen provide tools for defining agents, extracting function schemas, routing messages, and executing function calls based on model responses.</p></li>
+<li><p><strong>Agent Team Creation:</strong></p>
+<ul>
+<li><strong>Identify Strengths and Weaknesses:</strong> Analyze individual models to understand their capabilities and limitations.</li>
+<li><strong>Define Agent Roles:</strong> Assign roles and responsibilities to each agent based on their strengths.</li>
+<li><strong>Routing Layer:</strong> Design a system for efficiently routing messages and tasks to the appropriate agents.</li>
+<li><strong>Context Management:</strong> Implement mechanisms for sharing and summarizing context between agents, especially in long conversations.</li>
+</ul></li>
+<li><p><strong>Merging Models:</strong> Explore techniques like <strong><a href="https://github.com/arcee-ai/mergekit">MergeKit</a></strong> to combine layers from multiple models, potentially creating more capable composite models.</p></li>
+<li><p><strong>Cost and Latency Optimization:</strong> Consider using smaller, specialized models for specific tasks to reduce cost and latency.</p></li>
+</ul>
+</section>
+<section id="comparison-with-gorilla-project" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-with-gorilla-project">Comparison with Gorilla Project</h3>
+<ul>
+<li><strong>Gorilla:</strong>
+<ul>
+<li>Focuses on single-turn, forced function calling with Python signature generation.</li>
+<li>Supports various function calling scenarios (single, parallel, nested).</li>
+<li>Primarily designed for functions with simple parameters.</li>
+</ul></li>
+<li><strong>FireFunction:</strong>
+<ul>
+<li>Addresses real-world use cases involving complex system prompts and mixed conversations with function calling.</li>
+<li>Handles functions with more complex parameters and instructions.</li>
+</ul></li>
+<li><strong>Benchmarks:</strong> Gorilla leaderboard lacks tasks for complex system prompts and mixed conversation scenarios.</li>
+</ul>
+</section>
+<section id="smallest-model-for-local-smart-home-assistant" class="level3">
+<h3 class="anchored" data-anchor-id="smallest-model-for-local-smart-home-assistant">Smallest Model for Local Smart Home Assistant</h3>
+<ul>
+<li><strong>Challenges:</strong> Running a model locally with hundreds of functions on a resource-constrained device.</li>
+<li><strong>Potential Solutions:</strong>
+<ul>
+<li><strong>Pre-populate KV Cache:</strong> Pre-load function definitions into the model’s KV cache to reduce inference time.</li>
+<li><strong>Function Retrieval with RAG:</strong> Use retrieval augmented generation (RAG) to dynamically select relevant functions based on user input, reducing the number of functions in the prompt.</li>
+<li><strong>Smaller Models:</strong> Explore smaller models like Phi or Qwen2 (2 billion parameters) that can potentially run without a GPU.</li>
+</ul></li>
+</ul>
+</section>
+<section id="function-calling-with-graphql" class="level3">
+<h3 class="anchored" data-anchor-id="function-calling-with-graphql">Function Calling with GraphQL</h3>
+<ul>
+<li><strong>GraphQL as Structured Data:</strong> GraphQL can be treated as a structured data format similar to function call schemas.</li>
+<li><strong>Leveraging Function Calling Models:</strong> Explore using existing function calling models to generate or complete GraphQL queries by defining GraphQL operations as functions.</li>
+<li><strong><a href="https://docs.fireworks.ai/structured-responses/structured-output-grammar-based">Grammar Mode</a>:</strong> Leverage the grammar enforcement capabilities of function calling models to ensure syntactically correct GraphQL queries.</li>
+</ul>
+</section>
+<section id="handling-api-changes" class="level3">
+<h3 class="anchored" data-anchor-id="handling-api-changes">Handling API Changes</h3>
+<ul>
+<li><strong>Canonical Data Format:</strong> Store data in a format that can be easily translated to different API syntaxes.</li>
+<li><strong>Client-Side Translation:</strong> Implement a wrapper around the API to handle syntax conversions, allowing the model to remain agnostic to specific API changes.</li>
+<li><strong>Prompt-Based Function Definitions:</strong> Consider defining functions within the prompt itself. This approach allows for easier updates when APIs change, eliminating the need for retraining.</li>
+</ul>
+</section>
+<section id="synthetic-data-generation-best-practices" class="level3">
+<h3 class="anchored" data-anchor-id="synthetic-data-generation-best-practices">Synthetic Data Generation Best Practices</h3>
+<ul>
+<li><strong>High-Quality Prompt and Seed Data:</strong> Start with well-crafted prompts and a small, high-quality seed dataset.</li>
+<li><strong>Good Generation Model:</strong> Utilize a capable language model for generation, balancing the legal constraints of using closed-source models with the effort required for filtering outputs from open-source models.</li>
+<li><strong>Data Variety over Quantity:</strong> Prioritize diverse use cases and scenarios over a large number of examples for a single case.</li>
+<li><strong>Few-Shot Examples in Prompts:</strong> Include examples of desired outputs in the prompts to guide the generation process.</li>
+<li><strong>Temperature Variation:</strong> Experiment with different temperature settings to encourage creativity and diversity in generated samples.</li>
+<li><strong>Post-Filtering:</strong> Implement filtering mechanisms to remove low-quality or incorrect samples.</li>
+<li><strong>DPO Alignment (Optional):</strong> Use DPO to refine the model’s behavior, especially for complex system prompts, by providing examples of both desired and undesired outputs.</li>
+</ul>
+</section>
+<section id="importance-of-data-vs.-hyperparameters-vs.-base-model" class="level3">
+<h3 class="anchored" data-anchor-id="importance-of-data-vs.-hyperparameters-vs.-base-model">Importance of Data vs.&nbsp;Hyperparameters vs.&nbsp;Base Model</h3>
+<ul>
+<li><strong>Data Quality:</strong> As models become more intelligent and training data becomes smaller, the quality of the data becomes increasingly crucial.</li>
+<li><strong>Hyperparameter Sensitivity:</strong> Smaller datasets often lead to increased sensitivity to hyperparameters, requiring careful tuning.</li>
+<li><strong>Base Model:</strong> The choice of base model significantly impacts performance, especially for specialized tasks like Python code generation.</li>
+</ul>
+
+
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>llms</category>
+  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-019/</guid>
+  <pubDate>Fri, 30 Aug 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Office Hours 8: Predibase</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -21434,265 +21953,6 @@ font-style: inherit;">"['sli.latency', 'duration_ms', 'net.transport', 'http.met
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/workshop-004/</guid>
   <pubDate>Wed, 17 Jul 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Conference Talk 6: Train Almost Any LLM Model Using 🤗 autotrain</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-006/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<ul>
-<li>Introduction to AutoTrain</li>
-<li>Getting Started with AutoTrain</li>
-<li>Fine-tuning LLMs with AutoTrain</li>
-<li>Training Your Model</li>
-<li>Config Files and Advanced Options</li>
-<li>Additional Features and Considerations</li>
-<li>Q&amp;A Session</li>
-</ul>
-<section id="introduction-to-autotrain" class="level2">
-<h2 class="anchored" data-anchor-id="introduction-to-autotrain">Introduction to AutoTrain</h2>
-<ul>
-<li><strong>Homepage:</strong> <a href="https://huggingface.co/autotrain">https://huggingface.co/autotrain</a></li>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/autotrain/index">https://huggingface.co/docs/autotrain/index</a></li>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/huggingface/autotrain-advanced">autotrain-advanced</a></li>
-<li>Simplifies model training and fine-tuning for users with varying levels of expertise, from beginners to experienced data scientists.</li>
-<li><strong>Supported Tasks:</strong>
-<ul>
-<li><strong>NLP:</strong> Token classification, text classification, LLM tasks (e.g., SFT, R4, DPO, reward tuning), sentence transformer fine-tuning, etc.</li>
-<li><strong>Computer Vision:</strong> Image classification, Object Detection</li>
-<li><strong>Tabular Data:</strong> Classification, Regression</li>
-</ul></li>
-<li>Leverages the Hugging Face ecosystem, including transformers, datasets, diffusers, and Accelerate, ensuring compatibility with the latest models and tools.</li>
-</ul>
-</section>
-<section id="getting-started-with-autotrain" class="level2">
-<h2 class="anchored" data-anchor-id="getting-started-with-autotrain">Getting Started with AutoTrain</h2>
-<ul>
-<li><strong>Create a new project:</strong>
-<ul>
-<li><strong>Link:</strong> <a href="https://huggingface.co/login?next=%2Fspaces%2Fautotrain-projects%2Fautotrain-advanced%3Fduplicate%3Dtrue"><code>Create new project</code></a></li>
-<li>Optionally specify an organization and attach hardware (local or Hugging Face spaces).</li>
-<li>Choose the desired task (e.g., LLM SFT).</li>
-</ul></li>
-<li><strong>User-Friendly Interface:</strong>
-<ul>
-<li>Select a task.</li>
-<li>Upload your data or use a dataset from the Hugging Face Hub.</li>
-<li>Configure parameters or use default settings.</li>
-<li>Monitor training progress and logs.</li>
-</ul></li>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/autotrain/quickstart_spaces#creating-a-new-autotrain-space">Creating a New AutoTrain Space</a></li>
-</ul>
-</section>
-<section id="fine-tuning-llms-with-autotrain" class="level2">
-<h2 class="anchored" data-anchor-id="fine-tuning-llms-with-autotrain">Fine-tuning LLMs with AutoTrain</h2>
-<section id="supervised-fine-tuning-sft-and-generic-fine-tuning" class="level3">
-<h3 class="anchored" data-anchor-id="supervised-fine-tuning-sft-and-generic-fine-tuning">Supervised Fine-tuning (SFT) and Generic Fine-tuning</h3>
-<ul>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/trl/main/en/sft_trainer">Supervised Fine-tuning Trainer</a></li>
-<li>Both trainers are similar, but SFT uses the TRL library’s SFT trainer.
-<ul>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/trl/main/en/index">TRL - Transformer Reinforcement Learning</a></li>
-</ul></li>
-<li>Requires a “text” column in your dataset (can be mapped from a different column name).</li>
-<li>Supports chat template formatting (chatML, Sapphire, tokenizer’s template).</li>
-<li><strong>Example datasets:</strong>
-<ul>
-<li><a href="Salesforce/wikitext">Salesforce/wikitext</a>: plain text format</li>
-<li>Chat format with “content” and “role” fields (requires chat template).</li>
-</ul></li>
-</ul>
-</section>
-<section id="reward-modeling" class="level3">
-<h3 class="anchored" data-anchor-id="reward-modeling">Reward Modeling</h3>
-<ul>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/trl/main/en/reward_trainer">Reward Modeling</a></li>
-<li>Trains a custom reward model for sequence classification.</li>
-<li>Dataset requires “chosen” and “rejected” text columns.</li>
-</ul>
-</section>
-<section id="dpo-and-orpo" class="level3">
-<h3 class="anchored" data-anchor-id="dpo-and-orpo">DPO and ORPO</h3>
-<ul>
-<li><strong>DPO - Direct Preference Optimization</strong>
-<ul>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/trl/main/en/dpo_trainer">DPO Trainer</a></li>
-</ul></li>
-<li><strong>ORPO - Odds Ratio Preference Optimization</strong>
-<ul>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/trl/main/en/orpo_trainer">ORPO Trainer</a></li>
-</ul></li>
-<li>ORPO is recommended over DPO as it requires less memory and compute.</li>
-<li>Dataset requires “prompt,” “chosen,” and “rejected” columns (all conversations).</li>
-<li>Supports chat templates.</li>
-</ul>
-</section>
-</section>
-<section id="training-your-model" class="level2">
-<h2 class="anchored" data-anchor-id="training-your-model">Training Your Model</h2>
-<section id="data-format" class="level3">
-<h3 class="anchored" data-anchor-id="data-format">Data Format</h3>
-<ul>
-<li>Use CSV or JSON Lines (JSONL) format
-<ul>
-<li>JSONL preferred for readability and ease of use.</li>
-</ul></li>
-<li><strong>Format examples:</strong>
-<ul>
-<li>Alpaca dataset: Single “text” field with formatted text (no chat template needed).</li>
-<li>Chat format: Requires chat template or offline conversion to plain text.</li>
-</ul></li>
-</ul>
-</section>
-<section id="training-locally" class="level3">
-<h3 class="anchored" data-anchor-id="training-locally">Training Locally</h3>
-<ul>
-<li><p><strong>Documentation:</strong> <a href="https://huggingface.co/docs/autotrain/quickstart">Quickstart</a></p></li>
-<li><p>Set Hugging Face token:</p>
-<ul>
-<li><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1">  <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">export</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">HF_TOKEN</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=&lt;</span>your_token<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;</span></span></code></pre></div></li>
-</ul></li>
-<li><p>Run the AutoTrain app: <code>autotrain app</code></p>
-<ul>
-<li><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">autotrain</span> app <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">--port</span> 8080 <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">--host</span> 127.0.0.1</span></code></pre></div></li>
-</ul></li>
-<li><p>Alternatively, use config files or CLI commands.</p>
-<ul>
-<li><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">autotrain</span> <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">--config</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&lt;</span>path_to_config_file<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">&gt;</span></span></code></pre></div></li>
-</ul></li>
-</ul>
-<section id="local-installation" class="level4">
-<h4 class="anchored" data-anchor-id="local-installation">Local Installation</h4>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true">PIP</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false">Conda</a></li></ul>
-<div class="tab-content">
-<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
-<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">pip</span> install autotrain-advanced</span></code></pre></div>
-</div>
-<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
-<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">conda</span> create <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-n</span> autotrain python=3.10</span>
-<span id="cb5-2"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">conda</span> activate autotrain</span>
-<span id="cb5-3"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">pip</span> install autotrain-advanced</span>
-<span id="cb5-4"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">conda</span> install pytorch torchvision torchaudio pytorch-cuda=12.1 <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-c</span> pytorch <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-c</span> nvidia</span>
-<span id="cb5-5"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">conda</span> install <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-c</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"nvidia/label/cuda-12.1.0"</span> cuda-nvcc</span></code></pre></div>
-</div>
-</div>
-</div>
-</section>
-</section>
-<section id="training-on-other-platforms" class="level3">
-<h3 class="anchored" data-anchor-id="training-on-other-platforms">Training on Other Platforms</h3>
-<ul>
-<li><strong><a href="https://jarvislabs.ai/">Jarvis Labs</a>:</strong> Provides AutoTrain templates for easy setup and training.</li>
-<li><strong><a href="https://www.nvidia.com/en-us/data-center/dgx-cloud/">DGX Cloud</a>:</strong> Rent high-performance GPUs for training large models.</li>
-<li><strong><a href="https://colab.research.google.com/">Google Colab</a>:</strong> Run AutoTrain directly in Colab using provided notebooks and UI.</li>
-</ul>
-</section>
-</section>
-<section id="config-files-and-advanced-options" class="level2">
-<h2 class="anchored" data-anchor-id="config-files-and-advanced-options">Config Files and Advanced Options</h2>
-<ul>
-<li><strong>Documentation:</strong> <a href="https://huggingface.co/docs/autotrain/config">AutoTrain Configs</a></li>
-<li>Config files offer more flexibility and control over training parameters.</li>
-<li>Define task, base model, data paths, column mapping, hyperparameters, logging, and more.</li>
-<li>Access example config files in the AutoTrain GitHub repository.
-<ul>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/huggingface/autotrain-advanced/tree/main/configs">autotrain-advanced/configs</a></li>
-</ul></li>
-</ul>
-</section>
-<section id="additional-features-and-considerations" class="level2">
-<h2 class="anchored" data-anchor-id="additional-features-and-considerations">Additional Features and Considerations</h2>
-<ul>
-<li>AutoTrain automatically handles multi-GPU training using DeepSpeed or distributed data parallel.</li>
-<li>QLORA is supported on DeepSpeed for efficient training.</li>
-<li>Sentence Transformer fine-tuning is available for tasks like improving RAG models.</li>
-</ul>
-</section>
-<section id="qa-session" class="level2">
-<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
-<ul>
-<li><strong>Logging:</strong> Supports Weights &amp; Biases (W&amp;B) logging when using config files.</li>
-<li><strong>Mixed Precision:</strong> Supports BF16 and FP16, but not FP8.</li>
-<li><strong>Parameter Compatibility:</strong> AutoTrain ensures parameter compatibility based on the chosen base model.</li>
-<li><strong>Hyperparameter Optimization:</strong> Not currently supported for LLMs due to long training times.</li>
-<li><strong>CPU Training:</strong> Possible, but may come with performance limitations.</li>
-<li><strong>Custom Chat Templates:</strong> Can be added by modifying the <code>tokenizer_config.json</code> file of a cloned model.</li>
-<li><strong>Synthetic Data Generation:</strong> Not currently supported, but users can generate their own.</li>
-</ul>
-
-
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-006/</guid>
-  <pubDate>Fri, 12 Jul 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
