@@ -19,6 +19,553 @@
 <generator>quarto-1.4.555</generator>
 <lastBuildDate>Fri, 30 Aug 2024 07:00:00 GMT</lastBuildDate>
 <item>
+  <title>Conference Talk 20: Back to Basics for RAG</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-020/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Resources:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Presentation Resources:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/19L2j2-fBC_iPGswwER3Cfsy7N3HSqUrVfxh2xvcBU2Y/edit#slide=id.p">Back to basics?</a></li>
+</ul>
+</div>
+</div>
+<section id="about-jo-kristian-bergum" class="level3">
+<h3 class="anchored" data-anchor-id="about-jo-kristian-bergum">About Jo Kristian Bergum</h3>
+<ul>
+<li><strong>Distinguished Engineer</strong> at Vespa.ai</li>
+<li>18 years at Vespa.ai, 20 years in search and recommendation.</li>
+<li><strong><a href="https://vespa.ai/">Vespa.ai</a>:</strong>
+<ul>
+<li>Serving platform spun out of Yahoo.</li>
+<li>Open source since 2017.</li>
+<li><strong>Blog:</strong> <a href="https://blog.vespa.ai/">https://blog.vespa.ai/</a></li>
+</ul></li>
+<li>Active on Twitter (<a href="https://x.com/jobergum"><span class="citation" data-cites="jobergum">@jobergum</span></a>), enjoys posting memes.</li>
+</ul>
+</section>
+<section id="talk-overview" class="level3">
+<h3 class="anchored" data-anchor-id="talk-overview">Talk Overview</h3>
+<ul>
+<li><strong>Stuffing Text into Language Model Prompts:</strong> Using RAG beyond question answering, e.g., for classification by retrieving relevant training examples.</li>
+<li><strong>Information Retrieval (The R in RAG):</strong> Exploring the core concepts of retrieval and its importance in RAG pipelines.</li>
+<li><strong>Evaluation of IR Systems:</strong>
+<ul>
+<li>Building your own evaluation systems to measure and improve search performance.</li>
+<li>Demonstrating the impact of changes to your CTO.</li>
+</ul></li>
+<li><strong>Representational Approaches for IR:</strong>
+<ul>
+<li>Discussing <strong>sparse</strong> and <strong>dense</strong> representations (BM25, vectors, embeddings).</li>
+<li>Examining baselines for comparison.</li>
+</ul></li>
+</ul>
+</section>
+<section id="demystifying-rag" class="level3">
+<h3 class="anchored" data-anchor-id="demystifying-rag">Demystifying RAG</h3>
+<ul>
+<li><strong>RAG (Retrieval Augmented Generation):</strong> A technique for enhancing language model outputs by retrieving relevant context from external knowledge sources.</li>
+<li><strong>Common Use Cases:</strong> Question answering, chatbots, generating grounded responses.
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Current date is {date}, Don’t be rude. I’ll tip $5. Think step-by-step.</strong></p>
+<p>I want you to classify the text input as positive, negative or neutral. Examples:</p>
+<p><strong>Input:</strong> I’m very happy today<br>
+<strong>Output:</strong> positive</p>
+<p><strong>Input:</strong> I’m sad today<br>
+<strong>Output:</strong> negative</p>
+<p><strong>Input:</strong> I don’t know what to feel today<br>
+<strong>Output:</strong> neutral</p>
+<p>✨ <strong>{many_retrieved_context_sensitive_examples}</strong> ✨</p>
+<p><strong>Input:</strong> {input}<br>
+<strong>Output:</strong></p>
+</div>
+</div></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Example:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Example:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Current date is {date}, Don’t be rude. I’ll tip $5. Think step-by-step.</strong></p>
+<p>I want you to summarize and answer the question using context retrieved by a search engine.<br>
+<strong>Context:</strong> [1] BERT: Pre-training of deep bidirectional transformers for language understanding…<br>
+<strong>Question:</strong> What is a bidirectional transformer model?<br>
+<strong>Helpful answer:</strong> bidirectional means that tokens attend to all other tokens in the input sequence [1].</p>
+<p>✨ <strong>{retrieved_context_sensitive_examples}</strong> ✨</p>
+<p><strong>Context:</strong> {retrieved_context_question}<br>
+<strong>Question:</strong> {question}<br>
+<strong>Helpful answer:</strong></p>
+</div>
+</div></li>
+</ul></li>
+<li><strong>Basic Architecture:</strong>
+<ul>
+<li><strong>Orchestration Component:</strong> Manages the flow of data and interactions between components.</li>
+<li><strong>Input:</strong> User queries or prompts.</li>
+<li><strong>Output:</strong> Generated responses.</li>
+<li><strong>Evaluation:</strong> Measures the quality of the output.</li>
+<li><strong>Prompting:</strong> Techniques for interacting with language models.</li>
+<li><strong>Language Models:</strong> The core component for generating text.</li>
+<li><strong>State:</strong> Data storage, including files, search engines, vector databases, and databases.</li>
+</ul></li>
+</ul>
+</section>
+<section id="cutting-through-the-hype" class="level3">
+<h3 class="anchored" data-anchor-id="cutting-through-the-hype">Cutting Through the Hype</h3>
+<ul>
+<li><strong>Challenges in the RAG Landscape:</strong>
+<ul>
+<li>Constant stream of new models, components, and tricks.</li>
+<li>Oversimplification of RAG as just vector embeddings and language models.</li>
+<li>Lack of focus on evaluating performance on specific data.</li>
+</ul></li>
+<li><strong>Importance of Information Retrieval:</strong>
+<ul>
+<li>Retrieval is a deep and well-studied field, crucial for many applications.</li>
+<li>It’s more complex than simply encoding text into a single vector representation.</li>
+<li>Building effective RAG solutions requires understanding and leveraging existing retrieval techniques.</li>
+</ul></li>
+</ul>
+</section>
+<section id="evaluating-information-retrieval-systems" class="level3">
+<h3 class="anchored" data-anchor-id="evaluating-information-retrieval-systems">Evaluating Information Retrieval Systems</h3>
+<ul>
+<li><strong>Information Retrieval System as a Black Box:</strong>
+<ul>
+<li>Input: Query</li>
+<li>Output: Ranked list of documents</li>
+</ul></li>
+<li><strong>Evaluation Based on Relevance:</strong>
+<ul>
+<li>Human annotators judge the relevance of retrieved documents to the query.</li>
+<li><strong>Binary Judgment:</strong> Relevant or not relevant.</li>
+<li><strong>Graded Judgment:</strong> Levels of relevance (e.g., 0 - irrelevant, 1 - slightly relevant, 2 - highly relevant).</li>
+</ul></li>
+<li><strong>Established IR Research and Benchmarks:</strong>
+<ul>
+<li><strong><a href="https://trec.nist.gov/">TREC (Text Retrieval Conference)</a>:</strong> Evaluates various retrieval tasks, including news retrieval.</li>
+<li><strong><a href="https://microsoft.github.io/msmarco/">MS MARCO</a>:</strong> Large-scale dataset from Bing with real-world annotated data used for training embedding models.
+<ul>
+<li><strong>HuggingFace Hub:</strong> <a href="https://huggingface.co/datasets/microsoft/ms_marco">microsoft/ms_marco</a></li>
+</ul></li>
+<li><strong><a href="https://github.com/beir-cellar/beir">BEIR</a>:</strong> Evaluates models in a zero-shot setting without training data.</li>
+</ul></li>
+<li><strong>Common IR Metrics:</strong>
+<ul>
+<li><strong>Recall@K:</strong> Measures the proportion of relevant documents retrieved within the top K positions.</li>
+<li><strong>Precision@K:</strong> Measures the proportion of relevant documents among the top K retrieved documents.</li>
+<li><strong>nDCG (Normalized Discounted Cumulative Gain):</strong> Rank-aware metric that considers graded relevance judgments.</li>
+<li><strong>Reciprocal Rank:</strong> Measures the position of the first relevant hit.</li>
+<li><strong>LGTM (Looks Good To Me):</strong> Informal but common metric in industry.</li>
+</ul></li>
+<li><strong>Production System Metrics:</strong> Engagement (clicks, dwell time), add-to-cart rate, revenue.</li>
+<li><strong>Benchmark Limitations:</strong>
+<ul>
+<li>Often compare flat lists, not personalized results.</li>
+<li>Don’t always transfer well to specific domains or use cases.</li>
+</ul></li>
+</ul>
+</section>
+<section id="building-your-own-relevancy-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="building-your-own-relevancy-dataset">Building Your Own Relevancy Dataset</h3>
+<ul>
+<li><p><strong>The Importance of Measuring:</strong> To improve RAG performance, measure relevance on your specific data.</p></li>
+<li><p><strong>Creating a Relevancy Dataset:</strong></p>
+<ul>
+<li><strong>Leverage Existing Traffic:</strong> Log user searches and judge the relevance of results.</li>
+<li><strong>Bootstrap with Language Models:</strong> Use LLMs to generate questions based on your content and judge the relevance of retrieved passages.</li>
+</ul></li>
+<li><p><strong>Dataset Format:</strong></p>
+<ul>
+<li><p>Simple TSV file is sufficient.</p></li>
+<li><p><strong>Query ID, Document ID, Relevance Label</strong></p>
+<ul>
+<li><table class="caption-top table">
+<thead>
+<tr class="header">
+<th>qid</th>
+<th>docid</th>
+<th>relevance label</th>
+<th>comment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>3 (how to ..)</td>
+<td>4</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>3 (where ..)</td>
+<td>2</td>
+<td>0</td>
+<td></td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Static vs.&nbsp;Dynamic Collections:</strong></p>
+<ul>
+<li>Static collections are preferred for consistent evaluation.</li>
+<li>Dynamic collections can introduce noise when evaluating metrics.</li>
+</ul></li>
+<li><p><strong>Using Language Models for Relevance Judgments:</strong></p>
+<ul>
+<li><p><strong>Paper:</strong> <a href="https://arxiv.org/abs/2309.10621">Large language models can accurately predict searcher preferences</a></p></li>
+<li><p>LLMs can be prompted to assess the relevance of queries and passages.</p></li>
+<li><p>Find a prompt that correlates well with your golden dataset.</p></li>
+<li><p>Enables cheaper and larger-scale evaluation.</p></li>
+<li><p><strong>Example:</strong> Microsoft research demonstrating LLM effectiveness in judging relevance.</p>
+<ul>
+<li><p><strong>Paper:</strong> <a href="https://arxiv.org/abs/2406.06519">UMBRELA: UMbrela is the (Open-Source Reproduction of the) Bing RELevance Assessor</a></p></li>
+<li><div class="callout callout-style-default callout-note callout-titled" title="Figure 1: Prompt used for relevance assessment.">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Figure 1: Prompt used for relevance assessment.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<pre class="text"><code>Given a query and a passage, you must provide a score on an
+integer scale of 0 to 3 with the following meanings:
+0 = represent that the passage has nothing to do with the query,
+1 = represents that the passage seems related to the query but
+does not answer it,
+2 = represents that the passage has some answer for the query,
+but the answer may be a bit unclear, or hidden amongst extraneous
+information and
+3 = represents that the passage is dedicated to the query and
+contains the exact answer.
+
+Important Instruction: Assign category 1 if the passage is
+somewhat related to the topic but not completely, category 2 if
+passage presents something very important related to the entire
+topic but also has some extra information and category 3 if the
+passage only and entirely refers to the topic. If none of the
+above satisfies give it category 0.
+
+Query: {query}
+Passage: {passage}
+
+Split this problem into steps:
+Consider the underlying intent of the search.
+Measure how well the content matches a likely intent of the query
+(M).
+Measure how trustworthy the passage is (T).
+Consider the aspects above and the relative importance of each,
+and decide on a final score (O). Final score must be an integer
+value only.
+Do not provide any code in result. Provide each score in the
+format of: ##final score: score without providing any reasoning.</code></pre>
+</div>
+</div></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Benefits of Custom Relevancy Datasets:</strong></p>
+<ul>
+<li>Iterate and measure the impact of changes to your retrieval system.</li>
+<li>Track improvements in metrics like nDCG.</li>
+<li><strong>Example:</strong> Vespa documentation search showing improvement in nDCG with hybrid retrieval methods.</li>
+</ul></li>
+</ul>
+</section>
+<section id="representational-approaches-and-scoring-functions" class="level3">
+<h3 class="anchored" data-anchor-id="representational-approaches-and-scoring-functions">Representational Approaches and Scoring Functions</h3>
+<ul>
+<li><strong>Motivation for Efficient Retrieval:</strong> Avoid scoring all documents in the collection for each query.</li>
+<li><strong>Sparse Representations:</strong>
+<ul>
+<li><strong>Term-based:</strong> Documents and queries are represented by the presence and weight of terms.</li>
+<li><strong>Efficient Retrieval:</strong> Inverted indexes, algorithms like WAND and MaxScore.</li>
+<li><strong>Example:</strong> Keyword search technologies like Elasticsearch and Vespa.</li>
+</ul></li>
+<li><strong>Dense Representations:</strong>
+<ul>
+<li><strong>Embedding-based:</strong> Documents and queries are represented by vectors in a latent space.</li>
+<li><strong>Neural/Sparse Embedding Models:</strong> Learn term weights using transformer models.</li>
+<li><strong>Efficient Retrieval:</strong> Approximate Nearest Neighbor search, vector databases.</li>
+<li><strong>Example:</strong> Text embedding models, semantic search.</li>
+</ul></li>
+<li><strong>Advantages of Dense Representations:</strong>
+<ul>
+<li>Capture semantic relationships between words and concepts.</li>
+<li>Enable search based on meaning rather than exact keyword matches.</li>
+</ul></li>
+<li><strong>Challenges of Dense Representations:</strong>
+<ul>
+<li><strong>Transfer Learning:</strong> Off-the-shelf models may not perform well on specific data.</li>
+<li><strong>Diluted Representations:</strong> Averaging token embeddings into a single vector can lose information.</li>
+<li><strong>Fixed Vocabulary:</strong> Out-of-vocabulary words can be mapped to incorrect concepts.</li>
+<li><strong>Chunking:</strong> Long documents need to be chunked to maintain precision.</li>
+</ul></li>
+<li><strong>Baselines for Comparison:</strong>
+<ul>
+<li><strong>BM25:</strong>
+<ul>
+<li><strong>Term-based scoring function.</strong></li>
+<li><strong>Unsupervised, based on corpus statistics.</strong></li>
+<li><strong>Cheap, small index footprint.</strong></li>
+<li><strong>Strong baseline for many tasks.</strong></li>
+<li><strong>Limitations:</strong> Requires language-specific tokenization, struggles with long context.</li>
+</ul></li>
+<li><strong>Example:</strong> BM25 outperforming embedding models on long context documents in ColBERT evaluation.
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://blog.vespa.ai/announcing-long-context-ColBERT-in-vespa/">Announcing Vespa Long-Context ColBERT</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="hybrid-approaches" class="level3">
+<h3 class="anchored" data-anchor-id="hybrid-approaches">Hybrid Approaches</h3>
+<ul>
+<li><strong>Combining Sparse and Dense Representations:</strong>
+<ul>
+<li>Can overcome limitations of individual approaches.</li>
+<li>Example: Combining keyword search with embedding retrieval.</li>
+</ul></li>
+<li><strong>Challenges of Hybrid Approaches:</strong>
+<ul>
+<li>Calibration of different scoring functions.</li>
+<li>Determining when to ignore embedding results.</li>
+<li>Requires careful tuning and evaluation.</li>
+</ul></li>
+</ul>
+</section>
+<section id="long-context-and-chunking" class="level3">
+<h3 class="anchored" data-anchor-id="long-context-and-chunking">Long Context and Chunking</h3>
+<ul>
+<li><strong>Desire for Long Context Models:</strong> Eliminate the need for chunking.</li>
+<li><strong>Reality of Chunking:</strong>
+<ul>
+<li>Necessary for meaningful representations in high-precision search.
+<ul>
+<li>Dense representation beyond 256 tokens are bad for high-precision search.</li>
+</ul></li>
+<li><strong>Pooling operations dilute representations in long contexts.</strong></li>
+<li><strong>Limited training data for long context models.</strong></li>
+</ul></li>
+<li><strong>Chunking Strategies:</strong>
+<ul>
+<li>Split long documents into smaller segments.</li>
+<li>Index multiple vectors per row in a database.</li>
+</ul></li>
+</ul>
+</section>
+<section id="real-world-rag-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="real-world-rag-considerations">Real-World RAG Considerations</h3>
+<ul>
+<li><strong>Google Search Signals:</strong>
+<ul>
+<li><strong>Text Similarity:</strong> BM25, vector cosine similarity.</li>
+<li><strong>Freshness:</strong> Recency of content.</li>
+<li><strong>Authority:</strong> Trustworthiness of the source.</li>
+<li><strong>Quality:</strong> Overall content quality.</li>
+<li><strong>PageRank:</strong> Link analysis algorithm.</li>
+<li><strong>Revenue:</strong> In advertising-based search.</li>
+</ul></li>
+<li><strong>GBDT (Gradient Boosted Decision Trees):</strong>
+<ul>
+<li>Effective for combining tabular features.</li>
+<li>Still relevant for real-world search.</li>
+</ul></li>
+</ul>
+</section>
+<section id="summary" class="level3">
+<h3 class="anchored" data-anchor-id="summary">Summary</h3>
+<ul>
+<li><strong>Information retrieval is more than just vector representations.</strong></li>
+<li><strong>Build your own evaluations to improve retrieval.</strong></li>
+<li><strong>Don’t ignore the BM25 baseline.</strong></li>
+<li><strong>Choose technologies with hybrid capabilities.</strong></li>
+<li><strong>Real-world search involves more than just text similarity.</strong></li>
+</ul>
+</section>
+<section id="qa-session" class="level3">
+<h3 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h3>
+<section id="q1-metadata-for-vector-db-in-rag" class="level4">
+<h4 class="anchored" data-anchor-id="q1-metadata-for-vector-db-in-rag">Q1: Metadata for Vector DB in RAG</h4>
+<ul>
+<li><strong>Question:</strong> What kind of metadata is most valuable to put into a vector DB for doing RAG?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Context-Dependent:</strong> The most valuable metadata depends on the specific use case and domain.</li>
+<li><strong>Text-Only Use Cases:</strong>
+<ul>
+<li><strong>Authority/Source Filtering:</strong> Important in domains like healthcare where trustworthiness of sources is crucial (e.g., filter out Reddit posts in favor of medical journals).</li>
+<li><strong>Title and other basic metadata:</strong> Can provide additional context for retrieval.</li>
+</ul></li>
+<li><strong>Real-World Use Cases:</strong>
+<ul>
+<li>Consider factors beyond text, such as freshness, authority, quality, and even revenue.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="q2-calibration-of-different-indices" class="level4">
+<h4 class="anchored" data-anchor-id="q2-calibration-of-different-indices">Q2: Calibration of Different Indices</h4>
+<ul>
+<li><strong>Question:</strong> Do you have any thoughts on calibration of different indices? How can we obtain confidence scores for recommendations?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Challenge:</strong> Different scoring functions (e.g., BM25, cosine similarity) have different distributions and ranges, making calibration difficult. Scores are not probabilities.</li>
+<li><strong>Learning Task:</strong> Combining scores effectively is a learning problem.</li>
+<li><strong>GBDT’s Strength:</strong> Gradient Boosted Decision Trees (GBDT) can learn non-linear combinations of features, including different scoring functions.</li>
+<li><strong>Need for Training Data:</strong> Calibration and learning require training data.</li>
+<li><strong>Options for Training Data:</strong>
+<ul>
+<li><strong>Evaluation Data:</strong> The evaluation datasets described earlier can be used to generate training data.</li>
+<li><strong>Real User Interactions:</strong> Gather data from user searches and clicks (like Google).</li>
+<li><strong>Synthetic Data:</strong> Use large language models to generate synthetic training data.</li>
+</ul></li>
+<li><strong>No Easy Tricks:</strong> There’s no universal solution for calibration without training data and evaluation.</li>
+</ul></li>
+</ul>
+</section>
+<section id="q3-efficacy-of-re-rankers" class="level4">
+<h4 class="anchored" data-anchor-id="q3-efficacy-of-re-rankers">Q3: Efficacy of Re-rankers</h4>
+<ul>
+<li><strong>Question:</strong> What are your observations on the efficacy of re-rankers? Do you recommend using them?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Phased Retrieval and Ranking:</strong> Re-rankers are valuable in multi-stage pipelines. They allow you to invest more compute into fewer, more promising hits retrieved in earlier stages.</li>
+<li><strong>Benefits of Re-rankers:</strong>
+<ul>
+<li><strong>Token-Level Interaction:</strong> Re-rankers like Cohere or cross-encoders enable deeper interaction between the query and document at the token level, improving accuracy.</li>
+<li><strong>Latency Management:</strong> By focusing on a smaller set of candidates, re-rankers can help meet latency requirements.</li>
+</ul></li>
+<li><strong>Trade-offs:</strong> Re-rankers add computational cost and latency.</li>
+<li><strong>Recommendation:</strong> If accuracy is a priority and the cost is acceptable, re-rankers are recommended.</li>
+</ul></li>
+</ul>
+</section>
+<section id="q4-combining-usage-data-and-semantic-similarity" class="level4">
+<h4 class="anchored" data-anchor-id="q4-combining-usage-data-and-semantic-similarity">Q4: Combining Usage Data and Semantic Similarity</h4>
+<ul>
+<li><strong>Question:</strong> Do you have advice on combining usage data (e.g., number of views) with semantic similarity?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Learning to Rank Problem:</strong> Integrating usage data turns it into a learning to rank problem.</li>
+<li><strong>Label Generation:</strong> Convert interaction data into labeled training data. Different interactions (e.g., views, clicks, add-to-cart) may have different weights in the label generation process.</li>
+<li><strong>Model Training:</strong> Train a ranking model (e.g., GBDT) using the labeled data, including semantic similarity scores and usage data as features.</li>
+</ul></li>
+</ul>
+</section>
+<section id="q5-jason-lius-post-on-structured-summaries" class="level4">
+<h4 class="anchored" data-anchor-id="q5-jason-lius-post-on-structured-summaries">Q5: Jason Liu’s Post on Structured Summaries</h4>
+<ul>
+<li><strong>Question:</strong> What are your thoughts on Jason Liu’s post about the value of generating structured summaries and reports for decision makers instead of doing RAG as commonly done today?</li>
+<li><strong>Answer:</strong> Jo was not familiar with the specific post.</li>
+</ul>
+</section>
+<section id="q6-recent-advancements-in-text-embedding-models" class="level4">
+<h4 class="anchored" data-anchor-id="q6-recent-advancements-in-text-embedding-models">Q6: Recent Advancements in Text Embedding Models</h4>
+<ul>
+<li><strong>Question:</strong> What are some of your favorite advancements recently in text embedding models or other search technologies?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Larger Vocabularies:</strong> Jo hopes for embedding models with larger vocabularies to better handle out-of-vocabulary words, especially in specialized domains. BERT’s vocabulary is outdated.</li>
+<li><strong>Improved Pre-trained Models:</strong> Better pre-training techniques and data can lead to more robust and generalizable embedding models.</li>
+<li><strong>Caution on Long Context:</strong> Jo is not overly enthusiastic about increasing context length for embedding models. Research suggests diminishing returns for high-precision search with very long contexts.</li>
+</ul></li>
+</ul>
+</section>
+<section id="q7-query-expansion-with-bm25" class="level4">
+<h4 class="anchored" data-anchor-id="q7-query-expansion-with-bm25">Q7: Query Expansion with BM25</h4>
+<ul>
+<li><strong>Question:</strong> Does query expansion of out-of-vocabulary words with BM25 work better at search? Are people utilizing classical search techniques like query expansion enough?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>BM25 and Re-ranking:</strong> Combining BM25 with a re-ranker can yield excellent results. While BM25 may struggle with single-word queries that are out-of-vocabulary, it avoids the severe failure modes of relying solely on embedding-based search.</li>
+<li><strong>Query Expansion’s Potential:</strong> Query expansion and understanding are powerful techniques. Language models can be used for query expansion, and tools for prompting LLMs for this purpose are improving.</li>
+<li><strong>Importance of Evaluation:</strong> Building your own evaluation setup allows you to systematically test different techniques like query expansion on your specific data and determine their effectiveness.</li>
+</ul></li>
+</ul>
+</section>
+<section id="q8-handling-jargon-and-tokenization-issues" class="level4">
+<h4 class="anchored" data-anchor-id="q8-handling-jargon-and-tokenization-issues">Q8: Handling Jargon and Tokenization Issues</h4>
+<ul>
+<li><strong>Question:</strong> How do you overcome limitations in fixed vocabulary and poor tokenization in domains with a lot of jargon, when using an out-of-the-box model?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Hybrid Approach:</strong> Combine keyword search with embedding retrieval to mitigate vocabulary limitations.</li>
+<li><strong>Challenge of Ignoring Embedding Results:</strong> Embedding retrieval always returns results, even if they are not semantically relevant. It’s crucial to identify and filter out these irrelevant results.</li>
+<li><strong>Fine-tuning:</strong> Fine-tuning your own embedding model on domain-specific data can help, but vocabulary limitations may persist.</li>
+<li><strong>Pre-training from Scratch:</strong> Training a BERT-like model from scratch with a custom vocabulary tailored to the domain is becoming more feasible.
+<ul>
+<li>This is a common practice in e-commerce.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="q9-colbert-and-tokenizer-problems" class="level4">
+<h4 class="anchored" data-anchor-id="q9-colbert-and-tokenizer-problems">Q9: ColBERT and Tokenizer Problems</h4>
+<ul>
+<li><strong>Question:</strong> Would ColBERT-based methods improve retrieval when we are concerned with tokenizer problems?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>ColBERT’s Approach:</strong> ColBERT learns token-level vector representations instead of a single vector for the whole passage or query. It offers high accuracy while being computationally less expensive than cross-encoders.</li>
+<li><strong>Vocabulary Limitations:</strong> ColBERT still relies on the same vocabulary as other BERT-based models, so it’s not a complete solution to tokenizer problems.</li>
+<li><strong>Future Direction:</strong> Better pre-trained models with larger vocabularies would benefit ColBERT and other embedding models.</li>
+</ul></li>
+</ul>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>llms</category>
+  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-020/</guid>
+  <pubDate>Fri, 30 Aug 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
+<item>
   <title>Conference Talk 19: Fine Tuning LLMs for Function Calling</title>
   <dc:creator>Christian Mills</dc:creator>
   <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-019/</link>
@@ -20931,1028 +21478,6 @@ font-style: inherit;">pip</span> install mistral-inference</span></code></pre></
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-007/</guid>
   <pubDate>Thu, 18 Jul 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Workshop 4: Instrumenting &amp; Evaluating LLMs</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/workshop-004/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<ul>
-<li>Serving Overview</li>
-<li>Model Deployment Patterns</li>
-<li>Case Study: Honeycomb - Replicate</li>
-<li>Deploying Large Language Models</li>
-<li>Lessons from Building A Serverless Platform - Predibase</li>
-<li>Batch vs Real Time and Modal</li>
-<li>Q&amp;A Session</li>
-</ul>
-<section id="serving-overview" class="level2">
-<h2 class="anchored" data-anchor-id="serving-overview">Serving Overview</h2>
-<section id="recap-on-loras" class="level3">
-<h3 class="anchored" data-anchor-id="recap-on-loras">Recap on LoRAs</h3>
-<ul>
-<li><strong>LoRA (Low-Rank Adaptation)</strong>: A parameter-efficient fine-tuning technique that introduces small adapter matrices into the model’s layers, significantly reducing the number of trainable parameters compared to full fine-tuning.</li>
-<li><strong>Benefits of LoRA</strong>: Reduced memory requirements during training and deployment, enabling fine-tuning on consumer-grade hardware and efficient serving of multiple adapters.</li>
-<li><strong>Deployment Options</strong>:
-<ul>
-<li><strong>Keep LoRA separate</strong>: Store LoRA weights in a separate file and load them during inference.</li>
-<li><strong>Merge LoRA with base model</strong>: Combine the learned LoRA weights with the original model weights into a single file.</li>
-<li><strong>Hot-swapping adapters</strong>: Dynamically load and unload adapters on demand, sharing the base model among multiple adapters.</li>
-</ul></li>
-</ul>
-</section>
-<section id="performance-vs-costs" class="level3">
-<h3 class="anchored" data-anchor-id="performance-vs-costs">Performance vs Costs</h3>
-<ul>
-<li><strong>Key Trade-off</strong>: Balancing performance (latency and throughput) with cost (GPU usage and idle time).</li>
-<li><strong>Factors Influencing Performance and Cost</strong>:
-<ul>
-<li><strong>GPU speed:</strong> More powerful GPUs offer lower latency but are more expensive.</li>
-<li><strong>Model size:</strong> Larger models generally perform better but require more resources and time.</li>
-<li><strong>Engineering optimizations:</strong> Platform-level optimizations can improve efficiency.</li>
-<li><strong>Cold start vs.&nbsp;idle time:</strong> Loading models onto GPUs takes time (cold start), but keeping them loaded incurs idle time cost.</li>
-</ul></li>
-<li><strong>Hot-swapping adapters</strong>: A strategy to mitigate the cold start vs.&nbsp;idle time trade-off by serving multiple LoRAs on the same GPU, ensuring consistent traffic and reducing idle time.</li>
-</ul>
-</section>
-<section id="many-applications-arent-real-time" class="level3">
-<h3 class="anchored" data-anchor-id="many-applications-arent-real-time">Many Applications Aren’t Real-Time</h3>
-<ul>
-<li><strong>Real-time vs.&nbsp;batch/offline processing</strong>: Many LLM applications do not require real-time responses, allowing for batch processing and reducing cost by scaling down GPUs when not in use.</li>
-<li><strong>Examples of batch/offline use cases</strong>:
-<ul>
-<li>Generating alt text for images</li>
-<li>Extracting information from documents</li>
-<li>Editing text</li>
-<li>Analytics tools</li>
-</ul></li>
-</ul>
-</section>
-<section id="real-time-vs-batchoffline" class="level3">
-<h3 class="anchored" data-anchor-id="real-time-vs-batchoffline">Real-Time vs Batch/Offline</h3>
-<ul>
-<li><strong>Real-time use cases</strong>: Applications like chatbots and code assistants require low latency responses.</li>
-<li><strong>Batch/offline use cases</strong>: Tasks like data analysis, text summarization, and content generation can be processed in batches.</li>
-</ul>
-</section>
-<section id="merging-lora-to-base" class="level3">
-<h3 class="anchored" data-anchor-id="merging-lora-to-base">Merging LoRA to Base</h3>
-<ul>
-<li><p><strong>Workflow example</strong>:</p>
-<ol type="1">
-<li><p>Train a LoRA model and save the adapter weights.</p></li>
-<li><p>Merge the LoRA weights with the base model weights into a single file (potentially sharded for large models).</p>
-<ul>
-<li><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">root@724562262aec:/workspace/demo#</span> ls outputs/qlora-out/</span>
-<span id="cb1-2">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">README.md</span>         checkpoint-1         checkpoint-4         tokenizer.json</span>
-<span id="cb1-3">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">adapter_config.json</span>    checkpoint-2         config.json          tokenizer_config.json</span>
-<span id="cb1-4">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">adapter_model.bin</span>     checkpoint-3         special_tokens_map.json</span></code></pre></div>
-<ul>
-<li><code>adapter_model.bin</code> size: 168 MB</li>
-</ul></li>
-<li><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">root@724562262aec:/workspace/demo#</span> python3 <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-m</span> axolotl.cli.merge_lora ./qlora.yml <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">--dora_model_dir</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"./outputs/qlora-out"</span></span></code></pre></div></li>
-<li><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">root@724562262aec:/workspace/demo#</span> ls outputs/qlora-out/merged</span>
-<span id="cb3-2">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">config.json</span>             pytorch_model-00003-of-00004.bin   tokenizer.json</span>
-<span id="cb3-3">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">generation_config.json</span>        pytorch_model-00004-of-00004.bin   tokenizer_config.json</span>
-<span id="cb3-4">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">pytorch_model-00001-of-00004.bin</span>   pytorch_model.bin.index.json</span>
-<span id="cb3-5">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">pytorch_model-00002-of-00004.bin</span>   special_tokens_map.json        </span></code></pre></div>
-<ul>
-<li>merged <code>.bin</code> files: 16 GB</li>
-</ul></li>
-</ul></li>
-<li><p>Push the merged model files to a platform like HuggingFace Hub.</p></li>
-</ol></li>
-</ul>
-</section>
-<section id="push-model-files-to-hf-hub" class="level3">
-<h3 class="anchored" data-anchor-id="push-model-files-to-hf-hub">Push Model Files to HF Hub</h3>
-<ul>
-<li><strong>HuggingFace inference endpoints</strong>: A platform for serving models with options for automatic scaling and GPU selection.</li>
-<li><strong>Workflow example</strong>:
-<ol type="1">
-<li><p>Create a HuggingFace repository.</p>
-<ul>
-<li><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">pip</span> install <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-U</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"huggingface_hub[cli]"</span></span>
-<span id="cb4-2">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">huggingface-cli</span> repo create conference-demo</span></code></pre></div></li>
-</ul></li>
-<li><p>Copy the merged model files to the repository.</p>
-<ul>
-<li><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">cp</span> ./outputs/qlora-out/merged/<span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">*</span> conference-demo</span></code></pre></div></li>
-</ul></li>
-<li><p>Use Git LFS to track large files.</p>
-<ul>
-<li><div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb6-1">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">git</span> lfs track <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"*.bin"</span></span></code></pre></div></li>
-</ul></li>
-<li><p>Push the repository to HuggingFace Hub.</p>
-<ul>
-<li><div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb7-1">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">git</span> add <span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">*</span></span></code></pre></div></li>
-</ul></li>
-<li><p>Deploy the model using HuggingFace inference endpoints, choosing appropriate scaling and GPU options.</p>
-<ul>
-<li><div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb8-1">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">git</span> commit <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-am</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Push merged files"</span></span>
-<span id="cb8-2">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">git</span> push origin main</span></code></pre></div></li>
-<li><strong>HuggingFace Hub:</strong> <a href="https://huggingface.co/dansbecker/conference-demo/tree/main">dansbecker/conference-demo</a></li>
-</ul></li>
-</ol></li>
-</ul>
-</section>
-</section>
-<section id="model-deployment-patterns" class="level2">
-<h2 class="anchored" data-anchor-id="model-deployment-patterns">Model Deployment Patterns</h2>
-<ul>
-<li><strong>Blog Post:</strong> <a href="https://outerbounds.com/blog/the-many-ways-to-deploy-a-model/">The Many Ways to Deploy a Model</a></li>
-</ul>
-<section id="the-many-faces-of-deployments" class="level3">
-<h3 class="anchored" data-anchor-id="the-many-faces-of-deployments">The Many Faces of Deployments</h3>
-<ul>
-<li><table class="caption-top table">
-<colgroup>
-<col style="width: 19%">
-<col style="width: 40%">
-<col style="width: 40%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Factors</th>
-<th>Simple, lots of tools</th>
-<th>Some tools, customization may be needed</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Speed (time to response)</strong></td>
-<td>Slow: Results needed in minutes e.g.&nbsp;portfolio optimization</td>
-<td>Fast: Results needed in milliseconds e.g.&nbsp;high-frequency trading</td>
-</tr>
-<tr class="even">
-<td><strong>Scale (requests/second)</strong></td>
-<td>Low: 10 request/sec or less e.g.&nbsp;an internal dashboard</td>
-<td>High: 10k requests / sec or more e.g.&nbsp;a popular e-commerce site</td>
-</tr>
-<tr class="odd">
-<td><strong>Pace of improvement</strong></td>
-<td>Low: Updates infrequently e.g.&nbsp;a stable, marginal model</td>
-<td>High: Constant iteration needed e.g.&nbsp;an innovative, important model</td>
-</tr>
-<tr class="even">
-<td><strong>Real-time inputs needed?</strong></td>
-<td>No real-time inputs e.g.&nbsp;analyze past data</td>
-<td>Yes, real-time inputs e.g.&nbsp;targeted travel ads</td>
-</tr>
-<tr class="odd">
-<td><strong>Reliability requirement</strong></td>
-<td>Low: Ok to fail occasionally e.g.&nbsp;a proof of concept</td>
-<td>High: Must not fail e.g.&nbsp;a fraud detection model</td>
-</tr>
-<tr class="even">
-<td><strong>Model complexity</strong></td>
-<td>Simple models e.g.&nbsp;linear regression</td>
-<td>Complex models e.g.&nbsp;LLMs</td>
-</tr>
-</tbody>
-</table></li>
-</ul>
-</section>
-<section id="simple-model-serving" class="level3">
-<h3 class="anchored" data-anchor-id="simple-model-serving">Simple Model Serving</h3>
-<ul>
-<li><strong>Direct interface with model library</strong>: Using frameworks like <a href="https://fastapi.tiangolo.com/">FastAPI</a> to serve models with minimal overhead.</li>
-<li><strong>Suitable for</strong>: Proof of concepts, small-scale applications with low performance demands.</li>
-</ul>
-</section>
-<section id="advanced-model-serving" class="level3">
-<h3 class="anchored" data-anchor-id="advanced-model-serving">Advanced Model Serving</h3>
-<ul>
-<li><strong>Complex architectures</strong>: Auto-scaling clusters, load balancers, specialized components for pre- and post-processing.</li>
-<li><strong>Example</strong>: <a href="https://kubernetes.io/">Kubernetes</a> with <a href="https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html">Triton Inference Server</a> and <a href="https://github.com/NVIDIA/TensorRT-LLM">TensorRT-LLM</a>.</li>
-</ul>
-</section>
-<section id="kinds-of-model-serving" class="level3">
-<h3 class="anchored" data-anchor-id="kinds-of-model-serving">Kinds of Model Serving</h3>
-<ul>
-<li><strong>Decision Tree</strong>:</li>
-</ul>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<svg width="672" height="480" viewbox="0.00 0.00 793.93 732.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
-<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 728)">
-<title>Decision Tree</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-728 789.93,-728 789.93,4 -4,4"></polygon>
-<!-- A -->
-<g id="node1" class="node">
-<title>A</title>
-<path fill="ghostwhite" stroke="ghostwhite" d="M295.35,-724C295.35,-724 12.22,-724 12.22,-724 6.22,-724 0.22,-718 0.22,-712 0.22,-712 0.22,-668 0.22,-668 0.22,-662 6.22,-656 12.22,-656 12.22,-656 295.35,-656 295.35,-656 301.35,-656 307.35,-662 307.35,-668 307.35,-668 307.35,-712 307.35,-712 307.35,-718 301.35,-724 295.35,-724"></path>
-<text text-anchor="middle" x="153.78" y="-697.5" font-family="sans-serif:bold" font-size="25.00">Is there a finite enough set of</text>
-<text text-anchor="middle" x="153.78" y="-667.5" font-family="sans-serif:bold" font-size="25.00">inputs known in advance?</text>
-</g>
-<!-- B -->
-<g id="node2" class="node">
-<title>B</title>
-<path fill="#9bcd9b" stroke="#9bcd9b" d="M178.69,-590C178.69,-590 66.87,-590 66.87,-590 60.87,-590 54.87,-584 54.87,-578 54.87,-578 54.87,-534 54.87,-534 54.87,-528 60.87,-522 66.87,-522 66.87,-522 178.69,-522 178.69,-522 184.69,-522 190.69,-528 190.69,-534 190.69,-534 190.69,-578 190.69,-578 190.69,-584 184.69,-590 178.69,-590"></path>
-<text text-anchor="middle" x="122.78" y="-563.5" font-family="sans-serif:bold" font-size="25.00">Precompute</text>
-<text text-anchor="middle" x="122.78" y="-533.5" font-family="sans-serif:bold" font-size="25.00">responses</text>
-</g>
-<!-- A&#45;&gt;B -->
-<g id="edge1" class="edge">
-<title>A-&gt;B</title>
-<path fill="none" stroke="black" d="M145.96,-655.69C141.26,-635.68 135.3,-610.31 130.6,-590.3"></path>
-<text text-anchor="middle" x="161.22" y="-615.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
-</g>
-<!-- C -->
-<g id="node3" class="node">
-<title>C</title>
-<path fill="ghostwhite" stroke="ghostwhite" d="M491.41,-590C491.41,-590 220.16,-590 220.16,-590 214.16,-590 208.16,-584 208.16,-578 208.16,-578 208.16,-534 208.16,-534 208.16,-528 214.16,-522 220.16,-522 220.16,-522 491.41,-522 491.41,-522 497.41,-522 503.41,-528 503.41,-534 503.41,-534 503.41,-578 503.41,-578 503.41,-584 497.41,-590 491.41,-590"></path>
-<text text-anchor="middle" x="355.78" y="-563.5" font-family="sans-serif:bold" font-size="25.00">Is it ok to return responses</text>
-<text text-anchor="middle" x="355.78" y="-533.5" font-family="sans-serif:bold" font-size="25.00">asynchronously in minutes?</text>
-</g>
-<!-- A&#45;&gt;C -->
-<g id="edge2" class="edge">
-<title>A-&gt;C</title>
-<path fill="none" stroke="black" d="M204.49,-655.86C235.23,-635.78 274.31,-610.24 305.05,-590.15"></path>
-<text text-anchor="middle" x="289.06" y="-615.5" font-family="sans-serif:bold" font-size="25.00">No</text>
-</g>
-<!-- D -->
-<g id="node4" class="node">
-<title>D</title>
-<path fill="#9bcd9b" stroke="#9bcd9b" d="M385.74,-441C385.74,-441 171.82,-441 171.82,-441 165.82,-441 159.82,-435 159.82,-429 159.82,-429 159.82,-385 159.82,-385 159.82,-379 165.82,-373 171.82,-373 171.82,-373 385.74,-373 385.74,-373 391.74,-373 397.74,-379 397.74,-385 397.74,-385 397.74,-429 397.74,-429 397.74,-435 391.74,-441 385.74,-441"></path>
-<text text-anchor="middle" x="278.78" y="-414.5" font-family="sans-serif:bold" font-size="25.00">Trigger a workflow to</text>
-<text text-anchor="middle" x="278.78" y="-384.5" font-family="sans-serif:bold" font-size="25.00">compute responses</text>
-</g>
-<!-- C&#45;&gt;D -->
-<g id="edge3" class="edge">
-<title>C-&gt;D</title>
-<path fill="none" stroke="black" d="M338.31,-521.64C325.71,-497.59 308.77,-465.25 296.19,-441.22"></path>
-<text text-anchor="middle" x="348.22" y="-481.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
-</g>
-<!-- E -->
-<g id="node5" class="node">
-<title>E</title>
-<path fill="gold" stroke="gold" d="M628.03,-456C628.03,-456 427.53,-456 427.53,-456 421.53,-456 415.53,-450 415.53,-444 415.53,-444 415.53,-370 415.53,-370 415.53,-364 421.53,-358 427.53,-358 427.53,-358 628.03,-358 628.03,-358 634.03,-358 640.03,-364 640.03,-370 640.03,-370 640.03,-444 640.03,-444 640.03,-450 634.03,-456 628.03,-456"></path>
-<text text-anchor="middle" x="527.78" y="-429.5" font-family="sans-serif:bold" font-size="25.00">Are you comfortable</text>
-<text text-anchor="middle" x="527.78" y="-399.5" font-family="sans-serif:bold" font-size="25.00">operating services</text>
-<text text-anchor="middle" x="527.78" y="-369.5" font-family="sans-serif:bold" font-size="25.00">by yourself?</text>
-</g>
-<!-- C&#45;&gt;E -->
-<g id="edge4" class="edge">
-<title>C-&gt;E</title>
-<path fill="none" stroke="black" d="M394.81,-521.64C417.41,-502.33 446.25,-477.68 471.29,-456.28"></path>
-<text text-anchor="middle" x="463.06" y="-481.5" font-family="sans-serif:bold" font-size="25.00">No</text>
-</g>
-<!-- F -->
-<g id="node6" class="node">
-<title>F</title>
-<path fill="gold" stroke="gold" d="M429.55,-262C429.55,-262 174.01,-262 174.01,-262 168.01,-262 162.01,-256 162.01,-250 162.01,-250 162.01,-206 162.01,-206 162.01,-200 168.01,-194 174.01,-194 174.01,-194 429.55,-194 429.55,-194 435.55,-194 441.55,-200 441.55,-206 441.55,-206 441.55,-250 441.55,-250 441.55,-256 435.55,-262 429.55,-262"></path>
-<text text-anchor="middle" x="301.78" y="-235.5" font-family="sans-serif:bold" font-size="25.00">Do you require large scale</text>
-<text text-anchor="middle" x="301.78" y="-205.5" font-family="sans-serif:bold" font-size="25.00">or low latency?</text>
-</g>
-<!-- E&#45;&gt;F -->
-<g id="edge5" class="edge">
-<title>E-&gt;F</title>
-<path fill="none" stroke="black" d="M466.33,-357.87C427.5,-327.46 378.36,-288.97 343.92,-262"></path>
-<text text-anchor="middle" x="461.22" y="-317.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
-</g>
-<!-- I -->
-<g id="node9" class="node">
-<title>I</title>
-<path fill="#9bcd9b" stroke="#9bcd9b" d="M774.09,-292C774.09,-292 471.48,-292 471.48,-292 465.48,-292 459.48,-286 459.48,-280 459.48,-280 459.48,-176 459.48,-176 459.48,-170 465.48,-164 471.48,-164 471.48,-164 774.09,-164 774.09,-164 780.09,-164 786.09,-170 786.09,-176 786.09,-176 786.09,-280 786.09,-280 786.09,-286 780.09,-292 774.09,-292"></path>
-<text text-anchor="middle" x="622.78" y="-265.5" font-family="sans-serif:bold" font-size="25.00">Use a managed model</text>
-<text text-anchor="middle" x="622.78" y="-235.5" font-family="sans-serif:bold" font-size="25.00">hosting service:</text>
-<text text-anchor="middle" x="622.78" y="-175.5" font-family="sans-serif:bold" font-size="25.00">Amazon SageMaker, Anyscale</text>
-</g>
-<!-- E&#45;&gt;I -->
-<g id="edge6" class="edge">
-<title>E-&gt;I</title>
-<path fill="none" stroke="black" d="M553.74,-357.63C564.56,-337.47 577.28,-313.78 588.83,-292.26"></path>
-<text text-anchor="middle" x="594.06" y="-317.5" font-family="sans-serif:bold" font-size="25.00">No</text>
-</g>
-<!-- G -->
-<g id="node7" class="node">
-<title>G</title>
-<path fill="#9bcd9b" stroke="#9bcd9b" d="M285.92,-98C285.92,-98 25.64,-98 25.64,-98 19.64,-98 13.64,-92 13.64,-86 13.64,-86 13.64,-12 13.64,-12 13.64,-6 19.64,0 25.64,0 25.64,0 285.92,0 285.92,0 291.92,0 297.92,-6 297.92,-12 297.92,-12 297.92,-86 297.92,-86 297.92,-92 291.92,-98 285.92,-98"></path>
-<text text-anchor="middle" x="155.78" y="-71.5" font-family="sans-serif:bold" font-size="25.00">Deploy an advanced stack:</text>
-<text text-anchor="middle" x="155.78" y="-11.5" font-family="sans-serif:bold" font-size="25.00">NVIDIA</text>
-</g>
-<!-- F&#45;&gt;G -->
-<g id="edge7" class="edge">
-<title>F-&gt;G</title>
-<path fill="none" stroke="black" d="M274.32,-193.71C252.1,-166.77 220.51,-128.47 195.53,-98.18"></path>
-<text text-anchor="middle" x="253.22" y="-123.5" font-family="sans-serif:bold" font-size="25.00">Yes</text>
-</g>
-<!-- H -->
-<g id="node8" class="node">
-<title>H</title>
-<path fill="#9bcd9b" stroke="#9bcd9b" d="M567.62,-83C567.62,-83 327.94,-83 327.94,-83 321.94,-83 315.94,-77 315.94,-71 315.94,-71 315.94,-27 315.94,-27 315.94,-21 321.94,-15 327.94,-15 327.94,-15 567.62,-15 567.62,-15 573.62,-15 579.62,-21 579.62,-27 579.62,-27 579.62,-71 579.62,-71 579.62,-77 573.62,-83 567.62,-83"></path>
-<text text-anchor="middle" x="447.78" y="-56.5" font-family="sans-serif:bold" font-size="25.00">Deploy a simple service:</text>
-<text text-anchor="middle" x="447.78" y="-26.5" font-family="sans-serif:bold" font-size="25.00">OpenLLM, FastAPI</text>
-</g>
-<!-- F&#45;&gt;H -->
-<g id="edge8" class="edge">
-<title>F-&gt;H</title>
-<path fill="none" stroke="black" d="M329.24,-193.71C355.35,-162.06 394.38,-114.74 420.44,-83.14"></path>
-<text text-anchor="middle" x="408.06" y="-123.5" font-family="sans-serif:bold" font-size="25.00">No</text>
-</g>
-</g>
-</svg>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-</section>
-<section id="gpu-poor-benchmark-wrong-but-useful" class="level3">
-<h3 class="anchored" data-anchor-id="gpu-poor-benchmark-wrong-but-useful">GPU Poor Benchmark (Wrong, but useful)</h3>
-<ul>
-<li><strong>Benchmarking inference servers</strong>: Experiment with different servers to find the best fit for your use case.</li>
-<li><strong>Observations</strong>:
-<ul>
-<li><a href="https://github.com/vllm-project/vllm">vLLM</a>: Easy to use, good performance trade-offs.</li>
-<li>NVIDIA stack (<a href="https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html">Triton + TensorRT</a>): High performance but complex to use.</li>
-<li><strong>Quantization</strong>: Can significantly impact performance, but evaluate quality trade-offs.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="case-study-honeycomb---replicate" class="level2">
-<h2 class="anchored" data-anchor-id="case-study-honeycomb---replicate">Case Study: Honeycomb - Replicate</h2>
-<ul>
-<li><p><strong><a href="https://replicate.com/">Replicate</a>:</strong> Run AI with an API</p></li>
-<li><p><a href="https://replicate.com/hamelsmu/honeycomb-4-awq">hamelsmu/honeycomb-4-awq</a>: Honeycomb NLQ Generator hosted with vLLM + AWQ Quantized</p></li>
-<li><p><strong>HoneyComb Model:</strong> <a href="https://huggingface.co/parlance-labs/hc-mistral-alpaca-merged-awq">parlance-labs/hc-mistral-alpaca-merged-awq</a></p></li>
-</ul>
-<section id="why-replicate" class="level3">
-<h3 class="anchored" data-anchor-id="why-replicate">Why Replicate?</h3>
-<ul>
-<li><strong>Real-time Use Case:</strong> The Honeycomb example demands real-time responses within the Honeycomb interface, making a platform like Replicate ideal.</li>
-<li><strong>User-Friendly Playground:</strong> Replicate provides a playground environment with structured input, beneficial for non-technical users to interact with the model.</li>
-<li><strong>Permalink Functionality:</strong> Replicate generates permalinks for predictions, which simplifies debugging and sharing specific scenarios with collaborators.</li>
-<li><strong>Built-in Documentation and API:</strong> Replicate automatically generates documentation and API endpoints for easy integration and sharing.</li>
-<li><strong>Example Saving:</strong> The platform allows users to save specific examples for future reference and testing.</li>
-</ul>
-</section>
-<section id="show-me-the-code" class="level3">
-<h3 class="anchored" data-anchor-id="show-me-the-code">Show Me the Code</h3>
-<ul>
-<li><strong>GitHub:</strong> <a href="https://github.com/parlance-labs/ftcourse/tree/master/replicate-examples/mistral-vllm-awq">ftcourse/replicate-examples/mistral-vllm-awq</a></li>
-<li><strong><a href="https://cog.run/">Cog</a>:</strong> Containers for machine learning</li>
-</ul>
-<p><strong>Files:</strong></p>
-<ul>
-<li><code>cog.yaml</code>: Defines the Docker environment and specifies the entry point (<code>predict.py</code>).</li>
-<li><code>predict.py</code>: Contains the model loading, setup, and prediction logic.</li>
-</ul>
-<p><strong>Steps:</strong> 1. <strong>Environment Setup:</strong> - Install Cog (a Docker wrapper that simplifies CUDA management). - Download the model weights from Hugging Face Hub (optional, for local testing). 2. <strong>Code Structure:</strong> - <code>cog.yaml</code>: - Specifies the base Docker image and dependencies. - Defines the <code>predict.py</code> file as the entry point. - ```yaml # Configuration for Cog ⚙️ # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md</p>
-<pre><code>      build:
-       # set to true if your model requires a GPU
-       gpu: true
-       cuda: "12.1"
-      
-       # python version in the form '3.8' or '3.8.12'
-       python_version: "3.11"
-      
-       # a list of packages in the format &lt;package-name&gt;==&lt;version&gt;
-       python_packages:
-        - "hf_transfer==0.1.4"
-        - "aiohttp[speedups]"
-        - "torch==2.1.2"
-      
-       # commands run after the environment is setup
-       run:
-        - pip install "pydantic&lt;2.0.0"
-        - CUDA_HOME=/usr/local/cuda pip install --ignore-installed vllm==0.3.0
-        - pip install https://r2.drysys.workers.dev/tmp/cog-0.10.0a6-py3-none-any.whl
-        - bash -c 'ln -s /usr/local/lib/python3.11/site-packages/torch/lib/lib{nv,cu}* /usr/lib'
-        - pip install scipy==1.11.4 sentencepiece==0.1.99 protobuf==4.23.4
-        - ln -sf $(which echo) $(which pip)
-      
-      predict: "predict.py:Predictor"
-      ```
-- `predict.py`:
-    - **Prompt Template:** Sets the structure for interacting with the LLM.
-    - **Setup:**
-        - Defines a `Predictor` class.
-        - Loads the quantized model from Hugging Face Hub during initialization.
-    - **Predict Function:**
-        - Takes the natural language query and schema as input.
-        - Processes the input through the LLM using vLLM.
-        - Returns the generated Honeycomb query.
-    
-    - ```python
-        import os
-        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
-        import torch
-        from cog import BasePredictor
-        from vllm import LLM, SamplingParams
-        
-        
-        MODEL_ID = 'parlance-labs/hc-mistral-alpaca-merged-awq'
-        MAX_TOKENS=2500
-        
-        PROMPT_TEMPLATE = """Honeycomb is an observability platform that allows you to write queries to inspect trace data. You are an assistant that takes a natural language query (NLQ) and a list of valid columns and produce a Honeycomb query.
-        
-        ### Instruction:
-        
-        NLQ: "{nlq}"
-        
-        Columns: {cols}
-        
-        ### Response:
-        """
-        
-        class Predictor(BasePredictor):
-            
-          def setup(self):
-            n_gpus = torch.cuda.device_count()
-            self.sampling_params = SamplingParams(stop_token_ids=[2], temperature=0, ignore_eos=True, max_tokens=2500)
-        
-            self.llm = LLM(model='parlance-labs/hc-mistral-alpaca-merged-awq', 
-                    tensor_parallel_size=n_gpus, quantization="AWQ")
-        
-          def predict(self, nlq: str, cols: str) -&gt; str:    
-            _p = PROMPT_TEMPLATE.format(nlq=nlq, cols=cols)
-            out = self.llm.generate(_p, sampling_params=self.sampling_params, use_tqdm=False)
-            return out[0].outputs[0].text.strip().strip('"')
-        ```</code></pre>
-<ol start="3" type="1">
-<li><strong>Local Testing:</strong>
-<ul>
-<li><strong>Run Cog Server:</strong> <code>cog run</code> starts a local web server for interacting with the model.
-<ul>
-<li><div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb10-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">cog</span> run <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-e</span> CUDA_VISIBLE_DEVICES=0 <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-p</span> 5000 python <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-m</span> cog.server.http</span></code></pre></div></li>
-</ul></li>
-<li><strong>Direct Prediction:</strong> <code>cog predict -i input1=value1 input2=value2</code> allows for direct prediction using command-line arguments.
-<ul>
-<li><div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb11-1">  <span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">cog</span> predict <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-e</span> CUDA_VISIBLE_DEVICES=0 <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-i</span> nlq=<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"EMISSING slowest traces"</span> <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-i</span> cols=<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"['sli.latency', 'duration_ms', 'net.transport', 'http.method', 'error', 'http.target', 'http.route', 'rpc.method', 'ip', 'http.request_content_length', 'rpc.service', 'apdex', 'name', 'message.type', 'http.host', 'service.name', 'rpc.system', 'http.scheme', 'sli.platform-time', 'type', 'http.flavor', 'span.kind', 'dc.platform-time', 'library.version', 'status_code', 'net.host.port', 'net.host.ip', 'app.request_id', 'bucket_duration_ms', 'library.name', 'sli_product', 'message.uncompressed_size', 'rpc.grpc.status_code', 'net.peer.port', 'log10_duration_ms', 'http.status_code', 'status_message', 'http.user_agent', 'net.host.name', 'span.num_links', 'message.id', 'parent_name', 'app.cart_total', 'num_products', 'product_availability', 'revenue_at_risk', 'trace.trace_id', 'trace.span_id', 'ingest_timestamp', 'http.server_name', 'trace.parent_id']"</span></span></code></pre></div></li>
-</ul></li>
-</ul></li>
-<li><strong>Deployment to Replicate:</strong>
-<ul>
-<li><strong>Create a Model on Replicate:</strong>
-<ul>
-<li>Choose a descriptive name.</li>
-<li>Select appropriate hardware based on memory and GPU requirements.</li>
-<li>Choose “Custom Cog Model” as the model type.</li>
-</ul></li>
-<li><strong>Login to Cog:</strong> <code>cog login</code></li>
-<li><strong>Push to Replicate:</strong> <code>cog push r8.im/hamelsmu/honeycomb-4-awq</code></li>
-</ul></li>
-</ol>
-</section>
-</section>
-<section id="deploying-large-language-models" class="level2">
-<h2 class="anchored" data-anchor-id="deploying-large-language-models">Deploying Large Language Models</h2>
-<section id="deploying-llms" class="level3">
-<h3 class="anchored" data-anchor-id="deploying-llms">Deploying LLMs</h3>
-<ul>
-<li>Deploying LLMs is challenging, even in 2024, due to the multidimensional and zero-sum nature of performance optimization and the constant evolution of technology.</li>
-</ul>
-<section id="challenges-in-deploying-llms" class="level4">
-<h4 class="anchored" data-anchor-id="challenges-in-deploying-llms">Challenges in Deploying LLMs</h4>
-<ul>
-<li><strong>Multidimensional and Zero-Sum Performance:</strong> LLM performance involves trade-offs between various factors like speed, cost, and accuracy. Prioritizing one dimension often negatively impacts others.
-<ul>
-<li><strong>Example:</strong> Increasing batch size improves throughput (total tokens per second) but reduces single-stream performance (tokens per second for a single request), impacting user experience.</li>
-</ul></li>
-<li><strong>Rapid Technology Evolution:</strong> The field is constantly evolving with new serving frameworks and optimization techniques emerging frequently. Keeping up with these changes while maintaining a performant and cost-effective deployment is demanding.</li>
-</ul>
-</section>
-<section id="llm-performance-bottlenecks" class="level4">
-<h4 class="anchored" data-anchor-id="llm-performance-bottlenecks">LLM Performance Bottlenecks</h4>
-<p>Two primary factors contribute to slow LLM inference:</p>
-<ul>
-<li><strong>Memory Bandwidth:</strong> Transformers require frequent data transfers between slow device memory and faster memory caches on GPUs.</li>
-<li><strong>Software Overhead:</strong> Launching and scheduling each operation in a model’s forward pass involves communication between CPU and GPU, creating overhead.</li>
-</ul>
-</section>
-<section id="techniques-for-optimizing-llm-performance" class="level4">
-<h4 class="anchored" data-anchor-id="techniques-for-optimizing-llm-performance">Techniques for Optimizing LLM Performance</h4>
-<ul>
-<li><strong>Memory Bandwidth Optimization:</strong>
-<ul>
-<li><strong>CUDA Kernel Optimization:</strong> Techniques like kernel fusion aim to minimize data transfer by combining multiple kernels into one.</li>
-<li><strong>Flash Attention:</strong> Improves efficiency by minimizing data movement during attention calculations.</li>
-<li><strong>Paged Attention:</strong> Optimizes data storage and transfer for increased efficiency.</li>
-<li><strong>Quantization:</strong> Reduces model size by using lower-precision data types, allowing for faster data transfer.</li>
-<li><strong>Speculative Decoding:</strong> Generates multiple tokens in parallel, discarding incorrect ones, to potentially reduce latency.
-<ul>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2405.19325">Nearest Neighbor Speculative Decoding for LLM Generation and Attribution</a></li>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/feifeibear/LLMSpeculativeSampling">feifeibear/LLMSpeculativeSampling</a></li>
-</ul></li>
-</ul></li>
-<li><strong>Software Overhead Reduction:</strong>
-<ul>
-<li><strong>CUDA Kernel Optimization:</strong> Fewer, more efficient kernels lead to fewer kernel launches.</li>
-<li><strong>CUDA Graphs:</strong> Traces and combines all kernel launches in a forward pass into a single unit, reducing CPU-GPU communication.</li>
-</ul></li>
-<li><strong>Runtime Optimizations:</strong>
-<ul>
-<li><strong>Continuous Batching:</strong> Enables efficient processing of requests with varying lengths by continuously adding and removing them from batches during inference.</li>
-<li><strong>KV Caching:</strong> Stores key-value embeddings during inference, avoiding redundant calculations for repeated inputs.</li>
-<li><strong>Hardware Upgrades:</strong> Using more powerful GPUs directly improves performance.</li>
-<li><strong>Input/Output Length Optimization:</strong> Shorter inputs and outputs reduce the number of tokens processed, potentially improving latency.</li>
-</ul></li>
-</ul>
-</section>
-<section id="continuous-batching" class="level4">
-<h4 class="anchored" data-anchor-id="continuous-batching">Continuous Batching</h4>
-<ul>
-<li><p>Continuous batching is a significant advancement in LLM serving that addresses limitations of traditional micro-batching.</p></li>
-<li><p><strong>Blog Post:</strong> <a href="https://www.anyscale.com/blog/continuous-batching-llm-inference">How continuous batching enables 23x throughput in LLM inference while reducing p50 latency</a></p></li>
-<li><p><strong>How it Works:</strong> Processes requests as a stream of individual token generation steps, allowing for dynamic addition and removal of requests within a batch.</p></li>
-<li><p><strong>Benefits:</strong></p>
-<ul>
-<li>Eliminates the need to wait for a complete batch before processing, reducing latency.</li>
-<li>Enables efficient handling of requests with varying lengths.</li>
-</ul></li>
-<li><p><strong>Consequences:</strong></p>
-<ul>
-<li>Results in dynamic batch sizes, making performance less predictable.</li>
-<li>Requires careful consideration of performance SLAs and user experience.</li>
-</ul></li>
-</ul>
-</section>
-<section id="inference-servers" class="level4">
-<h4 class="anchored" data-anchor-id="inference-servers">Inference Servers</h4>
-<p>Various inference servers are available, each with its own strengths and weaknesses:</p>
-<ul>
-<li><strong>Examples:</strong> <a href="https://github.com/vllm-project/vllm">vLLM</a>, <a href="https://huggingface.co/docs/text-generation-inference/en/index">TGI</a>, <a href="https://fastgen.com/">FastGen</a>, <a href="https://github.com/NVIDIA/TensorRT-LLM">TensorRT-LLM</a>, <a href="https://github.com/sgl-project/sglang">SGLang</a>, <a href="https://ollama.com/">Ollama</a>, <a href="https://github.com/ggerganov/llama.cpp">Llama.cpp</a>, <a href="https://github.com/turboderp/exllama">Exllama</a>, <a href="https://github.com/mlc-ai/mlc-llm">MLC</a>, <a href="https://github.com/predibase/lorax">LoRAX</a></li>
-<li><strong>Common Features:</strong> Continuous batching, specialized kernels, support for different optimization techniques.</li>
-</ul>
-</section>
-<section id="performance-tuning" class="level4">
-<h4 class="anchored" data-anchor-id="performance-tuning">Performance Tuning</h4>
-<p>Understanding and tuning for different performance metrics is crucial:</p>
-<ul>
-<li><strong>Total Tokens Per Second (Throughput):</strong> Measures the overall token generation rate across all requests.</li>
-<li><strong>Single Stream Tokens Per Second (Latency):</strong> Measures the token generation rate for a single request, reflecting user experience.</li>
-<li><strong>Requests Per Second:</strong> Measures how many requests can be completed per second.</li>
-</ul>
-<p><strong>Key Considerations:</strong></p>
-<ul>
-<li>Increasing batch size generally improves throughput but reduces single-stream performance.</li>
-<li>Finding the right balance between these metrics depends on the specific use case and desired user experience.</li>
-<li>Clearly define performance SLOs and consider both throughput and latency when evaluating performance.</li>
-</ul>
-</section>
-</section>
-<section id="simplifying-llm-deployment" class="level3">
-<h3 class="anchored" data-anchor-id="simplifying-llm-deployment">Simplifying LLM Deployment</h3>
-<section id="prioritize-modularity" class="level4">
-<h4 class="anchored" data-anchor-id="prioritize-modularity">Prioritize Modularity</h4>
-<p>Building a modular LLM serving stack is essential for navigating the challenges of the rapidly evolving technology landscape.</p>
-<ul>
-<li><strong>Benefits of Modularity:</strong>
-<ul>
-<li><strong>Flexibility:</strong> Easily switch between different serving frameworks as needed to leverage new features or optimizations.</li>
-<li><strong>Experimentation:</strong> Enables efficient testing and comparison of different frameworks and configurations.</li>
-</ul></li>
-<li><strong>Challenges:</strong>
-<ul>
-<li><strong>Compatibility Issues:</strong> Features and optimizations from different frameworks may not always work together seamlessly.</li>
-<li><strong>Lack of Documentation:</strong> New features and their interactions may not be well-documented, requiring experimentation and debugging.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="simplify-llm-deployment-with-replicate" class="level3">
-<h3 class="anchored" data-anchor-id="simplify-llm-deployment-with-replicate">Simplify LLM Deployment with Replicate</h3>
-<p>Replicate is a serverless infrastructure that aims to simplify LLM deployment and experimentation.</p>
-<section id="replicate-features-and-workflow" class="level4">
-<h4 class="anchored" data-anchor-id="replicate-features-and-workflow">Replicate Features and Workflow</h4>
-<ul>
-<li><strong><a href="https://cog.run/">COG</a>:</strong> Open-source tool for packaging models and serving code, providing control over the serving framework.
-<ul>
-<li><a href="https://github.com/replicate/cog-vllm">Cog-vLLM</a>: Run vLLM on Replicate</li>
-</ul></li>
-<li><strong>Hugging Face Integration:</strong> Streamlined workflow for pulling and deploying models from Hugging Face.</li>
-<li><strong>Performance Optimizations:</strong> Caching mechanisms and other optimizations to improve model download and cold boot times.</li>
-<li><strong>Open Source Approach:</strong> Replicate’s model serving infrastructure is open source, allowing for customization and contributions.</li>
-</ul>
-<p><strong>Workflow Example:</strong></p>
-<ol type="1">
-<li><strong>Create a Training:</strong> Specify the model, Hugging Face ID, and other configurations through Replicate’s web interface.</li>
-<li><strong>Transfer Weights:</strong> Replicate downloads weights from Hugging Face and pushes them to its optimized storage.</li>
-<li><strong>Deploy and Access Model:</strong> Once the training is complete, the model is deployed and accessible through Replicate’s API or client libraries.</li>
-<li><strong>Customize with COG:</strong> Utilize COG to customize the serving environment, experiment with different frameworks, and add features.</li>
-</ol>
-<p><strong>Key Advantages:</strong></p>
-<ul>
-<li><strong>Simplified Deployment:</strong> Replicate abstracts away infrastructure complexities, making it easy to deploy and serve models.</li>
-<li><strong>Framework Flexibility:</strong> Supports multiple serving frameworks like vLLM and TRT-LLM, allowing for experimentation and optimization.</li>
-<li><strong>Open Source and Customizable:</strong> Provides transparency and control over the serving environment.</li>
-</ul>
-</section>
-</section>
-</section>
-<section id="lessons-from-building-a-serverless-platform---predibase" class="level2">
-<h2 class="anchored" data-anchor-id="lessons-from-building-a-serverless-platform---predibase">Lessons from Building A Serverless Platform - Predibase</h2>
-<section id="predibase-overview" class="level3">
-<h3 class="anchored" data-anchor-id="predibase-overview">Predibase Overview</h3>
-<ul>
-<li><a href="https://predibase.com/">Predibase</a> is a managed platform for fine-tuning and serving LLMs.</li>
-<li>It offers an end-to-end solution for prompting, fine-tuning, and deploying LLMs serverlessly or in dedicated environments.</li>
-</ul>
-</section>
-<section id="the-case-for-fine-tuned-llms" class="level3">
-<h3 class="anchored" data-anchor-id="the-case-for-fine-tuned-llms">The Case for Fine-Tuned LLMs</h3>
-<ul>
-<li><strong>General Intelligence vs.&nbsp;Task Specificity:</strong> General-purpose LLMs like ChatGPT are powerful but inefficient for specific tasks. Fine-tuning allows for models tailored to specific business needs, reducing cost and latency.</li>
-<li><strong>Cost of Serving Multiple Models:</strong> Serving numerous fine-tuned models on dedicated deployments becomes expensive.</li>
-<li><strong><a href="https://github.com/predibase/lorax">LoRAX</a> - A Solution for Efficient Serving:</strong>
-<ul>
-<li>Lorax is an open-source framework built on HuggingFace’s TGI, designed for efficient fine-tuned LLM inference.</li>
-<li>It enables serving multiple fine-tuned models concurrently on a single deployment by sharing base model parameters and using heterogeneous batching of LoRA adapters.</li>
-<li>This approach results in significant cost savings compared to dedicated deployments or fine-tuning via OpenAI’s API.</li>
-</ul></li>
-</ul>
-</section>
-<section id="deploying-your-fine-tuned-model-practical-considerations" class="level3">
-<h3 class="anchored" data-anchor-id="deploying-your-fine-tuned-model-practical-considerations">Deploying Your Fine-Tuned Model: Practical Considerations</h3>
-<section id="merging-adapters-pros-and-cons" class="level4">
-<h4 class="anchored" data-anchor-id="merging-adapters-pros-and-cons">Merging Adapters: Pros and Cons</h4>
-<ul>
-<li><strong>Merging:</strong>
-<ul>
-<li><strong>Pros:</strong> Better baseline performance by eliminating the overhead of processing LoRA layers at runtime.</li>
-<li><strong>Cons:</strong> Limits flexibility in serving multiple fine-tunes, incompatibility with certain adapters (e.g., DORA, speculative decoding), potential quantization challenges, increased disk space.</li>
-</ul></li>
-<li><strong>Not Merging:</strong>
-<ul>
-<li><strong>Pros:</strong> Allows serving multiple fine-tuned models and the base model on a single deployment, facilitates A/B testing and rapid iteration, compatibility with various adapter types.</li>
-<li><strong>Cons:</strong> Potential performance overhead due to processing LoRA layers at runtime.</li>
-</ul></li>
-<li><strong>Decision:</strong> Whether to merge depends on individual needs and constraints.</li>
-</ul>
-</section>
-<section id="quantization-for-training-and-inference" class="level4">
-<h4 class="anchored" data-anchor-id="quantization-for-training-and-inference">Quantization for Training and Inference</h4>
-<ul>
-<li><strong>Challenge:</strong> Models trained with QLoRA (quantized) often show performance degradation when served using FP16 (full precision). Serving with QLoRA is slow.</li>
-<li><strong>Solution:</strong> Dequantize the QLoRA weights to FP16 for inference. This maintains numerical equivalence with the quantized weights while enabling faster inference.</li>
-</ul>
-</section>
-</section>
-<section id="performance-tuning-1" class="level3">
-<h3 class="anchored" data-anchor-id="performance-tuning-1">Performance Tuning</h3>
-<section id="gathering-requirements" class="level4">
-<h4 class="anchored" data-anchor-id="gathering-requirements">Gathering Requirements</h4>
-<ul>
-<li><strong>Factors:</strong> Queries per second, input/output token distribution, number of adapters.</li>
-<li><strong>Impact:</strong> These factors influence ideal batch size, target throughput, and latency.</li>
-<li><strong>SLOs:</strong> Define service level objectives for peak throughput, latency, and cost.</li>
-</ul>
-</section>
-<section id="deployment-requirements" class="level4">
-<h4 class="anchored" data-anchor-id="deployment-requirements">Deployment Requirements</h4>
-<ul>
-<li><strong>VRAM Estimation:</strong> Allocate at least 1.5x the model weights for serving, considering activations, adapters, and KV cache.</li>
-</ul>
-</section>
-<section id="key-questions-for-choosing-deployment-options" class="level4">
-<h4 class="anchored" data-anchor-id="key-questions-for-choosing-deployment-options">Key Questions for Choosing Deployment Options</h4>
-<ul>
-<li>VRAM needs</li>
-<li>Requests per second</li>
-<li>Request distribution</li>
-<li>Maximum acceptable latency</li>
-<li>Willingness to sacrifice quality for cost</li>
-<li>Number of tasks</li>
-</ul>
-</section>
-<section id="serverless-vs.-dedicated-deployment" class="level4">
-<h4 class="anchored" data-anchor-id="serverless-vs.-dedicated-deployment">Serverless vs.&nbsp;Dedicated Deployment</h4>
-<ul>
-<li><strong>Serverless:</strong> Suitable for low to medium, uniformly distributed requests with latency tolerance on the order of seconds.</li>
-<li><strong>Dedicated:</strong> More appropriate for high, spiky request volumes, batch processing, or when strict latency and throughput SLOs are critical.</li>
-</ul>
-</section>
-</section>
-<section id="fine-tuning-for-throughput" class="level3">
-<h3 class="anchored" data-anchor-id="fine-tuning-for-throughput">Fine-Tuning for Throughput</h3>
-<ul>
-<li><strong>Shifting the Paradigm:</strong> Move beyond focusing solely on quality and leverage fine-tuning for performance improvements.</li>
-</ul>
-<section id="addressing-performance-differences" class="level4">
-<h4 class="anchored" data-anchor-id="addressing-performance-differences">Addressing Performance Differences:</h4>
-<ul>
-<li>Fine-tuned models with adapters often show slower throughput compared to base models.</li>
-</ul>
-</section>
-<section id="speculative-decoding---the-medusa-approach" class="level4">
-<h4 class="anchored" data-anchor-id="speculative-decoding---the-medusa-approach">Speculative Decoding - The Medusa Approach:</h4>
-<ul>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2401.10774">MEDUSA: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads</a></li>
-<li>Fine-tune additional projections to predict future tokens, improving throughput by reducing the number of forward passes.</li>
-<li>Implement verification steps to ensure only correct tokens are accepted.</li>
-</ul>
-</section>
-<section id="combining-quality-and-performance-with-lookahead-lora" class="level4">
-<h4 class="anchored" data-anchor-id="combining-quality-and-performance-with-lookahead-lora">Combining Quality and Performance with Lookahead LoRA:</h4>
-<ul>
-<li>Fine-tune adapters to predict multiple tokens ahead (lookahead) while maintaining task-specific accuracy.</li>
-<li>This approach has shown significant throughput improvements (2-3x) compared to base models and standard LoRA adapters.</li>
-</ul>
-</section>
-</section>
-<section id="demonstration" class="level3">
-<h3 class="anchored" data-anchor-id="demonstration">Demonstration</h3>
-<ul>
-<li>A live demo showcased the throughput differences between a base Medusa model, a fine-tuned Medusa model, and a model using lookahead LoRA for a code generation task.</li>
-<li>The lookahead LoRA model achieved significantly higher throughput, highlighting the potential of this technique.</li>
-</ul>
-</section>
-</section>
-<section id="batch-vs-real-time-and-modal" class="level2">
-<h2 class="anchored" data-anchor-id="batch-vs-real-time-and-modal">Batch vs Real Time and Modal</h2>
-<section id="throughput-vs.-latency" class="level3">
-<h3 class="anchored" data-anchor-id="throughput-vs.-latency">Throughput vs.&nbsp;Latency</h3>
-<ul>
-<li><strong>Defining “Slow”</strong>: A system can be slow due to low throughput (handling few requests per unit time) or high latency (taking long to process a single request).</li>
-<li><strong>Throughput</strong>: Measured in requests completed per unit time.
-<ul>
-<li>Relevant for batch tasks like recommendation systems, evaluations, and CI/CD.</li>
-<li>Constraints often stem from upstream/downstream systems.</li>
-</ul></li>
-<li><strong>Latency</strong>: Measured in time taken to complete a single request.
-<ul>
-<li>Crucial for real-time applications like chatbots, copilots, and guardrails.</li>
-<li>Human perception is the primary constraint (target ~200ms total system latency).</li>
-</ul></li>
-<li><strong>Cost</strong>: The hidden factor influencing throughput and latency. More resources generally improve both but at a cost.</li>
-</ul>
-</section>
-<section id="latency-lags-throughput" class="level3">
-<h3 class="anchored" data-anchor-id="latency-lags-throughput">Latency Lags Throughput</h3>
-<ul>
-<li><strong>Paper:</strong> <a href="https://dl.acm.org/doi/pdf/10.1145/1022594.1022596">Latency Lags Bandwidth</a></li>
-<li><strong>Latency Improvements Are Hard</strong>: Historically, improving bandwidth has been easier than reducing latency due to fundamental engineering and physical limitations (e.g., speed of light).
-<ul>
-<li><strong>GPUs Exemplify This</strong>: GPUs are optimized for throughput with large areas dedicated to processing, while CPUs prioritize latency with a focus on caching and control flow.</li>
-</ul></li>
-</ul>
-<section id="gpus-are-inherently-throughput-oriented." class="level4">
-<h4 class="anchored" data-anchor-id="gpus-are-inherently-throughput-oriented.">GPUs are inherently throughput-oriented.</h4>
-<ul>
-<li><strong>Textbook:</strong> <a href="https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/">Programming Massively Parallel Processors: A Hands-on Approach</a></li>
-<li>GPUs have much larger areas dedicated to processing units (ALUs) compared to CPUs, which prioritize caching and control flow for lower latency.</li>
-<li>This design difference allows GPUs to achieve significantly higher memory throughput, making them suitable for high-throughput tasks like LLM inference.</li>
-</ul>
-</section>
-<section id="llm-inference-challenges" class="level4">
-<h4 class="anchored" data-anchor-id="llm-inference-challenges">LLM Inference Challenges</h4>
-<ul>
-<li><strong>Throughput</strong>: Easily scalable by increasing batch size (with some latency tradeoffs).</li>
-<li><strong>Latency</strong>: Much harder to optimize.
-<ul>
-<li><strong>Techniques for Improvement</strong>: Quantization, model distillation, truncation, faster hardware, and highly optimized software (e.g., CUDA kernels).</li>
-<li><strong>Extreme Latency Optimization</strong>: Running models entirely on cache memory (SRAM), as done by <a href="https://wow.groq.com/lpu-inference-engine/">Groq’s LPU</a>, significantly reduces latency but may impact throughput per dollar.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="costs-are-high-but-falling." class="level3">
-<h3 class="anchored" data-anchor-id="costs-are-high-but-falling.">Costs are high but falling.</h3>
-<ul>
-<li><strong>Good News</strong>: LLM inference costs are decreasing faster than Moore’s law due to hardware, algorithmic, and R&amp;D advancements.
-<ul>
-<li><strong>Cognitive Capability for Fixed Price</strong>: $20/megatoken now buys GPT-4 level output, significantly higher capability than what was possible a year ago.</li>
-<li><strong>Falling Costs for Fixed Capability</strong>: Achieving chatGPT-level performance is now possible at a fraction of the cost compared to two years ago.</li>
-</ul></li>
-<li><strong>Implication</strong>: Holding onto a fixed budget and waiting for capabilities to improve is a viable strategy.</li>
-</ul>
-</section>
-<section id="deploying-llms-on-modal" class="level3">
-<h3 class="anchored" data-anchor-id="deploying-llms-on-modal">Deploying LLMs on Modal</h3>
-<ul>
-<li><strong>Modal’s Value Proposition</strong>:
-<ul>
-<li><strong>High Throughput</strong>: Easy scaling to hundreds of A100s for large-scale fine-tuning and batch inference.</li>
-<li><strong>Manageable Latency</strong>: Balancing latency and cost is achievable for models up to 13B parameters, suitable for certain latency-sensitive applications.</li>
-<li><strong>Competitive Cost</strong>: Offers competitive GPU pricing with potential for high utilization savings, especially for spiky workloads.</li>
-</ul></li>
-<li><strong>Beyond GPUs</strong>: Modal provides a complete serverless runtime with storage, compute, and web service capabilities, enabling tasks beyond just LLM inference.</li>
-</ul>
-</section>
-<section id="modal-is-for-more-than-gpus" class="level3">
-<h3 class="anchored" data-anchor-id="modal-is-for-more-than-gpus">Modal is for more than GPUs</h3>
-<ul>
-<li>Modal is not just a serverless GPU platform; it’s a complete runtime environment.</li>
-<li><strong>Key Features</strong>:
-<ul>
-<li><strong>Storage</strong>: Distributed file system, queues, dictionaries, and the ability to mount local and web data.</li>
-<li><strong>Compute</strong>: Functions, GPU acceleration, and other serverless compute options.</li>
-<li><strong>Web Services</strong>: Web endpoints and server capabilities for deploying applications.</li>
-</ul></li>
-</ul>
-</section>
-<section id="demos" class="level3">
-<h3 class="anchored" data-anchor-id="demos">Demos</h3>
-<ul>
-<li><strong>Code:</strong> <a href="https://modal.com/docs/examples">https://modal.com/docs/examples</a></li>
-<li><strong>Abliteration LLM</strong>: Demonstrated an LLM modified to remove certain responses (e.g., refusing harmful requests). This demo encountered technical difficulties.
-<ul>
-<li><strong>Blog Post:</strong> <a href="https://huggingface.co/blog/mlabonne/abliteration">Uncensor any LLM with abliteration</a></li>
-</ul></li>
-<li><strong>Batch Inference with TRT LLM</strong>: Showcased running batch inference on Llama-3 8B using TRT LLM, achieving high throughput.</li>
-<li><strong>Hot Reloading Development Server</strong>: Demonstrated the ability to make code changes locally and have them automatically redeployed on Modal.</li>
-<li><strong>OpenAI Compatible Endpoint</strong>: Showcased running an OpenAI compatible endpoint on Modal using vLLM, allowing integration with tools like Instructor.</li>
-</ul>
-</section>
-</section>
-<section id="qa-session" class="level2">
-<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
-<section id="awq-in-honeycomb-example" class="level3">
-<h3 class="anchored" data-anchor-id="awq-in-honeycomb-example">AWQ in Honeycomb Example</h3>
-<ul>
-<li><strong>Question:</strong> Clarification sought on the mention of AWQ in the Honeycomb example.</li>
-<li><strong>Answer:</strong> AWQ (quantization technique) is highlighted as a tool for model quantization, compatible and easily integrable with vLLM. The speaker shares their preference for using default or documented settings for quantization without delving into extensive customization.
-<ul>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2306.00978">AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
-</ul></li>
-</ul>
-</section>
-<section id="pricing-fine-tuning-projects-for-enterprises" class="level3">
-<h3 class="anchored" data-anchor-id="pricing-fine-tuning-projects-for-enterprises">Pricing Fine-Tuning Projects for Enterprises</h3>
-<ul>
-<li><strong>Question:</strong> Advice sought on determining pricing for enterprise fine-tuning projects.</li>
-<li><strong>Answer:</strong> Advises against hourly rates and recommends a value-based approach, which involves:
-<ul>
-<li>Understanding the client’s problem and its importance.</li>
-<li>Identifying key metrics the client aims to improve.</li>
-<li>Collaborating to determine the project’s value to the client.
-<ul>
-<li>If the client does not know, should probably not take the project</li>
-</ul></li>
-<li>Proposing a reasonable fraction of that value as the price.</li>
-</ul></li>
-</ul>
-</section>
-<section id="gpu-optimization-in-modal-with-vllms-async-engine" class="level3">
-<h3 class="anchored" data-anchor-id="gpu-optimization-in-modal-with-vllms-async-engine">GPU Optimization in Modal with vLLM’s Async Engine</h3>
-<ul>
-<li><strong>Question:</strong> Inquiry about optimizing GPU usage in Modal when using vLLM’s asynchronous engine and limiting concurrent requests instead of batch size.</li>
-<li><strong>Answer:</strong> Charles Frye emphasizes the importance of measuring actual GPU behavior:
-<ul>
-<li><strong>CUDA Kernel Utilization:</strong> Monitor using tools like NVIDIA SMI to understand GPU activity.</li>
-<li><strong>FLOPs Utilization:</strong> Measure and compare the achieved floating-point operations per second against the system’s theoretical maximum.</li>
-<li><strong>Wattage Consumption:</strong> Observe GPU power draw as a proxy for actual workload and potential bottlenecks.</li>
-</ul></li>
-</ul>
-</section>
-<section id="hiding-api-endpoints-in-model-serving-web-apps" class="level3">
-<h3 class="anchored" data-anchor-id="hiding-api-endpoints-in-model-serving-web-apps">Hiding API Endpoints in Model-Serving Web Apps</h3>
-<ul>
-<li><strong>Question:</strong> Strategies sought for concealing API endpoints in a web application to prevent exposure through browser inspection tools.</li>
-<li><strong>Answer:</strong>
-<ul>
-<li><strong>Proxy Server:</strong> Routing requests through a proxy to mask internal endpoints and implement protections.</li>
-<li><strong>Accepting Limitations:</strong> Recognizing that completely hiding data flow from the client-side is challenging.</li>
-</ul></li>
-</ul>
-</section>
-<section id="impact-of-input-prompt-size-on-speed" class="level3">
-<h3 class="anchored" data-anchor-id="impact-of-input-prompt-size-on-speed">Impact of Input Prompt Size on Speed</h3>
-<ul>
-<li><strong>Question:</strong> Clarification sought on how reducing input prompt size affects processing speed, given that the entire prompt is read at once.</li>
-<li><strong>Answer:</strong>
-<ul>
-<li><strong>Prefill Impact:</strong> Smaller prompts reduce the initial encoding time (prefill), which can be significant for very large inputs.</li>
-<li><strong>Attention Calculation:</strong> Shorter sequences lead to faster attention calculations due to the quadratic complexity of attention mechanisms.</li>
-<li><strong>Practical Considerations:</strong> The impact might be negligible for moderately sized prompts but becomes increasingly relevant for very large inputs like books or lengthy PDFs.</li>
-</ul></li>
-</ul>
-</section>
-<section id="resources-for-learning-continuous-batching" class="level3">
-<h3 class="anchored" data-anchor-id="resources-for-learning-continuous-batching">Resources for Learning Continuous Batching</h3>
-<ul>
-<li><strong>Question:</strong> Recommendation requested for resources to learn about continuous batching.</li>
-<li><strong>Answer:</strong>
-<ul>
-<li><strong>Orca Paper:</strong> Referring to the original research paper on continuous batching.</li>
-<li><strong>AnyScale Blog Post:</strong> <a href="https://www.anyscale.com/blog/continuous-batching-llm-inference">How continuous batching enables 23x throughput in LLM inference while reducing p50 latency</a></li>
-<li><strong>Practical Experimentation:</strong> Emphasizing the value of hands-on experience, benchmarking, and analyzing performance variations.</li>
-</ul></li>
-</ul>
-</section>
-<section id="request-caching-layer-in-hugging-face-and-modal" class="level3">
-<h3 class="anchored" data-anchor-id="request-caching-layer-in-hugging-face-and-modal">Request Caching Layer in Hugging Face and Modal</h3>
-<ul>
-<li><strong>Question:</strong> Inquiry about the availability of a request caching layer in Hugging Face and Modal.</li>
-<li><strong>Answer:</strong>
-<ul>
-<li><strong>KV Caching:</strong> The speakers clarify that some frameworks, like TRT-LLM and vLLM, offer KV caching, which can improve performance for requests sharing similar prefixes or chat history.</li>
-<li><strong>Higher-Level Caching:</strong> Expanding on the concept, they discuss the possibility of centralized KV cache databases and even caching complete requests and responses for deterministic scenarios.</li>
-<li><strong>Replicate’s Approach:</strong> Joe Hoover states that Replicate doesn’t currently provide explicit features for request caching but acknowledges it as a potential future consideration.</li>
-</ul></li>
-</ul>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/workshop-004/</guid>
-  <pubDate>Wed, 17 Jul 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
