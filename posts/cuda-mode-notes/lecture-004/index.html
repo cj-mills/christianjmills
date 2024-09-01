@@ -1,0 +1,2342 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-08-31">
+<meta name="description" content="Lecture #4 provides an overview of CUDA programming fundamentals, focusing on compute architecture, memory management, and optimization strategies like kernel fusion and tiling to achieve high-performance GPU computation.">
+
+<title>Christian Mills - CUDA MODE Lecture 4 : Compute and Memory Basics</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - CUDA MODE Lecture 4 : Compute and Memory Basics">
+<meta property="og:description" content="Lecture #4 provides an overview of CUDA programming fundamentals, focusing on compute architecture, memory management, and optimization strategies like kernel fusion and tiling to achieve high-performance GPU computation.">
+<meta property="og:image" content="https://christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - CUDA MODE Lecture 4 : Compute and Memory Basics">
+<meta name="twitter:description" content="Lecture #4 provides an overview of CUDA programming fundamentals, focusing on compute architecture, memory management, and optimization strategies like kernel fusion and tiling to achieve high-performance GPU computation.">
+<meta name="twitter:image" content="https://christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#compute-architecture-and-scheduling" id="toc-compute-architecture-and-scheduling" class="nav-link active" data-scroll-target="#compute-architecture-and-scheduling"><strong>Compute Architecture and Scheduling</strong></a>
+  <ul>
+  <li><a href="#gpu-architecture-vs.-cpu" id="toc-gpu-architecture-vs.-cpu" class="nav-link" data-scroll-target="#gpu-architecture-vs.-cpu"><strong>GPU Architecture vs.&nbsp;CPU</strong></a></li>
+  <li><a href="#gpu-architecture-details-rtx-3090-example" id="toc-gpu-architecture-details-rtx-3090-example" class="nav-link" data-scroll-target="#gpu-architecture-details-rtx-3090-example">GPU Architecture Details (RTX 3090 Example)</a></li>
+  <li><a href="#threads-warps-and-blocks" id="toc-threads-warps-and-blocks" class="nav-link" data-scroll-target="#threads-warps-and-blocks"><strong>Threads, Warps, and Blocks</strong></a></li>
+  <li><a href="#multi-dimensional-thread-grids" id="toc-multi-dimensional-thread-grids" class="nav-link" data-scroll-target="#multi-dimensional-thread-grids"><strong>Multi-Dimensional Thread Grids</strong></a></li>
+  <li><a href="#warp-divergence-and-control-flow" id="toc-warp-divergence-and-control-flow" class="nav-link" data-scroll-target="#warp-divergence-and-control-flow"><strong>Warp Divergence and Control Flow</strong></a></li>
+  <li><a href="#achieving-good-occupancy" id="toc-achieving-good-occupancy" class="nav-link" data-scroll-target="#achieving-good-occupancy"><strong>Achieving Good Occupancy</strong></a></li>
+  <li><a href="#querying-gpu-properties" id="toc-querying-gpu-properties" class="nav-link" data-scroll-target="#querying-gpu-properties"><strong>Querying GPU Properties</strong></a></li>
+  </ul></li>
+  <li><a href="#memory-architecture-and-data-locality" id="toc-memory-architecture-and-data-locality" class="nav-link" data-scroll-target="#memory-architecture-and-data-locality"><strong>Memory Architecture and Data Locality</strong></a>
+  <ul>
+  <li><a href="#performance-bottlenecks" id="toc-performance-bottlenecks" class="nav-link" data-scroll-target="#performance-bottlenecks"><strong>Performance Bottlenecks</strong></a></li>
+  <li><a href="#pytorch-performance-breakdown" id="toc-pytorch-performance-breakdown" class="nav-link" data-scroll-target="#pytorch-performance-breakdown"><strong>PyTorch Performance Breakdown</strong></a></li>
+  <li><a href="#memory-access-as-a-bottleneck" id="toc-memory-access-as-a-bottleneck" class="nav-link" data-scroll-target="#memory-access-as-a-bottleneck"><strong>Memory Access as a Bottleneck</strong></a></li>
+  <li><a href="#flash-attention-example" id="toc-flash-attention-example" class="nav-link" data-scroll-target="#flash-attention-example"><strong>Flash Attention Example</strong></a></li>
+  <li><a href="#kernel-fusion-example-approximated-gelu" id="toc-kernel-fusion-example-approximated-gelu" class="nav-link" data-scroll-target="#kernel-fusion-example-approximated-gelu"><strong>Kernel Fusion Example: Approximated Gelu</strong></a></li>
+  <li><a href="#numerical-accuracy-and-floating-point-operations" id="toc-numerical-accuracy-and-floating-point-operations" class="nav-link" data-scroll-target="#numerical-accuracy-and-floating-point-operations"><strong>Numerical Accuracy and Floating Point Operations</strong></a></li>
+  <li><a href="#theoretical-maximum-speed-level-rgb-to-gray-kernel" id="toc-theoretical-maximum-speed-level-rgb-to-gray-kernel" class="nav-link" data-scroll-target="#theoretical-maximum-speed-level-rgb-to-gray-kernel"><strong>Theoretical Maximum Speed: Level RGB to Gray Kernel</strong></a></li>
+  <li><a href="#roofline-model" id="toc-roofline-model" class="nav-link" data-scroll-target="#roofline-model"><strong>Roofline Model</strong></a></li>
+  <li><a href="#gpu-memory-hierarchy" id="toc-gpu-memory-hierarchy" class="nav-link" data-scroll-target="#gpu-memory-hierarchy"><strong>GPU Memory Hierarchy</strong></a></li>
+  <li><a href="#shared-memory-and-tiling" id="toc-shared-memory-and-tiling" class="nav-link" data-scroll-target="#shared-memory-and-tiling"><strong>Shared Memory and Tiling</strong></a></li>
+  <li><a href="#future-considerations" id="toc-future-considerations" class="nav-link" data-scroll-target="#future-considerations"><strong>Future Considerations</strong></a></li>
+  </ul></li>
+  <li><a href="#conclusions-and-key-takeaways" id="toc-conclusions-and-key-takeaways" class="nav-link" data-scroll-target="#conclusions-and-key-takeaways"><strong>Conclusions and Key Takeaways</strong></a>
+  <ul>
+  <li><a href="#gpu-computation" id="toc-gpu-computation" class="nav-link" data-scroll-target="#gpu-computation"><strong>GPU Computation:</strong></a></li>
+  <li><a href="#memory-management" id="toc-memory-management" class="nav-link" data-scroll-target="#memory-management"><strong>Memory Management:</strong></a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><strong>Next Steps:</strong></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CUDA MODE Lecture 4 : Compute and Memory Basics</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #4 provides an overview of CUDA programming fundamentals, focusing on compute architecture, memory management, and optimization strategies like kernel fusion and tiling to achieve high-performance GPU computation.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 31, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#compute-architecture-and-scheduling"><strong>Compute Architecture and Scheduling</strong></a></li>
+<li><a href="#memory-architecture-and-data-locality"><strong>Memory Architecture and Data Locality</strong></a><br>
+</li>
+<li><a href="#conclusions-and-key-takeaways"><strong>Conclusions and Key Takeaways</strong></a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=lTmYrKwjSOU">Lecture 4 Compute and Memory Basics</a></li>
+<li><strong>Jupyter Notebook:</strong> <a href="https://github.com/cuda-mode/lectures/blob/main/lecture_004/cuda-mode-session-4.ipynb">lecture_004/cuda-mode-session-4.ipynb</a></li>
+<li><strong>Paper:</strong> <a href="https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf">GA102 Whitepaper</a></li>
+</ul>
+</div>
+</div>
+<section id="compute-architecture-and-scheduling" class="level2">
+<h2 class="anchored" data-anchor-id="compute-architecture-and-scheduling"><strong>Compute Architecture and Scheduling</strong></h2>
+<section id="gpu-architecture-vs.-cpu" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-architecture-vs.-cpu"><strong>GPU Architecture vs.&nbsp;CPU</strong></h3>
+<ul>
+<li><strong>CPUs:</strong>
+<ul>
+<li>Complex cores with multiple specialized units (fetch, decode, ALU).</li>
+<li>Typically, one or few Arithmetic Logic Units (ALUs) per core. <img src="./images/cpu-core.png" class="img-fluid quarto-figure quarto-figure-center"></li>
+</ul></li>
+<li><strong>GPUs:</strong>
+<ul>
+<li>Streaming Multiprocessors (SMs) with many ALUs.</li>
+<li><strong>Threads</strong> share context and resources within an SM.</li>
+<li>Each thread has its own program counter in newer GPUs (e.g., Volta and later).</li>
+<li>Older GPUs shared program counters among threads in a warp. <img src="./images/gpu-sm.png" class="img-fluid quarto-figure quarto-figure-center"></li>
+</ul></li>
+</ul>
+</section>
+<section id="gpu-architecture-details-rtx-3090-example" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-architecture-details-rtx-3090-example">GPU Architecture Details (RTX 3090 Example)</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/rtx-3090.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 2. GA102 Full GPU with 84 SMs</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Note:</strong> The GA102 GPU also features 168 FP64 units (two per SM), which are not depicted in this diagram. The FP64 TFLOP rate is 1/64th the TFLOP rate of FP32 operations. The small number of FP64 hardware units are included to ensure any programs with FP64 code operate correctly, including FP64 Tensor Core code.</p>
+</div>
+</div>
+<ul>
+<li><strong>Streaming Multiprocessors (SMs):</strong>
+<ul>
+<li>RTX 3090 has 82 SMs.</li>
+<li>SMs are largely independent.</li>
+<li>Share a common L2 cache.</li>
+</ul></li>
+<li><strong>Floating-Point Cores:</strong>
+<ul>
+<li>Consumer GPUs lack dedicated FP64 cores.</li>
+<li>RTX 3090 has a limited FP64 rate (1/64th of FP32).</li>
+<li>Accidental use of FP64 constants can significantly slow down computation.</li>
+</ul></li>
+<li><strong>Streaming Multiprocessor Structure:</strong>
+<ul>
+<li>Each SM has four units, each with:
+<ul>
+<li>Register file.</li>
+<li>Scheduling and dispatch unit (32 threads/clock).</li>
+<li>Compute units: 32 FP32 units (half can do INT32).</li>
+<li>Tensor cores.</li>
+</ul></li>
+</ul></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/figure-3-ga10x-streaming-multiprocessor-sm.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 3. GA10x Streaming Multiprocessor (SM)</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Kernel Execution:</strong>
+<ul>
+<li><strong>Thread blocks</strong> are assigned to SMs (no user control over assignment).</li>
+<li>Multiple blocks can be assigned to one SM if resource limits allow.</li>
+<li>RTX 3090 can handle up to 1536 threads per SM.</li>
+<li>Ideal block size divides 1536 (e.g., 256 or 512).</li>
+</ul></li>
+<li><strong>Warp Execution:</strong>
+<ul>
+<li>Each SM processes one <strong>warp</strong> (32 threads) at a time.</li>
+<li><strong>Warp divergence</strong> occurs when threads within a warp are not in sync, leading to partial execution.</li>
+</ul></li>
+<li><strong>Registers:</strong>
+<ul>
+<li>Shared register file (64K 32-bit registers per SM).</li>
+<li>Registers are not cleared when switching between warps, requiring careful management of register usage.</li>
+</ul></li>
+<li><strong>L1 Cache and Shared Memory:</strong>
+<ul>
+<li>128KB of on-chip memory per SM, split between L1 cache and shared memory.</li>
+</ul></li>
+</ul>
+</section>
+<section id="threads-warps-and-blocks" class="level3">
+<h3 class="anchored" data-anchor-id="threads-warps-and-blocks"><strong>Threads, Warps, and Blocks</strong></h3>
+<ul>
+<li><strong>Kernel Launch:</strong> Defined by block layout (threads per block) and grid layout (number of blocks).</li>
+<li><strong>Thread Block:</strong>
+<ul>
+<li>Assigned to a single SM.</li>
+<li>Threads within a block execute in parallel on the same SM.</li>
+<li>Threads within a block can access <strong>shared memory</strong>.</li>
+</ul></li>
+<li><strong>Blocks:</strong>
+<ul>
+<li>Independent of each other.</li>
+<li>CUDA assigns blocks to SMs arbitrarily (no programmer control).</li>
+<li>Execution order of blocks is not guaranteed.</li>
+</ul></li>
+<li><strong>SM Thread Capacity:</strong>
+<ul>
+<li>SMs can process more threads than the maximum threads in a block.</li>
+<li>Multiple blocks can be assigned to a single SM, if resource limits allow.</li>
+<li><strong>Example (RTX 3090):</strong> Maximum 1536 threads per SM.</li>
+<li><strong>Recommendation:</strong> Choose block sizes (e.g., 256, 512) that divide the maximum thread capacity for optimal SM utilization.</li>
+</ul></li>
+<li><strong>Warp:</strong>
+<ul>
+<li>A group of 32 threads.</li>
+<li>SMs process one warp at a time.</li>
+<li><strong>Warp Divergence:</strong> Occurs when threads within a warp follow different execution paths (e.g., due to conditional statements).
+<ul>
+<li>Leads to reduced performance as only a subset of threads in a warp execute at a time.</li>
+</ul></li>
+</ul></li>
+<li><strong>AMD Terminology:</strong>
+<ul>
+<li><strong>Wavefronts:</strong> AMD’s term for warps.</li>
+<li>Typically 64 threads, but can be reduced to 32 via compiler options.</li>
+</ul></li>
+</ul>
+</section>
+<section id="multi-dimensional-thread-grids" class="level3">
+<h3 class="anchored" data-anchor-id="multi-dimensional-thread-grids"><strong>Multi-Dimensional Thread Grids</strong></h3>
+<ul>
+<li><p><strong>Linearization:</strong> Multi-dimensional thread grids are linearized for execution.</p></li>
+<li><p><strong>Thread Index Order:</strong> <code>threadIdx.x</code> is the fastest moving dimension, followed by <code>threadIdx.y</code>, and then <code>threadIdx.z</code>.</p></li>
+<li><p><strong>Example:</strong> An <code>8x8x8</code> thread block:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># CUDA kernel and C++ function declaration</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>cuda_src <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="st">#include &lt;c10/cuda/CUDAException.h&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">/**</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st"> * CUDA kernel to compute thread indices of neighbors in a 3D grid.</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st"> * </span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st"> * @param out Pointer to output array where neighbor indices will be stored.</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st"> */</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="st">__global__ void thread_idx_of_neighbors_kernel(int32_t* out) {</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="st">    // Grid dimensions: 8x8x8 threads per block, 32 neighbors per thread, 3 coordinates per neighbor</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="st">    int x = threadIdx.x;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="st">    int y = threadIdx.y;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">    int z = threadIdx.z;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="st">    // Iterate over all 32 threads in the warp</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="st">    for (int i = 0; i &lt; 32; i++) {</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="st">        // Use warp shuffle to get coordinates of other threads</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="st">        int other_x = __shfl_sync(0xffffffff, x, i);</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="st">        int other_y = __shfl_sync(0xffffffff, y, i);</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">        int other_z = __shfl_sync(0xffffffff, z, i);</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="st">        // Calculate offset in output array and store neighbor coordinates</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="st">        int offset = z * 8*8*32*3 + y * 8*32*3 + x * 32*3 + i*3;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="st">        out[offset] = other_x;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="st">        out[offset + 1] = other_y;</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="st">        out[offset + 2] = other_z;</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="st">/**</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="st"> * C++ wrapper function to launch the CUDA kernel and return results as a Torch tensor.</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="st"> * </span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="st"> * @return torch::Tensor A 5D tensor containing thread indices of neighbors.</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="st"> */</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="st">torch::Tensor thread_idx_of_neighbors() {</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="st">    // Create output tensor: 8x8x8 threads, 32 neighbors, 3 coordinates</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="st">    auto output = torch::empty({8, 8, 8, 32, 3}, torch::TensorOptions().device(torch::kCUDA).dtype(torch::kInt));</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="st">    // Set up kernel launch parameters</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="st">    dim3 block(8, 8, 8);</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="st">    dim3 grid(1);</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="st">    // Launch kernel</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="st">    thread_idx_of_neighbors_kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(output.data_ptr&lt;int32_t&gt;());</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="st">    // Check for CUDA errors</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="st">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="st">    return output;</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C++ function declaration</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>cpp_src <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">torch::Tensor thread_idx_of_neighbors();</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the CUDA kernel and C++ function as a PyTorch extension</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>thread_idx_of_neighbors_module <span class="op">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"test_thread_idx"</span>,  <span class="co"># Name of the extension</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    cpp_src,            <span class="co"># C++ source code</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    cuda_src,           <span class="co"># CUDA source code</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    functions<span class="op">=</span>[<span class="st">'thread_idx_of_neighbors'</span>],  <span class="co"># List of functions to expose</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    extra_cuda_cflags<span class="op">=</span>[<span class="st">'--ptxas-options=-v'</span>],  <span class="co"># Additional CUDA compiler flags</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span>        <span class="co"># Enable verbose output during compilation</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Threads within a warp have consecutive <code>threadIdx.x</code> values.</li>
+<li><code>threadIdx.y</code> changes less frequently than <code>threadIdx.x</code>.</li>
+<li><code>threadIdx.z</code> changes least frequently.</li>
+</ul></li>
+<li><p><strong>Verification:</strong> Kernel code demonstrates thread indexing using shuffle instructions.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Call the CUDA kernel through the PyTorch extension</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> thread_idx_of_neighbors_module.thread_idx_of_neighbors()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the first element of the result tensor</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>t[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([[0, 0, 0],
+        [1, 0, 0],
+        [2, 0, 0],
+        [3, 0, 0],
+        [4, 0, 0],
+        [5, 0, 0],
+        [6, 0, 0],
+        [7, 0, 0],
+        [0, 1, 0],
+        [1, 1, 0],
+        [2, 1, 0],
+        [3, 1, 0],
+        [4, 1, 0],
+        [5, 1, 0],
+        [6, 1, 0],
+        [7, 1, 0],
+        [0, 2, 0],
+        [1, 2, 0],
+        [2, 2, 0],
+        [3, 2, 0],
+        [4, 2, 0],
+        [5, 2, 0],
+        [6, 2, 0],
+        [7, 2, 0],
+        [0, 3, 0],
+        [1, 3, 0],
+        [2, 3, 0],
+        [3, 3, 0],
+        [4, 3, 0],
+        [5, 3, 0],
+        [6, 3, 0],
+        [7, 3, 0]], device='cuda:0', dtype=torch.int32)</code></pre></li>
+</ul>
+</section>
+<section id="warp-divergence-and-control-flow" class="level3">
+<h3 class="anchored" data-anchor-id="warp-divergence-and-control-flow"><strong>Warp Divergence and Control Flow</strong></h3>
+<ul>
+<li><strong>Traditional GPUs (Single Program Counter per Warp):</strong>
+<ul>
+<li><strong>Conditional Statements (if-else):</strong> Threads not satisfying the condition are disabled, leading to warp divergence.</li>
+<li>Only the active threads execute the corresponding branch.</li>
+<li>Threads are re-enabled/disabled as needed at each branch point.</li>
+<li><strong>Limitations:</strong>
+<ul>
+<li>Inter-thread communication within a warp is not possible during divergence (waiting threads would stall the warp).</li>
+<li>Performance is reduced due to idle threads and sequential execution of branches.</li>
+</ul></li>
+</ul></li>
+<li><strong>Newer GPUs (&gt;= Volta) (Independent Program Counters):</strong>
+<ul>
+<li>Each thread has its own program counter.</li>
+<li>GPU can interleave execution of different branches, improving utilization.</li>
+<li><strong>Advantages:</strong>
+<ul>
+<li>Can hide memory latency by switching to other warps while one warp waits for memory access.</li>
+</ul></li>
+<li><strong>Disadvantages:</strong>
+<ul>
+<li>Reconvergence of threads after divergence is not automatic.</li>
+<li>Requires explicit synchronization using <code>__syncwarp()</code> to ensure all threads are at the same point before continuing.</li>
+</ul></li>
+</ul></li>
+<li><strong>Loop Divergence:</strong> Similar divergence occurs in loops with variable iteration counts across threads in a warp.</li>
+</ul>
+</section>
+<section id="achieving-good-occupancy" class="level3">
+<h3 class="anchored" data-anchor-id="achieving-good-occupancy"><strong>Achieving Good Occupancy</strong></h3>
+<ul>
+<li><strong>Occupancy:</strong> A measure of how well the GPU’s resources are utilized.</li>
+<li><strong>Goals:</strong>
+<ul>
+<li>Keep all SMs busy.</li>
+<li>Maximize the number of active threads per SM.</li>
+<li>Minimize warp divergence.</li>
+<li>Avoid slow FP64 and INT64 operations (especially on consumer GPUs).</li>
+</ul></li>
+<li><strong>Strategies:</strong>
+<ul>
+<li><strong>Many Blocks:</strong> Utilize all available SMs.</li>
+<li><strong>Optimal Block Size:</strong> Choose a power of two smaller than 512 (or a divisor of the maximum threads per SM) to maximize concurrent threads.</li>
+<li><strong>Minimize Divergence:</strong>
+<ul>
+<li>Use conditional load/store instructions to avoid control flow divergence.</li>
+<li>Structure code to minimize branching within warps.</li>
+</ul></li>
+<li><strong>Avoid FP64/INT64:</strong> Use FP32/INT32 whenever possible for better performance.</li>
+</ul></li>
+<li><strong>Shared Memory and Registers:</strong>
+<ul>
+<li>Excessive use of shared memory or registers can limit the number of threads scheduled per SM.</li>
+<li><strong>Launch Bounds:</strong> Use <code>__launch_bounds__</code> to advise the compiler about expected thread counts, allowing for better register allocation.</li>
+<li><strong>Register Spills:</strong> If register usage exceeds the limit, variables are spilled to slower local memory, impacting performance.</li>
+</ul></li>
+<li><strong>Occupancy Calculation Tools:</strong>
+<ul>
+<li><strong>Previously:</strong> Excel sheets.</li>
+<li><strong>Currently:</strong> NVIDIA Nsight Compute provides occupancy analysis.</li>
+</ul></li>
+</ul>
+</section>
+<section id="querying-gpu-properties" class="level3">
+<h3 class="anchored" data-anchor-id="querying-gpu-properties"><strong>Querying GPU Properties</strong></h3>
+<ul>
+<li><strong>PyTorch:</strong> <code>torch.cuda.get_device_properties(device)</code> provides basic properties (name, compute architecture, memory, processor count, registers per SM, max threads per SM).</li>
+<li><strong>CUDA C API:</strong> More detailed properties are available through the CUDA Runtime API.</li>
+</ul>
+</section>
+</section>
+<section id="memory-architecture-and-data-locality" class="level2">
+<h2 class="anchored" data-anchor-id="memory-architecture-and-data-locality"><strong>Memory Architecture and Data Locality</strong></h2>
+<section id="performance-bottlenecks" class="level3">
+<h3 class="anchored" data-anchor-id="performance-bottlenecks"><strong>Performance Bottlenecks</strong></h3>
+<ul>
+<li><strong>Memory Accesses:</strong> Often a major bottleneck in kernel performance.</li>
+<li><strong>Kernel Fusion:</strong> Combining multiple kernels into one can reduce memory transfers by avoiding intermediate reads and writes.</li>
+</ul>
+</section>
+<section id="pytorch-performance-breakdown" class="level3">
+<h3 class="anchored" data-anchor-id="pytorch-performance-breakdown"><strong>PyTorch Performance Breakdown</strong></h3>
+<ul>
+<li><p><strong>High-Level:</strong></p>
+<ul>
+<li>Python processing.</li>
+<li>Data administrative overhead (tensor allocation, etc.).</li>
+<li>Data acquisition.</li>
+<li>GPU computation.</li>
+</ul></li>
+<li><p><strong>Data Acquisition:</strong> Often a significant bottleneck if not optimized.</p></li>
+<li><p><strong>GPU Computation:</strong></p>
+<ul>
+<li>Fixed costs (kernel launches).</li>
+<li>Memory accesses (reading inputs, writing outputs).</li>
+<li>Actual computation (influenced by occupancy).</li>
+</ul></li>
+<li><p><strong>Rules of Thumb:</strong></p>
+<ul>
+<li><p>As long as you don’t have close to 100% GPU utilization in nvidia-smi, work on data acquisition etc.</p></li>
+<li><p>As long as you have Tensors with a few 100s of elements, “Python is slow” and data administrative over head is single digit percentages.</p></li>
+<li><p>Algorithms also matter (parallel algorithms in the following chapters)</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="memory-access-as-a-bottleneck" class="level3">
+<h3 class="anchored" data-anchor-id="memory-access-as-a-bottleneck"><strong>Memory Access as a Bottleneck</strong></h3>
+<ul>
+<li><strong>Eager PyTorch:</strong> Typically loads inputs, computes, and stores outputs for each operation.</li>
+<li><strong>Fusion Benefits:</strong> Reduces memory transfers by combining multiple operations into a single kernel.</li>
+<li><strong>PyTorch JIT:</strong>
+<ul>
+<li>First generation: Fused point-wise operations.</li>
+<li>Second generation (NVFuser): Added support for contractions.</li>
+</ul></li>
+<li><strong>NVFuser:</strong>
+<ul>
+<li>Evolved beyond PyTorch.</li>
+<li>Active git repository with ongoing development.
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/NVIDIA/Fuser">https://github.com/NVIDIA/Fuser</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Inductor and Triton:</strong> Support more complex operations through a specialized language and templates.</li>
+<li><strong>Flash Attention:</strong> Minimizes global memory accesses by leveraging shared memory effectively.</li>
+</ul>
+</section>
+<section id="flash-attention-example" class="level3">
+<h3 class="anchored" data-anchor-id="flash-attention-example"><strong>Flash Attention Example</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flash-attention-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></li>
+<li><strong>Figure:</strong> (from the Flash Attention paper) Shows the relative speeds of different memory types.
+<ul>
+<li><strong>High Bandwidth Memory (HBM):</strong> 1.5 TB/s (900 GB/s on the RTX 3090).</li>
+<li><strong>Shared Memory:</strong> More than 10x faster than HBM.</li>
+<li><strong>Shared Memory Limitation:</strong> Significantly smaller capacity (0.2% of global memory).</li>
+</ul></li>
+<li><strong>Goal:</strong> Minimize global memory accesses and maximize shared memory usage.</li>
+</ul>
+</section>
+<section id="kernel-fusion-example-approximated-gelu" class="level3">
+<h3 class="anchored" data-anchor-id="kernel-fusion-example-approximated-gelu"><strong>Kernel Fusion Example: Approximated Gelu</strong></h3>
+<ul>
+<li><p><strong>Approximated Gelu Formula:</strong> (from <a href="https://pytorch.org/docs/stable/generated/torch.nn.GELU.html">PyTorch documentation</a>) Uses <code>tanh</code> for an approximation of the Gaussian error linear unit (GELU) activation function. <span class="math display">\[
+\text{GELU}(x) = 0.5 * x * (1 + \text{Tanh}(\sqrt{2 / \pi} * (x + 0.044715 * x^3)))
+\]</span></p></li>
+<li><p><strong>PyTorch Implementation:</strong> Highly optimized, around 13.3 microseconds.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit torch.nn.functional.gelu(x, approximate<span class="op">=</span><span class="st">'tanh'</span>)<span class="op">;</span> torch.cuda.synchronize()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>13.3 μs ± 331 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)</code></pre></li>
+<li><p><strong>Naive Implementation:</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gelu(x):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Compute the Gaussian Error Linear Unit (GELU) activation function.</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">    GELU is defined as: GELU(x) = 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">        x (torch.Tensor): Input tensor</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">        torch.Tensor: Output tensor after applying GELU activation</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the constant term (2/pi)^0.5</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    const <span class="op">=</span> (<span class="dv">2</span> <span class="op">/</span> torch.pi) <span class="op">**</span> <span class="fl">0.5</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute the inner term: x + 0.044715 * x^3</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    inner_term <span class="op">=</span> x <span class="op">+</span> <span class="fl">0.044715</span> <span class="op">*</span> x<span class="op">**</span><span class="dv">3</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Apply the GELU formula</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fl">0.5</span> <span class="op">*</span> x <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> torch.tanh(const <span class="op">*</span> inner_term))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a random tensor of size 1024x1024 on the GPU</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">1024</span>, <span class="dv">1024</span>, device<span class="op">=</span><span class="st">"cuda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Measure the execution time of the GELU function</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Synchronize CUDA operations to ensure accurate timing</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit gelu(x)<span class="op">;</span> torch.cuda.synchronize()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>67.2 μs ± 1.41 μs per loop (mean ± std. dev. of 7 runs, 10,000 loops each)</code></pre>
+<ul>
+<li>Separate kernels for each operation.</li>
+<li>Significantly slower due to numerous memory accesses.</li>
+</ul></li>
+<li><p><strong>PyTorch Profiler:</strong> Can be used to identify individual kernel calls and their execution times.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use torch.profiler to analyze the performance of the GELU function</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.profiler.profile() <span class="im">as</span> prof:</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Measure the execution time of the GELU function</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Run the function 1000 times for more accurate timing</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">%</span>timeit <span class="op">-</span>n <span class="dv">1000</span> gelu(x)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Print a table of key performance metrics</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(prof.key_averages().table())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Name
+</th>
+<th>
+Self CPU %
+</th>
+<th>
+Self CPU
+</th>
+<th>
+CPU total %
+</th>
+<th>
+CPU total
+</th>
+<th>
+CPU time avg
+</th>
+<th>
+Self CUDA
+</th>
+<th>
+Self CUDA %
+</th>
+<th>
+CUDA total
+</th>
+<th>
+CUDA time avg
+</th>
+<th>
+# of Calls
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+aten::mul
+</td>
+<td>
+30.34%
+</td>
+<td>
+130.980ms
+</td>
+<td>
+50.70%
+</td>
+<td>
+218.874ms
+</td>
+<td>
+7.817us
+</td>
+<td>
+88.571ms
+</td>
+<td>
+49.36%
+</td>
+<td>
+88.571ms
+</td>
+<td>
+3.163us
+</td>
+<td>
+28000
+</td>
+</tr>
+<tr>
+<td>
+cudaLaunchKernel
+</td>
+<td>
+37.49%
+</td>
+<td>
+161.833ms
+</td>
+<td>
+37.49%
+</td>
+<td>
+161.833ms
+</td>
+<td>
+2.890us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+56000
+</td>
+</tr>
+<tr>
+<td>
+aten::pow
+</td>
+<td>
+9.45%
+</td>
+<td>
+40.780ms
+</td>
+<td>
+14.16%
+</td>
+<td>
+61.140ms
+</td>
+<td>
+8.734us
+</td>
+<td>
+20.920ms
+</td>
+<td>
+11.66%
+</td>
+<td>
+20.920ms
+</td>
+<td>
+2.989us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+aten::result_type
+</td>
+<td>
+0.18%
+</td>
+<td>
+785.257us
+</td>
+<td>
+0.18%
+</td>
+<td>
+785.257us
+</td>
+<td>
+0.112us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+aten::to
+</td>
+<td>
+0.14%
+</td>
+<td>
+603.008us
+</td>
+<td>
+0.14%
+</td>
+<td>
+603.008us
+</td>
+<td>
+0.086us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+aten::add
+</td>
+<td>
+15.28%
+</td>
+<td>
+65.959ms
+</td>
+<td>
+23.82%
+</td>
+<td>
+102.833ms
+</td>
+<td>
+7.345us
+</td>
+<td>
+46.930ms
+</td>
+<td>
+26.16%
+</td>
+<td>
+46.930ms
+</td>
+<td>
+3.352us
+</td>
+<td>
+14000
+</td>
+</tr>
+<tr>
+<td>
+aten::tanh
+</td>
+<td>
+7.13%
+</td>
+<td>
+30.763ms
+</td>
+<td>
+11.32%
+</td>
+<td>
+48.857ms
+</td>
+<td>
+6.980us
+</td>
+<td>
+23.008ms
+</td>
+<td>
+12.82%
+</td>
+<td>
+23.008ms
+</td>
+<td>
+3.287us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+62.472ms
+</td>
+<td>
+34.82%
+</td>
+<td>
+62.472ms
+</td>
+<td>
+2.975us
+</td>
+<td>
+21000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+20.920ms
+</td>
+<td>
+11.66%
+</td>
+<td>
+20.920ms
+</td>
+<td>
+2.989us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+26.045ms
+</td>
+<td>
+14.52%
+</td>
+<td>
+26.045ms
+</td>
+<td>
+3.721us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+23.008ms
+</td>
+<td>
+12.82%
+</td>
+<td>
+23.008ms
+</td>
+<td>
+3.287us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+20.886ms
+</td>
+<td>
+11.64%
+</td>
+<td>
+20.886ms
+</td>
+<td>
+2.984us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+26.099ms
+</td>
+<td>
+14.55%
+</td>
+<td>
+26.099ms
+</td>
+<td>
+3.728us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+cudaDeviceSynchronize
+</td>
+<td>
+0.00%
+</td>
+<td>
+5.062us
+</td>
+<td>
+0.00%
+</td>
+<td>
+5.062us
+</td>
+<td>
+5.062us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+1
+</td>
+</tr>
+</tbody>
+</table>
+<p>
+Self CPU time total: 431.709ms
+</p>
+<p>
+Self CUDA time total: 179.430ms
+</p>
+</div>
+<ul>
+<li>Shows a large number of separate kernels for point-wise operations in the naive implementation.</li>
+</ul></li>
+<li><p><strong>Fused Kernel:</strong></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define CUDA source code as a string</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>cuda_src <span class="op">=</span> cuda_begin <span class="op">+</span> <span class="vs">r'''</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="vs">__global__ void my_gelu_kernel(float* out, float* inp, int n) {</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Calculate global thread index</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="vs">    int i = blockIdx.x * blockDim.x + threadIdx.x;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Return if thread index is out of bounds</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="vs">    if (i &gt;= n) return;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Load input value</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="vs">    float x = inp[i];</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Compute GELU (Gaussian Error Linear Unit) activation</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="vs">    // GELU(x) = 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x^3)))</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="vs">    out[i] = 0.5f * x * (1.0f + tanhf(sqrtf(2.0f/3.141592653589793f) * (x + 0.044715f * (x*x*x))));</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="vs">torch::Tensor my_gelu_out(torch::Tensor output, const torch::Tensor&amp; inp) {</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="vs">    CHECK_INPUT(inp);  // Validate input tensor</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="vs">    int n = inp.numel();  // Get total number of elements in input tensor</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Ensure output tensor has same properties as input tensor</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="vs">    TORCH_CHECK((output.sizes() == inp.sizes()) || (output.device() == inp.device())</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="vs">                || (output.scalar_type() == inp.scalar_type()));</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="vs">    int threads = 256;  // Set number of threads per block</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Launch CUDA kernel</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="vs">    my_gelu_kernel&lt;&lt;&lt;cdiv(n, threads), threads&gt;&gt;&gt;(</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="vs">        output.data_ptr&lt;float&gt;(), inp.data_ptr&lt;float&gt;(), n);</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="vs">    C10_CUDA_KERNEL_LAUNCH_CHECK();  // Check for CUDA errors</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="vs">    return output;</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="vs">torch::Tensor my_gelu(const torch::Tensor&amp; inp) {</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="vs">    CHECK_INPUT(inp);  // Validate input tensor</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="vs">    auto output = torch::empty_like(inp);  // Create output tensor with same properties as input</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="vs">    my_gelu_out(output, inp);  // Compute GELU activation</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="vs">    return output;</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a><span class="vs">'''</span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Define C++ source code as a string</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>cpp_src <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="st">torch::Tensor my_gelu(const torch::Tensor&amp; inp);</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a><span class="st">torch::Tensor my_gelu_out(torch::Tensor output, const torch::Tensor&amp; inp);</span></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="co"># Set environment variables for compiler paths</span></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'CXX'</span>] <span class="op">=</span> <span class="st">'/usr/lib/ccache/g++-11'</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'CC'</span>] <span class="op">=</span> <span class="st">'/usr/lib/ccache/gcc-11'</span></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="co"># Load and compile the CUDA extension</span></span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>gelu_module <span class="op">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>    <span class="st">"test_ext_gelu"</span>,  <span class="co"># Name of the extension</span></span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>    cpp_src,  <span class="co"># C++ source code</span></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>    cuda_src,  <span class="co"># CUDA source code</span></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>    functions<span class="op">=</span>[<span class="st">'my_gelu'</span>, <span class="st">'my_gelu_out'</span>],  <span class="co"># Functions to expose</span></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>    extra_cuda_cflags<span class="op">=</span>[<span class="st">'--ptxas-options=-v'</span>],  <span class="co"># Additional CUDA compiler flags</span></span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span>  <span class="co"># Enable verbose output during compilation</span></span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit gelu_module.my_gelu(x)<span class="op">;</span> torch.cuda.synchronize()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>17 μs ± 246 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)</code></pre>
+<ul>
+<li>Combines all operations into a single C++ kernel.</li>
+<li>Slightly slower than PyTorch’s implementation (tested on an RTX 4090 with PyTorch 2.4.0).</li>
+</ul></li>
+<li><p><strong>Numerical Accuracy:</strong> Results are the same as PyTorch’s implementation, “up to numerical accuracy.”</p></li>
+</ul>
+</section>
+<section id="numerical-accuracy-and-floating-point-operations" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-accuracy-and-floating-point-operations"><strong>Numerical Accuracy and Floating Point Operations</strong></h3>
+<ul>
+<li><strong>Floating Point Addition:</strong> Not strictly associative due to limited precision.
+<ul>
+<li>The order of operations can affect the result, especially when adding numbers with vastly different magnitudes.</li>
+<li><strong>Example:</strong> Adding a very small number to a large number might result in no change if the small number is below the precision threshold.</li>
+</ul></li>
+<li><strong>Relative Accuracy:</strong>
+<ul>
+<li>FP32: Typically around 10⁻⁷ or 10⁻⁸.</li>
+<li>FP64: Higher precision.</li>
+</ul></li>
+</ul>
+</section>
+<section id="theoretical-maximum-speed-level-rgb-to-gray-kernel" class="level3">
+<h3 class="anchored" data-anchor-id="theoretical-maximum-speed-level-rgb-to-gray-kernel"><strong>Theoretical Maximum Speed: Level RGB to Gray Kernel</strong></h3>
+<ul>
+<li><strong>Kernel Operations:</strong>
+<ul>
+<li>Load 3 bytes (R, G, B).</li>
+<li>Compute index (1 multiplication, 1 addition - INT32).</li>
+<li>Compute grayscale value (3 multiplications, 2 additions - FP32).</li>
+<li>Data conversion.</li>
+<li>Store 1 byte.</li>
+</ul></li>
+<li><strong>Memory Bandwidth (RTX 3090):</strong> 900 GB/s.</li>
+<li><strong>Image Size:</strong> 2048 x 2048.</li>
+<li><strong>Theoretical Memory Transfer Time (“Speed of Light”):</strong> ~18 microseconds (assuming ideal access patterns).</li>
+<li><strong>Compute Performance (RTX 3090):</strong>
+<ul>
+<li>FP32: 35.6 TFLOPs.</li>
+<li>INT32: 16.8 TFLOPs.</li>
+</ul></li>
+<li><strong>Theoretical Compute Time:</strong> ~2 microseconds (excluding parallelism and memory latency).</li>
+<li><strong>Kernel Launch Overhead:</strong> ~3 microseconds (measured using an empty kernel).</li>
+<li><strong>Measured Kernel Time:</strong> ~26-27 microseconds.</li>
+<li><strong>Efficiency:</strong> Achieves about 75% of the theoretical maximum speed.</li>
+</ul>
+</section>
+<section id="roofline-model" class="level3">
+<h3 class="anchored" data-anchor-id="roofline-model"><strong>Roofline Model</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/roofline-model.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<ul>
+<li><strong>Purpose:</strong> Helps analyze the performance limitations of a kernel.</li>
+<li><strong>Computational Intensity:</strong> Key metric, defined as the number of floating-point operations (FLOPs) per byte of memory transfer.</li>
+<li><strong>Memory-Bound Kernels:</strong>
+<ul>
+<li>Low computational intensity.</li>
+<li>Performance limited by memory bandwidth.</li>
+<li>Throughput limited by the diagonal line in the roofline model representing memory bandwidth.</li>
+</ul></li>
+<li><strong>Compute-Bound Kernels:</strong>
+<ul>
+<li>High computational intensity.</li>
+<li>Performance limited by the GPU’s compute capabilities.</li>
+<li>Throughput limited by the horizontal line in the roofline model representing peak compute performance.</li>
+</ul></li>
+<li><strong>Roofline Shape:</strong> The characteristic “roof” shape arises from the fact that memory latency can be hidden if other warps can compute while one warp waits for memory.
+<ul>
+<li>The performance becomes the maximum of the memory bandwidth and compute throughput, leading to the minimum of the two limiting factors.</li>
+</ul></li>
+</ul>
+</section>
+<section id="gpu-memory-hierarchy" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-memory-hierarchy"><strong>GPU Memory Hierarchy</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/cuda-device-memory-model.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 5.2</figcaption>
+</figure>
+</div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 60%">
+<col style="width: 12%">
+<col style="width: 9%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable declaration</th>
+<th>Memory</th>
+<th>Scope</th>
+<th>Lifetime</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Automatic variables other than arrays</td>
+<td>Register</td>
+<td>Thread</td>
+<td>Grid</td>
+</tr>
+<tr class="even">
+<td>Automatic array variables</td>
+<td>Local</td>
+<td>Thread</td>
+<td>Grid</td>
+</tr>
+<tr class="odd">
+<td><code>__device__ __shared__ int SharedVar;</code></td>
+<td>Shared</td>
+<td>Block</td>
+<td>Grid</td>
+</tr>
+<tr class="even">
+<td><code>__device__ int GlobalVar;</code></td>
+<td>Global</td>
+<td>Grid</td>
+<td>Application</td>
+</tr>
+<tr class="odd">
+<td><code>__device__ __constant__ int ConstVar;</code></td>
+<td>Constant</td>
+<td>Grid</td>
+<td>Application</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Registers:</strong> Fastest, used for local variables within a thread.</li>
+<li><strong>Local Memory:</strong> Slower than registers, used for arrays declared within a thread or for register spills.</li>
+<li><strong>Shared Memory:</strong> Per-block memory, faster than global memory, accessible by all threads in a block, declared using <code>__shared__</code>.</li>
+<li><strong>Global Memory:</strong> Main GPU memory, accessible by all threads, typically accessed through pointers.</li>
+<li><strong>Constant Memory:</strong> Read-only memory, cached, used for kernel launch parameters and can be explicitly declared.</li>
+</ul>
+</section>
+<section id="shared-memory-and-tiling" class="level3">
+<h3 class="anchored" data-anchor-id="shared-memory-and-tiling"><strong>Shared Memory and Tiling</strong></h3>
+<ul>
+<li><p><strong>Tiling:</strong> A technique to improve data locality by loading data from global memory into shared memory and reusing it multiple times within a block.</p></li>
+<li><p><strong>Matrix Multiplication Example:</strong></p>
+<ul>
+<li><p><strong>Naive Approach:</strong> Each output element reads 2n inputs from global memory n times.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># CUDA kernel for matrix multiplication</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>cuda_src <span class="op">=</span> cuda_begin <span class="op">+</span> <span class="vs">r'''</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="vs">__global__ void simple_matmul_k(float* m, float* n, float* out, int h, int w, int k) {</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Calculate global thread indices</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="vs">    int r = blockIdx.y*blockDim.y + threadIdx.y;</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="vs">    int c = blockIdx.x*blockDim.x + threadIdx.x;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Boundary check</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="vs">    if (r&gt;=h || c&gt;=w) return;</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="vs">    float o = 0;</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Perform dot product for this element</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="vs">    for (int i = 0; i&lt;k; ++i) o += m[r*k+i] * n[i*w+c];</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="vs">    out[r*w+c] = o;</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="vs">torch::Tensor simple_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n) {</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="vs">    CHECK_INPUT(m); CHECK_INPUT(n);</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="vs">    int h = m.size(0);</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="vs">    int w = n.size(1);</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="vs">    int k = m.size(1);</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="vs">    TORCH_CHECK(k==n.size(0), "Size mismatch!");</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="vs">    auto output = torch::zeros({h, w}, m.options());</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Define thread block and grid dimensions</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="vs">    dim3 tpb(16,16);</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="vs">    dim3 blocks(cdiv(w, tpb.x), cdiv(h, tpb.y));</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Launch CUDA kernel</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="vs">    simple_matmul_k&lt;&lt;&lt;blocks, tpb&gt;&gt;&gt;(</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="vs">        m.data_ptr&lt;float&gt;(), n.data_ptr&lt;float&gt;(), output.data_ptr&lt;float&gt;(), h, w, k);</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="vs">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="vs">    return output;</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="vs">'''</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="co"># C++ function declaration</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>cpp_src <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="st">torch::Tensor simple_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n);</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the custom CUDA extension</span></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>simple_matmul_module <span class="op">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"test_ext_simple_matmul"</span>,</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>    cpp_sources<span class="op">=</span>cpp_src,</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>    cuda_sources<span class="op">=</span>cuda_src,</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>    functions<span class="op">=</span>[<span class="st">'simple_matmul'</span>],</span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>    extra_cuda_cflags<span class="op">=</span>[<span class="st">'--ptxas-options=-v'</span>],</span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span></span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create two random 1024x1024 matrices on the GPU</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> torch.randn(<span class="dv">1024</span>, <span class="dv">1024</span>, device<span class="op">=</span><span class="st">"cuda"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> torch.randn(<span class="dv">1024</span>, <span class="dv">1024</span>, device<span class="op">=</span><span class="st">"cuda"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Benchmark the custom matrix multiplication function</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit simple_matmul_module.simple_matmul(a, b)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the maximum absolute difference between custom and built-in matrix multiplication</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>max_diff <span class="op">=</span> (simple_matmul_module.simple_matmul(a, b) <span class="op">-</span> a<span class="op">@</span>b).<span class="bu">abs</span>().<span class="bu">max</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>426 μs ± 9.98 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)</code></pre></li>
+<li><p><strong>Tiling:</strong> Reduces the number of global memory accesses by reading input tiles into shared memory and reusing them for multiple output tiles.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Constants and CUDA kernel definition</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>cuda_src <span class="op">=</span> cuda_begin <span class="op">+</span> <span class="vs">r"""</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="vs">constexpr int TILE_SIZE = 16;  // Size of each tile for matrix multiplication</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="vs">/**</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @brief Tiled matrix multiplication kernel.</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="vs"> * </span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="vs"> * This kernel performs matrix multiplication using shared memory tiles to improve performance.</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="vs"> *</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param out Pointer to the output matrix</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param M Pointer to the first input matrix</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param N Pointer to the second input matrix</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param h Height of matrix M</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param w Width of matrix N</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param k Width of matrix M / Height of matrix N</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="vs"> */</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="vs">__global__ void tiled_matmul_kernel(float* out, float* M, float* N, int h, int w, int k) {</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="vs">    __shared__ float M_tile[TILE_SIZE][TILE_SIZE];  // Shared memory for M matrix tile</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="vs">    __shared__ float N_tile[TILE_SIZE][TILE_SIZE];  // Shared memory for N matrix tile</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Thread indices within a tile</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a><span class="vs">    int ir = threadIdx.y;</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="vs">    int ic = threadIdx.x;</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Global thread indices</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a><span class="vs">    int r = blockIdx.y * blockDim.y + threadIdx.y;</span></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="vs">    int c = blockIdx.x * blockDim.x + threadIdx.x;</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a><span class="vs">    float res = 0.0f;  // Accumulator for dot product result</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Iterate over tiles</span></span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a><span class="vs">    for (int K_tileidx = 0; K_tileidx &lt; (k + TILE_SIZE -1) / TILE_SIZE; K_tileidx++) {</span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a><span class="vs">        // Load data into shared memory tiles, with bounds checking</span></span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a><span class="vs">        M_tile[ir][ic] = (((r &lt; h) &amp;&amp; (K_tileidx * TILE_SIZE + ic &lt; k)) ? M[r * k + K_tileidx * TILE_SIZE + ic] : 0.f);</span></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a><span class="vs">        N_tile[ir][ic] = ((((K_tileidx * TILE_SIZE + ir) &lt; k) &amp;&amp; (c &lt; w)) ? N[(K_tileidx * TILE_SIZE + ir) * w + c] : 0.f);</span></span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a><span class="vs">        __syncthreads();  // Ensure all threads have loaded data before computation</span></span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a><span class="vs">        // Compute dot product for this tile</span></span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a><span class="vs">        for (int idx = 0; idx &lt; TILE_SIZE; idx++) {</span></span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a><span class="vs">           res += M_tile[ir][idx] * N_tile[idx][ic];</span></span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a><span class="vs">        }</span></span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a><span class="vs">        __syncthreads();  // Ensure all computations are done before loading next tile</span></span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a><span class="vs">    }</span></span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Write result to global memory if within bounds</span></span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a><span class="vs">    if ((r &lt; h) &amp;&amp; (c &lt; w)) {</span></span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a><span class="vs">        out[r * w + c] = res;</span></span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a><span class="vs">    }</span></span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a><span class="vs">/**</span></span>
+<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @brief Wrapper function for tiled matrix multiplication kernel.</span></span>
+<span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a><span class="vs"> * </span></span>
+<span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a><span class="vs"> * This function checks input tensors, sets up kernel parameters, and launches the CUDA kernel.</span></span>
+<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a><span class="vs"> *</span></span>
+<span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param m First input matrix</span></span>
+<span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @param n Second input matrix</span></span>
+<span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a><span class="vs"> * @return torch::Tensor Result of matrix multiplication</span></span>
+<span id="cb19-61"><a href="#cb19-61" aria-hidden="true" tabindex="-1"></a><span class="vs"> */</span></span>
+<span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a><span class="vs">torch::Tensor tiled_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n) {</span></span>
+<span id="cb19-63"><a href="#cb19-63" aria-hidden="true" tabindex="-1"></a><span class="vs">    CHECK_INPUT(m); CHECK_INPUT(n);</span></span>
+<span id="cb19-64"><a href="#cb19-64" aria-hidden="true" tabindex="-1"></a><span class="vs">    int h = m.size(0);</span></span>
+<span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a><span class="vs">    int w = n.size(1);</span></span>
+<span id="cb19-66"><a href="#cb19-66" aria-hidden="true" tabindex="-1"></a><span class="vs">    int k = m.size(1);</span></span>
+<span id="cb19-67"><a href="#cb19-67" aria-hidden="true" tabindex="-1"></a><span class="vs">    TORCH_CHECK(k==n.size(0), "Size mismatch");</span></span>
+<span id="cb19-68"><a href="#cb19-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-69"><a href="#cb19-69" aria-hidden="true" tabindex="-1"></a><span class="vs">    auto output = torch::empty({h, w}, m.options());</span></span>
+<span id="cb19-70"><a href="#cb19-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-71"><a href="#cb19-71" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Define thread block and grid dimensions</span></span>
+<span id="cb19-72"><a href="#cb19-72" aria-hidden="true" tabindex="-1"></a><span class="vs">    dim3 tpb(TILE_SIZE, TILE_SIZE);</span></span>
+<span id="cb19-73"><a href="#cb19-73" aria-hidden="true" tabindex="-1"></a><span class="vs">    dim3 blocks(cdiv(w, tpb.x), cdiv(h, tpb.y));</span></span>
+<span id="cb19-74"><a href="#cb19-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-75"><a href="#cb19-75" aria-hidden="true" tabindex="-1"></a><span class="vs">    // Launch kernel</span></span>
+<span id="cb19-76"><a href="#cb19-76" aria-hidden="true" tabindex="-1"></a><span class="vs">    tiled_matmul_kernel&lt;&lt;&lt;blocks, tpb&gt;&gt;&gt;(</span></span>
+<span id="cb19-77"><a href="#cb19-77" aria-hidden="true" tabindex="-1"></a><span class="vs">        output.data_ptr&lt;float&gt;(), m.data_ptr&lt;float&gt;(), n.data_ptr&lt;float&gt;(), h, w, k);</span></span>
+<span id="cb19-78"><a href="#cb19-78" aria-hidden="true" tabindex="-1"></a><span class="vs">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
+<span id="cb19-79"><a href="#cb19-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-80"><a href="#cb19-80" aria-hidden="true" tabindex="-1"></a><span class="vs">    return output;</span></span>
+<span id="cb19-81"><a href="#cb19-81" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb19-82"><a href="#cb19-82" aria-hidden="true" tabindex="-1"></a><span class="vs">"""</span></span>
+<span id="cb19-83"><a href="#cb19-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-84"><a href="#cb19-84" aria-hidden="true" tabindex="-1"></a><span class="co"># C++ interface definition</span></span>
+<span id="cb19-85"><a href="#cb19-85" aria-hidden="true" tabindex="-1"></a>cpp_src <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb19-86"><a href="#cb19-86" aria-hidden="true" tabindex="-1"></a><span class="st">torch::Tensor tiled_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n);</span></span>
+<span id="cb19-87"><a href="#cb19-87" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb19-88"><a href="#cb19-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-89"><a href="#cb19-89" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the CUDA kernel as a PyTorch C++ extension</span></span>
+<span id="cb19-90"><a href="#cb19-90" aria-hidden="true" tabindex="-1"></a>tiled_matmul_module <span class="op">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb19-91"><a href="#cb19-91" aria-hidden="true" tabindex="-1"></a>    <span class="st">"test_ext_tiled_matmul"</span>,  <span class="co"># Name of the extension</span></span>
+<span id="cb19-92"><a href="#cb19-92" aria-hidden="true" tabindex="-1"></a>    cpp_src,                  <span class="co"># C++ interface</span></span>
+<span id="cb19-93"><a href="#cb19-93" aria-hidden="true" tabindex="-1"></a>    cuda_src,                 <span class="co"># CUDA source code</span></span>
+<span id="cb19-94"><a href="#cb19-94" aria-hidden="true" tabindex="-1"></a>    functions<span class="op">=</span>[<span class="st">'tiled_matmul'</span>],  <span class="co"># Exported functions</span></span>
+<span id="cb19-95"><a href="#cb19-95" aria-hidden="true" tabindex="-1"></a>    extra_cuda_cflags<span class="op">=</span>[<span class="st">'--ptxas-options=-v'</span>],  <span class="co"># Additional CUDA compilation flags</span></span>
+<span id="cb19-96"><a href="#cb19-96" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span>              <span class="co"># Enable verbose output during compilation</span></span>
+<span id="cb19-97"><a href="#cb19-97" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit tiled_matmul_module.tiled_matmul(a, b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>323 μs ± 2.73 μs per loop (mean ± std. dev. of 7 runs, 10,000 loops each)</code></pre></li>
+</ul></li>
+<li><p><strong>Tiled Matrix Multiplication (Square Matrices):</strong></p>
+<ul>
+<li><strong>Tile Size:</strong> A parameter that determines the size of the tiles.</li>
+<li><strong>Thread Block:</strong> Typically, the tile size squared (e.g., <code>16x16</code> threads for a tile size of <code>16</code>).</li>
+<li><strong>Shared Memory:</strong> Two shared memory arrays to store tiles from matrices A and B.</li>
+<li><strong>Algorithm:</strong>
+<ol type="1">
+<li>Load tiles from global memory into shared memory.</li>
+<li>Perform matrix multiplication within the tiles using shared memory.</li>
+<li>Loop over all tiles to compute the complete result.</li>
+<li>Store the result back to global memory.</li>
+</ol></li>
+</ul></li>
+<li><p><strong>Synchronization:</strong> <code>__syncthreads()</code> is crucial to ensure that all threads have finished reading/writing to shared memory before proceeding.</p></li>
+<li><p><strong>Padding:</strong> For matrices where the size is not a multiple of the tile size, padding with zeros is used to complete the tiles.</p></li>
+<li><p><strong>Performance Improvement:</strong> Reduces memory accesses and improves performance (e.g., from 426 microseconds to 323 microseconds in the example).</p></li>
+</ul>
+</section>
+<section id="future-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="future-considerations"><strong>Future Considerations</strong></h3>
+<ul>
+<li><strong>Thread Coarsening:</strong>
+<ul>
+<li><strong>Concept:</strong> Increasing the amount of work done by each thread to improve performance.</li>
+<li><strong>Application to Tiling:</strong> Allows for larger tile sizes.</li>
+<li><strong>Details:</strong> Covered in the next session.</li>
+</ul></li>
+<li><strong>Flash Attention Implementation:</strong>
+<ul>
+<li><strong>Exercise:</strong> Implement the original Flash Attention algorithm from scratch based on the pseudocode.</li>
+<li><strong>Key Aspect:</strong> Blocking of inputs and output for efficient kernel fusion.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="conclusions-and-key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions-and-key-takeaways"><strong>Conclusions and Key Takeaways</strong></h2>
+<section id="gpu-computation" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-computation"><strong>GPU Computation:</strong></h3>
+<ul>
+<li>GPUs use a hierarchy of threads, warps, and blocks to organize computation.</li>
+<li>Understanding the hardware architecture and scheduling is crucial for performance optimization.</li>
+<li>Occupancy, a measure of resource utilization, should be maximized.</li>
+<li>Thread divergence should be minimized.</li>
+</ul>
+</section>
+<section id="memory-management" class="level3">
+<h3 class="anchored" data-anchor-id="memory-management"><strong>Memory Management:</strong></h3>
+<ul>
+<li>Memory accesses are often a major bottleneck.</li>
+<li>Kernel fusion can reduce memory transfers.</li>
+<li>The roofline model provides insights into the performance limitations of a kernel.</li>
+<li>Tiling is a powerful technique to improve data locality by leveraging shared memory.</li>
+</ul>
+</section>
+<section id="next-steps" class="level3">
+<h3 class="anchored" data-anchor-id="next-steps"><strong>Next Steps:</strong></h3>
+<ul>
+<li>The next chapter will focus on <strong>coalesced memory access</strong>, a technique to optimize global memory reads and writes for maximum efficiency.</li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Christian J. Mills
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

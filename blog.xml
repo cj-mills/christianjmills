@@ -19,6 +19,2186 @@
 <generator>quarto-1.4.555</generator>
 <lastBuildDate>Sat, 31 Aug 2024 07:00:00 GMT</lastBuildDate>
 <item>
+  <title>CUDA MODE Lecture 4 : Compute and Memory Basics</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/cuda-mode-notes/lecture-004/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><strong>Compute Architecture and Scheduling</strong></li>
+<li><strong>Memory Architecture and Data Locality</strong><br>
+</li>
+<li><strong>Conclusions and Key Takeaways</strong></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=lTmYrKwjSOU">Lecture 4 Compute and Memory Basics</a></li>
+<li><strong>Jupyter Notebook:</strong> <a href="https://github.com/cuda-mode/lectures/blob/main/lecture_004/cuda-mode-session-4.ipynb">lecture_004/cuda-mode-session-4.ipynb</a></li>
+<li><strong>Paper:</strong> <a href="https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf">GA102 Whitepaper</a></li>
+</ul>
+</div>
+</div>
+<section id="compute-architecture-and-scheduling" class="level2">
+<h2 class="anchored" data-anchor-id="compute-architecture-and-scheduling"><strong>Compute Architecture and Scheduling</strong></h2>
+<section id="gpu-architecture-vs.-cpu" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-architecture-vs.-cpu"><strong>GPU Architecture vs.&nbsp;CPU</strong></h3>
+<ul>
+<li><strong>CPUs:</strong>
+<ul>
+<li>Complex cores with multiple specialized units (fetch, decode, ALU).</li>
+<li>Typically, one or few Arithmetic Logic Units (ALUs) per core. <img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-004/images/cpu-core.png" class="img-fluid quarto-figure quarto-figure-center"></li>
+</ul></li>
+<li><strong>GPUs:</strong>
+<ul>
+<li>Streaming Multiprocessors (SMs) with many ALUs.</li>
+<li><strong>Threads</strong> share context and resources within an SM.</li>
+<li>Each thread has its own program counter in newer GPUs (e.g., Volta and later).</li>
+<li>Older GPUs shared program counters among threads in a warp. <img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-004/images/gpu-sm.png" class="img-fluid quarto-figure quarto-figure-center"></li>
+</ul></li>
+</ul>
+</section>
+<section id="gpu-architecture-details-rtx-3090-example" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-architecture-details-rtx-3090-example">GPU Architecture Details (RTX 3090 Example)</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-004/images/rtx-3090.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 2. GA102 Full GPU with 84 SMs</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Note:</strong> The GA102 GPU also features 168 FP64 units (two per SM), which are not depicted in this diagram. The FP64 TFLOP rate is 1/64th the TFLOP rate of FP32 operations. The small number of FP64 hardware units are included to ensure any programs with FP64 code operate correctly, including FP64 Tensor Core code.</p>
+</div>
+</div>
+<ul>
+<li><strong>Streaming Multiprocessors (SMs):</strong>
+<ul>
+<li>RTX 3090 has 82 SMs.</li>
+<li>SMs are largely independent.</li>
+<li>Share a common L2 cache.</li>
+</ul></li>
+<li><strong>Floating-Point Cores:</strong>
+<ul>
+<li>Consumer GPUs lack dedicated FP64 cores.</li>
+<li>RTX 3090 has a limited FP64 rate (1/64th of FP32).</li>
+<li>Accidental use of FP64 constants can significantly slow down computation.</li>
+</ul></li>
+<li><strong>Streaming Multiprocessor Structure:</strong>
+<ul>
+<li>Each SM has four units, each with:
+<ul>
+<li>Register file.</li>
+<li>Scheduling and dispatch unit (32 threads/clock).</li>
+<li>Compute units: 32 FP32 units (half can do INT32).</li>
+<li>Tensor cores.</li>
+</ul></li>
+</ul></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-004/images/figure-3-ga10x-streaming-multiprocessor-sm.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 3. GA10x Streaming Multiprocessor (SM)</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Kernel Execution:</strong>
+<ul>
+<li><strong>Thread blocks</strong> are assigned to SMs (no user control over assignment).</li>
+<li>Multiple blocks can be assigned to one SM if resource limits allow.</li>
+<li>RTX 3090 can handle up to 1536 threads per SM.</li>
+<li>Ideal block size divides 1536 (e.g., 256 or 512).</li>
+</ul></li>
+<li><strong>Warp Execution:</strong>
+<ul>
+<li>Each SM processes one <strong>warp</strong> (32 threads) at a time.</li>
+<li><strong>Warp divergence</strong> occurs when threads within a warp are not in sync, leading to partial execution.</li>
+</ul></li>
+<li><strong>Registers:</strong>
+<ul>
+<li>Shared register file (64K 32-bit registers per SM).</li>
+<li>Registers are not cleared when switching between warps, requiring careful management of register usage.</li>
+</ul></li>
+<li><strong>L1 Cache and Shared Memory:</strong>
+<ul>
+<li>128KB of on-chip memory per SM, split between L1 cache and shared memory.</li>
+</ul></li>
+</ul>
+</section>
+<section id="threads-warps-and-blocks" class="level3">
+<h3 class="anchored" data-anchor-id="threads-warps-and-blocks"><strong>Threads, Warps, and Blocks</strong></h3>
+<ul>
+<li><strong>Kernel Launch:</strong> Defined by block layout (threads per block) and grid layout (number of blocks).</li>
+<li><strong>Thread Block:</strong>
+<ul>
+<li>Assigned to a single SM.</li>
+<li>Threads within a block execute in parallel on the same SM.</li>
+<li>Threads within a block can access <strong>shared memory</strong>.</li>
+</ul></li>
+<li><strong>Blocks:</strong>
+<ul>
+<li>Independent of each other.</li>
+<li>CUDA assigns blocks to SMs arbitrarily (no programmer control).</li>
+<li>Execution order of blocks is not guaranteed.</li>
+</ul></li>
+<li><strong>SM Thread Capacity:</strong>
+<ul>
+<li>SMs can process more threads than the maximum threads in a block.</li>
+<li>Multiple blocks can be assigned to a single SM, if resource limits allow.</li>
+<li><strong>Example (RTX 3090):</strong> Maximum 1536 threads per SM.</li>
+<li><strong>Recommendation:</strong> Choose block sizes (e.g., 256, 512) that divide the maximum thread capacity for optimal SM utilization.</li>
+</ul></li>
+<li><strong>Warp:</strong>
+<ul>
+<li>A group of 32 threads.</li>
+<li>SMs process one warp at a time.</li>
+<li><strong>Warp Divergence:</strong> Occurs when threads within a warp follow different execution paths (e.g., due to conditional statements).
+<ul>
+<li>Leads to reduced performance as only a subset of threads in a warp execute at a time.</li>
+</ul></li>
+</ul></li>
+<li><strong>AMD Terminology:</strong>
+<ul>
+<li><strong>Wavefronts:</strong> AMD’s term for warps.</li>
+<li>Typically 64 threads, but can be reduced to 32 via compiler options.</li>
+</ul></li>
+</ul>
+</section>
+<section id="multi-dimensional-thread-grids" class="level3">
+<h3 class="anchored" data-anchor-id="multi-dimensional-thread-grids"><strong>Multi-Dimensional Thread Grids</strong></h3>
+<ul>
+<li><p><strong>Linearization:</strong> Multi-dimensional thread grids are linearized for execution.</p></li>
+<li><p><strong>Thread Index Order:</strong> <code>threadIdx.x</code> is the fastest moving dimension, followed by <code>threadIdx.y</code>, and then <code>threadIdx.z</code>.</p></li>
+<li><p><strong>Example:</strong> An <code>8x8x8</code> thread block:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># CUDA kernel and C++ function declaration</span></span>
+<span id="cb1-2">cuda_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb1-3"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">#include &lt;c10/cuda/CUDAException.h&gt;</span></span>
+<span id="cb1-4"></span>
+<span id="cb1-5"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/**</span></span>
+<span id="cb1-6"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * CUDA kernel to compute thread indices of neighbors in a 3D grid.</span></span>
+<span id="cb1-7"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * </span></span>
+<span id="cb1-8"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param out Pointer to output array where neighbor indices will be stored.</span></span>
+<span id="cb1-9"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> */</span></span>
+<span id="cb1-10"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">__global__ void thread_idx_of_neighbors_kernel(int32_t* out) {</span></span>
+<span id="cb1-11"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Grid dimensions: 8x8x8 threads per block, 32 neighbors per thread, 3 coordinates per neighbor</span></span>
+<span id="cb1-12"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int x = threadIdx.x;</span></span>
+<span id="cb1-13"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int y = threadIdx.y;</span></span>
+<span id="cb1-14"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int z = threadIdx.z;</span></span>
+<span id="cb1-15"></span>
+<span id="cb1-16"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Iterate over all 32 threads in the warp</span></span>
+<span id="cb1-17"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    for (int i = 0; i &lt; 32; i++) {</span></span>
+<span id="cb1-18"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        // Use warp shuffle to get coordinates of other threads</span></span>
+<span id="cb1-19"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        int other_x = __shfl_sync(0xffffffff, x, i);</span></span>
+<span id="cb1-20"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        int other_y = __shfl_sync(0xffffffff, y, i);</span></span>
+<span id="cb1-21"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        int other_z = __shfl_sync(0xffffffff, z, i);</span></span>
+<span id="cb1-22"></span>
+<span id="cb1-23"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        // Calculate offset in output array and store neighbor coordinates</span></span>
+<span id="cb1-24"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        int offset = z * 8*8*32*3 + y * 8*32*3 + x * 32*3 + i*3;</span></span>
+<span id="cb1-25"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        out[offset] = other_x;</span></span>
+<span id="cb1-26"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        out[offset + 1] = other_y;</span></span>
+<span id="cb1-27"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        out[offset + 2] = other_z;</span></span>
+<span id="cb1-28"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    }</span></span>
+<span id="cb1-29"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb1-30"></span>
+<span id="cb1-31"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/**</span></span>
+<span id="cb1-32"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * C++ wrapper function to launch the CUDA kernel and return results as a Torch tensor.</span></span>
+<span id="cb1-33"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * </span></span>
+<span id="cb1-34"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @return torch::Tensor A 5D tensor containing thread indices of neighbors.</span></span>
+<span id="cb1-35"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> */</span></span>
+<span id="cb1-36"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor thread_idx_of_neighbors() {</span></span>
+<span id="cb1-37"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Create output tensor: 8x8x8 threads, 32 neighbors, 3 coordinates</span></span>
+<span id="cb1-38"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    auto output = torch::empty({8, 8, 8, 32, 3}, torch::TensorOptions().device(torch::kCUDA).dtype(torch::kInt));</span></span>
+<span id="cb1-39"></span>
+<span id="cb1-40"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Set up kernel launch parameters</span></span>
+<span id="cb1-41"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    dim3 block(8, 8, 8);</span></span>
+<span id="cb1-42"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    dim3 grid(1);</span></span>
+<span id="cb1-43"></span>
+<span id="cb1-44"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Launch kernel</span></span>
+<span id="cb1-45"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    thread_idx_of_neighbors_kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(output.data_ptr&lt;int32_t&gt;());</span></span>
+<span id="cb1-46"></span>
+<span id="cb1-47"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Check for CUDA errors</span></span>
+<span id="cb1-48"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
+<span id="cb1-49"></span>
+<span id="cb1-50"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    return output;</span></span>
+<span id="cb1-51"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb1-52"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span></code></pre></div>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># C++ function declaration</span></span>
+<span id="cb2-2">cpp_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb2-3"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor thread_idx_of_neighbors();</span></span>
+<span id="cb2-4"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span></code></pre></div>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the CUDA kernel and C++ function as a PyTorch extension</span></span>
+<span id="cb3-2">thread_idx_of_neighbors_module <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb3-3">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"test_thread_idx"</span>,  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Name of the extension</span></span>
+<span id="cb3-4">    cpp_src,            <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># C++ source code</span></span>
+<span id="cb3-5">    cuda_src,           <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># CUDA source code</span></span>
+<span id="cb3-6">    functions<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'thread_idx_of_neighbors'</span>],  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># List of functions to expose</span></span>
+<span id="cb3-7">    extra_cuda_cflags<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'--ptxas-options=-v'</span>],  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Additional CUDA compiler flags</span></span>
+<span id="cb3-8">    verbose<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Enable verbose output during compilation</span></span>
+<span id="cb3-9">)</span></code></pre></div>
+<ul>
+<li>Threads within a warp have consecutive <code>threadIdx.x</code> values.</li>
+<li><code>threadIdx.y</code> changes less frequently than <code>threadIdx.x</code>.</li>
+<li><code>threadIdx.z</code> changes least frequently.</li>
+</ul></li>
+<li><p><strong>Verification:</strong> Kernel code demonstrates thread indexing using shuffle instructions.</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Call the CUDA kernel through the PyTorch extension</span></span>
+<span id="cb4-2">t <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> thread_idx_of_neighbors_module.thread_idx_of_neighbors()</span>
+<span id="cb4-3"></span>
+<span id="cb4-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Access the first element of the result tensor</span></span>
+<span id="cb4-5">t[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span></code></pre></div>
+<pre class="text"><code>tensor([[0, 0, 0],
+        [1, 0, 0],
+        [2, 0, 0],
+        [3, 0, 0],
+        [4, 0, 0],
+        [5, 0, 0],
+        [6, 0, 0],
+        [7, 0, 0],
+        [0, 1, 0],
+        [1, 1, 0],
+        [2, 1, 0],
+        [3, 1, 0],
+        [4, 1, 0],
+        [5, 1, 0],
+        [6, 1, 0],
+        [7, 1, 0],
+        [0, 2, 0],
+        [1, 2, 0],
+        [2, 2, 0],
+        [3, 2, 0],
+        [4, 2, 0],
+        [5, 2, 0],
+        [6, 2, 0],
+        [7, 2, 0],
+        [0, 3, 0],
+        [1, 3, 0],
+        [2, 3, 0],
+        [3, 3, 0],
+        [4, 3, 0],
+        [5, 3, 0],
+        [6, 3, 0],
+        [7, 3, 0]], device='cuda:0', dtype=torch.int32)</code></pre></li>
+</ul>
+</section>
+<section id="warp-divergence-and-control-flow" class="level3">
+<h3 class="anchored" data-anchor-id="warp-divergence-and-control-flow"><strong>Warp Divergence and Control Flow</strong></h3>
+<ul>
+<li><strong>Traditional GPUs (Single Program Counter per Warp):</strong>
+<ul>
+<li><strong>Conditional Statements (if-else):</strong> Threads not satisfying the condition are disabled, leading to warp divergence.</li>
+<li>Only the active threads execute the corresponding branch.</li>
+<li>Threads are re-enabled/disabled as needed at each branch point.</li>
+<li><strong>Limitations:</strong>
+<ul>
+<li>Inter-thread communication within a warp is not possible during divergence (waiting threads would stall the warp).</li>
+<li>Performance is reduced due to idle threads and sequential execution of branches.</li>
+</ul></li>
+</ul></li>
+<li><strong>Newer GPUs (&gt;= Volta) (Independent Program Counters):</strong>
+<ul>
+<li>Each thread has its own program counter.</li>
+<li>GPU can interleave execution of different branches, improving utilization.</li>
+<li><strong>Advantages:</strong>
+<ul>
+<li>Can hide memory latency by switching to other warps while one warp waits for memory access.</li>
+</ul></li>
+<li><strong>Disadvantages:</strong>
+<ul>
+<li>Reconvergence of threads after divergence is not automatic.</li>
+<li>Requires explicit synchronization using <code>__syncwarp()</code> to ensure all threads are at the same point before continuing.</li>
+</ul></li>
+</ul></li>
+<li><strong>Loop Divergence:</strong> Similar divergence occurs in loops with variable iteration counts across threads in a warp.</li>
+</ul>
+</section>
+<section id="achieving-good-occupancy" class="level3">
+<h3 class="anchored" data-anchor-id="achieving-good-occupancy"><strong>Achieving Good Occupancy</strong></h3>
+<ul>
+<li><strong>Occupancy:</strong> A measure of how well the GPU’s resources are utilized.</li>
+<li><strong>Goals:</strong>
+<ul>
+<li>Keep all SMs busy.</li>
+<li>Maximize the number of active threads per SM.</li>
+<li>Minimize warp divergence.</li>
+<li>Avoid slow FP64 and INT64 operations (especially on consumer GPUs).</li>
+</ul></li>
+<li><strong>Strategies:</strong>
+<ul>
+<li><strong>Many Blocks:</strong> Utilize all available SMs.</li>
+<li><strong>Optimal Block Size:</strong> Choose a power of two smaller than 512 (or a divisor of the maximum threads per SM) to maximize concurrent threads.</li>
+<li><strong>Minimize Divergence:</strong>
+<ul>
+<li>Use conditional load/store instructions to avoid control flow divergence.</li>
+<li>Structure code to minimize branching within warps.</li>
+</ul></li>
+<li><strong>Avoid FP64/INT64:</strong> Use FP32/INT32 whenever possible for better performance.</li>
+</ul></li>
+<li><strong>Shared Memory and Registers:</strong>
+<ul>
+<li>Excessive use of shared memory or registers can limit the number of threads scheduled per SM.</li>
+<li><strong>Launch Bounds:</strong> Use <code>__launch_bounds__</code> to advise the compiler about expected thread counts, allowing for better register allocation.</li>
+<li><strong>Register Spills:</strong> If register usage exceeds the limit, variables are spilled to slower local memory, impacting performance.</li>
+</ul></li>
+<li><strong>Occupancy Calculation Tools:</strong>
+<ul>
+<li><strong>Previously:</strong> Excel sheets.</li>
+<li><strong>Currently:</strong> NVIDIA Nsight Compute provides occupancy analysis.</li>
+</ul></li>
+</ul>
+</section>
+<section id="querying-gpu-properties" class="level3">
+<h3 class="anchored" data-anchor-id="querying-gpu-properties"><strong>Querying GPU Properties</strong></h3>
+<ul>
+<li><strong>PyTorch:</strong> <code>torch.cuda.get_device_properties(device)</code> provides basic properties (name, compute architecture, memory, processor count, registers per SM, max threads per SM).</li>
+<li><strong>CUDA C API:</strong> More detailed properties are available through the CUDA Runtime API.</li>
+</ul>
+</section>
+</section>
+<section id="memory-architecture-and-data-locality" class="level2">
+<h2 class="anchored" data-anchor-id="memory-architecture-and-data-locality"><strong>Memory Architecture and Data Locality</strong></h2>
+<section id="performance-bottlenecks" class="level3">
+<h3 class="anchored" data-anchor-id="performance-bottlenecks"><strong>Performance Bottlenecks</strong></h3>
+<ul>
+<li><strong>Memory Accesses:</strong> Often a major bottleneck in kernel performance.</li>
+<li><strong>Kernel Fusion:</strong> Combining multiple kernels into one can reduce memory transfers by avoiding intermediate reads and writes.</li>
+</ul>
+</section>
+<section id="pytorch-performance-breakdown" class="level3">
+<h3 class="anchored" data-anchor-id="pytorch-performance-breakdown"><strong>PyTorch Performance Breakdown</strong></h3>
+<ul>
+<li><p><strong>High-Level:</strong></p>
+<ul>
+<li>Python processing.</li>
+<li>Data administrative overhead (tensor allocation, etc.).</li>
+<li>Data acquisition.</li>
+<li>GPU computation.</li>
+</ul></li>
+<li><p><strong>Data Acquisition:</strong> Often a significant bottleneck if not optimized.</p></li>
+<li><p><strong>GPU Computation:</strong></p>
+<ul>
+<li>Fixed costs (kernel launches).</li>
+<li>Memory accesses (reading inputs, writing outputs).</li>
+<li>Actual computation (influenced by occupancy).</li>
+</ul></li>
+<li><p><strong>Rules of Thumb:</strong></p>
+<ul>
+<li><p>As long as you don’t have close to 100% GPU utilization in nvidia-smi, work on data acquisition etc.</p></li>
+<li><p>As long as you have Tensors with a few 100s of elements, “Python is slow” and data administrative over head is single digit percentages.</p></li>
+<li><p>Algorithms also matter (parallel algorithms in the following chapters)</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="memory-access-as-a-bottleneck" class="level3">
+<h3 class="anchored" data-anchor-id="memory-access-as-a-bottleneck"><strong>Memory Access as a Bottleneck</strong></h3>
+<ul>
+<li><strong>Eager PyTorch:</strong> Typically loads inputs, computes, and stores outputs for each operation.</li>
+<li><strong>Fusion Benefits:</strong> Reduces memory transfers by combining multiple operations into a single kernel.</li>
+<li><strong>PyTorch JIT:</strong>
+<ul>
+<li>First generation: Fused point-wise operations.</li>
+<li>Second generation (NVFuser): Added support for contractions.</li>
+</ul></li>
+<li><strong>NVFuser:</strong>
+<ul>
+<li>Evolved beyond PyTorch.</li>
+<li>Active git repository with ongoing development.
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/NVIDIA/Fuser">https://github.com/NVIDIA/Fuser</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Inductor and Triton:</strong> Support more complex operations through a specialized language and templates.</li>
+<li><strong>Flash Attention:</strong> Minimizes global memory accesses by leveraging shared memory effectively.</li>
+</ul>
+</section>
+<section id="flash-attention-example" class="level3">
+<h3 class="anchored" data-anchor-id="flash-attention-example"><strong>Flash Attention Example</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-004/images/flash-attention-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></li>
+<li><strong>Figure:</strong> (from the Flash Attention paper) Shows the relative speeds of different memory types.
+<ul>
+<li><strong>High Bandwidth Memory (HBM):</strong> 1.5 TB/s (900 GB/s on the RTX 3090).</li>
+<li><strong>Shared Memory:</strong> More than 10x faster than HBM.</li>
+<li><strong>Shared Memory Limitation:</strong> Significantly smaller capacity (0.2% of global memory).</li>
+</ul></li>
+<li><strong>Goal:</strong> Minimize global memory accesses and maximize shared memory usage.</li>
+</ul>
+</section>
+<section id="kernel-fusion-example-approximated-gelu" class="level3">
+<h3 class="anchored" data-anchor-id="kernel-fusion-example-approximated-gelu"><strong>Kernel Fusion Example: Approximated Gelu</strong></h3>
+<ul>
+<li><p><strong>Approximated Gelu Formula:</strong> (from <a href="https://pytorch.org/docs/stable/generated/torch.nn.GELU.html">PyTorch documentation</a>) Uses <code>tanh</code> for an approximation of the Gaussian error linear unit (GELU) activation function. <img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7BGELU%7D(x)%20=%200.5%20*%20x%20*%20(1%20+%20%5Ctext%7BTanh%7D(%5Csqrt%7B2%20/%20%5Cpi%7D%20*%20(x%20+%200.044715%20*%20x%5E3)))%0A"></p></li>
+<li><p><strong>PyTorch Implementation:</strong> Highly optimized, around 13.3 microseconds.</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>timeit torch.nn.functional.gelu(x, approximate<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'tanh'</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span> torch.cuda.synchronize()</span></code></pre></div>
+<pre class="text"><code>13.3 μs ± 331 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)</code></pre></li>
+<li><p><strong>Naive Implementation:</strong></p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> gelu(x):</span>
+<span id="cb8-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb8-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Compute the Gaussian Error Linear Unit (GELU) activation function.</span></span>
+<span id="cb8-4"></span>
+<span id="cb8-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    GELU is defined as: GELU(x) = 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))</span></span>
+<span id="cb8-6"></span>
+<span id="cb8-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Args:</span></span>
+<span id="cb8-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        x (torch.Tensor): Input tensor</span></span>
+<span id="cb8-9"></span>
+<span id="cb8-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Returns:</span></span>
+<span id="cb8-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        torch.Tensor: Output tensor after applying GELU activation</span></span>
+<span id="cb8-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb8-13">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Calculate the constant term (2/pi)^0.5</span></span>
+<span id="cb8-14">    const <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> torch.pi) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5</span></span>
+<span id="cb8-15"></span>
+<span id="cb8-16">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Compute the inner term: x + 0.044715 * x^3</span></span>
+<span id="cb8-17">    inner_term <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.044715</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb8-18"></span>
+<span id="cb8-19">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Apply the GELU formula</span></span>
+<span id="cb8-20">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.tanh(const <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> inner_term))</span></code></pre></div>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create a random tensor of size 1024x1024 on the GPU</span></span>
+<span id="cb9-2">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>, device<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cuda"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Measure the execution time of the GELU function</span></span>
+<span id="cb10-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Synchronize CUDA operations to ensure accurate timing</span></span>
+<span id="cb10-3"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>timeit gelu(x)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span> torch.cuda.synchronize()</span></code></pre></div>
+<pre class="text"><code>67.2 μs ± 1.41 μs per loop (mean ± std. dev. of 7 runs, 10,000 loops each)</code></pre>
+<ul>
+<li>Separate kernels for each operation.</li>
+<li>Significantly slower due to numerous memory accesses.</li>
+</ul></li>
+<li><p><strong>PyTorch Profiler:</strong> Can be used to identify individual kernel calls and their execution times.</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Use torch.profiler to analyze the performance of the GELU function</span></span>
+<span id="cb12-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">with</span> torch.profiler.profile() <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> prof:</span>
+<span id="cb12-3">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Measure the execution time of the GELU function</span></span>
+<span id="cb12-4">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Run the function 1000 times for more accurate timing</span></span>
+<span id="cb12-5">    <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>timeit <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>n <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span> gelu(x)</span>
+<span id="cb12-6"></span>
+<span id="cb12-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print a table of key performance metrics</span></span>
+<span id="cb12-8"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(prof.key_averages().table())</span></code></pre></div>
+<div style="overflow-x:auto; max-height:500px">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Name
+</th>
+<th>
+Self CPU %
+</th>
+<th>
+Self CPU
+</th>
+<th>
+CPU total %
+</th>
+<th>
+CPU total
+</th>
+<th>
+CPU time avg
+</th>
+<th>
+Self CUDA
+</th>
+<th>
+Self CUDA %
+</th>
+<th>
+CUDA total
+</th>
+<th>
+CUDA time avg
+</th>
+<th>
+# of Calls
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+aten::mul
+</td>
+<td>
+30.34%
+</td>
+<td>
+130.980ms
+</td>
+<td>
+50.70%
+</td>
+<td>
+218.874ms
+</td>
+<td>
+7.817us
+</td>
+<td>
+88.571ms
+</td>
+<td>
+49.36%
+</td>
+<td>
+88.571ms
+</td>
+<td>
+3.163us
+</td>
+<td>
+28000
+</td>
+</tr>
+<tr>
+<td>
+cudaLaunchKernel
+</td>
+<td>
+37.49%
+</td>
+<td>
+161.833ms
+</td>
+<td>
+37.49%
+</td>
+<td>
+161.833ms
+</td>
+<td>
+2.890us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+56000
+</td>
+</tr>
+<tr>
+<td>
+aten::pow
+</td>
+<td>
+9.45%
+</td>
+<td>
+40.780ms
+</td>
+<td>
+14.16%
+</td>
+<td>
+61.140ms
+</td>
+<td>
+8.734us
+</td>
+<td>
+20.920ms
+</td>
+<td>
+11.66%
+</td>
+<td>
+20.920ms
+</td>
+<td>
+2.989us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+aten::result_type
+</td>
+<td>
+0.18%
+</td>
+<td>
+785.257us
+</td>
+<td>
+0.18%
+</td>
+<td>
+785.257us
+</td>
+<td>
+0.112us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+aten::to
+</td>
+<td>
+0.14%
+</td>
+<td>
+603.008us
+</td>
+<td>
+0.14%
+</td>
+<td>
+603.008us
+</td>
+<td>
+0.086us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+aten::add
+</td>
+<td>
+15.28%
+</td>
+<td>
+65.959ms
+</td>
+<td>
+23.82%
+</td>
+<td>
+102.833ms
+</td>
+<td>
+7.345us
+</td>
+<td>
+46.930ms
+</td>
+<td>
+26.16%
+</td>
+<td>
+46.930ms
+</td>
+<td>
+3.352us
+</td>
+<td>
+14000
+</td>
+</tr>
+<tr>
+<td>
+aten::tanh
+</td>
+<td>
+7.13%
+</td>
+<td>
+30.763ms
+</td>
+<td>
+11.32%
+</td>
+<td>
+48.857ms
+</td>
+<td>
+6.980us
+</td>
+<td>
+23.008ms
+</td>
+<td>
+12.82%
+</td>
+<td>
+23.008ms
+</td>
+<td>
+3.287us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+62.472ms
+</td>
+<td>
+34.82%
+</td>
+<td>
+62.472ms
+</td>
+<td>
+2.975us
+</td>
+<td>
+21000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+20.920ms
+</td>
+<td>
+11.66%
+</td>
+<td>
+20.920ms
+</td>
+<td>
+2.989us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+26.045ms
+</td>
+<td>
+14.52%
+</td>
+<td>
+26.045ms
+</td>
+<td>
+3.721us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+23.008ms
+</td>
+<td>
+12.82%
+</td>
+<td>
+23.008ms
+</td>
+<td>
+3.287us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+20.886ms
+</td>
+<td>
+11.64%
+</td>
+<td>
+20.886ms
+</td>
+<td>
+2.984us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+void at::native::vectorized_elementwise_kernel&lt;4, at…
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+26.099ms
+</td>
+<td>
+14.55%
+</td>
+<td>
+26.099ms
+</td>
+<td>
+3.728us
+</td>
+<td>
+7000
+</td>
+</tr>
+<tr>
+<td>
+cudaDeviceSynchronize
+</td>
+<td>
+0.00%
+</td>
+<td>
+5.062us
+</td>
+<td>
+0.00%
+</td>
+<td>
+5.062us
+</td>
+<td>
+5.062us
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.00%
+</td>
+<td>
+0.000us
+</td>
+<td>
+0.000us
+</td>
+<td>
+1
+</td>
+</tr>
+</tbody>
+</table>
+<p>
+Self CPU time total: 431.709ms
+</p>
+<p>
+Self CUDA time total: 179.430ms
+</p>
+</div>
+<ul>
+<li>Shows a large number of separate kernels for point-wise operations in the naive implementation.</li>
+</ul></li>
+<li><p><strong>Fused Kernel:</strong></p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Define CUDA source code as a string</span></span>
+<span id="cb13-2">cuda_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cuda_begin <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">r'''</span></span>
+<span id="cb13-3"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">__global__ void my_gelu_kernel(float* out, float* inp, int n) {</span></span>
+<span id="cb13-4"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Calculate global thread index</span></span>
+<span id="cb13-5"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int i = blockIdx.x * blockDim.x + threadIdx.x;</span></span>
+<span id="cb13-6"></span>
+<span id="cb13-7"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Return if thread index is out of bounds</span></span>
+<span id="cb13-8"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    if (i &gt;= n) return;</span></span>
+<span id="cb13-9"></span>
+<span id="cb13-10"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Load input value</span></span>
+<span id="cb13-11"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    float x = inp[i];</span></span>
+<span id="cb13-12"></span>
+<span id="cb13-13"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Compute GELU (Gaussian Error Linear Unit) activation</span></span>
+<span id="cb13-14"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // GELU(x) = 0.5 * x * (1 + tanh(sqrt(2/π) * (x + 0.044715 * x^3)))</span></span>
+<span id="cb13-15"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    out[i] = 0.5f * x * (1.0f + tanhf(sqrtf(2.0f/3.141592653589793f) * (x + 0.044715f * (x*x*x))));</span></span>
+<span id="cb13-16"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb13-17"></span>
+<span id="cb13-18"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor my_gelu_out(torch::Tensor output, const torch::Tensor&amp; inp) {</span></span>
+<span id="cb13-19"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    CHECK_INPUT(inp);  // Validate input tensor</span></span>
+<span id="cb13-20"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int n = inp.numel();  // Get total number of elements in input tensor</span></span>
+<span id="cb13-21"></span>
+<span id="cb13-22"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Ensure output tensor has same properties as input tensor</span></span>
+<span id="cb13-23"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    TORCH_CHECK((output.sizes() == inp.sizes()) || (output.device() == inp.device())</span></span>
+<span id="cb13-24"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">                || (output.scalar_type() == inp.scalar_type()));</span></span>
+<span id="cb13-25"></span>
+<span id="cb13-26"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int threads = 256;  // Set number of threads per block</span></span>
+<span id="cb13-27"></span>
+<span id="cb13-28"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Launch CUDA kernel</span></span>
+<span id="cb13-29"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    my_gelu_kernel&lt;&lt;&lt;cdiv(n, threads), threads&gt;&gt;&gt;(</span></span>
+<span id="cb13-30"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        output.data_ptr&lt;float&gt;(), inp.data_ptr&lt;float&gt;(), n);</span></span>
+<span id="cb13-31"></span>
+<span id="cb13-32"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    C10_CUDA_KERNEL_LAUNCH_CHECK();  // Check for CUDA errors</span></span>
+<span id="cb13-33"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    return output;</span></span>
+<span id="cb13-34"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb13-35"></span>
+<span id="cb13-36"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor my_gelu(const torch::Tensor&amp; inp) {</span></span>
+<span id="cb13-37"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    CHECK_INPUT(inp);  // Validate input tensor</span></span>
+<span id="cb13-38"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    auto output = torch::empty_like(inp);  // Create output tensor with same properties as input</span></span>
+<span id="cb13-39"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    my_gelu_out(output, inp);  // Compute GELU activation</span></span>
+<span id="cb13-40"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    return output;</span></span>
+<span id="cb13-41"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb13-42"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'''</span></span>
+<span id="cb13-43"></span>
+<span id="cb13-44"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Define C++ source code as a string</span></span>
+<span id="cb13-45">cpp_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb13-46"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor my_gelu(const torch::Tensor&amp; inp);</span></span>
+<span id="cb13-47"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor my_gelu_out(torch::Tensor output, const torch::Tensor&amp; inp);</span></span>
+<span id="cb13-48"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb13-49"></span>
+<span id="cb13-50"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set environment variables for compiler paths</span></span>
+<span id="cb13-51"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb13-52">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CXX'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'/usr/lib/ccache/g++-11'</span></span>
+<span id="cb13-53">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CC'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'/usr/lib/ccache/gcc-11'</span></span>
+<span id="cb13-54"></span>
+<span id="cb13-55"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load and compile the CUDA extension</span></span>
+<span id="cb13-56">gelu_module <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb13-57">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"test_ext_gelu"</span>,  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Name of the extension</span></span>
+<span id="cb13-58">    cpp_src,  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># C++ source code</span></span>
+<span id="cb13-59">    cuda_src,  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># CUDA source code</span></span>
+<span id="cb13-60">    functions<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'my_gelu'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'my_gelu_out'</span>],  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Functions to expose</span></span>
+<span id="cb13-61">    extra_cuda_cflags<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'--ptxas-options=-v'</span>],  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Additional CUDA compiler flags</span></span>
+<span id="cb13-62">    verbose<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Enable verbose output during compilation</span></span>
+<span id="cb13-63">)</span></code></pre></div>
+<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>timeit gelu_module.my_gelu(x)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span> torch.cuda.synchronize()</span></code></pre></div>
+<pre class="text"><code>17 μs ± 246 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)</code></pre>
+<ul>
+<li>Combines all operations into a single C++ kernel.</li>
+<li>Slightly slower than PyTorch’s implementation (tested on an RTX 4090 with PyTorch 2.4.0).</li>
+</ul></li>
+<li><p><strong>Numerical Accuracy:</strong> Results are the same as PyTorch’s implementation, “up to numerical accuracy.”</p></li>
+</ul>
+</section>
+<section id="numerical-accuracy-and-floating-point-operations" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-accuracy-and-floating-point-operations"><strong>Numerical Accuracy and Floating Point Operations</strong></h3>
+<ul>
+<li><strong>Floating Point Addition:</strong> Not strictly associative due to limited precision.
+<ul>
+<li>The order of operations can affect the result, especially when adding numbers with vastly different magnitudes.</li>
+<li><strong>Example:</strong> Adding a very small number to a large number might result in no change if the small number is below the precision threshold.</li>
+</ul></li>
+<li><strong>Relative Accuracy:</strong>
+<ul>
+<li>FP32: Typically around 10⁻⁷ or 10⁻⁸.</li>
+<li>FP64: Higher precision.</li>
+</ul></li>
+</ul>
+</section>
+<section id="theoretical-maximum-speed-level-rgb-to-gray-kernel" class="level3">
+<h3 class="anchored" data-anchor-id="theoretical-maximum-speed-level-rgb-to-gray-kernel"><strong>Theoretical Maximum Speed: Level RGB to Gray Kernel</strong></h3>
+<ul>
+<li><strong>Kernel Operations:</strong>
+<ul>
+<li>Load 3 bytes (R, G, B).</li>
+<li>Compute index (1 multiplication, 1 addition - INT32).</li>
+<li>Compute grayscale value (3 multiplications, 2 additions - FP32).</li>
+<li>Data conversion.</li>
+<li>Store 1 byte.</li>
+</ul></li>
+<li><strong>Memory Bandwidth (RTX 3090):</strong> 900 GB/s.</li>
+<li><strong>Image Size:</strong> 2048 x 2048.</li>
+<li><strong>Theoretical Memory Transfer Time (“Speed of Light”):</strong> ~18 microseconds (assuming ideal access patterns).</li>
+<li><strong>Compute Performance (RTX 3090):</strong>
+<ul>
+<li>FP32: 35.6 TFLOPs.</li>
+<li>INT32: 16.8 TFLOPs.</li>
+</ul></li>
+<li><strong>Theoretical Compute Time:</strong> ~2 microseconds (excluding parallelism and memory latency).</li>
+<li><strong>Kernel Launch Overhead:</strong> ~3 microseconds (measured using an empty kernel).</li>
+<li><strong>Measured Kernel Time:</strong> ~26-27 microseconds.</li>
+<li><strong>Efficiency:</strong> Achieves about 75% of the theoretical maximum speed.</li>
+</ul>
+</section>
+<section id="roofline-model" class="level3">
+<h3 class="anchored" data-anchor-id="roofline-model"><strong>Roofline Model</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-004/images/roofline-model.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<ul>
+<li><strong>Purpose:</strong> Helps analyze the performance limitations of a kernel.</li>
+<li><strong>Computational Intensity:</strong> Key metric, defined as the number of floating-point operations (FLOPs) per byte of memory transfer.</li>
+<li><strong>Memory-Bound Kernels:</strong>
+<ul>
+<li>Low computational intensity.</li>
+<li>Performance limited by memory bandwidth.</li>
+<li>Throughput limited by the diagonal line in the roofline model representing memory bandwidth.</li>
+</ul></li>
+<li><strong>Compute-Bound Kernels:</strong>
+<ul>
+<li>High computational intensity.</li>
+<li>Performance limited by the GPU’s compute capabilities.</li>
+<li>Throughput limited by the horizontal line in the roofline model representing peak compute performance.</li>
+</ul></li>
+<li><strong>Roofline Shape:</strong> The characteristic “roof” shape arises from the fact that memory latency can be hidden if other warps can compute while one warp waits for memory.
+<ul>
+<li>The performance becomes the maximum of the memory bandwidth and compute throughput, leading to the minimum of the two limiting factors.</li>
+</ul></li>
+</ul>
+</section>
+<section id="gpu-memory-hierarchy" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-memory-hierarchy"><strong>GPU Memory Hierarchy</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-004/images/cuda-device-memory-model.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 5.2</figcaption>
+</figure>
+</div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 60%">
+<col style="width: 12%">
+<col style="width: 9%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable declaration</th>
+<th>Memory</th>
+<th>Scope</th>
+<th>Lifetime</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Automatic variables other than arrays</td>
+<td>Register</td>
+<td>Thread</td>
+<td>Grid</td>
+</tr>
+<tr class="even">
+<td>Automatic array variables</td>
+<td>Local</td>
+<td>Thread</td>
+<td>Grid</td>
+</tr>
+<tr class="odd">
+<td><code>__device__ __shared__ int SharedVar;</code></td>
+<td>Shared</td>
+<td>Block</td>
+<td>Grid</td>
+</tr>
+<tr class="even">
+<td><code>__device__ int GlobalVar;</code></td>
+<td>Global</td>
+<td>Grid</td>
+<td>Application</td>
+</tr>
+<tr class="odd">
+<td><code>__device__ __constant__ int ConstVar;</code></td>
+<td>Constant</td>
+<td>Grid</td>
+<td>Application</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Registers:</strong> Fastest, used for local variables within a thread.</li>
+<li><strong>Local Memory:</strong> Slower than registers, used for arrays declared within a thread or for register spills.</li>
+<li><strong>Shared Memory:</strong> Per-block memory, faster than global memory, accessible by all threads in a block, declared using <code>__shared__</code>.</li>
+<li><strong>Global Memory:</strong> Main GPU memory, accessible by all threads, typically accessed through pointers.</li>
+<li><strong>Constant Memory:</strong> Read-only memory, cached, used for kernel launch parameters and can be explicitly declared.</li>
+</ul>
+</section>
+<section id="shared-memory-and-tiling" class="level3">
+<h3 class="anchored" data-anchor-id="shared-memory-and-tiling"><strong>Shared Memory and Tiling</strong></h3>
+<ul>
+<li><p><strong>Tiling:</strong> A technique to improve data locality by loading data from global memory into shared memory and reusing it multiple times within a block.</p></li>
+<li><p><strong>Matrix Multiplication Example:</strong></p>
+<ul>
+<li><p><strong>Naive Approach:</strong> Each output element reads 2n inputs from global memory n times.</p>
+<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># CUDA kernel for matrix multiplication</span></span>
+<span id="cb16-2">cuda_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cuda_begin <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">r'''</span></span>
+<span id="cb16-3"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">__global__ void simple_matmul_k(float* m, float* n, float* out, int h, int w, int k) {</span></span>
+<span id="cb16-4"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Calculate global thread indices</span></span>
+<span id="cb16-5"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int r = blockIdx.y*blockDim.y + threadIdx.y;</span></span>
+<span id="cb16-6"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int c = blockIdx.x*blockDim.x + threadIdx.x;</span></span>
+<span id="cb16-7"></span>
+<span id="cb16-8"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Boundary check</span></span>
+<span id="cb16-9"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    if (r&gt;=h || c&gt;=w) return;</span></span>
+<span id="cb16-10"></span>
+<span id="cb16-11"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    float o = 0;</span></span>
+<span id="cb16-12"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Perform dot product for this element</span></span>
+<span id="cb16-13"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    for (int i = 0; i&lt;k; ++i) o += m[r*k+i] * n[i*w+c];</span></span>
+<span id="cb16-14"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    out[r*w+c] = o;</span></span>
+<span id="cb16-15"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb16-16"></span>
+<span id="cb16-17"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor simple_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n) {</span></span>
+<span id="cb16-18"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    CHECK_INPUT(m); CHECK_INPUT(n);</span></span>
+<span id="cb16-19"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int h = m.size(0);</span></span>
+<span id="cb16-20"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int w = n.size(1);</span></span>
+<span id="cb16-21"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int k = m.size(1);</span></span>
+<span id="cb16-22"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    TORCH_CHECK(k==n.size(0), "Size mismatch!");</span></span>
+<span id="cb16-23"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    auto output = torch::zeros({h, w}, m.options());</span></span>
+<span id="cb16-24"></span>
+<span id="cb16-25"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Define thread block and grid dimensions</span></span>
+<span id="cb16-26"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    dim3 tpb(16,16);</span></span>
+<span id="cb16-27"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    dim3 blocks(cdiv(w, tpb.x), cdiv(h, tpb.y));</span></span>
+<span id="cb16-28"></span>
+<span id="cb16-29"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Launch CUDA kernel</span></span>
+<span id="cb16-30"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    simple_matmul_k&lt;&lt;&lt;blocks, tpb&gt;&gt;&gt;(</span></span>
+<span id="cb16-31"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        m.data_ptr&lt;float&gt;(), n.data_ptr&lt;float&gt;(), output.data_ptr&lt;float&gt;(), h, w, k);</span></span>
+<span id="cb16-32"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
+<span id="cb16-33"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    return output;</span></span>
+<span id="cb16-34"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb16-35"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'''</span></span>
+<span id="cb16-36"></span>
+<span id="cb16-37"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># C++ function declaration</span></span>
+<span id="cb16-38">cpp_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb16-39"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor simple_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n);</span></span>
+<span id="cb16-40"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb16-41"></span>
+<span id="cb16-42"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the custom CUDA extension</span></span>
+<span id="cb16-43">simple_matmul_module <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb16-44">    name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"test_ext_simple_matmul"</span>,</span>
+<span id="cb16-45">    cpp_sources<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>cpp_src,</span>
+<span id="cb16-46">    cuda_sources<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>cuda_src,</span>
+<span id="cb16-47">    functions<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'simple_matmul'</span>],</span>
+<span id="cb16-48">    extra_cuda_cflags<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'--ptxas-options=-v'</span>],</span>
+<span id="cb16-49">    verbose<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb16-50">)</span></code></pre></div>
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create two random 1024x1024 matrices on the GPU</span></span>
+<span id="cb17-2">a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>, device<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cuda"</span>)</span>
+<span id="cb17-3">b <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>, device<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cuda"</span>)</span>
+<span id="cb17-4"></span>
+<span id="cb17-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Benchmark the custom matrix multiplication function</span></span>
+<span id="cb17-6"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>timeit simple_matmul_module.simple_matmul(a, b)</span>
+<span id="cb17-7"></span>
+<span id="cb17-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Compute the maximum absolute difference between custom and built-in matrix multiplication</span></span>
+<span id="cb17-9">max_diff <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (simple_matmul_module.simple_matmul(a, b) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> a<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">@</span>b).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">abs</span>().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">max</span>()</span></code></pre></div>
+<pre class="text"><code>426 μs ± 9.98 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)</code></pre></li>
+<li><p><strong>Tiling:</strong> Reduces the number of global memory accesses by reading input tiles into shared memory and reusing them for multiple output tiles.</p>
+<div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Constants and CUDA kernel definition</span></span>
+<span id="cb19-2">cuda_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cuda_begin <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">r"""</span></span>
+<span id="cb19-3"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">constexpr int TILE_SIZE = 16;  // Size of each tile for matrix multiplication</span></span>
+<span id="cb19-4"></span>
+<span id="cb19-5"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/**</span></span>
+<span id="cb19-6"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @brief Tiled matrix multiplication kernel.</span></span>
+<span id="cb19-7"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * </span></span>
+<span id="cb19-8"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * This kernel performs matrix multiplication using shared memory tiles to improve performance.</span></span>
+<span id="cb19-9"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> *</span></span>
+<span id="cb19-10"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param out Pointer to the output matrix</span></span>
+<span id="cb19-11"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param M Pointer to the first input matrix</span></span>
+<span id="cb19-12"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param N Pointer to the second input matrix</span></span>
+<span id="cb19-13"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param h Height of matrix M</span></span>
+<span id="cb19-14"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param w Width of matrix N</span></span>
+<span id="cb19-15"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param k Width of matrix M / Height of matrix N</span></span>
+<span id="cb19-16"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> */</span></span>
+<span id="cb19-17"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">__global__ void tiled_matmul_kernel(float* out, float* M, float* N, int h, int w, int k) {</span></span>
+<span id="cb19-18"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    __shared__ float M_tile[TILE_SIZE][TILE_SIZE];  // Shared memory for M matrix tile</span></span>
+<span id="cb19-19"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    __shared__ float N_tile[TILE_SIZE][TILE_SIZE];  // Shared memory for N matrix tile</span></span>
+<span id="cb19-20"></span>
+<span id="cb19-21"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Thread indices within a tile</span></span>
+<span id="cb19-22"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int ir = threadIdx.y;</span></span>
+<span id="cb19-23"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int ic = threadIdx.x;</span></span>
+<span id="cb19-24"></span>
+<span id="cb19-25"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Global thread indices</span></span>
+<span id="cb19-26"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int r = blockIdx.y * blockDim.y + threadIdx.y;</span></span>
+<span id="cb19-27"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int c = blockIdx.x * blockDim.x + threadIdx.x;</span></span>
+<span id="cb19-28"></span>
+<span id="cb19-29"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    float res = 0.0f;  // Accumulator for dot product result</span></span>
+<span id="cb19-30"></span>
+<span id="cb19-31"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Iterate over tiles</span></span>
+<span id="cb19-32"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    for (int K_tileidx = 0; K_tileidx &lt; (k + TILE_SIZE -1) / TILE_SIZE; K_tileidx++) {</span></span>
+<span id="cb19-33"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        // Load data into shared memory tiles, with bounds checking</span></span>
+<span id="cb19-34"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        M_tile[ir][ic] = (((r &lt; h) &amp;&amp; (K_tileidx * TILE_SIZE + ic &lt; k)) ? M[r * k + K_tileidx * TILE_SIZE + ic] : 0.f);</span></span>
+<span id="cb19-35"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        N_tile[ir][ic] = ((((K_tileidx * TILE_SIZE + ir) &lt; k) &amp;&amp; (c &lt; w)) ? N[(K_tileidx * TILE_SIZE + ir) * w + c] : 0.f);</span></span>
+<span id="cb19-36"></span>
+<span id="cb19-37"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        __syncthreads();  // Ensure all threads have loaded data before computation</span></span>
+<span id="cb19-38"></span>
+<span id="cb19-39"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        // Compute dot product for this tile</span></span>
+<span id="cb19-40"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        for (int idx = 0; idx &lt; TILE_SIZE; idx++) {</span></span>
+<span id="cb19-41"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">           res += M_tile[ir][idx] * N_tile[idx][ic];</span></span>
+<span id="cb19-42"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        }</span></span>
+<span id="cb19-43"></span>
+<span id="cb19-44"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        __syncthreads();  // Ensure all computations are done before loading next tile</span></span>
+<span id="cb19-45"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    }</span></span>
+<span id="cb19-46"></span>
+<span id="cb19-47"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Write result to global memory if within bounds</span></span>
+<span id="cb19-48"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    if ((r &lt; h) &amp;&amp; (c &lt; w)) {</span></span>
+<span id="cb19-49"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        out[r * w + c] = res;</span></span>
+<span id="cb19-50"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    }</span></span>
+<span id="cb19-51"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb19-52"></span>
+<span id="cb19-53"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/**</span></span>
+<span id="cb19-54"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @brief Wrapper function for tiled matrix multiplication kernel.</span></span>
+<span id="cb19-55"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * </span></span>
+<span id="cb19-56"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * This function checks input tensors, sets up kernel parameters, and launches the CUDA kernel.</span></span>
+<span id="cb19-57"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> *</span></span>
+<span id="cb19-58"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param m First input matrix</span></span>
+<span id="cb19-59"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @param n Second input matrix</span></span>
+<span id="cb19-60"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> * @return torch::Tensor Result of matrix multiplication</span></span>
+<span id="cb19-61"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> */</span></span>
+<span id="cb19-62"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor tiled_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n) {</span></span>
+<span id="cb19-63"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    CHECK_INPUT(m); CHECK_INPUT(n);</span></span>
+<span id="cb19-64"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int h = m.size(0);</span></span>
+<span id="cb19-65"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int w = n.size(1);</span></span>
+<span id="cb19-66"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    int k = m.size(1);</span></span>
+<span id="cb19-67"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    TORCH_CHECK(k==n.size(0), "Size mismatch");</span></span>
+<span id="cb19-68"></span>
+<span id="cb19-69"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    auto output = torch::empty({h, w}, m.options());</span></span>
+<span id="cb19-70"></span>
+<span id="cb19-71"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Define thread block and grid dimensions</span></span>
+<span id="cb19-72"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    dim3 tpb(TILE_SIZE, TILE_SIZE);</span></span>
+<span id="cb19-73"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    dim3 blocks(cdiv(w, tpb.x), cdiv(h, tpb.y));</span></span>
+<span id="cb19-74"></span>
+<span id="cb19-75"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    // Launch kernel</span></span>
+<span id="cb19-76"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    tiled_matmul_kernel&lt;&lt;&lt;blocks, tpb&gt;&gt;&gt;(</span></span>
+<span id="cb19-77"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">        output.data_ptr&lt;float&gt;(), m.data_ptr&lt;float&gt;(), n.data_ptr&lt;float&gt;(), h, w, k);</span></span>
+<span id="cb19-78"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    C10_CUDA_KERNEL_LAUNCH_CHECK();</span></span>
+<span id="cb19-79"></span>
+<span id="cb19-80"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    return output;</span></span>
+<span id="cb19-81"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb19-82"><span class="vs" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb19-83"></span>
+<span id="cb19-84"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># C++ interface definition</span></span>
+<span id="cb19-85">cpp_src <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb19-86"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">torch::Tensor tiled_matmul(const torch::Tensor&amp; m, const torch::Tensor&amp; n);</span></span>
+<span id="cb19-87"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb19-88"></span>
+<span id="cb19-89"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load the CUDA kernel as a PyTorch C++ extension</span></span>
+<span id="cb19-90">tiled_matmul_module <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.utils.cpp_extension.load_inline(</span>
+<span id="cb19-91">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"test_ext_tiled_matmul"</span>,  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Name of the extension</span></span>
+<span id="cb19-92">    cpp_src,                  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># C++ interface</span></span>
+<span id="cb19-93">    cuda_src,                 <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># CUDA source code</span></span>
+<span id="cb19-94">    functions<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'tiled_matmul'</span>],  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Exported functions</span></span>
+<span id="cb19-95">    extra_cuda_cflags<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'--ptxas-options=-v'</span>],  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Additional CUDA compilation flags</span></span>
+<span id="cb19-96">    verbose<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>              <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Enable verbose output during compilation</span></span>
+<span id="cb19-97">)</span></code></pre></div>
+<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>timeit tiled_matmul_module.tiled_matmul(a, b)</span></code></pre></div>
+<pre class="text"><code>323 μs ± 2.73 μs per loop (mean ± std. dev. of 7 runs, 10,000 loops each)</code></pre></li>
+</ul></li>
+<li><p><strong>Tiled Matrix Multiplication (Square Matrices):</strong></p>
+<ul>
+<li><strong>Tile Size:</strong> A parameter that determines the size of the tiles.</li>
+<li><strong>Thread Block:</strong> Typically, the tile size squared (e.g., <code>16x16</code> threads for a tile size of <code>16</code>).</li>
+<li><strong>Shared Memory:</strong> Two shared memory arrays to store tiles from matrices A and B.</li>
+<li><strong>Algorithm:</strong>
+<ol type="1">
+<li>Load tiles from global memory into shared memory.</li>
+<li>Perform matrix multiplication within the tiles using shared memory.</li>
+<li>Loop over all tiles to compute the complete result.</li>
+<li>Store the result back to global memory.</li>
+</ol></li>
+</ul></li>
+<li><p><strong>Synchronization:</strong> <code>__syncthreads()</code> is crucial to ensure that all threads have finished reading/writing to shared memory before proceeding.</p></li>
+<li><p><strong>Padding:</strong> For matrices where the size is not a multiple of the tile size, padding with zeros is used to complete the tiles.</p></li>
+<li><p><strong>Performance Improvement:</strong> Reduces memory accesses and improves performance (e.g., from 426 microseconds to 323 microseconds in the example).</p></li>
+</ul>
+</section>
+<section id="future-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="future-considerations"><strong>Future Considerations</strong></h3>
+<ul>
+<li><strong>Thread Coarsening:</strong>
+<ul>
+<li><strong>Concept:</strong> Increasing the amount of work done by each thread to improve performance.</li>
+<li><strong>Application to Tiling:</strong> Allows for larger tile sizes.</li>
+<li><strong>Details:</strong> Covered in the next session.</li>
+</ul></li>
+<li><strong>Flash Attention Implementation:</strong>
+<ul>
+<li><strong>Exercise:</strong> Implement the original Flash Attention algorithm from scratch based on the pseudocode.</li>
+<li><strong>Key Aspect:</strong> Blocking of inputs and output for efficient kernel fusion.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="conclusions-and-key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions-and-key-takeaways"><strong>Conclusions and Key Takeaways</strong></h2>
+<section id="gpu-computation" class="level3">
+<h3 class="anchored" data-anchor-id="gpu-computation"><strong>GPU Computation:</strong></h3>
+<ul>
+<li>GPUs use a hierarchy of threads, warps, and blocks to organize computation.</li>
+<li>Understanding the hardware architecture and scheduling is crucial for performance optimization.</li>
+<li>Occupancy, a measure of resource utilization, should be maximized.</li>
+<li>Thread divergence should be minimized.</li>
+</ul>
+</section>
+<section id="memory-management" class="level3">
+<h3 class="anchored" data-anchor-id="memory-management"><strong>Memory Management:</strong></h3>
+<ul>
+<li>Memory accesses are often a major bottleneck.</li>
+<li>Kernel fusion can reduce memory transfers.</li>
+<li>The roofline model provides insights into the performance limitations of a kernel.</li>
+<li>Tiling is a powerful technique to improve data locality by leveraging shared memory.</li>
+</ul>
+</section>
+<section id="next-steps" class="level3">
+<h3 class="anchored" data-anchor-id="next-steps"><strong>Next Steps:</strong></h3>
+<ul>
+<li>The next chapter will focus on <strong>coalesced memory access</strong>, a technique to optimize global memory reads and writes for maximum efficiency.</li>
+</ul>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>cuda</category>
+  <guid>https://christianjmills.com/posts/cuda-mode-notes/lecture-004/</guid>
+  <pubDate>Sat, 31 Aug 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
+<item>
   <title>CUDA MODE Lecture 3 : Getting Started With CUDA for Python Programmers</title>
   <dc:creator>Christian Mills</dc:creator>
   <link>https://christianjmills.com/posts/cuda-mode-notes/lecture-003/</link>
@@ -23680,202 +25860,6 @@ This post is part of the following series:
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-010/</guid>
   <pubDate>Sat, 20 Jul 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Conference Talk 9: Why Fine-Tuning is Dead</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-009/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<ul>
-<li>Trends in Machine Learning</li>
-<li>Performance Observations: Fine-tuning vs.&nbsp;RAG</li>
-<li>The Moving Target: Fine-tuning and Frontier Models</li>
-<li>The Difficulty of Fine-tuning: Prioritizing Fundamentals</li>
-<li>Extrapolating Trends: Context Size, Price, and Latency</li>
-<li>Conclusion</li>
-<li>Q&amp;A Session</li>
-</ul>
-<section id="trends-in-machine-learning" class="level2">
-<h2 class="anchored" data-anchor-id="trends-in-machine-learning">Trends in Machine Learning</h2>
-<ul>
-<li><strong>Focus on fundamentals:</strong> Throughout ML history, focusing on “boring” fundamentals like data quality and SQL queries often yielded better results than chasing the latest “cool” technology.
-<ul>
-<li><strong>2009:</strong> Data analysis and SQL were more impactful than training ML models.</li>
-<li><strong>2012-2014:</strong> XGBoost outperformed deep learning for many tasks.</li>
-<li><strong>2015:</strong> Data cleaning and error correction were more effective than inventing new loss functions.</li>
-<li><strong>2023:</strong> Prompting and RAG often outperform fine-tuning.</li>
-</ul></li>
-<li><strong>Fine-tuning’s uncertain future:</strong> While fine-tuning became popular with the rise of pre-trained models like ResNet and BERT, LLMs might be shifting the paradigm again towards prompt-based and RAG-augmented approaches.</li>
-</ul>
-<section id="qa-on-trends-and-embedding-models" class="level3">
-<h3 class="anchored" data-anchor-id="qa-on-trends-and-embedding-models">Q&amp;A on Trends and Embedding Models</h3>
-<ul>
-<li><strong>Fine-tuning’s future relevance:</strong> Fine-tuning might still become more valuable in the future, just like deep learning did after an initial period of limited practical use.</li>
-<li><strong>Embedding models:</strong> While LLMs are currently the focus of improvement, embedding models might also see advancements that reduce the need for fine-tuning. However, domain-specific applications might still require fine-tuning or hybrid approaches like combining keyword search with embedding search.</li>
-<li><strong>Domain-specific ranking and retrieval:</strong> RAG, combined with techniques like query expansion driven by LLMs, might be able to address the need for domain-specific ranking and retrieval without fine-tuning embedding models.</li>
-<li><strong>Benchmarking prompting vs.&nbsp;fine-tuning:</strong> Limited data exists comparing prompting and RAG to fine-tuning, but existing research suggests RAG often outperforms fine-tuning.</li>
-</ul>
-</section>
-</section>
-<section id="performance-observations-fine-tuning-vs.-rag" class="level2">
-<h2 class="anchored" data-anchor-id="performance-observations-fine-tuning-vs.-rag">Performance Observations: Fine-tuning vs.&nbsp;RAG</h2>
-<ul>
-<li><strong>RAG often outperforms fine-tuning:</strong> Several studies indicate that RAG, even without fine-tuning, often achieves comparable or better performance than fine-tuning alone, especially for larger models and knowledge-based tasks.
-<ul>
-<li><strong>Forum Post:</strong> <a href="https://community.openai.com/t/fine-tuning-vs-context-injection-rag/550286/1">Fine-tuning vs Context-Injection (RAG)</a></li>
-</ul></li>
-<li><strong>Prioritization over “versus”:</strong> While combining RAG and fine-tuning can yield incremental improvements, prioritizing RAG is crucial due to its efficiency and effectiveness.
-<ul>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2403.01432">Fine Tuning vs.&nbsp;Retrieval Augmented Generation for Less Popular Knowledge</a></li>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2312.05934">Fine-Tuning or Retrieval? Comparing Knowledge Injection in LLMs</a></li>
-</ul></li>
-<li><strong>Fine-tuning for style, not knowledge:</strong> Fine-tuning might be less suitable for incorporating domain knowledge into a model compared to RAG, which directly provides relevant context.
-<ul>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2401.08406">RAG vs Fine-tuning: Pipelines, Tradeoffs, and a Case Study on Agriculture</a></li>
-</ul></li>
-<li><strong>The evolving definition of “knowledge”:</strong> Distinguishing between “knowledge” and “style” in LLMs is complex and changes with each model generation. What previously required fine-tuning (e.g., writing style) might be achievable through prompting in newer models.</li>
-</ul>
-<section id="qa-on-fine-tuning-rag-and-knowledge" class="level3">
-<h3 class="anchored" data-anchor-id="qa-on-fine-tuning-rag-and-knowledge">Q&amp;A on Fine-tuning, RAG, and Knowledge</h3>
-<ul>
-<li><strong>Fine-tuning effectiveness and model size:</strong> Fine-tuning might be more beneficial for smaller models compared to larger ones, which are already more capable of learning from context.</li>
-<li><strong>Domain-specific knowledge and RAG:</strong> Even for smaller models, RAG remains crucial for tasks involving domain-specific knowledge.</li>
-<li><strong>Evaluating fine-tuning success:</strong> The choice of evaluation metric significantly impacts the perceived effectiveness of fine-tuning. For tasks like style adherence, fine-tuning might appear more beneficial than RAG.</li>
-<li><strong>The blurry line between style and content:</strong> The distinction between “style” and “content” can be ambiguous, making it difficult to definitively determine when fine-tuning is beneficial.</li>
-</ul>
-</section>
-<section id="audience-questions-and-examples-of-fine-tuning-success" class="level3">
-<h3 class="anchored" data-anchor-id="audience-questions-and-examples-of-fine-tuning-success">Audience Questions and Examples of Fine-tuning Success</h3>
-<ul>
-<li><strong>Complex knowledge bases and fine-tuning:</strong> When dealing with large, curated knowledge bases, it’s crucial to evaluate whether the next generation of LLMs, combined with RAG, might be sufficient without fine-tuning.</li>
-<li><strong>Adding knowledge via prompting and RAG:</strong> In many cases, adding knowledge to the model can be achieved through prompting, RAG, or a combination of both, eliminating the need for fine-tuning.</li>
-<li><strong>Fine-tuning for multilingual models:</strong> Fine-tuning might be beneficial for improving the performance of multilingual models on languages with limited training data, as it leverages the model’s existing understanding of language mapping.</li>
-<li><strong>Fine-tuning for code generation:</strong> While fine-tuning can be used to adapt code generation models to specific styles and conventions, RAG remains highly effective for providing codebase context.</li>
-<li><strong>Contextual learning vs.&nbsp;fine-tuning:</strong> LLMs are demonstrating impressive abilities to learn from context, potentially replacing the need for fine-tuning in scenarios where sufficient context can be provided.</li>
-</ul>
-</section>
-</section>
-<section id="the-moving-target-fine-tuning-and-frontier-models" class="level2">
-<h2 class="anchored" data-anchor-id="the-moving-target-fine-tuning-and-frontier-models">The Moving Target: Fine-tuning and Frontier Models</h2>
-<ul>
-<li><strong>Rapid LLM advancements:</strong> The rapid pace of LLM development makes fine-tuning a moving target, as newer models often surpass the performance of previously fine-tuned models.</li>
-<li><strong>Bloomberg GPT example:</strong> Bloomberg GPT, a large language model pre-trained on financial data, initially outperformed existing models on financial tasks. However, its performance was subsequently surpassed by newer models like GPT-4.
-<ul>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2303.17564">BloombergGPT: A Large Language Model for Finance</a></li>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2305.05862">Are ChatGPT and GPT-4 General-Purpose Solvers for Financial Text Analytics? A Study on Several Typical Tasks</a></li>
-</ul></li>
-<li><strong>The cost of keeping up:</strong> Continuously fine-tuning on new model releases can be prohibitively expensive, especially for large datasets. Prompt-based and RAG-based pipelines offer more flexibility and cost-effectiveness.</li>
-<li><strong>Fine-tuning effectiveness and model scale:</strong> Fine-tuning might become less effective as models grow larger and more capable.</li>
-</ul>
-</section>
-<section id="the-difficulty-of-fine-tuning-prioritizing-fundamentals" class="level2">
-<h2 class="anchored" data-anchor-id="the-difficulty-of-fine-tuning-prioritizing-fundamentals">The Difficulty of Fine-tuning: Prioritizing Fundamentals</h2>
-<ul>
-<li><strong>The 80/20 rule of ML:</strong> Similar to traditional ML, most effort in LLM development should be dedicated to data work (80%), followed by engineering (18%), debugging (2%), and architecture research (0%).</li>
-<li><strong>Fine-tuning as a last resort:</strong> Fine-tuning should only be considered after thoroughly addressing fundamentals like data quality, evaluation, prompting, and RAG.</li>
-<li><strong>Hierarchy of needs:</strong> Prioritize building a solid ML system with robust evaluation, prompting, and RAG before attempting to fine-tune.
-<ul>
-<li><strong>Book:</strong> <a href="https://www.mlpowered.com/book/">Building Machine Learning Powered Applications: Going from Idea to Product</a></li>
-<li><strong>Continuous Integration</strong>
-<ul>
-<li>Model Backtesting</li>
-<li>Model Evaluation</li>
-<li>Experimentation Framework</li>
-</ul></li>
-<li><strong>Application Logic</strong>
-<ul>
-<li>Input Validation → Filtering Logic → Model Code → Output Validation → Displaying Logic</li>
-</ul></li>
-<li><strong>Monitoring</strong>
-<ul>
-<li>Monitoring Input Distribution</li>
-<li>Monitoring Latency</li>
-<li>Monitoring Output Distribution</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="extrapolating-trends-context-size-price-and-latency" class="level2">
-<h2 class="anchored" data-anchor-id="extrapolating-trends-context-size-price-and-latency">Extrapolating Trends: Context Size, Price, and Latency</h2>
-<ul>
-<li><strong>Decreasing costs and increasing capabilities:</strong> LLM costs are rapidly decreasing, while context windows and processing speeds are increasing.</li>
-<li><strong>The impact of future trends:</strong> If these trends continue, providing sufficient context to highly capable LLMs might become more efficient than fine-tuning for many use cases.</li>
-<li><strong>Context window limitations:</strong> Fine-tuning might still be necessary for applications requiring context exceeding the limits of available LLMs. However, techniques like prefix caching could mitigate this need.</li>
-</ul>
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<ul>
-<li><strong>Finetuning is:</strong>
-<ul>
-<li>expensive and complex</li>
-<li>has become less valuable</li>
-<li>often underperforms simpler approaches</li>
-</ul></li>
-<li><strong>Models are continuously becoming:</strong>
-<ul>
-<li>cheaper</li>
-<li>smarter</li>
-<li>faster</li>
-<li>longer context</li>
-</ul></li>
-<li><strong>Always start with:</strong>
-<ul>
-<li>prompting</li>
-<li>making a train/test set</li>
-<li>RAG</li>
-</ul></li>
-<li><strong>Treat finetuning as a niche/last resort solution</strong>
-<ul>
-<li>like cloud vs on prem</li>
-</ul></li>
-</ul>
-</section>
-<section id="qa-session" class="level2">
-<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
-<section id="question-1" class="level3">
-<h3 class="anchored" data-anchor-id="question-1">Question #1</h3>
-<ul>
-<li><strong>Context window size and computational cost:</strong> Passing large amounts of context through an LLM for every request can be computationally expensive. However, increasing LLM efficiency and advancements like prefix caching could mitigate this cost.</li>
-<li><strong>Fine-tuning complexity:</strong> Fine-tuning increasingly complex and larger LLMs might become more challenging, potentially outweighing the benefits compared to context-based approaches.</li>
-</ul>
-</section>
-<section id="question-2" class="level3">
-<h3 class="anchored" data-anchor-id="question-2">Question #2</h3>
-<ul>
-<li><strong>Dynamic few-shot learning:</strong> Dynamically selecting and providing relevant few-shot examples from a database is a powerful technique for improving LLM performance without fine-tuning.</li>
-<li><strong>Iterative prompt and example improvement:</strong> Invest time in iteratively refining prompts and curating effective few-shot examples before considering fine-tuning.</li>
-</ul>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-009/</guid>
-  <pubDate>Fri, 19 Jul 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
