@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 1 : How to profile CUDA kernels in PyTorch"
+title: "CUDA MODE Lecture 1: How to profile CUDA kernels in PyTorch"
 date: 2024-4-26
 image: /images/empty.gif
 hide: false

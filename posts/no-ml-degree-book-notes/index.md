@@ -1,13 +1,11 @@
 ---
-categories:
-- professional-growth
-- notes
+categories: [book, professional-growth, notes]
 date: 2022-5-27
-description: My notes on Emil Wallner's guide on how to land your first machine learning
-  job without a degree.
+description: "My notes on Emil Wallner's guide on how to land your first machine learning
+  job without a degree."
 hide: false
 search_exclude: false
-title: Notes on No ML Degree Book
+title: "Notes on *No ML Degree: How to Build an AI Portfolio*"
 
 aliases:
 - /Notes-on-No-ML-Degree-Book/
@@ -458,7 +456,6 @@ Jane
 ## References
 
 * [No ML Degree: How to Land Your First Machine Learning Job Without a Degree](https://www.nomldegree.com/l/no-ml-degree)
-
 
 
 

@@ -4,11 +4,14 @@ listing:
   contents: ./
   sort: 
     - "date desc"
-  type: default
+  type: grid
+  table-striped: false
+  grid-columns: 1
+  grid-item-border: true
   fields: [
     title, 
-    date,  
-    categories,
+    #date-modified,  
+    #categories,
     description
     ]
 page-layout: full

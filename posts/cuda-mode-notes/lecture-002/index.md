@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 2 : Ch.1-3 PMPP Book"
+title: "CUDA MODE Lecture 2: Ch.1-3 PMPP Book"
 date: 2024-6-6
 image: /images/empty.gif
 hide: false

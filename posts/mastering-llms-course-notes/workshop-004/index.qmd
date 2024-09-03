@@ -1,0 +1,676 @@
+---
+title: "Workshop 4: Instrumenting & Evaluating LLMs"
+date: 2024-7-17
+image: /images/empty.gif
+hide: false
+search_exclude: false
+categories: [notes, llms]
+description: "Workshop #4 focuses on the practical aspects of deploying fine-tuned LLMs, covering various deployment patterns, performance optimization techniques, and platform considerations."
+
+twitter-card:
+ creator: "@cdotjdotmills"
+ site: "@cdotjdotmills"
+ image: ../social-media/cover.jpg
+open-graph:
+ image: ../social-media/cover.jpg
+---
+
+
+
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
+:::
+
+
+
+
+
+* [Serving Overview](#serving-overview)
+* [Model Deployment Patterns](#model-deployment-patterns)
+* [Case Study: Honeycomb - Replicate](#case-study-honeycomb---replicate)
+* [Deploying Large Language Models](#deploying-large-language-models)
+* [Lessons from Building A Serverless Platform - Predibase](#lessons-from-building-a-serverless-platform---predibase)
+* [Batch vs Real Time and Modal](#batch-vs-real-time-and-modal)
+* [Q&A Session](#qa-session)
+
+
+
+## Serving Overview
+
+### Recap on LoRAs
+
+- **LoRA (Low-Rank Adaptation)**: A parameter-efficient fine-tuning technique that introduces small adapter matrices into the model's layers, significantly reducing the number of trainable parameters compared to full fine-tuning.
+- **Benefits of LoRA**: Reduced memory requirements during training and deployment, enabling fine-tuning on consumer-grade hardware and efficient serving of multiple adapters.
+- **Deployment Options**:
+  - **Keep LoRA separate**: Store LoRA weights in a separate file and load them during inference.
+  - **Merge LoRA with base model**: Combine the learned LoRA weights with the original model weights into a single file.
+  - **Hot-swapping adapters**: Dynamically load and unload adapters on demand, sharing the base model among multiple adapters.
+
+### Performance vs Costs
+
+- **Key Trade-off**: Balancing performance (latency and throughput) with cost (GPU usage and idle time).
+- **Factors Influencing Performance and Cost**:
+  - **GPU speed:** More powerful GPUs offer lower latency but are more expensive.
+  - **Model size:** Larger models generally perform better but require more resources and time.
+  - **Engineering optimizations:** Platform-level optimizations can improve efficiency.
+  - **Cold start vs. idle time:** Loading models onto GPUs takes time (cold start), but keeping them loaded incurs idle time cost.
+- **Hot-swapping adapters**: A strategy to mitigate the cold start vs. idle time trade-off by serving multiple LoRAs on the same GPU, ensuring consistent traffic and reducing idle time.
+
+### Many Applications Aren't Real-Time
+
+- **Real-time vs. batch/offline processing**: Many LLM applications do not require real-time responses, allowing for batch processing and reducing cost by scaling down GPUs when not in use.
+- **Examples of batch/offline use cases**: 
+  - Generating alt text for images
+  - Extracting information from documents 
+  - Editing text
+  - Analytics tools
+
+
+### Real-Time vs Batch/Offline
+
+- **Real-time use cases**: Applications like chatbots and code assistants require low latency responses.
+- **Batch/offline use cases**: Tasks like data analysis, text summarization, and content generation can be processed in batches.
+
+### Merging LoRA to Base
+
+- **Workflow example**:
+  
+  1. Train a LoRA model and save the adapter weights.
+  2. Merge the LoRA weights with the base model weights into a single file (potentially sharded for large models).
+  
+     * ```sh
+       root@724562262aec:/workspace/demo# ls outputs/qlora-out/
+       README.md         checkpoint-1         checkpoint-4         tokenizer.json
+       adapter_config.json    checkpoint-2         config.json          tokenizer_config.json
+       adapter_model.bin     checkpoint-3         special_tokens_map.json
+       ```
+  
+       * `adapter_model.bin` size: 168 MB
+  
+     * ```sh
+       root@724562262aec:/workspace/demo# python3 -m axolotl.cli.merge_lora ./qlora.yml --dora_model_dir="./outputs/qlora-out"
+       ```
+  
+     * ```sh
+       root@724562262aec:/workspace/demo# ls outputs/qlora-out/merged
+       config.json             pytorch_model-00003-of-00004.bin   tokenizer.json
+       generation_config.json        pytorch_model-00004-of-00004.bin   tokenizer_config.json
+       pytorch_model-00001-of-00004.bin   pytorch_model.bin.index.json
+       pytorch_model-00002-of-00004.bin   special_tokens_map.json        
+       ```
+  
+       * merged `.bin` files: 16 GB
+  3. Push the merged model files to a platform like HuggingFace Hub.
+
+### Push Model Files to HF Hub
+
+- **HuggingFace inference endpoints**: A platform for serving models with options for automatic scaling and GPU selection.
+- **Workflow example**:
+  1. Create a HuggingFace repository.
+  
+     * ```sh
+       pip install -U "huggingface_hub[cli]"
+       huggingface-cli repo create conference-demo
+       ```
+  2. Copy the merged model files to the repository.
+  
+     * ```sh
+       cp ./outputs/qlora-out/merged/* conference-demo
+       ```
+  3. Use Git LFS to track large files.
+  
+     * ```sh
+       git lfs track "*.bin"
+       ```
+  4. Push the repository to HuggingFace Hub.
+  
+     * ```sh
+       git add *
+       ```
+  5. Deploy the model using HuggingFace inference endpoints, choosing appropriate scaling and GPU options.
+  
+     * ```sh
+       git commit -am "Push merged files"
+       git push origin main
+       ```
+  
+     * **HuggingFace Hub:** [dansbecker/conference-demo](https://huggingface.co/dansbecker/conference-demo/tree/main)
+
+
+
+## Model Deployment Patterns
+
+* **Blog Post:** [The Many Ways to Deploy a Model](https://outerbounds.com/blog/the-many-ways-to-deploy-a-model/)
+
+### The Many Faces of Deployments
+
+- | Factors                      | Simple, lots of tools                                       | Some tools, customization may be needed                      |
+  | ---------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+  | **Speed (time to response)** | Slow: Results needed in minutes e.g. portfolio optimization | Fast: Results needed in milliseconds e.g. high-frequency trading |
+  | **Scale (requests/second)**  | Low: 10 request/sec or less e.g. an internal dashboard      | High: 10k requests / sec or more e.g. a popular e-commerce site |
+  | **Pace of improvement**      | Low: Updates infrequently e.g. a stable, marginal model     | High: Constant iteration needed e.g. an innovative, important model |
+  | **Real-time inputs needed?** | No real-time inputs e.g. analyze past data                  | Yes, real-time inputs e.g. targeted travel ads               |
+  | **Reliability requirement**  | Low: Ok to fail occasionally e.g. a proof of concept        | High: Must not fail e.g. a fraud detection model             |
+  | **Model complexity**         | Simple models e.g. linear regression                        | Complex models e.g. LLMs                                     |
+
+### Simple Model Serving
+
+- **Direct interface with model library**: Using frameworks like [FastAPI](https://fastapi.tiangolo.com/) to serve models with minimal overhead.
+- **Suitable for**: Proof of concepts, small-scale applications with low performance demands.
+
+### Advanced Model Serving
+
+- **Complex architectures**: Auto-scaling clusters, load balancers, specialized components for pre- and post-processing.
+- **Example**: [Kubernetes](https://kubernetes.io/) with [Triton Inference Server](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html) and [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM).
+
+### Kinds of Model Serving
+
+- **Decision Tree**:
+```{dot}
+digraph "Decision Tree" {
+  node [shape=box, style="rounded,filled", color=gold, fontsize=25, fontname="sans-serif:bold"];
+  graph [splines=polyline];
+  
+  A [label="Is there a finite enough set of\ninputs known in advance?", color=ghostwhite];
+  B [label="Precompute\nresponses"];
+  C [label="Is it ok to return responses\nasynchronously in minutes?", color=ghostwhite];
+  D [label="Trigger a workflow to\ncompute responses"];
+  E [label="Are you comfortable\noperating services\nby yourself?"];
+  F [label="Do you require large scale\nor low latency?"];
+  G [label="Deploy an advanced stack"];
+  H [label="Deploy a simple service"];
+  I [label="Use a managed model\nhosting service"];
+  
+  edge [splines=ortho, arrowhead=none];
+  
+  A -> B [label="Yes", fontsize=25, fontname="sans-serif:bold"];
+  A -> C [label="No", fontsize=25, fontname="sans-serif:bold"];
+  C -> D [label="Yes", fontsize=25, fontname="sans-serif:bold"];
+  C -> E [label="No", fontsize=25, fontname="sans-serif:bold"];
+  E -> F [label="Yes", fontsize=25, fontname="sans-serif:bold"];
+  E -> I [label="No", fontsize=25, fontname="sans-serif:bold"];
+  F -> G [label="Yes", fontsize=25, fontname="sans-serif:bold"];
+  F -> H [label="No", fontsize=25, fontname="sans-serif:bold"];
+
+  B [shape=box, color=darkseagreen3];
+  D [shape=box, color=darkseagreen3];
+  G [shape=box, color=darkseagreen3, label="Deploy an advanced stack:\n\nNVIDIA"];
+  H [shape=box, color=darkseagreen3, label="Deploy a simple service:\n\OpenLLM, FastAPI"];
+  I [shape=box, color=darkseagreen3, label="Use a managed model\nhosting service:\n\nAmazon SageMaker, Anyscale"];
+}
+
+```
+
+### GPU Poor Benchmark (Wrong, but useful)
+
+- **Benchmarking inference servers**: Experiment with different servers to find the best fit for your use case.
+- **Observations**:
+  - [vLLM](https://github.com/vllm-project/vllm): Easy to use, good performance trade-offs.
+  - NVIDIA stack ([Triton + TensorRT](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html)): High performance but complex to use.
+  - **Quantization**: Can significantly impact performance, but evaluate quality trade-offs.
+
+
+
+## Case Study: Honeycomb - Replicate
+
+* **[Replicate](https://replicate.com/):** Run AI with an API
+  
+* [hamelsmu/honeycomb-4-awq](https://replicate.com/hamelsmu/honeycomb-4-awq): Honeycomb NLQ Generator hosted with vLLM + AWQ Quantized 
+  
+* **HoneyComb Model:** [parlance-labs/hc-mistral-alpaca-merged-awq](https://huggingface.co/parlance-labs/hc-mistral-alpaca-merged-awq)
+
+### Why Replicate?
+
+- **Real-time Use Case:** The Honeycomb example demands real-time responses within the Honeycomb interface, making a platform like Replicate ideal.
+- **User-Friendly Playground:** Replicate provides a playground environment with structured input, beneficial for non-technical users to interact with the model.
+- **Permalink Functionality:** Replicate generates permalinks for predictions, which simplifies debugging and sharing specific scenarios with collaborators.
+- **Built-in Documentation and API:** Replicate automatically generates documentation and API endpoints for easy integration and sharing.
+- **Example Saving:** The platform allows users to save specific examples for future reference and testing.
+
+### Show Me the Code
+
+* **GitHub:** [ftcourse/replicate-examples/mistral-vllm-awq](https://github.com/parlance-labs/ftcourse/tree/master/replicate-examples/mistral-vllm-awq)
+* **[Cog](https://cog.run/):** Containers for machine learning
+
+**Files:**
+
+- `cog.yaml`: Defines the Docker environment and specifies the entry point (`predict.py`).
+- `predict.py`: Contains the model loading, setup, and prediction logic.
+
+**Steps:**
+1. **Environment Setup:**
+    - Install Cog (a Docker wrapper that simplifies CUDA management).
+    - Download the model weights from Hugging Face Hub (optional, for local testing).
+2. **Code Structure:**
+    - `cog.yaml`:
+        - Specifies the base Docker image and dependencies.
+        - Defines the `predict.py` file as the entry point.
+        - ```yaml
+          # Configuration for Cog ⚙️
+          # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+          
+          build:
+           # set to true if your model requires a GPU
+           gpu: true
+           cuda: "12.1"
+          
+           # python version in the form '3.8' or '3.8.12'
+           python_version: "3.11"
+          
+           # a list of packages in the format <package-name>==<version>
+           python_packages:
+            - "hf_transfer==0.1.4"
+            - "aiohttp[speedups]"
+            - "torch==2.1.2"
+          
+           # commands run after the environment is setup
+           run:
+            - pip install "pydantic<2.0.0"
+            - CUDA_HOME=/usr/local/cuda pip install --ignore-installed vllm==0.3.0
+            - pip install https://r2.drysys.workers.dev/tmp/cog-0.10.0a6-py3-none-any.whl
+            - bash -c 'ln -s /usr/local/lib/python3.11/site-packages/torch/lib/lib{nv,cu}* /usr/lib'
+            - pip install scipy==1.11.4 sentencepiece==0.1.99 protobuf==4.23.4
+            - ln -sf $(which echo) $(which pip)
+          
+          predict: "predict.py:Predictor"
+          ```
+    - `predict.py`:
+        - **Prompt Template:** Sets the structure for interacting with the LLM.
+        - **Setup:**
+            - Defines a `Predictor` class.
+            - Loads the quantized model from Hugging Face Hub during initialization.
+        - **Predict Function:**
+            - Takes the natural language query and schema as input.
+            - Processes the input through the LLM using vLLM.
+            - Returns the generated Honeycomb query.
+        
+        - ```python
+            import os
+            os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+            import torch
+            from cog import BasePredictor
+            from vllm import LLM, SamplingParams
+            
+            
+            MODEL_ID = 'parlance-labs/hc-mistral-alpaca-merged-awq'
+            MAX_TOKENS=2500
+            
+            PROMPT_TEMPLATE = """Honeycomb is an observability platform that allows you to write queries to inspect trace data. You are an assistant that takes a natural language query (NLQ) and a list of valid columns and produce a Honeycomb query.
+            
+            ### Instruction:
+            
+            NLQ: "{nlq}"
+            
+            Columns: {cols}
+            
+            ### Response:
+            """
+            
+            class Predictor(BasePredictor):
+                
+              def setup(self):
+                n_gpus = torch.cuda.device_count()
+                self.sampling_params = SamplingParams(stop_token_ids=[2], temperature=0, ignore_eos=True, max_tokens=2500)
+            
+                self.llm = LLM(model='parlance-labs/hc-mistral-alpaca-merged-awq', 
+                        tensor_parallel_size=n_gpus, quantization="AWQ")
+            
+              def predict(self, nlq: str, cols: str) -> str:    
+                _p = PROMPT_TEMPLATE.format(nlq=nlq, cols=cols)
+                out = self.llm.generate(_p, sampling_params=self.sampling_params, use_tqdm=False)
+                return out[0].outputs[0].text.strip().strip('"')
+            ```
+3. **Local Testing:**
+    - **Run Cog Server:** `cog run` starts a local web server for interacting with the model.
+      - ```sh
+        cog run -e CUDA_VISIBLE_DEVICES=0 -p 5000 python -m cog.server.http
+        ```
+    - **Direct Prediction:** `cog predict -i input1=value1 input2=value2` allows for direct prediction using command-line arguments.
+      - ```sh
+        cog predict -e CUDA_VISIBLE_DEVICES=0 -i nlq="EMISSING slowest traces" -i cols="['sli.latency', 'duration_ms', 'net.transport', 'http.method', 'error', 'http.target', 'http.route', 'rpc.method', 'ip', 'http.request_content_length', 'rpc.service', 'apdex', 'name', 'message.type', 'http.host', 'service.name', 'rpc.system', 'http.scheme', 'sli.platform-time', 'type', 'http.flavor', 'span.kind', 'dc.platform-time', 'library.version', 'status_code', 'net.host.port', 'net.host.ip', 'app.request_id', 'bucket_duration_ms', 'library.name', 'sli_product', 'message.uncompressed_size', 'rpc.grpc.status_code', 'net.peer.port', 'log10_duration_ms', 'http.status_code', 'status_message', 'http.user_agent', 'net.host.name', 'span.num_links', 'message.id', 'parent_name', 'app.cart_total', 'num_products', 'product_availability', 'revenue_at_risk', 'trace.trace_id', 'trace.span_id', 'ingest_timestamp', 'http.server_name', 'trace.parent_id']"
+        ```
+5. **Deployment to Replicate:**
+    - **Create a Model on Replicate:**
+        - Choose a descriptive name.
+        - Select appropriate hardware based on memory and GPU requirements.
+        - Choose "Custom Cog Model" as the model type.
+    - **Login to Cog:** `cog login`
+    - **Push to Replicate:** `cog push r8.im/hamelsmu/honeycomb-4-awq`
+
+
+
+
+## Deploying Large Language Models
+
+### Deploying LLMs
+
+* Deploying LLMs is challenging, even in 2024, due to the multidimensional and zero-sum nature of performance optimization and the constant evolution of technology.
+
+#### Challenges in Deploying LLMs
+
+* **Multidimensional and Zero-Sum Performance:** LLM performance involves trade-offs between various factors like speed, cost, and accuracy. Prioritizing one dimension often negatively impacts others. 
+  * **Example:** Increasing batch size improves throughput (total tokens per second) but reduces single-stream performance (tokens per second for a single request), impacting user experience.
+* **Rapid Technology Evolution:** The field is constantly evolving with new serving frameworks and optimization techniques emerging frequently. Keeping up with these changes while maintaining a performant and cost-effective deployment is demanding.
+
+#### LLM Performance Bottlenecks
+
+Two primary factors contribute to slow LLM inference:
+
+* **Memory Bandwidth:** Transformers require frequent data transfers between slow device memory and faster memory caches on GPUs.
+* **Software Overhead:** Launching and scheduling each operation in a model's forward pass involves communication between CPU and GPU, creating overhead.
+
+#### Techniques for Optimizing LLM Performance
+
+* **Memory Bandwidth Optimization:**
+  * **CUDA Kernel Optimization:** Techniques like kernel fusion aim to minimize data transfer by combining multiple kernels into one.
+  * **Flash Attention:** Improves efficiency by minimizing data movement during attention calculations.
+  * **Paged Attention:** Optimizes data storage and transfer for increased efficiency.
+  * **Quantization:** Reduces model size by using lower-precision data types, allowing for faster data transfer.
+  * **Speculative Decoding:** Generates multiple tokens in parallel, discarding incorrect ones, to potentially reduce latency.
+    * **Paper:** [Nearest Neighbor Speculative Decoding for LLM Generation and Attribution](https://arxiv.org/abs/2405.19325)
+    * **GitHub Repository:** [feifeibear/LLMSpeculativeSampling](https://github.com/feifeibear/LLMSpeculativeSampling)
+* **Software Overhead Reduction:**
+  * **CUDA Kernel Optimization:** Fewer, more efficient kernels lead to fewer kernel launches.
+  * **CUDA Graphs:** Traces and combines all kernel launches in a forward pass into a single unit, reducing CPU-GPU communication.
+* **Runtime Optimizations:**
+  * **Continuous Batching:** Enables efficient processing of requests with varying lengths by continuously adding and removing them from batches during inference.
+  * **KV Caching:** Stores key-value embeddings during inference, avoiding redundant calculations for repeated inputs.
+  * **Hardware Upgrades:** Using more powerful GPUs directly improves performance.
+  * **Input/Output Length Optimization:** Shorter inputs and outputs reduce the number of tokens processed, potentially improving latency.
+
+#### Continuous Batching
+
+* Continuous batching is a significant advancement in LLM serving that addresses limitations of traditional micro-batching.
+* **Blog Post:** [How continuous batching enables 23x throughput in LLM inference while reducing p50 latency](https://www.anyscale.com/blog/continuous-batching-llm-inference)
+
+* **How it Works:** Processes requests as a stream of individual token generation steps, allowing for dynamic addition and removal of requests within a batch.
+* **Benefits:**
+  * Eliminates the need to wait for a complete batch before processing, reducing latency.
+  * Enables efficient handling of requests with varying lengths.
+* **Consequences:**
+  * Results in dynamic batch sizes, making performance less predictable.
+  * Requires careful consideration of performance SLAs and user experience.
+
+#### Inference Servers
+
+Various inference servers are available, each with its own strengths and weaknesses:
+
+* **Examples:** [vLLM](https://github.com/vllm-project/vllm), [TGI](https://huggingface.co/docs/text-generation-inference/en/index), [FastGen](https://fastgen.com/), [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM), [SGLang](https://github.com/sgl-project/sglang), [Ollama](https://ollama.com/), [Llama.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/turboderp/exllama), [MLC](https://github.com/mlc-ai/mlc-llm), [LoRAX](https://github.com/predibase/lorax)
+* **Common Features:** Continuous batching, specialized kernels, support for different optimization techniques.
+
+#### Performance Tuning
+
+Understanding and tuning for different performance metrics is crucial:
+
+* **Total Tokens Per Second (Throughput):** Measures the overall token generation rate across all requests.
+* **Single Stream Tokens Per Second (Latency):** Measures the token generation rate for a single request, reflecting user experience.
+* **Requests Per Second:** Measures how many requests can be completed per second.
+
+**Key Considerations:**
+
+* Increasing batch size generally improves throughput but reduces single-stream performance.
+* Finding the right balance between these metrics depends on the specific use case and desired user experience.
+* Clearly define performance SLOs and consider both throughput and latency when evaluating performance.
+
+
+### Simplifying LLM Deployment
+
+#### Prioritize Modularity
+
+Building a modular LLM serving stack is essential for navigating the challenges of the rapidly evolving technology landscape.
+
+* **Benefits of Modularity:**
+  * **Flexibility:** Easily switch between different serving frameworks as needed to leverage new features or optimizations.
+  * **Experimentation:** Enables efficient testing and comparison of different frameworks and configurations.
+* **Challenges:**
+  * **Compatibility Issues:** Features and optimizations from different frameworks may not always work together seamlessly.
+  * **Lack of Documentation:** New features and their interactions may not be well-documented, requiring experimentation and debugging.
+
+### Simplify LLM Deployment with Replicate
+
+Replicate is a serverless infrastructure that aims to simplify LLM deployment and experimentation.
+
+#### Replicate Features and Workflow
+
+* **[COG](https://cog.run/):** Open-source tool for packaging models and serving code, providing control over the serving framework.
+  * [Cog-vLLM](https://github.com/replicate/cog-vllm): Run vLLM on Replicate
+
+* **Hugging Face Integration:** Streamlined workflow for pulling and deploying models from Hugging Face.
+* **Performance Optimizations:** Caching mechanisms and other optimizations to improve model download and cold boot times.
+* **Open Source Approach:** Replicate's model serving infrastructure is open source, allowing for customization and contributions.
+
+**Workflow Example:**
+
+1. **Create a Training:** Specify the model, Hugging Face ID, and other configurations through Replicate's web interface.
+2. **Transfer Weights:** Replicate downloads weights from Hugging Face and pushes them to its optimized storage.
+3. **Deploy and Access Model:** Once the training is complete, the model is deployed and accessible through Replicate's API or client libraries.
+4. **Customize with COG:** Utilize COG to customize the serving environment, experiment with different frameworks, and add features.
+
+**Key Advantages:**
+
+* **Simplified Deployment:** Replicate abstracts away infrastructure complexities, making it easy to deploy and serve models.
+* **Framework Flexibility:** Supports multiple serving frameworks like vLLM and TRT-LLM, allowing for experimentation and optimization.
+* **Open Source and Customizable:** Provides transparency and control over the serving environment.
+
+
+
+## Lessons from Building A Serverless Platform - Predibase
+
+### Predibase Overview
+
+- [Predibase](https://predibase.com/) is a managed platform for fine-tuning and serving LLMs.
+- It offers an end-to-end solution for prompting, fine-tuning, and deploying LLMs serverlessly or in dedicated environments.
+
+### The Case for Fine-Tuned LLMs
+
+- **General Intelligence vs. Task Specificity:** General-purpose LLMs like ChatGPT are powerful but inefficient for specific tasks. Fine-tuning allows for models tailored to specific business needs, reducing cost and latency.
+- **Cost of Serving Multiple Models:** Serving numerous fine-tuned models on dedicated deployments becomes expensive. 
+- **[LoRAX](https://github.com/predibase/lorax) - A Solution for Efficient Serving:**
+  - Lorax is an open-source framework built on HuggingFace's TGI, designed for efficient fine-tuned LLM inference.
+  - It enables serving multiple fine-tuned models concurrently on a single deployment by sharing base model parameters and using heterogeneous batching of LoRA adapters.
+  - This approach results in significant cost savings compared to dedicated deployments or fine-tuning via OpenAI's API.
+
+### Deploying Your Fine-Tuned Model: Practical Considerations
+
+#### Merging Adapters: Pros and Cons
+
+- **Merging:**
+  - **Pros:** Better baseline performance by eliminating the overhead of processing LoRA layers at runtime.
+  - **Cons:** Limits flexibility in serving multiple fine-tunes, incompatibility with certain adapters (e.g., DORA, speculative decoding), potential quantization challenges, increased disk space.
+- **Not Merging:**
+  - **Pros:** Allows serving multiple fine-tuned models and the base model on a single deployment, facilitates A/B testing and rapid iteration, compatibility with various adapter types.
+  - **Cons:** Potential performance overhead due to processing LoRA layers at runtime.
+- **Decision:** Whether to merge depends on individual needs and constraints.
+
+#### Quantization for Training and Inference
+
+- **Challenge:** Models trained with QLoRA (quantized) often show performance degradation when served using FP16 (full precision). Serving with QLoRA is slow.
+- **Solution:** Dequantize the QLoRA weights to FP16 for inference. This maintains numerical equivalence with the quantized weights while enabling faster inference.
+
+### Performance Tuning
+
+#### Gathering Requirements
+
+- **Factors:** Queries per second, input/output token distribution, number of adapters.
+- **Impact:** These factors influence ideal batch size, target throughput, and latency.
+- **SLOs:** Define service level objectives for peak throughput, latency, and cost.
+
+#### Deployment Requirements
+
+- **VRAM Estimation:** Allocate at least 1.5x the model weights for serving, considering activations, adapters, and KV cache.
+
+#### Key Questions for Choosing Deployment Options
+
+- VRAM needs
+- Requests per second
+- Request distribution
+- Maximum acceptable latency
+- Willingness to sacrifice quality for cost
+- Number of tasks
+
+#### Serverless vs. Dedicated Deployment
+
+- **Serverless:** Suitable for low to medium, uniformly distributed requests with latency tolerance on the order of seconds.
+- **Dedicated:** More appropriate for high, spiky request volumes, batch processing, or when strict latency and throughput SLOs are critical.
+
+### Fine-Tuning for Throughput
+
+- **Shifting the Paradigm:** Move beyond focusing solely on quality and leverage fine-tuning for performance improvements.
+
+#### Addressing Performance Differences:
+
+- Fine-tuned models with adapters often show slower throughput compared to base models.
+
+#### Speculative Decoding - The Medusa Approach:
+
+- **Paper:** [MEDUSA: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads](https://arxiv.org/abs/2401.10774)
+- Fine-tune additional projections to predict future tokens, improving throughput by reducing the number of forward passes.
+- Implement verification steps to ensure only correct tokens are accepted.
+
+#### Combining Quality and Performance with Lookahead LoRA:
+
+- Fine-tune adapters to predict multiple tokens ahead (lookahead) while maintaining task-specific accuracy.
+- This approach has shown significant throughput improvements (2-3x) compared to base models and standard LoRA adapters.
+
+### Demonstration
+
+- A live demo showcased the throughput differences between a base Medusa model, a fine-tuned Medusa model, and a model using lookahead LoRA for a code generation task.
+- The lookahead LoRA model achieved significantly higher throughput, highlighting the potential of this technique.
+
+
+
+## Batch vs Real Time and Modal
+
+### Throughput vs. Latency
+
+* **Defining "Slow"**: A system can be slow due to low throughput (handling few requests per unit time) or high latency (taking long to process a single request).
+* **Throughput**: Measured in requests completed per unit time.
+  * Relevant for batch tasks like recommendation systems, evaluations, and CI/CD.
+  * Constraints often stem from upstream/downstream systems.
+* **Latency**: Measured in time taken to complete a single request.
+  * Crucial for real-time applications like chatbots, copilots, and guardrails.
+  * Human perception is the primary constraint (target ~200ms total system latency).
+* **Cost**: The hidden factor influencing throughput and latency. More resources generally improve both but at a cost.
+
+### Latency Lags Throughput
+
+* **Paper:** [Latency Lags Bandwidth](https://dl.acm.org/doi/pdf/10.1145/1022594.1022596)
+* **Latency Improvements Are Hard**: Historically, improving bandwidth has been easier than reducing latency due to fundamental engineering and physical limitations (e.g., speed of light).
+  * **GPUs Exemplify This**: GPUs are optimized for throughput with large areas dedicated to processing, while CPUs prioritize latency with a focus on caching and control flow.
+
+#### GPUs are inherently throughput-oriented.
+
+* **Textbook:** [Programming Massively Parallel Processors: A Hands-on Approach](https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/)
+* GPUs have much larger areas dedicated to processing units (ALUs) compared to CPUs, which prioritize caching and control flow for lower latency.
+* This design difference allows GPUs to achieve significantly higher memory throughput, making them suitable for high-throughput tasks like LLM inference.
+
+#### LLM Inference Challenges
+
+* **Throughput**: Easily scalable by increasing batch size (with some latency tradeoffs).
+* **Latency**: Much harder to optimize.
+  * **Techniques for Improvement**: Quantization, model distillation, truncation, faster hardware, and highly optimized software (e.g., CUDA kernels).
+  * **Extreme Latency Optimization**: Running models entirely on cache memory (SRAM), as done by [Groq's LPU](https://wow.groq.com/lpu-inference-engine/), significantly reduces latency but may impact throughput per dollar.
+
+### Costs are high but falling.
+
+* **Good News**: LLM inference costs are decreasing faster than Moore's law due to hardware, algorithmic, and R&D advancements.
+  * **Cognitive Capability for Fixed Price**: $20/megatoken now buys GPT-4 level output, significantly higher capability than what was possible a year ago.
+  * **Falling Costs for Fixed Capability**: Achieving chatGPT-level performance is now possible at a fraction of the cost compared to two years ago.
+* **Implication**: Holding onto a fixed budget and waiting for capabilities to improve is a viable strategy.
+
+### Deploying LLMs on Modal
+
+* **Modal's Value Proposition**:
+  * **High Throughput**: Easy scaling to hundreds of A100s for large-scale fine-tuning and batch inference.
+  * **Manageable Latency**: Balancing latency and cost is achievable for models up to 13B parameters, suitable for certain latency-sensitive applications.
+  * **Competitive Cost**: Offers competitive GPU pricing with potential for high utilization savings, especially for spiky workloads.
+* **Beyond GPUs**: Modal provides a complete serverless runtime with storage, compute, and web service capabilities, enabling tasks beyond just LLM inference.
+
+### Modal is for more than GPUs
+
+* Modal is not just a serverless GPU platform; it's a complete runtime environment.
+* **Key Features**:
+  * **Storage**: Distributed file system, queues, dictionaries, and the ability to mount local and web data.
+  * **Compute**: Functions, GPU acceleration, and other serverless compute options.
+  * **Web Services**: Web endpoints and server capabilities for deploying applications.
+
+### Demos
+
+* **Code:** [https://modal.com/docs/examples](https://modal.com/docs/examples)
+* **Abliteration LLM**: Demonstrated an LLM modified to remove certain responses (e.g., refusing harmful requests). This demo encountered technical difficulties.
+  * **Blog Post:** [Uncensor any LLM with abliteration](https://huggingface.co/blog/mlabonne/abliteration) 
+* **Batch Inference with TRT LLM**: Showcased running batch inference on Llama-3 8B using TRT LLM, achieving high throughput.
+* **Hot Reloading Development Server**: Demonstrated the ability to make code changes locally and have them automatically redeployed on Modal.
+* **OpenAI Compatible Endpoint**: Showcased running an OpenAI compatible endpoint on Modal using vLLM, allowing integration with tools like Instructor.
+
+
+
+## Q&A Session
+
+### AWQ in Honeycomb Example
+
+* **Question:** Clarification sought on the mention of AWQ in the Honeycomb example.
+* **Answer:** AWQ (quantization technique) is highlighted as a tool for model quantization, compatible and easily integrable with vLLM. The speaker shares their preference for using default or documented settings for quantization without delving into extensive customization.
+  * **Paper:** [AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration](https://arxiv.org/abs/2306.00978)
+
+
+### Pricing Fine-Tuning Projects for Enterprises
+
+* **Question:** Advice sought on determining pricing for enterprise fine-tuning projects.
+* **Answer:** Advises against hourly rates and recommends a value-based approach, which involves:
+  * Understanding the client's problem and its importance.
+  * Identifying key metrics the client aims to improve.
+  * Collaborating to determine the project's value to the client.
+    * If the client does not know, should probably not take the project
+  * Proposing a reasonable fraction of that value as the price.
+
+### GPU Optimization in Modal with vLLM's Async Engine
+
+* **Question:** Inquiry about optimizing GPU usage in Modal when using vLLM's asynchronous engine and limiting concurrent requests instead of batch size.
+* **Answer:** Charles Frye emphasizes the importance of measuring actual GPU behavior:
+  * **CUDA Kernel Utilization:** Monitor using tools like NVIDIA SMI to understand GPU activity.
+  * **FLOPs Utilization:** Measure and compare the achieved floating-point operations per second against the system's theoretical maximum.
+  * **Wattage Consumption:** Observe GPU power draw as a proxy for actual workload and potential bottlenecks.
+
+### Hiding API Endpoints in Model-Serving Web Apps
+
+* **Question:** Strategies sought for concealing API endpoints in a web application to prevent exposure through browser inspection tools.
+* **Answer:**
+  * **Proxy Server:** Routing requests through a proxy to mask internal endpoints and implement protections.
+  * **Accepting Limitations:** Recognizing that completely hiding data flow from the client-side is challenging.
+
+### Impact of Input Prompt Size on Speed
+
+* **Question:** Clarification sought on how reducing input prompt size affects processing speed, given that the entire prompt is read at once.
+* **Answer:**
+  * **Prefill Impact:** Smaller prompts reduce the initial encoding time (prefill), which can be significant for very large inputs.
+  * **Attention Calculation:** Shorter sequences lead to faster attention calculations due to the quadratic complexity of attention mechanisms.
+  * **Practical Considerations:** The impact might be negligible for moderately sized prompts but becomes increasingly relevant for very large inputs like books or lengthy PDFs.
+
+### Resources for Learning Continuous Batching
+
+* **Question:** Recommendation requested for resources to learn about continuous batching.
+* **Answer:**
+  * **Orca Paper:** Referring to the original research paper on continuous batching.
+  * **AnyScale Blog Post:** [How continuous batching enables 23x throughput in LLM inference while reducing p50 latency](https://www.anyscale.com/blog/continuous-batching-llm-inference)
+  * **Practical Experimentation:** Emphasizing the value of hands-on experience, benchmarking, and analyzing performance variations.
+
+### Request Caching Layer in Hugging Face and Modal
+
+* **Question:** Inquiry about the availability of a request caching layer in Hugging Face and Modal.
+* **Answer:** 
+  * **KV Caching:** The speakers clarify that some frameworks, like TRT-LLM and vLLM, offer KV caching, which can improve performance for requests sharing similar prefixes or chat history.
+  * **Higher-Level Caching:** Expanding on the concept, they discuss the possibility of centralized KV cache databases and even caching complete requests and responses for deterministic scenarios.
+  * **Replicate's Approach:** Joe Hoover states that Replicate doesn't currently provide explicit features for request caching but acknowledges it as a potential future consideration. 
+
+
+
+
+
+
+
+
+
+
+

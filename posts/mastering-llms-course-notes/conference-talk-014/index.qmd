@@ -1,0 +1,734 @@
+---
+title: "Conference Talk 14: Explaining the Basics of Retrieval Augmented Generation"
+date: 2024-8-2
+image: /images/empty.gif
+hide: false
+search_exclude: false
+categories: [notes, llms]
+description: "In this talk, **Ben Clavié** from Answer.ai deconstructs the concept of Retrieval-Augmented Generation (RAG) and walks through building a robust, basic RAG pipeline."
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: ../social-media/cover.jpg
+open-graph:
+  image: ../social-media/cover.jpg
+---
+
+
+
+::: {.callout-tip}
+## This post is part of the following series:
+* [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
+:::
+
+
+
+
+
+* [Summary](#summary)
+* [Demystifying RAG](#demystifying-rag)
+* [The Compact MVP: A Simple RAG Implementation](#the-compact-mvp-a-simple-rag-implementation)
+* [Understanding Bi-Encoders in Vector Search](#understanding-bi-encoders-in-vector-search)
+* [Improving Retrieval with Re-ranking](#improving-retrieval-with-re-ranking)
+* [Keyword Search](#keyword-search)
+* [Leveraging Metadata for Targeted Retrieval](#leveraging-metadata-for-targeted-retrieval)
+* [Putting it All Together: The Complete MVP++ Pipeline](#putting-it-all-together-the-complete-mvp-pipeline)
+* [Beyond the Basics: Future Exploration and Resources](#beyond-the-basics-future-exploration-and-resources)
+* [Q&A Session](#qa-session)
+
+
+
+## Summary
+
+[Ben Clavié](https://ben.clavie.eu/) deconstructs the concept of Retrieval-Augmented Generation (RAG) and guides the audience through building a robust, basic RAG pipeline. He emphasizes that RAG is not a standalone technology, but a pipeline combining retrieval and generation, and each component needs individual attention for optimization. Ben advocates for a "MVP++" approach, incorporating essential elements like bi-encoders, re-ranking, keyword search (TF-IDF/BM25), and metadata filtering for a well-rounded system.
+
+
+
+## Demystifying RAG
+
+* **RAG: Overused and Misunderstood**
+  * The term "RAG" is often used incorrectly to represent an end-to-end system, creating confusion.
+* **RAG as a Pipeline: Retrieval + Generation**
+  * RAG simply combines retrieval (finding relevant information) and generation (creating text) using Large Language Models (LLMs). 
+  * It's not a single technology, but a pipeline requiring optimization at each stage: retrieval, generation, and their connection.
+* **Importance of Identifying Specific RAG Issues**
+  * "My RAG doesn't work" is too broad. Pinpointing the failing component (retrieval, LLM utilization) is crucial for debugging.
+
+
+
+## The Compact MVP: A Simple RAG Implementation
+
+* **Basic Pipeline Components and Flow**
+  * Query embedding
+  * Document embedding
+  * Cosine similarity search for relevant documents
+
+```{dot}
+digraph bencoder_approach {
+    rankdir=TB;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#a4d8ff"];
+    Query;
+
+    node [shape=box, style="rounded, filled", fillcolor="#feec98"];
+    Documents;
+
+    node [shape=rect, style="rounded, filled", fillcolor="#ffc9c9"];
+    Query -> Query_Embedding_Model -> Query_Embedding_Pooling;
+    Documents -> Document_Embedding_Model -> Document_Embedding_Pooling;
+
+    subgraph cluster_0 {
+        style="dashed, rounded";
+        fontcolor="red";
+        label="This is called a 'bi-encoder' approach";
+
+        Query_Embedding_Model [label="Embedding Model"];
+        Document_Embedding_Model [label="Embedding Model"];
+
+        Query_Embedding_Pooling [label="Embedding pooling (into 1 vector)"];
+        Document_Embedding_Pooling [label="Embedding pooling (into 1 vector)"];
+    }
+
+    node [shape=box, style="rounded, filled", fillcolor="#b2f3bb"];
+    Cosine_Similarity_Search [label="Cosine similarity search"];
+    Query_Embedding_Pooling -> Cosine_Similarity_Search;
+    Document_Embedding_Pooling -> Cosine_Similarity_Search;
+    Cosine_Similarity_Search -> Results;
+    Results;
+}
+```
+
+
+
+
+* ::: {.callout-note title="Code Example: Vector Search with NumPy"}
+  
+  * Demonstrates a basic RAG pipeline without a vector database, emphasizing simplicity.
+  * Uses NumPy for cosine similarity search for demonstration purposes.
+  
+  ```python
+  # Load the embedding model
+  from sentence_transformers import SentenceTransformer         #<1>
+  model = SentenceTransformer("Alibaba-NLP/gte-base-en-v1.5")   #<1>
+  
+  # Fetch some text content...           #<2>
+  from wikipediaapi import Wikipedia     #<2>
+  wiki = Wikipedia('RAGBot/0.0', 'en')   #<2>
+  doc = wiki.page('Hayao_Miyazaki').text #<2>
+  paragraphs = doc.split('\n\n')         #<2>
+  # ...And embed it.                                               #<2>
+  docs_embed = model.encode(paragraphs, normalize_embeddings=True) #<2>
+  
+  # Embed the query                                            #<3>
+  query = "What was Studio Ghibli's first film?"               #<3>
+  query_embed = model.encode(query, normalize_embeddings=True) #<3>
+  
+  # Find the 3 closest paragraphs to the query                    #<4>
+  import numpy as np                                              #<4>
+  similarities = np.dot(docs_embed, query_embed.T)                #<4>
+  top_3_idx = similarities.topk(3).indices.tolist()               #<4>
+  most_similar_documents = [paragraphs[idx] for idx in top_3_idx] #<4>
+  ```
+  
+  1. Load Bi-Encoder
+  2. Embed Documents
+  3. Embed Query
+  4. Cosine Similarity Search
+  
+  :::
+
+
+
+## Understanding Bi-Encoders in Vector Search
+
+* **Vector Databases: When and Why?**
+  
+  * Useful for efficiently searching large document sets using Approximate Search techniques
+    * **HNSW**
+      * **Paper:** [Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs](https://arxiv.org/abs/1603.09320)
+      * **Article:** [Hierarchical Navigable Small Worlds (HNSW)](https://www.pinecone.io/learn/series/faiss/hnsw/)
+    * **IVFPQ**
+      * **Article:** [Product Quantization: Compressing high-dimensional vectors by 97%](https://www.pinecone.io/learn/series/faiss/product-quantization/)
+  * Not necessary for small datasets (e.g., 500 documents)
+    * Modern CPU can search through hundreds of vectors in milliseconds
+  
+  ```{dot}
+  digraph bencoder_approach {
+      rankdir=TB;
+      
+      node [shape=box, style="rounded, filled", fillcolor="#a4d8ff"];
+      Query;
+  
+      node [shape=box, style="rounded, filled", fillcolor="#feec98"];
+      Documents;
+  
+      node [shape=rect, style="rounded, filled", fillcolor="#fddde6"];
+      Query -> Query_Embedding_Model -> Query_Embedding_Pooling;
+      Documents -> Document_Embedding_Model -> Document_Embedding_Pooling;
+  
+      subgraph cluster_0 {
+          style="dashed, rounded";
+  
+          Query_Embedding_Model [label="Embedding Model"];
+          Document_Embedding_Model [label="Embedding Model"];
+  
+          Query_Embedding_Pooling [label="Embedding pooling (into 1 vector)"];
+          Document_Embedding_Pooling [label="Embedding pooling (into 1 vector)"];
+      }
+  
+      node [shape=box, style="rounded, filled", fillcolor="#b2f3bb"];
+      Cosine_Similarity_Search [label="Cosine similarity search"];
+      Query_Embedding_Pooling -> Cosine_Similarity_Search;
+      Document_Embedding_Pooling -> Cosine_Similarity_Search [label="Vector DB goes here"];
+      Cosine_Similarity_Search -> Results;
+      Results;
+  }
+  ```
+  
+  
+
+* **Bi-Encoders: Separate Encoding for Queries and Documents**
+
+  * Encode documents and queries independently.
+  * Pre-computed document representations allow for efficient inference, as only the query needs encoding at runtime.
+  * Comes with retrieval performance tradeoffs
+
+  
+
+## Improving Retrieval with Re-ranking
+
+* **Bi-Encoder Limitations: Context Unawareness**
+  * Bi-encoders encode documents and queries separately, potentially missing nuanced relationships between them.
+
+* **Cross-Encoders: Joint Encoding for Better Relevance Scoring**
+  * Encode query-document pairs together, allowing for a more context-aware relevance score. 
+  * Effectively a binary classifier
+    * Uses the probability of being the positive class as the similarity score.
+
+  * Computationally expensive for large datasets.
+
+  ```{dot}
+  digraph bi_encoder {
+      rankdir=TB;
+      
+      subgraph cluster_0 {
+          style="dashed, rounded";
+          label="Bi-Encoder";
+          
+          node [shape=box, style="rounded, filled", fillcolor="#a4d8ff"];
+          Query;
+          
+          node [shape=box, style="rounded, filled", fillcolor="#feec98"];
+          Documents;
+  
+          node [shape=rect, style="rounded, filled", fillcolor="#fddde6"];
+          Query -> Query_Bi_Encoder;
+          Documents -> Document_Bi_Encoder;
+  
+          Query_Bi_Encoder [label="Bi-Encoder (Embed + Pool)"];
+          Document_Bi_Encoder [label="Bi-Encoder (Embed + Pool)"];
+          
+          node [shape=box, style="rounded, filled", fillcolor="#b2f3bb"];
+          Cosine_Similarity_Search [label="Cosine similarity search"];
+          Query_Bi_Encoder -> Cosine_Similarity_Search;
+          Document_Bi_Encoder -> Cosine_Similarity_Search;
+      }
+  }
+  ```
+
+  ```{dot}
+  digraph cross_encoder {
+      rankdir=TB;
+      
+      subgraph cluster_1 {
+          style="dashed, rounded";
+          label="Cross-Encoder";
+          
+          node [shape=box, style="rounded, filled", fillcolor="#a4d8ff"];
+          Query_2 [label="Query"];
+          
+          node [shape=box, style="rounded, filled", fillcolor="#feec98"];
+          Documents_2 [label="Documents"];
+  
+          node [shape=rect, style="rounded, filled", fillcolor="#fed8a7"];
+          Query_2 -> Cross_Encoder;
+          Documents_2 -> Cross_Encoder;
+  
+          Cross_Encoder [label="Cross-Encoder"];
+          
+          node [shape=box, style="rounded, filled", fillcolor="#b2f3bb"];
+          Similarity_Score [label="Similarity Score"];
+          Cross_Encoder -> Similarity_Score;
+      }
+  }
+  ```
+
+  
+
+* **Re-ranking in Practice: Addressing Computational Costs**
+
+  * Leverage a powerful but computationally expensive model (like cross-encoders) to score a subset of your documents, previously retrieved by more efficient model
+  * **Examples of other re-ranking approaches:**
+    * **[RankGPT](https://github.com/sunnweiwei/RankGPT):** LLMs as Re-Ranking Agent
+    * **[RankLLM](https://github.com/castorini/rank_llm):** Repository for prompt-decoding using LLMs
+
+* **[rerankers](https://github.com/AnswerDotAI/rerankers):** A lightweight unified API for various reranking models.
+
+```{dot}
+digraph reranking {
+	label="Compact Pipeline + Reranking\n\n";
+	labelloc = "t";
+    rankdir=TB;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#a4d8ff"];
+    Query;
+
+    node [shape=box, style="rounded, filled", fillcolor="#feec98"];
+    Documents;
+    
+    Query -> Query_Bi_Encoder;
+    Documents -> Document_Bi_Encoder;
+    
+    subgraph cluster_0 {
+    	label=""
+        style="dashed, rounded";
+
+        node [shape=rect, style="rounded, filled", fillcolor="#ffc9c9"];
+        Query_Bi_Encoder [label="Bi-Encoder (Embed + Pool)" style="rounded, filled", fillcolor="#ffc9c9"];
+        Document_Bi_Encoder [label="Bi-Encoder (Embed + Pool)" style="rounded, filled", fillcolor="#ffc9c9"];
+        
+    }
+    
+    node [shape=box, style="rounded, filled", fillcolor="#b2f3bb"];
+    Cosine_Similarity_Search [label="Cosine similarity search"];
+    Query_Bi_Encoder -> Cosine_Similarity_Search;
+    Document_Bi_Encoder -> Cosine_Similarity_Search;
+    Results [label="Results"];
+    
+    node [shape=box, style="rounded, filled", fillcolor="#fed8a7"];
+    Reranking [label="Reranking"];
+    Cosine_Similarity_Search -> Reranking;
+    Reranking -> Results;
+}
+```
+
+
+
+## Keyword Search
+
+* Also called "full-text search"
+
+* **Embeddings Are Not Enough: Lossy Compression and Jargon**
+  * Embeddings compress information, potentially losing details crucial for accurate retrieval, especially with domain-specific jargon and acronyms.
+
+* **TF-IDF and BM25**
+  * Emphasizes the importance of incorporating traditional keyword search alongside embedding-based methods.
+  * **TF-IDF (Term Frequency-Inverse Document Frequency)**
+    * Assigns a weight to words or groups of words based on their rarity
+    * **Stanford IR Book:** [Inverse document frequency](https://nlp.stanford.edu/IR-book/html/htmledition/inverse-document-frequency-1.html)
+  * **BM25 (Best-Matching 25)**
+    * **Wikipedia:** [Okapi BM25](https://en.wikipedia.org/wiki/Okapi_BM25)
+    * **Stanford IR Book:** [Okapi BM25: a non-binary model](https://nlp.stanford.edu/IR-book/html/htmledition/okapi-bm25-a-non-binary-model-1.html)
+
+* **BM25 Performance and Relevance in Modern Pipelines**
+
+  * Highlights BM25's continued relevance and effectiveness, often outperforming or complementing more complex methods.
+    * ::: {.callout-note title="Results Table" collapse="True"}
+    <div style="overflow-x:auto; max-height:500px">
+      | Model (→) Dataset (↓) | BM25  | DeepCT      | SPARTA      | docT5query | DPR         | ANCE       | TAS-B      | GenQ       |
+      | ----------------------------- | ----- | ----------- | ----------- | ---------- | ----------- | ---------- | ---------- | ---------- |
+      | MS MARCO                      | 0.228 | 0.296‡      | 0.351‡      | 0.338‡     | 0.177       | 0.388‡     | 0.408‡     | 0.408‡     |
+      | TREC-COVID                    | 0.656 | 0.406       | 0.538       | 0.713      | 0.332       | 0.654      | 0.481      | 0.619      |
+      | BioASQ                        | 0.465 | 0.407       | 0.351       | 0.431      | 0.127       | 0.306      | 0.383      | 0.398      |
+      | NFCorpus                      | 0.325 | 0.283       | 0.301       | 0.328      | 0.189       | 0.237      | 0.319      | 0.319      |
+      | NQ                            | 0.329 | 0.188       | 0.398       | 0.399      | 0.474‡      | 0.446      | 0.463      | 0.358      |
+      | HotpotQA                      | 0.603 | 0.503       | 0.492       | 0.580      | 0.391       | 0.456      | 0.584      | 0.534      |
+      | FiQA-2018                     | 0.236 | 0.191       | 0.198       | 0.291      | 0.112       | 0.295      | 0.300      | 0.308      |
+      | Signal-1M (RT)                | 0.330 | 0.269       | 0.252       | 0.307      | 0.155       | 0.249      | 0.289      | 0.281      |
+      | TREC-NEWS                     | 0.398 | 0.220       | 0.258       | 0.420      | 0.161       | 0.382      | 0.377      | 0.396      |
+      | Robust04                      | 0.408 | 0.287       | 0.276       | 0.437      | 0.252       | 0.392      | 0.427      | 0.362      |
+      | ArguAna                       | 0.315 | 0.309       | 0.279       | 0.349      | 0.175       | 0.415      | 0.429      | 0.493      |
+      | Touché-2020                   | 0.367 | 0.156       | 0.175       | 0.347      | 0.131       | 0.240      | 0.162      | 0.182      |
+      | CQADupStack                   | 0.299 | 0.268       | 0.257       | 0.325      | 0.153       | 0.296      | 0.314      | 0.347      |
+      | Quora                         | 0.789 | 0.691       | 0.630       | 0.802      | 0.248       | 0.852      | 0.835      | 0.830      |
+      | DBPedia                       | 0.313 | 0.177       | 0.314       | 0.331      | 0.263       | 0.281      | 0.384      | 0.328      |
+      | SCIDOCS                       | 0.158 | 0.124       | 0.126       | 0.162      | 0.077       | 0.122      | 0.149      | 0.143      |
+      | FEVER                         | 0.753 | 0.353       | 0.596       | 0.714      | 0.562       | 0.669      | 0.700      | 0.669      |
+      | Climate-FEVER                 | 0.213 | 0.066       | 0.082       | 0.201      | 0.148       | 0.198      | 0.228      | 0.175      |
+      | SciFact                       | 0.665 | 0.630       | 0.582       | 0.675      | 0.318       | 0.507      | 0.643      | 0.644      |
+      | **Avg. Performance vs. BM25** |       | **- 27.9%** | **- 20.3%** | **+ 1.6%** | **- 47.7%** | **- 7.4%** | **- 2.8%** | **- 3.6%** |
+    </div>
+
+      :::
+    * **Source:** [BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663)
+  * Especially powerful on longer documents and documents containing a lot of domain-specific jargon
+  * Virtually unnoticeable inference-time compute overhead
+
+### The TF-IDF MVP++
+
+```{dot}
+digraph tfidf_mvp_plusplus {
+	//label="The TF-IDF MVP++\n\n";
+	//labelloc = "t";
+    rankdir=TB;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#a4d8ff"];
+    Query;
+
+    node [shape=box, style="rounded, filled", fillcolor="#feec98"];
+    Documents;
+    
+    Query -> Query_Bi_Encoder;
+    Documents -> Document_Bi_Encoder;
+    
+    subgraph cluster_0 {
+    	label=""
+        style="dashed, rounded";
+
+        node [shape=rect, style="rounded, filled", fillcolor="#ffc9c9"];
+        Query_Bi_Encoder [label="Bi-Encoder (Embed + Pool)" style="rounded, filled", fillcolor="#ffc9c9"];
+        Document_Bi_Encoder [label="Bi-Encoder (Embed + Pool)" style="rounded, filled", fillcolor="#ffc9c9"];
+        
+    }
+    
+    Query -> Query_tfidf;
+    Documents -> Document_tfidf;
+    
+    subgraph cluster_1 {
+    	label=""
+        style="dashed, rounded";
+
+        node [shape=rect, style="rounded, filled", fillcolor="#cfbffe"];
+        Query_tfidf [label="tf-idf (weighted full text)" style="rounded, filled", fillcolor="#cfbffe"];
+        Document_tfidf [label="tf-idf (weighted full text)" style="rounded, filled", fillcolor="#cfbffe"];
+        
+    }
+    
+    node [shape=box, style="rounded, filled", fillcolor="#b2f3bb"];
+    Cosine_Similarity_Search [label="Cosine similarity search"];
+    Query_Bi_Encoder -> Cosine_Similarity_Search;
+    Document_Bi_Encoder -> Cosine_Similarity_Search;
+    Results [label="Results"];
+    
+    node [shape=box, style="rounded, filled", fillcolor="#fed8a7"];
+    Reranking [label="Reranking"];
+    Reranking -> Results;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#eebefa"];
+    BM25 [label="BM25 (full-text) search"];
+    Query_tfidf -> BM25;
+    Document_tfidf -> BM25;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#95f2d7"];
+    Combine_Scores [label="Combine the scores"]
+    BM25 -> Combine_Scores;
+    Cosine_Similarity_Search -> Combine_Scores;
+    Combine_Scores -> Reranking;
+    
+}
+```
+
+
+
+
+
+## Leveraging Metadata for Targeted Retrieval
+
+* **Real-World Data Has Context: Metadata Matters**
+  * Real-world documents often possess valuable metadata (e.g., author, date, department) that can significantly improve retrieval accuracy.
+  * Pure Semantic or Keyword Search can struggle with metadata
+    * **Example Query:** "Can you get me the cruise division financial report for Q4 2022?"
+      * Model must accurately represent all of “ﬁnancial report”,  “cruise division”, “Q4” and “2022”,  into a single vector
+        * Otherwise it will fetch documents that look relevant but aren’t meeting one or more of those criteria.
+      * If the number of documents you search for (“k”) is set too high, you will be passing irrelevant ﬁnancial reports to your LLM
+* **Entity Detection and Metadata Filtering: A Practical Example**
+  * Use entity detection models like GLiNER to automatically extract relevant metadata (e.g., document type, time period, department).
+  * **GLiNER**
+    * **Paper:** [GLiNER: Generalist Model for Named Entity Recognition using Bidirectional Transformer](https://arxiv.org/abs/2311.08526)
+    * **GitHub Repository:** [GLiNER](https://github.com/urchade/GLiNER)
+    * **:hugs: Spaces Demo:** [GLiNER-medium-v2.1, zero-shot NER](https://huggingface.co/spaces/tomaarsen/gliner_medium-v2.1)
+  * Filter documents based on extracted metadata to ensure relevance and reduce noise.
+* **Storing and Using Metadata for Pre-filtering**
+  * Store metadata alongside documents in the database.
+  * During retrieval, pre-filter documents based on query-specific metadata to narrow down the search space.
+
+
+
+## Putting it All Together: The Complete MVP++ Pipeline
+
+### The Final Compact MVP++
+
+```{dot}
+digraph tfidf_mvp_plusplus {
+	//label="The TF-IDF MVP++\n\n";
+	//labelloc = "t";
+    rankdir=TB;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#a4d8ff"];
+    Query;
+
+    node [shape=box, style="rounded, filled", fillcolor="#feec98"];
+    Documents;
+    
+    Query -> Query_Bi_Encoder;
+    Documents -> Document_Bi_Encoder;
+    
+    subgraph cluster_0 {
+    	label=""
+        style="dashed, rounded";
+
+        node [shape=rect, style="rounded, filled", fillcolor="#ffc9c9"];
+        Query_Bi_Encoder [label="Bi-Encoder (Embed + Pool)" style="rounded, filled", fillcolor="#ffc9c9"];
+        Document_Bi_Encoder [label="Bi-Encoder (Embed + Pool)" style="rounded, filled", fillcolor="#ffc9c9"];
+        
+    }
+    
+    Query -> Query_tfidf;
+    Documents -> Document_tfidf;
+    
+    subgraph cluster_1 {
+    	label=""
+        style="dashed, rounded";
+
+        node [shape=rect, style="rounded, filled", fillcolor="#cfbffe"];
+        Query_tfidf [label="tf-idf (weighted full text)" style="rounded, filled", fillcolor="#cfbffe"];
+        Document_tfidf [label="tf-idf (weighted full text)" style="rounded, filled", fillcolor="#cfbffe"];
+        
+    }
+    
+	node [shape=box, style="rounded, filled", fillcolor="#d2bab0"];
+    Metadata_Filtering [label="Metadata Document Filtering"];
+    Document_Bi_Encoder -> Metadata_Filtering;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#d2bab0"];
+    Metadata_Filtering_2 [label="Metadata Document Filtering"];
+    Document_tfidf -> Metadata_Filtering_2;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#b2f3bb"];
+    Cosine_Similarity_Search [label="Cosine similarity search"];
+    Query_Bi_Encoder -> Cosine_Similarity_Search;
+    Metadata_Filtering -> Cosine_Similarity_Search;
+    Results [label="Results"];
+    
+    node [shape=box, style="rounded, filled", fillcolor="#fed8a7"];
+    Reranking [label="Reranking"];
+    Reranking -> Results;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#eebefa"];
+    BM25 [label="BM25 (full-text) search"];
+    Query_tfidf -> BM25;
+    Metadata_Filtering_2 -> BM25;
+    
+    node [shape=box, style="rounded, filled", fillcolor="#95f2d7"];
+    Combine_Scores [label="Combine the scores"]
+    BM25 -> Combine_Scores;
+    Cosine_Similarity_Search -> Combine_Scores;
+    Combine_Scores -> Reranking;
+    
+}
+```
+
+
+
+### Code Example: Implementing the MVP++ with LanceDB
+
+* Uses LanceDB for its ease of use and built-in components.
+* **Vector Databases**
+  * [LanceDB](https://lancedb.com/)
+  * [Weaviate](https://weaviate.io/)
+  * [Chroma](https://www.trychroma.com/)
+
+```python
+# Fetch some text content in two different categories
+from wikipediaapi import Wikipedia
+wiki = Wikipedia('RAGBot/0.0', 'en')
+docs = [{"text": x,
+         "category": "person"}
+        for x in wiki.page('Hayao_Miyazaki').text.split('\n\n')]
+docs += [{"text": x,
+          "category": "film"}
+         for x in wiki.page('Spirited_Away').text.split('\n\n')]
+
+# Enter LanceDB
+import lancedb
+from lancedb.pydantic import LanceModel, Vector
+from lancedb.embedding import get_registry
+
+# Initialise the embedding model
+model_registry = get_registry().get("sentence-transformers")
+model = model_registry.create(name="BAAI/bge-small-en-v1.5")
+
+# Create a Model to store attributes for filtering
+class Document(LanceModel):                    
+    text: str = model.SourceField()
+    vector: Vector(384) = model.VectorField()
+    category: str
+
+db = lancedb.connect(".my_db")
+tbl = db.create_table("my_table", schema=Document)
+
+# Embed the documents and store them in the database
+tbl.add(docs)                                        
+
+# Generate the full-text (tf-idf) search index
+tbl.create_fts_index("text")                         
+
+# Initialise a reranker -- here, Cohere's API one
+from lancedb.rerankers import CohereReranker
+
+reranker = CohereReranker()                        
+
+query = "What is Chihiro's new name given to her by the witch?"
+
+results = (tbl.search(query, query_type="hybrid") # Hybrid means text + vector
+           .where("category = 'film'", prefilter=True) # Restrict to only docs in the 'film' category
+           .limit(10) # Get 10 results from first-pass retrieval
+           .rerank(reranker=reranker) # For the reranker to compute the final ranking
+          )
+```
+
+
+
+
+
+## Beyond the Basics: Future Exploration and Resources
+
+* **[RAGatouille](https://github.com/AnswerDotAI/RAGatouille):** Easily use and train state of the art late-interaction retrieval methods (ColBERT) in any RAG pipeline.
+* **[rerankers](https://github.com/AnswerDotAI/rerankers):** A lightweight unified API for various reranking models.
+*  **Video Tutorial:** [A Hackers' Guide to Language Models](https://www.youtube.com/watch?v=jkrNMKz9pWU)
+* **ColBERT**
+  * **Paper:** [ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT](https://arxiv.org/abs/2004.12832)
+  * **HuggingFace Hub:** [colbert-ir/colbertv2.0](https://huggingface.co/colbert-ir/colbertv2.0)
+
+* **Sparse Vectors:** [Understanding hybrid search](https://docs.pinecone.io/guides/data/understanding-hybrid-search)
+* **Multi-vector Retrievers:** [Multi-Vector Retriever for RAG on tables, text, and images](https://blog.langchain.dev/semi-structured-multi-modal-rag/)
+
+
+
+
+
+## Q&A Session
+
+### Fine-tuning Bi-Encoders and Cross-Encoders
+
+* **Q:** Does the fine-tuning approach for bi-encoder models impact the fine-tuning of cross-encoder models and vice versa?
+
+* **A:**  While domain-specific, generally aim for complementarity.  Fine-tune bi-encoders for broader retrieval, capturing potential candidates. Rely on cross-encoders (re-rankers) for precise filtering and ranking.
+
+### Combining Bi-Encoder and TF-IDF Scores
+
+* **Q:** What are the advantages and disadvantages of using a weighted average of bi-encoder and TF-IDF scores for selecting re-ranker questions compared to taking the top X from each ranker?
+
+* **A:**  Both methods are valid and depend on the data.  Weighted averages can be effective, but in domains like biomedicine, where document specificity is crucial, taking the top X from both ensures representation for potentially poorly embedded queries.
+
+### RAG's Future with Million-Token Context Lengths
+
+* **Q:**  How will the emergence of million-token context lengths impact the relevance of RAG in the future?
+
+* **A:**  RAG remains relevant even with extended context windows. Just as RAM doesn't replace hard drives, large context windows won't replace the need for efficient retrieval from vast external knowledge stores. Long context windows provide more flexibility in retrieval speed and allow for incorporating longer documents.
+
+### Chunking Strategies
+
+* **Q:**  What are your thoughts on different chunking strategies?
+
+* **A:**  While LLMs for pre-chunking are promising but currently immature, maintaining semantic continuity within chunks is vital. The recommended approach is 300 tokens per chunk, avoiding sentence interruptions and including overlapping context (50 tokens) between consecutive chunks.
+
+### Fine-tuning Bi-Encoders
+
+* **Q:**  Should bi-encoders always be fine-tuned with labeled data or is it acceptable to use them off-the-shelf and rely on a re-ranker?
+
+* **A:**  Fine-tuning encoders (both bi- and cross-) with labeled data consistently improves results. If data and resources are available, fine-tuning is highly recommended. However, for MVPs with limited resources, leveraging pre-trained models with re-ranking is a viable option.
+
+### Colbert Clarification and Discussion
+
+* **Discussion:** Clarifying the role of ColBERT in RAG pipelines.
+
+  * **ColBERT as a First-Stage Retriever:** Ideally replaces the bi-encoder in new pipelines, not used as a re-ranker.
+
+  * **ColBERT as a Re-Ranker:** Can be used when pipeline changes are not feasible, but less optimal.
+
+  * **ColBERT Overview:** A bi-encoder variant where documents and queries are represented as bags of embeddings (one per token). This approach enhances out-of-domain performance due to its multi-vector representation, capturing more granular information.
+
+
+### Tools for Fine-tuning Embeddings
+
+* **Q:**  Recommendations for tools to fine-tune embeddings for retrieval.
+
+* **A:**  [Sentence Transformers](https://sbert.net/), particularly version 3.0, is highly recommended for its user-friendliness and comprehensive implementation of essential features.
+
+### Fine-tuning Embeddings Workflow
+
+* **Q:** Can you describe the workflow for fine-tuning an embedding model?
+
+* **A:** 
+  1. **Gather Data:** Obtain queries and their corresponding relevant and non-relevant documents.
+  1. **Define Loss Function:**  Use a suitable loss function like [triplet loss](https://doordash.engineering/2021/09/08/using-twin-neural-networks-to-train-catalog-item-embeddings/), which leverages positive and negative examples to guide the model.
+  1. **Consider Hard Negatives:** Enhance training by retrieving hard negatives—documents similar to positive examples but irrelevant to the query.
+  1. **Data Analysis and Generation:**  Thoroughly analyze existing queries or generate synthetic ones using LLMs to augment training data.
+
+
+### Impact of Long Context Windows on RAG
+
+* **Q:**  How do long context windows change the strategies and possibilities within RAG?
+
+* **A:** Long context windows enable:
+
+  * **Longer Documents:** Incorporating longer documents or concatenated chunks into the context.
+
+  * **Reduced Retrieval Overhead:** Relaxing the reliance on highly precise retrieval (e.g., Recall@3) as more documents can fit within the context window. This allows for faster, less resource-intensive retrieval methods.
+
+
+### Fine-tuning Encoder Tutorials
+
+* **Q:**  Recommendations for tutorials on fine-tuning encoders.
+
+* **A:**  The [Sentence Transformers documentation](https://www.sbert.net/docs/sentence_transformer/training_overview.html) is a valuable resource but can be challenging for beginners. 
+
+### Go-to Embedding Models
+
+* **Q:**  Go-to embedding models for different scenarios.
+
+* **A:**  
+
+  * **Demos:** [Cohere](https://cohere.com/)'s embedding models due to their API accessibility, performance, and affordability.
+
+  * **Production:**  Multi-vector models like ColBERT are preferred.
+
+
+* **General Recommendations:**
+
+  * **Model Size:** Stick to models with parameters between 100 million and 1 billion; larger LLMs as encoders often have unfavorable latency-performance trade-offs.
+
+  * **Avoid Overly Large Models:**  Using excessively large LLMs for embedding can lead to diminishing returns in performance and increased latency.
+
+
+### Using Elasticsearch for RAG
+
+* **Q:**  Can Elasticsearch, a widely used search engine, be integrated into RAG pipelines, especially for organizations already invested in it?
+
+* **A:** 
+
+  * **Hybrid Approach:**  Use Elasticsearch's BM25 capabilities for initial retrieval and integrate a separate re-ranking pipeline (potentially using a cross-encoder).
+
+  * **Vector Database Integration:**  Leverage Elasticsearch's vector database offerings to incorporate semantic search capabilities.
+
+
+### BM25 Score in Re-ranking
+
+* **Q:**  Is it beneficial to incorporate BM25 similarity scores during the re-ranking stage?
+
+* **A:**  No, BM25 scores are primarily used for candidate retrieval and are not typically required by cross-encoders during re-ranking.
+
+### Strategies for Chunks Exceeding Context Window
+
+* **Q:**  Strategies for handling situations where document chunks exceed the context window size.
+
+* **A:**  Solutions depend on the specific constraints:
+
+  * **Latency Tolerance:** User experience dictates acceptable processing time.
+
+  * **Document Length and Diversity Requirements:**  
+
+  * **Precomputed Summaries:**  Maintain a separate database mapping documents to their summaries, generated offline. Retrieve relevant chunks and feed summaries into the context window to provide concise context.
+

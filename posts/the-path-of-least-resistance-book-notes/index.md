@@ -4,7 +4,7 @@ date: 2024-02-17
 image: /images/empty.gif
 hide: false
 search_exclude: false
-categories: [notes, personal-growth, professional-growth]
+categories: [book, notes, personal-growth, professional-growth]
 description: "My notes from the book ***The Path of Least Resistance: Learning to Become the Creative Force in Your Own Life*** by **Robert Fritz**."
 
 twitter-card:
