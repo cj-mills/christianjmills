@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-09-06">
+<meta name="description" content="Learn how to deploy a quantized YOLOX model on an NVIDIA Jetson Orin Nano for real-time object detection and tracking using ONNX Runtime with TensorRT.">
+
+<title>Christian Mills - Deploying YOLOX for Real-Time Object Tracking on Jetson Orin Nano</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Deploying YOLOX for Real-Time Object Tracking on Jetson Orin Nano">
+<meta property="og:description" content="Learn how to deploy a quantized YOLOX model on an NVIDIA Jetson Orin Nano for real-time object detection and tracking using ONNX Runtime with TensorRT.">
+<meta property="og:image" content="https://christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Deploying YOLOX for Real-Time Object Tracking on Jetson Orin Nano">
+<meta name="twitter:description" content="Learn how to deploy a quantized YOLOX model on an NVIDIA Jetson Orin Nano for real-time object detection and tracking using ONNX Runtime with TensorRT.">
+<meta name="twitter:image" content="https://christianjmills.com/posts/pytorch-train-object-detector-yolox-tutorial/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#prerequisites" id="toc-prerequisites" class="nav-link" data-scroll-target="#prerequisites">Prerequisites</a></li>
+  <li><a href="#setting-up-a-python-environment" id="toc-setting-up-a-python-environment" class="nav-link" data-scroll-target="#setting-up-a-python-environment">Setting Up a Python Environment</a>
+  <ul>
+  <li><a href="#install-mamba-package-manager" id="toc-install-mamba-package-manager" class="nav-link" data-scroll-target="#install-mamba-package-manager">Install Mamba Package Manager</a></li>
+  <li><a href="#create-a-python-environment" id="toc-create-a-python-environment" class="nav-link" data-scroll-target="#create-a-python-environment">Create a Python Environment</a></li>
+  <li><a href="#install-opencv-dependencies" id="toc-install-opencv-dependencies" class="nav-link" data-scroll-target="#install-opencv-dependencies">Install OpenCV Dependencies</a></li>
+  <li><a href="#build-opencv-python-pip-wheel" id="toc-build-opencv-python-pip-wheel" class="nav-link" data-scroll-target="#build-opencv-python-pip-wheel">Build <code>opencv-python</code> Pip Wheel</a></li>
+  <li><a href="#install-onnx-runtime" id="toc-install-onnx-runtime" class="nav-link" data-scroll-target="#install-onnx-runtime">Install ONNX Runtime</a></li>
+  <li><a href="#install-additional-dependencies" id="toc-install-additional-dependencies" class="nav-link" data-scroll-target="#install-additional-dependencies">Install Additional Dependencies</a></li>
+  </ul></li>
+  <li><a href="#getting-started-with-the-code" id="toc-getting-started-with-the-code" class="nav-link" data-scroll-target="#getting-started-with-the-code">Getting Started with the Code</a></li>
+  <li><a href="#importing-the-required-dependencies" id="toc-importing-the-required-dependencies" class="nav-link" data-scroll-target="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+  <li><a href="#defining-utility-functions" id="toc-defining-utility-functions" class="nav-link" data-scroll-target="#defining-utility-functions">Defining Utility Functions</a>
+  <ul>
+  <li><a href="#define-functions-for-yolox-inference" id="toc-define-functions-for-yolox-inference" class="nav-link" data-scroll-target="#define-functions-for-yolox-inference">Define Functions for YOLOX Inference</a></li>
+  <li><a href="#define-a-function-to-generate-a-gstreamer-pipeline" id="toc-define-a-function-to-generate-a-gstreamer-pipeline" class="nav-link" data-scroll-target="#define-a-function-to-generate-a-gstreamer-pipeline">Define a Function to Generate a GStreamer Pipeline</a></li>
+  <li><a href="#define-a-wrapper-class-for-reading-camera-frames" id="toc-define-a-wrapper-class-for-reading-camera-frames" class="nav-link" data-scroll-target="#define-a-wrapper-class-for-reading-camera-frames">Define a Wrapper Class for Reading Camera Frames</a></li>
+  </ul></li>
+  <li><a href="#setting-up-the-project" id="toc-setting-up-the-project" class="nav-link" data-scroll-target="#setting-up-the-project">Setting Up the Project</a>
+  <ul>
+  <li><a href="#set-the-directory-paths" id="toc-set-the-directory-paths" class="nav-link" data-scroll-target="#set-the-directory-paths">Set the Directory Paths</a></li>
+  <li><a href="#download-a-font-file" id="toc-download-a-font-file" class="nav-link" data-scroll-target="#download-a-font-file">Download a Font File</a></li>
+  </ul></li>
+  <li><a href="#loading-the-checkpoint-data" id="toc-loading-the-checkpoint-data" class="nav-link" data-scroll-target="#loading-the-checkpoint-data">Loading the Checkpoint Data</a>
+  <ul>
+  <li><a href="#load-the-colormap" id="toc-load-the-colormap" class="nav-link" data-scroll-target="#load-the-colormap">Load the Colormap</a></li>
+  <li><a href="#set-the-preprocessing-and-post-processing-parameters" id="toc-set-the-preprocessing-and-post-processing-parameters" class="nav-link" data-scroll-target="#set-the-preprocessing-and-post-processing-parameters">Set the Preprocessing and Post-Processing Parameters</a></li>
+  </ul></li>
+  <li><a href="#create-an-inference-session" id="toc-create-an-inference-session" class="nav-link" data-scroll-target="#create-an-inference-session">Create an Inference Session</a></li>
+  <li><a href="#tracking-objects-in-a-camera-feed" id="toc-tracking-objects-in-a-camera-feed" class="nav-link" data-scroll-target="#tracking-objects-in-a-camera-feed">Tracking Objects in a Camera Feed</a>
+  <ul>
+  <li><a href="#define-camera-feed-settings" id="toc-define-camera-feed-settings" class="nav-link" data-scroll-target="#define-camera-feed-settings">Define Camera Feed Settings</a></li>
+  <li><a href="#define-inference-parameters" id="toc-define-inference-parameters" class="nav-link" data-scroll-target="#define-inference-parameters">Define Inference Parameters</a></li>
+  <li><a href="#build-tensorrt-engine" id="toc-build-tensorrt-engine" class="nav-link" data-scroll-target="#build-tensorrt-engine">Build TensorRT Engine</a></li>
+  <li><a href="#detect-track-and-annotate-objects" id="toc-detect-track-and-annotate-objects" class="nav-link" data-scroll-target="#detect-track-and-annotate-objects">Detect, Track, and Annotate Objects</a>
+  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  </ul></li>
+  <li><a href="#comparing-performance" id="toc-comparing-performance" class="nav-link" data-scroll-target="#comparing-performance">Comparing Performance</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Deploying YOLOX for Real-Time Object Tracking on Jetson Orin Nano</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">onnx</div>
+    <div class="quarto-category">cuda</div>
+    <div class="quarto-category">tensorrt</div>
+    <div class="quarto-category">object-detection</div>
+    <div class="quarto-category">object-tracking</div>
+    <div class="quarto-category">yolox</div>
+    <div class="quarto-category">tutorial</div>
+    <div class="quarto-category">jetson</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Learn how to deploy a quantized YOLOX model on an NVIDIA Jetson Orin Nano for real-time object detection and tracking using ONNX Runtime with TensorRT.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 6, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/tutorials/pytorch-train-object-detector-yolox-series.html"><strong>Training YOLOX Models for Real-Time Object Detection in PyTorch</strong></a></li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#setting-up-a-python-environment">Setting Up a Python Environment</a></li>
+<li><a href="#getting-started-with-the-code">Getting Started with the Code</a></li>
+<li><a href="#importing-the-required-dependencies">Importing the Required Dependencies</a></li>
+<li><a href="#defining-utility-functions">Defining Utility Functions</a><br>
+</li>
+<li><a href="#setting-up-the-project">Setting Up the Project</a><br>
+</li>
+<li><a href="#loading-the-checkpoint-data">Loading the Checkpoint Data</a><br>
+</li>
+<li><a href="#create-an-inference-session">Create an Inference Session</a></li>
+<li><a href="#tracking-objects-in-a-camera-feed">Tracking Objects in a Camera Feed</a><br>
+</li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome back to this series on real-time object detection with YOLOX. So far, this series has covered how to:</p>
+<ul>
+<li>Finetune a YOLOX model in PyTorch to detect hand signs.</li>
+<li>Export the finetuned model to ONNX.</li>
+<li>Use the ByteTrack object tracker to track objects across video frames.</li>
+<li>Quantize the model with ONNX Runtime and TensorRT for int8 inference on NVIDIA hardware.</li>
+</ul>
+<p>This post builds on those past tutorials by walking through deploying our model on an NVIDIA <a href="https://developer.nvidia.com/embedded/learn/get-started-jetson-orin-nano-devkit">Jetson Orin Nano</a> developer kit to perform real-time object tracking from a camera feed. Additionally, we will use ONNX Runtime’s TensoRT execution provider to leverage the Jetson’s Tensor Cores.</p>
+<p>Released in 2023, the Jetson Orin Nano is NVIDIA’s entry-level single-board computer and offers a balance of performance and power efficiency for edge AI applications. Its compact form factor and robust inference capabilities make it a suitable platform for deploying real-time object-tracking systems in various scenarios, from human-computer interaction to industrial automation.</p>
+<p>Whether you’re working with the pre-trained hand-sign detection model used in this series or a custom model, real-time object tracking on the Jetson Orin Nano opens up many possibilities for edge applications.</p>
+</section>
+<section id="prerequisites" class="level2">
+<h2 class="anchored" data-anchor-id="prerequisites">Prerequisites</h2>
+<p>This tutorial is for Jetson devices loaded with <a href="https://developer.nvidia.com/embedded/jetpack-sdk-60">Jetpack 6</a>. You can follow the official guide from NVIDIA to ensure your Jetson is ready.</p>
+<ul>
+<li><a href="https://developer.nvidia.com/embedded/learn/get-started-jetson-orin-nano-devkit">Jetson Orin Nano Developer Kit Getting Started Guide</a></li>
+</ul>
+<p>The code for this tutorial assumes the Jetson device has either a USB or <a href="https://en.wikipedia.org/wiki/Camera_Serial_Interface">CSI</a> Camera attached. While a USB camera will work, a CSI Camera is preferable due to the improved frame rate and latency.</p>
+<p>The Jetson Orin Nano devkit has 22-pin MIPI CSI camera connectors. If your CSI camera module uses a 15-pin connector, you will need a 15-pin to 22-pin adapter cable. You can order a pack of 3 on Amazon at the link below:</p>
+<ul>
+<li><a href="https://www.amazon.com/Arducam-Raspberry-Camera-Ribbon-Extension/dp/B085RW9K13">Arducam for Raspberry Pi Zero Camera Cable Set, 1.5” 2.87” 5.9” Ribbon Flex Extension Cables for Pi Zero&amp;W, Pack of 3</a></li>
+</ul>
+</section>
+<section id="setting-up-a-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-a-python-environment">Setting Up a Python Environment</h2>
+<p>With our Jetson device prepared, we can set up a Python environment to run the demo code.</p>
+<section id="install-mamba-package-manager" class="level3">
+<h3 class="anchored" data-anchor-id="install-mamba-package-manager">Install Mamba Package Manager</h3>
+<p>As with previous tutorials in this series, we will use the Mamba package manager to create and manage our Python environment.</p>
+<p>Run the following bash commands on the Jetson to download the latest release, install it, and relaunch the current bash shell to apply the relevant changes:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the latest Mambaforge installer for the current OS and architecture</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="st">"https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-</span><span class="va">$(</span><span class="fu">uname</span><span class="va">)</span><span class="st">-</span><span class="va">$(</span><span class="fu">uname</span> <span class="at">-m</span><span class="va">)</span><span class="st">.sh"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the Mambaforge installer silently (-b flag for batch mode)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> Mambaforge-<span class="va">$(</span><span class="fu">uname</span><span class="va">)</span>-<span class="va">$(</span><span class="fu">uname</span> <span class="at">-m</span><span class="va">)</span>.sh <span class="at">-b</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize mamba for shell usage</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">~/mambaforge/bin/mamba</span> init</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Restart the shell to apply changes</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="create-a-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-python-environment">Create a Python Environment</h3>
+<p>Next, we will create and activate a Python 3.10 environment.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> create <span class="at">--name</span> object-tracking-env python=3.10 <span class="at">-y</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> activate object-tracking-env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="install-opencv-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="install-opencv-dependencies">Install OpenCV Dependencies</h3>
+<p>As with the <a href="../byte-track/">earlier object-tracking tutorial</a>, we will use the <a href="https://pypi.org/project/opencv-python/"><code>opencv-python</code></a> package to obtain input for our model. Since we are on a Jetson, we must build the package with support for USB and CSI Camera input enabled.</p>
+<p>To do that, we must install some dependencies:</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions:">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Package Descriptions:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 64%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>libgstreamer1.0-dev</td>
+<td>Development files for the GStreamer multimedia framework</td>
+</tr>
+<tr class="even">
+<td>libgstreamer-plugins-base1.0-dev</td>
+<td>Development files for GStreamer plugins (base)</td>
+</tr>
+<tr class="odd">
+<td>libgstreamer-plugins-bad1.0-dev</td>
+<td>Development files for GStreamer plugins (bad)</td>
+</tr>
+<tr class="even">
+<td>gstreamer1.0-plugins-base</td>
+<td>GStreamer plugins from the “base” set</td>
+</tr>
+<tr class="odd">
+<td>gstreamer1.0-plugins-good</td>
+<td>GStreamer plugins from the “good” set</td>
+</tr>
+<tr class="even">
+<td>gstreamer1.0-plugins-bad</td>
+<td>GStreamer plugins from the “bad” set</td>
+</tr>
+<tr class="odd">
+<td>gstreamer1.0-plugins-ugly</td>
+<td>GStreamer plugins from the “ugly” set</td>
+</tr>
+<tr class="even">
+<td>gstreamer1.0-libav</td>
+<td>LibAV plugin for GStreamer</td>
+</tr>
+<tr class="odd">
+<td>gstreamer1.0-tools</td>
+<td>Tools for GStreamer</td>
+</tr>
+<tr class="even">
+<td>gstreamer1.0-x</td>
+<td>GStreamer plugins for X11</td>
+</tr>
+<tr class="odd">
+<td>gstreamer1.0-alsa</td>
+<td>GStreamer plugin for ALSA</td>
+</tr>
+<tr class="even">
+<td>gstreamer1.0-gl</td>
+<td>GStreamer plugins for GL</td>
+</tr>
+<tr class="odd">
+<td>gstreamer1.0-gtk3</td>
+<td>GStreamer plugin for GTK+3</td>
+</tr>
+<tr class="even">
+<td>gstreamer1.0-qt5</td>
+<td>GStreamer plugins for Qt5</td>
+</tr>
+<tr class="odd">
+<td>gstreamer1.0-pulseaudio</td>
+<td>GStreamer plugin for PulseAudio</td>
+</tr>
+<tr class="even">
+<td>libgtk2.0-dev</td>
+<td>Development files for the GTK+ library</td>
+</tr>
+<tr class="odd">
+<td>pkg-config</td>
+<td>Manage compile and link flags for libraries</td>
+</tr>
+<tr class="even">
+<td>libavcodec-dev</td>
+<td>Development files for libavcodec (FFmpeg)</td>
+</tr>
+<tr class="odd">
+<td>libavformat-dev</td>
+<td>Development files for libavformat (FFmpeg)</td>
+</tr>
+<tr class="even">
+<td>libswscale-dev</td>
+<td>Development files for libswscale (FFmpeg)</td>
+</tr>
+<tr class="odd">
+<td>python3-dev</td>
+<td>Header files and a static library for Python3</td>
+</tr>
+<tr class="even">
+<td>python3-numpy</td>
+<td>NumPy library for Python3</td>
+</tr>
+<tr class="odd">
+<td>libtbb2</td>
+<td>Threading Building Blocks (TBB) library</td>
+</tr>
+<tr class="even">
+<td>libtbb-dev</td>
+<td>Threading Building Blocks (TBB) development files</td>
+</tr>
+<tr class="odd">
+<td>libjpeg-dev</td>
+<td>Development files for the JPEG library</td>
+</tr>
+<tr class="even">
+<td>libpng-dev</td>
+<td>Development files for the PNG library</td>
+</tr>
+<tr class="odd">
+<td>libtiff-dev</td>
+<td>Development files for the TIFF library</td>
+</tr>
+<tr class="even">
+<td>libdc1394-22-dev</td>
+<td>Development files for libdc1394 (IEEE 1394 camera control)</td>
+</tr>
+<tr class="odd">
+<td>libv4l-dev</td>
+<td>Development files for libv4l (video4linux)</td>
+</tr>
+<tr class="even">
+<td>v4l-utils</td>
+<td>Collection of command line video4linux utilities</td>
+</tr>
+<tr class="odd">
+<td>libcanberra-gtk-module</td>
+<td>GTK+ module for the libcanberra sound library</td>
+</tr>
+<tr class="even">
+<td>libcanberra-gtk3-module</td>
+<td>GTK+3 module for the libcanberra sound library</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get update</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get install <span class="at">-y</span> <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    build-essential cmake git <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev <span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly <span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl <span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio <span class="dt">\</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev <span class="dt">\</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    python3-dev python3-numpy <span class="dt">\</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev <span class="dt">\</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    libdc1394-22-dev <span class="dt">\</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    libv4l-dev v4l-utils <span class="dt">\</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    libcanberra-gtk-module libcanberra-gtk3-module</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="build-opencv-python-pip-wheel" class="level3">
+<h3 class="anchored" data-anchor-id="build-opencv-python-pip-wheel">Build <code>opencv-python</code> Pip Wheel</h3>
+<p>With the dependencies installed, we can clone the <code>opencv-python</code> GitHub repository and build and install the Python wheel.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This process will also install NumPy.</p>
+</div>
+</div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Clone the opencv-python repository with all its submodules</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="at">--recursive</span> https://github.com/opencv/opencv-python.git</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Change directory to the cloned repository</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> opencv-python</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the current directory to Git's safe.directory list to avoid ownership issues</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> config <span class="at">--global</span> <span class="at">--add</span> safe.directory <span class="va">$(</span><span class="bu">pwd</span><span class="va">)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Set CMAKE_ARGS environment variable with OpenCV build options</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">CMAKE_ARGS</span><span class="op">=</span><span class="st">"-D WITH_GSTREAMER=ON -D WITH_GTK=ON -D WITH_V4L=ON -D WITH_LIBV4L=ON -D WITH_OPENGL=ON"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Set MAKEFLAGS to use all available CPU cores for compilation</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">MAKEFLAGS</span><span class="op">=</span><span class="st">"-j</span><span class="va">$(</span><span class="fu">nproc</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Upgrade pip and install/upgrade the wheel package</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">--upgrade</span> pip wheel</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Build the OpenCV Python wheel</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> wheel . <span class="at">--verbose</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Install the built OpenCV Python wheel</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install opencv_python<span class="pp">*</span>.whl</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Move back to the parent directory</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ..</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if OpenCV was built with GStreamer support by printing build information and filtering for GStreamer</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-c</span> <span class="st">"import cv2; print(cv2.getBuildInformation())"</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">"GStreamer"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>    GStreamer:                   YES (1.20.3)</code></pre>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The final print statement verifies that we successfully built OpenCV with GStreamer support, which we need for using CSI Cameras.</p>
+</div>
+</div>
+</section>
+<section id="install-onnx-runtime" class="level3">
+<h3 class="anchored" data-anchor-id="install-onnx-runtime">Install ONNX Runtime</h3>
+<p>Next, we will install ONNX Runtime to use its TensorRT Execution Provider. The <a href="../ort-tensorrt-ubuntu/">previous tutorial</a> that utilized this execution provider used the dedicated <a href="https://pypi.org/project/tensorrt/">tensorrt pip package</a>. This time, we will use the version of TensorRT that comes with Jetpack 6.</p>
+<p>According to NVIDIA’s <a href="https://developer.nvidia.com/embedded/jetpack-sdk-60">release page</a> for Jetpack 6, it comes with CUDA 12.2 and TensorRT 8.6.</p>
+<p>Looking at ONNX Runtime’s <a href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements">documentation</a>, we can see that we need ONNX Runtime 1.17 for those versions of CUDA and TensorRT.</p>
+<p>We can download a pre-built Python 3.10 wheel for ONNX Runtime 1.17 from the webpage linked below:</p>
+<ul>
+<li><a href="https://elinux.org/Jetson_Zoo#ONNX_Runtime">Jetson Zoo: ONNX Runtime</a></li>
+</ul>
+<p>Run the following commands to download and install the required Python wheel:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://nvidia.box.com/shared/static/i7n40ki3pl2x57vyn4u7e9asyiqlnl7n.whl <span class="at">-O</span> onnxruntime_gpu-1.17.0-cp310-cp310-linux_aarch64.whl</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install onnxruntime_gpu-1.17.0-cp310-cp310-linux_aarch64.whl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="install-additional-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="install-additional-dependencies">Install Additional Dependencies</h3>
+<p>To wrap up our environment setup, we will install a few additional dependencies for our demo project and downgrade NumPy to a version supported by ONNX Runtime.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-U</span> <span class="st">"numpy&lt;2"</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install jupyter cjm_psl_utils cjm_pil_utils cjm_byte_track</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With our environment set up, we can dive into the code.</p>
+</section>
+</section>
+<section id="getting-started-with-the-code" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started-with-the-code">Getting Started with the Code</h2>
+<p>This tutorial walks through the demo as a Jupyter Notebook, but the code is also available as a Python script.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Jupyter Notebook</th>
+<th>Python Script</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/yolox-ort-trt-bytetrack-jetson.ipynb">yolox-ort-trt-bytetrack-jetson.ipynb</a></td>
+<td><a href="https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/scripts/yolox-ort-tensorrt-byte-track.py">scripts/yolox-ort-tensorrt-byte-track.py</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="importing-the-required-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="importing-the-required-dependencies">Importing the Required Dependencies</h2>
+<p>First, we will import the necessary Python packages.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standard library imports</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json  <span class="co"># For JSON data handling</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path  <span class="co"># For file path operations</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time  <span class="co"># For time-related functions</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> threading  <span class="co"># For multi-threading support</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> List  <span class="co"># For type hinting</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> queue  <span class="co"># For queue data structure</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># ByteTrack package for object tracking</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_byte_track.core <span class="im">import</span> BYTETracker</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_byte_track.matching <span class="im">import</span> match_detections_with_tracks</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Utility functions</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_psl_utils.core <span class="im">import</span> download_file  <span class="co"># For downloading files</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_pil_utils.core <span class="im">import</span> resize_img  <span class="co"># For resizing images</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># OpenCV for computer vision tasks</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co"># NumPy for numerical operations</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="co"># PIL (Python Imaging Library) for image processing</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image, ImageDraw, ImageFont</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ONNX (Open Neural Network Exchange) for machine learning interoperability</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnxruntime <span class="im">as</span> ort  <span class="co"># ONNX Runtime for model inference</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="defining-utility-functions" class="level2">
+<h2 class="anchored" data-anchor-id="defining-utility-functions">Defining Utility Functions</h2>
+<p>Next, we will define some utility functions for our demo, starting with those needed for performing inference with our YOLOX ONNX model.</p>
+<section id="define-functions-for-yolox-inference" class="level3">
+<h3 class="anchored" data-anchor-id="define-functions-for-yolox-inference">Define Functions for YOLOX Inference</h3>
+<p>These steps remain unchanged from <a href="../byte-track/#defining-utility-functions">previous tutorials</a>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prepare_image_for_inference(frame:np.ndarray, target_sz:<span class="bu">int</span>, max_stride:<span class="bu">int</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Prepares an image for inference by performing a series of preprocessing steps.</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Steps:</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">    1. Converts a BGR image to RGB.</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">    2. Resizes the image to a target size without cropping, considering a given divisor.</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">    3. Calculates input dimensions as multiples of the max stride.</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">    4. Calculates offsets based on the resized image dimensions and input dimensions.</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">    5. Computes the scale between the original and resized image.</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">    6. Crops the resized image based on calculated input dimensions.</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co">    - frame (numpy.ndarray): The input image in BGR format.</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co">    - target_sz (int): The target minimum size for resizing the image.</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co">    - max_stride (int): The maximum stride to be considered for calculating input dimensions.</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co">    tuple: </span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">    - rgb_img (PIL.Image): The converted RGB image.</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co">    - input_dims (list of int): Dimensions of the image that are multiples of max_stride.</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">    - offsets (numpy.ndarray): Offsets from the resized image dimensions to the input dimensions.</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co">    - min_img_scale (float): Scale factor between the original and resized image.</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">    - input_img (PIL.Image): Cropped image based on the calculated input dimensions.</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert the BGR image to RGB</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    rgb_img <span class="op">=</span> Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Resize image without cropping to multiple of the max stride</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    resized_img <span class="op">=</span> resize_img(rgb_img, target_sz<span class="op">=</span>target_sz, divisor<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculating the input dimensions that multiples of the max stride</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    input_dims <span class="op">=</span> [dim <span class="op">-</span> dim <span class="op">%</span> max_stride <span class="cf">for</span> dim <span class="kw">in</span> resized_img.size]</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the offsets from the resized image dimensions to the input dimensions</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    offsets <span class="op">=</span> (np.array(resized_img.size) <span class="op">-</span> input_dims) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the scale between the source image and the resized image</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    min_img_scale <span class="op">=</span> <span class="bu">min</span>(rgb_img.size) <span class="op">/</span> <span class="bu">min</span>(resized_img.size)</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Crop the resized image to the input dimensions</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    input_img <span class="op">=</span> resized_img.crop(box<span class="op">=</span>[<span class="op">*</span>offsets, <span class="op">*</span>resized_img.size <span class="op">-</span> offsets])</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> rgb_img, input_dims, offsets, min_img_scale, input_img</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_output_grids_np(height, width, strides<span class="op">=</span>[<span class="dv">8</span>,<span class="dv">16</span>,<span class="dv">32</span>]):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate a numpy array containing grid coordinates and strides for a given height and width.</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">        height (int): The height of the image.</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">        width (int): The width of the image.</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co">        np.ndarray: A numpy array containing grid coordinates and strides.</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    all_coordinates <span class="op">=</span> []</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> stride <span class="kw">in</span> strides:</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate the grid height and width</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        grid_height <span class="op">=</span> height <span class="op">//</span> stride</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>        grid_width <span class="op">=</span> width <span class="op">//</span> stride</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Generate grid coordinates</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        g1, g0 <span class="op">=</span> np.meshgrid(np.arange(grid_height), np.arange(grid_width), indexing<span class="op">=</span><span class="st">'ij'</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create an array of strides</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>        s <span class="op">=</span> np.full((grid_height, grid_width), stride)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Stack the coordinates along with the stride</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>        coordinates <span class="op">=</span> np.stack((g0.flatten(), g1.flatten(), s.flatten()), axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Append to the list</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>        all_coordinates.append(coordinates)</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Concatenate all arrays in the list along the first dimension</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>    output_grids <span class="op">=</span> np.concatenate(all_coordinates, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> output_grids</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_boxes_and_probs(model_output:np.ndarray, output_grids:np.ndarray) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Calculate the bounding boxes and their probabilities.</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">    model_output (numpy.ndarray): The output of the model.</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">    output_grids (numpy.ndarray): The output grids.</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co">    numpy.ndarray: The array containing the bounding box coordinates, class labels, and maximum probabilities.</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the bounding box coordinates</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    box_centroids <span class="op">=</span> (model_output[..., :<span class="dv">2</span>] <span class="op">+</span> output_grids[..., :<span class="dv">2</span>]) <span class="op">*</span> output_grids[..., <span class="dv">2</span>:]</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    box_sizes <span class="op">=</span> np.exp(model_output[..., <span class="dv">2</span>:<span class="dv">4</span>]) <span class="op">*</span> output_grids[..., <span class="dv">2</span>:]</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    x0, y0 <span class="op">=</span> [t.squeeze(axis<span class="op">=</span><span class="dv">2</span>) <span class="cf">for</span> t <span class="kw">in</span> np.split(box_centroids <span class="op">-</span> box_sizes <span class="op">/</span> <span class="dv">2</span>, <span class="dv">2</span>, axis<span class="op">=</span><span class="dv">2</span>)]</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    w, h <span class="op">=</span> [t.squeeze(axis<span class="op">=</span><span class="dv">2</span>) <span class="cf">for</span> t <span class="kw">in</span> np.split(box_sizes, <span class="dv">2</span>, axis<span class="op">=</span><span class="dv">2</span>)]</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the probabilities for each class</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    box_objectness <span class="op">=</span> model_output[..., <span class="dv">4</span>]</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    box_cls_scores <span class="op">=</span> model_output[..., <span class="dv">5</span>:]</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    box_probs <span class="op">=</span> np.expand_dims(box_objectness, <span class="op">-</span><span class="dv">1</span>) <span class="op">*</span> box_cls_scores</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get the maximum probability and corresponding class for each proposal</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    max_probs <span class="op">=</span> np.<span class="bu">max</span>(box_probs, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> np.argmax(box_probs, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([x0, y0, w, h, labels, max_probs]).transpose((<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> process_outputs(outputs:np.ndarray, input_dims:<span class="bu">tuple</span>, bbox_conf_thresh:<span class="bu">float</span>):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Process the model outputs to generate bounding box proposals filtered by confidence threshold.</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">    - outputs (numpy.ndarray): The raw output from the model, which will be processed to calculate boxes and probabilities.</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">    - input_dims (tuple of int): Dimensions (height, width) of the input image to the model.</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">    - bbox_conf_thresh (float): Threshold for the bounding box confidence/probability. Bounding boxes with a confidence</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co">                                score below this threshold will be discarded.</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">    - numpy.array: An array of proposals where each proposal is an array containing bounding box coordinates</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">                   and its associated probability, sorted in descending order by probability.</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Process the model output</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    outputs <span class="op">=</span> calculate_boxes_and_probs(outputs, generate_output_grids_np(<span class="op">*</span>input_dims))</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter the proposals based on the confidence threshold</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    max_probs <span class="op">=</span> outputs[:, :, <span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> max_probs <span class="op">&gt;</span> bbox_conf_thresh</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    proposals <span class="op">=</span> outputs[mask]</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sort the proposals by probability in descending order</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    proposals <span class="op">=</span> proposals[proposals[..., <span class="op">-</span><span class="dv">1</span>].argsort()][::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> proposals</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_iou(proposals:np.ndarray) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Calculates the Intersection over Union (IoU) for all pairs of bounding boxes (x,y,w,h) in 'proposals'.</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">    The IoU is a measure of overlap between two bounding boxes. It is calculated as the area of</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">    intersection divided by the area of union of the two boxes.</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">    proposals (2D np.array): A NumPy array of bounding boxes, where each box is an array [x, y, width, height].</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">    iou (2D np.array): The IoU matrix where each element i,j represents the IoU of boxes i and j.</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate coordinates for the intersection rectangles</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">=</span> np.maximum(proposals[:, <span class="dv">0</span>], proposals[:, <span class="dv">0</span>][:, <span class="va">None</span>])</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    y1 <span class="op">=</span> np.maximum(proposals[:, <span class="dv">1</span>], proposals[:, <span class="dv">1</span>][:, <span class="va">None</span>])</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">=</span> np.minimum(proposals[:, <span class="dv">0</span>] <span class="op">+</span> proposals[:, <span class="dv">2</span>], (proposals[:, <span class="dv">0</span>] <span class="op">+</span> proposals[:, <span class="dv">2</span>])[:, <span class="va">None</span>])</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    y2 <span class="op">=</span> np.minimum(proposals[:, <span class="dv">1</span>] <span class="op">+</span> proposals[:, <span class="dv">3</span>], (proposals[:, <span class="dv">1</span>] <span class="op">+</span> proposals[:, <span class="dv">3</span>])[:, <span class="va">None</span>])</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate intersection areas</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    intersections <span class="op">=</span> np.maximum(x2 <span class="op">-</span> x1, <span class="dv">0</span>) <span class="op">*</span> np.maximum(y2 <span class="op">-</span> y1, <span class="dv">0</span>)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate union areas</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    areas <span class="op">=</span> proposals[:, <span class="dv">2</span>] <span class="op">*</span> proposals[:, <span class="dv">3</span>]</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    unions <span class="op">=</span> areas[:, <span class="va">None</span>] <span class="op">+</span> areas <span class="op">-</span> intersections</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate IoUs</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    iou <span class="op">=</span> intersections <span class="op">/</span> unions</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return the iou matrix</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> iou</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nms_sorted_boxes(iou:np.ndarray, iou_thresh:<span class="bu">float</span><span class="op">=</span><span class="fl">0.45</span>) <span class="op">-&gt;</span> np.ndarray:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Applies non-maximum suppression (NMS) to sorted bounding boxes.</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">    It suppresses boxes that have high overlap (as defined by the IoU threshold) with a box that </span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co">    has a higher score.</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">    iou (np.ndarray): An IoU matrix where each element i,j represents the IoU of boxes i and j.</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co">    iou_thresh (float): The IoU threshold for suppression. Boxes with IoU &gt; iou_thresh are suppressed.</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co">    keep (np.ndarray): The indices of the boxes to keep after applying NMS.</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a boolean mask to keep track of boxes</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> np.ones(iou.shape[<span class="dv">0</span>], dtype<span class="op">=</span><span class="bu">bool</span>)</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Apply non-max suppression</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(iou.shape[<span class="dv">0</span>]):</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> mask[i]:</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Suppress boxes with higher index and IoU &gt; threshold</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>            mask[(iou[i] <span class="op">&gt;</span> iou_thresh) <span class="op">&amp;</span> (np.arange(iou.shape[<span class="dv">0</span>]) <span class="op">&gt;</span> i)] <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return the indices of the boxes to keep</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.arange(iou.shape[<span class="dv">0</span>])[mask]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_bboxes_pil(image, boxes, labels, colors, font, width<span class="op">=</span><span class="dv">2</span>, font_size<span class="op">=</span><span class="dv">18</span>, probs<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Annotates an image with bounding boxes, labels, and optional probability scores.</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">    - image (PIL.Image): The input image on which annotations will be drawn.</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co">    - boxes (list of tuples): A list of bounding box coordinates where each tuple is (x, y, w, h).</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">    - labels (list of str): A list of labels corresponding to each bounding box.</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co">    - colors (list of str): A list of colors for each bounding box and its corresponding label.</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co">    - font (str): Path to the font file to be used for displaying the labels.</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co">    - width (int, optional): Width of the bounding box lines. Defaults to 2.</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">    - font_size (int, optional): Size of the font for the labels. Defaults to 18.</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="co">    - probs (list of float, optional): A list of probability scores corresponding to each label. Defaults to None.</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co">    - annotated_image (PIL.Image): The image annotated with bounding boxes, labels, and optional probability scores.</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define a reference diagonal</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    REFERENCE_DIAGONAL <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Scale the font size using the hypotenuse of the image</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    font_size <span class="op">=</span> <span class="bu">int</span>(font_size <span class="op">*</span> (np.hypot(<span class="op">*</span>image.size) <span class="op">/</span> REFERENCE_DIAGONAL))</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add probability scores to labels if provided</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> probs <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>        labels <span class="op">=</span> [<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>prob<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span> <span class="cf">for</span> label, prob <span class="kw">in</span> <span class="bu">zip</span>(labels, probs)]</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create an ImageDraw object for drawing on the image</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    draw <span class="op">=</span> ImageDraw.Draw(image)</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load the font file (outside the loop)</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>    fnt <span class="op">=</span> ImageFont.truetype(font, font_size)</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute the mean color value for each color</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    mean_colors <span class="op">=</span> [np.mean(np.array(color)) <span class="cf">for</span> color <span class="kw">in</span> colors]</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Loop through the bounding boxes, labels, and colors</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> box, label, color, mean_color <span class="kw">in</span> <span class="bu">zip</span>(boxes, labels, colors, mean_colors):</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the bounding box coordinates</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>        x, y, w, h <span class="op">=</span> box</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the bounding box on the image</span></span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>        draw.rectangle([x, y, x<span class="op">+</span>w, y<span class="op">+</span>h], outline<span class="op">=</span>color, width<span class="op">=</span>width)</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the size of the label text box</span></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>        label_w, label_h <span class="op">=</span> draw.textbbox(xy<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">0</span>), text<span class="op">=</span>label, font<span class="op">=</span>fnt)[<span class="dv">2</span>:]</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the label rectangle on the image</span></span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>        draw.rectangle([x, y<span class="op">-</span>label_h, x<span class="op">+</span>label_w, y], outline<span class="op">=</span>color, fill<span class="op">=</span>color)</span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw the label text on the image</span></span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>        font_color <span class="op">=</span> <span class="st">'black'</span> <span class="cf">if</span> mean_color <span class="op">&gt;</span> <span class="fl">127.5</span> <span class="cf">else</span> <span class="st">'white'</span></span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>        draw.multiline_text((x, y<span class="op">-</span>label_h), label, font<span class="op">=</span>fnt, fill<span class="op">=</span>font_color)</span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> image</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-function-to-generate-a-gstreamer-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="define-a-function-to-generate-a-gstreamer-pipeline">Define a Function to Generate a GStreamer Pipeline</h3>
+<p>Next, we will define a function to generate a GStreamer pipeline string for OpenCV. We need this to get input from a CSI camera.</p>
+<p>The code is a lightly modified version of the <a href="https://github.com/JetsonHacksNano/CSI-Camera/blob/e11a0fa1f68519166e1627c5277c6dfda29f9d2f/simple_camera.py#L17">implementation</a> in the following JetsonHacks repository.</p>
+<ul>
+<li><a href="https://github.com/JetsonHacksNano/CSI-Camera/tree/master">CSI-Camera</a></li>
+</ul>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gstreamer_pipeline(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    sensor_id<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    capture_width<span class="op">=</span><span class="dv">1920</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    capture_height<span class="op">=</span><span class="dv">1080</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    display_width<span class="op">=</span><span class="dv">960</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    display_height<span class="op">=</span><span class="dv">540</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    framerate<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    flip_method<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate a GStreamer pipeline string for capturing and processing video from a camera.</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co">    This function creates a pipeline that captures video from an NVIDIA Argus camera,</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co">    performs necessary conversions, and prepares the video for display or further processing.</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co">        sensor_id (int): The ID of the camera sensor to use (default: 0).</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co">        capture_width (int): The width of the captured video in pixels (default: 1920).</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co">        capture_height (int): The height of the captured video in pixels (default: 1080).</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="co">        display_width (int): The width of the displayed/processed video in pixels (default: 960).</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co">        display_height (int): The height of the displayed/processed video in pixels (default: 540).</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="co">        framerate (int): The desired framerate of the video capture (default: 30).</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="co">        flip_method (int): The method used to flip the image, if needed (default: 0, no flip).</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="co">        str: A GStreamer pipeline string that can be used with GStreamer-based applications.</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Start with nvarguscamerasrc to capture from NVIDIA Argus camera</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"nvarguscamerasrc sensor-id=</span><span class="sc">{</span>sensor_id<span class="sc">}</span><span class="ss"> ! "</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set the captured video format and properties</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"video/x-raw(memory:NVMM), width=(int)</span><span class="sc">{</span>capture_width<span class="sc">}</span><span class="ss">, height=(int)</span><span class="sc">{</span>capture_height<span class="sc">}</span><span class="ss">, framerate=(fraction)</span><span class="sc">{</span>framerate<span class="sc">}</span><span class="ss">/1 ! "</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Use nvvidconv to convert the video and potentially flip the image</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"nvvidconv flip-method=</span><span class="sc">{</span>flip_method<span class="sc">}</span><span class="ss"> ! "</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set the display/processing video format and properties</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"video/x-raw, width=(int)</span><span class="sc">{</span>display_width<span class="sc">}</span><span class="ss">, height=(int)</span><span class="sc">{</span>display_height<span class="sc">}</span><span class="ss">, format=(string)BGRx ! "</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert the video color format</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"videoconvert ! "</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set the final video format to BGR for compatibility with OpenCV</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"video/x-raw, format=(string)BGR ! appsink"</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-a-wrapper-class-for-reading-camera-frames" class="level3">
+<h3 class="anchored" data-anchor-id="define-a-wrapper-class-for-reading-camera-frames">Define a Wrapper Class for Reading Camera Frames</h3>
+<p>When testing the demo using OpenCV’s <code>VideoCapture</code> class directly, I noticed a delay between the input to the camera (e.g., me waving my hand) and what showed on the preview window.</p>
+<p>This lag only occurred when performing inference, and the delay increased at higher framerates. It was as if there were a frame queue that built up faster than the Jetson could process.</p>
+<p>This effect is not necessarily a problem, depending on the application. However, I found it annoying, so I used the following solution to get around it. It is essentially a wrapper for the <code>VideoCapture</code> class that helps ensure we only work with the most recent frame from the camera.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FrameDropper:</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A class for efficiently reading frames from a video capture device,</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co">    dropping frames if necessary to maintain real-time processing.</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, cv2_capture: cv2.VideoCapture, queue_size<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co">        Initialize the FrameDropper.</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co">        Args:</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="co">            cv2_capture (cv2.VideoCapture): The video capture object.</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co">            queue_size (int): Maximum number of frames to keep in the queue.</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Store the video capture object</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.cap <span class="op">=</span> cv2_capture</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a queue to store frames with a maximum size</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.q <span class="op">=</span> queue.Queue(maxsize<span class="op">=</span>queue_size)</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create an event to signal when to stop the thread</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.stop_flag <span class="op">=</span> threading.Event()</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a separate thread for reading frames</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.thread <span class="op">=</span> threading.Thread(target<span class="op">=</span><span class="va">self</span>._reader)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set the thread as a daemon, so it will automatically close when the main program exits</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.thread.daemon <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Start the thread</span></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.thread.start()</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _reader(<span class="va">self</span>):</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a><span class="co">        Continuously read frames from the video capture device and manage the frame queue.</span></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a><span class="co">        Runs in a separate thread.</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> <span class="kw">not</span> <span class="va">self</span>.stop_flag.is_set():  <span class="co"># Continue until the stop flag is set</span></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Read a frame from the video capture device</span></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>            ret, frame <span class="op">=</span> <span class="va">self</span>.cap.read()</span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="kw">not</span> ret:  <span class="co"># If reading the frame failed, exit the loop</span></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>                <span class="cf">break</span></span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="kw">not</span> <span class="va">self</span>.q.full():  <span class="co"># If the queue is not full</span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.q.put(frame)  <span class="co"># Add the frame to the queue</span></span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>                <span class="cf">try</span>:</span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># If the queue is full, try to remove the oldest frame</span></span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>                    <span class="va">self</span>.q.get_nowait()</span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>                <span class="cf">except</span> queue.Empty:</span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># If the queue is empty (unlikely, but possible due to race conditions)</span></span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">pass</span></span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Add the new frame to the queue</span></span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.q.put(frame)</span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> read(<span class="va">self</span>):</span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a><span class="co">        Read a frame from the queue.</span></span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a><span class="co">        Returns:</span></span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a><span class="co">            tuple: (True, frame) where frame is the next available frame.</span></span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Get the next frame from the queue and return it</span></span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a>        <span class="co"># The 'True' indicates that a frame was successfully read</span></span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">True</span>, <span class="va">self</span>.q.get()</span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-68"><a href="#cb17-68" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> release(<span class="va">self</span>):</span>
+<span id="cb17-69"><a href="#cb17-69" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb17-70"><a href="#cb17-70" aria-hidden="true" tabindex="-1"></a><span class="co">        Stop the reading thread and release the video capture resources.</span></span>
+<span id="cb17-71"><a href="#cb17-71" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb17-72"><a href="#cb17-72" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Set the stop flag to signal the thread to stop</span></span>
+<span id="cb17-73"><a href="#cb17-73" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.stop_flag.<span class="bu">set</span>()</span>
+<span id="cb17-74"><a href="#cb17-74" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-75"><a href="#cb17-75" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Release the video capture object</span></span>
+<span id="cb17-76"><a href="#cb17-76" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.cap.release()</span>
+<span id="cb17-77"><a href="#cb17-77" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-78"><a href="#cb17-78" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Wait for the thread to finish</span></span>
+<span id="cb17-79"><a href="#cb17-79" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.thread.join()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol type="1">
+<li>The class employs threading to read frames in the background, enhancing processing efficiency.</li>
+<li>The class utilizes the <a href="https://docs.python.org/3/library/queue.html">queue</a> module to manage frames safely across threads.</li>
+<li>A separate thread executes the <code>_reader</code> method, which continuously reads frames and manages the queue.</li>
+<li>When the queue reaches capacity, the class discards the oldest frame to accommodate the newest one. This approach ensures the availability of the most recent frame for processing.</li>
+<li>The main video processing loop accesses frames from the queue through the <code>read</code> method.</li>
+<li>The release method stops the thread and frees up resources once the program finishes with video capture.</li>
+</ol>
+<p>That takes care of the utility code.</p>
+</section>
+</section>
+<section id="setting-up-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-project">Setting Up the Project</h2>
+<p>Next, we will set the folder locations for our project and the directory with the ONNX model, JSON colormap file, and the <a href="../ort-tensorrt-ubuntu/#inspect-tensorrt-cache-folder">calibration data</a> used by TensorRT to <a href="../ort-tensorrt-ubuntu/#quantization-process">quantize the model</a>.</p>
+<section id="set-the-directory-paths" class="level3">
+<h3 class="anchored" data-anchor-id="set-the-directory-paths">Set the Directory Paths</h3>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The name for the project</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>project_name <span class="op">=</span> <span class="ss">f"pytorch-yolox-object-detector"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The path for the project folder</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>project_dir <span class="op">=</span> Path(<span class="ss">f"./</span><span class="sc">{</span>project_name<span class="sc">}</span><span class="ss">/"</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the project directory if it does not already exist</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>project_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The path to the checkpoint folder</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>checkpoint_folder <span class="op">=</span> <span class="st">"2024-02-17_11-08-46"</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> Path(project_dir<span class="op">/</span>checkpoint_folder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Sample Files:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Sample Files:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I made an ONNX model available on Hugging Face Hub with a colormap file and a <code>trt_engine_cache</code> folder in the repository linked below:
+<ul>
+<li><a href="https://huggingface.co/cj-mills/yolox-hagrid-onnx/tree/main">cj-mills/yolox-hagrid-onnx</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="download-a-font-file" class="level3">
+<h3 class="anchored" data-anchor-id="download-a-font-file">Download a Font File</h3>
+<p>We should also ensure we have a font file for annotating images.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the font file</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>font_file <span class="op">=</span> <span class="st">'KFOlCnqEu92Fr1MmEU9vAw.ttf'</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the font file</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>download_file(<span class="ss">f"https://fonts.gstatic.com/s/roboto/v30/</span><span class="sc">{</span>font_file<span class="sc">}</span><span class="ss">"</span>, <span class="st">"./"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="loading-the-checkpoint-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-checkpoint-data">Loading the Checkpoint Data</h2>
+<p>Next, we will load the colormap and set the max stride value for processing model output.</p>
+<section id="load-the-colormap" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-colormap">Load the Colormap</h3>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The colormap path</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>colormap_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*colormap.json'</span>))[<span class="dv">0</span>]</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the JSON colormap data</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(colormap_path, <span class="st">'r'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>        colormap_json <span class="op">=</span> json.load(<span class="bu">file</span>)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the JSON data to a dictionary        </span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>colormap_dict <span class="op">=</span> {item[<span class="st">'label'</span>]: item[<span class="st">'color'</span>] <span class="cf">for</span> item <span class="kw">in</span> colormap_json[<span class="st">'items'</span>]}</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the class names from the colormap</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>class_names <span class="op">=</span> <span class="bu">list</span>(colormap_dict.keys())</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a copy of the colormap in integer format</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>int_colors <span class="op">=</span> [<span class="bu">tuple</span>(<span class="bu">int</span>(c<span class="op">*</span><span class="dv">255</span>) <span class="cf">for</span> c <span class="kw">in</span> color) <span class="cf">for</span> color <span class="kw">in</span> colormap_dict.values()]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="set-the-preprocessing-and-post-processing-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="set-the-preprocessing-and-post-processing-parameters">Set the Preprocessing and Post-Processing Parameters</h3>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>max_stride <span class="op">=</span> <span class="dv">32</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>input_dim_slice <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-an-inference-session" class="level2">
+<h2 class="anchored" data-anchor-id="create-an-inference-session">Create an Inference Session</h2>
+<p>Now, we can create an inference session using the TensorRT execution provider.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The following code assumes the <a href="../ort-tensorrt-ubuntu/#inspect-tensorrt-cache-folder"><code>trt_engine_cache</code></a> folder is in the same directory as the ONNX model.</p>
+</div>
+</div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the filename for the ONNX model</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Assumes there's only one .onnx file in the checkpoint directory</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*.onnx'</span>))[<span class="dv">0</span>]</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up a directory for TensorRT engine cache</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>trt_cache_dir <span class="op">=</span> checkpoint_dir <span class="op">/</span> <span class="st">'trt_engine_cache'</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize ONNX Runtime session options</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>sess_opt <span class="op">=</span> ort.SessionOptions()</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Disable memory optimizations to potentially improve performance</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>sess_opt.enable_cpu_mem_arena <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>sess_opt.enable_mem_pattern <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>sess_opt.enable_mem_reuse <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Set execution mode to sequential for predictable behavior</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>sess_opt.execution_mode <span class="op">=</span> ort.ExecutionMode.ORT_SEQUENTIAL</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable all graph optimizations</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>sess_opt.graph_optimization_level <span class="op">=</span> ort.GraphOptimizationLevel.ORT_ENABLE_ALL</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure TensorRT Execution Provider settings</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>providers <span class="op">=</span> [</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'TensorrtExecutionProvider'</span>, {</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">'device_id'</span>: <span class="dv">0</span>,  <span class="co"># GPU device ID (0 for the first GPU)</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_int8_enable'</span>: <span class="va">True</span>,  <span class="co"># Enable INT8 precision mode</span></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_engine_cache_enable'</span>: <span class="va">True</span>,  <span class="co"># Enable caching of TensorRT engines</span></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_engine_cache_path'</span>: <span class="bu">str</span>(trt_cache_dir),  <span class="co"># Path to store TensorRT cache</span></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_int8_calibration_table_name'</span>: <span class="st">'calibration.flatbuffers'</span>,  <span class="co"># INT8 calibration file</span></span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_max_workspace_size'</span>: <span class="fl">4e9</span>,  <span class="co"># Maximum TensorRT workspace size (4GB)</span></span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_timing_cache_enable'</span>: <span class="va">True</span>,  <span class="co"># Enable timing cache for faster engine building</span></span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_force_sequential_engine_build'</span>: <span class="va">True</span>,  <span class="co"># Build engines sequentially</span></span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_dla_enable'</span>: <span class="va">False</span>,  <span class="co"># Disable DLA (Deep Learning Accelerator)</span></span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_max_partition_iterations'</span>: <span class="dv">1000</span>,  <span class="co"># Max iterations for partitioning</span></span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_min_subgraph_size'</span>: <span class="dv">1</span>,  <span class="co"># Minimum subgraph size for TensorRT</span></span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an ONNX Runtime InferenceSession with the specified options and providers</span></span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> ort.InferenceSession(onnx_file_path, sess_options<span class="op">=</span>sess_opt, providers<span class="op">=</span>providers)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>[0;93m2024-09-05 16:34:58.430807424 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-05 23:34:58 WARNING] onnx2trt_utils.cpp:372: Your ONNX model has been generated with INT64 weights, while TensorRT does not natively support INT64. Attempting to cast down to INT32.[m
+[0;93m2024-09-05 16:34:58.430935716 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-05 23:34:58 WARNING] onnx2trt_utils.cpp:400: One or more weights outside the range of INT32 was clamped[m
+[0;93m2024-09-05 16:34:58.472815780 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-05 23:34:58 WARNING] onnx2trt_utils.cpp:372: Your ONNX model has been generated with INT64 weights, while TensorRT does not natively support INT64. Attempting to cast down to INT32.[m
+[0;93m2024-09-05 16:34:58.472888966 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-05 23:34:58 WARNING] onnx2trt_utils.cpp:400: One or more weights outside the range of INT32 was clamped[m</code></pre>
+</section>
+<section id="tracking-objects-in-a-camera-feed" class="level2">
+<h2 class="anchored" data-anchor-id="tracking-objects-in-a-camera-feed">Tracking Objects in a Camera Feed</h2>
+<p>Next, we will define the camera feed settings and the inference parameters.</p>
+<section id="define-camera-feed-settings" class="level3">
+<h3 class="anchored" data-anchor-id="define-camera-feed-settings">Define Camera Feed Settings</h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">CSI</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">USB</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>use_csi <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>sensor_id<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>flip_method <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>framerate<span class="op">=</span><span class="dv">60</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>capture_width<span class="op">=</span><span class="dv">1280</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>capture_height<span class="op">=</span><span class="dv">720</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>use_csi <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>sensor_id<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>flip_method <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>framerate<span class="op">=</span><span class="dv">60</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>capture_width<span class="op">=</span><span class="dv">1280</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>capture_height<span class="op">=</span><span class="dv">720</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you have multiple camera devices attached to the Jetson (e.g., a USB camera and a CSI camera), set the correct <code>sensor_id</code> for the target device.</p>
+</div>
+</div>
+</section>
+<section id="define-inference-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="define-inference-parameters">Define Inference Parameters</h3>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>test_sz <span class="op">=</span> <span class="dv">384</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>bbox_conf_thresh <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>iou_thresh <span class="op">=</span> <span class="fl">0.45</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="build-tensorrt-engine" class="level3">
+<h3 class="anchored" data-anchor-id="build-tensorrt-engine">Build TensorRT Engine</h3>
+<p>The TensorRT build process can take several minutes on the Jetson, so we will use a random sample input to build the engine before starting the camera feed loop.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a sample input with the target dimensions </span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> Image.fromarray(np.random.randn(capture_height, capture_width, <span class="dv">3</span>).astype(np.uint8))</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>resized_img <span class="op">=</span> resize_img(test_img, test_sz)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(resized_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform a single inference run to build the TensorRT engine for the current input dimensions</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>2024-09-06 13:40:43.685287224 [W:onnxruntime:Default, tensorrt_execution_provider.cc:189 loadTimingCacheFile] [TensorRT EP] Could not read timing cache from: pytorch-yolox-object-detector/2024-02-17_11-08-46/trt_engine_cache/TensorrtExecutionProvider_cache_sm87.timing. A new timing cache will be generated and written.
+2024-09-06 13:40:43.695805375 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-06 20:40:43 WARNING] Calibrator is not being used. Users must provide dynamic range for all tensors that are not Int32 or Bool.
+CPU times: user 7min 25s, sys: 20.8 s, total: 7min 46s
+Wall time: 8min 10s</code></pre>
+</section>
+<section id="detect-track-and-annotate-objects" class="level3">
+<h3 class="anchored" data-anchor-id="detect-track-and-annotate-objects">Detect, Track, and Annotate Objects</h3>
+<p>At last, we can initialize our video capture and tracker objects and implement our video processing loop.</p>
+<section id="overview" class="level4">
+<h4 class="anchored" data-anchor-id="overview">Overview</h4>
+<ol type="1">
+<li>The following code sets up a video capture system, supporting either a CSI camera or a V4L2 camera based on the <code>use_csi</code> flag.</li>
+<li>It creates a <code>FrameDropper</code> object to manage video capture.</li>
+<li>The code initializes a <code>BYTETracker</code> for object tracking.</li>
+<li>Inside a main processing loop, the system continuously:
+<ul>
+<li>Captures frames from the video feed</li>
+<li>Prepares each frame for inference</li>
+<li>Runs the ONNX model to detect objects</li>
+<li>Processes the model outputs to generate object proposals</li>
+<li>Applies non-max suppression to filter overlapping detections</li>
+<li>Updates the tracker with new detections</li>
+<li>Matches detections with existing tracks</li>
+<li>Annotates the frame with bounding boxes and tracking IDs</li>
+<li>Calculates and displays the current FPS</li>
+</ul></li>
+<li>The code uses OpenCV to create a window and display the annotated frames in real-time.</li>
+<li>It implements an exit mechanism, listening for a ‘q’ key press to stop the processing loop.</li>
+<li>Finally, the code ensures proper resource cleanup by releasing the video capture and closing all windows when the program terminates.</li>
+</ol>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up window title for display</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>window_title <span class="op">=</span> <span class="st">"Camera Feed - Press 'q' to Quit"</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure camera source based on the 'use_csi' flag</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> use_csi:</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Use CSI camera with GStreamer pipeline</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    src <span class="op">=</span> gstreamer_pipeline(sensor_id<span class="op">=</span>sensor_id,</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>                       display_width<span class="op">=</span>capture_width,</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>                       display_height<span class="op">=</span>capture_height,</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>                       flip_method<span class="op">=</span>flip_method, </span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>                       capture_width<span class="op">=</span>capture_width, </span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>                       capture_height<span class="op">=</span>capture_height, </span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>                       framerate<span class="op">=</span>framerate)</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    cv2_capture <span class="op">=</span> cv2.VideoCapture(src)</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Use V4L2 camera</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    cv2_capture <span class="op">=</span> cv2.VideoCapture(sensor_id, cv2.CAP_V4L2)</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    cv2_capture.<span class="bu">set</span>(cv2.CAP_PROP_FRAME_WIDTH, capture_width)</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>    cv2_capture.<span class="bu">set</span>(cv2.CAP_PROP_FRAME_HEIGHT, capture_height)</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    cv2_capture.<span class="bu">set</span>(cv2.CAP_PROP_FPS, framerate)</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a FrameDropper object to handle video capture</span></span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>video_capture <span class="op">=</span> FrameDropper(cv2_capture)</span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize the ByteTracker for object tracking</span></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>tracker <span class="op">=</span> BYTETracker(track_thresh<span class="op">=</span><span class="fl">0.25</span>, track_buffer<span class="op">=</span><span class="dv">30</span>, match_thresh<span class="op">=</span><span class="fl">0.8</span>, frame_rate<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a named window for displaying the video feed</span></span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a>    window_handle <span class="op">=</span> cv2.namedWindow(window_title, cv2.WINDOW_AUTOSIZE)</span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Main processing loop</span></span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a>        start_time <span class="op">=</span> time.perf_counter()</span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Capture a frame from the video feed</span></span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a>        ret_val, frame <span class="op">=</span> video_capture.read()</span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> ret_val:</span>
+<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">"Failed to retrieve frame"</span>)</span>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb29-42"><a href="#cb29-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-43"><a href="#cb29-43" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Prepare the input image for inference</span></span>
+<span id="cb29-44"><a href="#cb29-44" aria-hidden="true" tabindex="-1"></a>        rgb_img, input_dims, offsets, min_img_scale, input_img <span class="op">=</span> prepare_image_for_inference(frame, test_sz, max_stride)</span>
+<span id="cb29-45"><a href="#cb29-45" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb29-46"><a href="#cb29-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert the input image to NumPy format for the model</span></span>
+<span id="cb29-47"><a href="#cb29-47" aria-hidden="true" tabindex="-1"></a>        input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span>
+<span id="cb29-48"><a href="#cb29-48" aria-hidden="true" tabindex="-1"></a>                        </span>
+<span id="cb29-49"><a href="#cb29-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Run inference using the ONNX session</span></span>
+<span id="cb29-50"><a href="#cb29-50" aria-hidden="true" tabindex="-1"></a>        outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
+<span id="cb29-51"><a href="#cb29-51" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-52"><a href="#cb29-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Process the model output to get object proposals</span></span>
+<span id="cb29-53"><a href="#cb29-53" aria-hidden="true" tabindex="-1"></a>        proposals <span class="op">=</span> process_outputs(outputs, input_tensor_np.shape[input_dim_slice], bbox_conf_thresh)</span>
+<span id="cb29-54"><a href="#cb29-54" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb29-55"><a href="#cb29-55" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Apply non-max suppression to filter overlapping proposals</span></span>
+<span id="cb29-56"><a href="#cb29-56" aria-hidden="true" tabindex="-1"></a>        proposal_indices <span class="op">=</span> nms_sorted_boxes(calc_iou(proposals[:, :<span class="op">-</span><span class="dv">2</span>]), iou_thresh)</span>
+<span id="cb29-57"><a href="#cb29-57" aria-hidden="true" tabindex="-1"></a>        proposals <span class="op">=</span> proposals[proposal_indices]</span>
+<span id="cb29-58"><a href="#cb29-58" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb29-59"><a href="#cb29-59" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Extract bounding boxes, labels, and probabilities from proposals</span></span>
+<span id="cb29-60"><a href="#cb29-60" aria-hidden="true" tabindex="-1"></a>        bbox_list <span class="op">=</span> (proposals[:,:<span class="dv">4</span>]<span class="op">+</span>[<span class="op">*</span>offsets, <span class="dv">0</span>, <span class="dv">0</span>])<span class="op">*</span>min_img_scale</span>
+<span id="cb29-61"><a href="#cb29-61" aria-hidden="true" tabindex="-1"></a>        label_list <span class="op">=</span> [class_names[<span class="bu">int</span>(idx)] <span class="cf">for</span> idx <span class="kw">in</span> proposals[:,<span class="dv">4</span>]]</span>
+<span id="cb29-62"><a href="#cb29-62" aria-hidden="true" tabindex="-1"></a>        probs_list <span class="op">=</span> proposals[:,<span class="dv">5</span>]</span>
+<span id="cb29-63"><a href="#cb29-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-64"><a href="#cb29-64" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Initialize track IDs for detected objects</span></span>
+<span id="cb29-65"><a href="#cb29-65" aria-hidden="true" tabindex="-1"></a>        track_ids <span class="op">=</span> [<span class="op">-</span><span class="dv">1</span>]<span class="op">*</span><span class="bu">len</span>(bbox_list)</span>
+<span id="cb29-66"><a href="#cb29-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-67"><a href="#cb29-67" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert bounding boxes to top-left bottom-right (tlbr) format</span></span>
+<span id="cb29-68"><a href="#cb29-68" aria-hidden="true" tabindex="-1"></a>        tlbr_boxes <span class="op">=</span> bbox_list.copy()</span>
+<span id="cb29-69"><a href="#cb29-69" aria-hidden="true" tabindex="-1"></a>        tlbr_boxes[:, <span class="dv">2</span>:<span class="dv">4</span>] <span class="op">+=</span> tlbr_boxes[:, :<span class="dv">2</span>]</span>
+<span id="cb29-70"><a href="#cb29-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-71"><a href="#cb29-71" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Update tracker with detections</span></span>
+<span id="cb29-72"><a href="#cb29-72" aria-hidden="true" tabindex="-1"></a>        tracks <span class="op">=</span> tracker.update(</span>
+<span id="cb29-73"><a href="#cb29-73" aria-hidden="true" tabindex="-1"></a>            output_results<span class="op">=</span>np.concatenate([tlbr_boxes, probs_list[:, np.newaxis]], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb29-74"><a href="#cb29-74" aria-hidden="true" tabindex="-1"></a>            img_info<span class="op">=</span>rgb_img.size,</span>
+<span id="cb29-75"><a href="#cb29-75" aria-hidden="true" tabindex="-1"></a>            img_size<span class="op">=</span>rgb_img.size)</span>
+<span id="cb29-76"><a href="#cb29-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-77"><a href="#cb29-77" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(tlbr_boxes) <span class="op">&gt;</span> <span class="dv">0</span> <span class="kw">and</span> <span class="bu">len</span>(tracks) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb29-78"><a href="#cb29-78" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Match detections with tracks</span></span>
+<span id="cb29-79"><a href="#cb29-79" aria-hidden="true" tabindex="-1"></a>            track_ids <span class="op">=</span> match_detections_with_tracks(tlbr_boxes<span class="op">=</span>tlbr_boxes, track_ids<span class="op">=</span>track_ids, tracks<span class="op">=</span>tracks)</span>
+<span id="cb29-80"><a href="#cb29-80" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-81"><a href="#cb29-81" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Filter object detections based on tracking results</span></span>
+<span id="cb29-82"><a href="#cb29-82" aria-hidden="true" tabindex="-1"></a>            bbox_list, label_list, probs_list, track_ids <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>[(bbox, label, prob, track_id) </span>
+<span id="cb29-83"><a href="#cb29-83" aria-hidden="true" tabindex="-1"></a>                                                                <span class="cf">for</span> bbox, label, prob, track_id </span>
+<span id="cb29-84"><a href="#cb29-84" aria-hidden="true" tabindex="-1"></a>                                                                <span class="kw">in</span> <span class="bu">zip</span>(bbox_list, label_list, probs_list, track_ids) <span class="cf">if</span> track_id <span class="op">!=</span> <span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb29-85"><a href="#cb29-85" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb29-86"><a href="#cb29-86" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="bu">len</span>(bbox_list) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb29-87"><a href="#cb29-87" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Annotate the current frame with bounding boxes and tracking IDs</span></span>
+<span id="cb29-88"><a href="#cb29-88" aria-hidden="true" tabindex="-1"></a>                annotated_img <span class="op">=</span> draw_bboxes_pil(</span>
+<span id="cb29-89"><a href="#cb29-89" aria-hidden="true" tabindex="-1"></a>                    image<span class="op">=</span>rgb_img, </span>
+<span id="cb29-90"><a href="#cb29-90" aria-hidden="true" tabindex="-1"></a>                    boxes<span class="op">=</span>bbox_list, </span>
+<span id="cb29-91"><a href="#cb29-91" aria-hidden="true" tabindex="-1"></a>                    labels<span class="op">=</span>[<span class="ss">f"</span><span class="sc">{</span>track_id<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> track_id, label <span class="kw">in</span> <span class="bu">zip</span>(track_ids, label_list)],</span>
+<span id="cb29-92"><a href="#cb29-92" aria-hidden="true" tabindex="-1"></a>                    probs<span class="op">=</span>probs_list,</span>
+<span id="cb29-93"><a href="#cb29-93" aria-hidden="true" tabindex="-1"></a>                    colors<span class="op">=</span>[int_colors[class_names.index(i)] <span class="cf">for</span> i <span class="kw">in</span> label_list],  </span>
+<span id="cb29-94"><a href="#cb29-94" aria-hidden="true" tabindex="-1"></a>                    font<span class="op">=</span>font_file,</span>
+<span id="cb29-95"><a href="#cb29-95" aria-hidden="true" tabindex="-1"></a>                )</span>
+<span id="cb29-96"><a href="#cb29-96" aria-hidden="true" tabindex="-1"></a>                annotated_frame <span class="op">=</span> cv2.cvtColor(np.array(annotated_img), cv2.COLOR_RGB2BGR)</span>
+<span id="cb29-97"><a href="#cb29-97" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb29-98"><a href="#cb29-98" aria-hidden="true" tabindex="-1"></a>            <span class="co"># If no detections, use the original frame</span></span>
+<span id="cb29-99"><a href="#cb29-99" aria-hidden="true" tabindex="-1"></a>            annotated_frame <span class="op">=</span> frame</span>
+<span id="cb29-100"><a href="#cb29-100" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-101"><a href="#cb29-101" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Calculate and display FPS</span></span>
+<span id="cb29-102"><a href="#cb29-102" aria-hidden="true" tabindex="-1"></a>        end_time <span class="op">=</span> time.perf_counter()</span>
+<span id="cb29-103"><a href="#cb29-103" aria-hidden="true" tabindex="-1"></a>        processing_time <span class="op">=</span> end_time <span class="op">-</span> start_time</span>
+<span id="cb29-104"><a href="#cb29-104" aria-hidden="true" tabindex="-1"></a>        fps <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> processing_time</span>
+<span id="cb29-105"><a href="#cb29-105" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-106"><a href="#cb29-106" aria-hidden="true" tabindex="-1"></a>        fps_text <span class="op">=</span> <span class="ss">f"FPS: </span><span class="sc">{</span>fps<span class="sc">:.2f}</span><span class="ss">"</span></span>
+<span id="cb29-107"><a href="#cb29-107" aria-hidden="true" tabindex="-1"></a>        cv2.putText(annotated_frame, fps_text, (<span class="dv">10</span>, <span class="dv">30</span>), cv2.FONT_HERSHEY_SIMPLEX, <span class="dv">1</span>, (<span class="dv">0</span>, <span class="dv">255</span>, <span class="dv">0</span>), <span class="dv">2</span>)</span>
+<span id="cb29-108"><a href="#cb29-108" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb29-109"><a href="#cb29-109" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Display the annotated frame</span></span>
+<span id="cb29-110"><a href="#cb29-110" aria-hidden="true" tabindex="-1"></a>        cv2.imshow(window_title, annotated_frame)</span>
+<span id="cb29-111"><a href="#cb29-111" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb29-112"><a href="#cb29-112" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check for 'q' key press to exit the loop</span></span>
+<span id="cb29-113"><a href="#cb29-113" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cv2.waitKey(<span class="dv">1</span>) <span class="op">&amp;</span> <span class="bn">0xFF</span> <span class="op">==</span> <span class="bu">ord</span>(<span class="st">'q'</span>):</span>
+<span id="cb29-114"><a href="#cb29-114" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb29-115"><a href="#cb29-115" aria-hidden="true" tabindex="-1"></a><span class="cf">finally</span>:</span>
+<span id="cb29-116"><a href="#cb29-116" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Clean up resources</span></span>
+<span id="cb29-117"><a href="#cb29-117" aria-hidden="true" tabindex="-1"></a>    video_capture.release()</span>
+<span id="cb29-118"><a href="#cb29-118" aria-hidden="true" tabindex="-1"></a>    cv2.destroyAllWindows()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">CSI</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">USB</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<pre class="text"><code>[ WARN:0@9.753] global cap_gstreamer.cpp:1777 open OpenCV | GStreamer warning: Cannot query video position: status=0, value=-1, duration=-1
+Gtk-Message: 16:34:59.286: Failed to load module "canberra-gtk-module"
+[0;93m2024-09-05 16:34:59.358765333 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-05 23:34:59 WARNING] Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.[m
+
+
+GST_ARGUS: Creating output stream
+CONSUMER: Waiting until producer is connected...
+GST_ARGUS: Available Sensor modes :
+GST_ARGUS: 3280 x 2464 FR = 21.000000 fps Duration = 47619048 ; Analog Gain range min 1.000000, max 10.625000; Exposure Range min 13000, max 683709000;
+
+GST_ARGUS: 3280 x 1848 FR = 28.000001 fps Duration = 35714284 ; Analog Gain range min 1.000000, max 10.625000; Exposure Range min 13000, max 683709000;
+
+GST_ARGUS: 1920 x 1080 FR = 29.999999 fps Duration = 33333334 ; Analog Gain range min 1.000000, max 10.625000; Exposure Range min 13000, max 683709000;
+
+GST_ARGUS: 1640 x 1232 FR = 29.999999 fps Duration = 33333334 ; Analog Gain range min 1.000000, max 10.625000; Exposure Range min 13000, max 683709000;
+
+GST_ARGUS: 1280 x 720 FR = 59.999999 fps Duration = 16666667 ; Analog Gain range min 1.000000, max 10.625000; Exposure Range min 13000, max 683709000;
+
+GST_ARGUS: Running with following settings:
+   Camera index = 0 
+   Camera mode  = 4 
+   Output Stream W = 1280 H = 720 
+   seconds to Run    = 0 
+   Frame Rate = 59.999999 
+GST_ARGUS: Setup Complete, Starting captures for 0 seconds
+GST_ARGUS: Starting repeat capture requests.
+CONSUMER: Producer has connected; continuing.</code></pre>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<pre class="text"><code>Gtk-Message: 14:40:32.594: Failed to load module "canberra-gtk-module"
+2024-09-05 14:40:33.129041923 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-05 21:40:33 WARNING] Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.</code></pre>
+</div>
+</div>
+</div>
+<p>A new window should pop up displaying the camera feed.</p>
+</section>
+</section>
+<section id="comparing-performance" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-performance">Comparing Performance</h3>
+<p>As mentioned earlier, a CSI Camera is preferable due to the improved framerate and latency. We can see in the following screenshots just how significant the performance gap can be.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">CSI (≈24fps)</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">USB (≈11fps)</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<p><img src="./images/csi-imx-219-sample.png" class="img-fluid"></p>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<p><img src="./images/logitech-webcam-sample.png" class="img-fluid"></p>
+</div>
+</div>
+</div>
+<p>The USB camera also introduces a slight but noticeable delay in the camera input.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Congratulations on reaching the end of this tutorial. You’ve successfully learned to deploy a YOLOX object detection model on an NVIDIA Jetson Orin Nano for real-time object tracking from a camera feed. This tutorial covered several aspects:</p>
+<ol type="1">
+<li>Setting up a Python environment on the Jetson Orin Nano with the necessary dependencies</li>
+<li>Loading and preparing a pre-trained YOLOX model for inference</li>
+<li>Configuring ONNX Runtime with the TensorRT execution provider for optimized inference</li>
+<li>Implementing frame capture and processing</li>
+<li>Integrating the ByteTrack algorithm for object tracking</li>
+<li>Creating a real-time video processing pipeline that detects, tracks, and annotates objects</li>
+</ol>
+<p>This project provides a foundation for numerous real-world applications.</p>
+<p>Some potential next steps to consider:</p>
+<ol type="1">
+<li>Experiment with different model architectures or custom-trained models for other use cases</li>
+<li>Implement additional features like object counting or trajectory analysis</li>
+<li>Explore ways to stream the processed video over a network for remote monitoring</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled" title="Questions:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Questions:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Feel free to post questions or problems related to this tutorial in the comments below. I try to make time to address them on Thursdays and Fridays.</li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
