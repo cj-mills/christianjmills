@@ -8,7 +8,7 @@
 
 <meta name="author" content="Christian Mills">
 <meta name="dcterms.date" content="2021-12-09">
-<meta name="description" content="My notes on Herbert Wolverson’s talk on procedural map generation techniques from the 2020 virtual Roguelike Celebration.">
+<meta name="description" content="In this talk, Herbert Wolverson explores various procedural map generation algorithms, demonstrating their implementation and applications in game development, particularly roguelikes.">
 
 <title>Christian Mills - Notes on Procedural Map Generation Techniques</title>
 <style>
@@ -73,43 +73,14 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../../styles.css">
 <meta property="og:title" content="Christian Mills - Notes on Procedural Map Generation Techniques">
-<meta property="og:description" content="My notes on Herbert Wolverson’s talk on procedural map generation techniques from the 2020 virtual Roguelike Celebration.">
+<meta property="og:description" content="In this talk, Herbert Wolverson explores various procedural map generation algorithms, demonstrating their implementation and applications in game development, particularly roguelikes.">
 <meta property="og:image" content="https://christianjmills.com/posts/procedural-map-generation-techniques-notes/images/logo.png">
 <meta property="og:site_name" content="Christian Mills">
 <meta name="twitter:title" content="Christian Mills - Notes on Procedural Map Generation Techniques">
-<meta name="twitter:description" content="My notes on Herbert Wolverson’s talk on procedural map generation techniques from the 2020 virtual Roguelike Celebration.">
+<meta name="twitter:description" content="In this talk, Herbert Wolverson explores various procedural map generation algorithms, demonstrating their implementation and applications in game development, particularly roguelikes.">
 <meta name="twitter:image" content="https://christianjmills.com/posts/procedural-map-generation-techniques-notes/images/logo.png">
 <meta name="twitter:creator" content="@cdotjdotmills">
 <meta name="twitter:site" content="@cdotjdotmills">
@@ -186,25 +157,25 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#influential-games" id="toc-influential-games" class="nav-link" data-scroll-target="#influential-games">Influential Games</a>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#examples-of-procedural-generation-in-games" id="toc-examples-of-procedural-generation-in-games" class="nav-link" data-scroll-target="#examples-of-procedural-generation-in-games">Examples of Procedural Generation in Games</a></li>
+  <li><a href="#map-generation-algorithms" id="toc-map-generation-algorithms" class="nav-link" data-scroll-target="#map-generation-algorithms">Map Generation Algorithms</a>
   <ul>
-  <li><a href="#rogue-1980" id="toc-rogue-1980" class="nav-link" data-scroll-target="#rogue-1980">Rogue (1980)</a></li>
-  <li><a href="#dwarf-fortress-2006---present" id="toc-dwarf-fortress-2006---present" class="nav-link" data-scroll-target="#dwarf-fortress-2006---present">Dwarf Fortress (2006 - Present)</a></li>
-  </ul></li>
-  <li><a href="#simple-room-placement" id="toc-simple-room-placement" class="nav-link" data-scroll-target="#simple-room-placement">Simple Room-Placement</a></li>
-  <li><a href="#binary-space-partition-rooms" id="toc-binary-space-partition-rooms" class="nav-link" data-scroll-target="#binary-space-partition-rooms">Binary Space Partition Rooms</a></li>
+  <li><a href="#simple-room-placement" id="toc-simple-room-placement" class="nav-link" data-scroll-target="#simple-room-placement">Simple Room Placement</a></li>
+  <li><a href="#binary-space-partition-bsp-rooms" id="toc-binary-space-partition-bsp-rooms" class="nav-link" data-scroll-target="#binary-space-partition-bsp-rooms">Binary Space Partition (BSP) Rooms</a></li>
   <li><a href="#cellular-automata" id="toc-cellular-automata" class="nav-link" data-scroll-target="#cellular-automata">Cellular Automata</a></li>
   <li><a href="#drunkards-walk" id="toc-drunkards-walk" class="nav-link" data-scroll-target="#drunkards-walk">Drunkard’s Walk</a></li>
-  <li><a href="#diffusion-limited-aggregation" id="toc-diffusion-limited-aggregation" class="nav-link" data-scroll-target="#diffusion-limited-aggregation">Diffusion Limited Aggregation</a></li>
-  <li><a href="#dla-with-a-central-attractor" id="toc-dla-with-a-central-attractor" class="nav-link" data-scroll-target="#dla-with-a-central-attractor">DLA with a Central Attractor</a></li>
+  <li><a href="#diffusion-limited-aggregation-dla" id="toc-diffusion-limited-aggregation-dla" class="nav-link" data-scroll-target="#diffusion-limited-aggregation-dla">Diffusion-Limited Aggregation (DLA)</a></li>
   <li><a href="#voronoi-diagrams" id="toc-voronoi-diagrams" class="nav-link" data-scroll-target="#voronoi-diagrams">Voronoi Diagrams</a></li>
   <li><a href="#perlin-and-simplex-noise" id="toc-perlin-and-simplex-noise" class="nav-link" data-scroll-target="#perlin-and-simplex-noise">Perlin and Simplex Noise</a></li>
-  <li><a href="#you-can-use-more-than-one-technique" id="toc-you-can-use-more-than-one-technique" class="nav-link" data-scroll-target="#you-can-use-more-than-one-technique">You can use more than one technique</a></li>
+  </ul></li>
+  <li><a href="#combining-techniques" id="toc-combining-techniques" class="nav-link" data-scroll-target="#combining-techniques">Combining Techniques</a>
+  <ul>
+  <li><a href="#prefabs" id="toc-prefabs" class="nav-link" data-scroll-target="#prefabs">Prefabs</a></li>
+  </ul></li>
   <li><a href="#dijkstra-maps" id="toc-dijkstra-maps" class="nav-link" data-scroll-target="#dijkstra-maps">Dijkstra Maps</a></li>
-  <li><a href="#removing-unreachable-areas" id="toc-removing-unreachable-areas" class="nav-link" data-scroll-target="#removing-unreachable-areas">Removing Unreachable Areas</a></li>
-  <li><a href="#the-hot-path" id="toc-the-hot-path" class="nav-link" data-scroll-target="#the-hot-path">The Hot Path</a></li>
-  <li><a href="#telling-a-story" id="toc-telling-a-story" class="nav-link" data-scroll-target="#telling-a-story">Telling a Story</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#additional-resources" id="toc-additional-resources" class="nav-link" data-scroll-target="#additional-resources">Additional Resources</a></li>
   </ul>
 </nav>
     </div>
@@ -213,7 +184,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Notes on Procedural Map Generation Techniques</h1>
+<h1 class="title">Notes on <em>Procedural Map Generation Techniques</em></h1>
   <div class="quarto-categories">
     <div class="quarto-category">game-dev</div>
     <div class="quarto-category">procedural-generation</div>
@@ -223,7 +194,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    My notes on Herbert Wolverson’s talk on procedural map generation techniques from the 2020 virtual Roguelike Celebration.
+    In this talk, Herbert Wolverson explores various procedural map generation algorithms, demonstrating their implementation and applications in game development, particularly roguelikes.
   </div>
 </div>
 
@@ -253,294 +224,304 @@ window.Quarto = {
 
 
 <ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#influential-games">Influential Games</a></li>
-<li><a href="#simple-room-placement">Simple Room-Placement</a></li>
-<li><a href="#binary-space-partition-rooms">Binary Space Partition Rooms</a></li>
-<li><a href="#cellular-automata">Cellular Automata</a></li>
-<li><a href="#drunkards-walk">Drunkard’s Walk</a></li>
-<li><a href="#diffusion-limited-aggregation">Diffusion Limited Aggregation</a></li>
-<li><a href="#dla-with-a-central-attractor">DLA with a Central Attractor</a></li>
-<li><a href="#voronoi-diagrams">Voronoi Diagrams</a></li>
-<li><a href="#perlin-and-simplex-noise">Perlin and Simplex Noise</a></li>
-<li><a href="#you-can-use-more-than-one-technique">You can use more than one technique</a></li>
-<li><a href="#removing-unreachable-areas">Removing Unreachable Areas</a></li>
-<li><a href="#the-hot-path">The Hot Path</a></li>
-<li><a href="#telling-a-story">Telling a Story</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#examples-of-procedural-generation-in-games">Examples of Procedural Generation in Games</a></li>
+<li><a href="#map-generation-algorithms">Map Generation Algorithms</a><br>
+</li>
+<li><a href="#combining-techniques">Combining Techniques</a><br>
+</li>
+<li><a href="#dijkstra-maps">Dijkstra Maps</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#additional-resources">Additional Resources</a></li>
 </ul>
-<section id="overview" class="level2">
-<h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>My notes on Herbert Wolverson’s <a href="https://www.youtube.com/watch?v=TlLIOgWYVpI">talk</a> on procedural map generation techniques from the 2020 virtual Roguelike Celebration.</p>
-</section>
-<section id="influential-games" class="level2">
-<h2 class="anchored" data-anchor-id="influential-games">Influential Games</h2>
-<section id="rogue-1980" class="level3">
-<h3 class="anchored" data-anchor-id="rogue-1980">Rogue (1980)</h3>
+<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Resources">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Presentation Resources
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <ul>
-<li>One of the first uses of procedural generation</li>
-<li>Generates up to 9 rooms and connects them randomly</li>
-<li>Used procedural generation because they needed to keep the game small</li>
-<li>Different map every time the game is started</li>
-<li>Effectively infinite replay</li>
+<li><strong>Video:</strong> <a href="https://www.youtube.com/watch?v=TlLIOgWYVpI&amp;list=WL&amp;index=112">Herbert Wolverson - Procedural Map Generation Techniques</a></li>
+<li><strong>Source Code for Talk:</strong> <a href="https://github.com/thebracket/roguelike-celebration-2020">GitHub Repository</a></li>
+<li><strong>Online Book:</strong> <a href="https://bfnightly.bracketproductions.com/chapter23-prefix.html">Roguelike Tutorial - In Rust</a></li>
 </ul>
-</section>
-<section id="dwarf-fortress-2006---present" class="level3">
-<h3 class="anchored" data-anchor-id="dwarf-fortress-2006---present">Dwarf Fortress (2006 - Present)</h3>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <ul>
-<li>Probably crammed the most procedural generation into one game</li>
-<li>Procedurally Generates:
+<li><strong>Procedural Map Generation:</strong> Using algorithms to create maps for games, and then using additional algorithms to refine and ensure usability. (Source: Speaker’s definition)</li>
+<li>Benefits of Procedural Generation:
 <ul>
-<li>Massive overworld with sweeping mountain ranges, forests, volcanoes, demon-infested fortresses</li>
-<li>Civilizations that either like or hate each other
-<ul>
-<li>Can drill down to a single person and their procedurally generated backstory</li>
-</ul></li>
-<li>Mid-scale
-<ul>
-<li>Can zoom into any particular block on the map to find it is beautifully rendered and still matches the overall shape of the overworld</li>
-<li>Trees gain and lose foliage depending on their type and biome
-<ul>
-<li>Their type spawns the appropriate biome</li>
-</ul></li>
-</ul></li>
+<li><strong>Infinite Replayability:</strong> Creates unique maps each playthrough, preventing memorization and encouraging players to learn game systems. (citing Rogue as an example)</li>
+<li><strong>Dynamic Gameplay:</strong> Prevents static level design, enhancing replayability.</li>
 </ul></li>
 </ul>
-<p><strong>Takeaway:</strong> The randomness does not define the above games. The randomness is fed into an algorithm the generates something that approximates what you want to get, but ensures that it is different every time</p>
 </section>
+<section id="examples-of-procedural-generation-in-games" class="level2">
+<h2 class="anchored" data-anchor-id="examples-of-procedural-generation-in-games">Examples of Procedural Generation in Games</h2>
+<ul>
+<li><strong>Rogue (1980):</strong>
+<ul>
+<li>One of the first examples of procedural generation.</li>
+<li>Used simple room placement and random corridors to keep game size small.</li>
+<li>Resulted in a unique map for each new game.</li>
+</ul></li>
+<li><strong>Dwarf Fortress:</strong>
+<ul>
+<li>Extensive use of procedural generation for various aspects of the game.</li>
+<li>Examples:
+<ul>
+<li>Overworld generation: Mountains, forests, volcanoes, etc.</li>
+<li>Civilizations: History, relationships, deities, etc.</li>
+<li>Individual characters: Beliefs, personalities, histories, etc.</li>
+</ul></li>
+</ul></li>
+<li>Key Takeaway:
+<ul>
+<li>Randomness in these games is not purely random.</li>
+<li>Algorithms guide the randomness to create desired outcomes while ensuring variation.</li>
+</ul></li>
+</ul>
 </section>
-<section id="simple-room-placement" class="level2">
-<h2 class="anchored" data-anchor-id="simple-room-placement">Simple Room-Placement</h2>
+<section id="map-generation-algorithms" class="level2">
+<h2 class="anchored" data-anchor-id="map-generation-algorithms">Map Generation Algorithms</h2>
+<section id="simple-room-placement" class="level3">
+<h3 class="anchored" data-anchor-id="simple-room-placement">Simple Room Placement</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/01-RoomCorridors.gif?raw=true" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
+<ul>
+<li>Algorithm:
 <ol type="1">
-<li>Start with a solid map (random rectangle)</li>
-<li>Fill the map with walls.</li>
-<li>Randomly pick a room location.
-<ol type="1">
-<li>If the map location is not already occupied by another room, add the room</li>
+<li>Start with a solid map (all walls).</li>
+<li>Pick a random rectangle for a room.</li>
+<li>If the rectangle doesn’t overlap existing rooms, carve it out.</li>
+<li>Repeat steps 2-3 until a desired number of rooms are placed.</li>
+<li>Connect rooms with corridors. (referencing Python roguelike dev tutorial)</li>
 </ol></li>
-<li>Keep picking rooms.</li>
-<li>Join the rooms you kept with corridors.
-<ol type="1">
-<li>Example: Using a simple dog leg algorithm that randomly switches between being either vertical first or horizontal first.</li>
-</ol></li>
-</ol>
+<li><strong>Dogleg Corridors:</strong> A simple corridor generation method that randomly switches between vertical and horizontal segments.</li>
+<li>Limitations: Can result in clustered rooms and inefficient layouts.</li>
+</ul>
 </section>
-<section id="binary-space-partition-rooms" class="level2">
-<h2 class="anchored" data-anchor-id="binary-space-partition-rooms">Binary Space Partition Rooms</h2>
+<section id="binary-space-partition-bsp-rooms" class="level3">
+<h3 class="anchored" data-anchor-id="binary-space-partition-bsp-rooms">Binary Space Partition (BSP) Rooms</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/02-Bsp.gif?raw=true" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <ul>
-<li>Similar results to random room placement, better spaced out.
-<ul>
-<li>Used in Nethack</li>
-</ul></li>
-</ul>
+<li><strong>Binary Space Partition (BSP):</strong> Recursively dividing a space into two parts.</li>
+<li>Algorithm:
 <ol type="1">
-<li>Divide map into two. Randomly decide whether to divide vertically or horizontally.</li>
-<li>Divide area into two.</li>
-<li>Repeat.</li>
-<li>Use divided space for room.</li>
-</ol>
+<li>Divide the map in half (either vertically or horizontally).</li>
+<li>Recursively divide each half until the desired room size is reached.</li>
+<li>Optionally add a gutter (1 tile border) around each room to prevent merging.</li>
+</ol></li>
+<li>Benefits:
 <ul>
-<li>Add a gutter of one tile around to avoid rooms joining together (unless desired)</li>
+<li>Better room spacing compared to simple room placement.</li>
+<li>Used in games like NetHack.</li>
+</ul></li>
+<li>Limitations: Can lead to predictable, rectangular layouts.</li>
 </ul>
 </section>
-<section id="cellular-automata" class="level2">
-<h2 class="anchored" data-anchor-id="cellular-automata">Cellular Automata</h2>
+<section id="cellular-automata" class="level3">
+<h3 class="anchored" data-anchor-id="cellular-automata">Cellular Automata</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/03-cellular.gif?raw=true" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <ul>
-<li>Evolve order from chaos.</li>
-<li>Popularized in Conway’s Game of Life.</li>
-</ul>
+<li>Based on the principle of <strong>Conway’s Game of Life</strong>, where simple rules govern the evolution of a grid-based system.</li>
+<li>Algorithm:
 <ol type="1">
-<li>Make a random map.</li>
-<li>Make a copy of it.</li>
-<li>Apply cell life rules to each tile.
-<ol type="1">
-<li>Iterate every tile that isn’t on the edge and count the number of neighbors, including diagonals.
-<ol type="1">
-<li>If there are no neighbors, then it becomes a wall</li>
-<li>If there is one to four neighbors, it becomes empty</li>
-<li>If there are five or more neighbors, it becomes a wall</li>
-<li>Tweak rules to suit specific game</li>
-</ol></li>
-</ol></li>
-<li>Repeat.</li>
-</ol>
+<li>Initialize the map randomly with walls and floors (approximately 50/50).</li>
+<li>Iterate through each tile (excluding edges):
 <ul>
-<li>Simple</li>
-<li>Fast</li>
-<li>Deterministic (same random seed generates the same results)</li>
+<li>Count the number of neighboring walls (including diagonals).</li>
+<li>Apply rules based on neighbor count:
+<ul>
+<li>0 neighbors: Become a wall.</li>
+<li>1-4 neighbors: Become a floor.</li>
+<li>5+ neighbors: Become a wall. (suggesting rule customization)</li>
+</ul></li>
+</ul></li>
+<li>Repeat step 2 for a set number of iterations.</li>
+</ol></li>
+<li>Benefits:
+<ul>
+<li>Creates organic, natural-looking maps from random initial states.</li>
+<li>Simple and fast algorithm.</li>
+<li>Deterministic: Same seed produces the same map.</li>
+</ul></li>
+<li>Limitations: Can be difficult to control the specific shapes and features generated.</li>
 </ul>
 </section>
-<section id="drunkards-walk" class="level2">
-<h2 class="anchored" data-anchor-id="drunkards-walk">Drunkard’s Walk</h2>
+<section id="drunkards-walk" class="level3">
+<h3 class="anchored" data-anchor-id="drunkards-walk">Drunkard’s Walk</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/04-drunkard.gif?raw=true" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <ul>
-<li>Find Umber Hulk. Insert beer.</li>
-<li>Place Hulk randomly on solid map. See what he smashes</li>
-<li>Hulks stop when they leave the map, or pass out after n steps.</li>
-</ul>
+<li>Algorithm:
 <ol type="1">
-<li>Start with a solid map</li>
-<li>Random walk through map</li>
-<li>Tiles get removed based on walking path</li>
-<li>Pick maximum number of walking steps</li>
-<li>Repeat.</li>
-</ol>
+<li>Start with a solid map.</li>
+<li>Place a “drunkard” (e.g., a digging entity) at a random point.</li>
+<li>The drunkard moves randomly, carving out a path as it goes.</li>
+<li>Set a maximum distance for the drunkard to travel before it “passes out”.</li>
+<li>Repeat steps 2-4, spawning new drunkards within the open areas, until a desired percentage of the map is open. (using 1/3 as an example)</li>
+</ol></li>
+<li>Benefits:
 <ul>
-<li>Guarantees the map will be contiguous</li>
-<li>Tends to generate maps that look like it was carved out by water.
-<ul>
-<li>Ideal for creating limestone caverns and similar.</li>
+<li>Guarantees a contiguous map (no unreachable areas).</li>
+<li>Creates maps that resemble natural formations like caverns.</li>
 </ul></li>
+<li>Limitations: Can lead to winding, inefficient paths.</li>
 </ul>
 </section>
-<section id="diffusion-limited-aggregation" class="level2">
-<h2 class="anchored" data-anchor-id="diffusion-limited-aggregation">Diffusion Limited Aggregation</h2>
+<section id="diffusion-limited-aggregation-dla" class="level3">
+<h3 class="anchored" data-anchor-id="diffusion-limited-aggregation-dla">Diffusion-Limited Aggregation (DLA)</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/05-dla-inward.gif?raw=true" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <ul>
-<li><a href="http://www.roguebasin.com/index.php/Diffusion-limited_aggregation">Explanation</a></li>
-<li>Start with a targeted seed.</li>
-<li>Randomly - or not - fire particles at it.</li>
-<li>Dig out the last edge the particle hit.</li>
-</ul>
+<li><p><a href="http://www.roguebasin.com/index.php/Diffusion-limited_aggregation">Explanation</a></p></li>
+<li><p>Algorithm:</p>
 <ol type="1">
-<li>Start by digging out a small target seed</li>
-<li>Pick a random point anywhere on the map</li>
-<li>Pick a random direction</li>
-<li>Shoot a particle
-<ol type="1">
-<li>Keep shooting until you hit something</li>
-<li>If you hit a target area, carve out the last solid area you passed through</li>
+<li>Start with a small “seed” of open tiles.</li>
+<li>Pick a random point on the map and shoot a “particle” in a random direction.</li>
+<li>If the particle hits an open tile, carve out the last solid tile it passed through.</li>
+<li>If the particle doesn’t hit an open tile, keep shooting until it does.</li>
 </ol></li>
-</ol>
+<li><p>Benefits:</p>
 <ul>
-<li>Tends to give you a very winding open map</li>
-<li>Guaranteed to be contiguous</li>
-<li>Lots of ways to tweak the algorithm to make things more interesting</li>
-</ul>
-</section>
-<section id="dla-with-a-central-attractor" class="level2">
-<h2 class="anchored" data-anchor-id="dla-with-a-central-attractor">DLA with a Central Attractor</h2>
+<li>Creates winding, branching open areas.</li>
+<li>Guarantees a contiguous map.</li>
+</ul></li>
+<li><p>Variations:</p>
+<ul>
+<li><p><strong>Central Attractor:</strong> Particles are shot towards the center of the map, creating a central open area surrounded by a more complex perimeter. (suggesting dragon hoard placement in the center)</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/06-dla-attractor.gif?raw=true" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
-</div>
-<ul>
-<li>More likely to always hit the target</li>
-<li>Randomly spawn your starting point and then shoot the particle directly at the middle of the map</li>
-<li>Helps ensure your get an open space in the middle
-<ul>
-<li>Ideal, for example, to put a dragon with his hoard</li>
-</ul></li>
-<li>More interesting pattern around the edges of the map</li>
-<li>Can also apply symmetry down the vertical
-<ul>
-<li>Use sparingly</li>
+</div></li>
+<li><p><strong>Symmetry:</strong> Applying symmetry to the algorithm can create more structured and deliberate patterns.</p></li>
 </ul></li>
 </ul>
 </section>
-<section id="voronoi-diagrams" class="level2">
-<h2 class="anchored" data-anchor-id="voronoi-diagrams">Voronoi Diagrams</h2>
+<section id="voronoi-diagrams" class="level3">
+<h3 class="anchored" data-anchor-id="voronoi-diagrams">Voronoi Diagrams</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/1024px-Euclidean_Voronoi_diagram.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <ul>
-<li><p>Randomly (or deliberately) placed seeds.</p></li>
-<li><p>Each tile joins the closest seed.</p></li>
-<li><p>Vary distance heuristic for different effects.</p></li>
-<li><p>Iterate every point on the map and it joins the area belonging to the closest seed.</p>
+<li><p>Algorithm:</p>
+<ol type="1">
+<li>Place “seed” points randomly or deliberately across the map.</li>
+<li>For each tile on the map, determine the closest seed point using a distance algorithm (e.g., Euclidean, Manhattan, Chebyshev).</li>
+<li>Assign the tile to the region belonging to its closest seed point.</li>
+</ol></li>
+<li><p>Benefits:</p>
 <ul>
-<li>Example Algorithms:
-<ul>
-<li>Delauney triangulations</li>
-<li>Brute force</li>
+<li><p>Creates regions that represent areas of influence around each seed point.</p></li>
+<li><p>Can be used for various purposes (e.g., city generation, monster placement). (referencing <a href="https://thebracket.itch.io/apocalypse-taxi">Apocalypse Taxi</a>)</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div></li>
 </ul></li>
-</ul></li>
-<li><p>Can customize the result using a different distance algorithm to determine which group every tile joins</p>
+<li><p>Distance Algorithms:</p>
 <ul>
-<li>Pythagorean distance</li>
-<li>Manhattan distance</li>
+<li><strong>Euclidean (Pythagoras):</strong> Standard straight-line distance, resulting in smooth edges.</li>
+<li><strong>Manhattan:</strong> Distance measured as the sum of horizontal and vertical steps, creating sharp, grid-like edges.</li>
+<li><strong>Chebyshev:</strong> Distance measured as the maximum of the horizontal and vertical distances, producing a mix between Euclidean and Manhattan.</li>
 </ul></li>
-<li><p>Find the edges, place walls there and wind up with an alien cell structure</p></li>
-<li><p>Can be used to determine spawning placement/behavior based on cell location</p></li>
-<li><p>Can be used for effective city generation</p>
+<li><p>Uses:</p>
 <ul>
-<li>Apocalypse Taxi
-<ul>
-<li><img src="https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg" class="img-fluid quarto-figure quarto-figure-center"></li>
-<li>Uses the edges of the generated cells to determine where the roads went</li>
-<li>Randomly populated the content of each cell with something like “heavy industrial city”, “light industrial city”, etc.</li>
+<li>Alien cell structures (walls along edges).</li>
+<li>Monster placement based on relationships (e.g., keeping allies together, separating enemies).</li>
+<li>City generation (roads along edges, different regions for different city zones).</li>
 </ul></li>
-</ul>
-<p><a href="https://thebracket.itch.io/apocalypse-taxi">Apocalypse Taxi</a></p></li>
-<li><p>Can be combine with other techniques</p></li>
 </ul>
 </section>
-<section id="perlin-and-simplex-noise" class="level2">
-<h2 class="anchored" data-anchor-id="perlin-and-simplex-noise">Perlin and Simplex Noise</h2>
+<section id="perlin-and-simplex-noise" class="level3">
+<h3 class="anchored" data-anchor-id="perlin-and-simplex-noise">Perlin and Simplex Noise</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/11-noise-overworld.gif?raw=true" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
 <ul>
-<li>Basically a bunch of gradients combined together with a few variables</li>
-<li>Can generate it in either two or three dimensions</li>
-<li>X/Y Value: gives a number in the range <span class="math inline">\([-1,1]\)</span></li>
-<li>Smoothly moving either up or down</li>
-<li>Continuous</li>
-<li>Octaves: number of gradients being mixed in.</li>
-<li>Gain: how long the various gradients last</li>
-<li>Lacunarity: adds in randomness</li>
-<li>Frequency: how frequently each of the various octaves peaks</li>
-<li>Commonly used to make an overworld/terrain map</li>
-<li>Problem: The gradients are kind of dull
+<li><strong>Perlin Noise and Simplex Noise:</strong> Algorithms that generate continuous, smoothly varying values across a space.</li>
+<li>Properties:
 <ul>
-<li>Can be addressed by adding a second layer of noise that is more “bumpy”
+<li>Output values typically range from -1 to 1.</li>
+<li>Adjacent values are smoothly related.</li>
+<li>Continuous: Zooming in on a section of the noise produces a similar pattern at a finer scale.</li>
+</ul></li>
+<li>Variables:
 <ul>
-<li>Interpolate between smooth and bumpy gradients as you zoom in and out</li>
+<li><strong>Octaves:</strong> Number of different noise functions blended together, affecting detail.</li>
+<li><strong>Gain:</strong> How much each octave contributes to the final result, affecting amplitude.</li>
+<li><strong>Lacunarity:</strong> Adjusts the frequency of each octave, introducing randomness and detail.</li>
+<li><strong>Frequency:</strong> How quickly the noise values change across space, affecting the scale of features.</li>
 </ul></li>
+<li>Uses:
+<ul>
+<li>Overworld generation: Creating terrain heightmaps.</li>
+<li>Cloud generation.</li>
+<li>Particle effects.</li>
+<li>Wood grain textures.</li>
 </ul></li>
-<li>Easy to implement</li>
-<li>Can also be used to generate realistic looking clouds, particles, wood grain</li>
+<li>Recommendations: Experiment with different Perlin/Simplex noise tools and variable values to achieve desired results.</li>
 </ul>
 </section>
-<section id="you-can-use-more-than-one-technique" class="level2">
-<h2 class="anchored" data-anchor-id="you-can-use-more-than-one-technique">You can use more than one technique</h2>
+</section>
+<section id="combining-techniques" class="level2">
+<h2 class="anchored" data-anchor-id="combining-techniques">Combining Techniques</h2>
 <ul>
-<li>Can help generate maps that tell a story</li>
-<li>Example: Use BSP to generate a more structured part of the map leads into a more chaotic section generated using cellular automata</li>
-<li>Example: Use DLA for erosion
+<li><strong>Key Concept:</strong> Rarely use just one algorithm for map generation.</li>
+<li>Examples:
 <ul>
-<li>Take map and then use DLA to fire particles at it to blast parts of the map away</li>
-<li>Map becomes more organic-looking while keeping its basic structure</li>
+<li>Combining BSP (for a fortress) with Cellular Automata (for an underworld) to create a multi-themed map.</li>
+<li>Adding prefabs (e.g., fortifications) to enhance the combined map and tell a story.</li>
+<li>Using DLA to carve out sections of a BSP or Cellular Automata map, creating a more organic and weathered look.</li>
 </ul></li>
-<li>Example: Mix procedurally generated content with human-made prefabs</li>
 </ul>
+<section id="prefabs" class="level3">
+<h3 class="anchored" data-anchor-id="prefabs">Prefabs</h3>
+<ul>
+<li><strong>Prefabs:</strong> Pre-designed map sections that can be inserted into a procedurally generated map.</li>
+<li>Benefits:
+<ul>
+<li>Introduce deliberate design elements into a random map.</li>
+<li>Add specific features, challenges, or story elements. (using a trap room as an example)</li>
+</ul></li>
+<li>Placement:
+<ul>
+<li>In room-based maps: Find a room large enough to accommodate the prefab.</li>
+<li>In non-room-based maps: Randomly sample locations and check for fit.</li>
+</ul></li>
+<li>Considerations: Use prefabs sparingly to maintain variety and avoid predictability.</li>
+</ul>
+</section>
 </section>
 <section id="dijkstra-maps" class="level2">
 <h2 class="anchored" data-anchor-id="dijkstra-maps">Dijkstra Maps</h2>
@@ -549,65 +530,57 @@ window.Quarto = {
 <p><img src="./images/Dijk_basic.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
-<ol type="1">
+<ul>
 <li><a href="http://www.roguebasin.com/index.php/The_Incredible_Power_of_Dijkstra_Maps">Explanation</a></li>
-<li>Start with 1 or more starting points.</li>
-<li>Rest of the map ” sentinel” value - unreachable</li>
-<li>Set points adjacent to start to 1.</li>
-<li>Points adjacent to those 2.
+<li><strong>Dijkstra Maps:</strong> Represent the distance from one or more starting points to all other reachable points on a map. (referencing Rogue Basin article “The Incredible Power of Dijkstra Maps”)</li>
+<li>Algorithm:
 <ol type="1">
-<li>Keep going until whole map walked</li>
+<li>Initialize the map with a sentinel value (representing unreachable areas).</li>
+<li>Set the starting point(s) to a value of 0.</li>
+<li>Iterate through the map, assigning increasing distance values to reachable tiles based on their distance from the starting point(s).</li>
 </ol></li>
-</ol>
-</section>
-<section id="removing-unreachable-areas" class="level2">
-<h2 class="anchored" data-anchor-id="removing-unreachable-areas">Removing Unreachable Areas</h2>
+<li>Uses:
 <ul>
-<li>Cellular automata can give you chunks of the map that you can’t get to.</li>
-</ul>
+<li>Identifying and removing unreachable areas in maps generated with algorithms like Cellular Automata.</li>
+<li>Placing starting and ending points:
+<ul>
+<li>Starting Point: Find an open tile near a desired location that is reachable from the main map area.</li>
+<li>Ending Point:
+<ul>
+<li>For simple progression, place near the opposite edge of the map from the starting point.</li>
+<li>To hide secrets, place in the least accessible area.</li>
+</ul></li>
+</ul></li>
+<li><strong>Hot Path Analysis:</strong>
 <ol type="1">
-<li>Find Central Start</li>
-<li>Run Dijkstra</li>
-<li>Cull tiles without a valid distance.
-<ol type="1">
-<li>Or hide it for underground levels</li>
+<li>Generate a path between the starting and ending points (e.g., using A*).</li>
+<li>Create a Dijkstra map using the points on the path as starting points.</li>
+<li>Tiles with low distance values on the Dijkstra map represent areas close to the optimal path. (using a threshold of 10 as an example)</li>
 </ol></li>
-</ol>
-<p><strong>Finding a Starting Point</strong></p>
+</ul></li>
+<li>Applications of Hot Path Analysis:
 <ul>
-<li>Find a desired starting point</li>
-<li>Find closest open tile for actual start.</li>
-</ul>
-<p><strong>Finding an Endpoint</strong></p>
-<ul>
-<li>Use distance to target</li>
-<li>Use Dijkstra to find farthest point</li>
+<li>Removing irrelevant map sections in linear progression games.</li>
+<li>Hiding bonus content or challenges in areas off the hot path.</li>
+<li>Ordering story elements or puzzle placement based on likely player progression. (using examples of grandfather’s advice and a locked door puzzle)</li>
+</ul></li>
 </ul>
 </section>
-<section id="the-hot-path" class="level2">
-<h2 class="anchored" data-anchor-id="the-hot-path">The Hot Path</h2>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
 <ul>
-<li>Path-find from start to end</li>
-<li>Dijkstra Map with the path as starting points.</li>
-<li><span class="math inline">\(&lt;n\)</span> distance is “hot path”</li>
-<li>Can use A* algorithm</li>
-<li>Can be used to minimize branching in game map by culling irrelevant parts of the map outside the hot path.</li>
-<li>Or “bonus” content to reward exploration of the hot path.</li>
+<li>Procedural map generation involves guiding randomness with algorithms to create diverse and engaging maps.</li>
+<li>Combining multiple techniques and using tools like Dijkstra maps can lead to more complex and interesting results.</li>
+<li>The choice of algorithms and their parameters should be driven by the desired gameplay experience and the story you want to tell through your map.</li>
 </ul>
 </section>
-<section id="telling-a-story" class="level2">
-<h2 class="anchored" data-anchor-id="telling-a-story">Telling a Story</h2>
+<section id="additional-resources" class="level2">
+<h2 class="anchored" data-anchor-id="additional-resources">Additional Resources</h2>
 <ul>
-<li>Rooms are ordered.</li>
-<li>Story progression is in order, but RNG is retained</li>
-<li>Maybe room 5 has a locked door, meaning the key must be in rooms 1-4.</li>
-</ul>
-<p>Takeaway: Guide the randomness and use algorithms to check the randomness.</p>
-<p><strong>References:</strong></p>
-<ul>
-<li><p><a href="https://www.youtube.com/watch?v=TlLIOgWYVpI&amp;list=WL&amp;index=112">Herbert Wolverson - Procedural Map Generation Techniques</a></p></li>
-<li><p>Source Code for Talk: <a href="https://github.com/thebracket/roguelike-celebration-2020">GitHub Repository</a></p></li>
-<li><p>Online Book: <a href="https://bfnightly.bracketproductions.com/chapter23-prefix.html">Roguelike Tutorial - In Rust</a></p></li>
+<li>Source code for the talk: <a href="https://github.com/thebracket/roguelike-celebration-2020">https://github.com/thebracket/roguelike-celebration-2020</a></li>
+<li>Rust Roguelike Tutorial: <a href="https://bfnightly.bracketproductions.com/rustbook/">https://bfnightly.bracketproductions.com/rustbook/</a></li>
+<li>“The Incredible Power of Dijkstra Maps” (Rogue Basin): <a href="http://www.roguebasin.com/index.php?title=The_Incredible_Power_of_Dijkstra_Maps">http://www.roguebasin.com/index.php?title=The_Incredible_Power_of_Dijkstra_Maps</a></li>
+<li>“Hands on Rust, Effective Learning Through 2D Game Development and Play” (PragProg): <a href="https://pragprog.com/">https://pragprog.com/</a></li>
 </ul>
 <hr>
 <div class="callout callout-style-default callout-tip callout-titled" title="About Me:">

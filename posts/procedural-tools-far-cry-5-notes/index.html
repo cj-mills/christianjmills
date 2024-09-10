@@ -8,9 +8,9 @@
 
 <meta name="author" content="Christian Mills">
 <meta name="dcterms.date" content="2021-12-09">
-<meta name="description" content="My notes from Etienne Carrier’s overview of the procedural tools developed to create Far Cry 5.">
+<meta name="description" content="In this presentation from 2018, Etienne Carrier details the procedural pipeline developed for Far Cry 5 using Houdini and Houdini Engine, focusing on its objectives, tools, user workflow, underlying mechanics, and lessons learned during development.">
 
-<title>Christian Mills - Notes on the Procedural Tools Used to Make Far Cry 5</title>
+<title>Christian Mills - Notes on Procedural World Generation of Ubisoft’s Far Cry 5</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -75,12 +75,12 @@ ul.task-list li input[type="checkbox"] {
 
 
 <link rel="stylesheet" href="../../styles.css">
-<meta property="og:title" content="Christian Mills - Notes on the Procedural Tools Used to Make Far Cry 5">
-<meta property="og:description" content="My notes from Etienne Carrier’s overview of the procedural tools developed to create Far Cry 5.">
+<meta property="og:title" content="Christian Mills - Notes on Procedural World Generation of Ubisoft’s Far Cry 5">
+<meta property="og:description" content="In this presentation from 2018, Etienne Carrier details the procedural pipeline developed for Far Cry 5 using Houdini and Houdini Engine, focusing on its objectives, tools, user workflow, underlying mechanics, and lessons learned during development.">
 <meta property="og:image" content="https://christianjmills.com/posts/procedural-tools-far-cry-5-notes/images/logo.png">
 <meta property="og:site_name" content="Christian Mills">
-<meta name="twitter:title" content="Christian Mills - Notes on the Procedural Tools Used to Make Far Cry 5">
-<meta name="twitter:description" content="My notes from Etienne Carrier’s overview of the procedural tools developed to create Far Cry 5.">
+<meta name="twitter:title" content="Christian Mills - Notes on Procedural World Generation of Ubisoft’s Far Cry 5">
+<meta name="twitter:description" content="In this presentation from 2018, Etienne Carrier details the procedural pipeline developed for Far Cry 5 using Houdini and Houdini Engine, focusing on its objectives, tools, user workflow, underlying mechanics, and lessons learned during development.">
 <meta name="twitter:image" content="https://christianjmills.com/posts/procedural-tools-far-cry-5-notes/images/logo.png">
 <meta name="twitter:creator" content="@cdotjdotmills">
 <meta name="twitter:site" content="@cdotjdotmills">
@@ -157,37 +157,42 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#goal-of-the-pipeline" id="toc-goal-of-the-pipeline" class="nav-link" data-scroll-target="#goal-of-the-pipeline">Goal of the pipeline</a></li>
-  <li><a href="#available-procedural-tools" id="toc-available-procedural-tools" class="nav-link" data-scroll-target="#available-procedural-tools">Available procedural tools</a></li>
-  <li><a href="#user-point-of-view" id="toc-user-point-of-view" class="nav-link" data-scroll-target="#user-point-of-view">User point of view</a></li>
-  <li><a href="#pipeline" id="toc-pipeline" class="nav-link" data-scroll-target="#pipeline">Pipeline</a></li>
-  <li><a href="#cliffs-tool-in-detail" id="toc-cliffs-tool-in-detail" class="nav-link" data-scroll-target="#cliffs-tool-in-detail">Cliffs tool in detail</a>
+  <li><a href="#introduction-and-challenges" id="toc-introduction-and-challenges" class="nav-link active" data-scroll-target="#introduction-and-challenges">Introduction and Challenges</a></li>
+  <li><a href="#objectives-of-the-procedural-pipeline" id="toc-objectives-of-the-procedural-pipeline" class="nav-link" data-scroll-target="#objectives-of-the-procedural-pipeline">Objectives of the Procedural Pipeline</a></li>
+  <li><a href="#procedural-tools-developed" id="toc-procedural-tools-developed" class="nav-link" data-scroll-target="#procedural-tools-developed">Procedural Tools Developed</a></li>
+  <li><a href="#user-workflow-filling-an-empty-map" id="toc-user-workflow-filling-an-empty-map" class="nav-link" data-scroll-target="#user-workflow-filling-an-empty-map">User Workflow: Filling an Empty Map</a></li>
+  <li><a href="#under-the-hood-houdini-engine-and-data-exchange" id="toc-under-the-hood-houdini-engine-and-data-exchange" class="nav-link" data-scroll-target="#under-the-hood-houdini-engine-and-data-exchange">Under the Hood: Houdini Engine and Data Exchange</a></li>
+  <li><a href="#cliff-tool-detailed-breakdown" id="toc-cliff-tool-detailed-breakdown" class="nav-link" data-scroll-target="#cliff-tool-detailed-breakdown">Cliff Tool: Detailed Breakdown</a>
   <ul>
-  <li><a href="#tool-input" id="toc-tool-input" class="nav-link" data-scroll-target="#tool-input">Tool input</a></li>
+  <li><a href="#previous-tech-and-motivation" id="toc-previous-tech-and-motivation" class="nav-link" data-scroll-target="#previous-tech-and-motivation">Previous Tech and Motivation</a></li>
+  <li><a href="#cliff-tool-inputs-and-geometry" id="toc-cliff-tool-inputs-and-geometry" class="nav-link" data-scroll-target="#cliff-tool-inputs-and-geometry">Cliff Tool Inputs and Geometry</a></li>
   <li><a href="#stratification" id="toc-stratification" class="nav-link" data-scroll-target="#stratification">Stratification</a></li>
-  <li><a href="#cliffs-are-shaded-in-game-same-texture-as-terrain-underneath" id="toc-cliffs-are-shaded-in-game-same-texture-as-terrain-underneath" class="nav-link" data-scroll-target="#cliffs-are-shaded-in-game-same-texture-as-terrain-underneath">Cliffs are shaded in-game (same texture as terrain underneath)</a></li>
-  <li><a href="#erosion" id="toc-erosion" class="nav-link" data-scroll-target="#erosion">Erosion</a></li>
-  <li><a href="#vegetation-growing-surfaces" id="toc-vegetation-growing-surfaces" class="nav-link" data-scroll-target="#vegetation-growing-surfaces">Vegetation growing surfaces</a></li>
-  <li><a href="#exported-data" id="toc-exported-data" class="nav-link" data-scroll-target="#exported-data">Exported data</a></li>
+  <li><a href="#geometry-generation-and-export" id="toc-geometry-generation-and-export" class="nav-link" data-scroll-target="#geometry-generation-and-export">Geometry Generation and Export</a></li>
+  <li><a href="#terrain-shading-and-data-transfer" id="toc-terrain-shading-and-data-transfer" class="nav-link" data-scroll-target="#terrain-shading-and-data-transfer">Terrain Shading and Data Transfer</a></li>
+  <li><a href="#vegetation-on-cliff-ledges" id="toc-vegetation-on-cliff-ledges" class="nav-link" data-scroll-target="#vegetation-on-cliff-ledges">Vegetation on Cliff Ledges</a></li>
+  <li><a href="#cliff-tool-exported-data" id="toc-cliff-tool-exported-data" class="nav-link" data-scroll-target="#cliff-tool-exported-data">Cliff Tool Exported Data</a></li>
   </ul></li>
-  <li><a href="#biome-tool-in-detail" id="toc-biome-tool-in-detail" class="nav-link" data-scroll-target="#biome-tool-in-detail">Biome tool in detail</a>
+  <li><a href="#biome-tool-populating-the-world-with-life" id="toc-biome-tool-populating-the-world-with-life" class="nav-link" data-scroll-target="#biome-tool-populating-the-world-with-life">Biome Tool: Populating the World with Life</a>
   <ul>
-  <li><a href="#input" id="toc-input" class="nav-link" data-scroll-target="#input">Input</a></li>
-  <li><a href="#terrain-abiotic-data" id="toc-terrain-abiotic-data" class="nav-link" data-scroll-target="#terrain-abiotic-data">Terrain abiotic data</a></li>
-  <li><a href="#processing-main-biomes" id="toc-processing-main-biomes" class="nav-link" data-scroll-target="#processing-main-biomes">Processing main biomes</a></li>
-  <li><a href="#combine-terrain-data" id="toc-combine-terrain-data" class="nav-link" data-scroll-target="#combine-terrain-data">Combine terrain data</a></li>
-  <li><a href="#sizes" id="toc-sizes" class="nav-link" data-scroll-target="#sizes">Sizes</a></li>
-  <li><a href="#entities-color" id="toc-entities-color" class="nav-link" data-scroll-target="#entities-color">Entities Color</a></li>
-  <li><a href="#rotation" id="toc-rotation" class="nav-link" data-scroll-target="#rotation">Rotation</a></li>
-  <li><a href="#terrain-elements-affected-by-vegetation-in-biomes" id="toc-terrain-elements-affected-by-vegetation-in-biomes" class="nav-link" data-scroll-target="#terrain-elements-affected-by-vegetation-in-biomes">Terrain elements affected by vegetation in biomes</a></li>
-  <li><a href="#exported-data-1" id="toc-exported-data-1" class="nav-link" data-scroll-target="#exported-data-1">Exported data</a></li>
+  <li><a href="#initial-steps" id="toc-initial-steps" class="nav-link" data-scroll-target="#initial-steps">Initial Steps</a></li>
+  <li><a href="#main-biomes-and-sub-biomes" id="toc-main-biomes-and-sub-biomes" class="nav-link" data-scroll-target="#main-biomes-and-sub-biomes">Main Biomes and Sub-Biomes</a></li>
+  <li><a href="#sub-biome-recipes" id="toc-sub-biome-recipes" class="nav-link" data-scroll-target="#sub-biome-recipes">Sub-Biome Recipes</a></li>
+  <li><a href="#viability-and-species-competition" id="toc-viability-and-species-competition" class="nav-link" data-scroll-target="#viability-and-species-competition">Viability and Species Competition</a></li>
+  <li><a href="#combining-terrain-attributes-for-natural-patterns" id="toc-combining-terrain-attributes-for-natural-patterns" class="nav-link" data-scroll-target="#combining-terrain-attributes-for-natural-patterns">Combining Terrain Attributes for Natural Patterns</a></li>
+  <li><a href="#controlling-asset-size" id="toc-controlling-asset-size" class="nav-link" data-scroll-target="#controlling-asset-size">Controlling Asset Size</a></li>
+  <li><a href="#forest-canopy-and-ecological-succession" id="toc-forest-canopy-and-ecological-succession" class="nav-link" data-scroll-target="#forest-canopy-and-ecological-succession">Forest Canopy and Ecological Succession</a></li>
+  <li><a href="#scattering-density" id="toc-scattering-density" class="nav-link" data-scroll-target="#scattering-density">Scattering Density</a></li>
+  <li><a href="#instance-tinting" id="toc-instance-tinting" class="nav-link" data-scroll-target="#instance-tinting">Instance Tinting</a></li>
+  <li><a href="#instance-rotation" id="toc-instance-rotation" class="nav-link" data-scroll-target="#instance-rotation">Instance Rotation</a></li>
+  <li><a href="#terrain-modification-by-scattered-assets" id="toc-terrain-modification-by-scattered-assets" class="nav-link" data-scroll-target="#terrain-modification-by-scattered-assets">Terrain Modification by Scattered Assets</a></li>
+  <li><a href="#terrain-deformation" id="toc-terrain-deformation" class="nav-link" data-scroll-target="#terrain-deformation">Terrain Deformation</a></li>
+  <li><a href="#terrain-textures" id="toc-terrain-textures" class="nav-link" data-scroll-target="#terrain-textures">Terrain Textures</a></li>
+  <li><a href="#terrain-data-output-and-inter-species-dependency" id="toc-terrain-data-output-and-inter-species-dependency" class="nav-link" data-scroll-target="#terrain-data-output-and-inter-species-dependency">Terrain Data Output and Inter-Species Dependency</a></li>
+  <li><a href="#terrain-color-and-humidity-simulation" id="toc-terrain-color-and-humidity-simulation" class="nav-link" data-scroll-target="#terrain-color-and-humidity-simulation">Terrain Color and Humidity Simulation</a></li>
+  <li><a href="#biome-tool-exported-data" id="toc-biome-tool-exported-data" class="nav-link" data-scroll-target="#biome-tool-exported-data">Biome Tool Exported Data</a></li>
   </ul></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a>
-  <ul>
   <li><a href="#lessons-learned" id="toc-lessons-learned" class="nav-link" data-scroll-target="#lessons-learned">Lessons Learned</a></li>
-  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -196,7 +201,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Notes on the Procedural Tools Used to Make Far Cry 5</h1>
+<h1 class="title">Notes on <em>Procedural World Generation of Ubisoft’s Far Cry 5</em></h1>
   <div class="quarto-categories">
     <div class="quarto-category">procedural-generation</div>
     <div class="quarto-category">game-dev</div>
@@ -206,7 +211,7 @@ ul.task-list li input[type="checkbox"] {
 
 <div>
   <div class="description">
-    My notes from Etienne Carrier’s overview of the procedural tools developed to create Far Cry 5.
+    In this presentation from 2018, Etienne Carrier details the procedural pipeline developed for Far Cry 5 using Houdini and Houdini Engine, focusing on its objectives, tools, user workflow, underlying mechanics, and lessons learned during development.
   </div>
 </div>
 
@@ -236,406 +241,474 @@ ul.task-list li input[type="checkbox"] {
 
 
 <ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#goal-of-the-pipeline">Goal of the pipeline</a></li>
-<li><a href="#available-procedural-tools">Available procedural tools</a></li>
-<li><a href="#user-point-of-view">User point of view</a></li>
-<li><a href="#pipeline">Pipeline</a></li>
-<li><a href="#cliffs-tool-in-detail">Cliffs tool in detail</a></li>
-<li><a href="#biome-tool-in-detail">Biome tool in detail</a></li>
+<li><a href="#introduction-and-challenges">Introduction and Challenges</a></li>
+<li><a href="#objectives-of-the-procedural-pipeline">Objectives of the Procedural Pipeline</a></li>
+<li><a href="#procedural-tools-developed">Procedural Tools Developed</a></li>
+<li><a href="#user-workflow-filling-an-empty-map">User Workflow: Filling an Empty Map</a></li>
+<li><a href="#under-the-hood-houdini-engine-and-data-exchange">Under the Hood: Houdini Engine and Data Exchange</a></li>
+<li><a href="#cliff-tool-detailed-breakdown">Cliff Tool: Detailed Breakdown</a><br>
+</li>
+<li><a href="#biome-tool-populating-the-world-with-life">Biome Tool: Populating the World with Life</a><br>
+</li>
+<li><a href="#lessons-learned">Lessons Learned</a></li>
 <li><a href="#conclusion">Conclusion</a></li>
 </ul>
-<section id="overview" class="level2">
-<h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>I recently started learning about tools and techniques used for procedural generation in game development. I came across a <a href="https://www.youtube.com/watch?v=NfizT369g60">presentation from 2018</a> given by Etienne Carrier, a technical artist at Ubisoft. He provides an overview the tools he developed for the production of Far Cry 5. Below are some notes I took while watching.</p>
-</section>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Source Material">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Source Material
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <ul>
-<li>How to maintain quality of features like forests through multiple terrain iterations without manually updating them.</li>
+<li><strong>Video:</strong> <a href="https://www.youtube.com/watch?v=NfizT369g60">Procedural World Generation of Ubisoft’s Far Cry 5</a></li>
+<li><strong>Slides:</strong> <a href="https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2018/presentations/ProceduralWorldGeneration.pdf">Far Cry 5: Procedural World Generation</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction-and-challenges" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-and-challenges">Introduction and Challenges</h2>
+<ul>
+<li><strong>Etienne Carrier</strong>, Technical Artist at Ubisoft Montreal (3 years), presents the procedural pipeline developed for Far Cry 5.</li>
+<li><strong>Challenge:</strong> Terrain undergoing constant changes during the project’s 2.5-year development.
+<ul>
+<li>Manual content placement (e.g., forests) becomes incoherent with each terrain iteration.</li>
+<li>Repainting content manually after each terrain change is tedious and difficult to maintain consistency across a large world with multiple users.</li>
+<li>Locking terrain early is unrealistic as iterations are crucial for game quality.</li>
+</ul></li>
 </ul>
 </section>
-<section id="goal-of-the-pipeline" class="level2">
-<h2 class="anchored" data-anchor-id="goal-of-the-pipeline">Goal of the pipeline</h2>
+<section id="objectives-of-the-procedural-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="objectives-of-the-procedural-pipeline">Objectives of the Procedural Pipeline</h2>
 <ul>
-<li>Macro management tool to fill up the world with natural looking content</li>
-<li>Maintain content consistency with the terrain topology</li>
-<li>Automatable</li>
-<li>Deterministic (same result given the same input)</li>
-<li>User friendly</li>
+<li>Develop a <strong>macro management tool</strong> to:
+<ul>
+<li>Fill the world with natural-looking content.</li>
+<li>Ensure content consistency with terrain topology, adapting to changes (e.g., forest distribution remaining coherent despite terrain adjustments).</li>
+</ul></li>
+<li><strong>Automation:</strong>
+<ul>
+<li>Utilize Houdini, Houdini Engine, and nightly builds on build machines to fully refresh the world daily.</li>
+<li>Build machines process different map sections, ensuring up-to-date world data each morning.</li>
+</ul></li>
+<li><strong>Deterministic Generation:</strong>
+<ul>
+<li>Ensure the generation yields identical results with the same inputs, regardless of the build machine used.</li>
+<li>This is crucial for seamless map junctions and nav mesh generation.</li>
+</ul></li>
+<li><strong>User-Friendliness:</strong>
+<ul>
+<li>Provide in-editor tools for on-demand procedural generation alongside the nightly builds.</li>
+</ul></li>
 </ul>
 </section>
-<section id="available-procedural-tools" class="level2">
-<h2 class="anchored" data-anchor-id="available-procedural-tools">Available procedural tools</h2>
+<section id="procedural-tools-developed" class="level2">
+<h2 class="anchored" data-anchor-id="procedural-tools-developed">Procedural Tools Developed</h2>
 <ul>
-<li>Freshwater tool: generates lakes, rivers, streams, and waterfalls</li>
-<li>Fences and power-lines</li>
-<li>Cliff generation on steep terrain surfaces</li>
-<li>Biome tool: generates vegetation throughout the world</li>
-<li>Fog density map generation (2D map based on topology, forests, freshwater, etc)</li>
-<li>Worldmap terrain</li>
+<li>Expanded beyond the initial mandate of biome distribution to include:
+<ul>
+<li><strong>Freshwater Tools:</strong> Generate lakes, rivers, streams, and waterfalls.</li>
+<li><strong>Fence and Power Line Tools:</strong> Create fences and power lines along splines.</li>
+<li><strong>Cliff Generation:</strong> Generates cliffs on steep terrain.</li>
+<li><strong>Biome Tool:</strong> Spawns vegetation throughout the world.</li>
+<li><strong>Fog Density Map Generation:</strong> Creates a 2D map based on terrain topology and content placement to influence the fog shader.</li>
+<li><strong>Wall Map Terrain Generation:</strong> Generates a low-detail terrain representation for the world map, including miniature trees.</li>
+</ul></li>
 </ul>
 </section>
-<section id="user-point-of-view" class="level2">
-<h2 class="anchored" data-anchor-id="user-point-of-view">User point of view</h2>
+<section id="user-workflow-filling-an-empty-map" class="level2">
+<h2 class="anchored" data-anchor-id="user-workflow-filling-an-empty-map">User Workflow: Filling an Empty Map</h2>
 <ol type="1">
-<li>Terrain Terraforming Pass</li>
-<li>Freshwater: Artist lays down fresh water network using curves and splines</li>
-<li>Cliffs: based on terrain slope</li>
-<li>Vegetation: Artist uses biome painter → color density = forest density?
-<ol type="1">
-<li>Tool naturally distributes grass and other vegetation</li>
-<li>Reacts to water proximity</li>
-<li>Avoids adding vegetation on cliff erosion lines</li>
-<li>Altitude affects forest density</li>
-</ol></li>
-<li>Points of Interest: Artist can manually tweak results and specific locations
-<ol type="1">
-<li>Example: lay down road splines</li>
-<li>Example: clear out spots for bases</li>
-<li>Assets like houes, sheds, tools, etc. still need to be manually placed
-<ol type="1">
-<li>Might require tweaking of local biome</li>
-</ol></li>
-<li>Add fences using splines</li>
-<li>Add power-line networks using splines
-<ol type="1">
-<li>Transformer boxes automatically added where required</li>
-<li>Refresh biome to account for new power-lines</li>
-</ol></li>
-</ol></li>
-<li>Terrain can be adjusted at any time and is non-destructive</li>
+<li><strong>Terraforming:</strong>
+<ul>
+<li>Initial world machine pass followed by artist-driven terraforming using in-editor tools.</li>
+</ul></li>
+<li><strong>Freshwater Network:</strong>
+<ul>
+<li>Artists lay down a network of curves and splines to define rivers and other water bodies.</li>
+<li>Procedural generation creates the water surface, waterside assets, and terrain texturing based on spline parameters (e.g., width).</li>
+</ul></li>
+<li><strong>Cliff Generation:</strong>
+<ul>
+<li>Tool automatically generates cliffs based on terrain slope, with minimal user input.</li>
+<li>Includes features like exclusion masks for finer control.</li>
+<li>Often handled by nightly builds, relieving artists from frequent manual generation.</li>
+</ul></li>
+<li><strong>Vegetation (Biome Painter):</strong>
+<ul>
+<li>Artists paint sub-biomes (e.g., forest) using a painter tool.</li>
+<li>Main biomes automatically distribute vegetation (grass, trees) based on terrain data and sub-biome information.</li>
+<li>Recipes react to water proximity, altitude, and cliff erosion lines, spawning appropriate assets.</li>
+</ul></li>
+<li><strong>Customization:</strong>
+<ul>
+<li>Artists can override the natural distribution by clearing areas with grass sub-biome and adding elements like roads (using splines).</li>
+<li>Road generation clears vegetation and adds roads, requiring some manual asset placement (houses, vehicles).</li>
+<li>Biome painting can be further refined to create features like driveways using terrain textures.</li>
+<li>Forest sub-biome can be repainted to add trees around specific locations.</li>
+</ul></li>
+<li><strong>Non-Destructive Workflow:</strong>
+<ul>
+<li>Terrain can be adjusted at any time, requiring a refresh of affected procedural tools (e.g., cliffs, biomes).</li>
+<li>System maintains coherence and updates content placement automatically.</li>
+</ul></li>
+<li><strong>Fence and Power Line Placement:</strong>
+<ul>
+<li>Fences are generated along splines with fence type specified as an attribute.</li>
+<li>Power lines connect electric poles placed at spline control points.</li>
+<li>System supports multiple power line types and automatically handles snapping and transformer placement.</li>
+<li>Biome tool automatically clears vegetation obstructing power lines.</li>
+</ul></li>
 </ol>
 </section>
-<section id="pipeline" class="level2">
-<h2 class="anchored" data-anchor-id="pipeline">Pipeline</h2>
-<ol type="1">
-<li>Dunia2 (FarCry Game Engine/Editor) Inputs → Houdini</li>
-<li>Houdini Outputs → Dunia2</li>
-<li>Inputs via Python Scripts:
+<section id="under-the-hood-houdini-engine-and-data-exchange" class="level2">
+<h2 class="anchored" data-anchor-id="under-the-hood-houdini-engine-and-data-exchange">Under the Hood: Houdini Engine and Data Exchange</h2>
 <ul>
-<li>World information</li>
-<li>File Paths</li>
-<li>Terrain Sectors</li>
-<li>Splines and Shapes</li>
+<li><strong>Houdini Engine</strong> within Dunia enables seamless data exchange between Houdini and the engine.</li>
+<li><strong>Inputs from Dunia to Houdini (via Python script):</strong>
+<ul>
+<li>World information (name, size).</li>
+<li>File paths for assets and data.</li>
+<li>Terrain sector information (area to generate).</li>
+<li>Splines and shapes with metadata on geometry attributes (e.g., fence type on a fence spline).</li>
 </ul></li>
-<li>Inputs from Disk:
+<li><strong>Inputs from Disk (file paths provided by Dunia):</strong>
 <ul>
-<li>Height maps (.raw)</li>
-<li>Biome painter (.png)</li>
-<li>2D terrain masks (.png)</li>
-<li>Houdini Geometry (.geo or .bgo)</li>
+<li>Height maps.</li>
+<li>Biome painter data.</li>
+<li>SPNG and 2D terrain masks.</li>
+<li>Houdini geometry from previously generated tools.</li>
 </ul></li>
-<li>Outputs saved (data is saved temporarily as buffers on disk):
+<li><strong>Primary Input:</strong> The terrain itself, as generation is linked to specific terrain areas (<strong>sectors</strong>).</li>
+<li><strong>Terrain Subdivision:</strong>
 <ul>
-<li>Entity point cloud
+<li><strong>Sectors</strong> are the smallest unit (64x64 meters), defining the minimum area for procedural generation.</li>
+</ul></li>
+<li><strong>Baking Procedural Data:</strong>
 <ul>
-<li>Exported with object id</li>
-<li>Could be anything that has a position in editor
+<li>Users select a generation area:
 <ul>
-<li>Vegetation assets</li>
-<li>Rocks</li>
-<li>Collectibles</li>
-<li>Decals</li>
-<li>VFX</li>
-<li>Prefabs</li>
+<li>All (everything loaded in the editor).</li>
+<li>Local map section or sectors (under the camera).</li>
+<li>Frustum (sectors visible from the camera).</li>
 </ul></li>
 </ul></li>
-<li>Terrain texture layers</li>
-<li>Terrain height map layers</li>
-<li>2D terrain data</li>
-<li>Geometry</li>
-<li>Terrain Logic zones</li>
-</ul></li>
-<li>Tools Interconnectivity
+<li><strong>Outputs from Houdini to Dunia:</strong>
 <ul>
-<li>Each tool will output necessary masks to affect the next ones</li>
-<li>Cooking order is important if one tool requires input from a previous one
+<li>Entity point cloud (vegetation, rocks, collectibles, decals, VFX, etc.).</li>
+<li>Terrain textures.</li>
+<li>Terrain height maps.</li>
+<li>2D terrain data (RGB or grayscale).</li>
+<li>Procedurally generated geometry.</li>
+<li>Terrain logic zones (IDs for post-processing and fog presets).</li>
+</ul></li>
+<li><strong>Data Transfer:</strong> Outputs are saved as buffers in a specific format for efficient loading by the editor, avoiding large memory transfers.</li>
+<li><strong>Tool Interconnectivity:</strong>
 <ul>
-<li>freshwater → roads → fences &amp; power-lines → cliffs → biomes → fog → world map</li>
+<li>Procedural generation is sequential (freshwater, cliffs, biomes, etc.).</li>
+<li>Tools export data to influence subsequent tools (e.g., freshwater generates a water mask used by the biome tool).</li>
 </ul></li>
-</ul></li>
-</ol>
+</ul>
 </section>
-<section id="cliffs-tool-in-detail" class="level2">
-<h2 class="anchored" data-anchor-id="cliffs-tool-in-detail">Cliffs tool in detail</h2>
-<section id="tool-input" class="level3">
-<h3 class="anchored" data-anchor-id="tool-input">Tool input</h3>
+<section id="cliff-tool-detailed-breakdown" class="level2">
+<h2 class="anchored" data-anchor-id="cliff-tool-detailed-breakdown">Cliff Tool: Detailed Breakdown</h2>
+<section id="previous-tech-and-motivation" class="level3">
+<h3 class="anchored" data-anchor-id="previous-tech-and-motivation">Previous Tech and Motivation</h3>
 <ul>
-<li>slope terrain data → slope threshold (is it too steep to walk on?) → cliffs input</li>
-<li>prepare geometry by remeshing to get uniform mesh triangles</li>
+<li>Far Cry 4 and Primal had no dedicated cliff tech, relying on terrain and placed rocks.</li>
+<li>Worlds were designed to minimize large cliff surfaces due to visual limitations and the cost of manual rock placement.</li>
+<li>Far Cry 5 featured larger and more prominent cliffs, necessitating a new approach.</li>
+</ul>
+</section>
+<section id="cliff-tool-inputs-and-geometry" class="level3">
+<h3 class="anchored" data-anchor-id="cliff-tool-inputs-and-geometry">Cliff Tool Inputs and Geometry</h3>
+<ul>
+<li><strong>Terrain slope</strong> is the primary input.</li>
+<li>Surfaces below a defined slope threshold are deleted, creating the <strong>cliff input geometry</strong>.</li>
+<li>Cliffs serve as a visual cue for impassable terrain.</li>
+<li>Remeshing is applied to eliminate stretched quads on slopes, resulting in uniform triangles.</li>
 </ul>
 </section>
 <section id="stratification" class="level3">
 <h3 class="anchored" data-anchor-id="stratification">Stratification</h3>
-<p><a href="https://www.britannica.com/science/stratification-geology">stratification</a></p>
 <ul>
-<li>Visible horizontal lines formed by the accumulation of sedimentary rock and soil</li>
-<li>Slice input geometry into strata chunks
-<ul>
-<li>Each strata has a random thickness</li>
-<li>Assign strata id to each slice</li>
-<li>Control stata angle with RGB painter</li>
-<li>Split noise (on low res mesh) to split mesh into two groups
-<ul>
-<li>run stratification tool on both groups with different seed values to break up strata lines</li>
-</ul></li>
-<li>Extrude and displace strata</li>
-<li>Reduce mesh triangle count</li>
-<li>Exported geometry is divided per sector</li>
-</ul></li>
+<li><strong>Geological stratification</strong> (horizontal lines in sedimentary rock) is simulated.</li>
+<li>Tool slices the input geometry into <strong>strata chunks</strong> with random thickness.</li>
+<li>Each <strong>strata</strong> receives a unique ID for color variation (debug view).</li>
+<li><strong>Strata angle</strong> is controlled by user-painted RGB input on the terrain, with four presets available in the editor.</li>
+<li>Noise is used to split the cliff surface into two groups, each stratified with a different seed to break up perfect lines and create more natural patterns.</li>
 </ul>
 </section>
-<section id="cliffs-are-shaded-in-game-same-texture-as-terrain-underneath" class="level3">
-<h3 class="anchored" data-anchor-id="cliffs-are-shaded-in-game-same-texture-as-terrain-underneath">Cliffs are shaded in-game (same texture as terrain underneath)</h3>
-</section>
-<section id="erosion" class="level3">
-<h3 class="anchored" data-anchor-id="erosion">Erosion</h3>
+<section id="geometry-generation-and-export" class="level3">
+<h3 class="anchored" data-anchor-id="geometry-generation-and-export">Geometry Generation and Export</h3>
 <ul>
-<li>Run a flow simulation
-<ul>
-<li>Points scattered on cliff surfaces that will flow down the slope to create an erosion effect</li>
-</ul></li>
-<li>Use erosion data to scatter crumbled rocks on the erosion surfaces
-<ul>
-<li>export as point cloud</li>
-</ul></li>
-<li>use noise to mix two different cliff textures</li>
+<li>Strata are extruded with varying thickness and displaced using displacement maps.</li>
+<li>Triangle count reduction is applied for optimization.</li>
+<li>Geometry is split into individual meshes per sector (64x64 meters) for improved loading and streaming.</li>
 </ul>
 </section>
-<section id="vegetation-growing-surfaces" class="level3">
-<h3 class="anchored" data-anchor-id="vegetation-growing-surfaces">Vegetation growing surfaces</h3>
+<section id="terrain-shading-and-data-transfer" class="level3">
+<h3 class="anchored" data-anchor-id="terrain-shading-and-data-transfer">Terrain Shading and Data Transfer</h3>
 <ul>
-<li>Scatter vegetation on viable cliff surfaces
-<ul>
-<li>Clear above or not using raycast</li>
-</ul></li>
+<li>Cliffs are shaded using the <strong>terrain shader</strong>, inheriting textures from the terrain below.</li>
+<li>To avoid texture mismatch, cliff textures are transferred to the terrain beneath the extruded cliff mesh.</li>
+<li><strong>Cliff mask</strong> and <strong>strata attributes</strong> are raycast onto the terrain.</li>
+<li><strong>Strata attribute</strong> generates a color layer for macro tint variation, even when cliff mesh is unloaded at a distance.</li>
+<li><strong>Cliff mask</strong> is extended using a flow simulation to create an <strong>erosion effect</strong>, retaining the original strata color.</li>
+<li><strong>Crumbled rock entities</strong> are scattered on the erosion area and exported as a point cloud.</li>
+<li><strong>Terrain texture IDs</strong> are generated from the erosion mask, using noise to blend two cliff textures for tiling variation.</li>
 </ul>
 </section>
-<section id="exported-data" class="level3">
-<h3 class="anchored" data-anchor-id="exported-data">Exported data</h3>
+<section id="vegetation-on-cliff-ledges" class="level3">
+<h3 class="anchored" data-anchor-id="vegetation-on-cliff-ledges">Vegetation on Cliff Ledges</h3>
 <ul>
-<li>Cliffs geometry</li>
-<li>Entities point cloud</li>
-<li>Terrain Texture IDs</li>
-<li>2D Cliffs color</li>
-<li>2D Cliffs mask</li>
+<li>Upward-facing polygons on cliffs are identified as potential vegetation areas.</li>
+<li>Raycasting checks for clearance above the surface.</li>
+<li>Trees and other vegetation are spawned on viable cliff ledges.</li>
+</ul>
+</section>
+<section id="cliff-tool-exported-data" class="level3">
+<h3 class="anchored" data-anchor-id="cliff-tool-exported-data">Cliff Tool Exported Data</h3>
+<ul>
+<li>Cliff geometry with collision information.</li>
+<li>Point cloud for rocks and ledge vegetation.</li>
+<li>Terrain texture IDs.</li>
+<li>Cliff color layer for the terrain.</li>
+<li>Cliff mask.</li>
 </ul>
 </section>
 </section>
-<section id="biome-tool-in-detail" class="level2">
-<h2 class="anchored" data-anchor-id="biome-tool-in-detail">Biome tool in detail</h2>
-<section id="input" class="level3">
-<h3 class="anchored" data-anchor-id="input">Input</h3>
+<section id="biome-tool-populating-the-world-with-life" class="level2">
+<h2 class="anchored" data-anchor-id="biome-tool-populating-the-world-with-life">Biome Tool: Populating the World with Life</h2>
+<section id="initial-steps" class="level3">
+<h3 class="anchored" data-anchor-id="initial-steps">Initial Steps</h3>
 <ul>
-<li>Generate terrain from height map</li>
-</ul>
-</section>
-<section id="terrain-abiotic-data" class="level3">
-<h3 class="anchored" data-anchor-id="terrain-abiotic-data">Terrain abiotic data</h3>
+<li>Terrain is generated from the height map.</li>
+<li><strong>Abiotic data</strong> (physical features) is calculated:
 <ul>
-<li>Physical features of the land that are generated from terrain topology
-<ul>
-<li>Occlusion</li>
-<li>Flow</li>
-<li>Slope</li>
-<li>Curvature</li>
-<li>Illumination</li>
-<li>Altitude</li>
-<li>Latitude</li>
-<li>Longitude</li>
-<li>Wind</li>
+<li>Occlusion.</li>
+<li>Flow map.</li>
+<li>Slope.</li>
+<li>Curvature.</li>
+<li>Illumination.</li>
+<li>Altitude, latitude, longitude.</li>
+<li>Wind vector map.</li>
 </ul></li>
-<li>Importing 2D data
+<li>These attributes form the basis for biome recipes.</li>
+<li>2D data from Dunia is imported:
 <ul>
-<li>Biome painter data</li>
-<li>Procedurally generated data
-<ul>
-<li>Freshwater masks</li>
-<li>Roads masks</li>
-<li>Fences mask</li>
-<li>Power lines mask</li>
-<li>Cliffs mask</li>
-</ul></li>
+<li>Biome painting (user input).</li>
+<li>Procedural data from previous tools (freshwater, roads, fences, power lines, cliff masks).</li>
 </ul></li>
 </ul>
 </section>
-<section id="processing-main-biomes" class="level3">
-<h3 class="anchored" data-anchor-id="processing-main-biomes">Processing main biomes</h3>
+<section id="main-biomes-and-sub-biomes" class="level3">
+<h3 class="anchored" data-anchor-id="main-biomes-and-sub-biomes">Main Biomes and Sub-Biomes</h3>
 <ul>
-<li>Biome and sub-biome
+<li><strong>Main biomes</strong> cover most of the world (75-85%).</li>
+<li>They automatically determine <strong>sub-biome</strong> distribution (e.g., forest vs.&nbsp;grassland) based on abiotic terrain data, creating natural macro-level patterns.</li>
+<li>Main biomes also handle specific rules:
 <ul>
-<li>Main biome (e.g.&nbsp;Mountain) large scale
-<ul>
-<li>sub biome: mountain grass</li>
-<li>sub biome: mountain forest</li>
-</ul></li>
-<li>Main biome processes power line clearings</li>
-<li>Sub-biomes recipes
-<ul>
-<li>node-based</li>
-<li>mountain forest
-<ul>
-<li>ingredient: aspen undergrowth</li>
-<li>ingredient: dead conifer</li>
-<li>ingredient: hemlock</li>
-</ul></li>
-<li>mountain grass</li>
-<li>intermountain prarie</li>
-</ul></li>
-<li>Viability
-<ul>
-<li>Each species is fighting for ground to grow and thrive</li>
-<li>viability is defined by setting up favored terrain attributes for each species</li>
-<li>species that accumulate the most viability will win over others</li>
-<li>Factors
-<ul>
-<li>occlusion terrain data</li>
-<li>flow map</li>
-<li>viability radius
-<ul>
-<li>Example: a tree with a lower viability will be discarded if it is withing the radius of a tree with a higher viability</li>
-</ul></li>
-<li>priority radius
-<ul>
-<li>Useful for populating bushes, etc. under larger trees</li>
-<li>filtering will process priority first</li>
-<li>if priority is equal, the viability will be used instead</li>
-</ul></li>
-</ul></li>
-</ul></li>
+<li>Replacing forest with grassland where power lines are present.</li>
 </ul></li>
 </ul>
 </section>
-<section id="combine-terrain-data" class="level3">
-<h3 class="anchored" data-anchor-id="combine-terrain-data">Combine terrain data</h3>
+<section id="sub-biome-recipes" class="level3">
+<h3 class="anchored" data-anchor-id="sub-biome-recipes">Sub-Biome Recipes</h3>
 <ul>
-<li>Mix terrain abiotic data to achieve specific distribution patterns
+<li>Sub-biomes are processed sequentially.</li>
+<li>Each <strong>recipe</strong> contains ingredients (trees, saplings, bushes, grass).</li>
+<li>Core of each recipe is the <strong>generate-terrain-entities HDA</strong> (Houdini Digital Asset), responsible for:
 <ul>
-<li>Occlusion</li>
-<li>Altitude</li>
-<li>Flow map</li>
-<li>Noise (e.g.&nbsp;perlin noise)</li>
-<li>Exclusion masks (generated from fresh water maps, power lines, etc.)</li>
-<li>Used as viability for species</li>
+<li>Vegetation scattering.</li>
+<li>Terrain attribute modification.</li>
+<li>Defining <strong>viability</strong> for each species.</li>
 </ul></li>
 </ul>
 </section>
-<section id="sizes" class="level3">
-<h3 class="anchored" data-anchor-id="sizes">Sizes</h3>
+<section id="viability-and-species-competition" class="level3">
+<h3 class="anchored" data-anchor-id="viability-and-species-competition">Viability and Species Competition</h3>
 <ul>
-<li>multiple sizes for same species</li>
-<li>driven by viability
+<li><strong>Viability</strong> determines the likelihood of a species growing at a specific location, based on favored terrain attributes.</li>
+<li>Species with the highest accumulated viability at a location “wins.”</li>
+<li>Example:
 <ul>
-<li>asset size value linked to viability value</li>
+<li>Species A favors a specific occlusion range (power of 1).</li>
+<li>Species B favors a specific flow map range (power of 2).</li>
+<li>Species B will dominate where the flow map value is sufficiently high.</li>
 </ul></li>
-<li>small and young trees more likely to spawn at edge of forest</li>
-<li>taller trees more likely near the center</li>
-<li>Altitude</li>
-<li>Sizes variation
+<li><strong>Viability radius</strong> determines the influence area of a species, preventing other species from growing too close.</li>
+<li><strong>Priority</strong> and <strong>priority radius</strong> allow finer control over species interaction:
 <ul>
-<li>several assets of the same size</li>
-<li>probability control on each variation</li>
-<li>forest canopy
-<ul>
-<li>ecological succession</li>
-<li>Overstory</li>
-<li>Midstory</li>
-<li>Woody understory</li>
-<li>Herbaceous understory</li>
-</ul></li>
-<li>Age parameter
-<ul>
-<li>sine-distance field generated from viability data</li>
-<li>ramp for profile shape</li>
-</ul></li>
-<li>Density
-<ul>
-<li>ramp from size, age, or viability</li>
-<li>slope aspect effect on density</li>
-<li>illumination (how much light does the vegetation receive)</li>
-</ul></li>
+<li>Priority is evaluated first.</li>
+<li>If priorities are equal, viability is considered.</li>
+<li>Example: Trees (priority 10) can have a smaller priority radius, allowing bushes (priority 0) to grow closer while still preventing overlap with other trees.</li>
 </ul></li>
 </ul>
 </section>
-<section id="entities-color" class="level3">
-<h3 class="anchored" data-anchor-id="entities-color">Entities Color</h3>
+<section id="combining-terrain-attributes-for-natural-patterns" class="level3">
+<h3 class="anchored" data-anchor-id="combining-terrain-attributes-for-natural-patterns">Combining Terrain Attributes for Natural Patterns</h3>
 <ul>
-<li>per instance color ramp variation</li>
+<li>Mixing various terrain attributes allows for complex vegetation patterns and fluctuating viability.</li>
+<li>Example: Combining occlusion, altitude, flow map, and noise to create specific growth conditions.</li>
+<li><strong>Exclusion masks</strong> from previous tools (water, cliffs, roads) can be incorporated.</li>
 </ul>
 </section>
-<section id="rotation" class="level3">
-<h3 class="anchored" data-anchor-id="rotation">Rotation</h3>
+<section id="controlling-asset-size" class="level3">
+<h3 class="anchored" data-anchor-id="controlling-asset-size">Controlling Asset Size</h3>
 <ul>
-<li>orient on terrain slope
-<ul>
-<li>e.g.&nbsp;grass leaning towards water</li>
-<li>pre-bended tree trunks from growing on a slope</li>
-</ul></li>
-<li>grassland oriented on wind vector map</li>
-<li>percent angle of terrain</li>
-<li>rotation jitter</li>
+<li><strong>Asset size</strong> is linked to viability, allowing for natural size variation within a species.</li>
+<li>Example: A conifer species can have multiple size variations (50m, 40m, 30m, etc.), each assigned to a specific viability range on the terrain.</li>
+<li>This creates a tapering effect at forest edges, with smaller trees at the periphery.</li>
+<li><strong>Scaling percentage</strong> for each size prevents a staircase effect, allowing smooth transitions between sizes.</li>
+<li><strong>Random scale</strong> can be added for further variation.</li>
+<li>Each size can have multiple <strong>variations</strong> (e.g., a dead tree variant), randomly selected with controllable weights.</li>
 </ul>
 </section>
-<section id="terrain-elements-affected-by-vegetation-in-biomes" class="level3">
-<h3 class="anchored" data-anchor-id="terrain-elements-affected-by-vegetation-in-biomes">Terrain elements affected by vegetation in biomes</h3>
+<section id="forest-canopy-and-ecological-succession" class="level3">
+<h3 class="anchored" data-anchor-id="forest-canopy-and-ecological-succession">Forest Canopy and Ecological Succession</h3>
 <ul>
-<li>Terrain deformation
+<li><strong>Age parameter</strong> (signed distance field from viability data) influences size distribution, mimicking forest canopy and ecological succession.</li>
+<li>It can be added, multiplied, or interpolated with viability to control its influence.</li>
+<li><strong>Age maximum distance</strong> controls the depth of the forest border tapering effect.</li>
+<li>Age ramp can be used to profile the overall forest shape.</li>
+</ul>
+</section>
+<section id="scattering-density" class="level3">
+<h3 class="anchored" data-anchor-id="scattering-density">Scattering Density</h3>
 <ul>
-<li>terrain elevation around trunks</li>
-<li>height map layer</li>
-<li>need to blend assets with terrain
+<li><strong>Density ramp</strong> controls the scattering density based on size, age, or viability.</li>
+<li>It prevents overlap issues with larger assets and manages performance by controlling asset numbers.</li>
+<li>Terrain attributes (illumination, slope aspect) can be mixed into the density ramp for finer control (e.g., reduced density on poorly lit slopes).</li>
+</ul>
+</section>
+<section id="instance-tinting" class="level3">
+<h3 class="anchored" data-anchor-id="instance-tinting">Instance Tinting</h3>
 <ul>
-<li>generate matching terrain texture underneath asset</li>
-</ul></li>
-</ul></li>
-<li>Terrain textures
+<li>Biomes with high color variation are achieved by tinting individual instances.</li>
+<li>Gradient color ramps are driven by viability, age, or terrain data.</li>
+<li>Example: Water signed distance field drives grass color variation near water bodies.</li>
+</ul>
+</section>
+<section id="instance-rotation" class="level3">
+<h3 class="anchored" data-anchor-id="instance-rotation">Instance Rotation</h3>
 <ul>
-<li>pine needles</li>
-<li>acorns</li>
-<li>dead branches</li>
-<li>shadows affect how light other vegetation receives</li>
-</ul></li>
-<li>Terrain data output</li>
-<li>Terrain color
+<li>Asset rotation is primarily based on terrain slope, aligning the forward axis with the slope.</li>
+<li>This allows for effects like grass leaning towards water due to the shore’s slope.</li>
+<li>Other options include:
 <ul>
-<li>terrain texture tint</li>
+<li><strong>Flat horizontal alignment.</strong></li>
+<li><strong>Wind vector map alignment</strong> (e.g., for wheatgrass).</li>
+<li><strong>Rotation jitter and offset</strong> on all axes for random variation.</li>
 </ul></li>
 </ul>
 </section>
-<section id="exported-data-1" class="level3">
-<h3 class="anchored" data-anchor-id="exported-data-1">Exported data</h3>
+<section id="terrain-modification-by-scattered-assets" class="level3">
+<h3 class="anchored" data-anchor-id="terrain-modification-by-scattered-assets">Terrain Modification by Scattered Assets</h3>
 <ul>
-<li>reuse data on following species (e.g.&nbsp;viability map)</li>
-<li>species age output</li>
-<li>terrain height map</li>
-<li>entities point cloud</li>
-<li>terrain texture IDs</li>
-<li>terrain color</li>
-<li>forest mask</li>
+<li>Scattered assets can influence terrain properties.</li>
+<li>Four types of terrain data can be modified:
+<ul>
+<li><strong>Terrain deformation:</strong> Height map adjustment (e.g., raising terrain around tree trunks).</li>
+<li><strong>Terrain textures:</strong> Applying specific textures underneath assets (e.g., tree roots).</li>
+<li><strong>Terrain data output (mask):</strong> Generating masks for reuse by other species (e.g., spawning rocks around specific trees).</li>
+<li><strong>Terrain color:</strong> Blending colors with terrain textures (e.g., simulating terrain humidity).</li>
+</ul></li>
+<li>Each data type has independent signed distance field settings for controlling the influence area.</li>
 </ul>
 </section>
+<section id="terrain-deformation" class="level3">
+<h3 class="anchored" data-anchor-id="terrain-deformation">Terrain Deformation</h3>
+<ul>
+<li>Masks generated from scattered assets can be combined with terrain data to control deformation.</li>
+<li>Example: Preventing terrain deformation near roads using the road mask.</li>
+<li>Displacement height deforms the terrain (e.g., raising it by 1 meter around trees).</li>
+</ul>
+</section>
+<section id="terrain-textures" class="level3">
+<h3 class="anchored" data-anchor-id="terrain-textures">Terrain Textures</h3>
+<ul>
+<li>Masks generated from scattered assets determine terrain texture application.</li>
+<li>Example: Applying a “root” texture underneath trees.</li>
+<li>Texture selection is dynamically fetched from the engine via Python script.</li>
+<li>Mask scale controls the area of influence for each texture.</li>
+</ul>
+</section>
+<section id="terrain-data-output-and-inter-species-dependency" class="level3">
+<h3 class="anchored" data-anchor-id="terrain-data-output-and-inter-species-dependency">Terrain Data Output and Inter-Species Dependency</h3>
+<ul>
+<li>Terrain data attributes (masks) can be generated from scattered assets and reused by other species.</li>
+<li>Example:
+<ul>
+<li>Ponderosa tree outputs a viability mask.</li>
+<li>Forest rock species uses the Ponderosa viability mask to drive its spawning behavior, creating a dependency between the two.</li>
+</ul></li>
+</ul>
+</section>
+<section id="terrain-color-and-humidity-simulation" class="level3">
+<h3 class="anchored" data-anchor-id="terrain-color-and-humidity-simulation">Terrain Color and Humidity Simulation</h3>
+<ul>
+<li><strong>Terrain tint</strong> is generated and mixed with organic terrain textures, similar to the cliff strata color.</li>
+<li>This creates color variations (e.g., dry brown to lush green) without increasing the number of terrain textures.</li>
+<li>Neutral gray color allows for both darkening and lightening of the terrain texture.</li>
+<li>Terrain color and texture variations can transpire through grass, controlled by a mask on the grass asset.</li>
+</ul>
+</section>
+<section id="biome-tool-exported-data" class="level3">
+<h3 class="anchored" data-anchor-id="biome-tool-exported-data">Biome Tool Exported Data</h3>
+<ul>
+<li>Entity point clouds.</li>
+<li>Terrain texture IDs.</li>
+<li>Terrain height map.</li>
+<li>Terrain color.</li>
+<li>Forest mask (used by fog and wall map tools).</li>
+</ul>
+</section>
+</section>
+<section id="lessons-learned" class="level2">
+<h2 class="anchored" data-anchor-id="lessons-learned">Lessons Learned</h2>
+<ul>
+<li><strong>Responsibility:</strong>
+<ul>
+<li>Procedural tools offer immense control over performance, gameplay, and art, requiring careful consideration of their impact.</li>
+<li>Balancing art direction (e.g., dense forests) with gameplay needs (e.g., AI navigation) is crucial.</li>
+</ul></li>
+<li><strong>Elegant Design:</strong>
+<ul>
+<li>Tools should open up possibilities and be adaptable for various scenarios.</li>
+<li>The biome tool’s flexibility is highlighted as an example.</li>
+</ul></li>
+<li><strong>Simplicity:</strong>
+<ul>
+<li>Avoid over-engineering.</li>
+<li>Strive for simple and elegant designs through iterative development and refinement.</li>
+</ul></li>
+<li><strong>User Feedback:</strong>
+<ul>
+<li>Listen to user needs and preferences.</li>
+<li>Sometimes manual control is preferred over automation (e.g., riverbed carving).</li>
+</ul></li>
+<li><strong>Flexibility:</strong>
+<ul>
+<li>Adapt to changing requirements and be prepared to deviate from initial plans.</li>
+</ul></li>
+<li><strong>Balance:</strong>
+<ul>
+<li>Find the right balance between control and automation.</li>
+<li>Excessive automation can lead to issues, while excessive manual control can be time-consuming and difficult to manage.</li>
+</ul></li>
+</ul>
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<section id="lessons-learned" class="level3">
-<h3 class="anchored" data-anchor-id="lessons-learned">Lessons Learned</h3>
 <ul>
-<li>procedural tools can generate a lot of data</li>
-<li>gives a lot of control over performance, game-play, and art</li>
-<li>design elegant tools that open up possibilities</li>
-<li>keep things simple</li>
-<li>listen to users
-<ul>
-<li>might prefer more manual controls instead of automation</li>
-</ul></li>
-<li>be flexible</li>
-<li>balance between control and automation</li>
-</ul>
-<p><strong>References:</strong></p>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=NfizT369g60">Procedural World Generation of Ubisoft’s Far Cry 5</a></li>
+<li>The procedural pipeline significantly enhanced Far Cry 5’s development, providing efficiency, control, and natural-looking environments.</li>
+<li>Houdini played a crucial role in achieving the project’s goals.</li>
+<li>Collaboration and iteration were key to the pipeline’s success.</li>
+<li>The modular and flexible design allows for future adaptation and reuse in other projects.</li>
 </ul>
 <hr>
 <div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
@@ -657,7 +730,6 @@ About Me:
 </div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
