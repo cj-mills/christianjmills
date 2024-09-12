@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-09-11">
+<meta name="description" content="In this lecture, Bill Dally discusses the historical progress of deep learning, driven by hardware advancements, especially GPUs, and explores future directions focusing on improving performance and efficiency through techniques like optimized number representation, sparsity, and specialized hardware accelerators.">
+
+<title>Christian Mills - Notes on Trends in Deep Learning Hardware: Bill Dally (NVIDIA)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - Notes on Trends in Deep Learning Hardware: Bill Dally (NVIDIA)">
+<meta property="og:description" content="In this lecture, Bill Dally discusses the historical progress of deep learning, driven by hardware advancements, especially GPUs, and explores future directions focusing on improving performance and efficiency through techniques like optimized number representation, sparsity, and specialized hardware accelerators.">
+<meta property="og:image" content="https://christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - Notes on Trends in Deep Learning Hardware: Bill Dally (NVIDIA)">
+<meta name="twitter:description" content="In this lecture, Bill Dally discusses the historical progress of deep learning, driven by hardware advancements, especially GPUs, and explores future directions focusing on improving performance and efficiency through techniques like optimized number representation, sparsity, and specialized hardware accelerators.">
+<meta name="twitter:image" content="https://christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#motivation-and-history" id="toc-motivation-and-history" class="nav-link active" data-scroll-target="#motivation-and-history">Motivation and History</a></li>
+  <li><a href="#gpu-performance-improvements-huangs-law" id="toc-gpu-performance-improvements-huangs-law" class="nav-link" data-scroll-target="#gpu-performance-improvements-huangs-law">GPU Performance Improvements: Huang’s Law</a></li>
+  <li><a href="#complex-instructions-and-their-importance" id="toc-complex-instructions-and-their-importance" class="nav-link" data-scroll-target="#complex-instructions-and-their-importance">Complex Instructions and Their Importance</a></li>
+  <li><a href="#nvidia-hopper-gpu-current-state-2023" id="toc-nvidia-hopper-gpu-current-state-2023" class="nav-link" data-scroll-target="#nvidia-hopper-gpu-current-state-2023">NVIDIA Hopper GPU: Current State (2023)</a></li>
+  <li><a href="#scaling-with-multiple-gpus" id="toc-scaling-with-multiple-gpus" class="nav-link" data-scroll-target="#scaling-with-multiple-gpus">Scaling with Multiple GPUs</a></li>
+  <li><a href="#the-importance-of-software" id="toc-the-importance-of-software" class="nav-link" data-scroll-target="#the-importance-of-software">The Importance of Software</a></li>
+  <li><a href="#future-directions" id="toc-future-directions" class="nav-link" data-scroll-target="#future-directions">Future Directions</a></li>
+  <li><a href="#number-representation-choosing-the-right-system" id="toc-number-representation-choosing-the-right-system" class="nav-link" data-scroll-target="#number-representation-choosing-the-right-system">Number Representation: Choosing the Right System</a></li>
+  <li><a href="#logarithmic-number-systems" id="toc-logarithmic-number-systems" class="nav-link" data-scroll-target="#logarithmic-number-systems">Logarithmic Number Systems</a></li>
+  <li><a href="#optimal-clipping" id="toc-optimal-clipping" class="nav-link" data-scroll-target="#optimal-clipping">Optimal Clipping</a></li>
+  <li><a href="#scaling-granularity" id="toc-scaling-granularity" class="nav-link" data-scroll-target="#scaling-granularity">Scaling Granularity</a></li>
+  <li><a href="#sparsity" id="toc-sparsity" class="nav-link" data-scroll-target="#sparsity">Sparsity</a></li>
+  <li><a href="#accelerators-vs.-gpus" id="toc-accelerators-vs.-gpus" class="nav-link" data-scroll-target="#accelerators-vs.-gpus">Accelerators vs.&nbsp;GPUs</a></li>
+  <li><a href="#magnetic-bert-accelerator" id="toc-magnetic-bert-accelerator" class="nav-link" data-scroll-target="#magnetic-bert-accelerator">Magnetic BERT Accelerator</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#qa-session" id="toc-qa-session" class="nav-link" data-scroll-target="#qa-session">Q&amp;A Session</a>
+  <ul>
+  <li><a href="#question-1-network-size-optimization-and-pruning-techniques" id="toc-question-1-network-size-optimization-and-pruning-techniques" class="nav-link" data-scroll-target="#question-1-network-size-optimization-and-pruning-techniques">Question 1: Network Size Optimization and Pruning Techniques</a></li>
+  <li><a href="#question-2-energy-savings-breakdown-for-complex-instructions" id="toc-question-2-energy-savings-breakdown-for-complex-instructions" class="nav-link" data-scroll-target="#question-2-energy-savings-breakdown-for-complex-instructions">Question 2: Energy Savings Breakdown for Complex Instructions</a></li>
+  <li><a href="#question-3-systolic-array-architectures-vs.-nvidias-approach" id="toc-question-3-systolic-array-architectures-vs.-nvidias-approach" class="nav-link" data-scroll-target="#question-3-systolic-array-architectures-vs.-nvidias-approach">Question 3: Systolic Array Architectures vs.&nbsp;NVIDIA’s Approach</a></li>
+  <li><a href="#question-4-hardwaresoftware-implementation-of-clipping" id="toc-question-4-hardwaresoftware-implementation-of-clipping" class="nav-link" data-scroll-target="#question-4-hardwaresoftware-implementation-of-clipping">Question 4: Hardware/Software Implementation of Clipping</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Notes on <em>Trends in Deep Learning Hardware: Bill Dally (NVIDIA)</em></h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this lecture, Bill Dally discusses the historical progress of deep learning, driven by hardware advancements, especially GPUs, and explores future directions focusing on improving performance and efficiency through techniques like optimized number representation, sparsity, and specialized hardware accelerators.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 11, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#motivation-and-history">Motivation and History</a></li>
+<li><a href="#gpu-performance-improvements-huangs-law">GPU Performance Improvements: Huang’s Law</a></li>
+<li><a href="#complex-instructions-and-their-importance">Complex Instructions and Their Importance</a></li>
+<li><a href="#nvidia-hopper-gpu-current-state-2023">NVIDIA Hopper GPU: Current State (2023)</a></li>
+<li><a href="#scaling-with-multiple-gpus">Scaling with Multiple GPUs</a></li>
+<li><a href="#the-importance-of-software">The Importance of Software</a></li>
+<li><a href="#future-directions">Future Directions</a></li>
+<li><a href="#number-representation-choosing-the-right-system">Number Representation: Choosing the Right System</a></li>
+<li><a href="#logarithmic-number-systems">Logarithmic Number Systems</a></li>
+<li><a href="#optimal-clipping">Optimal Clipping</a></li>
+<li><a href="#scaling-granularity">Scaling Granularity</a></li>
+<li><a href="#sparsity">Sparsity</a></li>
+<li><a href="#accelerators-vs.-gpus">Accelerators vs.&nbsp;GPUs</a></li>
+<li><a href="#magnetic-bert-accelerator">Magnetic BERT Accelerator</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#qa-session">Q&amp;A Session</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Source Material">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Source Material
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube:</strong> <a href="https://www.youtube.com/watch?v=kLiwvnr4L80">Trends in Deep Learning Hardware: Bill Dally (NVIDIA)</a></li>
+</ul>
+</div>
+</div>
+<section id="motivation-and-history" class="level2">
+<h2 class="anchored" data-anchor-id="motivation-and-history">Motivation and History</h2>
+<ul>
+<li><strong>Deep learning</strong> can be viewed as a process of distilling data into value.
+<ul>
+<li>Starting with massive datasets (e.g., 10<sup>12</sup> tokens, 10<sup>9</sup> images).</li>
+<li>Aiming to extract valuable insights, applications, and functionalities.</li>
+</ul></li>
+<li><strong>Deep learning models</strong> require a training process analogous to education:
+<ul>
+<li><strong>Undergraduate School (General Training):</strong>
+<ul>
+<li>Input: Trillion-token dataset (now exceeding 10 trillion).</li>
+<li>Process: Extensive training on GPUs (e.g., via AWS).</li>
+<li>Output: A broadly trained model with a general understanding of the data.</li>
+</ul></li>
+<li><strong>Graduate School (Specialization):</strong>
+<ul>
+<li><strong>Pre-tuning:</strong> Continued training on domain-specific data (e.g., Chip Nemo trained on 24 billion tokens of NVIDIA hardware design documents).</li>
+<li><strong>Fine-tuning with Human Feedback:</strong> Model generates responses, humans grade them, and feedback refines the model for better user experience.</li>
+</ul></li>
+<li><strong>Inference (Real-World Application):</strong>
+<ul>
+<li>The bulk of deep learning computation occurs in the inference stage.</li>
+<li>Trained models are used for extended periods, performing inference on new data (e.g., answering queries, generating content).</li>
+<li><strong>Retrieval Augmented Generation:</strong>
+<ul>
+<li>Recent approach to enhance inference accuracy and prevent “hallucinations.”</li>
+<li>Queries a database (e.g., Chip Nemo’s document database) before running the LLM.</li>
+<li>Relevant documents are fed into the transformer’s input window along with the original query.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><strong>Deep learning’s revolution</strong> was enabled by hardware:
+<ul>
+<li><strong>Algorithms (Fuel):</strong> Mostly established by the 1980s (e.g., deep neural networks, convolutional networks, stochastic gradient descent, backpropagation).</li>
+<li><strong>Data (Air):</strong> Large labeled datasets emerged in the early 2000s (e.g., Pascal, ImageNet).</li>
+<li><strong>Computing Power (Spark):</strong> Sufficient compute to train large models on large datasets in reasonable time was the catalyst (e.g., AlexNet trained on ImageNet in two weeks on a pair of Fermi GPUs).</li>
+</ul></li>
+<li><strong>Progress in deep learning</strong> is gated by available compute power:
+<ul>
+<li>Training time demands have increased dramatically:
+<ul>
+<li>AlexNet (2012): 10<sup>-2</sup> petaflop days.</li>
+<li>ResNet (2016): ~1 petaflop day.</li>
+<li>BERT (2018): ~10 petaflop days.</li>
+<li>GPT-4 (2023, estimated): ~10<sup>6</sup> petaflop days.</li>
+</ul></li>
+<li>This represents a 10<sup>8</sup> increase in compute demand over a decade.</li>
+<li>Improvements have come from:
+<ul>
+<li><strong>Increased individual GPU performance (~1000x).</strong></li>
+<li><strong>Scaling up GPU numbers and training time (~10<sup>6</sup>x).</strong></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="gpu-performance-improvements-huangs-law" class="level2">
+<h2 class="anchored" data-anchor-id="gpu-performance-improvements-huangs-law">GPU Performance Improvements: Huang’s Law</h2>
+<ul>
+<li><strong>Huang’s Law:</strong> Deep learning inference performance on NVIDIA GPUs has doubled annually for the last decade.
+<ul>
+<li>Kepler generation: ~4 int8 TOPS (Tera Operations Per Second) on single-chip inference.</li>
+<li>Hopper generation: ~4000 int8 TOPS.</li>
+<li>This represents a ~1000x increase over 10 years.</li>
+</ul></li>
+<li><strong>Key contributors to performance gains:</strong>
+<ul>
+<li><strong>Smaller numbers (biggest gain):</strong>
+<ul>
+<li>Shifting from FP32 (used in Kepler for scientific computing and graphics) to int8 for inference.</li>
+<li>Reduced data size (4x) and quadratic reduction in multiply operations (16x).</li>
+<li>Note: Google TPU V1’s efficiency advantage over Kepler stemmed primarily from using int8 vs.&nbsp;Kepler’s FP32.</li>
+</ul></li>
+<li><strong>Complex instructions:</strong>
+<ul>
+<li>GPUs have a simplified pipeline (no branch prediction, out-of-order execution), but instruction execution still has significant overhead (~20x the cost of arithmetic within the instruction).</li>
+<li><strong>Complex instructions amortize this overhead by performing more work per instruction.</strong></li>
+<li>Examples:
+<ul>
+<li><strong>FMA (Fuse Multiply Add) in Kepler.</strong></li>
+<li><strong>DP4 (4-element Dot Product) in Pascal.</strong></li>
+<li><strong>HMMA (Half-precision Matrix Multiply Accumulate) in Volta.</strong></li>
+<li><strong>IMMA (Integer Matrix Multiply Accumulate) in Turing.</strong></li>
+<li>These instructions offer efficiency comparable to hardwired accelerators (e.g., TPUs).</li>
+</ul></li>
+</ul></li>
+<li><strong>Process technology:</strong>
+<ul>
+<li>Four generations of process technology advancements (28nm to 5nm) contributed ~2.5x improvement.</li>
+<li><strong>Most gains have come from architectural improvements, not process technology.</strong></li>
+</ul></li>
+<li><strong>Sparsity:</strong>
+<ul>
+<li>Exploiting sparsity (currently 2:1 on weights only) yields performance improvements.</li>
+<li>Future potential lies in exploiting higher levels of sparsity and sparsity in activations.</li>
+</ul></li>
+<li><strong>Algorithm improvements:</strong>
+<ul>
+<li>More efficient deep learning models have also contributed significantly to performance gains (estimated ~1000x).</li>
+<li>Example: GoogleNet’s efficiency improvements over VGGNet in the ImageNet competition.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="complex-instructions-and-their-importance" class="level2">
+<h2 class="anchored" data-anchor-id="complex-instructions-and-their-importance">Complex Instructions and Their Importance</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Operation</th>
+<th>Energy**</th>
+<th>Overhead*</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>HFMA</td>
+<td>1.5pJ</td>
+<td>2000%</td>
+</tr>
+<tr class="even">
+<td>HDP4A</td>
+<td>6.0pJ</td>
+<td>500%</td>
+</tr>
+<tr class="odd">
+<td>HMMA</td>
+<td>110pJ</td>
+<td>22%</td>
+</tr>
+<tr class="even">
+<td>IMMA</td>
+<td>160pJ</td>
+<td>16%</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Even simplified GPU pipelines have an overhead factor of ~20 for instruction execution compared to the cost of arithmetic operations within the instruction.</li>
+<li>Complex CPUs have even higher overhead (~1000x for FP16 operations).</li>
+<li><strong>Complex instructions are crucial for amortizing instruction overhead:</strong>
+<ul>
+<li><strong>FMA:</strong> Two arithmetic operations, overhead dominates energy consumption.</li>
+<li><strong>DP4:</strong> Eight operations (4 multiplies, 4 adds), overhead reduced to ~5x.</li>
+<li><strong>Tensor Cores (HMMA, IMMA, QMMA):</strong> Matrix multiply instructions perform hundreds of operations per instruction, significantly reducing overhead to ~15-20%.
+<ul>
+<li><strong>HMMA (Volta):</strong> Two FP16 4x4 matrices, matrix multiply (64 multiplies), accumulate into an FP32 4x4 matrix (128 total operations).</li>
+<li><strong>IMMA (Turing):</strong> Two int8 8x8 matrices, matrix multiply and accumulate.</li>
+<li><strong>QMMA (Hopper):</strong> Quarter-precision (FP8) matrix multiply accumulate.</li>
+</ul></li>
+</ul></li>
+<li><strong>Complex instructions make programmable GPUs as efficient as hardwired accelerators for deep learning while retaining programmability advantages.</strong></li>
+</ul>
+</section>
+<section id="nvidia-hopper-gpu-current-state-2023" class="level2">
+<h2 class="anchored" data-anchor-id="nvidia-hopper-gpu-current-state-2023">NVIDIA Hopper GPU: Current State (2023)</h2>
+<ul>
+<li><strong>Hopper H100:</strong>
+<ul>
+<li>1 petaflop TensorFloat32.</li>
+<li>1-2 petaflops FP16/BFloat16 (dense/sparse).</li>
+<li>2-4 petaflops FP8/int8 (dense/sparse).</li>
+<li>3 TB/s memory bandwidth.</li>
+<li>96 GB HBM3 memory.</li>
+<li>18 NVLink ports (900 GB/s off-chip bandwidth).</li>
+<li>700 watts power consumption.</li>
+<li>9 teraOPS/watt (int8/FP8).</li>
+<li>Includes dynamic programming instructions for bioinformatics.</li>
+</ul></li>
+<li><strong>Note:</strong> Export restrictions to China may be counterproductive, potentially driving Chinese developers to Huawei’s hardware.</li>
+</ul>
+</section>
+<section id="scaling-with-multiple-gpus" class="level2">
+<h2 class="anchored" data-anchor-id="scaling-with-multiple-gpus">Scaling with Multiple GPUs</h2>
+<ul>
+<li><strong>Model Parallelism:</strong>
+<ul>
+<li>Necessary because large models (e.g., GPT-4 with 1.2 trillion parameters) don’t fit on a single GPU.</li>
+<li><strong>Tensor Parallelism:</strong> Dividing individual matrices (e.g., into column strips) and distributing operations across multiple GPUs.</li>
+<li><strong>Pipeline Parallelism:</strong> Assigning different network layers to different GPUs, forwarding results sequentially. Earlier layers start processing the next batch of training data while later layers finish the current batch.</li>
+</ul></li>
+<li><strong>Data Parallelism:</strong>
+<ul>
+<li>Running multiple copies of the model.</li>
+<li>Splitting a batch of training data across model copies.</li>
+<li>Each copy trains on its portion, then weight updates are exchanged to ensure all copies have the same weights for the next iteration.</li>
+</ul></li>
+<li><strong>Hardware for Multi-GPU Scaling:</strong>
+<ul>
+<li><strong>HGX Server:</strong> 8 H100 GPUs, 4 NV switches, 32 petaflops compute, 11 kilowatts power, 900 GB/s bandwidth.</li>
+<li><strong>NV Switch Pizza Box:</strong> Connects multiple HGX servers with active optical cables.</li>
+<li><strong>DGX SuperPOD:</strong> Large-scale system comprised of multiple interconnected HGX servers.
+<ul>
+<li><strong>Pre-configured software for rapid deployment.</strong></li>
+<li><strong>Network collectives (all-reduce) on NVLink and InfiniBand for efficient data parallel training.</strong></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="the-importance-of-software" class="level2">
+<h2 class="anchored" data-anchor-id="the-importance-of-software">The Importance of Software</h2>
+<ul>
+<li>“Anybody can build a matrix multiplier, but software makes it useful.”</li>
+<li><strong>NVIDIA’s Deep Learning Software History:</strong>
+<ul>
+<li>Started in 2010 with cuDNN, developed in collaboration with Andrew Ng (Stanford).</li>
+<li>Has evolved into a comprehensive software stack:
+<ul>
+<li><strong>AI Stack:</strong> CUDA, cuDNN, TensorRT, etc.</li>
+<li><strong>HPC Stack:</strong> Libraries and tools for high-performance computing.</li>
+<li><strong>Graphics Stack (Omniverse):</strong> Platform for 3D design collaboration and simulation.</li>
+<li><strong>Vertical Applications:</strong> Clara (medical), Modulus (physics), Drive (autonomous vehicles), etc.</li>
+</ul></li>
+<li>Represents tens of thousands of person-years of development effort.</li>
+</ul></li>
+<li><strong>MLPerf Benchmarks:</strong> Demonstrate the impact of software on performance.
+<ul>
+<li>NVIDIA GPUs consistently lead in these benchmarks, showcasing the strength of the software ecosystem.</li>
+<li><strong>Significant performance gains are achieved through software optimizations even on existing hardware (e.g., Ampere’s performance increased 2.5x since its initial release).</strong></li>
+</ul></li>
+</ul>
+</section>
+<section id="future-directions" class="level2">
+<h2 class="anchored" data-anchor-id="future-directions">Future Directions</h2>
+<ul>
+<li><strong>The challenge:</strong> Meeting the ever-increasing compute demand for deep learning (10<sup>8</sup> increase in 10 years).</li>
+<li><strong>Energy breakdown in deep learning inference:</strong>
+<ul>
+<li>Math (Datapath and MAC): 47%.</li>
+<li>Memories (accumulation buffer, input buffer, weight buffer, accumulation collector): 47%.</li>
+<li>Data movement: 6%.</li>
+</ul></li>
+<li><strong>Strategies for future improvements:</strong>
+<ul>
+<li><strong>Number Representation:</strong>
+<ul>
+<li><strong>Use the cheapest representation that maintains sufficient accuracy.</strong></li>
+<li><strong>Optimal scaling:</strong> Adjust the dynamic range of the number system to minimize error (e.g., minimize mean squared error).</li>
+<li><strong>Logarithmic numbers:</strong> Offer better accuracy than integers or floats, especially for small values. Efficient addition methods exist.</li>
+<li><strong>Sparsity:</strong> Exploit sparsity in both weights and activations, explore lower density sparsity patterns.</li>
+</ul></li>
+<li><strong>Data Movement:</strong>
+<ul>
+<li><strong>Better tiling:</strong> Optimize loop scheduling to minimize data movement and maximize reuse.</li>
+</ul></li>
+<li><strong>Circuits:</strong>
+<ul>
+<li><strong>More efficient memories:</strong>
+<ul>
+<li><strong>Write-once, read-many optimizations (e.g., bit line per cell).</strong> This reduces read energy significantly.</li>
+</ul></li>
+<li><strong>Better communication circuits:</strong> Reduce energy consumption in on-chip data transfer (e.g., using lower voltage signaling).</li>
+<li><strong>3D memory:</strong> Stack DRAM directly on top of the GPU for higher bandwidth and lower energy (long-term goal with significant technical challenges).</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="number-representation-choosing-the-right-system" class="level2">
+<h2 class="anchored" data-anchor-id="number-representation-choosing-the-right-system">Number Representation: Choosing the Right System</h2>
+<ul>
+<li><strong>Evaluating a number system:</strong>
+<ul>
+<li><strong>Accuracy:</strong> Maximum error introduced when converting a real number to the number system’s representation (due to rounding).</li>
+<li><strong>Dynamic Range:</strong> The range of numbers that can be represented.</li>
+<li><strong>Cost:</strong>
+<ul>
+<li>Number of bits (affects storage and data movement).</li>
+<li>Cost of arithmetic operations (e.g., multiply-accumulate).</li>
+</ul></li>
+</ul></li>
+<li><strong>Comparison of number systems:</strong>
+<ul>
+<li><strong>Integer:</strong> Poor accuracy (error is independent of value), worst-case error of 33%.</li>
+<li><strong>Floating Point:</strong> Better accuracy than integer, error scales with value but in blocks.</li>
+<li><strong>Logarithmic:</strong> Even better accuracy, error scales continuously with value.
+<ul>
+<li>Example: Log 4.3 (8-bit representation) offers 50% higher worst-case accuracy than FP8 (E4M3) with the same dynamic range.</li>
+</ul></li>
+<li><strong>Symbolic:</strong> Optimal for a fixed number of representable values (e.g., codebook), but lookup and arithmetic costs can be high.</li>
+<li><strong>Spiking:</strong> Extremely inefficient in terms of energy consumption due to high toggling activity.</li>
+<li><strong>Analog:</strong> Advantages in individual operations are negated by the need for digital conversion for storage and movement.</li>
+</ul></li>
+</ul>
+</section>
+<section id="logarithmic-number-systems" class="level2">
+<h2 class="anchored" data-anchor-id="logarithmic-number-systems">Logarithmic Number Systems</h2>
+<ul>
+<li><strong>Principle:</strong> Similar to slide rules, using logarithmic scales to turn multiplication into addition.</li>
+<li><strong>Advantages:</strong>
+<ul>
+<li><strong>Cheap multiplications:</strong> Simple addition operation.</li>
+<li><strong>High accuracy, especially for small values:</strong> Error scales continuously with value.</li>
+</ul></li>
+<li><strong>Challenges:</strong>
+<ul>
+<li><strong>Additions are traditionally expensive:</strong> Requires table lookups to convert between logarithmic and linear representations.</li>
+</ul></li>
+<li><strong>Efficient Addition in Logarithmic Systems:</strong>
+<ul>
+<li><strong>Factor out table lookups:</strong> Perform lookups once per tensor (e.g., 10,000 elements) instead of per element.</li>
+<li><strong>Sort elements based on fractional exponent part (EF).</strong></li>
+<li><strong>Add integer parts (EI) together efficiently.</strong></li>
+<li><strong>Perform a single lookup (or use hardwired constants) for each EF value.</strong></li>
+<li><strong>Multiply partial sums by the looked-up values.</strong></li>
+<li><strong>Convert the final sum back to logarithmic form.</strong></li>
+</ul></li>
+</ul>
+</section>
+<section id="optimal-clipping" class="level2">
+<h2 class="anchored" data-anchor-id="optimal-clipping">Optimal Clipping</h2>
+<ul>
+<li><p><strong>Goal:</strong> Minimize error by optimally centering the representable range of a number system on the distribution of values to be represented (e.g., weights or activations).</p></li>
+<li><p><strong>Traditional Scaling:</strong></p>
+<ul>
+<li>Scale the number system to represent the minimum and maximum values without clipping.</li>
+<li>No clipping noise, but high quantization noise due to large spacing between representable values.</li>
+</ul></li>
+<li><p><strong>Optimal Clipping:</strong></p>
+<ul>
+<li>Introduce clipping noise by saturating values outside a chosen range.</li>
+<li><strong>Reduces quantization noise significantly.</strong></li>
+<li><strong>Minimizes the overall error (e.g., mean squared error) by balancing clipping noise and quantization noise.</strong></li>
+</ul></li>
+<li><p><strong>Finding the optimal clipping point:</strong> <span class="math display">\[
+s_{n+1} = \frac{\mathbb{E}\left[|X| \cdot \mathbb{1}_{\{|X| &gt; s_n\}}\right]}{\frac{4^{-B}}{3} \mathbb{E}\left[\mathbb{1}_{\{|X| \leq s_n\}}\right] + \mathbb{E}\left[\mathbb{1}_{\{|X| &gt; s_n\}}\right]}
+\]</span></p>
+<ul>
+<li>An iterative equation approximates the integral that minimizes mean squared error.</li>
+<li>A few iterations provide a good approximation of the optimal clipping range.</li>
+</ul></li>
+<li><p><strong>Benefits:</strong></p>
+<ul>
+<li><strong>Can be worth more than a bit of precision in terms of mean squared error.</strong></li>
+<li><strong>Significantly improves accuracy, especially for lower-precision representations.</strong></li>
+</ul></li>
+<li><p><strong>Note:</strong> Clipping is typically done post-training, but training the clipping factor along with the model’s weights could potentially yield further improvements.</p></li>
+</ul>
+</section>
+<section id="scaling-granularity" class="level2">
+<h2 class="anchored" data-anchor-id="scaling-granularity">Scaling Granularity</h2>
+<ul>
+<li><strong>Layer-wise scaling:</strong> Initially used for both forward and backward propagation (separate scale factors).</li>
+<li><strong>Finer granularity scaling (e.g., vector-wise):</strong> Improves accuracy by scaling smaller groups of elements independently.
+<ul>
+<li><strong>Example:</strong> In ConvNets, scaling each 32-element vector in the channel dimension independently.</li>
+</ul></li>
+<li><strong>Hardware support:</strong> Requires additional multipliers to apply activation and weight scale factors (SW and SA) after the MAC operation.</li>
+<li><strong>Benefits:</strong> Tighter scaling for smaller groups of numbers leads to significantly reduced error, equivalent to gaining a couple of bits of precision.</li>
+</ul>
+</section>
+<section id="sparsity" class="level2">
+<h2 class="anchored" data-anchor-id="sparsity">Sparsity</h2>
+<ul>
+<li><strong>Pruning neural networks:</strong> Removing less important weights (e.g., based on magnitude or sensitivity) can significantly reduce the number of computations without significant accuracy loss.
+<ul>
+<li>Multi-layer perceptrons (MLPs): Can prune up to 90% of weights.</li>
+<li>Convolutional neural networks (ConvNets): Can prune up to 60-70% of weights.</li>
+</ul></li>
+<li><strong>Challenges in implementing sparsity efficiently:</strong>
+<ul>
+<li><strong>Irregularity of sparsity patterns:</strong> Leads to high overhead for bookkeeping and data shuffling.</li>
+<li><strong>Difficulty in parallelizing sparse computations efficiently.</strong></li>
+</ul></li>
+<li><strong>Structured Sparsity (Ampere and Hopper):</strong>
+<ul>
+<li><strong>Enforces a regular sparsity pattern (e.g., no more than 2 out of every 4 weights can be non-zero).</strong></li>
+<li><strong>Dense training followed by structured pruning and retraining with a mask.</strong></li>
+<li><strong>Compression by storing only non-zero weights and metadata indicating their positions.</strong></li>
+<li><strong>Benefits:</strong> Predictable sparsity pattern enables efficient parallel computations, achieving ~2x speedup.</li>
+</ul></li>
+<li><strong>Future directions:</strong> Extending structured sparsity to activations and exploring other regular sparsity patterns.</li>
+</ul>
+</section>
+<section id="accelerators-vs.-gpus" class="level2">
+<h2 class="anchored" data-anchor-id="accelerators-vs.-gpus">Accelerators vs.&nbsp;GPUs</h2>
+<ul>
+<li><strong>NVIDIA’s accelerator projects:</strong> EIE, IRIS, SCNN, multi-chip module.</li>
+<li><strong>How accelerators achieve performance:</strong>
+<ul>
+<li><strong>Special data types and operators:</strong> Similar to GPUs, using specialized data types (e.g., FP8) and complex instructions (e.g., matrix multiply).</li>
+<li><strong>Massive parallelism:</strong> Exploiting parallelism to perform many operations concurrently.</li>
+<li><strong>Optimized memory:</strong> Minimizing main memory accesses through hierarchical scratchpads and data reuse.</li>
+<li><strong>Algorithm-architecture co-design:</strong> Adapting algorithms to the accelerator’s architecture for optimal performance (e.g., bioinformatics accelerator with efficient alignment engine).</li>
+<li><strong>Reduced dramatized overhead:</strong> Simplifying control and data movement compared to CPUs.</li>
+</ul></li>
+<li><strong>Amortizing overhead:</strong> Crucial for efficiency.
+<ul>
+<li>Example: Simple ARM out-of-order core:
+<ul>
+<li>CPU instruction overhead: 250 picojoules.</li>
+<li>16-bit integer add: 32 femtojoules.</li>
+<li>Overhead dominates energy consumption (~99.99%).</li>
+</ul></li>
+</ul></li>
+<li><strong>Memory access costs:</strong>
+<ul>
+<li>Local 8kB memory: 5 picojoules/word.</li>
+<li>On-chip (hundreds of MB): 50 picojoules/word (45 picojoules for communication).</li>
+<li>Off-chip LPDDR/HBM: 640 picojoules/word (32-bit).</li>
+</ul></li>
+</ul>
+</section>
+<section id="magnetic-bert-accelerator" class="level2">
+<h2 class="anchored" data-anchor-id="magnetic-bert-accelerator">Magnetic BERT Accelerator</h2>
+<ul>
+<li><strong>Design:</strong>
+<ul>
+<li>Optimized for LLMs (BERT and BERT-large).</li>
+<li>Incorporates optimal clipping and vector-level scaling (32-element vectors).</li>
+<li>Achieves int4 (4-bit) inference with negligible accuracy loss.</li>
+</ul></li>
+<li><strong>Performance:</strong>
+<ul>
+<li><strong>95.6 teraOPS/watt for int8 operations (~10x more efficient than Hopper).</strong></li>
+<li>Demonstrates the potential for further efficiency improvements in future GPU designs.</li>
+</ul></li>
+</ul>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<ul>
+<li>Deep learning’s progress is heavily reliant on hardware advancements.</li>
+<li>GPUs have provided significant performance gains (~1000x in 10 years) through architectural innovations (smaller numbers, complex instructions, sparsity).</li>
+<li>Scaling with multiple GPUs and longer training times has enabled the training of increasingly large models.</li>
+<li><strong>Future directions focus on:</strong>
+<ul>
+<li>Number representation (logarithmic numbers, optimal clipping, scaling granularity).</li>
+<li>Sparsity (exploiting higher levels and activation sparsity).</li>
+<li>Memory and circuit optimizations (efficient memories, communication circuits, 3D memory).</li>
+<li>Algorithm-architecture co-design.</li>
+</ul></li>
+<li><strong>Accelerators like Magnetic BERT demonstrate the potential for further efficiency gains, paving the way for future GPU architectures.</strong></li>
+</ul>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<section id="question-1-network-size-optimization-and-pruning-techniques" class="level4">
+<h4 class="anchored" data-anchor-id="question-1-network-size-optimization-and-pruning-techniques">Question 1: Network Size Optimization and Pruning Techniques</h4>
+<ul>
+<li><strong>Question:</strong> What techniques are used for optimizing network size (pruning)?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li><strong>Neural Architecture Search:</strong> A team at NVIDIA uses neural architecture search to find optimal models based on various parameters (number of layers, channels per layer, layer sizes, etc.) given constraints on accuracy, execution time, or power.</li>
+<li><strong>Pruning Techniques:</strong>
+<ul>
+<li><strong>Magnitude-based pruning (most common):</strong>
+<ul>
+<li>Scan weights in a layer and prune those with the smallest magnitudes based on a target density.</li>
+<li>Essentially histograms the layer and sets weights below a threshold to zero.</li>
+</ul></li>
+<li><strong>Sensitivity-based pruning (more complex but potentially more effective):</strong>
+<ul>
+<li>Considers both the weight value and the sensitivity of the weight’s connections to the output.</li>
+<li>Prunes weights with the least sensitivity, taking into account both the weight value and its impact on the output.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="question-2-energy-savings-breakdown-for-complex-instructions" class="level4">
+<h4 class="anchored" data-anchor-id="question-2-energy-savings-breakdown-for-complex-instructions">Question 2: Energy Savings Breakdown for Complex Instructions</h4>
+<ul>
+<li><strong>Question:</strong> Regarding the energy savings from complex instructions, could you elaborate on the breakdown between fetch/decode savings and operand loading savings?</li>
+<li><strong>Answer:</strong> While the exact breakdown isn’t readily available, Dally believes that the majority of energy savings come from reduced fetch and decode operations. However, more detailed analysis would be required to provide specific numbers.</li>
+</ul>
+</section>
+<section id="question-3-systolic-array-architectures-vs.-nvidias-approach" class="level4">
+<h4 class="anchored" data-anchor-id="question-3-systolic-array-architectures-vs.-nvidias-approach">Question 3: Systolic Array Architectures vs.&nbsp;NVIDIA’s Approach</h4>
+<ul>
+<li><strong>Question:</strong> Does NVIDIA use systolic arrays for matrix multiplications, like Google’s TPU?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li>NVIDIA uses smaller matrix multiplies (4x4 for FP16/BFloat16) compared to Google’s TPUs, which often use larger sizes (e.g., 128x128).</li>
+<li>Smaller matrix sizes help avoid fragmentation issues that can arise when the natural matrix size isn’t a power of two. Large matrix multipliers can lead to significant rounding-up inefficiencies.</li>
+<li>While NVIDIA’s approach isn’t systolic, the efficiency of the core matrix multiply operation is comparable. The energy cost is dominated by the math units themselves.</li>
+<li>NVIDIA feeds matrix multipliers from register files, potentially incurring slightly higher shuffling overhead for smaller matrices compared to systolic arrays.</li>
+<li>However, even this overhead is likely minimal (estimated around 10%) and comparable to the data movement costs in systolic arrays. Google’s TPUs still require data movement to feed the systolic array, and they also have control overhead.</li>
+</ul></li>
+</ul>
+</section>
+<section id="question-4-hardwaresoftware-implementation-of-clipping" class="level4">
+<h4 class="anchored" data-anchor-id="question-4-hardwaresoftware-implementation-of-clipping">Question 4: Hardware/Software Implementation of Clipping</h4>
+<ul>
+<li><strong>Question:</strong> Is the clipping technique implemented in hardware, software, or programmable hardware like FPGAs?</li>
+<li><strong>Answer:</strong>
+<ul>
+<li>Clipping is primarily implemented in software.</li>
+<li>NVIDIA GPUs already have the capability to use scale factors for adjusting the dynamic range of number representations.</li>
+<li>Clipping simply involves choosing a larger scale factor, causing some numbers to saturate to the maximum representable value.</li>
+<li>The only hardware requirement is the presence of multipliers for applying activation and weight scale factors (SW and SA), which are already present in GPUs that support scaling.</li>
+<li>The clipping itself and the granularity of scaling are software-controlled, allowing flexibility in implementation.</li>
+</ul></li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

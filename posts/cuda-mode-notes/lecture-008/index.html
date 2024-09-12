@@ -1,0 +1,2781 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-09-11">
+<meta name="description" content="Lecture #8 provides a comprehensive guide to CUDA performance optimization techniques, covering key concepts like memory coalescing, occupancy, control divergence, tiling, privatization, thread coarsening, and algorithm rewriting with better math, illustrated with practical examples and profiling using NCU to improve kernel performance.">
+
+<title>Christian Mills - CUDA MODE Lecture 8: CUDA Performance Checklist</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - CUDA MODE Lecture 8: CUDA Performance Checklist">
+<meta property="og:description" content="Lecture #8 provides a comprehensive guide to CUDA performance optimization techniques, covering key concepts like memory coalescing, occupancy, control divergence, tiling, privatization, thread coarsening, and algorithm rewriting with better math, illustrated with practical examples and profiling using NCU to improve kernel performance.">
+<meta property="og:image" content="https://christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta property="og:site_name" content="Christian Mills">
+<meta name="twitter:title" content="Christian Mills - CUDA MODE Lecture 8: CUDA Performance Checklist">
+<meta name="twitter:description" content="Lecture #8 provides a comprehensive guide to CUDA performance optimization techniques, covering key concepts like memory coalescing, occupancy, control divergence, tiling, privatization, thread coarsening, and algorithm rewriting with better math, illustrated with practical examples and profiling using NCU to improve kernel performance.">
+<meta name="twitter:image" content="https://christianjmills.com/posts/cuda-mode-notes/social-media/cover.jpg">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#the-importance-of-sram" id="toc-the-importance-of-sram" class="nav-link" data-scroll-target="#the-importance-of-sram">The Importance of SRAM</a></li>
+  <li><a href="#cuda-performance-tricks" id="toc-cuda-performance-tricks" class="nav-link" data-scroll-target="#cuda-performance-tricks">CUDA Performance Tricks</a></li>
+  <li><a href="#memory-latency-and-the-roofline-model" id="toc-memory-latency-and-the-roofline-model" class="nav-link" data-scroll-target="#memory-latency-and-the-roofline-model">Memory Latency and the Roofline Model</a></li>
+  <li><a href="#case-study-1-coalescing-global-memory-accesses" id="toc-case-study-1-coalescing-global-memory-accesses" class="nav-link" data-scroll-target="#case-study-1-coalescing-global-memory-accesses">Case Study 1: Coalescing Global Memory Accesses</a></li>
+  <li><a href="#case-study-2-maximizing-occupancy" id="toc-case-study-2-maximizing-occupancy" class="nav-link" data-scroll-target="#case-study-2-maximizing-occupancy">Case Study 2: Maximizing Occupancy</a></li>
+  <li><a href="#understanding-memory-vs.-compute-bound-workloads" id="toc-understanding-memory-vs.-compute-bound-workloads" class="nav-link" data-scroll-target="#understanding-memory-vs.-compute-bound-workloads">Understanding Memory vs.&nbsp;Compute Bound Workloads</a></li>
+  <li><a href="#case-study-3-minimizing-control-divergence" id="toc-case-study-3-minimizing-control-divergence" class="nav-link" data-scroll-target="#case-study-3-minimizing-control-divergence">Case Study 3: Minimizing Control Divergence</a></li>
+  <li><a href="#case-study-4-thread-coarsening" id="toc-case-study-4-thread-coarsening" class="nav-link" data-scroll-target="#case-study-4-thread-coarsening">Case Study 4: Thread Coarsening</a></li>
+  <li><a href="#case-study-5-privatization" id="toc-case-study-5-privatization" class="nav-link" data-scroll-target="#case-study-5-privatization">Case Study 5: Privatization</a></li>
+  <li><a href="#case-study-6-rewriting-algorithms-with-better-math-flash-attention" id="toc-case-study-6-rewriting-algorithms-with-better-math-flash-attention" class="nav-link" data-scroll-target="#case-study-6-rewriting-algorithms-with-better-math-flash-attention">Case Study 6: Rewriting Algorithms with Better Math (Flash Attention)</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CUDA MODE Lecture 8: CUDA Performance Checklist</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #8 provides a comprehensive guide to CUDA performance optimization techniques, covering key concepts like memory coalescing, occupancy, control divergence, tiling, privatization, thread coarsening, and algorithm rewriting with better math, illustrated with practical examples and profiling using NCU to improve kernel performance.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 11, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#the-importance-of-sram">The Importance of SRAM</a></li>
+<li><a href="#cuda-performance-tricks">CUDA Performance Tricks</a></li>
+<li><a href="#memory-latency-and-the-roofline-model">Memory Latency and the Roofline Model</a></li>
+<li><a href="#case-study-1-coalescing-global-memory-accesses">Case Study 1: Coalescing Global Memory Accesses</a></li>
+<li><a href="#case-study-2-maximizing-occupancy">Case Study 2: Maximizing Occupancy</a></li>
+<li><a href="#understanding-memory-vs.-compute-bound-workloads">Understanding Memory vs.&nbsp;Compute Bound Workloads</a></li>
+<li><a href="#case-study-3-minimizing-control-divergence">Case Study 3: Minimizing Control Divergence</a></li>
+<li><a href="#case-study-4-thread-coarsening">Case Study 4: Thread Coarsening</a></li>
+<li><a href="#case-study-5-privatization">Case Study 5: Privatization</a></li>
+<li><a href="#case-study-6-rewriting-algorithms-with-better-math-flash-attention">Case Study 6: Rewriting Algorithms with Better Math (Flash Attention)</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=SGhfUhlowB4">Lecture 8: CUDA Performance Checklist</a></li>
+<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/1cvVpf3ChFFiY4Kf25S4e4sPY6Y5uRUO-X-A4nJ7IhFE/edit#slide=id.p">CUDA Performance Checklist</a></li>
+<li><strong>Code:</strong> <a href="https://github.com/cuda-mode/lectures/tree/main/lecture_008">lecture_008</a></li>
+<li><strong>Lightning AI Studio:</strong> <a href="https://lightning.ai/msaroufim/studios/cuda-mode-lectures?section=featured&amp;query=cuda+mode">CUDA Mode Lectures</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><strong>Mark Sarukhim</strong>, an engineer on the PyTorch team at Meta, presents a re-recorded talk on CUDA performance checklist.</li>
+<li>This talk is a direct sequel to <a href="../lecture-001/">Lecture 1</a>, which focused on the importance of GPU performance.</li>
+<li>This lecture covers common tricks to improve CUDA and PyTorch performance.</li>
+<li>The content follows a profiling-first approach, using <strong><a href="https://docs.nvidia.com/nsight-compute/NsightComputeCli/index.html">NCU</a></strong> (an NVIDIA CUDA Profiler) to validate hypotheses.</li>
+<li>Running the examples requires a GPU; cloud vendor setup for NCU can be tricky.</li>
+<li><a href="https://lightning.ai/studios">Lightning AI Studio</a> is recommended for cloud-based execution as NCU is already set up.</li>
+<li><strong>Technical Report:</strong> <a href="https://arxiv.org/pdf/1804.06826">Dissecting the NVIDIA Volta GPU Architecture via Microbenchmarking</a></li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled" title="[Local NCU Permissions](https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters)">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<a href="https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters">Local NCU Permissions</a>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Allow access for any user (restart required)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">'options nvidia NVreg_RestrictProfilingToAdminUsers=0'</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/modprobe.d/ncu-permissions.conf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
+<section id="the-importance-of-sram" class="level2">
+<h2 class="anchored" data-anchor-id="the-importance-of-sram">The Importance of SRAM</h2>
+<ul>
+<li><strong>Blog Post:</strong> <a href="https://siliconvlsi.com/why-sram-is-faster-than-dram/">Why SRAM is faster than DRAM</a></li>
+<li>The primary goal for CUDA performance is to minimize the use of DRAM (slow) and maximize the use of SRAM (fast).</li>
+<li><strong>SRAM (Static RAM):</strong> Shared memory, on the order of kilobytes.</li>
+<li><strong>DRAM (Dynamic RAM):</strong> Global memory, on the order of tens of gigabytes (e.g., 23GB, 40GB, 80GB).</li>
+<li>SRAM is physically larger, more expensive (3-6x), and generates more heat than DRAM, limiting its size on GPUs.</li>
+<li>Bill Dally (Chief Scientist at NVIDIA) provides insightful explanations of GPU architecture in his talks (recommended).
+<ul>
+<li><strong>YouTube:</strong> <a href="https://www.youtube.com/watch?v=kLiwvnr4L80">Trends in Deep Learning Hardware: Bill Dally (NVIDIA)</a></li>
+<li><strong>Notes:</strong> <a href="../trends-in-deep-learning-hardware-bill-dally-nvidia/">Notes on <em>Trends in Deep Learning Hardware: Bill Dally (NVIDIA)</em></a></li>
+</ul></li>
+<li>Key takeaway: While hardware limitations exist, we can leverage software tricks to improve performance.</li>
+</ul>
+</section>
+<section id="cuda-performance-tricks" class="level2">
+<h2 class="anchored" data-anchor-id="cuda-performance-tricks">CUDA Performance Tricks</h2>
+<ul>
+<li><strong>Coalescing global memory accesses:</strong> Ensuring contiguous memory access for efficient data transfer.</li>
+<li><strong>Maximizing occupancy:</strong> Optimizing thread block and grid sizes to fully utilize GPU resources.</li>
+<li><strong><em>Understanding memory or compute bound workloads:</em></strong> Identifying the bottleneck (memory bandwidth or compute capability) to guide optimization strategies.</li>
+<li><strong>Minimizing control divergence:</strong> Ensuring threads within a warp execute similar instructions to avoid idle time.</li>
+<li><strong>Tiling of reused data:</strong> Storing frequently accessed data in shared memory (SRAM) for faster access (covered in <a href="../lecture-005/">Lecture 5</a>).</li>
+<li><strong>Privatization:</strong> Utilizing local copies of data to minimize global memory accesses.</li>
+<li><strong>Thread coarsening:</strong> Increasing the workload per thread, particularly beneficial for memory-bound kernels.</li>
+<li><strong><em>Rewriting algorithms using better math:</em></strong> Employing algorithmic and mathematical optimizations to improve performance (e.g., Flash Attention).</li>
+<li>Most of these tricks are discussed in the “Programming Massively Parallel Processors” (PMPP) book.</li>
+</ul>
+</section>
+<section id="memory-latency-and-the-roofline-model" class="level2">
+<h2 class="anchored" data-anchor-id="memory-latency-and-the-roofline-model">Memory Latency and the Roofline Model</h2>
+<ul>
+<li><strong>Latency:</strong> The time it takes to access a memory location.</li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2208.11174">Demystifying the Nvidia Ampere Architecture through Microbenchmarking and Instruction-level Analysis</a></li>
+<li><strong>Global memory latency:</strong> ~290 cycles (from “Demystifying the NVIDIA Ampere Architecture…” paper).</li>
+<li><strong>L2 cache latency:</strong> ~200 cycles.</li>
+<li><strong>L1 cache latency:</strong> ~33 cycles (10x reduction compared to global memory).</li>
+<li><strong>Shared memory latency:</strong> Similar to L1 cache (23/19).</li>
+<li>GPU memory access is non-deterministic due to the implicit management of L1 and L2 caches.</li>
+<li><strong>“<a href="http://www.stuartcheshire.org/rants/latency.html">It’s the Latency, Stupid</a>” article:</strong> Explains the challenges of reducing latency; throughput can be increased by parallelism, but latency reduction requires fundamental changes.</li>
+<li><strong>Quantization:</strong> Reduces latency by using smaller data types (e.g., int8 instead of float32), but may impact accuracy.</li>
+<li><strong>Roofline Model:</strong>
+<ul>
+<li><strong>Operational Intensity:</strong> (Total operations) / (Total memory accesses)</li>
+<li><strong>X-axis:</strong> Operational Intensity.</li>
+<li><strong>Y-axis:</strong> Performance.</li>
+<li><strong>Memory-bound workloads:</strong> Performance limited by memory bandwidth (low operational intensity).</li>
+<li><strong>Compute-bound workloads:</strong> Performance limited by GPU compute capability (high operational intensity).</li>
+</ul></li>
+</ul>
+</section>
+<section id="case-study-1-coalescing-global-memory-accesses" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-1-coalescing-global-memory-accesses">Case Study 1: Coalescing Global Memory Accesses</h2>
+<ul>
+<li><p><strong>Goal:</strong> Demonstrate the impact of coalesced vs.&nbsp;non-coalesced memory accesses.</p></li>
+<li><p><strong>Kernel:</strong> Copies data from one memory location to another.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda_runtime.h&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> copyDataNonCoalesced<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>in<span class="op">,</span> <span class="dt">float</span> <span class="op">*</span>out<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> index <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>index <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        out<span class="op">[</span>index<span class="op">]</span> <span class="op">=</span> in<span class="op">[(</span>index <span class="op">*</span> <span class="dv">2</span><span class="op">)</span> <span class="op">%</span> n<span class="op">];</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> copyDataCoalesced<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>in<span class="op">,</span> <span class="dt">float</span> <span class="op">*</span>out<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> index <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>index <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        out<span class="op">[</span>index<span class="op">]</span> <span class="op">=</span> in<span class="op">[</span>index<span class="op">];</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initializeArray<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>arr<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span><span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        arr<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="kw">static_cast</span><span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;(</span>i<span class="op">);</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> n <span class="op">=</span> <span class="dv">1</span> <span class="op">&lt;&lt;</span> <span class="dv">24</span><span class="op">;</span> <span class="co">// Increase n to have a larger workload</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> <span class="op">*</span>in<span class="op">,</span> <span class="op">*</span>out<span class="op">;</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    cudaMallocManaged<span class="op">(&amp;</span>in<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    cudaMallocManaged<span class="op">(&amp;</span>out<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    initializeArray<span class="op">(</span>in<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> blockSize <span class="op">=</span> <span class="dv">128</span><span class="op">;</span> <span class="co">// Define block size</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// int blockSize = 1024; // change this when talking about occupancy</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numBlocks <span class="op">=</span> <span class="op">(</span>n <span class="op">+</span> blockSize <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> blockSize<span class="op">;</span> <span class="co">// Ensure there are enough blocks to cover all elements</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch non-coalesced kernel</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    copyDataNonCoalesced<span class="op">&lt;&lt;&lt;</span>numBlocks<span class="op">,</span> blockSize<span class="op">&gt;&gt;&gt;(</span>in<span class="op">,</span> out<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    cudaDeviceSynchronize<span class="op">();</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    initializeArray<span class="op">(</span>out<span class="op">,</span> n<span class="op">);</span> <span class="co">// Reset output array</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch coalesced kernel</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    copyDataCoalesced<span class="op">&lt;&lt;&lt;</span>numBlocks<span class="op">,</span> blockSize<span class="op">&gt;&gt;&gt;(</span>in<span class="op">,</span> out<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    cudaDeviceSynchronize<span class="op">();</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>in<span class="op">);</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>out<span class="op">);</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Coalesced version:</strong> Threads access contiguous memory locations.</li>
+<li><strong>Non-coalesced version:</strong> Threads access memory locations with strides (skipping elements).</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called benchmark</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> benchmark coalesce.cu</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the benchmark</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> benchmark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Metrics:</strong> DRAM throughput, L1 cache throughput, kernel duration.</p></li>
+<li><p><strong>Lecture Results (T4):</strong></p>
+<ul>
+<li><p><strong>Non-coalesced:</strong> Lower L1 cache throughput, higher DRAM throughput, slower kernel duration.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>cycle/nsecond</td>
+<td>4.97</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>cycle/usecond</td>
+<td>581.85</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>444595</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>89.74</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>89.74</td>
+</tr>
+<tr class="even">
+<td><strong>Duration</strong></td>
+<td>usecond</td>
+<td><strong>764.10</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>L1/TEX Cache Throughput</strong></td>
+<td>%</td>
+<td><strong>29.51</strong></td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>30.26</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>443190.15</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>25.06</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Coalesced:</strong> Higher L1 cache throughput, lower DRAM throughput, significantly faster kernel duration.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>cycle/nsecond</td>
+<td>4.97</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>cycle/usecond</td>
+<td>582.33</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>325426</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>82.13</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>82.13</td>
+</tr>
+<tr class="even">
+<td><strong>Duration</strong></td>
+<td>usecond</td>
+<td><strong>558.82</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>L1/TEX Cache Throughput</strong></td>
+<td>%</td>
+<td><strong>36.70</strong></td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>27.57</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>323347.40</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>24.17</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Personal Results (RTX 4090):</strong></p>
+<ul>
+<li><p><strong>Non-coalesced:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.49</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.23</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>458,344</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>94.34</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>94.34</td>
+</tr>
+<tr class="even">
+<td><strong>Duration</strong></td>
+<td>us</td>
+<td><strong>205.12</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>L1/TEX Cache Throughput</strong></td>
+<td>%</td>
+<td><strong>9.52</strong></td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>34.92</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>414,499.87</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>8.31</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Coalesced:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.49</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.23</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>265,803</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>93.54</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>93.54</td>
+</tr>
+<tr class="even">
+<td><strong>Duration</strong></td>
+<td>us</td>
+<td><strong>118.98</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>L1/TEX Cache Throughput</strong></td>
+<td>%</td>
+<td><strong>17.47</strong></td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>31.50</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>206,343.47</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>11.56</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Key takeaway:</strong> Coalesced memory accesses significantly improve performance, especially for larger inputs.</p>
+<p>​</p></li>
+</ul>
+</section>
+<section id="case-study-2-maximizing-occupancy" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-2-maximizing-occupancy">Case Study 2: Maximizing Occupancy</h2>
+<ul>
+<li><p><strong>Occupancy:</strong> The ratio of active warps to the maximum number of warps a streaming multiprocessor (SM) can handle.</p></li>
+<li><p><strong>Tile Quantization:</strong> Occurs when matrix dimensions are not divisible by the thread block tile size.</p></li>
+<li><p><strong>Wave Quantization:</strong> Occurs when the total number of tiles is not divisible by the number of SMs.</p></li>
+<li><p><strong>NCU Warning:</strong> Indicates tile or wave quantization issues.</p></li>
+<li><p><strong>Example:</strong> Matrix multiplication with varying inner dimension (k).</p>
+<ul>
+<li><strong>NVIDIA Documentation:</strong> <a href="https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html">Matrix Multiplication Background User’s Guide</a></li>
+</ul></li>
+<li><p><strong>Results:</strong> Performance can vary significantly (up to 4x) depending on the divisibility of k by the optimal tile size.</p></li>
+<li><p><strong>Padding:</strong> A common technique in PyTorch to ensure matrix dimensions are multiples of optimal values.</p></li>
+<li><p><strong>Optimal Tile Sizes (from <a href="https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#requirements-tc">Matrix Multiplication Background User’s Guide</a>):</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 32%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tensor Cores can be used for…</th>
+<th>cuBLAS version &lt; 11.0 cuDNN version &lt; 7.6.3</th>
+<th>cuBLAS version ≥ 11.0 cuDNN version ≥ 7.6.3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>INT8</td>
+<td>Multiples of 16</td>
+<td>Always but most efficient with multiples of 16; on A100, multiples of 128.</td>
+</tr>
+<tr class="even">
+<td>FP16</td>
+<td>Multiples of 8</td>
+<td>Always but most efficient with multiples of 8; on A100, multiples of 64.</td>
+</tr>
+<tr class="odd">
+<td>TF32</td>
+<td>N/A</td>
+<td>Always but most efficient with multiples of 4; on A100, multiples of 32.</td>
+</tr>
+<tr class="even">
+<td>FP64</td>
+<td>N/A</td>
+<td>Always but most efficient with multiples of 2; on A100, multiples of 16.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>A100 (Tensor Cores):</strong> int8 (multiples of 16, 128), FP16 (multiples of 8, 64), TF32 (multiples of 4, 32), FP64 (multiples of 2, 16).</li>
+</ul></li>
+<li><p><strong>CUDA Occupancy Calculator:</strong> A tool that recommends optimal block and grid sizes for a given kernel and hardware.</p></li>
+<li><p><strong>Example:</strong> Using <code>cudaOccupancyMaxPotentialBlockSize</code> function to determine optimal block and grid sizes.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda_runtime.h&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> copyDataCoalesced<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>in<span class="op">,</span> <span class="dt">float</span> <span class="op">*</span>out<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> index <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>index <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        out<span class="op">[</span>index<span class="op">]</span> <span class="op">=</span> in<span class="op">[</span>index<span class="op">];</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initializeArray<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>arr<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span><span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        arr<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="kw">static_cast</span><span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;(</span>i<span class="op">);</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> n <span class="op">=</span> <span class="dv">1</span> <span class="op">&lt;&lt;</span> <span class="dv">24</span><span class="op">;</span> <span class="co">// Adjust the data size for workload</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> <span class="op">*</span>in<span class="op">,</span> <span class="op">*</span>out<span class="op">;</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    cudaMallocManaged<span class="op">(&amp;</span>in<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    cudaMallocManaged<span class="op">(&amp;</span>out<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    initializeArray<span class="op">(</span>in<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> blockSize <span class="op">=</span> <span class="dv">1024</span><span class="op">;</span> <span class="co">// Optimal block size for many devices</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numBlocks <span class="op">=</span> <span class="op">(</span>n <span class="op">+</span> blockSize <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> blockSize<span class="op">;</span> <span class="co">// Calculate the number of blocks</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Optimize grid dimensions based on device properties</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> minGridSize <span class="op">=</span> <span class="dv">40</span><span class="op">;</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    cudaOccupancyMaxPotentialBlockSize<span class="op">(&amp;</span>minGridSize<span class="op">,</span> <span class="op">&amp;</span>blockSize<span class="op">,</span> copyDataCoalesced<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Print suggested block size and minimum grid size</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout <span class="op">&lt;&lt;</span> <span class="st">"Recommended block size: "</span> <span class="op">&lt;&lt;</span> blockSize</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> <span class="st">", Minimum grid size: "</span> <span class="op">&lt;&lt;</span> minGridSize <span class="op">&lt;&lt;</span> <span class="bu">std::</span>endl<span class="op">;</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    numBlocks <span class="op">=</span> <span class="op">(</span>n <span class="op">+</span> blockSize <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> blockSize<span class="op">;</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch coalesced kernel</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    copyDataCoalesced<span class="op">&lt;&lt;&lt;</span>numBlocks<span class="op">,</span> blockSize<span class="op">&gt;&gt;&gt;(</span>in<span class="op">,</span> out<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    cudaDeviceSynchronize<span class="op">();</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>in<span class="op">);</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>out<span class="op">);</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called benchmark</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> benchmark occupancy.cu</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the benchmark</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> benchmark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Lecture Results (T4):</strong> Significant performance improvement by using recommended block and grid sizes.</p>
+<pre class="text"><code>Recommended block size: 1024, Minimum grid size: 40</code></pre></li>
+<li><p><strong>Personal Results (RTX 4090):</strong></p>
+<pre class="text"><code>Recommended block size: 768, Minimum grid size: 256</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.49</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.23</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>265,182</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>93.62</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>93.62</td>
+</tr>
+<tr class="even">
+<td><strong>Duration</strong></td>
+<td>us</td>
+<td><strong>118.69</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>L1/TEX Cache Throughput</strong></td>
+<td>%</td>
+<td><strong>17.08</strong></td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>28.70</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>246,167.14</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>11.32</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Key takeaway:</strong> Maximizing occupancy is crucial for achieving optimal performance, especially for compute-bound kernels.</p></li>
+</ul>
+</section>
+<section id="understanding-memory-vs.-compute-bound-workloads" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-memory-vs.-compute-bound-workloads">Understanding Memory vs.&nbsp;Compute Bound Workloads</h2>
+<ul>
+<li><p><strong>Slides:</strong> <a href="https://developer.download.nvidia.com/video/gputechconf/gtc/2019/presentation/s9926-tensor-core-performance-the-ultimate-guide.pdf">NVIDIA Tensor Core DL Performance Guide</a></p></li>
+<li><p><strong>Memory-bound kernels:</strong> Bottlenecked by memory bandwidth.</p></li>
+<li><p><strong>Compute-bound kernels:</strong> Bottlenecked by GPU compute capability.</p></li>
+<li><p><strong>Operational Intensity:</strong> A key metric to determine if a kernel is memory or compute bound.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Operation</th>
+<th>Arithmetic Intensity</th>
+<th>Limiter</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Residual addition</td>
+<td>0.166</td>
+<td>Memory</td>
+</tr>
+<tr class="even">
+<td>ReLU activation</td>
+<td>0.25</td>
+<td>Memory</td>
+</tr>
+<tr class="odd">
+<td>Batch normalization</td>
+<td>O(10)</td>
+<td>Memory</td>
+</tr>
+<tr class="even">
+<td>Convolution</td>
+<td>1-10000+</td>
+<td>Memory/Math</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Examples of Arithmetic Intensity Calculation:</strong></p>
+<ul>
+<li><strong>Pointwise Functions (e.g., ReLU):</strong>
+<ul>
+<li><strong>Float32:</strong> Arithmetic intensity of 1/8 (general case) or 1/4 (best case).</li>
+<li><strong>Float16:</strong> Arithmetic intensity of 1/4.</li>
+</ul></li>
+<li><strong>Matrix Multiplication:</strong>
+<ul>
+<li><strong><code>A = [m,n]</code> <code>B = [n,k]</code>:</strong> 2mnk / (mn + nk + mk)</li>
+<li>Generally compute-bound for larger matrices.</li>
+<li>Can become memory bandwidth bound for very small matrices.</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Optimizations for Memory-Bound Kernels:</strong></p>
+<ul>
+<li><strong>Fusions:</strong> Combining multiple operations into a single kernel to reduce memory accesses.</li>
+<li><strong>Quantization:</strong> Reducing data type size to improve arithmetic intensity.</li>
+<li><strong>Compilation:</strong> Using compilers like Torch Compiler to optimize memory access patterns and reduce overhead.</li>
+</ul></li>
+<li><p><strong>Optimizations for Compute-Bound Kernels:</strong></p>
+<ul>
+<li><strong>Algorithm optimization:</strong> Rewriting the algorithm with fewer operations or improved mathematical formulations.</li>
+</ul></li>
+<li><p><strong>Key takeaway:</strong> Understanding the bottleneck (memory or compute) is crucial for selecting the right optimization strategies.</p></li>
+</ul>
+</section>
+<section id="case-study-3-minimizing-control-divergence" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-3-minimizing-control-divergence">Case Study 3: Minimizing Control Divergence</h2>
+<ul>
+<li><p><strong>Control Divergence:</strong> Occurs when threads within a warp execute different instructions due to conditional statements (if-else).</p></li>
+<li><p><strong>Warp:</strong> A group of 32 threads scheduled together on a SM.</p></li>
+<li><p><strong>Problem:</strong> Divergent threads can lead to idle time and reduced performance.</p></li>
+<li><p><strong>Example:</strong> Kernel with an if-else statement based on even/odd element values.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda_runtime.h&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> processArrayWithDivergence<span class="op">(</span><span class="dt">int</span> <span class="op">*</span>data<span class="op">,</span> <span class="dt">int</span> N<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> idx <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>idx <span class="op">&lt;</span> N<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>data<span class="op">[</span>idx<span class="op">]</span> <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>            data<span class="op">[</span>idx<span class="op">]</span> <span class="op">=</span> data<span class="op">[</span>idx<span class="op">]</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>            data<span class="op">[</span>idx<span class="op">]</span> <span class="op">=</span> data<span class="op">[</span>idx<span class="op">]</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> processArrayWithoutDivergence<span class="op">(</span><span class="dt">int</span> <span class="op">*</span>data<span class="op">,</span> <span class="dt">int</span> N<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> idx <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>idx <span class="op">&lt;</span> N<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> isEven <span class="op">=</span> <span class="op">!(</span>data<span class="op">[</span>idx<span class="op">]</span> <span class="op">%</span> <span class="dv">2</span><span class="op">);</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        data<span class="op">[</span>idx<span class="op">]</span> <span class="op">=</span> isEven <span class="op">*</span> <span class="op">(</span>data<span class="op">[</span>idx<span class="op">]</span> <span class="op">*</span> <span class="dv">2</span><span class="op">)</span> <span class="op">+</span> <span class="op">(!</span>isEven<span class="op">)</span> <span class="op">*</span> <span class="op">(</span>data<span class="op">[</span>idx<span class="op">]</span> <span class="op">+</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> benchmarkKernel<span class="op">(</span><span class="dt">void</span> <span class="op">(*</span>kernel<span class="op">)(</span><span class="dt">int</span> <span class="op">*,</span> <span class="dt">int</span><span class="op">),</span> <span class="dt">int</span> <span class="op">*</span>data<span class="op">,</span> <span class="dt">int</span> N<span class="op">,</span> <span class="at">const</span> <span class="dt">char</span> <span class="op">*</span>kernelName<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> <span class="op">*</span>devData<span class="op">;</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>devData<span class="op">,</span> N <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">int</span><span class="op">));</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>devData<span class="op">,</span> data<span class="op">,</span> N <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">int</span><span class="op">),</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="dt">cudaEvent_t</span> start<span class="op">,</span> stop<span class="op">;</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    cudaEventCreate<span class="op">(&amp;</span>start<span class="op">);</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    cudaEventCreate<span class="op">(&amp;</span>stop<span class="op">);</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> threadsPerBlock <span class="op">=</span> <span class="dv">256</span><span class="op">;</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> blocksPerGrid <span class="op">=</span> <span class="op">(</span>N <span class="op">+</span> threadsPerBlock <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> threadsPerBlock<span class="op">;</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    cudaEventRecord<span class="op">(</span>start<span class="op">);</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    kernel<span class="op">&lt;&lt;&lt;</span>blocksPerGrid<span class="op">,</span> threadsPerBlock<span class="op">&gt;&gt;&gt;(</span>devData<span class="op">,</span> N<span class="op">);</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    cudaEventRecord<span class="op">(</span>stop<span class="op">);</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    cudaEventSynchronize<span class="op">(</span>stop<span class="op">);</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> milliseconds <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    cudaEventElapsedTime<span class="op">(&amp;</span>milliseconds<span class="op">,</span> start<span class="op">,</span> stop<span class="op">);</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">"</span><span class="sc">%s</span><span class="st"> took </span><span class="sc">%f</span><span class="st"> milliseconds</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> kernelName<span class="op">,</span> milliseconds<span class="op">);</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>data<span class="op">,</span> devData<span class="op">,</span> N <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">int</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>devData<span class="op">);</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>    cudaEventDestroy<span class="op">(</span>start<span class="op">);</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>    cudaEventDestroy<span class="op">(</span>stop<span class="op">);</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> N <span class="op">=</span> <span class="dv">1</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span><span class="op">;</span> <span class="co">// Example size</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> <span class="op">*</span>data <span class="op">=</span> <span class="op">(</span><span class="dt">int</span> <span class="op">*)</span>malloc<span class="op">(</span>N <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">int</span><span class="op">));</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize data</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span><span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> N<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>        data<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> i<span class="op">;</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>    benchmarkKernel<span class="op">(</span>processArrayWithDivergence<span class="op">,</span> data<span class="op">,</span> N<span class="op">,</span> <span class="st">"processArrayWithDivergence"</span><span class="op">);</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>    benchmarkKernel<span class="op">(</span>processArrayWithoutDivergence<span class="op">,</span> data<span class="op">,</span> N<span class="op">,</span> <span class="st">"processArrayWithoutDivergence"</span><span class="op">);</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>data<span class="op">);</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Solution:</strong> Rewrite the if-else statement using clever algebra to eliminate branching.</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called benchmark</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> benchmark divergence.cu</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the benchmark</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> <span class="at">--set</span> full benchmark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Lecture Results (T4):</strong> Significant performance improvement (up to 3x speedup) by reducing branch instructions and improving warp efficiency.</p>
+<ul>
+<li><p>With Divergence:</p>
+<pre class="text"><code>processArrayWithDivergence took 0.074272 milliseconds</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Branch Instructions Ratio</td>
+<td>%</td>
+<td>0.18</td>
+</tr>
+<tr class="even">
+<td>Branch Instructions</td>
+<td>inst</td>
+<td>98304</td>
+</tr>
+<tr class="odd">
+<td>Branch Efficiency</td>
+<td>%</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Avg. Divergent Branches</td>
+<td></td>
+<td>0</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>Without Divergence:</p>
+<pre class="text"><code>processArrayWithoutDivergence took 0.024704 milliseconds</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Branch Instructions Ratio</td>
+<td>%</td>
+<td>0.13</td>
+</tr>
+<tr class="even">
+<td>Branch Instructions</td>
+<td>inst</td>
+<td>65536</td>
+</tr>
+<tr class="odd">
+<td>Branch Efficiency</td>
+<td>%</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Avg. Divergent Branches</td>
+<td>-</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Personal Results (RTX 4090):</strong></p>
+<ul>
+<li><p>With Divergence:</p>
+<pre class="text"><code>processArrayWithDivergence took 0.032224 milliseconds</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Branch Instructions Ratio</td>
+<td>%</td>
+<td>0.17</td>
+</tr>
+<tr class="even">
+<td>Branch Instructions</td>
+<td>inst</td>
+<td>98,304</td>
+</tr>
+<tr class="odd">
+<td>Branch Efficiency</td>
+<td>%</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Avg. Divergent Branches</td>
+<td></td>
+<td>0</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>Without Divergence:</p>
+<pre class="text"><code>processArrayWithoutDivergence took 0.107680 milliseconds</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Branch Instructions Ratio</td>
+<td>%</td>
+<td>0.12</td>
+</tr>
+<tr class="even">
+<td>Branch Instructions</td>
+<td>inst</td>
+<td>65,536</td>
+</tr>
+<tr class="odd">
+<td>Branch Efficiency</td>
+<td>%</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Avg. Divergent Branches</td>
+<td></td>
+<td>0</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Key takeaway:</strong> Minimizing control divergence is important for maintaining high warp utilization and overall performance.</p></li>
+</ul>
+</section>
+<section id="case-study-4-thread-coarsening" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-4-thread-coarsening">Case Study 4: Thread Coarsening</h2>
+<ul>
+<li><p><strong>Thread Coarsening:</strong> Increasing the workload per thread, especially beneficial for memory-bound kernels.</p></li>
+<li><p><strong>Example:</strong> Vector addition kernel.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define N </span><span class="dv">1024</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#define THREADS_PER_BLOCK </span><span class="dv">256</span><span class="pp"> </span><span class="co">// This is just an example block size</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Original vector addition kernel without coarsening</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> VecAdd<span class="op">(</span><span class="dt">float</span><span class="op">*</span> A<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> B<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> C<span class="op">)</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>i <span class="op">&lt;</span> N<span class="op">)</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        C<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> A<span class="op">[</span>i<span class="op">]</span> <span class="op">+</span> B<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co">// Vector addition kernel with thread coarsening</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="co">// Assuming a coarsening factor of 2</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> VecAddCoarsened<span class="op">(</span><span class="dt">float</span><span class="op">*</span> A<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> B<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> C<span class="op">)</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i <span class="op">=</span> <span class="op">(</span>blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">)</span> <span class="op">*</span> <span class="dv">2</span><span class="op">;</span> <span class="co">// Coarsening factor applied here</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>i <span class="op">&lt;</span> N<span class="op">)</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        C<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> A<span class="op">[</span>i<span class="op">]</span> <span class="op">+</span> B<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>i <span class="op">+</span> <span class="dv">1</span> <span class="op">&lt;</span> N<span class="op">)</span> <span class="co">// Handle the additional element due to coarsening</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        C<span class="op">[</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">]</span> <span class="op">=</span> A<span class="op">[</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">]</span> <span class="op">+</span> B<span class="op">[</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">];</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> random_init<span class="op">(</span><span class="dt">float</span><span class="op">*</span> data<span class="op">,</span> <span class="dt">int</span> size<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> size<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>        data<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> rand<span class="op">()</span> <span class="op">/</span> <span class="op">(</span><span class="dt">float</span><span class="op">)</span>RAND_MAX<span class="op">;</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> <span class="op">*</span>a<span class="op">,</span> <span class="op">*</span>b<span class="op">,</span> <span class="op">*</span>c<span class="op">;</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> <span class="op">*</span>d_a<span class="op">,</span> <span class="op">*</span>d_b<span class="op">,</span> <span class="op">*</span>d_c<span class="op">;</span> <span class="co">// device copies of a, b, c</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> size <span class="op">=</span> N <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">);</span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate space for device copies of a, b, c</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">((</span><span class="dt">void</span> <span class="op">**)&amp;</span>d_a<span class="op">,</span> size<span class="op">);</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">((</span><span class="dt">void</span> <span class="op">**)&amp;</span>d_b<span class="op">,</span> size<span class="op">);</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">((</span><span class="dt">void</span> <span class="op">**)&amp;</span>d_c<span class="op">,</span> size<span class="op">);</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate space for host copies of a, b, c and setup input values</span></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> <span class="op">(</span><span class="dt">float</span> <span class="op">*)</span>malloc<span class="op">(</span>size<span class="op">);</span> random_init<span class="op">(</span>a<span class="op">,</span> N<span class="op">);</span></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> <span class="op">(</span><span class="dt">float</span> <span class="op">*)</span>malloc<span class="op">(</span>size<span class="op">);</span> random_init<span class="op">(</span>b<span class="op">,</span> N<span class="op">);</span></span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> <span class="op">(</span><span class="dt">float</span> <span class="op">*)</span>malloc<span class="op">(</span>size<span class="op">);</span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>    <span class="dt">cudaEvent_t</span> start<span class="op">,</span> stop<span class="op">,</span> startCoarsened<span class="op">,</span> stopCoarsened<span class="op">;</span></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>    cudaEventCreate<span class="op">(&amp;</span>start<span class="op">);</span></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>    cudaEventCreate<span class="op">(&amp;</span>stop<span class="op">);</span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>    cudaEventCreate<span class="op">(&amp;</span>startCoarsened<span class="op">);</span></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>    cudaEventCreate<span class="op">(&amp;</span>stopCoarsened<span class="op">);</span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy inputs to device</span></span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_a<span class="op">,</span> a<span class="op">,</span> size<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_b<span class="op">,</span> b<span class="op">,</span> size<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Start timer for VecAdd kernel</span></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>    cudaEventRecord<span class="op">(</span>start<span class="op">);</span></span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>    VecAdd<span class="op">&lt;&lt;&lt;(</span>N <span class="op">+</span> THREADS_PER_BLOCK <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> THREADS_PER_BLOCK<span class="op">,</span> THREADS_PER_BLOCK<span class="op">&gt;&gt;&gt;(</span>d_a<span class="op">,</span> d_b<span class="op">,</span> d_c<span class="op">);</span></span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>    cudaEventRecord<span class="op">(</span>stop<span class="op">);</span></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Wait for VecAdd kernel to finish</span></span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a>    cudaEventSynchronize<span class="op">(</span>stop<span class="op">);</span></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> milliseconds <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a>    cudaEventElapsedTime<span class="op">(&amp;</span>milliseconds<span class="op">,</span> start<span class="op">,</span> stop<span class="op">);</span></span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">"VecAdd execution time: </span><span class="sc">%f</span><span class="st"> ms</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> milliseconds<span class="op">);</span></span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Start timer for VecAddCoarsened kernel</span></span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a>    cudaEventRecord<span class="op">(</span>startCoarsened<span class="op">);</span></span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a>    VecAddCoarsened<span class="op">&lt;&lt;&lt;(</span>N <span class="op">+</span> <span class="dv">2</span><span class="op">*</span>THREADS_PER_BLOCK <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="dv">2</span><span class="op">*</span>THREADS_PER_BLOCK<span class="op">),</span> THREADS_PER_BLOCK<span class="op">&gt;&gt;&gt;(</span>d_a<span class="op">,</span> d_b<span class="op">,</span> d_c<span class="op">);</span></span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a>    cudaEventRecord<span class="op">(</span>stopCoarsened<span class="op">);</span></span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Wait for VecAddCoarsened kernel to finish</span></span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a>    cudaEventSynchronize<span class="op">(</span>stopCoarsened<span class="op">);</span></span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> millisecondsCoarsened <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a>    cudaEventElapsedTime<span class="op">(&amp;</span>millisecondsCoarsened<span class="op">,</span> startCoarsened<span class="op">,</span> stopCoarsened<span class="op">);</span></span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">"VecAddCoarsened execution time: </span><span class="sc">%f</span><span class="st"> ms</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> millisecondsCoarsened<span class="op">);</span></span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy result back to host</span></span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>c<span class="op">,</span> d_c<span class="op">,</span> size<span class="op">,</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Clean up</span></span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_a<span class="op">);</span> cudaFree<span class="op">(</span>d_b<span class="op">);</span> cudaFree<span class="op">(</span>d_c<span class="op">);</span></span>
+<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>a<span class="op">);</span> free<span class="op">(</span>b<span class="op">);</span> free<span class="op">(</span>c<span class="op">);</span></span>
+<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a>    cudaEventDestroy<span class="op">(</span>start<span class="op">);</span></span>
+<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a>    cudaEventDestroy<span class="op">(</span>stop<span class="op">);</span></span>
+<span id="cb14-89"><a href="#cb14-89" aria-hidden="true" tabindex="-1"></a>    cudaEventDestroy<span class="op">(</span>startCoarsened<span class="op">);</span></span>
+<span id="cb14-90"><a href="#cb14-90" aria-hidden="true" tabindex="-1"></a>    cudaEventDestroy<span class="op">(</span>stopCoarsened<span class="op">);</span></span>
+<span id="cb14-91"><a href="#cb14-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-92"><a href="#cb14-92" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb14-93"><a href="#cb14-93" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Standard version:</strong> Each thread handles one element.</li>
+<li><strong>Coarsened version:</strong> Each thread handles two elements (coarsening factor of 2).</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called benchmark</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> benchmark coarsening.cu</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the benchmark</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> benchmark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Lecture Results (T4):</strong> Dramatic performance improvement by reducing the number of memory accesses.</p>
+<ul>
+<li><p>Without Coarsening:</p>
+<pre class="text"><code>VecAdd execution time: 0.235264 ms</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>cycle/nsecond</td>
+<td>4.70</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>cycle/usecond</td>
+<td>553.39</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>2321</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>0.81</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>0.81</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>usecond</td>
+<td>4.19</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>27.52</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>0.72</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>29.07</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>0.28</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>With Coarsening:</p>
+<pre class="text"><code>VecAddCoarsened execution time: 0.020480 ms</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>cycle/nsecond</td>
+<td>4.68</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>cycle/usecond</td>
+<td>547.36</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>2488</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>1.10</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>1.10</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>usecond</td>
+<td>4.54</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>38.64</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>0.74</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>33.12</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>0.26</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Personal Results (RTX 4090):</strong></p>
+<ul>
+<li><p>Without Coarsening:</p>
+<pre class="text"><code>VecAdd execution time: 0.082944 ms</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.19</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.17</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>4,244</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>0.67</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>0.57</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>us</td>
+<td>1.95</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>17.10</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>0.67</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>52.64</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>0.05</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>With Coarsening:</p>
+<pre class="text"><code>VecAddCoarsened execution time: 0.008192 ms</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.29</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.18</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>4,402</td>
+</tr>
+<tr class="even">
+<td><strong>Memory Throughput</strong></td>
+<td>%</td>
+<td><strong>0.74</strong></td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>0.57</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>us</td>
+<td>2.02</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>29.11</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>0.74</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>30.92</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>0.04</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Note:</strong> Larger coarsening factors may not always yield further improvements (Zippy’s experiments in CUDA Mode Discord).</p></li>
+<li><p><strong>Key takeaway:</strong> Thread coarsening can significantly improve performance for memory-bound kernels by reducing memory traffic.</p></li>
+</ul>
+</section>
+<section id="case-study-5-privatization" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-5-privatization">Case Study 5: Privatization</h2>
+<ul>
+<li><p><strong>Privatization:</strong> Using local copies of data to minimize global memory accesses.</p></li>
+<li><p><strong>Example 1:</strong> Vector addition with private variables.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda_runtime.h&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">// CUDA kernel for vector addition without privatization</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> vectorAdd<span class="op">(</span><span class="at">const</span> <span class="dt">float</span> <span class="op">*</span>a<span class="op">,</span> <span class="at">const</span> <span class="dt">float</span> <span class="op">*</span>b<span class="op">,</span> <span class="dt">float</span> <span class="op">*</span>result<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> index <span class="op">=</span> threadIdx<span class="op">.</span>x <span class="op">+</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>index <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        result<span class="op">[</span>index<span class="op">]</span> <span class="op">=</span> a<span class="op">[</span>index<span class="op">]</span> <span class="op">+</span> b<span class="op">[</span>index<span class="op">];</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="co">// CUDA kernel for vector addition with privatization</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> vectorAddPrivatized<span class="op">(</span><span class="at">const</span> <span class="dt">float</span> <span class="op">*</span>a<span class="op">,</span> <span class="at">const</span> <span class="dt">float</span> <span class="op">*</span>b<span class="op">,</span> <span class="dt">float</span> <span class="op">*</span>result<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> index <span class="op">=</span> threadIdx<span class="op">.</span>x <span class="op">+</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>index <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> a_private <span class="op">=</span> a<span class="op">[</span>index<span class="op">];</span> <span class="co">// Load into private memory</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">float</span> b_private <span class="op">=</span> b<span class="op">[</span>index<span class="op">];</span> <span class="co">// Load into private memory</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>        result<span class="op">[</span>index<span class="op">]</span> <span class="op">=</span> a_private <span class="op">+</span> b_private<span class="op">;</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="co">// Function to initialize the vectors with dummy data</span></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initData<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>data<span class="op">,</span> <span class="dt">int</span> size<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> size<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>        data<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> i<span class="op">;</span></span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> n <span class="op">=</span> <span class="dv">1</span><span class="op">&lt;&lt;</span><span class="dv">20</span><span class="op">;</span> <span class="co">// Size of the vectors</span></span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> <span class="op">*</span>a<span class="op">,</span> <span class="op">*</span>b<span class="op">,</span> <span class="op">*</span>result<span class="op">,</span> <span class="op">*</span>d_a<span class="op">,</span> <span class="op">*</span>d_b<span class="op">,</span> <span class="op">*</span>d_result<span class="op">;</span></span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on the host</span></span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">*)</span>malloc<span class="op">(</span>n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">*)</span>malloc<span class="op">(</span>n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="op">(</span><span class="dt">float</span><span class="op">*)</span>malloc<span class="op">(</span>n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize vectors</span></span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a>    initData<span class="op">(</span>a<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>    initData<span class="op">(</span>b<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on the device</span></span>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_a<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_b<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_result<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy vectors from host to device</span></span>
+<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_a<span class="op">,</span> a<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_b<span class="op">,</span> b<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define number of blocks and threads</span></span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> threadsPerBlock <span class="op">=</span> <span class="dv">256</span><span class="op">;</span></span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> blocksPerGrid <span class="op">=</span> <span class="op">(</span>n <span class="op">+</span> threadsPerBlock <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> threadsPerBlock<span class="op">;</span></span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch the vector addition kernel without privatization</span></span>
+<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>    vectorAdd<span class="op">&lt;&lt;&lt;</span>blocksPerGrid<span class="op">,</span> threadsPerBlock<span class="op">&gt;&gt;&gt;(</span>d_a<span class="op">,</span> d_b<span class="op">,</span> d_result<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy result back to host</span></span>
+<span id="cb20-59"><a href="#cb20-59" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>result<span class="op">,</span> d_result<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb20-60"><a href="#cb20-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-61"><a href="#cb20-61" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch the vector addition kernel with privatization</span></span>
+<span id="cb20-62"><a href="#cb20-62" aria-hidden="true" tabindex="-1"></a>    vectorAddPrivatized<span class="op">&lt;&lt;&lt;</span>blocksPerGrid<span class="op">,</span> threadsPerBlock<span class="op">&gt;&gt;&gt;(</span>d_a<span class="op">,</span> d_b<span class="op">,</span> d_result<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb20-63"><a href="#cb20-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-64"><a href="#cb20-64" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy result back to host</span></span>
+<span id="cb20-65"><a href="#cb20-65" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>result<span class="op">,</span> d_result<span class="op">,</span> n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb20-66"><a href="#cb20-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-67"><a href="#cb20-67" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Cleanup</span></span>
+<span id="cb20-68"><a href="#cb20-68" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_a<span class="op">);</span></span>
+<span id="cb20-69"><a href="#cb20-69" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_b<span class="op">);</span></span>
+<span id="cb20-70"><a href="#cb20-70" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_result<span class="op">);</span></span>
+<span id="cb20-71"><a href="#cb20-71" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>a<span class="op">);</span></span>
+<span id="cb20-72"><a href="#cb20-72" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>b<span class="op">);</span></span>
+<span id="cb20-73"><a href="#cb20-73" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>result<span class="op">);</span></span>
+<span id="cb20-74"><a href="#cb20-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-75"><a href="#cb20-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb20-76"><a href="#cb20-76" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Vector Addition without Privatization:</strong> Directly accesses global memory for each operation.</li>
+<li><strong>Vector Addition with Privatization:</strong> Loads data into private variables before performing operations.</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called benchmark</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> benchmark privatization.cu</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the benchmark</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> benchmark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Lecture Results (T4):</strong> No significant performance improvement in this specific example.</p></li>
+<li><p><strong>Personal Results (RTX 4090):</strong></p>
+<ul>
+<li><p><strong>Not Privatized:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.44</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.22</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>24,774</td>
+</tr>
+<tr class="even">
+<td>Memory Throughput</td>
+<td>%</td>
+<td>77.39</td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>77.39</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>us</td>
+<td>11.14</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>11.14</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>33.19</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>20,122.48</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>8.64</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Privatized:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.44</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.23</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>28,775</td>
+</tr>
+<tr class="even">
+<td>Memory Throughput</td>
+<td>%</td>
+<td>80.72</td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>80.72</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>us</td>
+<td>12.93</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>11.33</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>28.59</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>20,259.88</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>8.77</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Example 2:</strong> Sliding window algorithm using shared memory.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;stdio.h&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;cuda_runtime.h&gt;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="op">//</span> Kernel without privatization: Direct <span class="kw">global</span> memory access</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>__global__ void windowSumDirect(const <span class="bu">float</span> <span class="op">*</span><span class="bu">input</span>, <span class="bu">float</span> <span class="op">*</span>output, <span class="bu">int</span> n, <span class="bu">int</span> windowSize) {</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> idx <span class="op">=</span> blockIdx.x <span class="op">*</span> blockDim.x <span class="op">+</span> threadIdx.x<span class="op">;</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> halfWindow <span class="op">=</span> windowSize <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (idx <span class="op">&lt;</span> n) {</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">float</span> <span class="bu">sum</span> <span class="op">=</span> <span class="fl">0.0</span><span class="er">f</span><span class="op">;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="bu">int</span> i <span class="op">=</span> <span class="op">-</span>halfWindow<span class="op">;</span> i <span class="op">&lt;=</span> halfWindow<span class="op">;</span> <span class="op">++</span>i) {</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>            <span class="bu">int</span> accessIdx <span class="op">=</span> idx <span class="op">+</span> i<span class="op">;</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (accessIdx <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> accessIdx <span class="op">&lt;</span> n) {</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>                <span class="bu">sum</span> <span class="op">+=</span> <span class="bu">input</span>[accessIdx]<span class="op">;</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>        output[idx] <span class="op">=</span> <span class="bu">sum</span><span class="op">;</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="op">//</span> Kernel <span class="cf">with</span> privatization: Preload window elements into registers</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>__global__ void windowSumPrivatized(const <span class="bu">float</span> <span class="op">*</span><span class="bu">input</span>, <span class="bu">float</span> <span class="op">*</span>output, <span class="bu">int</span> n, <span class="bu">int</span> windowSize) {</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> idx <span class="op">=</span> blockIdx.x <span class="op">*</span> blockDim.x <span class="op">+</span> threadIdx.x<span class="op">;</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> halfWindow <span class="op">=</span> windowSize <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>    __shared__ <span class="bu">float</span> sharedData[<span class="dv">1024</span>]<span class="op">;</span> <span class="op">//</span> Assuming blockDim.x <span class="op">&lt;=</span> <span class="dv">1024</span></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> Load <span class="bu">input</span> into shared memory (<span class="cf">for</span> demonstration, assuming window fits into shared memory)</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (idx <span class="op">&lt;</span> n) {</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>        sharedData[threadIdx.x] <span class="op">=</span> <span class="bu">input</span>[idx]<span class="op">;</span></span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>        __syncthreads()<span class="op">;</span> <span class="op">//</span> Ensure <span class="bu">all</span> loads are complete</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>        <span class="bu">float</span> <span class="bu">sum</span> <span class="op">=</span> <span class="fl">0.0</span><span class="er">f</span><span class="op">;</span></span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (<span class="bu">int</span> i <span class="op">=</span> <span class="op">-</span>halfWindow<span class="op">;</span> i <span class="op">&lt;=</span> halfWindow<span class="op">;</span> <span class="op">++</span>i) {</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>            <span class="bu">int</span> accessIdx <span class="op">=</span> threadIdx.x <span class="op">+</span> i<span class="op">;</span></span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>            <span class="op">//</span> Check bounds within shared memory</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (accessIdx <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> accessIdx <span class="op">&lt;</span> blockDim.x <span class="op">&amp;&amp;</span> (idx <span class="op">+</span> i) <span class="op">&lt;</span> n <span class="op">&amp;&amp;</span> (idx <span class="op">+</span> i) <span class="op">&gt;=</span> <span class="dv">0</span>) {</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>                <span class="bu">sum</span> <span class="op">+=</span> sharedData[accessIdx]<span class="op">;</span></span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>        output[idx] <span class="op">=</span> <span class="bu">sum</span><span class="op">;</span></span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>void initializeArray(<span class="bu">float</span> <span class="op">*</span>arr, <span class="bu">int</span> n) {</span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="bu">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>        arr[i] <span class="op">=</span> <span class="fl">1.0</span><span class="er">f</span><span class="op">;</span> <span class="op">//</span> Simple initialization <span class="cf">for</span> demonstration</span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a><span class="bu">int</span> main() {</span>
+<span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> n <span class="op">=</span> <span class="dv">1</span><span class="op">&lt;&lt;</span><span class="dv">20</span><span class="op">;</span> <span class="op">//</span> Example array size</span>
+<span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> windowSize <span class="op">=</span> <span class="dv">5</span><span class="op">;</span> <span class="op">//</span> Example window size</span>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>    <span class="bu">float</span> <span class="op">*</span><span class="bu">input</span>, <span class="op">*</span>output<span class="op">;</span></span>
+<span id="cb22-53"><a href="#cb22-53" aria-hidden="true" tabindex="-1"></a>    <span class="bu">float</span> <span class="op">*</span>d_input, <span class="op">*</span>d_output<span class="op">;</span></span>
+<span id="cb22-54"><a href="#cb22-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-55"><a href="#cb22-55" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span> <span class="op">=</span> (<span class="bu">float</span><span class="op">*</span>)malloc(n <span class="op">*</span> sizeof(<span class="bu">float</span>))<span class="op">;</span></span>
+<span id="cb22-56"><a href="#cb22-56" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> (<span class="bu">float</span><span class="op">*</span>)malloc(n <span class="op">*</span> sizeof(<span class="bu">float</span>))<span class="op">;</span></span>
+<span id="cb22-57"><a href="#cb22-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-58"><a href="#cb22-58" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> Initialize <span class="bu">input</span> array</span>
+<span id="cb22-59"><a href="#cb22-59" aria-hidden="true" tabindex="-1"></a>    initializeArray(<span class="bu">input</span>, n)<span class="op">;</span></span>
+<span id="cb22-60"><a href="#cb22-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-61"><a href="#cb22-61" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> Allocate device memory</span>
+<span id="cb22-62"><a href="#cb22-62" aria-hidden="true" tabindex="-1"></a>    cudaMalloc(<span class="op">&amp;</span>d_input, n <span class="op">*</span> sizeof(<span class="bu">float</span>))<span class="op">;</span></span>
+<span id="cb22-63"><a href="#cb22-63" aria-hidden="true" tabindex="-1"></a>    cudaMalloc(<span class="op">&amp;</span>d_output, n <span class="op">*</span> sizeof(<span class="bu">float</span>))<span class="op">;</span></span>
+<span id="cb22-64"><a href="#cb22-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-65"><a href="#cb22-65" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> Copy data to device</span>
+<span id="cb22-66"><a href="#cb22-66" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy(d_input, <span class="bu">input</span>, n <span class="op">*</span> sizeof(<span class="bu">float</span>), cudaMemcpyHostToDevice)<span class="op">;</span></span>
+<span id="cb22-67"><a href="#cb22-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-68"><a href="#cb22-68" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> Setup execution parameters</span>
+<span id="cb22-69"><a href="#cb22-69" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> threadsPerBlock <span class="op">=</span> <span class="dv">256</span><span class="op">;</span></span>
+<span id="cb22-70"><a href="#cb22-70" aria-hidden="true" tabindex="-1"></a>    <span class="bu">int</span> blocksPerGrid <span class="op">=</span> (n <span class="op">+</span> threadsPerBlock <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> threadsPerBlock<span class="op">;</span></span>
+<span id="cb22-71"><a href="#cb22-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-72"><a href="#cb22-72" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> Execute kernels</span>
+<span id="cb22-73"><a href="#cb22-73" aria-hidden="true" tabindex="-1"></a>    windowSumDirect<span class="op">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span class="op">&gt;&gt;&gt;</span>(d_input, d_output, n, windowSize)<span class="op">;</span></span>
+<span id="cb22-74"><a href="#cb22-74" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy(output, d_output, n <span class="op">*</span> sizeof(<span class="bu">float</span>), cudaMemcpyDeviceToHost)<span class="op">;</span> <span class="op">//</span> Copy result back <span class="cf">for</span> verification</span>
+<span id="cb22-75"><a href="#cb22-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-76"><a href="#cb22-76" aria-hidden="true" tabindex="-1"></a>    windowSumPrivatized<span class="op">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span class="op">&gt;&gt;&gt;</span>(d_input, d_output, n, windowSize)<span class="op">;</span></span>
+<span id="cb22-77"><a href="#cb22-77" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy(output, d_output, n <span class="op">*</span> sizeof(<span class="bu">float</span>), cudaMemcpyDeviceToHost)<span class="op">;</span> <span class="op">//</span> Copy result back <span class="cf">for</span> verification</span>
+<span id="cb22-78"><a href="#cb22-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-79"><a href="#cb22-79" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> Cleanup</span>
+<span id="cb22-80"><a href="#cb22-80" aria-hidden="true" tabindex="-1"></a>    cudaFree(d_input)<span class="op">;</span></span>
+<span id="cb22-81"><a href="#cb22-81" aria-hidden="true" tabindex="-1"></a>    cudaFree(d_output)<span class="op">;</span></span>
+<span id="cb22-82"><a href="#cb22-82" aria-hidden="true" tabindex="-1"></a>    free(<span class="bu">input</span>)<span class="op">;</span></span>
+<span id="cb22-83"><a href="#cb22-83" aria-hidden="true" tabindex="-1"></a>    free(output)<span class="op">;</span></span>
+<span id="cb22-84"><a href="#cb22-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-85"><a href="#cb22-85" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb22-86"><a href="#cb22-86" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Sliding Window Algorithm with Privatization:</strong> Utilizes shared memory to store data within the sliding window, reducing global memory traffic.</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called benchmark</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> benchmark privatization2.cu</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the benchmark</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> benchmark</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Personal Results (RTX 4090):</strong></p>
+<ul>
+<li><p><strong>Not Privatized:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.46</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.22</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>16,441</td>
+</tr>
+<tr class="even">
+<td>Memory Throughput</td>
+<td>%</td>
+<td>64.73</td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>64.73</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>us</td>
+<td>7.39</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>31.43</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>32.96</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>11,401.60</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>29.51</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Privatized:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.39</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.22</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>17,959</td>
+</tr>
+<tr class="even">
+<td>Memory Throughput</td>
+<td>%</td>
+<td>67.53</td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>67.53</td>
+</tr>
+<tr class="even">
+<td>Duration</td>
+<td>us</td>
+<td>8.10</td>
+</tr>
+<tr class="odd">
+<td>L1/TEX Cache Throughput</td>
+<td>%</td>
+<td>37.99</td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>28.07</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>12,130.35</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>41.96</td>
+</tr>
+</tbody>
+</table></li>
+</ul></li>
+<li><p><strong>Key takeaway:</strong> Privatization can be effective, but its impact depends on the specific algorithm and memory access patterns.</p></li>
+</ul>
+</section>
+<section id="case-study-6-rewriting-algorithms-with-better-math-flash-attention" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-6-rewriting-algorithms-with-better-math-flash-attention">Case Study 6: Rewriting Algorithms with Better Math (Flash Attention)</h2>
+<ul>
+<li><p><strong>Flash Attention:</strong> An example of algorithm optimization for attention mechanisms.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flash-attention-figure.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://arxiv.org/abs/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></figcaption>
+</figure>
+</div>
+<p><strong>Problem:</strong> Traditional softmax calculation in attention requires multiple passes over the data, making it memory-bound.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flash-attention-2-figure.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://arxiv.org/abs/2307.08691">FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning</a></figcaption>
+</figure>
+</div>
+<ul>
+<li><div class="callout callout-style-default callout-note callout-titled" title="FlashAttention-2: Figure 1">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+FlashAttention-2: Figure 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Figure 1:</strong> Diagram of how FlashAttention forward pass is performed, when the key K is partitioned into two blocks and the value V is also partitioned into two blocks. By computing attention with respect to each block and rescaling the output, we get the right answer at the end, while avoiding expensive memory reads/writes of the intermediate matrices S and P. We simplify the diagram, omitting the step in softmax that subtracts each element by the row-wise max.</p>
+</div>
+</div></li>
+</ul></li>
+<li><p><strong>Original softmax</strong></p>
+<ul>
+<li><p>3 memory accesses per element</p>
+<ul>
+<li>2 reads</li>
+<li>1 store</li>
+</ul></li>
+<li><p><strong>Function:</strong> <span class="math display">\[
+  y_i = \frac{e^{x_i}}{\sum\limits_{j=1}^{V} e^{x_j}}
+  \]</span></p></li>
+<li><p><strong>Algorithm:</strong></p>
+<pre class="text"><code>1: d₀ ← 0
+2: for j ← 1, V do
+3:     d₁ ← dⱼ₋₁ + eˣⱼ
+4: end for
+5: for i ← 1, V do
+6:     yᵢ ← eˣⁱ / d_V
+7: end for</code></pre></li>
+</ul></li>
+<li><p><strong>Safe softmax:</strong></p>
+<ul>
+<li><p>4 memory accesses per element</p>
+<ul>
+<li>3 reads</li>
+<li>1 store</li>
+</ul></li>
+<li><p><strong>Function:</strong> <span class="math display">\[
+  y_i = \frac{e^{x_i - \max\limits_{k=1}^{V} x_k}}{\sum\limits_{j=1}^{V} e^{x_j - \max\limits_{k=1}^{V} x_k}}
+  \]</span></p></li>
+<li><p><strong>Algorithm:</strong></p>
+<pre class="text"><code> 1: m₀ ← -∞
+ 2: for k ← 1, V do
+ 3:     mₖ ← max(mₖ₋₁, xₖ)
+ 4: end for
+ 5: d₀ ← 0
+ 6: for j ← 1, V do
+ 7:     dⱼ ← dⱼ₋₁ + eˣʲ⁻ᵐ_V
+ 8: end for
+ 9: for i ← 1, V do
+10:     yᵢ ← eˣⁱ⁻ᵐ_V / d_V
+11: end for</code></pre></li>
+</ul></li>
+<li><p><strong>Solution:</strong> <strong>Online softmax</strong> algorithm:</p>
+<ul>
+<li><p><strong>Paper:</strong> <a href="https://arxiv.org/abs/1805.02867">Online normalizer calculation for softmax</a></p></li>
+<li><p>3 memory accesses per element</p>
+<ul>
+<li>3 reads</li>
+<li>1 store</li>
+</ul></li>
+<li><p><strong>Algorithm:</strong></p>
+<pre class="text"><code>1: m₀ ← -∞  
+2: d₀ ← 0  
+3: for j ← 1, V do  
+4:     mⱼ ← max(mⱼ₋₁, xⱼ)  
+5:     dⱼ ← dⱼ₋₁ × eᵐʲ⁻₁⁻ᵐʲ + eˣʲ⁻ᵐⱼ  
+6: end for  
+7: for i ← 1, V do  
+8:     yᵢ ← eˣⁱ⁻ᵐ_V / d_V  
+9: end for  </code></pre></li>
+<li><p>Maintains a running estimate of the normalization factor.</p></li>
+<li><p>Corrects the normalization factor locally as new elements are processed. (line 5)</p></li>
+<li><p>Reduces the number of memory accesses, improving performance.</p></li>
+</ul></li>
+<li><p><strong>Key takeaway:</strong> Algorithmic and mathematical optimizations can significantly improve performance, especially for compute-bound kernels.</p></li>
+</ul>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<ul>
+<li><p>This lecture presented several key optimizations for improving CUDA kernel performance.</p></li>
+<li><p><strong>Table 6.1 in the PMPP book</strong> provides a summary of these optimizations and their impact on compute and memory performance.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 27%">
+<col style="width: 27%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Optimization</th>
+<th>Benefit to compute cores</th>
+<th>Benefit to memory</th>
+<th>Strategies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Maximizing occupancy</td>
+<td>More work to hide pipeline latency</td>
+<td>More parallel memory accesses to hide DRAM latency</td>
+<td>Tuning usage of SM resources such as threads per block, shared memory per block, and registers per thread</td>
+</tr>
+<tr class="even">
+<td>Enabling coalesced global memory accesses</td>
+<td>Fewer pipeline stalls waiting for global memory accesses</td>
+<td>Less global memory traffic and better utilization of bursts/cache lines</td>
+<td>Transfer between global memory and shared memory in a coalesced manner and performing uncoalesced accesses in shared memory (e.g., corner turning) Rearranging the mapping of threads to data Rearranging the layout of the data</td>
+</tr>
+<tr class="odd">
+<td>Minimizing control divergence</td>
+<td>High SIMD efficiency (fewer idle cores during SIMD execution)</td>
+<td>–</td>
+<td>Rearranging the mapping of threads to work and/or data Rearranging the layout of the data</td>
+</tr>
+<tr class="even">
+<td>Tiling of reused data</td>
+<td>Fewer pipeline stalls waiting for global memory accesses</td>
+<td>Less global memory traffic</td>
+<td>Placing data that is reused within a block in shared memory or registers so that it is transferred between global memory and the SM only once</td>
+</tr>
+<tr class="odd">
+<td>Privatization (covered later)</td>
+<td>Fewer pipeline stalls waiting for atomic updates</td>
+<td>Less contention and serialization of atomic updates</td>
+<td>Applying partial updates to a private copy of the data and then updating the universal copy when done</td>
+</tr>
+<tr class="even">
+<td>Thread coarsening</td>
+<td>Less redundant work, divergence, or synchronization</td>
+<td>Less redundant global memory traffic</td>
+<td>Assigning multiple units of parallelism to each thread to reduce the price of parallelism when it is incurred unnecessarily</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>NCU (NVIDIA CUDA Profiler)</strong> is a valuable tool for profiling and understanding kernel performance.</p></li>
+<li><p>Understanding whether a workload is memory or compute bound is crucial for choosing the right optimization strategies.</p></li>
+<li><p><strong>CUDA Mode:</strong> Represents the mastery of both math and computer science to co-design software with hardware in mind.</p></li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
