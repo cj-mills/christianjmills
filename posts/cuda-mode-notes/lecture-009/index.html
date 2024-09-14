@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-09-14">
+<meta name="description" content="Lecture #9 covers parallel reduction algorithms for GPUs, focusing on optimizing their implementation in CUDA by addressing control divergence, memory divergence, minimizing global memory accesses, and thread coarsening, ultimately demonstrating how these techniques are employed in machine learning frameworks like PyTorch and Triton.">
+
+<title>Christian Mills - CUDA MODE Lecture 9: Reductions</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - CUDA MODE Lecture 9: Reductions">
+<meta property="og:description" content="Lecture #9 covers parallel reduction algorithms for GPUs, focusing on optimizing their implementation in CUDA by addressing control divergence, memory divergence, minimizing global memory accesses, and thread coarsening, ultimately demonstrating how these techniques are employed in machine learning frameworks like PyTorch and Triton.">
+<meta property="og:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta property="og:site_name" content="Christian Mills">
+<meta property="og:image:height" content="284">
+<meta property="og:image:width" content="526">
+<meta name="twitter:title" content="Christian Mills - CUDA MODE Lecture 9: Reductions">
+<meta name="twitter:description" content="Lecture #9 covers parallel reduction algorithms for GPUs, focusing on optimizing their implementation in CUDA by addressing control divergence, memory divergence, minimizing global memory accesses, and thread coarsening, ultimately demonstrating how these techniques are employed in machine learning frameworks like PyTorch and Triton.">
+<meta name="twitter:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="284">
+<meta name="twitter:image-width" content="526">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#examples-of-reductions" id="toc-examples-of-reductions" class="nav-link" data-scroll-target="#examples-of-reductions">Examples of Reductions</a></li>
+  <li><a href="#reductions-in-machine-learning" id="toc-reductions-in-machine-learning" class="nav-link" data-scroll-target="#reductions-in-machine-learning">Reductions in Machine Learning</a></li>
+  <li><a href="#implementing-reductions-in-pytorch" id="toc-implementing-reductions-in-pytorch" class="nav-link" data-scroll-target="#implementing-reductions-in-pytorch">Implementing Reductions in PyTorch</a></li>
+  <li><a href="#serial-reduction" id="toc-serial-reduction" class="nav-link" data-scroll-target="#serial-reduction">Serial Reduction</a></li>
+  <li><a href="#parallel-reduction-algorithm" id="toc-parallel-reduction-algorithm" class="nav-link" data-scroll-target="#parallel-reduction-algorithm">Parallel Reduction Algorithm</a></li>
+  <li><a href="#non-determinism-in-floating-point-reductions" id="toc-non-determinism-in-floating-point-reductions" class="nav-link" data-scroll-target="#non-determinism-in-floating-point-reductions">Non-Determinism in Floating-Point Reductions</a></li>
+  <li><a href="#implementing-parallel-reduction-in-cuda" id="toc-implementing-parallel-reduction-in-cuda" class="nav-link" data-scroll-target="#implementing-parallel-reduction-in-cuda">Implementing Parallel Reduction in CUDA</a>
+  <ul>
+  <li><a href="#naive-approach-simple-reduce" id="toc-naive-approach-simple-reduce" class="nav-link" data-scroll-target="#naive-approach-simple-reduce">Naive Approach: Simple Reduce</a></li>
+  <li><a href="#minimizing-control-divergence-control-divergence-reduction" id="toc-minimizing-control-divergence-control-divergence-reduction" class="nav-link" data-scroll-target="#minimizing-control-divergence-control-divergence-reduction">Minimizing Control Divergence: Control Divergence Reduction</a></li>
+  <li><a href="#utilizing-shared-memory-shared-reduce" id="toc-utilizing-shared-memory-shared-reduce" class="nav-link" data-scroll-target="#utilizing-shared-memory-shared-reduce">Utilizing Shared Memory: Shared Reduce</a></li>
+  <li><a href="#segmented-multi-block-reduction-segmented-reduce" id="toc-segmented-multi-block-reduction-segmented-reduce" class="nav-link" data-scroll-target="#segmented-multi-block-reduction-segmented-reduce">Segmented Multi-Block Reduction: Segmented Reduce</a></li>
+  <li><a href="#thread-coarsening-reduced-coarsening" id="toc-thread-coarsening-reduced-coarsening" class="nav-link" data-scroll-target="#thread-coarsening-reduced-coarsening">Thread Coarsening: Reduced Coarsening</a></li>
+  </ul></li>
+  <li><a href="#reductions-in-machine-learning-frameworks" id="toc-reductions-in-machine-learning-frameworks" class="nav-link" data-scroll-target="#reductions-in-machine-learning-frameworks">Reductions in Machine Learning Frameworks</a>
+  <ul>
+  <li><a href="#pytorch" id="toc-pytorch" class="nav-link" data-scroll-target="#pytorch">PyTorch</a></li>
+  <li><a href="#torch-compile-triton" id="toc-torch-compile-triton" class="nav-link" data-scroll-target="#torch-compile-triton">Torch Compile (Triton)</a></li>
+  <li><a href="#triton" id="toc-triton" class="nav-link" data-scroll-target="#triton">Triton</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#call-to-action" id="toc-call-to-action" class="nav-link" data-scroll-target="#call-to-action">Call to Action</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CUDA MODE Lecture 9: Reductions</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #9 covers parallel reduction algorithms for GPUs, focusing on optimizing their implementation in CUDA by addressing control divergence, memory divergence, minimizing global memory accesses, and thread coarsening, ultimately demonstrating how these techniques are employed in machine learning frameworks like PyTorch and Triton.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 14, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#examples-of-reductions">Examples of Reductions</a></li>
+<li><a href="#reductions-in-machine-learning">Reductions in Machine Learning</a></li>
+<li><a href="#implementing-reductions-in-pytorch">Implementing Reductions in PyTorch</a></li>
+<li><a href="#serial-reduction">Serial Reduction</a></li>
+<li><a href="#parallel-reduction-algorithm">Parallel Reduction Algorithm</a></li>
+<li><a href="#non-determinism-in-floating-point-reductions">Non-Determinism in Floating-Point Reductions</a></li>
+<li><a href="#implementing-parallel-reduction-in-cuda">Implementing Parallel Reduction in CUDA</a><br>
+</li>
+<li><a href="#reductions-in-machine-learning-frameworks">Reductions in Machine Learning Frameworks</a><br>
+</li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#call-to-action">Call to Action</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=09wntC6BT5o">Lecture 9: Reductions</a></li>
+<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/1s8lRU8xuDn-R05p1aSP6P7T5kk9VYnDOCyN5bWKeg3U/edit#slide=id.p">Lecture 9: Reductions</a></li>
+<li><strong>Code:</strong> <a href="https://github.com/cuda-mode/lectures/tree/main/lecture_009">lecture_009</a></li>
+<li><strong>Lightning AI Studio:</strong> <a href="https://lightning.ai/msaroufim/studios/cuda-mode-lectures?section=featured&amp;query=cuda+mode">CUDA Mode Lectures</a></li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled" title="[Local NCU Permissions](https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters)">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<a href="https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters">Local NCU Permissions</a>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Allow access for any user (restart required)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">'options nvidia NVreg_RestrictProfilingToAdminUsers=0'</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/modprobe.d/ncu-permissions.conf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><p>This lecture covers <strong>reductions</strong>, a core concept in GPU programming and machine learning.</p></li>
+<li><p>Previous lectures (1-8) provided the foundational knowledge to author, integrate, profile, and ship CUDA/Triton kernels in PyTorch.</p></li>
+<li><p>This lecture aligns with Chapter 10 of the PMPP book and includes example kernels available on GitHub.</p></li>
+<li><p><strong>Reductions</strong> are mathematical operations that reduce the size of input data, often producing a scalar from a vector in machine learning.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/basic-reduction-graphviz.png" class="img-fluid figure-img"></p>
+<figcaption>Sum Reduction</figcaption>
+</figure>
+</div></li>
+</ul>
+</section>
+<section id="examples-of-reductions" class="level2">
+<h2 class="anchored" data-anchor-id="examples-of-reductions">Examples of Reductions</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">reduce</span>(data, identity, op):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> identity</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> element <span class="kw">in</span> data:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> op(result, element)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Sum:</strong>
+<ul>
+<li><p>Iteratively adds elements of a list.</p></li>
+<li><p>Identity element: 0 (for an empty list).</p></li>
+<li><p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summation</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">reduce</span>(data, <span class="dv">0</span>, <span class="kw">lambda</span> a, b: a <span class="op">+</span> b))  <span class="co"># Output: 15</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><strong>Product:</strong>
+<ul>
+<li><p>Iteratively multiplies elements of a list.</p></li>
+<li><p>Identity element: 1 (for an empty list).</p></li>
+<li><p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Product</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">reduce</span>(data, <span class="dv">1</span>, <span class="kw">lambda</span> a, b: a <span class="op">*</span> b))  <span class="co"># Output: 120</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><strong>Min/Max:</strong>
+<ul>
+<li><p>Finds the minimum/maximum element in a list.</p></li>
+<li><p>Identity element: <code>float('-inf')</code>/<code>float('inf')</code> (for an empty list).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maximum</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">reduce</span>(data, <span class="bu">float</span>(<span class="st">'-inf'</span>), <span class="bu">max</span>))  <span class="co"># Output: 5</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimum</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">reduce</span>(data, <span class="bu">float</span>(<span class="st">'inf'</span>), <span class="bu">min</span>))  <span class="co"># Output: 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li>Other common reductions: argmax, argmin, norm, mean, number of unique elements.</li>
+</ul>
+</section>
+<section id="reductions-in-machine-learning" class="level2">
+<h2 class="anchored" data-anchor-id="reductions-in-machine-learning">Reductions in Machine Learning</h2>
+<ul>
+<li><strong>Ubiquitous</strong> in machine learning code:
+<ul>
+<li>Convolutional Neural Networks (CNNs): Mean/max pooling.</li>
+<li>Classification: Argmax over probabilities.</li>
+<li>Loss calculations: Scalar loss computed from target and prediction.</li>
+<li>Softmax normalization: Summation of exponentiated elements.</li>
+</ul></li>
+</ul>
+</section>
+<section id="implementing-reductions-in-pytorch" class="level2">
+<h2 class="anchored" data-anchor-id="implementing-reductions-in-pytorch">Implementing Reductions in PyTorch</h2>
+<ul>
+<li><strong>Reduction Implementations:</strong> <a href="https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/cuda/ReduceOps.cpp">aten/src/ATen/native/cuda/ReduceOps.cpp</a></li>
+<li>PyTorch provides built-in functions for common reductions (e.g., <code>torch.max</code>, <code>torch.min</code>, <code>torch.mean</code>).</li>
+<li>These functions call optimized CUDA kernels when tensors are on a CUDA device.</li>
+</ul>
+</section>
+<section id="serial-reduction" class="level2">
+<h2 class="anchored" data-anchor-id="serial-reduction">Serial Reduction</h2>
+<ul>
+<li><p><strong>Serial reduction</strong> is a basic approach where a single thread iterates through the input data and updates the result sequentially.</p></li>
+<li><p><strong>Example:</strong> Finding the maximum element in a list by iterating and comparing each element to the current maximum.</p>
+<pre class="text"><code>+----------------------+
+|    Initial Vector    |
++----------------------+
+|  5  |  2  |  8  |  1 |
++----------------------+
+           |
+           v
++----------------------+
+|     Iteration 1      |
++----------------------+
+|  5  |     |     |    |
++----------------------+
+           |
+           v
++----------------------+
+|     Iteration 2      |
++----------------------+
+|  5  |  5  |     |    |
++----------------------+
+           |
+           v
++----------------------+
+|     Iteration 3      |
++----------------------+
+|  5  |  5  |  8  |    |
++----------------------+
+           |
+           v
++----------------------+
+|     Iteration 4      |
++----------------------+
+|  5  |  5  |  8  |  8 |
++----------------------+</code></pre></li>
+<li><p><strong>Inefficient</strong> for parallel architectures like GPUs.</p></li>
+</ul>
+</section>
+<section id="parallel-reduction-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="parallel-reduction-algorithm">Parallel Reduction Algorithm</h2>
+<ul>
+<li><p><strong>Linked Video:</strong> <a href="https://www.youtube.com/watch?v=D4l1YMsGNlU&amp;t=1763s">05 Atomics Reductions Warp Shuffle</a></p></li>
+<li><p><strong>Foundation</strong> for efficient GPU reduction implementations.</p></li>
+<li><p><strong>Key Idea:</strong> Divide the input data into pairs, assign a thread to each pair, and have each thread perform the reduction operation on its pair.</p></li>
+<li><p><strong>Iterative Process:</strong> Repeat the process on the reduced results until a single result remains.</p></li>
+<li><p><strong>Max Reduction Visualization:</strong></p>
+<pre class="text"><code>+-----------------------------------------------------------------------+
+|                             Initial Vector                            |
++-----------------------------------------------------------------------+
+|  5  |  2  |  8  |  1  |  1  |  9  |  3  |  7  |  7  |  4  |  6  |  0  |
++-----------------------------------------------------------------------+
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                            Reduction Step 1                           |
++-----------------------------------------------------------------------+
+|  5  |  8  |  9  |  7  |  6                                            |
++-----------------------------------------------------------------------+
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                            Reduction Step 2                           |
++-----------------------------------------------------------------------+
+|  8  |  9  |  7                                                        |
++-----------------------------------------------------------------------+
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                            Reduction Step 3                           |
++-----------------------------------------------------------------------+
+|  9  |  9                                                              |
++-----------------------------------------------------------------------+
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                          Final Reduction Step                         |
++-----------------------------------------------------------------------+
+|  9                                                                    |
++-----------------------------------------------------------------------+</code></pre></li>
+<li><p><strong>Sum Reduction Tree:</strong> Visualizes the parallel reduction process as a tree, where each level represents a reduction step.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/parallel-sum-reduction-tree-graphviz.png" class="img-fluid figure-img"></p>
+<figcaption>Parallel Sum Reduction Tree</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Logarithmic Complexity:</strong> Requires <code>log n</code> steps for an input of size <code>n</code>.</p></li>
+</ul>
+</section>
+<section id="non-determinism-in-floating-point-reductions" class="level2">
+<h2 class="anchored" data-anchor-id="non-determinism-in-floating-point-reductions">Non-Determinism in Floating-Point Reductions</h2>
+<ul>
+<li><p><strong>Floating-point operations are non-commutative</strong>, meaning <code>a + b</code> may not equal <code>b + a</code>.</p></li>
+<li><p><strong>Parallel reductions can introduce non-determinism</strong> due to:</p>
+<ul>
+<li><strong>Weak memory consistency</strong> on GPUs: Different threads may execute operations in unpredictable order.</li>
+<li><strong>Order of operations within threads:</strong> The order in which a thread performs operations can affect the result.</li>
+</ul></li>
+<li><p><strong>Deterministic algorithms</strong> can be enforced in PyTorch using <code>torch.use_deterministic_algorithms(True)</code>, but this can impact performance.</p></li>
+<li><p><strong>Example:</strong> Summing a list with many small numbers and a few large numbers can produce different results depending on the order of operations.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We'll use several small numbers that, when added together first, could show a difference</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>numbers <span class="op">=</span> [<span class="fl">1e-20</span>] <span class="op">*</span> <span class="dv">10</span> <span class="op">+</span> [<span class="fl">1e20</span>, <span class="op">-</span><span class="fl">1e20</span>]  <span class="co"># 10 small numbers followed by a large positive and negative number</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Sum the list from left to right</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>sum_left_to_right_adjusted <span class="op">=</span> <span class="bu">sum</span>(numbers)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Sum the list from right to left</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>sum_right_to_left_adjusted <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">reversed</span>(numbers))</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.0 9.999999999999997e-20</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"sum_left_to_right_adjusted: </span><span class="sc">{</span>sum_left_to_right_adjusted<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"sum_right_to_left_adjusted: </span><span class="sc">{</span>sum_right_to_left_adjusted<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>sum_left_to_right_adjusted: 0.0
+sum_right_to_left_adjusted: 9.999999999999997e-20</code></pre></li>
+<li><p><strong>Accuracy Implications:</strong> Accumulating many small values in low-precision floating-point formats (e.g., float16) can lead to loss of precision.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>large_value <span class="op">=</span> torch.tensor([<span class="fl">1000.0</span>], dtype<span class="op">=</span>torch.float32)  <span class="co"># Using float32 for initial value</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a smaller value that is significant for float32 but not for float16</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>small_value <span class="op">=</span> torch.tensor([<span class="fl">1e-3</span>], dtype<span class="op">=</span>torch.float32)  <span class="co"># Small value in float32</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Add small value to large value in float32</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>result_float32 <span class="op">=</span> large_value <span class="op">+</span> small_value</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert large value to float16 and add the small value (also converted to float16)</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>result_float16 <span class="op">=</span> large_value.to(torch.float16) <span class="op">+</span> small_value.to(torch.float16)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert results back to float32 for accurate comparison</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>result_float32 <span class="op">=</span> result_float32.item()</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>result_float16_converted <span class="op">=</span> result_float16.to(torch.float32).item()</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Print results</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 1000.0009765625 1000.0</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"result_float32: </span><span class="sc">{</span>result_float32<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"result_float16_converted: </span><span class="sc">{</span>result_float16_converted<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>result_float32: 1000.0009765625
+result_float16_converted: 1000.0</code></pre></li>
+<li><p><strong>Solutions:</strong></p>
+<ul>
+<li>Use higher-precision formats (e.g., bfloat16) for accumulation.</li>
+<li>Upcast the accumulator to a higher precision (e.g., float32) during the reduction.</li>
+</ul></li>
+</ul>
+</section>
+<section id="implementing-parallel-reduction-in-cuda" class="level2">
+<h2 class="anchored" data-anchor-id="implementing-parallel-reduction-in-cuda">Implementing Parallel Reduction in CUDA</h2>
+<section id="naive-approach-simple-reduce" class="level3">
+<h3 class="anchored" data-anchor-id="naive-approach-simple-reduce">Naive Approach: Simple Reduce</h3>
+<ul>
+<li><p><strong>Thread Strategy:</strong> One thread per pair of elements.</p></li>
+<li><p><strong>Implementation:</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Include necessary header files</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span><span class="pp">  </span><span class="co">// For standard input/output functions</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda.h&gt;</span><span class="pp">    </span><span class="co">// For CUDA functions and data types</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">/*</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"> * CUDA kernel function to perform sum reduction on an array of floats.</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"> *</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"> * The kernel reduces the input array 'input' to a single sum and stores the result in 'output'.</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co"> * The reduction is performed in parallel using a binary tree reduction pattern.</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"> *</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co"> * Key concepts:</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"> * - Each thread in a block processes elements of the array.</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"> * - The number of active threads decreases by half in each iteration.</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"> * - Synchronization is required between iterations to ensure correct results.</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co"> *</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co"> * CUDA-specific keywords:</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co"> * - __global__: Indicates a function that runs on the device (GPU) and is called from the host (CPU).</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co"> * - threadIdx.x: The thread's index within its block in the x-dimension.</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co"> * - blockDim.x: The number of threads in a block in the x-dimension.</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co"> * - __syncthreads(): A barrier synchronization function that waits until all threads in the block reach this point.</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> SimpleSumReductionKernel<span class="op">(</span><span class="dt">float</span><span class="op">*</span> input<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> output<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the index for each thread.</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Each thread handles two elements starting at index 'i'.</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> i <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Start the reduction loop.</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 'stride' controls the distance between elements to be added.</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">int</span> stride <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> stride <span class="op">&lt;=</span> blockDim<span class="op">.</span>x<span class="op">;</span> stride <span class="op">*=</span> <span class="dv">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Only threads where threadIdx.x is a multiple of 'stride' participate.</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>threadIdx<span class="op">.</span>x <span class="op">%</span> stride <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Add the element at 'i + stride' to the element at 'i'.</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>            input<span class="op">[</span>i<span class="op">]</span> <span class="op">+=</span> input<span class="op">[</span>i <span class="op">+</span> stride<span class="op">];</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Synchronize threads to ensure all additions are completed before the next iteration.</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        __syncthreads<span class="op">();</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// After the reduction, the total sum is stored in input[0].</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Thread 0 writes the result to the output variable.</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>threadIdx<span class="op">.</span>x <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>output <span class="op">=</span> input<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define the size of the input array.</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> size <span class="op">=</span> <span class="dv">2048</span><span class="op">;</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the total bytes needed for the input array.</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> bytes <span class="op">=</span> size <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">);</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on the host (CPU) for input array and output variable.</span></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_input <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[</span>size<span class="op">];</span>  <span class="co">// Host input array</span></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_output <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">;</span>       <span class="co">// Host output variable</span></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize the input array on the host.</span></span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">// For simplicity, set all elements to 1.0f.</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> size<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>        h_input<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">;</span>  <span class="co">// Initialize each element to 1</span></span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Declare pointers for device (GPU) memory.</span></span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_input<span class="op">;</span>   <span class="co">// Device input array</span></span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_output<span class="op">;</span>  <span class="co">// Device output variable</span></span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on the device for input array and output variable.</span></span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_input<span class="op">,</span> bytes<span class="op">);</span>           <span class="co">// Allocate memory for input array</span></span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span>  <span class="co">// Allocate memory for output variable</span></span>
+<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the input data from host memory to device memory.</span></span>
+<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_input<span class="op">,</span> h_input<span class="op">,</span> bytes<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Determine the number of threads per block.</span></span>
+<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Since each thread handles two elements, we use half the size of the input array.</span></span>
+<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> threadsPerBlock <span class="op">=</span> size <span class="op">/</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch the reduction kernel on the device.</span></span>
+<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The kernel configuration &lt;&lt;&lt;1, threadsPerBlock&gt;&gt;&gt; means:</span></span>
+<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a>    <span class="co">// - 1 block</span></span>
+<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a>    <span class="co">// - 'threadsPerBlock' threads per block</span></span>
+<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a>    SimpleSumReductionKernel<span class="op">&lt;&lt;&lt;</span><span class="dv">1</span><span class="op">,</span> threadsPerBlock<span class="op">&gt;&gt;&gt;(</span>d_input<span class="op">,</span> d_output<span class="op">);</span></span>
+<span id="cb12-83"><a href="#cb12-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-84"><a href="#cb12-84" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the result from device memory back to host memory.</span></span>
+<span id="cb12-85"><a href="#cb12-85" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>h_output<span class="op">,</span> d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb12-86"><a href="#cb12-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-87"><a href="#cb12-87" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Print the result to the console.</span></span>
+<span id="cb12-88"><a href="#cb12-88" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout <span class="op">&lt;&lt;</span> <span class="st">"Sum is "</span> <span class="op">&lt;&lt;</span> <span class="op">*</span>h_output <span class="op">&lt;&lt;</span> <span class="bu">std::</span>endl<span class="op">;</span></span>
+<span id="cb12-89"><a href="#cb12-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-90"><a href="#cb12-90" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free the allocated memory on the host.</span></span>
+<span id="cb12-91"><a href="#cb12-91" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span><span class="op">[]</span> h_input<span class="op">;</span>  <span class="co">// Free host input array</span></span>
+<span id="cb12-92"><a href="#cb12-92" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span> h_output<span class="op">;</span>   <span class="co">// Free host output variable</span></span>
+<span id="cb12-93"><a href="#cb12-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-94"><a href="#cb12-94" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free the allocated memory on the device.</span></span>
+<span id="cb12-95"><a href="#cb12-95" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_input<span class="op">);</span>   <span class="co">// Free device input array</span></span>
+<span id="cb12-96"><a href="#cb12-96" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_output<span class="op">);</span>  <span class="co">// Free device output variable</span></span>
+<span id="cb12-97"><a href="#cb12-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-98"><a href="#cb12-98" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span>  <span class="co">// Return success</span></span>
+<span id="cb12-99"><a href="#cb12-99" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Threads with even indices are active.</li>
+<li>Stride starts at 1 and doubles at each iteration.</li>
+<li>Each thread adds its current element and the element at <code>stride</code> distance.</li>
+</ul></li>
+<li><p><strong>Issues:</strong></p>
+<ul>
+<li><strong>High thread divergence:</strong> Many threads become inactive as the reduction progresses.</li>
+<li><strong>Poor memory access patterns:</strong> Threads access data with increasing strides, leading to poor cache utilization.</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called sum</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> sum simple_reduce.cu</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the binary</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> <span class="at">--set</span> full sum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Results (RTX 4090):</strong></p>
+<pre class="text"><code>Sum is 2048</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Branch Instructions Ratio</td>
+<td>%</td>
+<td>0.12</td>
+</tr>
+<tr class="even">
+<td>Branch Instructions</td>
+<td>inst</td>
+<td>1,312</td>
+</tr>
+<tr class="odd">
+<td><strong>Branch Efficiency</strong></td>
+<td>%</td>
+<td><strong>74.05</strong></td>
+</tr>
+<tr class="even">
+<td>Avg. Divergent Branches</td>
+<td></td>
+<td>0.37</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</section>
+<section id="minimizing-control-divergence-control-divergence-reduction" class="level3">
+<h3 class="anchored" data-anchor-id="minimizing-control-divergence-control-divergence-reduction">Minimizing Control Divergence: Control Divergence Reduction</h3>
+<ul>
+<li><p><strong>Thread Strategy:</strong> Threads are co-located, with stride starting at block dimension and halving at each iteration.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/control-divergence-reduce.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 10.8</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Implementation:</strong></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span><span class="pp"> </span><span class="co">// Include input/output stream library</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda.h&gt;</span><span class="pp">   </span><span class="co">// Include CUDA runtime API</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">// CUDA kernel function to perform parallel reduction (sum of array elements)</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">// This kernel adds elements in the input array in parallel to compute the total sum.</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">// It uses a tree-based reduction pattern to sum the elements efficiently.</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> FixDivergenceKernel<span class="op">(</span><span class="dt">float</span><span class="op">*</span> input<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> output<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> i <span class="op">=</span> threadIdx<span class="op">.</span>x<span class="op">;</span> <span class="co">// Each thread handles one element of the input array.</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Iteratively reduce the array elements.</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// At each step, 'stride' determines the distance between elements to be added.</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">int</span> stride <span class="op">=</span> blockDim<span class="op">.</span>x<span class="op">;</span> stride <span class="op">&gt;=</span> <span class="dv">1</span><span class="op">;</span> stride <span class="op">/=</span> <span class="dv">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Ensure that threads with index less than 'stride' perform the computation.</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>threadIdx<span class="op">.</span>x <span class="op">&lt;</span> stride<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Add the element from the distant index (i + stride) to the current index (i).</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>            input<span class="op">[</span>i<span class="op">]</span> <span class="op">+=</span> input<span class="op">[</span>i <span class="op">+</span> stride<span class="op">];</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Synchronize threads to ensure all additions are completed before the next iteration.</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        __syncthreads<span class="op">();</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// After the reduction, the first thread (threadIdx.x == 0) has the total sum in input[0].</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>threadIdx<span class="op">.</span>x <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>output <span class="op">=</span> input<span class="op">[</span><span class="dv">0</span><span class="op">];</span> <span class="co">// Write the result to the output variable.</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Size of the input data (number of elements in the array).</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> size <span class="op">=</span> <span class="dv">2048</span><span class="op">;</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Total size in bytes of the input data.</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> bytes <span class="op">=</span> size <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">);</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory for input and output on the host (CPU).</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_input <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[</span>size<span class="op">];</span> <span class="co">// Host input array.</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_output <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">;</span>      <span class="co">// Host output variable to store the result.</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize input data on the host.</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> size<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>        h_input<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">;</span> <span class="co">// Example initialization: set all elements to 1.</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory for input and output on the device (GPU).</span></span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_input<span class="op">;</span>  <span class="co">// Device input array.</span></span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_output<span class="op">;</span> <span class="co">// Device output variable.</span></span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_input<span class="op">,</span> bytes<span class="op">);</span>          <span class="co">// Allocate memory for input array on device.</span></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span> <span class="co">// Allocate memory for output variable on device.</span></span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy input data from host to device.</span></span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_input<span class="op">,</span> h_input<span class="op">,</span> bytes<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Determine the number of threads per block.</span></span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> threadsPerBlock <span class="op">=</span> size <span class="op">/</span> <span class="dv">2</span><span class="op">;</span> <span class="co">// Launch half as many threads as the input size.</span></span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch the kernel function on the GPU.</span></span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The syntax is &lt;&lt;&lt;number of blocks, threads per block&gt;&gt;&gt;</span></span>
+<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>    <span class="co">// We use 1 block and 'threadsPerBlock' threads.</span></span>
+<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a>    FixDivergenceKernel<span class="op">&lt;&lt;&lt;</span><span class="dv">1</span><span class="op">,</span> threadsPerBlock<span class="op">&gt;&gt;&gt;(</span>d_input<span class="op">,</span> d_output<span class="op">);</span></span>
+<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the result back from device to host.</span></span>
+<span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>h_output<span class="op">,</span> d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Print the result.</span></span>
+<span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout <span class="op">&lt;&lt;</span> <span class="st">"Sum is "</span> <span class="op">&lt;&lt;</span> <span class="op">*</span>h_output <span class="op">&lt;&lt;</span> <span class="bu">std::</span>endl<span class="op">;</span> <span class="co">// Expected output: Sum is 2048</span></span>
+<span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Clean up and free allocated memory.</span></span>
+<span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span><span class="op">[]</span> h_input<span class="op">;</span> <span class="co">// Free host input array.</span></span>
+<span id="cb15-68"><a href="#cb15-68" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span> h_output<span class="op">;</span>  <span class="co">// Free host output variable.</span></span>
+<span id="cb15-69"><a href="#cb15-69" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_input<span class="op">);</span>   <span class="co">// Free device input array.</span></span>
+<span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_output<span class="op">);</span>  <span class="co">// Free device output variable.</span></span>
+<span id="cb15-71"><a href="#cb15-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-72"><a href="#cb15-72" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb15-73"><a href="#cb15-73" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>All threads are initially active.</li>
+<li>Stride starts at block dimension and is halved at each iteration.</li>
+<li>Each thread adds its current element and the element at <code>stride</code> distance.</li>
+</ul></li>
+<li><p><strong>Benefits:</strong></p>
+<ul>
+<li><strong>Reduced thread divergence:</strong> Threads remain active for longer.</li>
+<li><strong>Improved memory access patterns:</strong> Threads access contiguous chunks of memory, improving cache utilization.</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called sum</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> sum control_divergence_reduce.cu</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the binary</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> <span class="at">--set</span> full sum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Results (RTX 4090):</strong></p>
+<pre class="text"><code>Sum is 2048</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.28</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.19</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>6,299</td>
+</tr>
+<tr class="even">
+<td>Memory Throughput</td>
+<td>%</td>
+<td>0.68</td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>0.39</td>
+</tr>
+<tr class="even">
+<td><strong>Duration</strong></td>
+<td>us</td>
+<td><strong>2.88</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>L1/TEX Cache Throughput</strong></td>
+<td>%</td>
+<td><strong>30.49</strong></td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>0.68</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>29.80</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td><strong>0.12</strong></td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Branch Instructions Ratio</td>
+<td>%</td>
+<td>0.31</td>
+</tr>
+<tr class="even">
+<td>Branch Instructions</td>
+<td>inst</td>
+<td>1,126</td>
+</tr>
+<tr class="odd">
+<td><strong>Branch Efficiency</strong></td>
+<td>%</td>
+<td><strong>99.32</strong></td>
+</tr>
+<tr class="even">
+<td>Avg. Divergent Branches</td>
+<td></td>
+<td>0.01</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</section>
+<section id="utilizing-shared-memory-shared-reduce" class="level3">
+<h3 class="anchored" data-anchor-id="utilizing-shared-memory-shared-reduce">Utilizing Shared Memory: Shared Reduce</h3>
+<ul>
+<li><p><strong>Thread Strategy:</strong> Similar to control divergence reduction, but the first reduction step is performed in shared memory.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/shared-reduce.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 10.10</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Implementation:</strong></p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda.h&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">/*</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"> * This program demonstrates how to perform parallel reduction using CUDA.</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"> * It computes the sum of an array of floating-point numbers.</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"> * The reduction is performed within a single block using shared memory for optimization.</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Define the number of threads per block (must be a power of 2 for reduction)</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="pp">#define BLOCK_DIM </span><span class="dv">1024</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co">// CUDA kernel function to perform parallel reduction using shared memory</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> SharedMemoryReduction<span class="op">(</span><span class="dt">float</span><span class="op">*</span> input<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> output<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Declare shared memory array to hold partial sums</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    __shared__ <span class="dt">float</span> input_s<span class="op">[</span>BLOCK_DIM<span class="op">];</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the thread's index within the block</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> t <span class="op">=</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Each thread processes two elements from the input array</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Compute the global indices of the elements to be processed</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> start_index <span class="op">=</span> t<span class="op">;</span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> end_index <span class="op">=</span> t <span class="op">+</span> BLOCK_DIM<span class="op">;</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Load elements from global memory, add them, and store the result in shared memory</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    input_s<span class="op">[</span>t<span class="op">]</span> <span class="op">=</span> input<span class="op">[</span>start_index<span class="op">]</span> <span class="op">+</span> input<span class="op">[</span>end_index<span class="op">];</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Synchronize threads to ensure all partial sums are loaded into shared memory</span></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>    __syncthreads<span class="op">();</span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Perform the reduction in shared memory</span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// At each step, the stride is halved and threads with indices less than the stride</span></span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">// add their corresponding element with the element stride positions ahead</span></span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// This effectively sums pairs of elements, then pairs of pairs, and so on</span></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">int</span> stride <span class="op">=</span> blockDim<span class="op">.</span>x <span class="op">/</span> <span class="dv">2</span><span class="op">;</span> stride <span class="op">&gt;=</span> <span class="dv">1</span><span class="op">;</span> stride <span class="op">/=</span> <span class="dv">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Synchronize threads before each reduction step to ensure all additions are complete</span></span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>        __syncthreads<span class="op">();</span></span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Only threads with indices less than stride participate in this step</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>t <span class="op">&lt;</span> stride<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a>            <span class="co">// Each thread adds its element with the element stride positions ahead</span></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>            input_s<span class="op">[</span>t<span class="op">]</span> <span class="op">+=</span> input_s<span class="op">[</span>t <span class="op">+</span> stride<span class="op">];</span></span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// After the reduction, the first element of shared memory contains the total sum</span></span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Thread 0 writes the result from shared memory to the output variable in global memory</span></span>
+<span id="cb18-49"><a href="#cb18-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>t <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb18-50"><a href="#cb18-50" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>output <span class="op">=</span> input_s<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb18-51"><a href="#cb18-51" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb18-52"><a href="#cb18-52" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb18-53"><a href="#cb18-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-54"><a href="#cb18-54" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb18-55"><a href="#cb18-55" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Total number of input elements (must be a multiple of 2 * BLOCK_DIM)</span></span>
+<span id="cb18-56"><a href="#cb18-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> size <span class="op">=</span> <span class="dv">2048</span><span class="op">;</span> <span class="co">// Note: This implementation assumes size is exactly 2 * BLOCK_DIM</span></span>
+<span id="cb18-57"><a href="#cb18-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Total size in bytes of the input array</span></span>
+<span id="cb18-59"><a href="#cb18-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> bytes <span class="op">=</span> size <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">);</span></span>
+<span id="cb18-60"><a href="#cb18-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-61"><a href="#cb18-61" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate host memory for input and output</span></span>
+<span id="cb18-62"><a href="#cb18-62" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_input <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[</span>size<span class="op">];</span>    <span class="co">// Host input array</span></span>
+<span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_output <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">;</span>         <span class="co">// Host output value</span></span>
+<span id="cb18-64"><a href="#cb18-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize input data on the host</span></span>
+<span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a>    <span class="co">// For simplicity, we initialize all elements to 1.0f</span></span>
+<span id="cb18-67"><a href="#cb18-67" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The expected sum is size * 1.0f = 2048.0f</span></span>
+<span id="cb18-68"><a href="#cb18-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> size<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb18-69"><a href="#cb18-69" aria-hidden="true" tabindex="-1"></a>        h_input<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb18-70"><a href="#cb18-70" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb18-71"><a href="#cb18-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-72"><a href="#cb18-72" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate device memory for input and output</span></span>
+<span id="cb18-73"><a href="#cb18-73" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_input<span class="op">;</span></span>
+<span id="cb18-74"><a href="#cb18-74" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_output<span class="op">;</span></span>
+<span id="cb18-75"><a href="#cb18-75" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_input<span class="op">,</span> bytes<span class="op">);</span>             <span class="co">// Device input array</span></span>
+<span id="cb18-76"><a href="#cb18-76" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span>    <span class="co">// Device output value</span></span>
+<span id="cb18-77"><a href="#cb18-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-78"><a href="#cb18-78" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy input data from host to device</span></span>
+<span id="cb18-79"><a href="#cb18-79" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_input<span class="op">,</span> h_input<span class="op">,</span> bytes<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb18-80"><a href="#cb18-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-81"><a href="#cb18-81" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch the kernel with one block and size / 2 threads</span></span>
+<span id="cb18-82"><a href="#cb18-82" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Each thread processes two elements</span></span>
+<span id="cb18-83"><a href="#cb18-83" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> threadsPerBlock <span class="op">=</span> size <span class="op">/</span> <span class="dv">2</span><span class="op">;</span> <span class="co">// 2048 / 2 = 1024 threads</span></span>
+<span id="cb18-84"><a href="#cb18-84" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> blocksPerGrid <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb18-85"><a href="#cb18-85" aria-hidden="true" tabindex="-1"></a>    SharedMemoryReduction<span class="op">&lt;&lt;&lt;</span>blocksPerGrid<span class="op">,</span> threadsPerBlock<span class="op">&gt;&gt;&gt;(</span>d_input<span class="op">,</span> d_output<span class="op">);</span></span>
+<span id="cb18-86"><a href="#cb18-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-87"><a href="#cb18-87" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the result from device to host</span></span>
+<span id="cb18-88"><a href="#cb18-88" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>h_output<span class="op">,</span> d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb18-89"><a href="#cb18-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-90"><a href="#cb18-90" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Print the final result</span></span>
+<span id="cb18-91"><a href="#cb18-91" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout <span class="op">&lt;&lt;</span> <span class="st">"Sum is "</span> <span class="op">&lt;&lt;</span> <span class="op">*</span>h_output <span class="op">&lt;&lt;</span> <span class="bu">std::</span>endl<span class="op">;</span></span>
+<span id="cb18-92"><a href="#cb18-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-93"><a href="#cb18-93" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free host and device memory</span></span>
+<span id="cb18-94"><a href="#cb18-94" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span><span class="op">[]</span> h_input<span class="op">;</span></span>
+<span id="cb18-95"><a href="#cb18-95" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span> h_output<span class="op">;</span></span>
+<span id="cb18-96"><a href="#cb18-96" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_input<span class="op">);</span></span>
+<span id="cb18-97"><a href="#cb18-97" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_output<span class="op">);</span></span>
+<span id="cb18-98"><a href="#cb18-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-99"><a href="#cb18-99" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb18-100"><a href="#cb18-100" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Input data is copied to shared memory in a block-wise manner.</li>
+<li>Reduction is performed entirely in shared memory.</li>
+<li>Final result is written to global memory using atomic operations.</li>
+</ul></li>
+<li><p><strong>Benefits:</strong></p>
+<ul>
+<li><strong>Reduced global memory accesses:</strong> Data is read from global memory only once.</li>
+<li><strong>Improved memory access patterns:</strong> Shared memory access is faster and more predictable than global memory access.</li>
+</ul></li>
+<li><p><strong>Limitation:</strong> Assumes the entire input can fit into shared memory.</p></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called sum</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> sum shared_reduce.cu</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the binary</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> <span class="at">--set</span> full sum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Results (RTX 4090):</strong></p>
+<pre class="text"><code>Sum is 2048</code></pre>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DRAM Frequency</td>
+<td>Ghz</td>
+<td>10.32</td>
+</tr>
+<tr class="even">
+<td>SM Frequency</td>
+<td>Ghz</td>
+<td>2.19</td>
+</tr>
+<tr class="odd">
+<td>Elapsed Cycles</td>
+<td>cycle</td>
+<td>7,006</td>
+</tr>
+<tr class="even">
+<td>Memory Throughput</td>
+<td>%</td>
+<td>0.44</td>
+</tr>
+<tr class="odd">
+<td>DRAM Throughput</td>
+<td>%</td>
+<td>0.44</td>
+</tr>
+<tr class="even">
+<td><strong>Duration</strong></td>
+<td>us</td>
+<td><strong>3.20</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>L1/TEX Cache Throughput</strong></td>
+<td>%</td>
+<td><strong>48.27</strong></td>
+</tr>
+<tr class="even">
+<td>L2 Cache Throughput</td>
+<td>%</td>
+<td>0.36</td>
+</tr>
+<tr class="odd">
+<td>SM Active Cycles</td>
+<td>cycle</td>
+<td>35.28</td>
+</tr>
+<tr class="even">
+<td>Compute (SM) Throughput</td>
+<td>%</td>
+<td>0.24</td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Metric Unit</th>
+<th>Metric Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Branch Instructions Ratio</td>
+<td>%</td>
+<td>0.10</td>
+</tr>
+<tr class="even">
+<td>Branch Instructions</td>
+<td>inst</td>
+<td>385</td>
+</tr>
+<tr class="odd">
+<td><strong>Branch Efficiency</strong></td>
+<td>%</td>
+<td><strong>100</strong></td>
+</tr>
+<tr class="even">
+<td>Avg. Divergent Branches</td>
+<td></td>
+<td>0</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+</section>
+<section id="segmented-multi-block-reduction-segmented-reduce" class="level3">
+<h3 class="anchored" data-anchor-id="segmented-multi-block-reduction-segmented-reduce">Segmented Multi-Block Reduction: Segmented Reduce</h3>
+<ul>
+<li><p><strong>Thread Strategy:</strong> Uses multiple blocks to handle larger inputs. Each block performs a reduction on a segment of the input</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/segmented-multiblock.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 10.12</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Implementation:</strong></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">/*</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * This program demonstrates how to perform a parallel reduction (sum) of an array using CUDA.</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"> * It sums up all elements of an input array using multiple threads and blocks on the GPU.</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"> * Each block computes a partial sum using shared memory and then adds it to a global output variable.</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span><span class="pp">  </span><span class="co">// Include standard input/output stream library</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda.h&gt;</span><span class="pp">    </span><span class="co">// Include CUDA library for GPU programming</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="pp">#define BLOCK_DIM </span><span class="dv">1024</span><span class="pp">  </span><span class="co">// Define the number of threads per block</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co"> * CUDA kernel function to perform parallel reduction (sum) of an input array.</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co"> * Each block reduces its portion of the array using shared memory, and the result is accumulated</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co"> * into a single output variable using atomic addition.</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">input</span><span class="co">  Pointer to input array in device memory</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">output</span><span class="co"> Pointer to output variable in device memory (the result of reduction)</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">n</span><span class="co">      Size of the input array</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> SharedMemoryReduction<span class="op">(</span><span class="dt">float</span><span class="op">*</span> input<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> output<span class="op">,</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Declare shared memory array for this block</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>    __shared__ <span class="dt">float</span> input_s<span class="op">[</span>BLOCK_DIM<span class="op">];</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Compute global index for this thread</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> idx <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span> <span class="co">// Global index</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Thread index within the block</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> t <span class="op">=</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Each thread loads one element from global memory to shared memory</span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>idx <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>        input_s<span class="op">[</span>t<span class="op">]</span> <span class="op">=</span> input<span class="op">[</span>idx<span class="op">];</span>  <span class="co">// Load element from global memory</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>        input_s<span class="op">[</span>t<span class="op">]</span> <span class="op">=</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">;</span>        <span class="co">// If index exceeds array size, initialize to zero</span></span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>    __syncthreads<span class="op">();</span>  <span class="co">// Ensure all threads have loaded their data</span></span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Perform tree-based reduction in shared memory</span></span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">int</span> stride <span class="op">=</span> blockDim<span class="op">.</span>x <span class="op">/</span> <span class="dv">2</span><span class="op">;</span> stride <span class="op">&gt;</span> <span class="dv">0</span><span class="op">;</span> stride <span class="op">&gt;&gt;=</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a>        <span class="co">// At each step, the stride halves, combining pairs of elements</span></span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>t <span class="op">&lt;</span> stride <span class="op">&amp;&amp;</span> idx <span class="op">+</span> stride <span class="op">&lt;</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>            input_s<span class="op">[</span>t<span class="op">]</span> <span class="op">+=</span> input_s<span class="op">[</span>t <span class="op">+</span> stride<span class="op">];</span>  <span class="co">// Add the element with its pair</span></span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>        __syncthreads<span class="op">();</span>  <span class="co">// Synchronize threads before next iteration</span></span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// After reduction, the first thread of each block contains the block's partial sum</span></span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>t <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Atomically add block's partial sum to global output variable</span></span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>        atomicAdd<span class="op">(</span>output<span class="op">,</span> input_s<span class="op">[</span><span class="dv">0</span><span class="op">]);</span></span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Define the size of the input data</span></span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> size <span class="op">=</span> <span class="dv">100000</span><span class="op">;</span>                <span class="co">// Total number of elements in the array</span></span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> bytes <span class="op">=</span> size <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">);</span> <span class="co">// Total size in bytes of the array</span></span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on host (CPU)</span></span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_input <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[</span>size<span class="op">];</span>   <span class="co">// Host input array</span></span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_output <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">;</span>        <span class="co">// Host output variable</span></span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize input data on host</span></span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> size<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>        h_input<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">;</span> <span class="co">// Example: Initialize all elements to 1</span></span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Since we initialized all elements to 1.0f, the expected sum is equal to 'size'</span></span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on device (GPU)</span></span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_input<span class="op">;</span>   <span class="co">// Device input array</span></span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_output<span class="op">;</span>  <span class="co">// Device output variable</span></span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_input<span class="op">,</span> bytes<span class="op">);</span>          <span class="co">// Allocate device memory for input array</span></span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span> <span class="co">// Allocate device memory for output variable</span></span>
+<span id="cb21-75"><a href="#cb21-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-76"><a href="#cb21-76" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize output variable on device to zero</span></span>
+<span id="cb21-77"><a href="#cb21-77" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> zero <span class="op">=</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb21-78"><a href="#cb21-78" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_output<span class="op">,</span> <span class="op">&amp;</span>zero<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb21-79"><a href="#cb21-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-80"><a href="#cb21-80" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy input data from host to device</span></span>
+<span id="cb21-81"><a href="#cb21-81" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_input<span class="op">,</span> h_input<span class="op">,</span> bytes<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb21-82"><a href="#cb21-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-83"><a href="#cb21-83" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Determine the number of blocks needed</span></span>
+<span id="cb21-84"><a href="#cb21-84" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numBlocks <span class="op">=</span> <span class="op">(</span>size <span class="op">+</span> BLOCK_DIM <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> BLOCK_DIM<span class="op">;</span> <span class="co">// Calculate number of blocks</span></span>
+<span id="cb21-85"><a href="#cb21-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-86"><a href="#cb21-86" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch the kernel on the device</span></span>
+<span id="cb21-87"><a href="#cb21-87" aria-hidden="true" tabindex="-1"></a>    SharedMemoryReduction<span class="op">&lt;&lt;&lt;</span>numBlocks<span class="op">,</span> BLOCK_DIM<span class="op">&gt;&gt;&gt;(</span>d_input<span class="op">,</span> d_output<span class="op">,</span> size<span class="op">);</span></span>
+<span id="cb21-88"><a href="#cb21-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-89"><a href="#cb21-89" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the result from device back to host</span></span>
+<span id="cb21-90"><a href="#cb21-90" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>h_output<span class="op">,</span> d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb21-91"><a href="#cb21-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-92"><a href="#cb21-92" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Print the result</span></span>
+<span id="cb21-93"><a href="#cb21-93" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout <span class="op">&lt;&lt;</span> <span class="st">"Sum is "</span> <span class="op">&lt;&lt;</span> <span class="op">*</span>h_output <span class="op">&lt;&lt;</span> <span class="bu">std::</span>endl<span class="op">;</span></span>
+<span id="cb21-94"><a href="#cb21-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-95"><a href="#cb21-95" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free host and device memory</span></span>
+<span id="cb21-96"><a href="#cb21-96" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span><span class="op">[]</span> h_input<span class="op">;</span>   <span class="co">// Free host input array</span></span>
+<span id="cb21-97"><a href="#cb21-97" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span> h_output<span class="op">;</span>    <span class="co">// Free host output variable</span></span>
+<span id="cb21-98"><a href="#cb21-98" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_input<span class="op">);</span>  <span class="co">// Free device input array</span></span>
+<span id="cb21-99"><a href="#cb21-99" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_output<span class="op">);</span> <span class="co">// Free device output variable</span></span>
+<span id="cb21-100"><a href="#cb21-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-101"><a href="#cb21-101" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb21-102"><a href="#cb21-102" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Each block copies its segment of the input to shared memory.</li>
+<li>Reduction is performed in shared memory within each block.</li>
+<li>Each block writes its partial result to global memory using atomic operations.</li>
+<li>A final reduction is performed on the partial results in global memory.</li>
+</ul></li>
+<li><p><strong>Benefits:</strong></p>
+<ul>
+<li><strong>Handles larger inputs:</strong> Shared memory limitations are overcome by using multiple blocks.</li>
+<li><strong>Improved parallelism:</strong> Multiple blocks can execute concurrently.</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called sum</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> sum segment_reduce.cu</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the binary</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> <span class="at">--set</span> full sum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Results (RTX 4090):</strong></p>
+<pre class="text"><code>Sum is 100000</code></pre></li>
+</ul>
+</section>
+<section id="thread-coarsening-reduced-coarsening" class="level3">
+<h3 class="anchored" data-anchor-id="thread-coarsening-reduced-coarsening">Thread Coarsening: Reduced Coarsening</h3>
+<ul>
+<li><p><strong>Thread Strategy:</strong> Each thread reduces multiple elements before synchronizing with other threads.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/thread-coarsening-reduction.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 10.14</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Implementation:</strong></p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cuda.h&gt;</span><span class="pp">  </span><span class="co">// Include CUDA header for CUDA runtime functions</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Define the number of threads per block (maximum is 1024 for most GPUs)</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#define BLOCK_DIM </span><span class="dv">1024</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Define the coarsening factor (number of elements each thread will process)</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define COARSE_FACTOR </span><span class="dv">2</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="co"> * CUDA kernel function that performs parallel reduction (summing up an array of floats)</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="co"> * using thread coarsening to have each thread process multiple elements,</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="co"> * and using shared memory for efficient intra-block reduction.</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co"> *</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">input</span><span class="co">  Pointer to the input array in device memory</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">output</span><span class="co"> Pointer to the output value in device memory</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">size</span><span class="co">   The size of the input array</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>__global__ <span class="dt">void</span> CoarsenedReduction<span class="op">(</span><span class="dt">float</span><span class="op">*</span> input<span class="op">,</span> <span class="dt">float</span><span class="op">*</span> output<span class="op">,</span> <span class="dt">int</span> size<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate shared memory for partial sums within a block</span></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    __shared__ <span class="dt">float</span> input_s<span class="op">[</span>BLOCK_DIM<span class="op">];</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Compute the global index for each thread, adjusted for coarsening</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> i <span class="op">=</span> blockIdx<span class="op">.</span>x <span class="op">*</span> blockDim<span class="op">.</span>x <span class="op">*</span> COARSE_FACTOR <span class="op">+</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Thread index within the block</span></span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> t <span class="op">=</span> threadIdx<span class="op">.</span>x<span class="op">;</span></span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize a local sum for this thread</span></span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span> sum <span class="op">=</span> <span class="fl">0.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Each thread processes COARSE_FACTOR elements</span></span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">int</span> tile <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> tile <span class="op">&lt;</span> COARSE_FACTOR<span class="op">;</span> <span class="op">++</span>tile<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a>        <span class="dt">unsigned</span> <span class="dt">int</span> index <span class="op">=</span> i <span class="op">+</span> tile <span class="op">*</span> blockDim<span class="op">.</span>x<span class="op">;</span>  <span class="co">// Compute the index for the current element</span></span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Check if index is within bounds</span></span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>index <span class="op">&lt;</span> size<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a>            sum <span class="op">+=</span> input<span class="op">[</span>index<span class="op">];</span>  <span class="co">// Accumulate the sum</span></span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Store the partial sum in shared memory</span></span>
+<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a>    input_s<span class="op">[</span>t<span class="op">]</span> <span class="op">=</span> sum<span class="op">;</span></span>
+<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Synchronize threads within the block to ensure all partial sums are stored</span></span>
+<span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a>    __syncthreads<span class="op">();</span></span>
+<span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Perform reduction within the block using shared memory</span></span>
+<span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">int</span> stride <span class="op">=</span> blockDim<span class="op">.</span>x <span class="op">/</span> <span class="dv">2</span><span class="op">;</span> stride <span class="op">&gt;</span> <span class="dv">0</span><span class="op">;</span> stride <span class="op">&gt;&gt;=</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>t <span class="op">&lt;</span> stride<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb24-51"><a href="#cb24-51" aria-hidden="true" tabindex="-1"></a>            input_s<span class="op">[</span>t<span class="op">]</span> <span class="op">+=</span> input_s<span class="op">[</span>t <span class="op">+</span> stride<span class="op">];</span>  <span class="co">// Accumulate sums from higher threads</span></span>
+<span id="cb24-52"><a href="#cb24-52" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb24-53"><a href="#cb24-53" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Synchronize after each reduction step</span></span>
+<span id="cb24-54"><a href="#cb24-54" aria-hidden="true" tabindex="-1"></a>        __syncthreads<span class="op">();</span></span>
+<span id="cb24-55"><a href="#cb24-55" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb24-56"><a href="#cb24-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-57"><a href="#cb24-57" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Thread 0 in each block adds the block's result to the global output atomically</span></span>
+<span id="cb24-58"><a href="#cb24-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>t <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb24-59"><a href="#cb24-59" aria-hidden="true" tabindex="-1"></a>        atomicAdd<span class="op">(</span>output<span class="op">,</span> input_s<span class="op">[</span><span class="dv">0</span><span class="op">]);</span></span>
+<span id="cb24-60"><a href="#cb24-60" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb24-61"><a href="#cb24-61" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb24-62"><a href="#cb24-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-63"><a href="#cb24-63" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb24-64"><a href="#cb24-64" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Total number of elements to sum</span></span>
+<span id="cb24-65"><a href="#cb24-65" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> size <span class="op">=</span> <span class="dv">10000</span><span class="op">;</span></span>
+<span id="cb24-66"><a href="#cb24-66" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Total size in bytes for the input array</span></span>
+<span id="cb24-67"><a href="#cb24-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> bytes <span class="op">=</span> size <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">);</span></span>
+<span id="cb24-68"><a href="#cb24-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-69"><a href="#cb24-69" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on the host (CPU) for input data and output result</span></span>
+<span id="cb24-70"><a href="#cb24-70" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_input <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">[</span>size<span class="op">];</span>  <span class="co">// Input array</span></span>
+<span id="cb24-71"><a href="#cb24-71" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> h_output <span class="op">=</span> <span class="kw">new</span> <span class="dt">float</span><span class="op">;</span>       <span class="co">// Output value</span></span>
+<span id="cb24-72"><a href="#cb24-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-73"><a href="#cb24-73" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize input data on the host (e.g., set all elements to 1.0f)</span></span>
+<span id="cb24-74"><a href="#cb24-74" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> size<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb24-75"><a href="#cb24-75" aria-hidden="true" tabindex="-1"></a>        h_input<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">;</span>  <span class="co">// Example initialization</span></span>
+<span id="cb24-76"><a href="#cb24-76" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb24-77"><a href="#cb24-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-78"><a href="#cb24-78" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Allocate memory on the device (GPU) for input data and output result</span></span>
+<span id="cb24-79"><a href="#cb24-79" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_input<span class="op">;</span></span>
+<span id="cb24-80"><a href="#cb24-80" aria-hidden="true" tabindex="-1"></a>    <span class="dt">float</span><span class="op">*</span> d_output<span class="op">;</span></span>
+<span id="cb24-81"><a href="#cb24-81" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_input<span class="op">,</span> bytes<span class="op">);</span>          <span class="co">// Allocate device memory for input</span></span>
+<span id="cb24-82"><a href="#cb24-82" aria-hidden="true" tabindex="-1"></a>    cudaMalloc<span class="op">(&amp;</span>d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span> <span class="co">// Allocate device memory for output</span></span>
+<span id="cb24-83"><a href="#cb24-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-84"><a href="#cb24-84" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy input data from host to device</span></span>
+<span id="cb24-85"><a href="#cb24-85" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>d_input<span class="op">,</span> h_input<span class="op">,</span> bytes<span class="op">,</span> cudaMemcpyHostToDevice<span class="op">);</span></span>
+<span id="cb24-86"><a href="#cb24-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-87"><a href="#cb24-87" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize output on the device to 0</span></span>
+<span id="cb24-88"><a href="#cb24-88" aria-hidden="true" tabindex="-1"></a>    cudaMemset<span class="op">(</span>d_output<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">));</span></span>
+<span id="cb24-89"><a href="#cb24-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-90"><a href="#cb24-90" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Calculate the number of blocks needed, considering coarsening</span></span>
+<span id="cb24-91"><a href="#cb24-91" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> numBlocks <span class="op">=</span> <span class="op">(</span>size <span class="op">+</span> BLOCK_DIM <span class="op">*</span> COARSE_FACTOR <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span>BLOCK_DIM <span class="op">*</span> COARSE_FACTOR<span class="op">);</span></span>
+<span id="cb24-92"><a href="#cb24-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-93"><a href="#cb24-93" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Launch the kernel with the calculated number of blocks and threads per block</span></span>
+<span id="cb24-94"><a href="#cb24-94" aria-hidden="true" tabindex="-1"></a>    CoarsenedReduction<span class="op">&lt;&lt;&lt;</span>numBlocks<span class="op">,</span> BLOCK_DIM<span class="op">&gt;&gt;&gt;(</span>d_input<span class="op">,</span> d_output<span class="op">,</span> size<span class="op">);</span></span>
+<span id="cb24-95"><a href="#cb24-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-96"><a href="#cb24-96" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Copy the result from device back to host</span></span>
+<span id="cb24-97"><a href="#cb24-97" aria-hidden="true" tabindex="-1"></a>    cudaMemcpy<span class="op">(</span>h_output<span class="op">,</span> d_output<span class="op">,</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">float</span><span class="op">),</span> cudaMemcpyDeviceToHost<span class="op">);</span></span>
+<span id="cb24-98"><a href="#cb24-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-99"><a href="#cb24-99" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Print the final result</span></span>
+<span id="cb24-100"><a href="#cb24-100" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout <span class="op">&lt;&lt;</span> <span class="st">"Sum is "</span> <span class="op">&lt;&lt;</span> <span class="op">*</span>h_output <span class="op">&lt;&lt;</span> <span class="bu">std::</span>endl<span class="op">;</span></span>
+<span id="cb24-101"><a href="#cb24-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-102"><a href="#cb24-102" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free allocated memory on the host</span></span>
+<span id="cb24-103"><a href="#cb24-103" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span><span class="op">[]</span> h_input<span class="op">;</span></span>
+<span id="cb24-104"><a href="#cb24-104" aria-hidden="true" tabindex="-1"></a>    <span class="kw">delete</span> h_output<span class="op">;</span></span>
+<span id="cb24-105"><a href="#cb24-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-106"><a href="#cb24-106" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Free allocated memory on the device</span></span>
+<span id="cb24-107"><a href="#cb24-107" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_input<span class="op">);</span></span>
+<span id="cb24-108"><a href="#cb24-108" aria-hidden="true" tabindex="-1"></a>    cudaFree<span class="op">(</span>d_output<span class="op">);</span></span>
+<span id="cb24-109"><a href="#cb24-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-110"><a href="#cb24-110" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb24-111"><a href="#cb24-111" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Threads reduce multiple elements within their assigned segment.</li>
+<li>Reduction is then performed within blocks and finally across blocks, similar to the segmented reduction.</li>
+</ul></li>
+<li><p><strong>Benefits:</strong></p>
+<ul>
+<li><strong>Reduced synchronization overhead:</strong> Threads synchronize less frequently.</li>
+<li><strong>Improved memory access patterns:</strong> Threads access contiguous chunks of memory during the initial reduction.</li>
+</ul></li>
+<li><p><strong>Benchmark:</strong></p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary called sum</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nvcc</span> <span class="at">-o</span> sum reduce_coarsening.cu</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the binary</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ncu</span> <span class="at">--set</span> full sum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Results (RTX 4090):</strong></p>
+<pre class="text"><code>Sum is 10000</code></pre></li>
+</ul>
+</section>
+</section>
+<section id="reductions-in-machine-learning-frameworks" class="level2">
+<h2 class="anchored" data-anchor-id="reductions-in-machine-learning-frameworks">Reductions in Machine Learning Frameworks</h2>
+<section id="pytorch" class="level3">
+<h3 class="anchored" data-anchor-id="pytorch">PyTorch</h3>
+<ul>
+<li><strong>Generic Reduction Kernel:</strong> PyTorch uses a single <a href="https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/cuda/Reduce.cuh"><code>Reduce.cuh</code></a> kernel for various reduction operations (e.g., min, max, sum).</li>
+<li><strong>Code Generation:</strong> The kernel is specialized at runtime based on the desired reduction operation, data type, and input size.</li>
+<li><strong>Heuristics:</strong> PyTorch uses heuristics to determine optimal kernel launch parameters (e.g., block size, grid size).</li>
+<li><strong><a href="https://github.com/pytorch/pytorch/blob/c64ae601ba9eb3ad2cd3402a14f6ac83c0ab7eba/aten/src/ATen/native/cuda/Reduce.cuh#L1205">ReduceConfig</a>:</strong> Defines various heuristics and parameters for different reduction scenarios.</li>
+<li><strong>Examples:</strong>
+<ul>
+<li><a href="https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/cuda/Reduce.cuh"><code>Reduce.cuh</code></a> handles different data types and accumulation strategies.</li>
+<li><a href="https://github.com/pytorch/pytorch/blob/c64ae601ba9eb3ad2cd3402a14f6ac83c0ab7eba/aten/src/ATen/native/cuda/Reduce.cuh#L1205"><code>ReduceConfig</code></a> sets heuristics for block size, thread coarsening, and accumulation data type.</li>
+</ul></li>
+</ul>
+</section>
+<section id="torch-compile-triton" class="level3">
+<h3 class="anchored" data-anchor-id="torch-compile-triton">Torch Compile (Triton)</h3>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="at">@torch.compile</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f(a):</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> torch.<span class="bu">sum</span>(a)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> c</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>f(torch.randn(<span class="dv">10</span>).cuda())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="va">TORCH_LOGS</span><span class="op">=</span><span class="st">"output_code"</span> <span class="ex">python</span> reduce_compile.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><p><strong>Trident Kernels:</strong> Torch Compile generates Trident kernels for reductions.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># AOT ID: ['0_inference']</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ctypes <span class="im">import</span> c_void_p, c_long</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tempfile</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> math <span class="im">import</span> inf, nan</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.hooks <span class="im">import</span> run_intermediate_hooks</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.utils <span class="im">import</span> maybe_profile</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.codegen.memory_planning <span class="im">import</span> _align <span class="im">as</span> align</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch <span class="im">import</span> device, empty_strided</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.async_compile <span class="im">import</span> AsyncCompile</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.select_algorithm <span class="im">import</span> extern_kernels</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.codegen.multi_kernel <span class="im">import</span> MultiKernelCall</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>aten <span class="op">=</span> torch.ops.aten</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>inductor_ops <span class="op">=</span> torch.ops.inductor</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>_quantized <span class="op">=</span> torch.ops._quantized</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>assert_size_stride <span class="op">=</span> torch._C._dynamo.guards.assert_size_stride</span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>empty_strided_cpu <span class="op">=</span> torch._C._dynamo.guards._empty_strided_cpu</span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>empty_strided_cuda <span class="op">=</span> torch._C._dynamo.guards._empty_strided_cuda</span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>reinterpret_tensor <span class="op">=</span> torch._C._dynamo.guards._reinterpret_tensor</span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>alloc_from_pool <span class="op">=</span> torch.ops.inductor._alloc_from_pool</span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>async_compile <span class="op">=</span> AsyncCompile()</span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a><span class="co"># kernel path: /tmp/torchinductor_innom-dt/xc/cxcl4refhjzcdxt6unhmqpirfzuwlll35zqbrgprj6lcwak26bfa.py</span></span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Source Nodes: [c], Original ATen: [aten.sum]</span></span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a><span class="co"># c =&gt; sum_1</span></span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>triton_per_fused_sum_0 <span class="op">=</span> async_compile.triton(<span class="st">'triton_'</span>, <span class="st">'''</span></span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a><span class="st">import triton</span></span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a><span class="st">import triton.language as tl</span></span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a><span class="st">from triton.compiler.compiler import AttrsDescriptor</span></span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a><span class="st">from torch._inductor.runtime import triton_helpers, triton_heuristics</span></span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a><span class="st">from torch._inductor.runtime.triton_helpers import libdevice, math as tl_math</span></span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a><span class="st">from torch._inductor.runtime.hints import AutotuneHint, ReductionHint, TileHint, instance_descriptor, DeviceProperties</span></span>
+<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a><span class="st">@triton_heuristics.persistent_reduction(</span></span>
+<span id="cb29-42"><a href="#cb29-42" aria-hidden="true" tabindex="-1"></a><span class="st">    size_hints=[1, 16],</span></span>
+<span id="cb29-43"><a href="#cb29-43" aria-hidden="true" tabindex="-1"></a><span class="st">    reduction_hint=ReductionHint.INNER,</span></span>
+<span id="cb29-44"><a href="#cb29-44" aria-hidden="true" tabindex="-1"></a><span class="st">    filename=__file__,</span></span>
+<span id="cb29-45"><a href="#cb29-45" aria-hidden="true" tabindex="-1"></a><span class="st">    triton_meta={'signature': {0: '*fp32', 1: '*fp32', 2: 'i32', 3: 'i32'}, 'device': DeviceProperties(type='cuda', index=0, cc=89, major=8, regs_per_multiprocessor=65536, max_threads_per_multi_processor=1536, multi_processor_count=128), 'constants': </span><span class="sc">{2: 1}</span><span class="st">, 'configs': [AttrsDescriptor(divisible_by_16=(0, 1), equal_to_1=(2,))]},</span></span>
+<span id="cb29-46"><a href="#cb29-46" aria-hidden="true" tabindex="-1"></a><span class="st">    inductor_meta={'autotune_hints': set(), 'kernel_name': 'triton_per_fused_sum_0', 'mutated_arg_names': [], 'no_x_dim': False, 'num_load': 1, 'num_reduction': 1, 'backend_hash': '2A9CF09493B10CFF69FD04C0FEC21CD676E4FE3810C6D0938868EF378B24086E', 'are_deterministic_algorithms_enabled': False, 'assert_indirect_indexing': True, 'autotune_local_cache': True, 'autotune_pointwise': True, 'autotune_remote_cache': False, 'force_disable_caches': False, 'dynamic_scale_rblock': True, 'max_autotune': False, 'max_autotune_pointwise': False, 'min_split_scan_rblock': 256, 'spill_threshold': 16, 'store_cubin': False}</span></span>
+<span id="cb29-47"><a href="#cb29-47" aria-hidden="true" tabindex="-1"></a><span class="st">)</span></span>
+<span id="cb29-48"><a href="#cb29-48" aria-hidden="true" tabindex="-1"></a><span class="st">@triton.jit</span></span>
+<span id="cb29-49"><a href="#cb29-49" aria-hidden="true" tabindex="-1"></a><span class="st">def triton_(in_ptr0, out_ptr0, xnumel, rnumel, XBLOCK : tl.constexpr):</span></span>
+<span id="cb29-50"><a href="#cb29-50" aria-hidden="true" tabindex="-1"></a><span class="st">    xnumel = 1</span></span>
+<span id="cb29-51"><a href="#cb29-51" aria-hidden="true" tabindex="-1"></a><span class="st">    rnumel = 10</span></span>
+<span id="cb29-52"><a href="#cb29-52" aria-hidden="true" tabindex="-1"></a><span class="st">    RBLOCK: tl.constexpr = 16</span></span>
+<span id="cb29-53"><a href="#cb29-53" aria-hidden="true" tabindex="-1"></a><span class="st">    xoffset = tl.program_id(0) * XBLOCK</span></span>
+<span id="cb29-54"><a href="#cb29-54" aria-hidden="true" tabindex="-1"></a><span class="st">    xindex = xoffset + tl.arange(0, XBLOCK)[:, None]</span></span>
+<span id="cb29-55"><a href="#cb29-55" aria-hidden="true" tabindex="-1"></a><span class="st">    xmask = xindex &lt; xnumel</span></span>
+<span id="cb29-56"><a href="#cb29-56" aria-hidden="true" tabindex="-1"></a><span class="st">    rindex = tl.arange(0, RBLOCK)[None, :]</span></span>
+<span id="cb29-57"><a href="#cb29-57" aria-hidden="true" tabindex="-1"></a><span class="st">    roffset = 0</span></span>
+<span id="cb29-58"><a href="#cb29-58" aria-hidden="true" tabindex="-1"></a><span class="st">    rmask = rindex &lt; rnumel</span></span>
+<span id="cb29-59"><a href="#cb29-59" aria-hidden="true" tabindex="-1"></a><span class="st">    r0 = rindex</span></span>
+<span id="cb29-60"><a href="#cb29-60" aria-hidden="true" tabindex="-1"></a><span class="st">    tmp0 = tl.load(in_ptr0 + (r0), rmask, other=0.0)</span></span>
+<span id="cb29-61"><a href="#cb29-61" aria-hidden="true" tabindex="-1"></a><span class="st">    tmp1 = tl.broadcast_to(tmp0, [XBLOCK, RBLOCK])</span></span>
+<span id="cb29-62"><a href="#cb29-62" aria-hidden="true" tabindex="-1"></a><span class="st">    tmp3 = tl.where(rmask, tmp1, 0)</span></span>
+<span id="cb29-63"><a href="#cb29-63" aria-hidden="true" tabindex="-1"></a><span class="st">    tmp4 = tl.sum(tmp3, 1)[:, None]</span></span>
+<span id="cb29-64"><a href="#cb29-64" aria-hidden="true" tabindex="-1"></a><span class="st">    tl.store(out_ptr0 + (tl.full([XBLOCK, 1], 0, tl.int32)), tmp4, None)</span></span>
+<span id="cb29-65"><a href="#cb29-65" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span>, device_str<span class="op">=</span><span class="st">'cuda'</span>)</span>
+<span id="cb29-66"><a href="#cb29-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-67"><a href="#cb29-67" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> triton</span>
+<span id="cb29-68"><a href="#cb29-68" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> triton.language <span class="im">as</span> tl</span>
+<span id="cb29-69"><a href="#cb29-69" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.runtime.triton_heuristics <span class="im">import</span> grid, split_scan_grid, start_graph, end_graph</span>
+<span id="cb29-70"><a href="#cb29-70" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._C <span class="im">import</span> _cuda_getCurrentRawStream <span class="im">as</span> get_raw_stream</span>
+<span id="cb29-71"><a href="#cb29-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-72"><a href="#cb29-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-73"><a href="#cb29-73" aria-hidden="true" tabindex="-1"></a>async_compile.wait(<span class="bu">globals</span>())</span>
+<span id="cb29-74"><a href="#cb29-74" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> async_compile</span>
+<span id="cb29-75"><a href="#cb29-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-76"><a href="#cb29-76" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> call(args):</span>
+<span id="cb29-77"><a href="#cb29-77" aria-hidden="true" tabindex="-1"></a>    arg0_1, <span class="op">=</span> args</span>
+<span id="cb29-78"><a href="#cb29-78" aria-hidden="true" tabindex="-1"></a>    args.clear()</span>
+<span id="cb29-79"><a href="#cb29-79" aria-hidden="true" tabindex="-1"></a>    assert_size_stride(arg0_1, (<span class="dv">10</span>, ), (<span class="dv">1</span>, ))</span>
+<span id="cb29-80"><a href="#cb29-80" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.cuda._DeviceGuard(<span class="dv">0</span>):</span>
+<span id="cb29-81"><a href="#cb29-81" aria-hidden="true" tabindex="-1"></a>        torch.cuda.set_device(<span class="dv">0</span>)</span>
+<span id="cb29-82"><a href="#cb29-82" aria-hidden="true" tabindex="-1"></a>        buf0 <span class="op">=</span> empty_strided_cuda((), (), torch.float32)</span>
+<span id="cb29-83"><a href="#cb29-83" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Source Nodes: [c], Original ATen: [aten.sum]</span></span>
+<span id="cb29-84"><a href="#cb29-84" aria-hidden="true" tabindex="-1"></a>        stream0 <span class="op">=</span> get_raw_stream(<span class="dv">0</span>)</span>
+<span id="cb29-85"><a href="#cb29-85" aria-hidden="true" tabindex="-1"></a>        triton_per_fused_sum_0.run(arg0_1, buf0, <span class="dv">1</span>, <span class="dv">10</span>, grid<span class="op">=</span>grid(<span class="dv">1</span>), stream<span class="op">=</span>stream0)</span>
+<span id="cb29-86"><a href="#cb29-86" aria-hidden="true" tabindex="-1"></a>        <span class="kw">del</span> arg0_1</span>
+<span id="cb29-87"><a href="#cb29-87" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (buf0, )</span>
+<span id="cb29-88"><a href="#cb29-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-89"><a href="#cb29-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-90"><a href="#cb29-90" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> benchmark_compiled_module(times<span class="op">=</span><span class="dv">10</span>, repeat<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb29-91"><a href="#cb29-91" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> torch._dynamo.testing <span class="im">import</span> rand_strided</span>
+<span id="cb29-92"><a href="#cb29-92" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> torch._inductor.utils <span class="im">import</span> print_performance</span>
+<span id="cb29-93"><a href="#cb29-93" aria-hidden="true" tabindex="-1"></a>    arg0_1 <span class="op">=</span> rand_strided((<span class="dv">10</span>, ), (<span class="dv">1</span>, ), device<span class="op">=</span><span class="st">'cuda:0'</span>, dtype<span class="op">=</span>torch.float32)</span>
+<span id="cb29-94"><a href="#cb29-94" aria-hidden="true" tabindex="-1"></a>    fn <span class="op">=</span> <span class="kw">lambda</span>: call([arg0_1])</span>
+<span id="cb29-95"><a href="#cb29-95" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> print_performance(fn, times<span class="op">=</span>times, repeat<span class="op">=</span>repeat)</span>
+<span id="cb29-96"><a href="#cb29-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-97"><a href="#cb29-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-98"><a href="#cb29-98" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb29-99"><a href="#cb29-99" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> torch._inductor.wrapper_benchmark <span class="im">import</span> compiled_module_main</span>
+<span id="cb29-100"><a href="#cb29-100" aria-hidden="true" tabindex="-1"></a>    compiled_module_main(<span class="st">'None'</span>, benchmark_compiled_module)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> triton</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> triton.language <span class="im">as</span> tl</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> triton.compiler.compiler <span class="im">import</span> AttrsDescriptor</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.runtime <span class="im">import</span> triton_helpers, triton_heuristics</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.runtime.triton_helpers <span class="im">import</span> libdevice, math <span class="im">as</span> tl_math</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch._inductor.runtime.hints <span class="im">import</span> AutotuneHint, ReductionHint, TileHint, instance_descriptor, DeviceProperties</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="at">@triton_heuristics.persistent_reduction</span>(</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    size_hints<span class="op">=</span>[<span class="dv">1</span>, <span class="dv">16</span>],</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    reduction_hint<span class="op">=</span>ReductionHint.INNER,</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    filename<span class="op">=</span><span class="va">__file__</span>,</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    triton_meta<span class="op">=</span>{<span class="st">'signature'</span>: {<span class="dv">0</span>: <span class="st">'*fp32'</span>, <span class="dv">1</span>: <span class="st">'*fp32'</span>, <span class="dv">2</span>: <span class="st">'i32'</span>, <span class="dv">3</span>: <span class="st">'i32'</span>}, <span class="st">'device'</span>: DeviceProperties(<span class="bu">type</span><span class="op">=</span><span class="st">'cuda'</span>, index<span class="op">=</span><span class="dv">0</span>, cc<span class="op">=</span><span class="dv">89</span>, major<span class="op">=</span><span class="dv">8</span>, regs_per_multiprocessor<span class="op">=</span><span class="dv">65536</span>, max_threads_per_multi_processor<span class="op">=</span><span class="dv">1536</span>, multi_processor_count<span class="op">=</span><span class="dv">128</span>), <span class="st">'constants'</span>: {<span class="dv">2</span>: <span class="dv">1</span>}, <span class="st">'configs'</span>: [AttrsDescriptor(divisible_by_16<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>), equal_to_1<span class="op">=</span>(<span class="dv">2</span>,))]},</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    inductor_meta<span class="op">=</span>{<span class="st">'autotune_hints'</span>: <span class="bu">set</span>(), <span class="st">'kernel_name'</span>: <span class="st">'triton_per_fused_sum_0'</span>, <span class="st">'mutated_arg_names'</span>: [], <span class="st">'no_x_dim'</span>: <span class="va">False</span>, <span class="st">'num_load'</span>: <span class="dv">1</span>, <span class="st">'num_reduction'</span>: <span class="dv">1</span>, <span class="st">'backend_hash'</span>: <span class="st">'2A9CF09493B10CFF69FD04C0FEC21CD676E4FE3810C6D0938868EF378B24086E'</span>, <span class="st">'are_deterministic_algorithms_enabled'</span>: <span class="va">False</span>, <span class="st">'assert_indirect_indexing'</span>: <span class="va">True</span>, <span class="st">'autotune_local_cache'</span>: <span class="va">True</span>, <span class="st">'autotune_pointwise'</span>: <span class="va">True</span>, <span class="st">'autotune_remote_cache'</span>: <span class="va">False</span>, <span class="st">'force_disable_caches'</span>: <span class="va">False</span>, <span class="st">'dynamic_scale_rblock'</span>: <span class="va">True</span>, <span class="st">'max_autotune'</span>: <span class="va">False</span>, <span class="st">'max_autotune_pointwise'</span>: <span class="va">False</span>, <span class="st">'min_split_scan_rblock'</span>: <span class="dv">256</span>, <span class="st">'spill_threshold'</span>: <span class="dv">16</span>, <span class="st">'store_cubin'</span>: <span class="va">False</span>}</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a><span class="at">@triton.jit</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> triton_(in_ptr0, out_ptr0, xnumel, rnumel, XBLOCK : tl.constexpr):</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    xnumel <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    rnumel <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>    RBLOCK: tl.constexpr <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>    xoffset <span class="op">=</span> tl.program_id(<span class="dv">0</span>) <span class="op">*</span> XBLOCK</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>    xindex <span class="op">=</span> xoffset <span class="op">+</span> tl.arange(<span class="dv">0</span>, XBLOCK)[:, <span class="va">None</span>]</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>    xmask <span class="op">=</span> xindex <span class="op">&lt;</span> xnumel</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>    rindex <span class="op">=</span> tl.arange(<span class="dv">0</span>, RBLOCK)[<span class="va">None</span>, :]</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>    roffset <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>    rmask <span class="op">=</span> rindex <span class="op">&lt;</span> rnumel</span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>    r0 <span class="op">=</span> rindex</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>    tmp0 <span class="op">=</span> tl.load(in_ptr0 <span class="op">+</span> (r0), rmask, other<span class="op">=</span><span class="fl">0.0</span>)</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>    tmp1 <span class="op">=</span> tl.broadcast_to(tmp0, [XBLOCK, RBLOCK])</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>    tmp3 <span class="op">=</span> tl.where(rmask, tmp1, <span class="dv">0</span>)</span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>    tmp4 <span class="op">=</span> tl.<span class="bu">sum</span>(tmp3, <span class="dv">1</span>)[:, <span class="va">None</span>]</span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>    tl.store(out_ptr0 <span class="op">+</span> (tl.full([XBLOCK, <span class="dv">1</span>], <span class="dv">0</span>, tl.int32)), tmp4, <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Heuristics:</strong> Trident uses heuristics to determine optimal kernel launch parameters and optimizations.</p>
+<ul>
+<li><a href="https://github.com/pytorch/pytorch/blob/main/torch/_inductor/runtime/triton_heuristics.py">torch/_inductor/runtime/triton_heuristics.py</a></li>
+</ul></li>
+<li><p><strong>Examples:</strong></p>
+<ul>
+<li>Trident automatically detects reductions in PyTorch code.</li>
+<li>Trident generates efficient kernels with appropriate block size and thread coarsening.</li>
+<li>Trident provides hints for specific optimizations (e.g., reduction type, dimensions).</li>
+</ul></li>
+</ul>
+</section>
+<section id="triton" class="level3">
+<h3 class="anchored" data-anchor-id="triton">Triton</h3>
+<ul>
+<li><strong>Hierarchical Reduction:</strong> Triton implements reductions using a hierarchical approach, similar to the CUDA implementations discussed.
+<ul>
+<li><a href="https://github.com/triton-lang/triton/blob/c99c2148f363e4806e02300d302ae0b52bb19388/lib/Conversion/TritonGPUToLLVM/ReduceOpToLLVM.cpp#L39">lib/Conversion/TritonGPUToLLVM/ReduceOpToLLVM.cpp</a></li>
+</ul></li>
+<li><strong>Examples:</strong>
+<ul>
+<li>Triton performs reduction within threads, within warps, within blocks, and finally across blocks.</li>
+</ul></li>
+<li><strong>Flexibility:</strong> Triton provides primitives for building custom reduction kernels with fine-grained control over the reduction process.</li>
+</ul>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<ul>
+<li><strong>Reductions are essential operations in GPU programming and machine learning.</strong></li>
+<li><strong>Parallel reduction algorithms</strong> enable efficient implementation of reductions on GPUs.</li>
+<li><strong>Thread strategies play a crucial role in optimizing parallel reductions.</strong></li>
+<li><strong>Machine learning frameworks</strong> like PyTorch and Triton employ sophisticated techniques to generate optimized reduction kernels.</li>
+<li><strong>Understanding reduction algorithms and implementation strategies is crucial for developing high-performance GPU code.</strong></li>
+</ul>
+</section>
+<section id="call-to-action" class="level2">
+<h2 class="anchored" data-anchor-id="call-to-action">Call to Action</h2>
+<ul>
+<li><strong>Start writing your own kernels!</strong> This is the best way to solidify your understanding and gain practical experience.</li>
+<li><strong>Consider collaborating with others</strong> for motivation and support.</li>
+<li><strong>Volunteer to give a lecture!</strong> Share your knowledge and experience with the community. Topics like Trident kernels, prefix sum, and NCCL are highly relevant.</li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
