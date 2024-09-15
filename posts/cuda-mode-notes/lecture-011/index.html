@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-09-15">
+<meta name="description" content="Lecture #11 discusses GPU sparsity, specifically semi-structured and block sparsity techniques, for accelerating neural network inference and training by leveraging optimized kernels and sparse data representations.">
+
+<title>Christian Mills - CUDA MODE Lecture 11: Sparsity</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - CUDA MODE Lecture 11: Sparsity">
+<meta property="og:description" content="Lecture #11 discusses GPU sparsity, specifically semi-structured and block sparsity techniques, for accelerating neural network inference and training by leveraging optimized kernels and sparse data representations.">
+<meta property="og:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta property="og:site_name" content="Christian Mills">
+<meta property="og:image:height" content="284">
+<meta property="og:image:width" content="526">
+<meta name="twitter:title" content="Christian Mills - CUDA MODE Lecture 11: Sparsity">
+<meta name="twitter:description" content="Lecture #11 discusses GPU sparsity, specifically semi-structured and block sparsity techniques, for accelerating neural network inference and training by leveraging optimized kernels and sparse data representations.">
+<meta name="twitter:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="284">
+<meta name="twitter:image-width" content="526">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul>
+  <li><a href="#sparsity-and-pruning-core-concepts" id="toc-sparsity-and-pruning-core-concepts" class="nav-link" data-scroll-target="#sparsity-and-pruning-core-concepts">Sparsity and Pruning: Core Concepts</a></li>
+  <li><a href="#historical-context-and-renewed-interest" id="toc-historical-context-and-renewed-interest" class="nav-link" data-scroll-target="#historical-context-and-renewed-interest">Historical Context and Renewed Interest</a></li>
+  </ul></li>
+  <li><a href="#the-performance-challenge-of-sparsity" id="toc-the-performance-challenge-of-sparsity" class="nav-link" data-scroll-target="#the-performance-challenge-of-sparsity">The Performance Challenge of Sparsity</a>
+  <ul>
+  <li><a href="#multiplying-by-zero-the-ideal-vs.-reality" id="toc-multiplying-by-zero-the-ideal-vs.-reality" class="nav-link" data-scroll-target="#multiplying-by-zero-the-ideal-vs.-reality">Multiplying by Zero: The Ideal vs.&nbsp;Reality</a></li>
+  <li><a href="#sparsity-patterns-and-the-gpu-trade-off" id="toc-sparsity-patterns-and-the-gpu-trade-off" class="nav-link" data-scroll-target="#sparsity-patterns-and-the-gpu-trade-off">Sparsity Patterns and the GPU Trade-off</a></li>
+  </ul></li>
+  <li><a href="#unstructured-sparsity-and-its-limitations-on-gpus" id="toc-unstructured-sparsity-and-its-limitations-on-gpus" class="nav-link" data-scroll-target="#unstructured-sparsity-and-its-limitations-on-gpus">Unstructured Sparsity and Its Limitations on GPUs</a>
+  <ul>
+  <li><a href="#sparse-representations-and-kernels" id="toc-sparse-representations-and-kernels" class="nav-link" data-scroll-target="#sparse-representations-and-kernels">Sparse Representations and Kernels</a></li>
+  <li><a href="#challenges-on-gpus" id="toc-challenges-on-gpus" class="nav-link" data-scroll-target="#challenges-on-gpus">Challenges on GPUs</a></li>
+  </ul></li>
+  <li><a href="#semi-structured-sparsity-24-sparsity" id="toc-semi-structured-sparsity-24-sparsity" class="nav-link" data-scroll-target="#semi-structured-sparsity-24-sparsity">Semi-structured Sparsity (2:4 Sparsity)</a>
+  <ul>
+  <li><a href="#characteristics" id="toc-characteristics" class="nav-link" data-scroll-target="#characteristics">Characteristics</a></li>
+  <li><a href="#implementation-in-pytorch" id="toc-implementation-in-pytorch" class="nav-link" data-scroll-target="#implementation-in-pytorch">Implementation in PyTorch</a></li>
+  <li><a href="#example-usage-in-pytorch" id="toc-example-usage-in-pytorch" class="nav-link" data-scroll-target="#example-usage-in-pytorch">Example Usage in PyTorch</a></li>
+  <li><a href="#limitations-and-workarounds" id="toc-limitations-and-workarounds" class="nav-link" data-scroll-target="#limitations-and-workarounds">Limitations and Workarounds</a></li>
+  </ul></li>
+  <li><a href="#block-sparsity" id="toc-block-sparsity" class="nav-link" data-scroll-target="#block-sparsity">Block Sparsity</a>
+  <ul>
+  <li><a href="#characteristics-1" id="toc-characteristics-1" class="nav-link" data-scroll-target="#characteristics-1">Characteristics</a></li>
+  <li><a href="#advantages-for-vision-transformers" id="toc-advantages-for-vision-transformers" class="nav-link" data-scroll-target="#advantages-for-vision-transformers">Advantages for Vision Transformers</a></li>
+  <li><a href="#challenges" id="toc-challenges" class="nav-link" data-scroll-target="#challenges">Challenges</a></li>
+  </ul></li>
+  <li><a href="#composing-sparsity-with-quantization" id="toc-composing-sparsity-with-quantization" class="nav-link" data-scroll-target="#composing-sparsity-with-quantization">Composing Sparsity with Quantization</a>
+  <ul>
+  <li><a href="#challenges-and-fusion-issues" id="toc-challenges-and-fusion-issues" class="nav-link" data-scroll-target="#challenges-and-fusion-issues">Challenges and Fusion Issues</a></li>
+  <li><a href="#potential-solutions" id="toc-potential-solutions" class="nav-link" data-scroll-target="#potential-solutions">Potential Solutions</a></li>
+  <li><a href="#accuracy-considerations" id="toc-accuracy-considerations" class="nav-link" data-scroll-target="#accuracy-considerations">Accuracy Considerations</a></li>
+  </ul></li>
+  <li><a href="#sparse-training" id="toc-sparse-training" class="nav-link" data-scroll-target="#sparse-training">Sparse Training</a>
+  <ul>
+  <li><a href="#accelerating-the-training-process" id="toc-accelerating-the-training-process" class="nav-link" data-scroll-target="#accelerating-the-training-process">Accelerating the Training Process</a></li>
+  <li><a href="#example-xformers-and-imagenet" id="toc-example-xformers-and-imagenet" class="nav-link" data-scroll-target="#example-xformers-and-imagenet">Example: xFormers and ImageNet</a></li>
+  <li><a href="#differences-between-inference-and-training" id="toc-differences-between-inference-and-training" class="nav-link" data-scroll-target="#differences-between-inference-and-training">Differences Between Inference and Training</a></li>
+  </ul></li>
+  <li><a href="#future-directions-and-research-areas" id="toc-future-directions-and-research-areas" class="nav-link" data-scroll-target="#future-directions-and-research-areas">Future Directions and Research Areas</a>
+  <ul>
+  <li><a href="#combining-sparsity-patterns" id="toc-combining-sparsity-patterns" class="nav-link" data-scroll-target="#combining-sparsity-patterns">Combining Sparsity Patterns</a></li>
+  <li><a href="#flexible-sparsity-with-shuffling" id="toc-flexible-sparsity-with-shuffling" class="nav-link" data-scroll-target="#flexible-sparsity-with-shuffling">Flexible Sparsity with Shuffling</a></li>
+  <li><a href="#sparsity-for-dropout" id="toc-sparsity-for-dropout" class="nav-link" data-scroll-target="#sparsity-for-dropout">Sparsity for Dropout</a></li>
+  <li><a href="#cuda-specific-considerations" id="toc-cuda-specific-considerations" class="nav-link" data-scroll-target="#cuda-specific-considerations">CUDA-Specific Considerations</a></li>
+  <li><a href="#hardware-support-for-sparsity" id="toc-hardware-support-for-sparsity" class="nav-link" data-scroll-target="#hardware-support-for-sparsity">Hardware Support for Sparsity</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CUDA MODE Lecture 11: Sparsity</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #11 discusses GPU sparsity, specifically semi-structured and block sparsity techniques, for accelerating neural network inference and training by leveraging optimized kernels and sparse data representations.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 15, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a><br>
+</li>
+<li><a href="#the-performance-challenge-of-sparsity">The Performance Challenge of Sparsity</a><br>
+</li>
+<li><a href="#unstructured-sparsity-and-its-limitations-on-gpus">Unstructured Sparsity and Its Limitations on GPUs</a><br>
+</li>
+<li><a href="#semi-structured-sparsity-24-sparsity">Semi-structured Sparsity (2:4 Sparsity)</a><br>
+</li>
+<li><a href="#block-sparsity">Block Sparsity</a><br>
+</li>
+<li><a href="#composing-sparsity-with-quantization">Composing Sparsity with Quantization</a><br>
+</li>
+<li><a href="#sparse-training">Sparse Training</a><br>
+</li>
+<li><a href="#future-directions-and-research-areas">Future Directions and Research Areas</a><br>
+</li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=mGDnOLcfE8g">Lecture 11: Sparsity</a></li>
+<li><strong>Slides:</strong> <a href="https://github.com/cuda-mode/lectures/blob/main/lecture_011/sparsity.pptx">GPU Sparsity</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><strong>Speaker:</strong> Jesse Cai</li>
+</ul>
+<section id="sparsity-and-pruning-core-concepts" class="level3">
+<h3 class="anchored" data-anchor-id="sparsity-and-pruning-core-concepts">Sparsity and Pruning: Core Concepts</h3>
+<ul>
+<li><p><strong>Sparsity</strong> in neural networks refers to the presence of a significant number of zero-valued weights.</p></li>
+<li><p><strong>Pruning</strong> is the process of intentionally removing these zero-valued or insignificant weights from the network.</p></li>
+<li><p>The goal is to reduce computational cost and memory footprint without significantly impacting model accuracy.</p></li>
+<li><p>This is achieved in two steps:</p>
+<ol type="1">
+<li><strong>Zeroing out weights:</strong> Identify and set insignificant weights to zero.</li>
+<li><strong>Accelerating computation:</strong> Develop methods to efficiently perform calculations with zero-valued weights (e.g., skipping multiplication by zero).</li>
+</ol></li>
+</ul>
+</section>
+<section id="historical-context-and-renewed-interest" class="level3">
+<h3 class="anchored" data-anchor-id="historical-context-and-renewed-interest">Historical Context and Renewed Interest</h3>
+<ul>
+<li>The concept of pruning dates back to the <a href="https://proceedings.neurips.cc/paper_files/paper/1989/file/6c9882bbac1c7093bd25041881277658-Paper.pdf">“Optimal Brain Damage” paper</a> from 1989.</li>
+<li>Renewed interest emerged with the rise of deep learning and large models like AlexNet in 2012.</li>
+<li>The increasing size of modern models, especially in the context of LLMs and Gen AI, has further intensified the need for sparsity and pruning techniques.</li>
+</ul>
+</section>
+</section>
+<section id="the-performance-challenge-of-sparsity" class="level2">
+<h2 class="anchored" data-anchor-id="the-performance-challenge-of-sparsity">The Performance Challenge of Sparsity</h2>
+<section id="multiplying-by-zero-the-ideal-vs.-reality" class="level3">
+<h3 class="anchored" data-anchor-id="multiplying-by-zero-the-ideal-vs.-reality">Multiplying by Zero: The Ideal vs.&nbsp;Reality</h3>
+<ul>
+<li>The fundamental principle of sparsity relies on the fact that multiplying by zero is inherently faster than multiplying by non-zero values.</li>
+<li>However, <strong>simply having zero-valued weights doesn’t guarantee speedups</strong>. The way computation is performed is crucial.</li>
+<li><strong>Naive approaches:</strong> If multiplication by zero is treated the same as multiplication by any other number (e.g., performing the full multiplication steps), no significant performance gain is achieved.</li>
+</ul>
+</section>
+<section id="sparsity-patterns-and-the-gpu-trade-off" class="level3">
+<h3 class="anchored" data-anchor-id="sparsity-patterns-and-the-gpu-trade-off">Sparsity Patterns and the GPU Trade-off</h3>
+<ul>
+<li><strong>The challenge:</strong> Achieving optimal performance with sparse models on GPUs requires balancing two competing factors:
+<ul>
+<li><strong>Flexibility:</strong> Allowing for a wide range of sparsity patterns to minimize the impact on accuracy.</li>
+<li><strong>Efficient Computation:</strong> Ensuring that the chosen sparsity pattern can be efficiently processed on the parallel architecture of GPUs.</li>
+</ul></li>
+<li><strong>Types of Sparsity:</strong>
+<ul>
+<li><strong>Unstructured Sparsity:</strong> No constraints on the location of zero-valued weights. Offers high flexibility but can be challenging to accelerate on GPUs.</li>
+<li><strong>Structured Sparsity:</strong> Zeros are arranged in specific patterns (e.g., entire rows, columns, or filters). Easier to accelerate but may significantly impact accuracy.</li>
+<li><strong>Semi-structured Sparsity (2:4 Sparsity):</strong> An intermediate approach where two out of every four elements are zero. Offers a balance between flexibility and performance. Well-supported on GPUs.</li>
+<li><strong>Block Sparsity:</strong> Zeros are grouped into blocks (e.g., 32x32). Provides good performance but requires more complex algorithms for accuracy recovery.
+<ul>
+<li><strong>PyTorch:</strong> <a href="https://github.com/pytorch/ao/tree/main/torchao/sparsity/prototype/superblock">torchao/sparsity/prototype/superblock</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2207.00670">DRESS: Dynamic REal-time Sparse Subnets</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="unstructured-sparsity-and-its-limitations-on-gpus" class="level2">
+<h2 class="anchored" data-anchor-id="unstructured-sparsity-and-its-limitations-on-gpus">Unstructured Sparsity and Its Limitations on GPUs</h2>
+<section id="sparse-representations-and-kernels" class="level3">
+<h3 class="anchored" data-anchor-id="sparse-representations-and-kernels">Sparse Representations and Kernels</h3>
+<ul>
+<li>To make unstructured sparsity efficient, data is stored in <strong>sparse representations</strong> (e.g., coordinate format).
+<ul>
+<li><strong>Documentation:</strong> <a href="https://pytorch.org/docs/stable/sparse.html">torch.sparse</a></li>
+</ul></li>
+<li><strong>Coordinate Format Example:</strong>
+<ul>
+<li><strong>Dense Matrix:</strong> Stored contiguously in memory.</li>
+<li><strong>Sparse Matrix (Coordinate Format):</strong> Only non-zero elements are stored along with their indices. This reduces memory footprint when the matrix is sufficiently sparse.</li>
+</ul></li>
+<li><strong>Sparse kernels</strong> are used to perform computations directly on these sparse representations, skipping multiplications by zero.</li>
+</ul>
+</section>
+<section id="challenges-on-gpus" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-on-gpus">Challenges on GPUs</h3>
+<ul>
+<li><strong>High Sparsity Requirement:</strong> CPU sparsity is generally only faster at extremely high sparsity levels (greater than 99%).</li>
+<li><strong>GPU Limitations:</strong> Dense matrix multiplication is significantly faster on GPUs due to their parallel nature.
+<ul>
+<li>This makes it even harder for unstructured sparsity to achieve speedups on GPUs, as the parallelization benefits are lost with highly irregular sparsity patterns.</li>
+</ul></li>
+<li><strong>Need for Structure:</strong> To achieve performance gains on GPUs, some form of structure in the sparsity pattern is necessary to enable efficient parallelization.</li>
+</ul>
+</section>
+</section>
+<section id="semi-structured-sparsity-24-sparsity" class="level2">
+<h2 class="anchored" data-anchor-id="semi-structured-sparsity-24-sparsity">Semi-structured Sparsity (2:4 Sparsity)</h2>
+<section id="characteristics" class="level3">
+<h3 class="anchored" data-anchor-id="characteristics">Characteristics</h3>
+<ul>
+<li><p><strong>Fixed Sparsity Level:</strong> 50% of the elements are zero.</p></li>
+<li><p><strong>Pattern:</strong> Two out of every four elements within a block are zero.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/semi-structured-sparsity.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 9</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Accuracy Recovery:</strong> NVIDIA research suggests that accuracy can be effectively recovered with a simple “prune once, retrain” approach.</p></li>
+</ul>
+</section>
+<section id="implementation-in-pytorch" class="level3">
+<h3 class="anchored" data-anchor-id="implementation-in-pytorch">Implementation in PyTorch</h3>
+<ul>
+<li><p><strong>Integration:</strong> Semi-structured sparsity is supported in PyTorch.</p>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://pytorch.org/docs/stable/sparse.html">torch.sparse</a></li>
+</ul></li>
+<li><p><strong>Backends:</strong></p>
+<ul>
+<li><p><strong><a href="https://github.com/NVIDIA/CUTLASS">CUTLASS</a>:</strong> NVIDIA’s CUDA Templates library provides native instructions for 2:4 sparse operations.</p></li>
+<li><p><strong><a href="https://docs.nvidia.com/cuda/cusparselt/">cuSPARSELt</a>:</strong> NVIDIA’s library specifically designed for sparse linear algebra operations. Offers additional features and potential performance improvements.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/cusparselt-semi-structured-sparsity.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 10</figcaption>
+</figure>
+</div></li>
+</ul></li>
+<li><p><strong>Performance:</strong></p>
+<ul>
+<li><strong>Theoretical Maximum Speedup:</strong> 2x due to halving the number of non-zero elements.</li>
+<li><strong>Practical Average Speedup:</strong> Around 1.6x due to overheads like loading metadata (bitmask) and matrix shape dependencies.</li>
+</ul></li>
+</ul>
+</section>
+<section id="example-usage-in-pytorch" class="level3">
+<h3 class="anchored" data-anchor-id="example-usage-in-pytorch">Example Usage in PyTorch</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.sparse <span class="im">import</span> to_sparse_semi_structured, SparseSemiStructuredTensor</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Sparsity helper functions</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> apply_fake_sparsity(model):</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">    This function simulates 2:4 sparsity on all linear layers in a model.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">    It uses the torch.ao.pruning flow.</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># torch.ao.pruning flow</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> torch.ao.pruning <span class="im">import</span> WeightNormSparsifier</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    sparse_config <span class="op">=</span> []</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> name, mod <span class="kw">in</span> model.named_modules():</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(mod, torch.nn.Linear):</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>            sparse_config.append({<span class="st">"tensor_fqn"</span>: <span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">.weight"</span>})</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    sparsifier <span class="op">=</span> WeightNormSparsifier(sparsity_level<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                                      sparse_block_shape<span class="op">=</span>(<span class="dv">1</span>,<span class="dv">4</span>),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                                      zeros_per_block<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    sparsifier.prepare(model, sparse_config)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    sparsifier.step()</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    sparsifier.step()</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    sparsifier.squash_mask()</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> apply_sparse(model):</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    apply_fake_sparsity(model)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> name, mod <span class="kw">in</span> model.named_modules():</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(mod, torch.nn.Linear):</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            mod.weight <span class="op">=</span> torch.nn.Parameter(to_sparse_semi_structured(mod.weight))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="limitations-and-workarounds" class="level3">
+<h3 class="anchored" data-anchor-id="limitations-and-workarounds">Limitations and Workarounds</h3>
+<ul>
+<li><strong>First Matrix Sparsity Only:</strong> Current implementations only support sparsity in the first matrix of a matrix multiplication, not the second.</li>
+<li><strong>Impact on PyTorch Linear Layers:</strong> PyTorch linear layers are defined as XW<sup>T</sup>, requiring a transpose operation when using semi-structured sparsity.</li>
+<li><strong>Transpose Overhead:</strong> The transpose can introduce performance overhead due to data copying.</li>
+<li><strong>Torch.compile Mitigation:</strong> Torch.compile can fuse the transpose with subsequent operations (e.g., ReLU) to reduce overhead.</li>
+<li><strong>Current Fusion Limitations:</strong> Torch.compile cannot currently fuse operations directly into the sparse matrix multiplication kernel (cuSPARSELt). This limits potential performance gains.</li>
+</ul>
+</section>
+</section>
+<section id="block-sparsity" class="level2">
+<h2 class="anchored" data-anchor-id="block-sparsity">Block Sparsity</h2>
+<ul>
+<li><strong>PyTorch:</strong> <a href="https://github.com/pytorch/ao/tree/main/torchao/sparsity/prototype/superblock">torchao/sparsity/prototype/superblock</a></li>
+</ul>
+<section id="characteristics-1" class="level3">
+<h3 class="anchored" data-anchor-id="characteristics-1">Characteristics</h3>
+<ul>
+<li><strong>Variable Sparsity Level:</strong> The sparsity level can be adjusted (e.g., 90%).</li>
+<li><strong>Pattern:</strong> Zeros are grouped into blocks of a fixed size (e.g., 32x32).</li>
+<li><strong>Accuracy Recovery:</strong> More complex algorithms are typically needed for accuracy recovery compared to 2:4 sparsity. Research in this area is ongoing.</li>
+</ul>
+</section>
+<section id="advantages-for-vision-transformers" class="level3">
+<h3 class="anchored" data-anchor-id="advantages-for-vision-transformers">Advantages for Vision Transformers</h3>
+<ul>
+<li><strong>Potential for Higher Speedups:</strong> Block sparsity can achieve speedups beyond 2x, especially at high sparsity levels.</li>
+<li><strong>Example (Vision Transformers):</strong>
+<ul>
+<li>90% sparsity can lead to speedups of up to 3.4x.</li>
+<li>1.4x speedup achieved on ImageNet with minimal accuracy loss (2 percentage points).</li>
+</ul></li>
+</ul>
+</section>
+<section id="challenges" class="level3">
+<h3 class="anchored" data-anchor-id="challenges">Challenges</h3>
+<ul>
+<li><strong>Accuracy Recovery:</strong> Finding effective methods to recover accuracy after block sparsity pruning remains an active research area.</li>
+<li><strong>Limited Research:</strong> Compared to 2:4 sparsity, block sparsity on GPUs has received less attention, and optimal solutions are still being explored.</li>
+</ul>
+</section>
+</section>
+<section id="composing-sparsity-with-quantization" class="level2">
+<h2 class="anchored" data-anchor-id="composing-sparsity-with-quantization">Composing Sparsity with Quantization</h2>
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/pytorch/ao">torchao</a></li>
+</ul>
+<section id="challenges-and-fusion-issues" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-and-fusion-issues">Challenges and Fusion Issues</h3>
+<ul>
+<li><strong>Combining sparsity and quantization can lead to performance bottlenecks</strong> due to limitations in operator fusion.</li>
+<li><strong>Fusion Breakdown:</strong>
+<ul>
+<li><strong>Ideal Scenario:</strong> A fully fused kernel would handle sparsity, quantization, matrix multiplication, and dequantization in a single operation.</li>
+<li><strong>Current Limitations:</strong> Existing implementations (especially with cuSPARSELt) often result in multiple separate kernels, introducing overhead.</li>
+</ul></li>
+<li><strong>Example:</strong>
+<ul>
+<li>Baseline (BF16): 1600ms</li>
+<li>Sparsity: 1400ms</li>
+<li>Quantization: 1400ms</li>
+<li>Sparsity + Quantization (without optimal fusion): Marginal speedup (1420ms)</li>
+<li>Sparsity + Quantization (with partial fusion using cuSPARSELt alpha vectors): 1278ms (significant improvement)</li>
+</ul></li>
+</ul>
+</section>
+<section id="potential-solutions" class="level3">
+<h3 class="anchored" data-anchor-id="potential-solutions">Potential Solutions</h3>
+<ul>
+<li><strong>Fused Kernels:</strong> Developing custom fused kernels that handle sparsity and quantization together can significantly improve performance.</li>
+<li><strong>CUTLASS vs.&nbsp;cuSPARSELt:</strong> CUTLASS offers more flexibility for creating custom fused kernels compared to the black-box nature of cuSPARSELt.</li>
+<li><strong>Transpose Fusion:</strong> Integrating the transpose operation (needed for PyTorch linear layers) directly into the sparse kernel can further enhance performance.</li>
+</ul>
+</section>
+<section id="accuracy-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="accuracy-considerations">Accuracy Considerations</h3>
+<ul>
+<li><strong>Accuracy Impact:</strong> Combining sparsity and quantization can lead to accuracy degradation.</li>
+<li><strong>Research is ongoing</strong> to find the optimal balance between sparsity, quantization levels, and accuracy.</li>
+<li><strong>Sparse GPT:</strong> One example of research in this area, exploring one-shot calibration methods to recover accuracy without retraining, which is particularly challenging for large LLMs due to memory constraints.</li>
+</ul>
+</section>
+</section>
+<section id="sparse-training" class="level2">
+<h2 class="anchored" data-anchor-id="sparse-training">Sparse Training</h2>
+<section id="accelerating-the-training-process" class="level3">
+<h3 class="anchored" data-anchor-id="accelerating-the-training-process">Accelerating the Training Process</h3>
+<ul>
+<li>Sparsity can also be applied during training to speed up the process.</li>
+<li><strong>Fast Sparsification:</strong> Efficient algorithms (e.g., based on weight magnitude without sorting or branching) are used to quickly sparsify the weights or activations before each matrix multiplication.</li>
+<li><strong>Performance Gains:</strong> The time taken for sparsification and sparse matrix multiplication can be less than the time for a dense matrix multiplication, leading to overall training speedups.</li>
+</ul>
+</section>
+<section id="example-xformers-and-imagenet" class="level3">
+<h3 class="anchored" data-anchor-id="example-xformers-and-imagenet">Example: xFormers and ImageNet</h3>
+<ul>
+<li><strong>Collaboration with <a href="https://github.com/facebookresearch/xformers">xFormers</a>:</strong> PyTorch has been working with the xFormers team to develop fast sparsification kernels.</li>
+<li><strong>Results:</strong>
+<ul>
+<li>10-20% speedup in end-to-end ImageNet training with minimal accuracy loss (81.6% to 80.5%).</li>
+</ul></li>
+<li><strong>Key Observations:</strong>
+<ul>
+<li><strong>Activation Sparsity:</strong> Applying sparsity to activations (after ReLU) often leads to better results than weight sparsity, as activations tend to be more naturally sparse.</li>
+<li><strong>Matrix Shape Considerations:</strong> The effectiveness of sparsity can depend on the shapes of the matrices involved.</li>
+</ul></li>
+</ul>
+</section>
+<section id="differences-between-inference-and-training" class="level3">
+<h3 class="anchored" data-anchor-id="differences-between-inference-and-training">Differences Between Inference and Training</h3>
+<ul>
+<li><strong>Transpose Handling:</strong>
+<ul>
+<li><strong>Inference:</strong> Only one representation (either W or W<sup>T</sup>) is needed.</li>
+<li><strong>Training:</strong> Both W and W<sup>T</sup> are required for the forward and backward passes. This can lead to a slight memory penalty when using sparse representations during training.</li>
+</ul></li>
+<li><strong>Fused Transpose Requirement:</strong>
+<ul>
+<li><strong>Training:</strong> Fused transpose operations are crucial for performance. Currently, this functionality is only available in cuSPARSELt, making it essential for sparse training.</li>
+<li><strong>Inference:</strong> Fused transpose is less critical as it can be handled by Torch.compile.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="future-directions-and-research-areas" class="level2">
+<h2 class="anchored" data-anchor-id="future-directions-and-research-areas">Future Directions and Research Areas</h2>
+<section id="combining-sparsity-patterns" class="level3">
+<h3 class="anchored" data-anchor-id="combining-sparsity-patterns">Combining Sparsity Patterns</h3>
+<ul>
+<li><strong>Exploring combinations of different sparsity patterns</strong> (e.g., 2:4 sparsity within blocks) could lead to further performance improvements.</li>
+<li><strong>Challenges:</strong> This requires developing efficient algorithms and kernels that can handle these more complex patterns.</li>
+</ul>
+</section>
+<section id="flexible-sparsity-with-shuffling" class="level3">
+<h3 class="anchored" data-anchor-id="flexible-sparsity-with-shuffling">Flexible Sparsity with Shuffling</h3>
+<ul>
+<li><strong>Introducing shuffles into blockwise sparsity</strong> can increase flexibility while maintaining performance benefits.</li>
+<li><strong>Shuffle Overhead:</strong> The shuffle operation itself can introduce overhead.</li>
+<li><strong>Torch.compile Mitigation:</strong> Torch.compile can be used to fuse the shuffle with other operations, minimizing its impact.</li>
+</ul>
+</section>
+<section id="sparsity-for-dropout" class="level3">
+<h3 class="anchored" data-anchor-id="sparsity-for-dropout">Sparsity for Dropout</h3>
+<ul>
+<li><strong>2:4 sparsity could potentially be used to implement dropout</strong> due to its inherent randomness and 50% sparsity level.</li>
+<li><strong>Benefits:</strong> Achieving dropout-like regularization with the performance advantages of 2:4 sparsity.</li>
+</ul>
+</section>
+<section id="cuda-specific-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="cuda-specific-considerations">CUDA-Specific Considerations</h3>
+<ul>
+<li><strong>Bridging the CUTLASS and cuSPARSELt Gap:</strong> Developing CUTLASS kernels with comparable functionality and performance to cuSPARSELt would offer greater flexibility and control over fusion and kernel optimization.</li>
+<li><strong>Larger Fused Kernels:</strong> Exploring larger fused kernels that incorporate more operations (e.g., quantization, dequantization, transpose) within the sparse matrix multiplication can further enhance performance.</li>
+<li><strong>Flexible Sparsity Patterns in CUTLASS:</strong> Implementing efficient shuffles or other techniques to enable more flexible sparsity patterns within CUTLASS kernels.</li>
+<li><strong>Load as Sparse Kernels:</strong> For memory-bound workloads (e.g., LLMs), loading data in a sparse format and expanding to dense within the GPU could offer speedups by reducing memory transfer time.</li>
+</ul>
+</section>
+<section id="hardware-support-for-sparsity" class="level3">
+<h3 class="anchored" data-anchor-id="hardware-support-for-sparsity">Hardware Support for Sparsity</h3>
+<ul>
+<li><strong>Specialized hardware architectures</strong> could be designed to directly support sparse representations and operations, potentially leading to significant performance improvements.</li>
+<li><strong>NVIDIA’s Tensor Cores:</strong> Semi-structured sparsity support in Tensor Cores suggests that hardware vendors are exploring such directions.</li>
+</ul>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<ul>
+<li><strong>Sparsity and pruning are promising techniques</strong> for improving the efficiency of large neural networks, especially in the context of LLMs and Gen AI.</li>
+<li><strong>Accuracy remains a key challenge:</strong> Finding effective ways to recover accuracy after pruning is crucial for wider adoption.</li>
+<li><strong>Performance gains are demonstrable:</strong> Especially with semi-structured and block sparsity on GPUs, significant speedups can be achieved.</li>
+<li><strong>Ongoing research and development:</strong> The field is actively evolving, with new sparsity patterns, algorithms, and hardware support being explored.</li>
+<li><strong>Potential for breakthroughs:</strong> As the research progresses and new tools become available, sparsity is likely to play an increasingly important role in making large models more practical and accessible.</li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

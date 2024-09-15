@@ -19,6 +19,504 @@
 <generator>quarto-1.4.555</generator>
 <lastBuildDate>Sun, 15 Sep 2024 07:00:00 GMT</lastBuildDate>
 <item>
+  <title>CUDA MODE Lecture 11: Sparsity</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/cuda-mode-notes/lecture-011/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li>Introduction<br>
+</li>
+<li>The Performance Challenge of Sparsity<br>
+</li>
+<li>Unstructured Sparsity and Its Limitations on GPUs<br>
+</li>
+<li>Semi-structured Sparsity (2:4 Sparsity)<br>
+</li>
+<li>Block Sparsity<br>
+</li>
+<li>Composing Sparsity with Quantization<br>
+</li>
+<li>Sparse Training<br>
+</li>
+<li>Future Directions and Research Areas<br>
+</li>
+<li>Conclusion</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=mGDnOLcfE8g">Lecture 11: Sparsity</a></li>
+<li><strong>Slides:</strong> <a href="https://github.com/cuda-mode/lectures/blob/main/lecture_011/sparsity.pptx">GPU Sparsity</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><strong>Speaker:</strong> Jesse Cai</li>
+</ul>
+<section id="sparsity-and-pruning-core-concepts" class="level3">
+<h3 class="anchored" data-anchor-id="sparsity-and-pruning-core-concepts">Sparsity and Pruning: Core Concepts</h3>
+<ul>
+<li><p><strong>Sparsity</strong> in neural networks refers to the presence of a significant number of zero-valued weights.</p></li>
+<li><p><strong>Pruning</strong> is the process of intentionally removing these zero-valued or insignificant weights from the network.</p></li>
+<li><p>The goal is to reduce computational cost and memory footprint without significantly impacting model accuracy.</p></li>
+<li><p>This is achieved in two steps:</p>
+<ol type="1">
+<li><strong>Zeroing out weights:</strong> Identify and set insignificant weights to zero.</li>
+<li><strong>Accelerating computation:</strong> Develop methods to efficiently perform calculations with zero-valued weights (e.g., skipping multiplication by zero).</li>
+</ol></li>
+</ul>
+</section>
+<section id="historical-context-and-renewed-interest" class="level3">
+<h3 class="anchored" data-anchor-id="historical-context-and-renewed-interest">Historical Context and Renewed Interest</h3>
+<ul>
+<li>The concept of pruning dates back to the <a href="https://proceedings.neurips.cc/paper_files/paper/1989/file/6c9882bbac1c7093bd25041881277658-Paper.pdf">“Optimal Brain Damage” paper</a> from 1989.</li>
+<li>Renewed interest emerged with the rise of deep learning and large models like AlexNet in 2012.</li>
+<li>The increasing size of modern models, especially in the context of LLMs and Gen AI, has further intensified the need for sparsity and pruning techniques.</li>
+</ul>
+</section>
+</section>
+<section id="the-performance-challenge-of-sparsity" class="level2">
+<h2 class="anchored" data-anchor-id="the-performance-challenge-of-sparsity">The Performance Challenge of Sparsity</h2>
+<section id="multiplying-by-zero-the-ideal-vs.-reality" class="level3">
+<h3 class="anchored" data-anchor-id="multiplying-by-zero-the-ideal-vs.-reality">Multiplying by Zero: The Ideal vs.&nbsp;Reality</h3>
+<ul>
+<li>The fundamental principle of sparsity relies on the fact that multiplying by zero is inherently faster than multiplying by non-zero values.</li>
+<li>However, <strong>simply having zero-valued weights doesn’t guarantee speedups</strong>. The way computation is performed is crucial.</li>
+<li><strong>Naive approaches:</strong> If multiplication by zero is treated the same as multiplication by any other number (e.g., performing the full multiplication steps), no significant performance gain is achieved.</li>
+</ul>
+</section>
+<section id="sparsity-patterns-and-the-gpu-trade-off" class="level3">
+<h3 class="anchored" data-anchor-id="sparsity-patterns-and-the-gpu-trade-off">Sparsity Patterns and the GPU Trade-off</h3>
+<ul>
+<li><strong>The challenge:</strong> Achieving optimal performance with sparse models on GPUs requires balancing two competing factors:
+<ul>
+<li><strong>Flexibility:</strong> Allowing for a wide range of sparsity patterns to minimize the impact on accuracy.</li>
+<li><strong>Efficient Computation:</strong> Ensuring that the chosen sparsity pattern can be efficiently processed on the parallel architecture of GPUs.</li>
+</ul></li>
+<li><strong>Types of Sparsity:</strong>
+<ul>
+<li><strong>Unstructured Sparsity:</strong> No constraints on the location of zero-valued weights. Offers high flexibility but can be challenging to accelerate on GPUs.</li>
+<li><strong>Structured Sparsity:</strong> Zeros are arranged in specific patterns (e.g., entire rows, columns, or filters). Easier to accelerate but may significantly impact accuracy.</li>
+<li><strong>Semi-structured Sparsity (2:4 Sparsity):</strong> An intermediate approach where two out of every four elements are zero. Offers a balance between flexibility and performance. Well-supported on GPUs.</li>
+<li><strong>Block Sparsity:</strong> Zeros are grouped into blocks (e.g., 32x32). Provides good performance but requires more complex algorithms for accuracy recovery.
+<ul>
+<li><strong>PyTorch:</strong> <a href="https://github.com/pytorch/ao/tree/main/torchao/sparsity/prototype/superblock">torchao/sparsity/prototype/superblock</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2207.00670">DRESS: Dynamic REal-time Sparse Subnets</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="unstructured-sparsity-and-its-limitations-on-gpus" class="level2">
+<h2 class="anchored" data-anchor-id="unstructured-sparsity-and-its-limitations-on-gpus">Unstructured Sparsity and Its Limitations on GPUs</h2>
+<section id="sparse-representations-and-kernels" class="level3">
+<h3 class="anchored" data-anchor-id="sparse-representations-and-kernels">Sparse Representations and Kernels</h3>
+<ul>
+<li>To make unstructured sparsity efficient, data is stored in <strong>sparse representations</strong> (e.g., coordinate format).
+<ul>
+<li><strong>Documentation:</strong> <a href="https://pytorch.org/docs/stable/sparse.html">torch.sparse</a></li>
+</ul></li>
+<li><strong>Coordinate Format Example:</strong>
+<ul>
+<li><strong>Dense Matrix:</strong> Stored contiguously in memory.</li>
+<li><strong>Sparse Matrix (Coordinate Format):</strong> Only non-zero elements are stored along with their indices. This reduces memory footprint when the matrix is sufficiently sparse.</li>
+</ul></li>
+<li><strong>Sparse kernels</strong> are used to perform computations directly on these sparse representations, skipping multiplications by zero.</li>
+</ul>
+</section>
+<section id="challenges-on-gpus" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-on-gpus">Challenges on GPUs</h3>
+<ul>
+<li><strong>High Sparsity Requirement:</strong> CPU sparsity is generally only faster at extremely high sparsity levels (greater than 99%).</li>
+<li><strong>GPU Limitations:</strong> Dense matrix multiplication is significantly faster on GPUs due to their parallel nature.
+<ul>
+<li>This makes it even harder for unstructured sparsity to achieve speedups on GPUs, as the parallelization benefits are lost with highly irregular sparsity patterns.</li>
+</ul></li>
+<li><strong>Need for Structure:</strong> To achieve performance gains on GPUs, some form of structure in the sparsity pattern is necessary to enable efficient parallelization.</li>
+</ul>
+</section>
+</section>
+<section id="semi-structured-sparsity-24-sparsity" class="level2">
+<h2 class="anchored" data-anchor-id="semi-structured-sparsity-24-sparsity">Semi-structured Sparsity (2:4 Sparsity)</h2>
+<section id="characteristics" class="level3">
+<h3 class="anchored" data-anchor-id="characteristics">Characteristics</h3>
+<ul>
+<li><p><strong>Fixed Sparsity Level:</strong> 50% of the elements are zero.</p></li>
+<li><p><strong>Pattern:</strong> Two out of every four elements within a block are zero.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-011/images/semi-structured-sparsity.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 9</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Accuracy Recovery:</strong> NVIDIA research suggests that accuracy can be effectively recovered with a simple “prune once, retrain” approach.</p></li>
+</ul>
+</section>
+<section id="implementation-in-pytorch" class="level3">
+<h3 class="anchored" data-anchor-id="implementation-in-pytorch">Implementation in PyTorch</h3>
+<ul>
+<li><p><strong>Integration:</strong> Semi-structured sparsity is supported in PyTorch.</p>
+<ul>
+<li><strong>Documentation:</strong> <a href="https://pytorch.org/docs/stable/sparse.html">torch.sparse</a></li>
+</ul></li>
+<li><p><strong>Backends:</strong></p>
+<ul>
+<li><p><strong><a href="https://github.com/NVIDIA/CUTLASS">CUTLASS</a>:</strong> NVIDIA’s CUDA Templates library provides native instructions for 2:4 sparse operations.</p></li>
+<li><p><strong><a href="https://docs.nvidia.com/cuda/cusparselt/">cuSPARSELt</a>:</strong> NVIDIA’s library specifically designed for sparse linear algebra operations. Offers additional features and potential performance improvements.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-011/images/cusparselt-semi-structured-sparsity.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 10</figcaption>
+</figure>
+</div></li>
+</ul></li>
+<li><p><strong>Performance:</strong></p>
+<ul>
+<li><strong>Theoretical Maximum Speedup:</strong> 2x due to halving the number of non-zero elements.</li>
+<li><strong>Practical Average Speedup:</strong> Around 1.6x due to overheads like loading metadata (bitmask) and matrix shape dependencies.</li>
+</ul></li>
+</ul>
+</section>
+<section id="example-usage-in-pytorch" class="level3">
+<h3 class="anchored" data-anchor-id="example-usage-in-pytorch">Example Usage in PyTorch</h3>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb1-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.sparse <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> to_sparse_semi_structured, SparseSemiStructuredTensor</span>
+<span id="cb1-3"></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Sparsity helper functions</span></span>
+<span id="cb1-5"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> apply_fake_sparsity(model):</span>
+<span id="cb1-6">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb1-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    This function simulates 2:4 sparsity on all linear layers in a model.</span></span>
+<span id="cb1-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    It uses the torch.ao.pruning flow.</span></span>
+<span id="cb1-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb1-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># torch.ao.pruning flow</span></span>
+<span id="cb1-11">    <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.ao.pruning <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> WeightNormSparsifier</span>
+<span id="cb1-12">    sparse_config <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> []</span>
+<span id="cb1-13">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> name, mod <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> model.named_modules():</span>
+<span id="cb1-14">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">isinstance</span>(mod, torch.nn.Linear):</span>
+<span id="cb1-15">            sparse_config.append({<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tensor_fqn"</span>: <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>name<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">.weight"</span>})</span>
+<span id="cb1-16"></span>
+<span id="cb1-17">    sparsifier <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> WeightNormSparsifier(sparsity_level<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0</span>,</span>
+<span id="cb1-18">                                      sparse_block_shape<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>),</span>
+<span id="cb1-19">                                      zeros_per_block<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb1-20">    sparsifier.prepare(model, sparse_config)</span>
+<span id="cb1-21">    sparsifier.step()</span>
+<span id="cb1-22"></span>
+<span id="cb1-23">    sparsifier.step()</span>
+<span id="cb1-24">    sparsifier.squash_mask()</span>
+<span id="cb1-25"></span>
+<span id="cb1-26"></span>
+<span id="cb1-27"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> apply_sparse(model):</span>
+<span id="cb1-28">    apply_fake_sparsity(model)</span>
+<span id="cb1-29">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> name, mod <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> model.named_modules():</span>
+<span id="cb1-30">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">isinstance</span>(mod, torch.nn.Linear):</span>
+<span id="cb1-31">            mod.weight <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.nn.Parameter(to_sparse_semi_structured(mod.weight))</span></code></pre></div>
+</section>
+<section id="limitations-and-workarounds" class="level3">
+<h3 class="anchored" data-anchor-id="limitations-and-workarounds">Limitations and Workarounds</h3>
+<ul>
+<li><strong>First Matrix Sparsity Only:</strong> Current implementations only support sparsity in the first matrix of a matrix multiplication, not the second.</li>
+<li><strong>Impact on PyTorch Linear Layers:</strong> PyTorch linear layers are defined as XW<sup>T</sup>, requiring a transpose operation when using semi-structured sparsity.</li>
+<li><strong>Transpose Overhead:</strong> The transpose can introduce performance overhead due to data copying.</li>
+<li><strong>Torch.compile Mitigation:</strong> Torch.compile can fuse the transpose with subsequent operations (e.g., ReLU) to reduce overhead.</li>
+<li><strong>Current Fusion Limitations:</strong> Torch.compile cannot currently fuse operations directly into the sparse matrix multiplication kernel (cuSPARSELt). This limits potential performance gains.</li>
+</ul>
+</section>
+</section>
+<section id="block-sparsity" class="level2">
+<h2 class="anchored" data-anchor-id="block-sparsity">Block Sparsity</h2>
+<ul>
+<li><strong>PyTorch:</strong> <a href="https://github.com/pytorch/ao/tree/main/torchao/sparsity/prototype/superblock">torchao/sparsity/prototype/superblock</a></li>
+</ul>
+<section id="characteristics-1" class="level3">
+<h3 class="anchored" data-anchor-id="characteristics-1">Characteristics</h3>
+<ul>
+<li><strong>Variable Sparsity Level:</strong> The sparsity level can be adjusted (e.g., 90%).</li>
+<li><strong>Pattern:</strong> Zeros are grouped into blocks of a fixed size (e.g., 32x32).</li>
+<li><strong>Accuracy Recovery:</strong> More complex algorithms are typically needed for accuracy recovery compared to 2:4 sparsity. Research in this area is ongoing.</li>
+</ul>
+</section>
+<section id="advantages-for-vision-transformers" class="level3">
+<h3 class="anchored" data-anchor-id="advantages-for-vision-transformers">Advantages for Vision Transformers</h3>
+<ul>
+<li><strong>Potential for Higher Speedups:</strong> Block sparsity can achieve speedups beyond 2x, especially at high sparsity levels.</li>
+<li><strong>Example (Vision Transformers):</strong>
+<ul>
+<li>90% sparsity can lead to speedups of up to 3.4x.</li>
+<li>1.4x speedup achieved on ImageNet with minimal accuracy loss (2 percentage points).</li>
+</ul></li>
+</ul>
+</section>
+<section id="challenges" class="level3">
+<h3 class="anchored" data-anchor-id="challenges">Challenges</h3>
+<ul>
+<li><strong>Accuracy Recovery:</strong> Finding effective methods to recover accuracy after block sparsity pruning remains an active research area.</li>
+<li><strong>Limited Research:</strong> Compared to 2:4 sparsity, block sparsity on GPUs has received less attention, and optimal solutions are still being explored.</li>
+</ul>
+</section>
+</section>
+<section id="composing-sparsity-with-quantization" class="level2">
+<h2 class="anchored" data-anchor-id="composing-sparsity-with-quantization">Composing Sparsity with Quantization</h2>
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/pytorch/ao">torchao</a></li>
+</ul>
+<section id="challenges-and-fusion-issues" class="level3">
+<h3 class="anchored" data-anchor-id="challenges-and-fusion-issues">Challenges and Fusion Issues</h3>
+<ul>
+<li><strong>Combining sparsity and quantization can lead to performance bottlenecks</strong> due to limitations in operator fusion.</li>
+<li><strong>Fusion Breakdown:</strong>
+<ul>
+<li><strong>Ideal Scenario:</strong> A fully fused kernel would handle sparsity, quantization, matrix multiplication, and dequantization in a single operation.</li>
+<li><strong>Current Limitations:</strong> Existing implementations (especially with cuSPARSELt) often result in multiple separate kernels, introducing overhead.</li>
+</ul></li>
+<li><strong>Example:</strong>
+<ul>
+<li>Baseline (BF16): 1600ms</li>
+<li>Sparsity: 1400ms</li>
+<li>Quantization: 1400ms</li>
+<li>Sparsity + Quantization (without optimal fusion): Marginal speedup (1420ms)</li>
+<li>Sparsity + Quantization (with partial fusion using cuSPARSELt alpha vectors): 1278ms (significant improvement)</li>
+</ul></li>
+</ul>
+</section>
+<section id="potential-solutions" class="level3">
+<h3 class="anchored" data-anchor-id="potential-solutions">Potential Solutions</h3>
+<ul>
+<li><strong>Fused Kernels:</strong> Developing custom fused kernels that handle sparsity and quantization together can significantly improve performance.</li>
+<li><strong>CUTLASS vs.&nbsp;cuSPARSELt:</strong> CUTLASS offers more flexibility for creating custom fused kernels compared to the black-box nature of cuSPARSELt.</li>
+<li><strong>Transpose Fusion:</strong> Integrating the transpose operation (needed for PyTorch linear layers) directly into the sparse kernel can further enhance performance.</li>
+</ul>
+</section>
+<section id="accuracy-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="accuracy-considerations">Accuracy Considerations</h3>
+<ul>
+<li><strong>Accuracy Impact:</strong> Combining sparsity and quantization can lead to accuracy degradation.</li>
+<li><strong>Research is ongoing</strong> to find the optimal balance between sparsity, quantization levels, and accuracy.</li>
+<li><strong>Sparse GPT:</strong> One example of research in this area, exploring one-shot calibration methods to recover accuracy without retraining, which is particularly challenging for large LLMs due to memory constraints.</li>
+</ul>
+</section>
+</section>
+<section id="sparse-training" class="level2">
+<h2 class="anchored" data-anchor-id="sparse-training">Sparse Training</h2>
+<section id="accelerating-the-training-process" class="level3">
+<h3 class="anchored" data-anchor-id="accelerating-the-training-process">Accelerating the Training Process</h3>
+<ul>
+<li>Sparsity can also be applied during training to speed up the process.</li>
+<li><strong>Fast Sparsification:</strong> Efficient algorithms (e.g., based on weight magnitude without sorting or branching) are used to quickly sparsify the weights or activations before each matrix multiplication.</li>
+<li><strong>Performance Gains:</strong> The time taken for sparsification and sparse matrix multiplication can be less than the time for a dense matrix multiplication, leading to overall training speedups.</li>
+</ul>
+</section>
+<section id="example-xformers-and-imagenet" class="level3">
+<h3 class="anchored" data-anchor-id="example-xformers-and-imagenet">Example: xFormers and ImageNet</h3>
+<ul>
+<li><strong>Collaboration with <a href="https://github.com/facebookresearch/xformers">xFormers</a>:</strong> PyTorch has been working with the xFormers team to develop fast sparsification kernels.</li>
+<li><strong>Results:</strong>
+<ul>
+<li>10-20% speedup in end-to-end ImageNet training with minimal accuracy loss (81.6% to 80.5%).</li>
+</ul></li>
+<li><strong>Key Observations:</strong>
+<ul>
+<li><strong>Activation Sparsity:</strong> Applying sparsity to activations (after ReLU) often leads to better results than weight sparsity, as activations tend to be more naturally sparse.</li>
+<li><strong>Matrix Shape Considerations:</strong> The effectiveness of sparsity can depend on the shapes of the matrices involved.</li>
+</ul></li>
+</ul>
+</section>
+<section id="differences-between-inference-and-training" class="level3">
+<h3 class="anchored" data-anchor-id="differences-between-inference-and-training">Differences Between Inference and Training</h3>
+<ul>
+<li><strong>Transpose Handling:</strong>
+<ul>
+<li><strong>Inference:</strong> Only one representation (either W or W<sup>T</sup>) is needed.</li>
+<li><strong>Training:</strong> Both W and W<sup>T</sup> are required for the forward and backward passes. This can lead to a slight memory penalty when using sparse representations during training.</li>
+</ul></li>
+<li><strong>Fused Transpose Requirement:</strong>
+<ul>
+<li><strong>Training:</strong> Fused transpose operations are crucial for performance. Currently, this functionality is only available in cuSPARSELt, making it essential for sparse training.</li>
+<li><strong>Inference:</strong> Fused transpose is less critical as it can be handled by Torch.compile.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="future-directions-and-research-areas" class="level2">
+<h2 class="anchored" data-anchor-id="future-directions-and-research-areas">Future Directions and Research Areas</h2>
+<section id="combining-sparsity-patterns" class="level3">
+<h3 class="anchored" data-anchor-id="combining-sparsity-patterns">Combining Sparsity Patterns</h3>
+<ul>
+<li><strong>Exploring combinations of different sparsity patterns</strong> (e.g., 2:4 sparsity within blocks) could lead to further performance improvements.</li>
+<li><strong>Challenges:</strong> This requires developing efficient algorithms and kernels that can handle these more complex patterns.</li>
+</ul>
+</section>
+<section id="flexible-sparsity-with-shuffling" class="level3">
+<h3 class="anchored" data-anchor-id="flexible-sparsity-with-shuffling">Flexible Sparsity with Shuffling</h3>
+<ul>
+<li><strong>Introducing shuffles into blockwise sparsity</strong> can increase flexibility while maintaining performance benefits.</li>
+<li><strong>Shuffle Overhead:</strong> The shuffle operation itself can introduce overhead.</li>
+<li><strong>Torch.compile Mitigation:</strong> Torch.compile can be used to fuse the shuffle with other operations, minimizing its impact.</li>
+</ul>
+</section>
+<section id="sparsity-for-dropout" class="level3">
+<h3 class="anchored" data-anchor-id="sparsity-for-dropout">Sparsity for Dropout</h3>
+<ul>
+<li><strong>2:4 sparsity could potentially be used to implement dropout</strong> due to its inherent randomness and 50% sparsity level.</li>
+<li><strong>Benefits:</strong> Achieving dropout-like regularization with the performance advantages of 2:4 sparsity.</li>
+</ul>
+</section>
+<section id="cuda-specific-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="cuda-specific-considerations">CUDA-Specific Considerations</h3>
+<ul>
+<li><strong>Bridging the CUTLASS and cuSPARSELt Gap:</strong> Developing CUTLASS kernels with comparable functionality and performance to cuSPARSELt would offer greater flexibility and control over fusion and kernel optimization.</li>
+<li><strong>Larger Fused Kernels:</strong> Exploring larger fused kernels that incorporate more operations (e.g., quantization, dequantization, transpose) within the sparse matrix multiplication can further enhance performance.</li>
+<li><strong>Flexible Sparsity Patterns in CUTLASS:</strong> Implementing efficient shuffles or other techniques to enable more flexible sparsity patterns within CUTLASS kernels.</li>
+<li><strong>Load as Sparse Kernels:</strong> For memory-bound workloads (e.g., LLMs), loading data in a sparse format and expanding to dense within the GPU could offer speedups by reducing memory transfer time.</li>
+</ul>
+</section>
+<section id="hardware-support-for-sparsity" class="level3">
+<h3 class="anchored" data-anchor-id="hardware-support-for-sparsity">Hardware Support for Sparsity</h3>
+<ul>
+<li><strong>Specialized hardware architectures</strong> could be designed to directly support sparse representations and operations, potentially leading to significant performance improvements.</li>
+<li><strong>NVIDIA’s Tensor Cores:</strong> Semi-structured sparsity support in Tensor Cores suggests that hardware vendors are exploring such directions.</li>
+</ul>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<ul>
+<li><strong>Sparsity and pruning are promising techniques</strong> for improving the efficiency of large neural networks, especially in the context of LLMs and Gen AI.</li>
+<li><strong>Accuracy remains a key challenge:</strong> Finding effective ways to recover accuracy after pruning is crucial for wider adoption.</li>
+<li><strong>Performance gains are demonstrable:</strong> Especially with semi-structured and block sparsity on GPUs, significant speedups can be achieved.</li>
+<li><strong>Ongoing research and development:</strong> The field is actively evolving, with new sparsity patterns, algorithms, and hardware support being explored.</li>
+<li><strong>Potential for breakthroughs:</strong> As the research progresses and new tools become available, sparsity is likely to play an increasingly important role in making large models more practical and accessible.</li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>cuda</category>
+  <guid>https://christianjmills.com/posts/cuda-mode-notes/lecture-011/</guid>
+  <pubDate>Sun, 15 Sep 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
+<item>
   <title>CUDA MODE Lecture 10: Build a Prod Ready CUDA library</title>
   <dc:creator>Christian Mills</dc:creator>
   <link>https://christianjmills.com/posts/cuda-mode-notes/lecture-010/</link>
@@ -40641,313 +41139,6 @@ About Me:
   <category>notes</category>
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-017/</guid>
-  <pubDate>Thu, 29 Aug 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Conference Talk 16: A Deep Dive on LLM Evaluation</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-016/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<div class="callout callout-style-default callout-tip callout-titled" title="Presentation Slides">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Presentation Slides
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/1qTaDYqLCgxkUaTfxQkN1it4tx6_jixwv9ZtsbqQgE4U/">A Deep Dive on LM Evaluation</a></li>
-</ul>
-</div>
-</div>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<ul>
-<li><strong>Speaker:</strong> Hailey Schoelkopf, Research Scientist at Eleuther AI</li>
-<li><strong>Topic:</strong> Deep dive into the challenges and best practices of Large Language Model (LLM) evaluation.</li>
-</ul>
-<section id="about-the-speaker" class="level3">
-<h3 class="anchored" data-anchor-id="about-the-speaker">About the Speaker</h3>
-<ul>
-<li><strong>Hailey Schoelkopf:</strong>
-<ul>
-<li>Research Scientist at Eleuther AI.</li>
-<li>Maintainer of the <strong>LM Evaluation Harness</strong>, a widely used open-source library for evaluating LLMs.</li>
-</ul></li>
-</ul>
-</section>
-<section id="about-eleuther-ai" class="level3">
-<h3 class="anchored" data-anchor-id="about-eleuther-ai">About Eleuther AI:</h3>
-<ul>
-<li><strong>Website:</strong> <a href="https://eleuther.ai/">https://eleuther.ai/</a></li>
-<li><strong>Project Page:</strong> <a href="https://www.eleuther.ai/projects/large-language-model-evaluation">Evaluating LLMs</a></li>
-<li><strong>Non-profit research lab</strong> known for:
-<ul>
-<li>Releasing open-source LLMs like GPT-J and GPT-NeoX-20B.</li>
-<li>Research on:
-<ul>
-<li>Model Interpretability</li>
-<li>Datasets</li>
-<li>Distributed Training</li>
-<li>LLM Evaluation</li>
-</ul></li>
-<li>Building and maintaining tools for the open-source AI ecosystem.</li>
-</ul></li>
-</ul>
-</section>
-<section id="lm-evaluation-harness" class="level3">
-<h3 class="anchored" data-anchor-id="lm-evaluation-harness">LM Evaluation Harness</h3>
-<ul>
-<li><strong>GitHub Repository:</strong> <a href="https://github.com/EleutherAI/lm-evaluation-harness">https://github.com/EleutherAI/lm-evaluation-harness</a></li>
-<li><strong>Purpose:</strong>
-<ul>
-<li>Originally created to reproduce and track the evaluations from the GPT-3 paper.</li>
-<li>Evolved into a comprehensive library for evaluating LLMs.</li>
-</ul></li>
-<li><strong>Usage:</strong>
-<ul>
-<li>Widely used by researchers and practitioners.</li>
-<li>Powers the backend for the OpenLLM Leaderboard.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="challenges-in-llm-evaluation" class="level2">
-<h2 class="anchored" data-anchor-id="challenges-in-llm-evaluation">Challenges in LLM Evaluation</h2>
-<section id="scoring-difficulties" class="level4">
-<h4 class="anchored" data-anchor-id="scoring-difficulties">1. Scoring Difficulties</h4>
-<ul>
-<li><strong>Core Issue:</strong> Reliably evaluating the correctness of LLM responses in natural language.</li>
-<li><strong>Challenges:</strong>
-<ul>
-<li><strong>Subjectivity of Language:</strong> What constitutes a “correct” response can be subjective and context-dependent.</li>
-<li><strong>Hallucination:</strong> LLMs can generate plausible-sounding but incorrect information, making it challenging to determine accuracy based on surface-level analysis.</li>
-<li><strong>Lack of Standardized Metrics:</strong> Absence of universally agreed-upon metrics for evaluating LLM performance across different tasks and domains.</li>
-</ul></li>
-</ul>
-</section>
-<section id="reproducibility-issues" class="level4">
-<h4 class="anchored" data-anchor-id="reproducibility-issues">2. Reproducibility Issues</h4>
-<ul>
-<li><strong>Importance:</strong> Ensuring that evaluation results are consistent and replicable.</li>
-<li><strong>Challenges:</strong>
-<ul>
-<li><strong>Sensitivity to Implementation Details:</strong> LLM performance can vary significantly based on seemingly minor differences in implementation, such as tokenization, prompt formatting, and hyperparameters.</li>
-<li><strong>Lack of Transparency:</strong> Limited sharing of evaluation code and detailed methodologies makes it difficult for others to reproduce results.</li>
-<li><strong>Data Set Variability:</strong> Differences in data set composition and quality can lead to inconsistent evaluations.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="common-llm-evaluation-methods" class="level2">
-<h2 class="anchored" data-anchor-id="common-llm-evaluation-methods">Common LLM Evaluation Methods</h2>
-<section id="log-likelihoods-assessing-the-probability-of-expected-outputs" class="level4">
-<h4 class="anchored" data-anchor-id="log-likelihoods-assessing-the-probability-of-expected-outputs">1. Log Likelihoods: Assessing the Probability of Expected Outputs</h4>
-<ul>
-<li><p><strong>Background:</strong></p>
-<ul>
-<li>LLMs output a probability distribution over vocabulary for each possible next token.</li>
-<li>This distribution represents the model’s confidence in different words following the given input.</li>
-</ul></li>
-<li><p><strong>How It Works:</strong></p>
-<ul>
-<li><p><strong>Input:</strong> A prompt (X) and a potential output (Y).</p></li>
-<li><p><strong>Process:</strong> Calculate the probability of the model generating Y given X. This involves summing the log probabilities of each token in Y, conditioned on the preceding tokens in X and Y.</p>
-<ul>
-<li><p><img src="https://latex.codecogs.com/png.latex?%0A%5Clog%20P(y%7Cx)%20=%20%5Csum_%7Bi=0%7D%5E%7Bm-1%7D%20%5Clog%20p(y_i%20%7C%20x,%20y_0,%20%5Cldots,%20y_%7Bi-1%7D)%20=%20%5Csum_%7Bi=0%7D%5E%7Bm-1%7D%20l(n+i,%20y_%7Bi%7D)%0A"></p></li>
-<li><p>where <img src="https://latex.codecogs.com/png.latex?%5Clog%20p(y_i%20%7C%20x,%20y_0,%20%5Cldots,%20y_%7Bi-1%7D)"> is the log probability of the <img src="https://latex.codecogs.com/png.latex?i">-th target token conditioned on the full input <img src="https://latex.codecogs.com/png.latex?x"> and the preceding target tokens. (and where <img src="https://latex.codecogs.com/png.latex?x,%20y_0,%20%5Cldots,%20y_%7Bi-1%7D"> denotes conditioning on only <img src="https://latex.codecogs.com/png.latex?x">.).</p></li>
-</ul></li>
-<li><p><strong>Example:</strong> For the prompt “The cow jumped over the,” calculate the probability of the model generating “moon” versus other words.</p></li>
-</ul></li>
-<li><p><strong>Use Case: Multiple Choice Question Answering</strong></p>
-<ul>
-<li><strong>Advantages:</strong>
-<ul>
-<li>Computationally cheaper than generation-based evaluation.</li>
-<li>Avoids issues with parsing errors in generated text.</li>
-<li>Suitable for evaluating smaller LLMs or those in early training stages.</li>
-</ul></li>
-<li><strong>Disadvantages:</strong>
-<ul>
-<li>Limited real-world applicability compared to open-ended generation.</li>
-<li>Doesn’t assess a model’s ability to formulate its own answers.</li>
-<li>Cannot evaluate chain-of-thought reasoning.</li>
-</ul></li>
-</ul></li>
-<li><p><strong>Challenges with Log Likelihoods and Perplexity:</strong></p>
-<ul>
-<li><strong>Tokenizer Sensitivity:</strong> Metrics are affected by the specific tokenizer used, making comparisons between models with different tokenizers difficult.
-<ul>
-<li><strong>Solution:</strong> Implement normalization techniques to account for tokenizer variations.</li>
-</ul></li>
-<li><strong>Limited Information:</strong> Log likelihoods only consider the probability of a given output, not its overall quality, coherence, or factual accuracy.</li>
-</ul></li>
-</ul>
-</section>
-<section id="perplexity-measuring-how-well-a-model-fits-a-data-distribution" class="level4">
-<h4 class="anchored" data-anchor-id="perplexity-measuring-how-well-a-model-fits-a-data-distribution">2. Perplexity: Measuring How Well a Model Fits a Data Distribution</h4>
-<ul>
-<li><p><strong>Concept:</strong> Quantifies how well a language model predicts a given text, indicating its familiarity with the data distribution.</p></li>
-<li><p><strong>Calculation:</strong> Based on the average per-token log probability of the text, with lower perplexity indicating a better fit to the data.</p>
-<ul>
-<li><img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7BPPL%7D%20=%20%5Cexp%20%5Cleft(%20-%5Cfrac%7B1%7D%7B%5Csum_%7Bj=1%7D%5E%7B%7CD%7C%7D%20N_j%7D%20%5Csum_%7Bj=1%7D%5E%7B%7CD%7C%7D%20%5Csum_%7Bi=1%7D%5E%7BN_j%7D%20%5Clog%20P(y_%7Bji%7D%20%7C%20y_%7Bj1%7D,%20%5Cldots,%20y_%7Bji-1%7D)%20%5Cright)%0A"></li>
-</ul></li>
-<li><p><strong>Use Case:</strong> Evaluating a model’s understanding of a specific text corpus (e.g., Wikipedia).</p></li>
-<li><p><strong>Limitations:</strong></p>
-<ul>
-<li><strong>Domain Specificity:</strong> Perplexity on one dataset (e.g., Wikipedia) may not generalize to other domains or tasks.</li>
-<li><strong>Limited Insight into Downstream Performance:</strong> A low perplexity doesn’t guarantee good performance in real-world applications like chatbots or question answering.</li>
-</ul></li>
-</ul>
-</section>
-<section id="text-generation-evaluating-real-world-output-but-facing-scoring-challenges" class="level4">
-<h4 class="anchored" data-anchor-id="text-generation-evaluating-real-world-output-but-facing-scoring-challenges">3. Text Generation: Evaluating Real-World Output but Facing Scoring Challenges</h4>
-<ul>
-<li><strong>Importance:</strong> Crucial for assessing LLMs in tasks involving text generation (e.g., chatbots, story writing).</li>
-<li><strong>Challenges:</strong>
-<ul>
-<li><strong>Scoring Free-Form Text:</strong> Determining the correctness and quality of generated text is difficult.
-<ul>
-<li>Simple heuristics (e.g., keyword matching) are unreliable and prone to gaming.</li>
-<li>Human evaluation is expensive and time-consuming.</li>
-<li>LLM-based judges introduce their own biases and limitations.</li>
-</ul></li>
-<li><strong>Sensitivity to Prompt Details:</strong> Minor variations in prompts (e.g., trailing whitespace) can drastically impact results, hindering reproducibility.
-<ul>
-<li><strong>Example:</strong> In code generation, a trailing tab in the prompt can create syntax errors for models that generate code with specific formatting, leading to artificially lower performance scores.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="the-need-for-reproducibility-and-best-practices" class="level2">
-<h2 class="anchored" data-anchor-id="the-need-for-reproducibility-and-best-practices">The Need for Reproducibility and Best Practices</h2>
-<ul>
-<li><strong>Reproducibility is Crucial:</strong> Ensuring that evaluation results can be independently verified is essential for:
-<ul>
-<li><strong>Fair Model Comparisons:</strong> Accurately assessing the relative performance of different LLMs.</li>
-<li><strong>Meaningful Progress Tracking:</strong> Tracking improvements in model development and evaluation methods.</li>
-</ul></li>
-<li><strong>Challenges to Reproducibility:</strong>
-<ul>
-<li>Lack of standardized evaluation practices and metrics.</li>
-<li>Incomplete reporting of evaluation details (e.g., prompts, code, evaluation settings).</li>
-</ul></li>
-<li><strong>Best Practices for Reproducible LLM Evaluation:</strong>
-<ul>
-<li><strong>Share Evaluation Code:</strong> Publicly release code used for evaluation to allow for scrutiny and replication of results.</li>
-<li><strong>Detailed Reporting:</strong> Provide comprehensive information about evaluation procedures, including:
-<ul>
-<li>Specific prompts and instructions given to models.</li>
-<li>Data preprocessing steps and evaluation datasets used.</li>
-<li>Evaluation metrics and their calculation.</li>
-</ul></li>
-<li><strong>Use Standardized Evaluation Frameworks:</strong> Leverage libraries like the <code>lm-evaluation-harness</code> or other tools (Helm, OpenCompass) to promote consistency and reduce implementation discrepancies.
-<ul>
-<li><strong><code>lm-evaluation-harness</code>:</strong> <a href="https://github.com/EleutherAI/lm-evaluation-harness">GitHub Repository</a></li>
-<li><strong><code>helm</code>:</strong> <a href="https://github.com/stanford-crfm/helm">GitHub Repository</a></li>
-<li><strong><code>opencompass</code>:</strong> <a href="https://github.com/open-compass/opencompass">GitHub Repository</a></li>
-</ul></li>
-</ul></li>
-<li><strong>Distinction Between Model Evals and Downstream Evals:</strong>
-<ul>
-<li><strong>Model Evals (e.g., MMLU benchmark):</strong> Measure general language understanding and capabilities across diverse tasks.</li>
-<li><strong>Downstream Evals:</strong> Focus on performance in a specific application or domain (e.g., chatbot for customer support).</li>
-<li>Prioritize Downstream Evals whenever possible for production settings, as they directly reflect real-world performance needs.</li>
-<li><strong>OpenLLM Leaderboard:</strong> <a href="https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard">https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard</a></li>
-<li><strong>MMLU Benchmark:</strong> <a href="https://paperswithcode.com/dataset/mmlu">https://paperswithcode.com/dataset/mmlu</a></li>
-<li><strong>HellaSwag Benchmark:</strong> <a href="https://paperswithcode.com/dataset/hellaswag">https://paperswithcode.com/dataset/hellaswag</a></li>
-<li><strong>ARC Benchmark:</strong> <a href="https://paperswithcode.com/dataset/arc">https://paperswithcode.com/dataset/arc</a>
-<ul>
-<li>ARC focuses on generalization and multi-step reasoning, making it more challenging than benchmarks that rely heavily on memorization.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<ul>
-<li><strong>Implementation Details Matter:</strong> LLMs are highly sensitive to minor variations in evaluation procedures.</li>
-<li><strong>Transparency and Standardization are Key:</strong> Sharing code, detailed reporting, and using standardized frameworks are crucial for reproducible LLM evaluation.</li>
-<li><strong>Prioritize Downstream Evaluations:</strong> Focus on evaluations that directly measure performance in your specific application context.</li>
-<li><strong>For Further Exploration:</strong>
-<ul>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2405.14782"><em>Lessons from the Trenches on Reproducible Evaluation of Language Models</em></a> (Eleuther AI)</li>
-<li><strong>Library:</strong> <a href="https://github.com/EleutherAI/lm-evaluation-harness"><code>lm-evaluation-harness</code></a> (Eleuther AI)</li>
-</ul></li>
-</ul>
-<section id="qa-highlights" class="level3">
-<h3 class="anchored" data-anchor-id="qa-highlights">Q&amp;A Highlights:</h3>
-<ul>
-<li><strong>Dataset Quality:</strong> Errors or biases in benchmark datasets can significantly affect evaluation results and limit the usefulness of benchmarks.</li>
-<li><strong>Overfitting to Evaluations:</strong> Repeatedly optimizing for a specific benchmark can lead to overfitting, where models excel on the benchmark but fail to generalize to other tasks or data.</li>
-<li><strong>Measurement Validity:</strong> It’s essential to ensure that evaluation metrics accurately measure the desired aspects of LLM performance (e.g., factual accuracy, reasoning, coherence).</li>
-<li><strong>LLMs as Judges:</strong>
-<ul>
-<li><strong>Benefits:</strong> LLMs can potentially automate the evaluation of tasks requiring nuanced understanding and reasoning, which are difficult to assess with simple heuristics.</li>
-<li><strong>Considerations:</strong>
-<ul>
-<li><strong>Judge Model Selection:</strong> Carefully choose an LLM judge that possesses the necessary capabilities for the task being evaluated.</li>
-<li><strong>Judge Model Limitations:</strong> Be aware of the judge model’s own biases and limitations, as these can influence the evaluation outcomes.</li>
-</ul></li>
-</ul></li>
-<li><strong>Reliable Multiple-Choice Answers Without Additional Text:</strong>
-<ul>
-<li><strong>Structured Generation:</strong> Use techniques that constrain the model’s output to specific formats.</li>
-<li><strong>System Prompts:</strong> Provide clear instructions to the model to only output the answer.</li>
-<li><strong>Log Likelihoods:</strong> Rely on log likelihood-based multiple-choice evaluations if structured generation isn’t possible.</li>
-</ul></li>
-</ul>
-<hr>
-<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-About Me:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
-<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
-<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
-</ul>
-</div>
-</div>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-016/</guid>
   <pubDate>Thu, 29 Aug 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
