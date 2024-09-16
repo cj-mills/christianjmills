@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-09-15">
+<meta name="description" content="Lecture #12 provides an introduction to Flash Attention, a highly optimized CUDA kernel for accelerating attention computations in transformer models, including a conceptual overview, tiling strategy, softmax stabilization, and limitations.">
+
+<title>Christian Mills - CUDA MODE Lecture 12: Flash Attention</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Christian Mills - CUDA MODE Lecture 12: Flash Attention">
+<meta property="og:description" content="Lecture #12 provides an introduction to Flash Attention, a highly optimized CUDA kernel for accelerating attention computations in transformer models, including a conceptual overview, tiling strategy, softmax stabilization, and limitations.">
+<meta property="og:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta property="og:site_name" content="Christian Mills">
+<meta property="og:image:height" content="284">
+<meta property="og:image:width" content="526">
+<meta name="twitter:title" content="Christian Mills - CUDA MODE Lecture 12: Flash Attention">
+<meta name="twitter:description" content="Lecture #12 provides an introduction to Flash Attention, a highly optimized CUDA kernel for accelerating attention computations in transformer models, including a conceptual overview, tiling strategy, softmax stabilization, and limitations.">
+<meta name="twitter:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="284">
+<meta name="twitter:image-width" content="526">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#background-the-need-for-optimization" id="toc-background-the-need-for-optimization" class="nav-link" data-scroll-target="#background-the-need-for-optimization">Background: The Need for Optimization</a></li>
+  <li><a href="#memory-hierarchy-and-performance" id="toc-memory-hierarchy-and-performance" class="nav-link" data-scroll-target="#memory-hierarchy-and-performance">Memory Hierarchy and Performance</a></li>
+  <li><a href="#attention-mechanisms-a-brief-overview" id="toc-attention-mechanisms-a-brief-overview" class="nav-link" data-scroll-target="#attention-mechanisms-a-brief-overview">Attention Mechanisms: A Brief Overview</a></li>
+  <li><a href="#flash-attention-tiling-strategy" id="toc-flash-attention-tiling-strategy" class="nav-link" data-scroll-target="#flash-attention-tiling-strategy">Flash Attention: Tiling Strategy</a></li>
+  <li><a href="#the-softmax-challenge" id="toc-the-softmax-challenge" class="nav-link" data-scroll-target="#the-softmax-challenge">The Softmax Challenge</a></li>
+  <li><a href="#flash-attention-2-advanced-techniques" id="toc-flash-attention-2-advanced-techniques" class="nav-link" data-scroll-target="#flash-attention-2-advanced-techniques">Flash Attention 2: Advanced Techniques</a></li>
+  <li><a href="#implementation-attempts-and-challenges" id="toc-implementation-attempts-and-challenges" class="nav-link" data-scroll-target="#implementation-attempts-and-challenges">Implementation Attempts and Challenges</a></li>
+  <li><a href="#cuda-c-implementation" id="toc-cuda-c-implementation" class="nav-link" data-scroll-target="#cuda-c-implementation">CUDA C++ Implementation</a>
+  <ul>
+  <li><a href="#thunder" id="toc-thunder" class="nav-link" data-scroll-target="#thunder">Thunder</a></li>
+  </ul></li>
+  <li><a href="#performance-evaluation-and-future-directions" id="toc-performance-evaluation-and-future-directions" class="nav-link" data-scroll-target="#performance-evaluation-and-future-directions">Performance Evaluation and Future Directions</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#qa-session" id="toc-qa-session" class="nav-link" data-scroll-target="#qa-session">Q&amp;A Session</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CUDA MODE Lecture 12: Flash Attention</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #12 provides an introduction to Flash Attention, a highly optimized CUDA kernel for accelerating attention computations in transformer models, including a conceptual overview, tiling strategy, softmax stabilization, and limitations.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 15, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>CUDA Mode Lecture Notes</strong></a>: My notes from the <strong>CUDA MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#background-the-need-for-optimization">Background: The Need for Optimization</a></li>
+<li><a href="#memory-hierarchy-and-performance">Memory Hierarchy and Performance</a></li>
+<li><a href="#attention-mechanisms-a-brief-overview">Attention Mechanisms: A Brief Overview</a></li>
+<li><a href="#flash-attention-tiling-strategy">Flash Attention: Tiling Strategy</a></li>
+<li><a href="#the-softmax-challenge">The Softmax Challenge</a></li>
+<li><a href="#flash-attention-2-advanced-techniques">Flash Attention 2: Advanced Techniques</a></li>
+<li><a href="#implementation-attempts-and-challenges">Implementation Attempts and Challenges</a></li>
+<li><a href="#cuda-c-implementation">CUDA C++ Implementation</a></li>
+<li><a href="#performance-evaluation-and-future-directions">Performance Evaluation and Future Directions</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#qa-session">Q&amp;A Session</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=zEuwuCTEf_0">Lecture 12: Flash Attention</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><strong>Presenter:</strong> Thomas Viehmann</li>
+<li><strong>Topic:</strong> Flash Attention, a highly optimized CUDA kernel for attention mechanisms in AI models, specifically transformers.</li>
+<li><strong>Focus:</strong> This lecture provides an introductory overview of Flash Attention, its underlying principles, and implementation challenges. It does not delve into live coding of the fastest kernels due to time constraints.</li>
+</ul>
+</section>
+<section id="background-the-need-for-optimization" class="level2">
+<h2 class="anchored" data-anchor-id="background-the-need-for-optimization">Background: The Need for Optimization</h2>
+<ul>
+<li><strong>Attention Mechanisms:</strong> Attention mechanisms are computationally intensive and memory-demanding operations in transformer models.</li>
+<li><strong>Optimizing for Performance:</strong> Flash Attention aims to optimize attention calculations by:
+<ul>
+<li>Minimizing data transfers between DRAM (main memory) and SRAM (on-chip memory).</li>
+<li>Leveraging the speed advantages of SRAM over DRAM (typically an order of magnitude faster).</li>
+<li>Reducing memory allocation and holding times, addressing GPU memory limitations.</li>
+</ul></li>
+</ul>
+</section>
+<section id="memory-hierarchy-and-performance" class="level2">
+<h2 class="anchored" data-anchor-id="memory-hierarchy-and-performance">Memory Hierarchy and Performance</h2>
+<ul>
+<li><strong>DRAM vs.&nbsp;SRAM:</strong>
+<ul>
+<li><strong>DRAM:</strong> Larger capacity but slower access times.</li>
+<li><strong>SRAM (Shared Memory):</strong> Smaller capacity but significantly faster access times.</li>
+</ul></li>
+<li><strong>Minimizing DRAM Access:</strong> Flash Attention focuses on reducing the need to write intermediate results to DRAM and then reload them, aiming to keep computations within SRAM as much as possible.</li>
+<li><strong>Changes in GPU Computing:</strong> GPU architectures and software have evolved, requiring more sophisticated optimization techniques compared to earlier approaches where simple kernel sequencing could saturate GPU utilization.</li>
+</ul>
+</section>
+<section id="attention-mechanisms-a-brief-overview" class="level2">
+<h2 class="anchored" data-anchor-id="attention-mechanisms-a-brief-overview">Attention Mechanisms: A Brief Overview</h2>
+<ul>
+<li><p><strong>Attention as Classification:</strong> Attention can be viewed as a classification process within a neural network.</p>
+<ul>
+<li><strong>Analogy to Classification Heads:</strong> Similar to a classification head in a network, attention involves:
+<ul>
+<li>Input activations (d-dimensional): <span class="math inline">\(q\)</span></li>
+<li>A final layer (<span class="math inline">\(K\)</span>) producing logits: <span class="math inline">\(l = q K^T\)</span></li>
+<li>Softmax function to generate probabilities: <span class="math inline">\(p_i = \frac{\exp(l_i)}{\sum_j \exp(l_j)}\)</span></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Class Embeddings Perspective:</strong> The final linear layer (K) can be interpreted as class embeddings. Each row of the matrix represents an embedding of a target class.</p>
+<ul>
+<li>Input activations (d-dimensional): <span class="math inline">\(q\)</span></li>
+<li>Class embeddings (d-dimensional): <span class="math inline">\(K = (k_i)\)</span></li>
+<li>Logits: <span class="math inline">\(l_i = q \cdot k_i\)</span></li>
+<li>Class Probabilities: <span class="math inline">\(p_i = \frac{\exp(d^{-1/2} l_i)}{\sum_j \exp(d^{-1/2} l_j)}\)</span></li>
+</ul></li>
+<li><p><strong>Attention Weights:</strong> Attention weights are derived from scalar products of these embeddings, followed by a softmax operation to produce probabilities. <span class="math display">\[
+q_t = Qx_t, w_s = Kx_s
+\]</span></p></li>
+<li><p><strong>Multi-Head Attention:</strong></p>
+<ul>
+<li><strong>Multiple Classifications:</strong> Multi-head attention performs multiple independent classifications simultaneously, each with a smaller dimension (d).</li>
+<li><strong>Benefits:</strong>
+<ul>
+<li><strong>Representational Power:</strong> Allows the model to attend to information from different representation subspaces and positions (as stated in the “<a href="https://arxiv.org/abs/1706.03762">Attention is All You Need</a>” paper).</li>
+<li><strong>Computational Simplification:</strong> Heads are independent, enabling easy parallelization across the batch dimension and multiple streaming multiprocessors (SMs).</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Mapping to GPU Hardware:</strong></p>
+<ul>
+<li><strong>One Head per Block:</strong> Flash Attention typically maps the computation of one attention head to a single block of threads on the GPU.</li>
+<li><strong>Blocks and SMs:</strong> A block of threads is processed by one SM. The goal is to have enough blocks to utilize all available SMs on the GPU.</li>
+<li><strong>Shared Memory:</strong> Threads within a block can share memory, making it efficient to store and access data needed for the attention head’s computation.</li>
+</ul></li>
+<li><p><strong>Head Dimension Constraint:</strong> The size of the head dimension (d) is a limiting factor as it affects the amount of shared memory and registers required per block. Flash Attention implementations often use small, fixed head dimensions (e.g., 128 or 256) to ensure computations fit within the resources of a single SM.</p></li>
+</ul>
+</section>
+<section id="flash-attention-tiling-strategy" class="level2">
+<h2 class="anchored" data-anchor-id="flash-attention-tiling-strategy">Flash Attention: Tiling Strategy</h2>
+<ul>
+<li><p><strong>Computing One Output Element:</strong> The core idea is to analyze the computation required for a single element of the output matrix. <span class="math display">\[
+O[t, d]
+\]</span></p></li>
+<li><p><strong>Output Element Dependencies:</strong></p>
+<ul>
+<li><p>Requires values (V) for all sequence elements (s) and the hidden dimension (d). <span class="math display">\[
+V[s, d] \text{ for all } s
+\]</span></p></li>
+<li><p>Requires softmax probabilities (P) for the specific output sequence element (t) and all sequence elements (s). <span class="math display">\[
+\text{softmax}(I[t, s], \text{dim}=-1) \text{ for } t \rightarrow \text{need } I[t, s] = \sum_d Q[t, d] \text{ } K[s, d]
+\]</span></p></li>
+</ul></li>
+<li><p><strong>Softmax and Contraction Dimension Alignment:</strong> Crucially, the dimension over which the softmax is computed (s) is the same as the contraction dimension between the softmax output and the value matrix (V). This enables efficient tiling.</p></li>
+<li><p><strong>Tiling Scheme:</strong></p>
+<pre class="text"><code>for t_tile:
+    load(Q[t_tile]) to shared, init O[t, d] = 0
+    for s_tile:
+        load(K[s_tile], V[s_tile]) to shared;
+        compute I[t, s] = Q[t_tile] @ K^T[s_tile]  (compute p[t, s])
+        O[t, d] += p[t_tile, s_tile] @ V[s_tile]
+    write O[t, d]</code></pre>
+<ul>
+<li><strong>Tiling in Output Dimension (t):</strong> The output dimension is tiled into blocks.</li>
+<li><strong>Loading Query Tile:</strong> A corresponding query tile (Q) is loaded into shared memory, covering the entire hidden dimension (d).</li>
+<li><strong>Iterating over Sequence Tiles (s):</strong> An inner loop iterates over tiles in the sequence dimension (s).</li>
+<li><strong>Loading Key and Value Tiles:</strong> For each s-tile, the corresponding key (K) and value (V) tiles are loaded into shared memory.</li>
+<li><strong>Computing Logits and Probabilities:</strong> The logits (L) and probabilities (P) are computed for the Q-tile and K-tile using matrix multiplication.</li>
+<li><strong>Updating Output:</strong> The output tile is updated by multiplying the computed probability matrix with the V-tile.</li>
+<li><strong>Writing Output Tile:</strong> Once the inner loop is complete, the output tile is written back to memory.</li>
+</ul></li>
+<li><p><strong>HuggingFace <code>text-generation-inference</code> Docs:</strong> <a href="https://huggingface.co/docs/text-generation-inference/en/conceptual/flash_attention">Flash Attention</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flash-attn.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://cdn-lfs.huggingface.co/datasets/huggingface/documentation-images/7a59cb2f5b1c0ed0a00fe065f89e3f736aea3d5b10df95d90a7747fe543f3925?response-content-disposition=inline%3B+filename*%3DUTF-8%27%27flash-attn.png%3B+filename%3D%22flash-attn.png%22%3B&amp;response-content-type=image%2Fpng&amp;Expires=1726702524&amp;Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTcyNjcwMjUyNH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2RuLWxmcy5odWdnaW5nZmFjZS5jby9kYXRhc2V0cy9odWdnaW5nZmFjZS9kb2N1bWVudGF0aW9uLWltYWdlcy83YTU5Y2IyZjViMWMwZWQwYTAwZmUwNjVmODllM2Y3MzZhZWEzZDViMTBkZjk1ZDkwYTc3NDdmZTU0M2YzOTI1P3Jlc3BvbnNlLWNvbnRlbnQtZGlzcG9zaXRpb249KiZyZXNwb25zZS1jb250ZW50LXR5cGU9KiJ9XX0_&amp;Signature=Q4YZK%7Ep22EKRaDzKRHXvMiHLusgwlOz9tyGjY-iqvvkirvcXRFIQJnxgkCponnm%7ED--y8kqWOO4iePmt8o27tbGDn6XWq%7EiWh9eY7YKA0g1RE0S-JIzcnspFJInINeIo2mZ8FCAxUnACT1b1xGuJOO3ecrktWPd%7E4ZyqjDUZICQXcwdKXhTpYA3SbP2pvwf59wzpjTsBM94-sFIlewNKtRrJiMW5ic2LYvNq5OsRzrjHCsGDA9MCtIayQasmFStROB1boLAojLG8Y6FjVdcXZeySLBjdKZHIDQuT9W4CyE91ZUgxFzj28CUixEa53vOto7s8GeGbdR%7ERy95JwVF8OA__&amp;Key-Pair-Id=K3ESJI6DHPFC7">Standard Attention vs Flash Attention v1</a></figcaption>
+</figure>
+</div></li>
+</ul>
+</section>
+<section id="the-softmax-challenge" class="level2">
+<h2 class="anchored" data-anchor-id="the-softmax-challenge">The Softmax Challenge</h2>
+<ul>
+<li><strong>Softmax Formula:</strong>
+<ul>
+<li><span class="math inline">\(p_i = exp(l_i) / \sum_j(exp(l_j))\)</span></li>
+<li><span class="math inline">\(p\)</span>: probabilities, <span class="math inline">\(l\)</span>: logits</li>
+</ul></li>
+<li><strong>Numerical Stability:</strong> The exponential function can lead to very large or small values, causing numerical instability in the softmax calculation.
+<ul>
+<li><strong>PyTorch Dev Discussions:</strong> <a href="https://dev-discuss.pytorch.org/t/fmas-and-softmax-and-floating-point-considered-harmful/1953/1">FMAs (and softmax (and floating point)) considered harmful</a></li>
+</ul></li>
+<li><strong>Stabilized Softmax:</strong>
+<ul>
+<li><strong>Stabilization Technique:</strong> The softmax is stabilized by subtracting the maximum logit (m) from all logits before exponentiation.</li>
+<li><span class="math inline">\(p_i = exp(l_i - m) / \sum_j(exp(l_j - m))\)</span></li>
+<li><strong>Benefits:</strong> Ensures that the numerator values are between 0 and 1, improving numerical stability.</li>
+</ul></li>
+<li><strong><a href="https://arxiv.org/abs/1805.02867">Online Softmax</a>:</strong>
+<ul>
+<li><strong>Incremental Update:</strong> The stabilized softmax can be computed incrementally by adjusting the sum when the maximum logit (m) changes.</li>
+<li><strong>Implementation:</strong> Flash Attention often implements this online softmax block-by-block.</li>
+</ul></li>
+</ul>
+</section>
+<section id="flash-attention-2-advanced-techniques" class="level2">
+<h2 class="anchored" data-anchor-id="flash-attention-2-advanced-techniques">Flash Attention 2: Advanced Techniques</h2>
+<ul>
+<li><strong>Flash Attention 1 vs.&nbsp;2:</strong> Flash Attention 2 significantly improves performance over Flash Attention 1 by avoiding writing intermediate results (O, L, M) to DRAM.</li>
+<li><strong>Key Features:</strong>
+<ul>
+<li><strong>Masking Support:</strong> Handles non-rectangular block layouts for masked attention.</li>
+<li><strong>Optimized Tile Ordering:</strong> Rearranges tile processing order to minimize DRAM writes.</li>
+<li><strong>CUTLASS Integration:</strong> Leverages the NVIDIA CUTLASS library for efficient tensor core utilization in matrix multiplications.</li>
+</ul></li>
+<li><strong>Compilation Challenges:</strong> The integration of CUTLASS makes Flash Attention 2 a complex C++ codebase, leading to significant compilation time and memory requirements.</li>
+</ul>
+</section>
+<section id="implementation-attempts-and-challenges" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-attempts-and-challenges">Implementation Attempts and Challenges</h2>
+<ul>
+<li><p><strong>Triton Tutorial:</strong> <a href="https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html">Fused Attention</a></p></li>
+<li><p><strong>Manual PyTorch Implementation:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch, math</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># within one block.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>N_inp <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>N_out <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">128</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>Q <span class="op">=</span> torch.randn(N_out, d)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> torch.randn(N_inp, d)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>V <span class="op">=</span> torch.randn(N_inp, d)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>O <span class="op">=</span> torch.zeros(N_out, d)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>L <span class="op">=</span> torch.zeros(N_out, <span class="dv">1</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>B_c <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>B_r <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>T_c <span class="op">=</span> (N_inp <span class="op">+</span> B_c <span class="op">-</span> <span class="dv">1</span>) <span class="op">//</span> B_c</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>T_r <span class="op">=</span> (N_out <span class="op">+</span> B_r <span class="op">-</span> <span class="dv">1</span>) <span class="op">//</span> B_r</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>scale_factor <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> math.sqrt(Q.size(<span class="op">-</span><span class="dv">1</span>))</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Q and O split into T_r; K, V in T_c blocks</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(T_r):</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    Q_i <span class="op">=</span> Q[i <span class="op">*</span> B_r: (i <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> B_r]</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    O_i <span class="op">=</span> torch.zeros(B_r, d)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    L_i <span class="op">=</span> torch.zeros(B_r, <span class="dv">1</span>)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    m_i <span class="op">=</span> torch.full((B_r, <span class="dv">1</span>), <span class="op">-</span>math.inf)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    last_m_i <span class="op">=</span> m_i</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(T_c):</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        K_j <span class="op">=</span> K[j <span class="op">*</span> B_c: (j <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> B_c]</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        V_j <span class="op">=</span> V[j <span class="op">*</span> B_c: (j <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> B_c]</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>        S_ij <span class="op">=</span> scale_factor <span class="op">*</span> (Q_i <span class="op">@</span> K_j.T)</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>        m_i <span class="op">=</span> torch.maximum(m_i, S_ij.<span class="bu">max</span>(dim<span class="op">=-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>).values)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>        P_ij <span class="op">=</span> torch.exp(S_ij <span class="op">-</span> m_i)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        P_ij <span class="op">=</span> torch.exp(last_m_i <span class="op">-</span> m_i) <span class="op">*</span> L_i <span class="op">+</span> P_ij.<span class="bu">sum</span>(dim<span class="op">=-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>        O_i <span class="op">=</span> torch.exp(last_m_i <span class="op">-</span> m_i) <span class="op">*</span> O_i <span class="op">+</span> P_ij <span class="op">@</span> V_j</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>        L_i <span class="op">=</span> P_ij</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    last_m_i <span class="op">=</span> m_i</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    O[i <span class="op">*</span> B_r: (i <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> B_r] <span class="op">=</span> O_i</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    L[i <span class="op">*</span> B_r: (i <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> B_r] <span class="op">=</span> L_i</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Numba Implementation:</strong> Initial attempts to implement Flash Attention in Numba (a Python-based CUDA kernel compiler) encountered limitations with shared memory capacity, especially for larger tile sizes.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install numba</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numba.cuda</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">@numba.cuda.jit</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> attention(K, Q, V, scaling: numba.float32, L, O):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    inp_dtype <span class="op">=</span> K.dtype</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    tid_x <span class="op">=</span> numba.cuda.threadIdx.x</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    tid_y <span class="op">=</span> numba.cuda.threadIdx.y</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Shared memory arrays</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    Q_i <span class="op">=</span> numba.cuda.shared.array((B_r, d), inp_dtype)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    K_j <span class="op">=</span> numba.cuda.shared.array((B_c, d), inp_dtype)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    V_j <span class="op">=</span> numba.cuda.shared.array((B_c, d), inp_dtype)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    O_i <span class="op">=</span> numba.cuda.shared.array((B_r, d), inp_dtype)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    L_i <span class="op">=</span> numba.cuda.shared.array((B_r, <span class="dv">1</span>), inp_dtype)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    m_i <span class="op">=</span> numba.cuda.shared.array((B_r, <span class="dv">1</span>), inp_dtype)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    S_ij <span class="op">=</span> numba.cuda.shared.array((B_c,), inp_dtype)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(T_r):</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ii <span class="kw">in</span> <span class="bu">range</span>(tid_y, B_r, numba.cuda.blockDim.y):</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> dd <span class="kw">in</span> <span class="bu">range</span>(tid_x, d, numba.cuda.blockDim.x):</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                Q_i[ii, dd] <span class="op">=</span> Q[ii <span class="op">+</span> i <span class="op">*</span> B_r, dd]</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                O_i[ii, dd] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>            L_i[ii] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>            m_i[ii] <span class="op">=</span> <span class="op">-</span>math.inf</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        numba.cuda.syncthreads()</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(T_c):</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> jj <span class="kw">in</span> <span class="bu">range</span>(tid_y, B_c, numba.cuda.blockDim.y):</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> dd <span class="kw">in</span> <span class="bu">range</span>(tid_x, d, numba.cuda.blockDim.x):</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>                    K_j[jj, dd] <span class="op">=</span> K[jj <span class="op">+</span> j <span class="op">*</span> B_c, dd]</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>                    V_j[jj, dd] <span class="op">=</span> V[jj <span class="op">+</span> j <span class="op">*</span> B_c, dd]</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            numba.cuda.syncthreads()</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>            <span class="co"># S_ij = scale_factor * (Q_i @ K_j.T)</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> ii <span class="kw">in</span> <span class="bu">range</span>(tid_x, B_r, numba.cuda.blockDim.x):</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>                numba.cuda.syncthreads()</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> jj <span class="kw">in</span> <span class="bu">range</span>(tid_y, B_c, numba.cuda.blockDim.y):</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>                    S_ij <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">for</span> dd <span class="kw">in</span> <span class="bu">range</span>(d):</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>                        S_ij <span class="op">+=</span> Q_i[ii, dd] <span class="op">*</span> K_j[jj, dd]</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>                    S_ij <span class="op">=</span> scale_factor <span class="op">*</span> S_ij</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>                    S_ij_store[jj] <span class="op">=</span> S_ij</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>                <span class="co"># m_i = torch.maximum(m_i, S_ij.max(dim=-1, keepdim=True).values)</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>                <span class="co"># This needs to use the parallel reduction pattern</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>                numba.cuda.syncthreads()</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>                m <span class="op">=</span> m_i[ii]</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>                last_m <span class="op">=</span> m</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> jj <span class="kw">in</span> <span class="bu">range</span>(B_c):</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>                    m <span class="op">=</span> <span class="bu">max</span>(m, S_ij_store[jj])</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>                m_i[ii] <span class="op">=</span> m</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>                L_i[ii] <span class="op">=</span> math.exp(last_m <span class="op">-</span> m) <span class="op">*</span> L_i[ii]</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>                numba.cuda.syncthreads()</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> dd <span class="kw">in</span> <span class="bu">range</span>(d):</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>                    O_i[ii, dd] <span class="op">*=</span> math.exp(last_m <span class="op">-</span> m)</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> jj <span class="kw">in</span> <span class="bu">range</span>(B_c):</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>                    S_ij_store[jj] <span class="op">=</span> math.exp(S_ij_store[jj] <span class="op">-</span> m)  <span class="co"># Cache the value</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">for</span> dd <span class="kw">in</span> <span class="bu">range</span>(d):</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>                        O_i[ii, dd] <span class="op">+=</span> S_ij_store[jj] <span class="op">*</span> V_j[jj, dd]</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>                L_i[ii] <span class="op">=</span> L_i[ii]</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ii <span class="kw">in</span> <span class="bu">range</span>(tid_y, B_r, numba.cuda.blockDim.y):</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> dd <span class="kw">in</span> <span class="bu">range</span>(tid_x, d, numba.cuda.blockDim.x):</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>                O[ii <span class="op">+</span> i <span class="op">*</span> B_r, dd] <span class="op">=</span> O_i[ii, dd] <span class="op">/</span> L_i[ii]</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>            L[ii <span class="op">+</span> i <span class="op">*</span> B_r] <span class="op">=</span> L_i[ii]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialization code</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>O2 <span class="op">=</span> torch.zeros(N_out, d, device<span class="op">=</span><span class="st">"cuda"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>L2 <span class="op">=</span> torch.zeros(N_out, device<span class="op">=</span><span class="st">"cuda"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>Kc <span class="op">=</span> K.to(<span class="st">"cuda"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>Qc <span class="op">=</span> Q.to(<span class="st">"cuda"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>Vc <span class="op">=</span> V.to(<span class="st">"cuda"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Call to the attention kernel</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>attention((<span class="dv">32</span>, <span class="dv">4</span>), (<span class="dv">1</span>,))(Kc, Qc, Vc, scale_factor, L2, O2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Shared Memory vs.&nbsp;Registers:</strong></p>
+<ul>
+<li><strong>Shared Memory:</strong> Typically used for Q, K, and V matrices.</li>
+<li><strong>Registers:</strong> Ideally used for intermediate results like logits (L), probabilities (P), and outputs (O) to maximize speed.</li>
+</ul></li>
+<li><p><strong>Register Allocation in CUDA:</strong> CUDA can automatically allocate variables to registers if they are:</p>
+<ul>
+<li>Declared as local arrays with constant size.</li>
+<li>Accessed using simple loop indices (not dynamic indices).</li>
+</ul></li>
+</ul>
+</section>
+<section id="cuda-c-implementation" class="level2">
+<h2 class="anchored" data-anchor-id="cuda-c-implementation">CUDA C++ Implementation</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install cuda-python</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cuda <span class="im">import</span> cuda, nvrtc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>cuda_src <span class="op">=</span> <span class="vs">r"""\</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="vs">constexpr int B_r = 16;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="vs">constexpr int B_c = 16;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="vs">constexpr int d = 128;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="vs">constexpr int o_per_thread_x = 1;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="vs">constexpr int o_per_thread_y = 128 / 32;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="vs">#define NEG_INFINITY __int_as_float(0xff800000)</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="vs">extern "C" __global__</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="vs">void silly_attn(float *out, float *out_l, float *K, float *Q, float *V, float scaling, int n, int T_r, int T_c) </span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="vs">{</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="vs">    int tid_x = threadIdx.x;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="vs">    int tid_y = threadIdx.y;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="vs">    __shared__ float Q_i[B_r][d];</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="vs">    __shared__ float K_j[B_c][d];</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="vs">    __shared__ float V_j[B_c][d];</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="vs">    __shared__ float S_i[B_r][B_c];</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="vs">    float l_i[o_per_thread_x];</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="vs">    float m_i[o_per_thread_x];</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="vs">    float O_i[o_per_thread_x][o_per_thread_y];</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="vs">    for (int i = 0; i &lt; T_r; i++) {</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="vs">        for (int ii = 0; ii &lt; o_per_thread_x; ii++) {</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="vs">            for (int dd = 0; dd &lt; o_per_thread_y; dd++) {</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="vs">                O_i[ii][dd] = 0;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="vs">            }</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="vs">            l_i[ii] = 0.f;</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="vs">            m_i[ii] = NEG_INFINITY;</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="vs">        }</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="vs">        </span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="vs">        for (int ii = tid_y; ii &lt; B_r; ii += blockDim.y) {</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="vs">            for (int dd = tid_x; dd &lt; d; dd += blockDim.x) {</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="vs">                Q_i[ii][dd] = Q[(ii + i * B_r) * d + dd];</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="vs">            }</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="vs">        }</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="vs">        </span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="vs">        for (int j = 0; j &lt; T_c; j++) {</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="vs">            __syncthreads();</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="vs">            for (int jj = tid_y; jj &lt; B_c; jj += blockDim.y) {</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="vs">                for (int dd = tid_x; dd &lt; d; dd += blockDim.x) {</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="vs">                    K_j[jj][dd] = K[(jj + j * B_c) * d + dd];</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="vs">                    V_j[jj][dd] = V[(jj + j * B_c) * d + dd];</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="vs">                }</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="vs">            }</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="vs">            __syncthreads();</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="vs">            // S_i = scale_factor * (Q_i @ K_j.T);</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="vs">            for (int ii = tid_x; ii &lt; B_r; ii += blockDim.x) {</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a><span class="vs">                for (int jj = tid_y; jj &lt; B_c; jj += blockDim.y) {</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a><span class="vs">                    float S_ij = 0.f;</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="vs">                    for (int dd = 0; dd &lt; d; dd++) {</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a><span class="vs">                        S_ij += Q_i[ii][dd] * K_j[jj][dd];</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a><span class="vs">                    }</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a><span class="vs">                    S_ij = scaling * S_ij;</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="vs">                    S_i[ii][jj] = S_ij;</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="vs">                }</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="vs">            }</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="vs">            __syncthreads();</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a><span class="vs">            for (int ii = 0; ii &lt; o_per_thread_x; ii++) {</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a><span class="vs">                float m = m_i[ii];</span></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a><span class="vs">                float last_m = m;</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a><span class="vs">                for (int jj = 0; jj &lt; B_c; jj+=1) {</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a><span class="vs">                    if (m &lt; S_i[ii] * blockDim.x + tid_x[jj]) {</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a><span class="vs">                        m = S_i[ii] * blockDim.x + tid_x[jj];</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a><span class="vs">                    }</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="vs">                }</span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a><span class="vs">                m_i[ii] = m;</span></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a><span class="vs">                float l = exp(last_m - m) * l_i[ii];</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a><span class="vs">                for (int dd = 0; dd &lt; o_per_thread_y; dd++) {</span></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a><span class="vs">                    O_i[ii][dd] *= exp(last_m - m);</span></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a><span class="vs">                }</span></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a><span class="vs">            </span></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a><span class="vs">                for (int jj = 0; jj &lt; B_c; jj++) {</span></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a><span class="vs">                    float S_ij = exp(S_i[ii] * blockDim.x + tid_x[jj] - m);</span></span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a><span class="vs">                    l += S_ij;</span></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a><span class="vs">                    for (int dd = 0; dd &lt; o_per_thread_y; dd++) {</span></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a><span class="vs">                        O_i[ii][dd] += S_ij * V_j[jj][dd + blockDim.y + tid_y];</span></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a><span class="vs">                    }</span></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a><span class="vs">                }</span></span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a><span class="vs">                l_i[ii] = l;</span></span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a><span class="vs">                </span></span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a><span class="vs">            }</span></span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a><span class="vs">        }</span></span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a><span class="vs">        for (int ii = 0; ii &lt; o_per_thread_x; ii++) {</span></span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a><span class="vs">            for (int dd = 0; dd &lt; o_per_thread_y; dd++) {</span></span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a><span class="vs">                out[(ii * blockDim.x + tid_x + i * B_r) * d + dd * blockDim.y + tid_y] = O_i[ii][dd] / l_i[ii];</span></span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a><span class="vs">                out_l[ii * blockDim.x + tid_x + i * B_r] = l_i[ii];</span></span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a><span class="vs">            }</span></span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a><span class="vs">        }</span></span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a><span class="vs">    }</span></span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a><span class="vs">}</span></span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a><span class="vs">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create program</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>err, prog <span class="op">=</span> nvrtc.nvrtcCreateProgram(<span class="bu">str</span>.encode(cuda_src), <span class="st">b"silly_attn.cu"</span>, <span class="dv">0</span>, [], [])</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Compile program</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="bu">min</span>, maj <span class="op">=</span> torch.cuda.get_device_capability()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>opts <span class="op">=</span> [<span class="ss">f"--gpu-architecture=compute_</span><span class="sc">{</span><span class="bu">min</span><span class="sc">}{</span>maj<span class="sc">}</span><span class="ss">"</span>.encode()]</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>err, <span class="op">=</span> nvrtc.nvrtcCompileProgram(prog, <span class="bu">len</span>(opts), opts)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(err)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Get PTX from compilation</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>err, ptxSize <span class="op">=</span> nvrtc.nvrtcGetPTXSize(prog)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>ptx <span class="op">=</span> <span class="st">b" "</span> <span class="op">*</span> ptxSize</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>err, <span class="op">=</span> nvrtc.nvrtcGetPTX(prog, ptx)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(err)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>err, logSize <span class="op">=</span> nvrtc.nvrtcGetProgramLogSize(prog)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>log <span class="op">=</span> <span class="st">b" "</span> <span class="op">*</span> logSize</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>err, <span class="op">=</span> nvrtc.nvrtcGetProgramLog(prog, log)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(log.decode())</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co"># print(ptx.decode())</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Load PTX as module data and retrieve function</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>err, module <span class="op">=</span> cuda.cuModuleLoadData(ptx)</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(err)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>err, kernel <span class="op">=</span> cuda.cuModuleGetFunction(module, <span class="st">b"silly_attn"</span>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(err, kernel)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Allocate tensors</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># S3 = torch.zeros(N_out, N_out, device="cuda")</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>O3 <span class="op">=</span> torch.zeros(N_out, d, device<span class="op">=</span><span class="st">"cuda"</span>)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>L3 <span class="op">=</span> torch.zeros(N_out, device<span class="op">=</span><span class="st">"cuda"</span>)</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co"># To quote the official tutorial: (https://nvidia.github.io/cuda-python/overview.html)</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co"># The following code example is not intuitive</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Subject to change in a future release</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>int_args <span class="op">=</span> torch.tensor([<span class="dv">0</span>, T_r, T_c], dtype<span class="op">=</span>torch.int32)</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>float_args <span class="op">=</span> torch.tensor([scale_factor], dtype<span class="op">=</span>torch.float32)</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>ptr_args <span class="op">=</span> torch.tensor([i.data_ptr() <span class="cf">for</span> i <span class="kw">in</span> (O3, L3, Kc, Qc, Vc)], dtype<span class="op">=</span>torch.uint64)</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>args <span class="op">=</span> torch.tensor([</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>(i.data_ptr() <span class="cf">for</span> i <span class="kw">in</span> ptr_args),</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>(i.data_ptr() <span class="cf">for</span> i <span class="kw">in</span> float_args),</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>(i.data_ptr() <span class="cf">for</span> i <span class="kw">in</span> int_args)], dtype<span class="op">=</span>torch.uint64)</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>args</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fn():</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    err, _ <span class="op">=</span> cuda.cuLaunchKernel(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        kernel,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span>,  <span class="co"># grid x dim</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span>,  <span class="co"># grid y dim</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span>,  <span class="co"># grid z dim</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        <span class="dv">32</span>,  <span class="co"># block x dim</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="dv">32</span>,  <span class="co"># block y dim</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span>,  <span class="co"># block z dim</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span>,  <span class="co"># dynamic shared memory</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        torch.cuda.current_stream().stream_id,  <span class="co"># stream</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        args.data_ptr(),  <span class="co"># kernel arguments</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span>,  <span class="co"># extra (ignore)</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>fn()</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>(O3 <span class="op">-</span> O2)[<span class="dv">0</span>]</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>(O3.cpu() <span class="op">-</span> expected).<span class="bu">abs</span>().<span class="bu">max</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Register-Based Output:</strong> The Numba implementation was translated to CUDA C++ with modifications to store the output (O) in registers.</li>
+<li><strong>Benefits:</strong> Leveraging the large register file (16k single-precision registers) on the SM can significantly improve performance compared to using shared memory for outputs.</li>
+<li><strong>Register Spillover:</strong> Care must be taken to avoid register spillover, which occurs when the kernel requires more registers than available.
+<ul>
+<li><strong>Detection:</strong> Compiler flags and profiling tools (e.g., Nsight Compute) can help detect register spillover.
+<ul>
+<li><strong>Tool:</strong> <a href="https://godbolt.org/">godbolt</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Compilation with Python CUDA:</strong> The CUDA C++ kernel can be compiled directly within Python using the <code>nvrtc</code> runtime compiler provided by the <a href="https://nvidia.github.io/cuda-python/overview.html">CUDA Python library</a>.</li>
+</ul>
+<section id="thunder" class="level3">
+<h3 class="anchored" data-anchor-id="thunder">Thunder</h3>
+<ul>
+<li><strong>Thunder Integration:</strong> <a href="https://github.com/Lightning-AI/lightning-thunder">Thunder</a>, a source-to-source compiler for PyTorch, can be used to seamlessly integrate custom kernels (like the Flash Attention implementation) into PyTorch models.
+<ul>
+<li><strong>Operator Registration:</strong> Custom kernels can be registered as operators within Thunder.</li>
+<li><strong>Kernel Replacement:</strong> Thunder can automatically replace specific PyTorch operations (e.g., <code>torch.nn.functional.scaled_dot_product_attention</code>) with the registered custom kernel.</li>
+<li><strong>Conditional Replacement:</strong> Checker functions allow defining conditions under which the replacement should occur (e.g., based on input shapes, presence of masks, etc.).</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="performance-evaluation-and-future-directions" class="level2">
+<h2 class="anchored" data-anchor-id="performance-evaluation-and-future-directions">Performance Evaluation and Future Directions</h2>
+<ul>
+<li><strong>Initial Performance:</strong> The custom CUDA C++ implementation, even with register-based output, is currently slower than the built-in <code>scaled_dot_product_attention</code> in PyTorch.</li>
+<li><strong>Further Optimization:</strong>
+<ul>
+<li><strong>Improving Register Usage:</strong> Fine-tuning register allocation and minimizing spillover.</li>
+<li><strong>Exploring Tile Sizes:</strong> Experimenting with different tile sizes to find optimal configurations for specific hardware and problem sizes.</li>
+<li><strong>Implementing Advanced Features:</strong> Adding support for masks, multiple heads, and dropout.</li>
+</ul></li>
+<li><strong>Persistent Kernels:</strong> Future research directions include exploring persistent kernels, where a single CUDA kernel represents an entire neural network and remains resident on the GPU for processing multiple batches of data.</li>
+</ul>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<ul>
+<li><strong>Flash Attention Summary:</strong> Flash Attention is a powerful technique for optimizing attention calculations in transformer models. It achieves significant performance gains by minimizing DRAM access and leveraging the speed of SRAM.</li>
+<li><strong>Implementation Challenges:</strong> Implementing Flash Attention efficiently requires careful consideration of tiling strategies, softmax stabilization,</li>
+</ul>
+</section>
+<section id="qa-session" class="level2">
+<h2 class="anchored" data-anchor-id="qa-session">Q&amp;A Session</h2>
+<ul>
+<li><p><strong>Q1: At what level does Thunder replace PyTorch operations? Is it at the ATen level or the ref level?</strong></p>
+<ul>
+<li><p><strong>A:</strong> Thunder operates similarly to the ATen level but not exactly the same. It provides operators that can replace PyTorch functions. However, it is flexible and can also replace user-defined functions within a model.</p></li>
+<li><p><strong>Explanation:</strong> Thunder utilizes a Python interpreter to record PyTorch function calls and generates an intermediate representation (IR) as Python code. This allows for easy extensibility and customization of the replacement process.</p></li>
+</ul></li>
+<li><p><strong>Q2: Given that the kernel is written in pure PyTorch, would it be beneficial to see the Triton kernel generated by Torch Compile for comparison?</strong></p>
+<ul>
+<li><p><strong>A:</strong> While seeing the Triton kernel generated by Torch Compile would be interesting, it is expected that the automatic fusion capabilities of compilers like Dynamo might not be sufficient to fully recover the Flash Attention kernel’s optimizations. This is because Flash Attention involves complex tiling and memory access patterns that might be difficult for a general-purpose compiler to automatically infer and optimize.</p></li>
+<li><p><strong>Explanation:</strong> The educational value of the custom kernel lies in its transparency and ability to showcase specific optimization techniques, which might not be evident in a compiler-generated kernel.</p></li>
+</ul></li>
+<li><p><strong>Q3: How do you detect register spillover when writing CUDA kernels, especially since you don’t explicitly control register allocation?</strong></p>
+<ul>
+<li><p><strong>A:</strong> Register spillover can be detected by:</p>
+<ul>
+<li><p><strong>Compiler Flags:</strong> Using compiler flags that provide information about register usage during compilation.</p></li>
+<li><p><strong>Profiling Tools:</strong> Utilizing profiling tools like Nsight Compute, which can identify potential spillover issues.</p></li>
+<li><p><strong>Examining PTX:</strong> Analyzing the PTX (parallel thread execution) code generated by the compiler to see the number of registers allocated and identify potential spillover.</p></li>
+</ul></li>
+<li><p><strong>Explanation:</strong> While CUDA automatically allocates registers based on variable usage, it is essential to monitor register usage and optimize the kernel to minimize spillover, as it can significantly impact performance.</p></li>
+</ul></li>
+<li><p><strong>Q4: In Flash Attention, Q, K, and V are computed from input tokens using matrix multiplications. Would it be sensible to fuse these multiplications into a single kernel, or would register limitations prevent this?</strong></p>
+<ul>
+<li><p><strong>A:</strong> Fusing the Q, K, and V matrix multiplications into a single kernel is a common optimization technique in Flash Attention implementations. However, fusing additional operations beyond this point might become challenging due to register limitations and the complexity of managing intermediate results within the kernel.</p></li>
+<li><p><strong>Explanation:</strong> Flash Attention already pushes the boundaries of kernel complexity and resource utilization. While further fusion might be theoretically possible, it requires careful consideration of resource constraints and potential performance trade-offs.</p></li>
+</ul></li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
