@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Christian Mills">
-<meta name="dcterms.date" content="2023-09-09">
+<meta name="dcterms.date" content="2024-09-21">
 <meta name="description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs.">
 
 <title>Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu – Christian Mills</title>
@@ -208,16 +208,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#add-intel-graphics-drivers-repository" id="toc-add-intel-graphics-drivers-repository" class="nav-link" data-scroll-target="#add-intel-graphics-drivers-repository">Add Intel Graphics drivers Repository</a></li>
   <li><a href="#install-packages" id="toc-install-packages" class="nav-link" data-scroll-target="#install-packages">Install packages</a></li>
-  <li><a href="#verify-the-installations" id="toc-verify-the-installations" class="nav-link" data-scroll-target="#verify-the-installations">Verify the Installations</a>
-  <ul class="collapse">
-  <li><a href="#verify-the-device-is-working-with-the-i915-driver" id="toc-verify-the-device-is-working-with-the-i915-driver" class="nav-link" data-scroll-target="#verify-the-device-is-working-with-the-i915-driver">Verify the device is working with the <code>i915</code> driver</a></li>
-  <li><a href="#verify-media-drivers-installation" id="toc-verify-media-drivers-installation" class="nav-link" data-scroll-target="#verify-media-drivers-installation">Verify Media drivers installation</a></li>
-  <li><a href="#verify-computing-drivers-installation" id="toc-verify-computing-drivers-installation" class="nav-link" data-scroll-target="#verify-computing-drivers-installation">Verify Computing drivers installation</a></li>
-  <li><a href="#verify-3d-drivers-installation" id="toc-verify-3d-drivers-installation" class="nav-link" data-scroll-target="#verify-3d-drivers-installation">Verify 3D drivers installation</a></li>
   </ul></li>
-  </ul></li>
-  <li><a href="#install-oneapi-base-toolkit" id="toc-install-oneapi-base-toolkit" class="nav-link" data-scroll-target="#install-oneapi-base-toolkit">Install oneAPI Base Toolkit</a></li>
-  <li><a href="#update-the-bash-run-commands-file" id="toc-update-the-bash-run-commands-file" class="nav-link" data-scroll-target="#update-the-bash-run-commands-file">Update the Bash Run Commands File</a></li>
   <li><a href="#set-up-a-python-environment" id="toc-set-up-a-python-environment" class="nav-link" data-scroll-target="#set-up-a-python-environment">Set Up a Python Environment</a>
   <ul>
   <li><a href="#install-mamba-package-manager" id="toc-install-mamba-package-manager" class="nav-link" data-scroll-target="#install-mamba-package-manager">Install Mamba Package Manager</a></li>
@@ -227,6 +218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#modify-pytorch-code" id="toc-modify-pytorch-code" class="nav-link" data-scroll-target="#modify-pytorch-code">Modify PyTorch Code</a>
   <ul>
+  <li><a href="#set-environment-variables" id="toc-set-environment-variables" class="nav-link" data-scroll-target="#set-environment-variables">Set Environment Variables</a></li>
   <li><a href="#import-pytorch-extension" id="toc-import-pytorch-extension" class="nav-link" data-scroll-target="#import-pytorch-extension">Import PyTorch Extension</a></li>
   <li><a href="#update-pytorch-imports" id="toc-update-pytorch-imports" class="nav-link" data-scroll-target="#update-pytorch-imports">Update PyTorch Imports</a></li>
   <li><a href="#verify-arc-gpu-availability" id="toc-verify-arc-gpu-availability" class="nav-link" data-scroll-target="#verify-arc-gpu-availability">Verify Arc GPU Availability</a></li>
@@ -273,7 +265,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 9, 2023</p>
+      <p class="date">September 21, 2024</p>
     </div>
   </div>
   
@@ -290,18 +282,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><a href="#enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</a></li>
 <li><a href="#install-ubuntu">Install Ubuntu</a></li>
 <li><a href="#verify-resizable-bar">Verify Resizable BAR</a></li>
-<li><a href="#install-drivers">Install Drivers</a></li>
-<li><a href="#install-oneapi-base-toolkit">Install oneAPI Base Toolkit</a></li>
-<li><a href="#update-the-bash-run-commands-file">Update the Bash Run Commands File</a></li>
-<li><a href="#set-up-a-python-environment">Set Up a Python Environment</a></li>
-<li><a href="#modify-pytorch-code">Modify PyTorch Code</a></li>
+<li><a href="#install-drivers">Install Drivers</a><br>
+</li>
+<li><a href="#set-up-a-python-environment">Set Up a Python Environment</a><br>
+</li>
+<li><a href="#modify-pytorch-code">Modify PyTorch Code</a><br>
+</li>
 <li><a href="#conclusion">Conclusion</a></li>
 </ul>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://ubuntu.com/download/desktop">Ubuntu</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it now includes <code>experimental</code> support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
+<p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://ubuntu.com/download/desktop">Ubuntu</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it includes support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
 <p>The XMX engines are dedicated hardware for performing matrix operations like those in deep-learning workloads. Intel’s PyTorch extension allows us to leverage this hardware with minimal changes to existing PyTorch code.</p>
-<p>To illustrate this, we’ll adapt the training code from my <a href="https://christianjmills.com/posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all the steps required to set up Ubuntu for training PyTorch models using Arc GPUs.</p>
+<p>To illustrate this, we’ll adapt the training code from my <a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all the steps required to set up Ubuntu for training PyTorch models using Arc GPUs.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -312,7 +305,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The current setup process is for version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/2.0.110+xpu/"><code>2.0.110+xpu</code></a> of Intel’s PyTorch extension.</p>
+<p>The current setup process is for version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/2.3.110+xpu/"><code>2.3.110+xpu</code></a> of Intel’s PyTorch extension.</p>
 </div>
 </div>
 </section>
@@ -330,7 +323,7 @@ Note
 </section>
 <section id="install-ubuntu" class="level2">
 <h2 class="anchored" data-anchor-id="install-ubuntu">Install Ubuntu</h2>
-<p>Intel’s <a href="https://dgpu-docs.intel.com/driver/client/overview.html#client-install-options">documentation</a> recommends Ubuntu 22.04 LTS or newer. The <a href="https://ubuntu.com/blog/what-is-an-ubuntu-lts-release">LTS</a> releases have the minimum required Linux kernel version as of 22.04.3, so we can stick with that. If you already have Ubuntu 22.04 LTS installed, ensure it’s fully updated.</p>
+<p>Intel’s <a href="https://dgpu-docs.intel.com/driver/client/overview.html#client-install-options">documentation</a> recommends Ubuntu 22.04 LTS or newer. I verified the following steps in both Ubuntu 22.04 and 24.04. If you already have Ubuntu 22.04 LTS or newer installed, ensure it’s fully updated.</p>
 <ul>
 <li><a href="https://ubuntu.com/download/desktop">Download Ubuntu Desktop Download Page</a></li>
 </ul>
@@ -338,7 +331,7 @@ Note
 <ul>
 <li><strong>Tutorial:</strong> <a href="https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview">Install Ubuntu with a Bootable USB Stick</a></li>
 </ul>
-<p>That tutorial calls for at least 25GB of free storage space, but I recommend at least 80 GB for our case. The <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html#gs.ztyvfm">oneAPI Base Toolkit</a> used by Intel’s PyTorch extension alone takes up approximately 15GB. Additional packages, applications, models, and datasets can quickly fill space.</p>
+<p>That tutorial calls for at least 25GB of free storage space, but I recommend at least 80 GB for our case.</p>
 </section>
 <section id="verify-resizable-bar" class="level2">
 <h2 class="anchored" data-anchor-id="verify-resizable-bar">Verify Resizable BAR</h2>
@@ -366,7 +359,7 @@ Note
     Kernel driver in use: i915
     Kernel modules: i915</code></pre>
 <hr>
-<p>Note that the <code>[size=16GB]</code> matches the total memory for the GPU. If you have the A750 8GB variant, it should read <code>[size=8GB]</code> for your GPU.</p>
+<p>Note that the <code>[size=16G]</code> matches the total memory for the GPU. If you have the A750 8GB variant, it should read <code>[size=8G]</code> for your GPU.</p>
 </section>
 <section id="install-drivers" class="level2">
 <h2 class="anchored" data-anchor-id="install-drivers">Install Drivers</h2>
@@ -374,15 +367,15 @@ Note
 <section id="add-intel-graphics-drivers-repository" class="level3">
 <h3 class="anchored" data-anchor-id="add-intel-graphics-drivers-repository">Add Intel Graphics drivers Repository</h3>
 <p>Run the following bash commands to add the Intel Graphics drivers repository:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-v</span> <span class="kw">&amp;&amp;</span> <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-qO</span> <span class="at">-</span> https://repositories.intel.com/graphics/intel-graphics.key <span class="kw">|</span> <span class="dt">\</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> gpg <span class="at">--dearmor</span> <span class="at">--output</span> /usr/share/keyrings/intel-graphics.gpg <span class="kw">&amp;&amp;</span> <span class="dt">\</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc"</span> <span class="kw">|</span> <span class="dt">\</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> tee /etc/apt/sources.list.d/intel-gpu-jammy.list <span class="kw">&amp;&amp;</span> <span class="dt">\</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get update</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-qO</span> <span class="at">-</span> https://repositories.intel.com/gpu/intel-graphics.key <span class="kw">|</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> gpg <span class="at">--yes</span> <span class="at">--dearmor</span> <span class="at">--output</span> /usr/share/keyrings/intel-graphics.gpg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-qO</span> <span class="at">-</span> https://repositories.intel.com/gpu/intel-graphics.key <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> gpg <span class="at">--yes</span> <span class="at">--dearmor</span> <span class="at">--output</span> /usr/share/keyrings/intel-graphics.gpg</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy/lts/2350 unified"</span> <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> tee /etc/apt/sources.list.d/intel-gpu-jammy.list</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt update</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The above bash commands perform the following steps:</p>
 <ol type="1">
-<li>Refresh sudo access to avoid multiple password prompts.</li>
 <li>Download the Intel graphics repository’s public key.</li>
 <li>Convert the downloaded key to binary and save it.</li>
 <li>Add the Intel graphics repository to the APT’s list of package sources.</li>
@@ -391,198 +384,58 @@ Note
 </section>
 <section id="install-packages" class="level3">
 <h3 class="anchored" data-anchor-id="install-packages">Install packages</h3>
-<p>Now, we can install the required packages.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get install <span class="at">-y</span> <span class="dt">\</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  intel-opencl-icd intel-level-zero-gpu level-zero <span class="dt">\</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 <span class="dt">\</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri <span class="dt">\</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers <span class="dt">\</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo hwinfo clinfo mesa-utils</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now we can install the required packages.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install <span class="at">-y</span> <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    intel-opencl-icd intel-level-zero-gpu level-zero <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo hwinfo clinfo</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="verify-the-installations" class="level3">
-<h3 class="anchored" data-anchor-id="verify-the-installations">Verify the Installations</h3>
-<p>We can verify everything is installed correctly by running the following commands.</p>
-<section id="verify-the-device-is-working-with-the-i915-driver" class="level4">
-<h4 class="anchored" data-anchor-id="verify-the-device-is-working-with-the-i915-driver">Verify the device is working with the <code>i915</code> driver</h4>
-<p>Run the following command to confirm the device is using Intel’s graphics driver:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">hwinfo</span> <span class="at">--display</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Here is the expected output for the A770:</p>
-<pre class="text"><code>$ hwinfo --display
-06: PCI 300.0: 0300 VGA compatible controller (VGA)             
-  [Created at pci.386]
-  Unique ID: svHJ.nDfmnmUHKH4
-  Parent ID: GA8e.mr2N3fBJq5F
-  SysFS ID: /devices/pci0000:00/0000:00:01.0/0000:01:00.0/0000:02:01.0/0000:03:00.0
-  SysFS BusID: 0000:03:00.0
-  Hardware Class: graphics card
-  Model: "Intel VGA compatible controller"
-  Vendor: pci 0x8086 "Intel Corporation"
-  Device: pci 0x56a0 
-  SubVendor: pci 0x8086 "Intel Corporation"
-  SubDevice: pci 0x1020 
-  Revision: 0x08
-  Driver: "i915"
-  Driver Modules: "i915"
-  Memory Range: 0xa1000000-0xa1ffffff (rw,non-prefetchable)
-  Memory Range: 0x6000000000-0x63ffffffff (ro,non-prefetchable)
-  Memory Range: 0xa2000000-0xa21fffff (ro,non-prefetchable,disabled)
-  IRQ: 173 (701506 events)
-  Module Alias: "pci:v00008086d000056A0sv00008086sd00001020bc03sc00i00"
-  Driver Info #0:
-    Driver Status: i915 is active
-    Driver Activation Cmd: "modprobe i915"
-  Config Status: cfg=new, avail=yes, need=no, active=unknown
-  Attached to: #25 (PCI bridge)</code></pre>
-<hr>
-</section>
-<section id="verify-media-drivers-installation" class="level4">
-<h4 class="anchored" data-anchor-id="verify-media-drivers-installation">Verify Media drivers installation</h4>
-<p>Run the following commands to verify the media drivers installation:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">DISPLAY</span><span class="op">=</span>:0.0<span class="kw">;</span> <span class="ex">vainfo</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Here is a snippet of the expected output for the A770:</p>
-<pre class="text"><code>$ export DISPLAY=:0.0; vainfo
-Trying display: wayland
-libva info: VA-API version 1.18.0
-libva info: Trying to open /usr/lib/x86_64-linux-gnu/dri/iHD_drv_video.so
-libva info: Found init function __vaDriverInit_1_18
-libva info: va_openDriver() returns 0
-vainfo: VA-API version: 1.18 (libva 2.17.0)
-vainfo: Driver version: Intel iHD driver for Intel(R) Gen Graphics - 23.1.4 (12e141d)
-vainfo: Supported profile and entrypoints
-      VAProfileNone                   : VAEntrypointVideoProc
-      VAProfileNone                   : VAEntrypointStats
-...</code></pre>
-<hr>
-</section>
-<section id="verify-computing-drivers-installation" class="level4">
-<h4 class="anchored" data-anchor-id="verify-computing-drivers-installation">Verify Computing drivers installation</h4>
-<p>Run the following command to get a list of available OpenCL platforms and devices:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clinfo</span> <span class="at">-l</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The Arc GPU should show as one of the available devices. On my computer, the Arc GPU is device 0 for platform 2:</p>
-<pre class="text"><code>$ clinfo -l
-Platform #0: Intel(R) FPGA Emulation Platform for OpenCL(TM)
- `-- Device #0: Intel(R) FPGA Emulation Device
-Platform #1: Intel(R) OpenCL
- `-- Device #0: 11th Gen Intel(R) Core(TM) i7-11700K @ 3.60GHz
-Platform #2: Intel(R) OpenCL HD Graphics
- `-- Device #0: Intel(R) Arc(TM) A770 Graphics
-Platform #3: Intel(R) OpenCL HD Graphics
- `-- Device #0: Intel(R) UHD Graphics 750</code></pre>
-<hr>
-<p>We can run the following command to get the properties for that device:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clinfo</span> <span class="at">-d</span> 2:0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The command will output a lot of information. Here is the top section of the output for the A770:</p>
-<pre class="text"><code>$ clinfo -d 2:0
-  Platform Name                                   Intel(R) OpenCL HD Graphics
-  Device Name                                     Intel(R) Arc(TM) A770 Graphics
-  Device Vendor                                   Intel(R) Corporation
-  Device Vendor ID                                0x8086
-  Device Version                                  OpenCL 3.0 NEO 
-  Device UUID                                     8680a056-0800-0000-0300-000000000000
-  Driver UUID                                     32332e30-352e-3235-3539-332e31380000
-  Valid Device LUID                               No
-  Device LUID                                     400f-ca04fd7f0000
-  Device Node Mask                                0
-  Device Numeric Version                          0xc00000 (3.0.0)
-  Driver Version                                  23.05.25593.18
-  Device OpenCL C Version                         OpenCL C 1.2 
-  Device OpenCL C all versions                    OpenCL C                                 
-...</code></pre>
-<hr>
-</section>
-<section id="verify-3d-drivers-installation" class="level4">
-<h4 class="anchored" data-anchor-id="verify-3d-drivers-installation">Verify 3D drivers installation</h4>
-<p>Lastly, we can run the following command to verify the 3D drivers’ installation:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">glxinfo</span> <span class="kw">|</span> <span class="fu">grep</span> OpenGL</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Here is the output for the A770:</p>
-<pre class="text"><code>$ glxinfo |grep OpenGL
-OpenGL vendor string: Intel
-OpenGL renderer string: Mesa Intel(R) Arc(tm) A770 Graphics (DG2)
-OpenGL core profile version string: 4.6 (Core Profile) Mesa 23.1.0-devel (git-722bcd7973)
-OpenGL core profile shading language version string: 4.60
-OpenGL core profile context flags: (none)
-OpenGL core profile profile mask: core profile
-OpenGL core profile extensions:
-OpenGL version string: 4.6 (Compatibility Profile) Mesa 23.1.0-devel (git-722bcd7973)
-OpenGL shading language version string: 4.60
-OpenGL context flags: (none)
-OpenGL profile mask: compatibility profile
-OpenGL extensions:
-OpenGL ES profile version string: OpenGL ES 3.2 Mesa 23.1.0-devel (git-722bcd7973)
-OpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20
-OpenGL ES profile extensions:</code></pre>
-<hr>
-</section>
-</section>
-</section>
-<section id="install-oneapi-base-toolkit" class="level2">
-<h2 class="anchored" data-anchor-id="install-oneapi-base-toolkit">Install oneAPI Base Toolkit</h2>
-<p>Next, we install the <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html#gs.ztyvfm">oneAPI Base Toolkit</a>, which Intel’s PyTorch extension depends on. As mentioned earlier, the toolkit will take up approximately 15GB of disk space. We’ll install the toolkit using the APT package manager.</p>
-<p>Run the following commands to add the package repository and install the toolkit:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-v</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-O-</span> https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB <span class="dt">\ </span><span class="kw">|</span> <span class="ex">gpg</span> <span class="at">--dearmor</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /usr/share/keyrings/oneapi-archive-keyring.gpg <span class="op">&gt;</span> /dev/null</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main"</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/apt/sources.list.d/oneAPI.list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt update</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install intel-basekit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The above bash commands perform the following steps:</p>
-<ol type="1">
-<li>Refresh sudo access to avoid multiple password prompts.</li>
-<li>Download the system keyring for the repository.</li>
-<li>Add the signed entry to APT sources and configure the APT client to use the Intel repository.</li>
-<li>Update the list of available packages.</li>
-<li>Install the toolkit.</li>
-</ol>
-</section>
-<section id="update-the-bash-run-commands-file" class="level2">
-<h2 class="anchored" data-anchor-id="update-the-bash-run-commands-file">Update the Bash Run Commands File</h2>
-<p>We need to add the following lines to the end of the bash run commands file (<code>.bashrc</code>) for Intel’s extension to use the oneAPI toolkit:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">ONEAPI_ROOT</span><span class="op">=</span>/opt/intel/oneapi</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">DPCPPROOT</span><span class="op">=</span><span class="va">${ONEAPI_ROOT}</span>/compiler/latest</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">MKLROOT</span><span class="op">=</span><span class="va">${ONEAPI_ROOT}</span>/mkl/latest</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">IPEX_XPU_ONEDNN_LAYOUT</span><span class="op">=</span>1</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> <span class="va">${ONEAPI_ROOT}</span>/setvars.sh <span class="op">&gt;</span> /dev/null</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The above lines perform the following steps:</p>
-<ol type="1">
-<li>Add the installation location for the oneAPI toolkit as an environment variable.</li>
-<li>Add the installation location for the DPC++ Compiler as an environment variable.</li>
-<li>Add the installation for the Math Kernel Library as an environment variable.</li>
-<li>Set the oneDNN memory layout to improve training speed.</li>
-<li>Initialize the oneAPI environment.</li>
-</ol>
-<p>You can run the following commands to add the above lines to the <code>.bashrc</code> file and apply the changes to the current shell:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="at">-e</span> <span class="st">"\nexport ONEAPI_ROOT=/opt/intel/oneapi\nexport DPCPPROOT=</span><span class="dt">\$</span><span class="st">{ONEAPI_ROOT}/compiler/latest\nexport MKLROOT=</span><span class="dt">\$</span><span class="st">{ONEAPI_ROOT}/mkl/latest\nexport IPEX_XPU_ONEDNN_LAYOUT=1\nsource </span><span class="dt">\$</span><span class="st">{ONEAPI_ROOT}/setvars.sh &gt; /dev/null"</span> <span class="op">&gt;&gt;</span> ~/.bashrc <span class="dt">\</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>source ~/.bashrc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="set-up-a-python-environment" class="level2">
 <h2 class="anchored" data-anchor-id="set-up-a-python-environment">Set Up a Python Environment</h2>
-<p>Now, we can create a Python environment to run the training code. We’ll install a patched version of PyTorch needed for Intel’s extension, the extension itself, and the other dependencies for the training code.</p>
+<p>Next, we can create a Python environment to run the training code. We’ll install a patched version of PyTorch needed for Intel’s extension, the extension itself, and the other dependencies for the training code.</p>
 <section id="install-mamba-package-manager" class="level3">
 <h3 class="anchored" data-anchor-id="install-mamba-package-manager">Install Mamba Package Manager</h3>
-<p>We’ll use the <a href="https://mamba.readthedocs.io/en/latest/">Mamba</a> package manager to create the Python environment. You can learn more about it in my <a href="https://christianjmills.com/posts/mamba-getting-started-tutorial-windows/">getting started</a> tutorial.</p>
+<p>We’ll use the <a href="https://mamba.readthedocs.io/en/latest/">Mamba</a> package manager to create the Python environment. You can learn more about it in my <a href="../../../posts/mamba-getting-started-tutorial-windows/">getting started</a> tutorial.</p>
 <p>The following bash commands will download the latest release, install it, and relaunch the current bash shell to apply the relevant changes:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="st">"https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-</span><span class="va">$(</span><span class="fu">uname</span><span class="va">)</span><span class="st">-</span><span class="va">$(</span><span class="fu">uname</span> <span class="at">-m</span><span class="va">)</span><span class="st">.sh"</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> Mambaforge-<span class="va">$(</span><span class="fu">uname</span><span class="va">)</span>-<span class="va">$(</span><span class="fu">uname</span> <span class="at">-m</span><span class="va">)</span>.sh <span class="at">-b</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="ex">~/mambaforge/bin/mamba</span> init</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="st">"https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-</span><span class="va">$(</span><span class="fu">uname</span><span class="va">)</span><span class="st">-</span><span class="va">$(</span><span class="fu">uname</span> <span class="at">-m</span><span class="va">)</span><span class="st">.sh"</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> Mambaforge-<span class="va">$(</span><span class="fu">uname</span><span class="va">)</span>-<span class="va">$(</span><span class="fu">uname</span> <span class="at">-m</span><span class="va">)</span>.sh <span class="at">-b</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">~/mambaforge/bin/mamba</span> init</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="create-a-python-environment" class="level3">
 <h3 class="anchored" data-anchor-id="create-a-python-environment">Create a Python Environment</h3>
 <p>Next, we’ll create a Python environment and activate it. The current version of the extension supports Python 3.11, so we’ll use that.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> create <span class="at">--name</span> pytorch-arc python=3.11 <span class="at">-y</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> activate pytorch-arc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> create <span class="at">--name</span> pytorch-arc python=3.11 <span class="at">-y</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> activate pytorch-arc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="install-pytorch-and-intels-pytorch-extension" class="level3">
 <h3 class="anchored" data-anchor-id="install-pytorch-and-intels-pytorch-extension">Install PyTorch and Intel’s PyTorch extension</h3>
 <p>The following command will install the required versions of PyTorch and torchvision, along with the extension itself:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install torch==2.0.1a0 torchvision==0.15.2a0 intel_extension_for_pytorch==2.0.110+xpu <span class="at">-f</span> https://developer.intel.com/ipex-whl-stable-xpu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi torchaudio==2.3.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu oneccl_bind_pt==2.3.100+xpu <span class="at">--extra-index-url</span> https://pytorch-extension.intel.com/release-whl/stable/xpu/us/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="install-additional-dependencies" class="level3">
 <h3 class="anchored" data-anchor-id="install-additional-dependencies">Install additional dependencies</h3>
-<p>Lastly, we’ll install the other training code dependencies. You can learn about these dependencies (<a href="https://christianjmills.com/posts/pytorch-train-image-classifier-timm-hf-tutorial/#installing-additional-libraries">here</a>).</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install additional dependencies</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install datasets jupyter matplotlib pandas pillow timm torcheval torchtnt tqdm</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Install utility packages</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install cjm_pandas_utils cjm_pil_utils cjm_pytorch_utils</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Lastly, we’ll install the other training code dependencies. You can learn about these dependencies (<a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/#installing-additional-libraries">here</a>).</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install jupyter matplotlib pandas pillow timm torcheval torchtnt tqdm</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install cjm_pandas_utils cjm_psl_utils cjm_pil_utils cjm_pytorch_utils cjm_torchvision_tfms</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-important callout-titled" title="oneDNN Memory Layout">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+oneDNN Memory Layout
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The previous version of this tutorial set an environment variable for the oneDNN memory layout to improve training speed. The performance improvement from this step is no longer significant and even prevents successful training for other model types.</p>
+<p>If you followed the previous version of this tutorial, run the following command to remove the environment variable from the <code>.bashrc</code> file and apply the changes to the current shell:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i</span> <span class="st">'/export IPEX_XPU_ONEDNN_LAYOUT=1/d'</span> ~/.bashrc <span class="kw">&amp;&amp;</span> <span class="bu">source</span> ~/.bashrc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
 </section>
 </section>
 <section id="modify-pytorch-code" class="level2">
@@ -593,21 +446,31 @@ OpenGL ES profile extensions:</code></pre>
 <li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/intel-arc-pytorch-timm-image-classifier-training.ipynb">intel-arc-pytorch-timm-image-classifier-training.ipynb</a></li>
 </ul>
 <p>You can also download the notebooks to the current directory by running the following commands:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/pytorch-timm-image-classifier-training.ipynb <span class="dt">\</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>wget https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/intel-arc-pytorch-timm-image-classifier-training.ipynb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/pytorch-timm-image-classifier-training.ipynb <span class="dt">\</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>wget https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/intel-arc-pytorch-timm-image-classifier-training.ipynb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Once downloaded, run the following command to launch the Jupyter Notebook Environment:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="set-environment-variables" class="level3">
+<h3 class="anchored" data-anchor-id="set-environment-variables">Set Environment Variables</h3>
+<p>First, we need to set the following environment variables:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'OCL_ICD_VENDORS'</span>] <span class="op">=</span> <span class="st">'/etc/OpenCL/vendors'</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'CCL_ROOT'</span>] <span class="op">=</span> os.environ.get(<span class="st">'CONDA_PREFIX'</span>, <span class="st">''</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 <section id="import-pytorch-extension" class="level3">
 <h3 class="anchored" data-anchor-id="import-pytorch-extension">Import PyTorch Extension</h3>
-<p>We import Intel’s PyTorch extension with the following code:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">import</span> torch</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">import</span> intel_extension_for_pytorch as ipex</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="ex">print</span><span class="er">(</span><span class="ex">f</span><span class="st">'PyTorch Version: {torch.__version__}'</span><span class="kw">)</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="ex">print</span><span class="er">(</span><span class="ex">f</span><span class="st">'Intel PyTorch Extension Version: {ipex.__version__}'</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Next, we import Intel’s PyTorch extension with the following code:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">import</span> torch</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">import</span> intel_extension_for_pytorch as ipex</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="ex">print</span><span class="er">(</span><span class="ex">f</span><span class="st">'PyTorch Version: {torch.__version__}'</span><span class="kw">)</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="ex">print</span><span class="er">(</span><span class="ex">f</span><span class="st">'Intel PyTorch Extension Version: {ipex.__version__}'</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Note that we need to import PyTorch before the extension. Also, if you get the following user warning, don’t worry. It’s normal.</p>
-<pre class="text"><code>UserWarning: Failed to load image Python extension: 
-  warn(f"Failed to load image Python extension: {e}")</code></pre>
+<pre class="text"><code>PyTorch Version: 2.3.1+cxx11.abi
+Intel PyTorch Extension Version: 2.3.110+xpu
+
+/home/innom-dt/mambaforge/envs/pytorch-arc/lib/python3.11/site-packages/intel_extension_for_pytorch/llm/__init__.py:9: UserWarning: failed to use huggingface generation fuctions due to: No module named 'transformers'.
+  warnings.warn(f"failed to use huggingface generation fuctions due to: {e}.")</code></pre>
 <hr>
 </section>
 <section id="update-pytorch-imports" class="level3">
@@ -617,27 +480,19 @@ OpenGL ES profile extensions:</code></pre>
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Original</a></li></ul>
 <div class="tab-content">
 <div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
-<div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.amp <span class="im">import</span> autocast</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.cuda.amp <span class="im">import</span> GradScaler</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision.transforms.functional <span class="im">as</span> TF</span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchtnt.utils <span class="im">import</span> get_module_summary</span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torcheval.metrics <span class="im">import</span> MulticlassAccuracy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.amp <span class="im">import</span> autocast</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.cuda.amp <span class="im">import</span> GradScaler</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.amp <span class="im">import</span> autocast</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.cuda.amp <span class="im">import</span> GradScaler</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision.transforms.functional <span class="im">as</span> TF</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torcheval.tools <span class="im">import</span> get_module_summary</span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torcheval.metrics <span class="im">import</span> MulticlassAccuracy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PyTorch dependencies</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.amp <span class="im">import</span> autocast</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.cuda.amp <span class="im">import</span> GradScaler</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -645,16 +500,16 @@ OpenGL ES profile extensions:</code></pre>
 <section id="verify-arc-gpu-availability" class="level3">
 <h3 class="anchored" data-anchor-id="verify-arc-gpu-availability">Verify Arc GPU Availability</h3>
 <p>We can double-check that the extension can use the Arc GPU by getting the properties of the available <code>xpu</code> devices.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_public_properties(obj):</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        prop: <span class="bu">getattr</span>(obj, prop)</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> prop <span class="kw">in</span> <span class="bu">dir</span>(obj)</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> prop.startswith(<span class="st">"__"</span>) <span class="kw">and</span> <span class="kw">not</span> <span class="bu">callable</span>(<span class="bu">getattr</span>(obj, prop))</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>xpu_device_count <span class="op">=</span> torch.xpu.device_count()</span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>dict_properties_list <span class="op">=</span> [get_public_properties(torch.xpu.get_device_properties(i)) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(xpu_device_count)]</span>
-<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(dict_properties_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_public_properties(obj):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>        prop: <span class="bu">getattr</span>(obj, prop)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> prop <span class="kw">in</span> <span class="bu">dir</span>(obj)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> prop.startswith(<span class="st">"__"</span>) <span class="kw">and</span> <span class="kw">not</span> <span class="bu">callable</span>(<span class="bu">getattr</span>(obj, prop))</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>xpu_device_count <span class="op">=</span> torch.xpu.device_count()</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>dict_properties_list <span class="op">=</span> [get_public_properties(torch.xpu.get_device_properties(i)) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(xpu_device_count)]</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(dict_properties_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto;">
 <table class="dataframe table table-sm table-striped small">
 <thead>
@@ -662,10 +517,31 @@ OpenGL ES profile extensions:</code></pre>
 <th>
 </th>
 <th>
-dev_type
+driver_version
+</th>
+<th>
+gpu_eu_count
+</th>
+<th>
+gpu_subslice_count
+</th>
+<th>
+has_atomic64
+</th>
+<th>
+has_fp16
+</th>
+<th>
+has_fp64
 </th>
 <th>
 max_compute_units
+</th>
+<th>
+max_num_sub_groups
+</th>
+<th>
+max_work_group_size
 </th>
 <th>
 name
@@ -674,10 +550,19 @@ name
 platform_name
 </th>
 <th>
-support_fp64
+sub_group_sizes
 </th>
 <th>
 total_memory
+</th>
+<th>
+type
+</th>
+<th>
+vendor
+</th>
+<th>
+version
 </th>
 </tr>
 </thead>
@@ -687,10 +572,31 @@ total_memory
 0
 </th>
 <td>
-gpu
+1.3.27642
 </td>
 <td>
 512
+</td>
+<td>
+32
+</td>
+<td>
+True
+</td>
+<td>
+True
+</td>
+<td>
+False
+</td>
+<td>
+512
+</td>
+<td>
+128
+</td>
+<td>
+1024
 </td>
 <td>
 Intel(R) Arc(TM) A770 Graphics
@@ -699,10 +605,19 @@ Intel(R) Arc(TM) A770 Graphics
 Intel(R) Level-Zero
 </td>
 <td>
-False
+[8, 16, 32]
 </td>
 <td>
 16225243136
+</td>
+<td>
+gpu
+</td>
+<td>
+Intel(R) Corporation
+</td>
+<td>
+1.3
 </td>
 </tr>
 <tr>
@@ -710,10 +625,31 @@ False
 1
 </th>
 <td>
-gpu
+1.3.27642
 </td>
 <td>
 32
+</td>
+<td>
+2
+</td>
+<td>
+True
+</td>
+<td>
+True
+</td>
+<td>
+False
+</td>
+<td>
+32
+</td>
+<td>
+64
+</td>
+<td>
+512
 </td>
 <td>
 Intel(R) UHD Graphics 750
@@ -722,16 +658,25 @@ Intel(R) UHD Graphics 750
 Intel(R) Level-Zero
 </td>
 <td>
-False
+[8, 16, 32]
 </td>
 <td>
-26589642752
+30791524352
+</td>
+<td>
+gpu
+</td>
+<td>
+Intel(R) Corporation
+</td>
+<td>
+1.3
 </td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>In this case, the A770 is the default <code>xpu</code> device, and the integrated graphics on the CPU is available as the second device. The <code>total_memory</code> value for the integrated graphics is higher because it uses system memory.</p>
+<p>In this case, the A770 is the default device, and the integrated graphics on the CPU is available as the second device. The <code>total_memory</code> value for the integrated graphics is higher because it uses system memory.</p>
 </section>
 <section id="update-the-device-name" class="level3">
 <h3 class="anchored" data-anchor-id="update-the-device-name">Update the Device Name</h3>
@@ -740,93 +685,103 @@ False
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Original</a></li></ul>
 <div class="tab-content">
 <div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
-<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'xpu'</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>dtype <span class="op">=</span> torch.float32</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>device, dtype</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'xpu'</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>dtype <span class="op">=</span> torch.float32</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>device, dtype</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
-<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> get_torch_device()</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>dtype <span class="op">=</span> torch.float32</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>device, dtype</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> get_torch_device()</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>dtype <span class="op">=</span> torch.float32</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>device, dtype</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </section>
 <section id="optimize-the-model-and-optimizer-objects" class="level3">
 <h3 class="anchored" data-anchor-id="optimize-the-model-and-optimizer-objects">Optimize the <code>model</code> and <code>optimizer</code> Objects</h3>
-<p>Before we run the <code>train_loop</code> function, we’ll use Intel’s PyTorch extension to apply optimizations to the model and optimizer objects. We’ll also cast the model to the <code>bfloat16</code> data type, so we can train using mixed precision. Intel’s PyTorch extension only supports the <code>bloat16</code> data type for mixed-precision training currently.</p>
+<p>Before we run the <code>train_loop</code> function, we’ll use Intel’s PyTorch extension to apply optimizations to the model and optimizer objects. We’ll also cast the model to the <code>bfloat16</code> data type, so we can train using mixed precision.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Original</a></li></ul>
 <div class="tab-content">
 <div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
-<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate for the model</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-3</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of training epochs</span></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">3</span></span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a><span class="co"># AdamW optimizer; includes weight decay for regularization</span></span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op">=</span>lr, eps<span class="op">=</span><span class="fl">1e-5</span>)</span>
-<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimize the model and optimizer objects</span></span>
-<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>model, optimizer <span class="op">=</span> ipex.optimize(model, optimizer<span class="op">=</span>optimizer, dtype<span class="op">=</span>torch.bfloat16)</span>
-<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate scheduler; adjusts the learning rate during training</span></span>
-<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>lr_scheduler <span class="op">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
-<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>                                                   max_lr<span class="op">=</span>lr, </span>
-<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>                                                   total_steps<span class="op">=</span>epochs<span class="op">*</span><span class="bu">len</span>(train_dataloader))</span>
-<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Performance metric: Multiclass Accuracy</span></span>
-<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>metric <span class="op">=</span> MulticlassAccuracy()</span>
-<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for CUDA-capable GPU availability</span></span>
-<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>use_grad_scaler <span class="op">=</span> torch.cuda.is_available()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate for the model</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-3</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of training epochs</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op">=</span>lr, eps<span class="op">=</span><span class="fl">1e-5</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimize the model and optimizer objects</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>model, optimizer <span class="op">=</span> ipex.optimize(model, optimizer<span class="op">=</span>optimizer, dtype<span class="op">=</span>torch.bfloat16)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>lr_scheduler <span class="op">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>                                                   max_lr<span class="op">=</span>lr, </span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>                                                   total_steps<span class="op">=</span>epochs<span class="op">*</span><span class="bu">len</span>(train_dataloader))</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>metric <span class="op">=</span> MulticlassAccuracy()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
-<div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate for the model</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-3</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of training epochs</span></span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">3</span></span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="co"># AdamW optimizer; includes weight decay for regularization</span></span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op">=</span>lr, eps<span class="op">=</span><span class="fl">1e-5</span>)</span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate scheduler; adjusts the learning rate during training</span></span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>lr_scheduler <span class="op">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>                                                   max_lr<span class="op">=</span>lr, </span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>                                                   total_steps<span class="op">=</span>epochs<span class="op">*</span><span class="bu">len</span>(train_dataloader))</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Performance metric: Multiclass Accuracy</span></span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>metric <span class="op">=</span> MulticlassAccuracy()</span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for CUDA-capable GPU availability</span></span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>use_grad_scaler <span class="op">=</span> torch.cuda.is_available()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate for the model</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">1e-3</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of training epochs</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op">=</span>lr, eps<span class="op">=</span><span class="fl">1e-5</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>lr_scheduler <span class="op">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>                                                   max_lr<span class="op">=</span>lr, </span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>                                                   total_steps<span class="op">=</span>epochs<span class="op">*</span><span class="bu">len</span>(train_dataloader))</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>metric <span class="op">=</span> MulticlassAccuracy()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </section>
 <section id="train-the-model" class="level3">
 <h3 class="anchored" data-anchor-id="train-the-model">Train the Model</h3>
-<p>That’s it for the required changes to the training code. We can now run the <code>train_loop</code> function. With the A770 and the dataset on an SSD, training takes between twelve and twelve and a half minutes to complete.</p>
+<p>That’s it for the required changes to the training code. We can now run the <code>train_loop</code> function.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Current</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Previous</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<pre class="text"><code>Epochs: 100% |█████████| 3/3 [18:31&lt;00:00, 369.74s/it]
+Train: 100% |█████████| 4324/4324 [05:56&lt;00:00, 12.48it/s, accuracy=0.843, avg_loss=0.542, loss=0.592, lr=0.000994]
+Eval: 100% |█████████| 481/481 [00:19&lt;00:00, 43.79it/s, accuracy=0.957, avg_loss=0.147, loss=0.133, lr=]
+Train: 100% |█████████| 4324/4324 [05:53&lt;00:00, 12.37it/s, accuracy=0.905, avg_loss=0.309, loss=0.321, lr=0.000462]
+Eval: 100% |█████████| 481/481 [00:13&lt;00:00, 44.92it/s, accuracy=0.97, avg_loss=0.092, loss=0.0842, lr=]
+Train: 100% |█████████| 4324/4324 [05:54&lt;00:00, 12.62it/s, accuracy=0.953, avg_loss=0.151, loss=0.0595, lr=4.03e-9]
+Eval: 100% |█████████| 481/481 [00:13&lt;00:00, 43.28it/s, accuracy=0.988, avg_loss=0.0389, loss=0.0422, lr=]</code></pre>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
 <p><img src="./images/arc-a770-pytorch-training-session-ubuntu.png" class="img-fluid"></p>
+</div>
+</div>
+</div>
+<p>In my testing, the training speed is significantly slower with this extension than the one used for the previous version of this tutorial, with the total run taking 18 minutes 31 seconds versus 12 minutes 46 seconds.</p>
 </section>
 <section id="update-the-inference-code" class="level3">
 <h3 class="anchored" data-anchor-id="update-the-inference-code">Update the Inference Code</h3>
 <p>Since we cast the model to <code>bloat16</code>, we must ensure input data use the same type. We can update the inference code using the auto-cast context manager as shown below:</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Original</a></li></ul>
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" role="tab" aria-controls="tabset-5-1" aria-selected="true">Modified</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" role="tab" aria-controls="tabset-5-2" aria-selected="false">Original</a></li></ul>
 <div class="tab-content">
-<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
-<div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a prediction with the model</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.xpu.amp.autocast(enabled<span class="op">=</span><span class="va">True</span>, dtype<span class="op">=</span>torch.bfloat16, cache_enabled<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>        pred <span class="op">=</span> model(img_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a prediction with the model</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad(), autocast(torch.device(device).<span class="bu">type</span>):</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> model(img_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
-<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a prediction with the model</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> model(img_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a prediction with the model</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> model(img_tensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -834,7 +789,7 @@ False
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>In this tutorial, we set up Intel’s PyTorch extension on Ubuntu and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/latest/tutorials/installation.html">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
+<p>In this tutorial, we set up Intel’s PyTorch extension on Ubuntu and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=linux%2fwsl2&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Questions:">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">

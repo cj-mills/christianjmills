@@ -713,7 +713,7 @@ font-style: inherit;">=</span> MulticlassAccuracy()</span></code></pre></div>
 <ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" aria-controls="tabset-4-1" aria-selected="true">Current</a></li><li class="nav-item"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" aria-controls="tabset-4-2" aria-selected="false">Previous</a></li></ul>
 <div class="tab-content">
 <div id="tabset-4-1" class="tab-pane active" aria-labelledby="tabset-4-1-tab">
-<pre class="text"><code>Epochs: 100% 3/3 [24:21&lt;00:00, 478.44s/it]
+<pre class="text"><code>Epochs: 100% |█████████| 3/3 [24:21&lt;00:00, 478.44s/it]
 Train: 100% |█████████| 4324/4324 [07:56&lt;00:00, 10.52it/s, accuracy=0.844, avg_loss=0.535, loss=0.572, lr=0.000994]
 Eval: 100% |█████████| 481/481 [00:49&lt;00:00, 28.10it/s, accuracy=0.95, avg_loss=0.162, loss=0.0692, lr=]
 Train: 100% |█████████| 4324/4324 [07:41&lt;00:00, 10.73it/s, accuracy=0.914, avg_loss=0.281, loss=0.412, lr=0.000462]
@@ -815,6 +815,962 @@ About Me:
   <category>arc-gpu</category>
   <category>getting-started</category>
   <guid>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/</guid>
+  <pubDate>Sat, 21 Sep 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
+<item>
+  <title>Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-ubuntu/</link>
+  <description><![CDATA[ 
+
+
+
+
+<ul>
+<li>Introduction</li>
+<li>Enable Resizable BAR in BIOS</li>
+<li>Install Ubuntu</li>
+<li>Verify Resizable BAR</li>
+<li>Install Drivers<br>
+</li>
+<li>Set Up a Python Environment<br>
+</li>
+<li>Modify PyTorch Code<br>
+</li>
+<li>Conclusion</li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://ubuntu.com/download/desktop">Ubuntu</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it includes support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
+<p>The XMX engines are dedicated hardware for performing matrix operations like those in deep-learning workloads. Intel’s PyTorch extension allows us to leverage this hardware with minimal changes to existing PyTorch code.</p>
+<p>To illustrate this, we’ll adapt the training code from my <a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all the steps required to set up Ubuntu for training PyTorch models using Arc GPUs.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The current setup process is for version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/2.3.110+xpu/"><code>2.3.110+xpu</code></a> of Intel’s PyTorch extension.</p>
+</div>
+</div>
+</section>
+<section id="enable-resizable-bar-in-bios" class="level2">
+<h2 class="anchored" data-anchor-id="enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</h2>
+<p>If you have an Arc GPU, one of the first things you should do is enable Resizable BAR. Resizable BAR allows a computer’s processor to access the graphics card’s entire memory instead of in small chunks. The Arc GPUs currently require this feature to perform as intended. You can enable the feature in your motherboard’s BIOS.</p>
+<p>Here are links on how to do this for some of the popular motherboard manufacturers:</p>
+<ul>
+<li><a href="https://www.asrock.com/support/faq.asp?id=498">ASRock</a></li>
+<li><a href="https://www.asus.com/support/FAQ/1046107/">Asus</a></li>
+<li><a href="https://www.evga.com/support/faq/FAQdetails.aspx?faqid=59772">EVGA</a></li>
+<li><a href="https://www.gigabyte.com/WebPage/785/NVIDIA_resizable_bar.html">Gigabyte</a></li>
+<li><a href="https://www.msi.com/blog/unlock-system-performance-to-extreme-resizable-bar">MSI</a></li>
+</ul>
+</section>
+<section id="install-ubuntu" class="level2">
+<h2 class="anchored" data-anchor-id="install-ubuntu">Install Ubuntu</h2>
+<p>Intel’s <a href="https://dgpu-docs.intel.com/driver/client/overview.html#client-install-options">documentation</a> recommends Ubuntu 22.04 LTS or newer. I verified the following steps in both Ubuntu 22.04 and 24.04. If you already have Ubuntu 22.04 LTS or newer installed, ensure it’s fully updated.</p>
+<ul>
+<li><a href="https://ubuntu.com/download/desktop">Download Ubuntu Desktop Download Page</a></li>
+</ul>
+<p>The Ubuntu website provides <a href="https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview">a step-by-step guide</a> to installing Ubuntu on your PC, and you can install it alongside an existing operating system.</p>
+<ul>
+<li><strong>Tutorial:</strong> <a href="https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview">Install Ubuntu with a Bootable USB Stick</a></li>
+</ul>
+<p>That tutorial calls for at least 25GB of free storage space, but I recommend at least 80 GB for our case.</p>
+</section>
+<section id="verify-resizable-bar" class="level2">
+<h2 class="anchored" data-anchor-id="verify-resizable-bar">Verify Resizable BAR</h2>
+<p>Once you log into Ubuntu, you can verify Resizable BAR is active by opening a terminal (<code>Ctrl+Alt+T</code>) and running the following command:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">lspci</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-v</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">grep</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-A8</span> VGA</span></code></pre></div>
+<p>Here is the output for the Arc A770 16GB card:</p>
+<pre class="text"><code>$ lspci -v |grep -A8 VGA
+00:02.0 VGA compatible controller: Intel Corporation RocketLake-S GT1 [UHD Graphics 750] (rev 04) (prog-if 00 [VGA controller])
+    Subsystem: ASRock Incorporation RocketLake-S GT1 [UHD Graphics 750]
+    Flags: bus master, fast devsel, latency 0, IRQ 172
+    Memory at 6401000000 (64-bit, non-prefetchable) [size=16M]
+    Memory at 4000000000 (64-bit, prefetchable) [size=256M]
+    I/O ports at 3000 [size=64]
+    Expansion ROM at 000c0000 [virtual] [disabled] [size=128K]
+    Capabilities: &lt;access denied&gt;
+    Kernel driver in use: i915
+--
+03:00.0 VGA compatible controller: Intel Corporation DG2 [Arc A770] (rev 08) (prog-if 00 [VGA controller])
+    Subsystem: Intel Corporation DG2 [Arc A770]
+    Flags: bus master, fast devsel, latency 0, IRQ 173
+    Memory at a1000000 (64-bit, non-prefetchable) [size=16M]
+    Memory at 6000000000 (64-bit, prefetchable) [size=16G]
+    Expansion ROM at a2000000 [disabled] [size=2M]
+    Capabilities: &lt;access denied&gt;
+    Kernel driver in use: i915
+    Kernel modules: i915</code></pre>
+<hr>
+<p>Note that the <code>[size=16G]</code> matches the total memory for the GPU. If you have the A750 8GB variant, it should read <code>[size=8G]</code> for your GPU.</p>
+</section>
+<section id="install-drivers" class="level2">
+<h2 class="anchored" data-anchor-id="install-drivers">Install Drivers</h2>
+<p>Next, we will install the compute, media, and display runtimes.</p>
+<section id="add-intel-graphics-drivers-repository" class="level3">
+<h3 class="anchored" data-anchor-id="add-intel-graphics-drivers-repository">Add Intel Graphics drivers Repository</h3>
+<p>Run the following bash commands to add the Intel Graphics drivers repository:</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wget</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-qO</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-</span> https://repositories.intel.com/gpu/intel-graphics.key <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span></span>
+<span id="cb3-2">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> gpg <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--yes</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--dearmor</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--output</span> /usr/share/keyrings/intel-graphics.gpg</span></code></pre></div>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wget</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-qO</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-</span> https://repositories.intel.com/gpu/intel-graphics.key <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb4-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> gpg <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--yes</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--dearmor</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--output</span> /usr/share/keyrings/intel-graphics.gpg</span>
+<span id="cb4-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">echo</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy/lts/2350 unified"</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb4-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> tee /etc/apt/sources.list.d/intel-gpu-jammy.list</span>
+<span id="cb4-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt update</span></code></pre></div>
+<p>The above bash commands perform the following steps:</p>
+<ol type="1">
+<li>Download the Intel graphics repository’s public key.</li>
+<li>Convert the downloaded key to binary and save it.</li>
+<li>Add the Intel graphics repository to the APT’s list of package sources.</li>
+<li>Update the package list from all configured repositories, including the newly added Intel repository.</li>
+</ol>
+</section>
+<section id="install-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-packages">Install packages</h3>
+<p>Now we can install the required packages.</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt install <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb5-2">    intel-opencl-icd intel-level-zero-gpu level-zero <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb5-3">    intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb5-4">    libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb5-5">    libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb5-6">    mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo hwinfo clinfo</span></code></pre></div>
+</section>
+</section>
+<section id="set-up-a-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="set-up-a-python-environment">Set Up a Python Environment</h2>
+<p>Next, we can create a Python environment to run the training code. We’ll install a patched version of PyTorch needed for Intel’s extension, the extension itself, and the other dependencies for the training code.</p>
+<section id="install-mamba-package-manager" class="level3">
+<h3 class="anchored" data-anchor-id="install-mamba-package-manager">Install Mamba Package Manager</h3>
+<p>We’ll use the <a href="https://mamba.readthedocs.io/en/latest/">Mamba</a> package manager to create the Python environment. You can learn more about it in my <a href="../../../posts/mamba-getting-started-tutorial-windows/">getting started</a> tutorial.</p>
+<p>The following bash commands will download the latest release, install it, and relaunch the current bash shell to apply the relevant changes:</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wget</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">-</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">.sh"</span></span>
+<span id="cb6-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bash</span> Mambaforge-<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span>-<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uname</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span>.sh <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-b</span></span>
+<span id="cb6-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">~/mambaforge/bin/mamba</span> init</span>
+<span id="cb6-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bash</span></span></code></pre></div>
+</section>
+<section id="create-a-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-python-environment">Create a Python Environment</h3>
+<p>Next, we’ll create a Python environment and activate it. The current version of the extension supports Python 3.11, so we’ll use that.</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> create <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--name</span> pytorch-arc python=3.11 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb7-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> activate pytorch-arc</span></code></pre></div>
+</section>
+<section id="install-pytorch-and-intels-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="install-pytorch-and-intels-pytorch-extension">Install PyTorch and Intel’s PyTorch extension</h3>
+<p>The following command will install the required versions of PyTorch and torchvision, along with the extension itself:</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi torchaudio==2.3.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu oneccl_bind_pt==2.3.100+xpu <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--extra-index-url</span> https://pytorch-extension.intel.com/release-whl/stable/xpu/us/</span></code></pre></div>
+</section>
+<section id="install-additional-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="install-additional-dependencies">Install additional dependencies</h3>
+<p>Lastly, we’ll install the other training code dependencies. You can learn about these dependencies (<a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/#installing-additional-libraries">here</a>).</p>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install jupyter matplotlib pandas pillow timm torcheval torchtnt tqdm</span>
+<span id="cb9-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install cjm_pandas_utils cjm_psl_utils cjm_pil_utils cjm_pytorch_utils cjm_torchvision_tfms</span></code></pre></div>
+<div class="callout callout-style-default callout-important callout-titled" title="oneDNN Memory Layout">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+oneDNN Memory Layout
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The previous version of this tutorial set an environment variable for the oneDNN memory layout to improve training speed. The performance improvement from this step is no longer significant and even prevents successful training for other model types.</p>
+<p>If you followed the previous version of this tutorial, run the following command to remove the environment variable from the <code>.bashrc</code> file and apply the changes to the current shell:</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sed</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-i</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'/export IPEX_XPU_ONEDNN_LAYOUT=1/d'</span> ~/.bashrc <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;&amp;</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">source</span> ~/.bashrc</span></code></pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="modify-pytorch-code" class="level2">
+<h2 class="anchored" data-anchor-id="modify-pytorch-code">Modify PyTorch Code</h2>
+<p>It’s finally time to train a model. The Jupyter Notebooks with the original and modified training code are available on GitHub at the links below.</p>
+<ul>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/pytorch-timm-image-classifier-training.ipynb">pytorch-timm-image-classifier-training.ipynb</a></li>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/intel-arc-pytorch-timm-image-classifier-training.ipynb">intel-arc-pytorch-timm-image-classifier-training.ipynb</a></li>
+</ul>
+<p>You can also download the notebooks to the current directory by running the following commands:</p>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wget</span> https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/pytorch-timm-image-classifier-training.ipynb <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb11-2">wget https://raw.githubusercontent.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/intel-arc-pytorch-timm-image-classifier-training.ipynb</span></code></pre></div>
+<p>Once downloaded, run the following command to launch the Jupyter Notebook Environment:</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">jupyter</span> notebook</span></code></pre></div>
+<section id="set-environment-variables" class="level3">
+<h3 class="anchored" data-anchor-id="set-environment-variables">Set Environment Variables</h3>
+<p>First, we need to set the following environment variables:</p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb13-2">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'OCL_ICD_VENDORS'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'/etc/OpenCL/vendors'</span></span>
+<span id="cb13-3">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CCL_ROOT'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> os.environ.get(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CONDA_PREFIX'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">''</span>)</span></code></pre></div>
+</section>
+<section id="import-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="import-pytorch-extension">Import PyTorch Extension</h3>
+<p>Next, we import Intel’s PyTorch extension with the following code:</p>
+<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb14-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">import</span> intel_extension_for_pytorch as ipex</span>
+<span id="cb14-3"></span>
+<span id="cb14-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">print</span><span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">f</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'PyTorch Version: {torch.__version__}'</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb14-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">print</span><span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">f</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Intel PyTorch Extension Version: {ipex.__version__}'</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span></code></pre></div>
+<p>Note that we need to import PyTorch before the extension. Also, if you get the following user warning, don’t worry. It’s normal.</p>
+<pre class="text"><code>PyTorch Version: 2.3.1+cxx11.abi
+Intel PyTorch Extension Version: 2.3.110+xpu
+
+/home/innom-dt/mambaforge/envs/pytorch-arc/lib/python3.11/site-packages/intel_extension_for_pytorch/llm/__init__.py:9: UserWarning: failed to use huggingface generation fuctions due to: No module named 'transformers'.
+  warnings.warn(f"failed to use huggingface generation fuctions due to: {e}.")</code></pre>
+<hr>
+</section>
+<section id="update-pytorch-imports" class="level3">
+<h3 class="anchored" data-anchor-id="update-pytorch-imports">Update PyTorch Imports</h3>
+<p>We don’t want to re-import <code>torch</code> after the extension, so we’ll remove that line from the <code>Import PyTorch dependencies</code> section.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PyTorch dependencies</span></span>
+<span id="cb16-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch.nn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> nn</span>
+<span id="cb16-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> autocast</span>
+<span id="cb16-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.cuda.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> GradScaler</span>
+<span id="cb16-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.utils.data <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Dataset, DataLoader</span></code></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PyTorch dependencies</span></span>
+<span id="cb17-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb17-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch.nn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> nn</span>
+<span id="cb17-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> autocast</span>
+<span id="cb17-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.cuda.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> GradScaler</span>
+<span id="cb17-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.utils.data <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Dataset, DataLoader</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="verify-arc-gpu-availability" class="level3">
+<h3 class="anchored" data-anchor-id="verify-arc-gpu-availability">Verify Arc GPU Availability</h3>
+<p>We can double-check that the extension can use the Arc GPU by getting the properties of the available <code>xpu</code> devices.</p>
+<div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> get_public_properties(obj):</span>
+<span id="cb18-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> {</span>
+<span id="cb18-3">        prop: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">getattr</span>(obj, prop)</span>
+<span id="cb18-4">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> prop <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">dir</span>(obj)</span>
+<span id="cb18-5">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> prop.startswith(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"__"</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">callable</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">getattr</span>(obj, prop))</span>
+<span id="cb18-6">    }</span>
+<span id="cb18-7"></span>
+<span id="cb18-8">xpu_device_count <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.xpu.device_count()</span>
+<span id="cb18-9">dict_properties_list <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [get_public_properties(torch.xpu.get_device_properties(i)) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(xpu_device_count)]</span>
+<span id="cb18-10">pd.DataFrame(dict_properties_list)</span></code></pre></div>
+<div style="overflow-x:auto;">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+driver_version
+</th>
+<th>
+gpu_eu_count
+</th>
+<th>
+gpu_subslice_count
+</th>
+<th>
+has_atomic64
+</th>
+<th>
+has_fp16
+</th>
+<th>
+has_fp64
+</th>
+<th>
+max_compute_units
+</th>
+<th>
+max_num_sub_groups
+</th>
+<th>
+max_work_group_size
+</th>
+<th>
+name
+</th>
+<th>
+platform_name
+</th>
+<th>
+sub_group_sizes
+</th>
+<th>
+total_memory
+</th>
+<th>
+type
+</th>
+<th>
+vendor
+</th>
+<th>
+version
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+1.3.27642
+</td>
+<td>
+512
+</td>
+<td>
+32
+</td>
+<td>
+True
+</td>
+<td>
+True
+</td>
+<td>
+False
+</td>
+<td>
+512
+</td>
+<td>
+128
+</td>
+<td>
+1024
+</td>
+<td>
+Intel(R) Arc(TM) A770 Graphics
+</td>
+<td>
+Intel(R) Level-Zero
+</td>
+<td>
+[8, 16, 32]
+</td>
+<td>
+16225243136
+</td>
+<td>
+gpu
+</td>
+<td>
+Intel(R) Corporation
+</td>
+<td>
+1.3
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+1.3.27642
+</td>
+<td>
+32
+</td>
+<td>
+2
+</td>
+<td>
+True
+</td>
+<td>
+True
+</td>
+<td>
+False
+</td>
+<td>
+32
+</td>
+<td>
+64
+</td>
+<td>
+512
+</td>
+<td>
+Intel(R) UHD Graphics 750
+</td>
+<td>
+Intel(R) Level-Zero
+</td>
+<td>
+[8, 16, 32]
+</td>
+<td>
+30791524352
+</td>
+<td>
+gpu
+</td>
+<td>
+Intel(R) Corporation
+</td>
+<td>
+1.3
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>In this case, the A770 is the default device, and the integrated graphics on the CPU is available as the second device. The <code>total_memory</code> value for the integrated graphics is higher because it uses system memory.</p>
+</section>
+<section id="update-the-device-name" class="level3">
+<h3 class="anchored" data-anchor-id="update-the-device-name">Update the Device Name</h3>
+<p>Next, we’ll manually set the device name to <code>xpu</code>.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" aria-controls="tabset-2-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" aria-controls="tabset-2-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1">device <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'xpu'</span></span>
+<span id="cb19-2">dtype <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.float32</span>
+<span id="cb19-3">device, dtype</span></code></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" aria-labelledby="tabset-2-2-tab">
+<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1">device <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_torch_device()</span>
+<span id="cb20-2">dtype <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.float32</span>
+<span id="cb20-3">device, dtype</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="optimize-the-model-and-optimizer-objects" class="level3">
+<h3 class="anchored" data-anchor-id="optimize-the-model-and-optimizer-objects">Optimize the <code>model</code> and <code>optimizer</code> Objects</h3>
+<p>Before we run the <code>train_loop</code> function, we’ll use Intel’s PyTorch extension to apply optimizations to the model and optimizer objects. We’ll also cast the model to the <code>bfloat16</code> data type, so we can train using mixed precision.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" aria-controls="tabset-3-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" aria-controls="tabset-3-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" aria-labelledby="tabset-3-1-tab">
+<div class="sourceCode" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate for the model</span></span>
+<span id="cb21-2">lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-3</span></span>
+<span id="cb21-3"></span>
+<span id="cb21-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Number of training epochs</span></span>
+<span id="cb21-5">epochs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb21-6"></span>
+<span id="cb21-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb21-8">optimizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, eps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-5</span>)</span>
+<span id="cb21-9"></span>
+<span id="cb21-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Optimize the model and optimizer objects</span></span>
+<span id="cb21-11">model, optimizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> ipex.optimize(model, optimizer<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>optimizer, dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>torch.bfloat16)</span>
+<span id="cb21-12"></span>
+<span id="cb21-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb21-14">lr_scheduler <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb21-15">                                                   max_lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, </span>
+<span id="cb21-16">                                                   total_steps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>epochs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(train_dataloader))</span>
+<span id="cb21-17"></span>
+<span id="cb21-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb21-19">metric <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> MulticlassAccuracy()</span></code></pre></div>
+</div>
+<div id="tabset-3-2" class="tab-pane" aria-labelledby="tabset-3-2-tab">
+<div class="sourceCode" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate for the model</span></span>
+<span id="cb22-2">lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-3</span></span>
+<span id="cb22-3"></span>
+<span id="cb22-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Number of training epochs</span></span>
+<span id="cb22-5">epochs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb22-6"></span>
+<span id="cb22-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb22-8">optimizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, eps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-5</span>)</span>
+<span id="cb22-9"></span>
+<span id="cb22-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb22-11">lr_scheduler <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb22-12">                                                   max_lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, </span>
+<span id="cb22-13">                                                   total_steps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>epochs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(train_dataloader))</span>
+<span id="cb22-14"></span>
+<span id="cb22-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb22-16">metric <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> MulticlassAccuracy()</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="train-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="train-the-model">Train the Model</h3>
+<p>That’s it for the required changes to the training code. We can now run the <code>train_loop</code> function.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" aria-controls="tabset-4-1" aria-selected="true">Current</a></li><li class="nav-item"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" aria-controls="tabset-4-2" aria-selected="false">Previous</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" aria-labelledby="tabset-4-1-tab">
+<pre class="text"><code>Epochs: 100% |█████████| 3/3 [18:31&lt;00:00, 369.74s/it]
+Train: 100% |█████████| 4324/4324 [05:56&lt;00:00, 12.48it/s, accuracy=0.843, avg_loss=0.542, loss=0.592, lr=0.000994]
+Eval: 100% |█████████| 481/481 [00:19&lt;00:00, 43.79it/s, accuracy=0.957, avg_loss=0.147, loss=0.133, lr=]
+Train: 100% |█████████| 4324/4324 [05:53&lt;00:00, 12.37it/s, accuracy=0.905, avg_loss=0.309, loss=0.321, lr=0.000462]
+Eval: 100% |█████████| 481/481 [00:13&lt;00:00, 44.92it/s, accuracy=0.97, avg_loss=0.092, loss=0.0842, lr=]
+Train: 100% |█████████| 4324/4324 [05:54&lt;00:00, 12.62it/s, accuracy=0.953, avg_loss=0.151, loss=0.0595, lr=4.03e-9]
+Eval: 100% |█████████| 481/481 [00:13&lt;00:00, 43.28it/s, accuracy=0.988, avg_loss=0.0389, loss=0.0422, lr=]</code></pre>
+</div>
+<div id="tabset-4-2" class="tab-pane" aria-labelledby="tabset-4-2-tab">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-ubuntu/images/arc-a770-pytorch-training-session-ubuntu.png" class="img-fluid"></p>
+</div>
+</div>
+</div>
+<p>In my testing, the training speed is significantly slower with this extension than the one used for the previous version of this tutorial, with the total run taking 18 minutes 31 seconds versus 12 minutes 46 seconds.</p>
+</section>
+<section id="update-the-inference-code" class="level3">
+<h3 class="anchored" data-anchor-id="update-the-inference-code">Update the Inference Code</h3>
+<p>Since we cast the model to <code>bloat16</code>, we must ensure input data use the same type. We can update the inference code using the auto-cast context manager as shown below:</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" aria-controls="tabset-5-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" aria-controls="tabset-5-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-5-1" class="tab-pane active" aria-labelledby="tabset-5-1-tab">
+<div class="sourceCode" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Make a prediction with the model</span></span>
+<span id="cb24-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.no_grad(), autocast(torch.device(device).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span>):</span>
+<span id="cb24-3">    pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model(img_tensor)</span></code></pre></div>
+</div>
+<div id="tabset-5-2" class="tab-pane" aria-labelledby="tabset-5-2-tab">
+<div class="sourceCode" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Make a prediction with the model</span></span>
+<span id="cb25-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.no_grad():</span>
+<span id="cb25-3">    pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model(img_tensor)</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>In this tutorial, we set up Intel’s PyTorch extension on Ubuntu and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=linux%2fwsl2&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Questions:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Questions:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Feel free to post questions or problems related to this tutorial in the comments below. I try to make time to address them on Thursdays and Fridays.</li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>pytorch</category>
+  <category>ubuntu</category>
+  <category>image-classification</category>
+  <category>arc-gpu</category>
+  <category>getting-started</category>
+  <guid>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-ubuntu/</guid>
   <pubDate>Sat, 21 Sep 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
@@ -42389,507 +43345,6 @@ About Me:
   <category>llms</category>
   <guid>https://christianjmills.com/posts/mastering-llms-course-notes/conference-talk-019/</guid>
   <pubDate>Fri, 30 Aug 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Office Hours 8: Predibase</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-008/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-This post is part of the following series:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="../../../series/notes/mastering-llms-course-notes.html"><strong>Mastering LLMs Course Notes</strong></a>: My notes from the course <strong>Mastering LLMs: A Conference For Developers &amp; Data Scientists</strong> by <strong>Hamel Husain</strong> and <strong>Dan Becker</strong>.</li>
-</ul>
-</div>
-</div>
-<section id="lorax-benefits-over-vllm-and-other-libraries" class="level3">
-<h3 class="anchored" data-anchor-id="lorax-benefits-over-vllm-and-other-libraries">Lorax Benefits over vLLM and Other Libraries</h3>
-<ul>
-<li><strong><a href="https://github.com/predibase/lorax">lorax</a>:</strong> Multi-LoRA inference server that scales to 1000s of fine-tuned LLMs</li>
-</ul>
-<section id="performance-optimization" class="level4">
-<h4 class="anchored" data-anchor-id="performance-optimization">Performance Optimization</h4>
-<ul>
-<li><p>Lorax uses <a href="https://github.com/punica-ai/punica/tree/master/csrc/sgmv"><strong>SGMV (segmented gathered matrix vector multiplication)</strong> kernel</a> for pre-fill (compute-bound) operations, while vLLM uses <a href="https://github.com/punica-ai/punica/tree/master/csrc/bgmv"><strong>BGMV</strong> kernel</a>.</p>
-<ul>
-<li><p>SGMV is optimized for pre-fill computation profiles.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-008/images/sgmv.png" class="img-fluid figure-img"></p>
-<figcaption>Punica: Multi-Tenant LoRA Serving - Figure 3</figcaption>
-</figure>
-</div></li>
-<li><p><strong>Paper:</strong> <a href="https://arxiv.org/abs/2310.18547">Punica: Multi-Tenant LoRA Serving</a></p></li>
-</ul></li>
-<li><p>Lorax uses both kernels (SGMV for pre-fill, BGMV for decode) depending on the generation process stage, while vLLM uses only BGMV.</p></li>
-</ul>
-</section>
-<section id="dynamic-adapter-loading" class="level4">
-<h4 class="anchored" data-anchor-id="dynamic-adapter-loading">Dynamic Adapter Loading</h4>
-<ul>
-<li>Lorax is currently the only library offering <strong>dynamic adapter loading</strong>, eliminating the need to pre-specify adapters and simplifying memory management.</li>
-</ul>
-</section>
-<section id="scheduler-component" class="level4">
-<h4 class="anchored" data-anchor-id="scheduler-component">Scheduler Component</h4>
-<ul>
-<li>Lorax’s scheduler intelligently manages:
-<ul>
-<li>Adapter residency on GPU and host memory.</li>
-<li>Batching of requests.</li>
-<li>Trade-off between latency and throughput for optimal processing.</li>
-</ul></li>
-</ul>
-</section>
-<section id="support-for-various-adapters" class="level4">
-<h4 class="anchored" data-anchor-id="support-for-various-adapters">Support for Various Adapters</h4>
-<ul>
-<li>Supports <strong>LoRa switching</strong> (most popular) and other adapter types.
-<ul>
-<li><strong>Speculative decoding</strong>, allowing combination with LoRa, is unique to Lorax.</li>
-<li>Exploration of other adapter types like <a href="https://arxiv.org/abs/2404.03592">ReFT</a> (representation fine-tuning) and <a href="https://arxiv.org/abs/2402.09353">DoRA</a>.</li>
-</ul></li>
-</ul>
-</section>
-<section id="additional-features" class="level4">
-<h4 class="anchored" data-anchor-id="additional-features">Additional Features</h4>
-<ul>
-<li>Adding support for:
-<ul>
-<li>Embedding models.</li>
-<li>Training adapters specifically for embedding models.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="data-requirements-and-sourcing-for-quality-fine-tuning" class="level3">
-<h3 class="anchored" data-anchor-id="data-requirements-and-sourcing-for-quality-fine-tuning">Data Requirements and Sourcing for Quality Fine-Tuning</h3>
-<section id="data-volume-vs.-quality" class="level4">
-<h4 class="anchored" data-anchor-id="data-volume-vs.-quality">Data Volume vs.&nbsp;Quality</h4>
-<ul>
-<li><strong>High-quality data is more important than high volume.</strong>
-<ul>
-<li>Large datasets often contain irrelevant information, hindering effective learning.</li>
-</ul></li>
-<li>Start with a <strong>smaller dataset (hundreds of examples) and a larger base model (e.g., Llama 3 70B).</strong>
-<ul>
-<li>Larger models perform better with smaller datasets but are more expensive to train and use for inference.</li>
-</ul></li>
-<li>As the dataset grows, transition to smaller models for cost efficiency.</li>
-</ul>
-</section>
-<section id="synthetic-data-generation" class="level4">
-<h4 class="anchored" data-anchor-id="synthetic-data-generation">Synthetic Data Generation</h4>
-<ul>
-<li><strong>Significantly increases performance</strong>, especially for smaller datasets (hundreds to low thousands of examples).</li>
-<li>Gains decrease with larger datasets (hundreds of thousands).</li>
-</ul>
-</section>
-<section id="case-study-metas-less-is-more-for-alignment" class="level4">
-<h4 class="anchored" data-anchor-id="case-study-metas-less-is-more-for-alignment">Case Study: Meta’s “Less is More for Alignment”</h4>
-<ul>
-<li>Demonstrated strong performance using only <strong>2,000 samples</strong> for training Llama 2 70B (older generation).</li>
-</ul>
-</section>
-<section id="dataset-creation-challenges" class="level4">
-<h4 class="anchored" data-anchor-id="dataset-creation-challenges">Dataset Creation Challenges</h4>
-<ul>
-<li>Users often expect to directly transfer knowledge from closed-source APIs (e.g., OpenAI) to open-source models, leading to ineffective QA pairs.</li>
-<li>Solution: Reformulate tasks as RAG problems or use embedding/generator models with appropriate data corpus indexing and training.</li>
-</ul>
-</section>
-<section id="dataset-preparation-support" class="level4">
-<h4 class="anchored" data-anchor-id="dataset-preparation-support">Dataset Preparation Support</h4>
-<ul>
-<li>Predibase provides guidance on dataset creation but does not offer specific data preparation tools.</li>
-<li>Consulting companies can assist with data preparation and synthetic data generation.</li>
-<li>Collaboration with companies like <a href="https://gretel.ai/">Gretel</a> for synthetic data as a service is being explored.</li>
-</ul>
-</section>
-<section id="dataset-complexity" class="level4">
-<h4 class="anchored" data-anchor-id="dataset-complexity">Dataset Complexity</h4>
-<ul>
-<li>Simpler for traditional supervised ML tasks (e.g., classification, NER, summarization) due to straightforward input-output relationships.</li>
-</ul>
-</section>
-</section>
-<section id="platform-choice-predibase-vs.-self-hosting-lorax" class="level3">
-<h3 class="anchored" data-anchor-id="platform-choice-predibase-vs.-self-hosting-lorax">Platform Choice: Predibase vs.&nbsp;Self-Hosting Lorax</h3>
-<section id="considerations-for-self-hosting" class="level4">
-<h4 class="anchored" data-anchor-id="considerations-for-self-hosting">Considerations for Self-Hosting</h4>
-<ul>
-<li>Suitable for companies where ML infrastructure is a core competency or differentiator.</li>
-<li>Requires a dedicated team for platform development, maintenance, and updates.</li>
-</ul>
-</section>
-<section id="cost-benefit-analysis" class="level4">
-<h4 class="anchored" data-anchor-id="cost-benefit-analysis">Cost-Benefit Analysis</h4>
-<ul>
-<li><strong>Self-hosting:</strong> High upfront and ongoing costs.</li>
-<li><strong>Predibase:</strong> Predictable subscription fee, freeing up resources for other priorities.</li>
-</ul>
-</section>
-<section id="recommendation" class="level4">
-<h4 class="anchored" data-anchor-id="recommendation">Recommendation</h4>
-<ul>
-<li>Predibase is generally more cost-effective for companies whose core competencies lie elsewhere, allowing them to focus on product development or model creation.</li>
-</ul>
-</section>
-</section>
-<section id="lorax-adoption-and-engagement-expectations" class="level3">
-<h3 class="anchored" data-anchor-id="lorax-adoption-and-engagement-expectations">Lorax Adoption and Engagement Expectations</h3>
-<section id="comparison-to-previous-open-source-projects" class="level4">
-<h4 class="anchored" data-anchor-id="comparison-to-previous-open-source-projects">Comparison to Previous Open-Source Projects</h4>
-<ul>
-<li><strong><a href="https://github.com/horovod/horovod">Horovod</a> (distributed training framework):</strong> Significant buy-in from large companies building ML platforms.</li>
-<li><strong><a href="https://github.com/ludwig-ai/ludwig">Ludwig</a> (low-code ML framework):</strong> High user adoption but limited contributions due to its abstract nature.</li>
-</ul>
-</section>
-<section id="lorax-adoption-pattern" class="level4">
-<h4 class="anchored" data-anchor-id="lorax-adoption-pattern">Lorax Adoption Pattern</h4>
-<ul>
-<li>Similar to Horovod, attracting technical users building internal ML infrastructure.</li>
-<li>Active contributions from self-hosting users, indicating strong engagement and “dogfooding.”</li>
-</ul>
-</section>
-</section>
-<section id="future-plans-for-the-fine-tuning-index" class="level3">
-<h3 class="anchored" data-anchor-id="future-plans-for-the-fine-tuning-index">Future Plans for the Fine-Tuning Index</h3>
-<ul>
-<li><strong>Homepage:</strong> <a href="https://predibase.com/fine-tuning-index">The Fine-tuning Index</a></li>
-</ul>
-<section id="current-state" class="level4">
-<h4 class="anchored" data-anchor-id="current-state">Current State</h4>
-<ul>
-<li>Static artifact averaging performance over 31 diverse tasks.</li>
-</ul>
-</section>
-<section id="short-term-goals" class="level4">
-<h4 class="anchored" data-anchor-id="short-term-goals">Short-Term Goals</h4>
-<ul>
-<li>Transition to a <strong>living artifact</strong> with regular updates as new models are released.</li>
-<li>Implement tooling for <strong>easier model addition and UI integration with a database.</strong></li>
-</ul>
-</section>
-<section id="long-term-vision" class="level4">
-<h4 class="anchored" data-anchor-id="long-term-vision">Long-Term Vision</h4>
-<ul>
-<li>Achieve the <strong>freshness and openness of platforms like LMSYS Leaderboard and Hugging Face Leaderboards.</strong></li>
-</ul>
-</section>
-<section id="additional-improvements" class="level4">
-<h4 class="anchored" data-anchor-id="additional-improvements">Additional Improvements</h4>
-<ul>
-<li>Introduce <strong>Elo scores</strong> for more accurate model ranking.</li>
-</ul>
-</section>
-</section>
-<section id="handling-large-scale-text-classification-with-sensitive-data" class="level3">
-<h3 class="anchored" data-anchor-id="handling-large-scale-text-classification-with-sensitive-data">Handling Large-Scale Text Classification with Sensitive Data</h3>
-<section id="scenario" class="level4">
-<h4 class="anchored" data-anchor-id="scenario">Scenario</h4>
-<ul>
-<li>1-2 million free-form text snippets per month requiring 5-10 binary (yes/no) questions.</li>
-<li>GPT-4 performance is desired but cost-prohibitive.</li>
-<li>Data is sensitive and based in the EU.</li>
-</ul>
-</section>
-<section id="solution" class="level4">
-<h4 class="anchored" data-anchor-id="solution">Solution</h4>
-<ul>
-<li><strong>GPT-4 Distillation:</strong>
-<ul>
-<li>Use GPT-4 to generate label data for a smaller, more cost-effective model.</li>
-<li>Consider OpenAI’s terms of service when using GPT-4 for data generation.</li>
-</ul></li>
-<li><strong>Adapter Structure:</strong>
-<ul>
-<li><strong>Multiple Adapters:</strong> Suitable if the specific adapter to use for each request is unknown beforehand.</li>
-<li><strong>One Adapter with Multiple Label Outputs:</strong> Preferable if the adapter selection can be determined based on request information.</li>
-<li><strong>Routing Architectures:</strong> Explore if dynamically determining the appropriate adapter is necessary.</li>
-</ul></li>
-<li><strong>GDPR Compliance:</strong>
-<ul>
-<li>Predibase is working with EU-based, GDPR-compliant cloud providers.</li>
-<li>Contact Predibase for options and discussions on EU data center deployments.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="on-device-lorax-and-lookahead-loras" class="level3">
-<h3 class="anchored" data-anchor-id="on-device-lorax-and-lookahead-loras">On-Device Lorax and Lookahead LoRAs</h3>
-<section id="on-device-potential" class="level4">
-<h4 class="anchored" data-anchor-id="on-device-potential">On-Device Potential</h4>
-<ul>
-<li>Highly appealing for running smaller language models on edge devices (e.g., phones) with task-specific LoRAs.</li>
-<li>Aligned with the trend of sparse activation for efficient model execution.</li>
-</ul>
-</section>
-<section id="challenges" class="level4">
-<h4 class="anchored" data-anchor-id="challenges">Challenges</h4>
-<ul>
-<li><strong>Hardware Compatibility:</strong> Lorax is currently optimized for NVIDIA GPUs, which are not common on edge devices.
-<ul>
-<li>Optimizations like flash attention, page attention, and SG&amp;B kernels are CUDA-based.</li>
-<li>Porting to different hardware architectures (e.g., Qualcomm’s AI chips) would require significant code rewriting.</li>
-<li>Optimization techniques might not translate well to specialized ASICs used in edge devices.</li>
-</ul></li>
-</ul>
-</section>
-<section id="lookahead-loras-and-speculative-decoding" class="level4">
-<h4 class="anchored" data-anchor-id="lookahead-loras-and-speculative-decoding">Lookahead LoRAs and Speculative Decoding</h4>
-<ul>
-<li><strong>Lookahead LoRAs:</strong> Fine-tuned for both performance and inference speed (low-rank acceleration).</li>
-<li><strong>Speculative Decoding:</strong> Works best for narrow tasks (e.g., summarization, structured generation) where predictions can be made based on limited context.
-<ul>
-<li>Effectiveness increases with narrower task definitions.</li>
-<li>Aligns with the trend of using LLMs for specialized tasks with task-specific LoRAs.</li>
-</ul></li>
-<li><strong>Hardware Trends:</strong> NVIDIA’s newer GPUs (e.g., L40S) prioritize increased FLOPs over memory bandwidth, favoring compute-intensive techniques like speculative decoding.</li>
-</ul>
-</section>
-<section id="speculative-decoding-in-practice" class="level4">
-<h4 class="anchored" data-anchor-id="speculative-decoding-in-practice">Speculative Decoding in Practice</h4>
-<ul>
-<li><strong>Performance:</strong> Expected to work well in practice due to its suitability for narrow tasks.</li>
-<li><strong>High QPS:</strong> Ensuring efficient operation at high query per second (QPS) is a current challenge being addressed.</li>
-<li><strong>Fine-Tuning:</strong> Speculative decoding components should be fine-tuned alongside the LoRA for seamless integration.</li>
-</ul>
-</section>
-</section>
-<section id="synthetic-data-generation-for-fine-tuning" class="level3">
-<h3 class="anchored" data-anchor-id="synthetic-data-generation-for-fine-tuning">Synthetic Data Generation for Fine-Tuning</h3>
-<section id="process" class="level4">
-<h4 class="anchored" data-anchor-id="process">Process</h4>
-<ul>
-<li>Use a large language model (e.g., Llama 3 70B) with a small dataset for initial fine-tuning.</li>
-<li>Generate synthetic data using the fine-tuned model.</li>
-<li>Fine-tune a smaller model using the generated synthetic data.</li>
-</ul>
-</section>
-<section id="effectiveness" class="level4">
-<h4 class="anchored" data-anchor-id="effectiveness">Effectiveness</h4>
-<ul>
-<li>Significant performance improvements observed.</li>
-<li>Each 2x increase in data leads to approximately a 5% performance lift.</li>
-</ul>
-</section>
-<section id="model-family-considerations" class="level4">
-<h4 class="anchored" data-anchor-id="model-family-considerations">Model Family Considerations</h4>
-<ul>
-<li>Use the same model family for both the initial large model and the final smaller model (e.g., Llama) for optimal distillation.</li>
-<li>Cross-family distillation might not be as effective due to differences in data distributions.</li>
-</ul>
-</section>
-<section id="alternative-approach" class="level4">
-<h4 class="anchored" data-anchor-id="alternative-approach">Alternative Approach</h4>
-<ul>
-<li>Use GPT-3.5 or GPT-4 to generate synthetic data based on the small input dataset.</li>
-<li>Fine-tune a smaller model using the GPT-generated synthetic data.</li>
-</ul>
-</section>
-<section id="ensemble-techniques-for-synthetic-data-generation" class="level4">
-<h4 class="anchored" data-anchor-id="ensemble-techniques-for-synthetic-data-generation">Ensemble Techniques for Synthetic Data Generation</h4>
-<ul>
-<li>Explore generating synthetic data using multiple model families to enhance diversity and capture different data aspects.</li>
-<li>Fine-tune the final model on the ensemble of predictions from different models, similar to ensembling techniques in traditional ML.</li>
-<li>This approach could potentially outperform fine-tuning on synthetic data generated from a single model family.</li>
-</ul>
-</section>
-<section id="data-programming-and-weak-labeling" class="level4">
-<h4 class="anchored" data-anchor-id="data-programming-and-weak-labeling">Data Programming and Weak Labeling</h4>
-<ul>
-<li>Data programming techniques (e.g., <a href="https://www.snorkel.org/">Snorkel</a>) can be used to combine predictions from multiple “weak” experts (models) to generate more accurate labels.</li>
-<li>Distilling on the logits or probabilities, rather than the final labels, captures the uncertainty and agreement levels among different models, improving label quality.</li>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/1605.07723">Data Programming: Creating Large Training Sets, Quickly</a></li>
-</ul>
-</section>
-</section>
-<section id="fine-tuning-adapters-vs.-gpt-4-for-qa-over-internal-documentation" class="level3">
-<h3 class="anchored" data-anchor-id="fine-tuning-adapters-vs.-gpt-4-for-qa-over-internal-documentation">Fine-Tuning Adapters vs.&nbsp;GPT-4 for Q&amp;A over Internal Documentation</h3>
-<section id="long-term-vision-1" class="level4">
-<h4 class="anchored" data-anchor-id="long-term-vision-1">Long-Term Vision</h4>
-<ul>
-<li>Fine-tuning could potentially replace RAG entirely for domain adaptation, allowing models to directly answer questions based on internal data.</li>
-</ul>
-</section>
-<section id="current-state-1" class="level4">
-<h4 class="anchored" data-anchor-id="current-state-1">Current State</h4>
-<ul>
-<li>Fine-tuning is not yet a complete replacement for RAG.</li>
-</ul>
-</section>
-<section id="fine-tuning-applications-within-rag" class="level4">
-<h4 class="anchored" data-anchor-id="fine-tuning-applications-within-rag">Fine-Tuning Applications within RAG</h4>
-<ul>
-<li>Improve individual RAG components:
-<ul>
-<li><strong>Embedder:</strong> Enhance document retrieval accuracy.</li>
-<li><strong>Re-ranker:</strong> Improve relevance ranking of retrieved documents.</li>
-<li><strong>Generator:</strong> Enhance answer generation quality.</li>
-</ul></li>
-<li>Jointly fine-tune multiple components for optimal performance.</li>
-<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2403.18295">Dual Instruction Tuning with Large Language Models for Mathematical Reasoning</a></li>
-</ul>
-</section>
-<section id="benefits-of-fine-tuning-for-rag" class="level4">
-<h4 class="anchored" data-anchor-id="benefits-of-fine-tuning-for-rag">Benefits of Fine-Tuning for RAG</h4>
-<ul>
-<li>Addresses limitations of pre-trained models by tailoring them to specific domains and tasks.</li>
-<li>Improves accuracy, relevance, and quality of RAG system outputs.</li>
-</ul>
-</section>
-<section id="considerations" class="level4">
-<h4 class="anchored" data-anchor-id="considerations">Considerations</h4>
-<ul>
-<li><strong>Freshness:</strong> Keeping fine-tuned models up-to-date with changing data can be challenging.</li>
-<li><strong>Metadata Filtering:</strong> RAG allows for flexible filtering based on document metadata, which might not be easily replicated with fine-tuning alone.</li>
-</ul>
-</section>
-<section id="recommendations" class="level4">
-<h4 class="anchored" data-anchor-id="recommendations">Recommendations</h4>
-<ul>
-<li>Start with a baseline RAG system using pre-trained models.</li>
-<li>Identify performance bottlenecks and target fine-tuning efforts accordingly.</li>
-<li>Consider joint fine-tuning of multiple components for optimal results.</li>
-</ul>
-</section>
-</section>
-<section id="catastrophic-forgetting-with-lora-fine-tuning" class="level3">
-<h3 class="anchored" data-anchor-id="catastrophic-forgetting-with-lora-fine-tuning">Catastrophic Forgetting with LoRA Fine-Tuning</h3>
-<ul>
-<li>Still possible, even with LoRA, if the LoRA’s output leads to model collapse (e.g., producing NaNs or zeros).</li>
-<li>Less prevalent with LoRA compared to full fine-tuning.
-<ul>
-<li>Learns less, forgets less</li>
-</ul></li>
-<li>LoRA is better suited for structuring outputs and narrow tasks, where catastrophic forgetting is less likely.</li>
-</ul>
-<section id="lora-fine-tuning-benefits" class="level4">
-<h4 class="anchored" data-anchor-id="lora-fine-tuning-benefits">LoRA Fine-Tuning Benefits</h4>
-<ul>
-<li>Consistent performance improvements observed for suitable tasks.</li>
-<li>Reduced risk of catastrophic forgetting compared to full fine-tuning.</li>
-</ul>
-</section>
-</section>
-<section id="multiple-loras-and-parameter-updates" class="level3">
-<h3 class="anchored" data-anchor-id="multiple-loras-and-parameter-updates">Multiple LoRAs and Parameter Updates</h3>
-<ul>
-<li>Multiple LoRAs can update different subsets of model parameters</li>
-<li>Punica project kernels modified to allow sparse segmented matrix multiplication</li>
-<li>Heterogeneous setups (LoRAs targeting different layers) can be batched together</li>
-</ul>
-</section>
-<section id="lora-rank-and-parameter-count" class="level3">
-<h3 class="anchored" data-anchor-id="lora-rank-and-parameter-count">LoRA Rank and Parameter Count</h3>
-<section id="rank-selection" class="level4">
-<h4 class="anchored" data-anchor-id="rank-selection">Rank Selection</h4>
-<ul>
-<li>Experimentation with ranks from 8 to 128.</li>
-<li><strong>8:</strong> Good starting point, default in some libraries.</li>
-<li><strong>16:</strong> Generally provides strong performance and is widely used in the industry.</li>
-<li><strong>64:</strong> Performance tends to plateau or decline beyond this rank.</li>
-<li><strong>LoRA Alpha:</strong> Consider adjusting this parameter, which controls the contribution of base model weights, when using higher ranks.</li>
-</ul>
-</section>
-<section id="parameter-scaling" class="level4">
-<h4 class="anchored" data-anchor-id="parameter-scaling">Parameter Scaling</h4>
-<ul>
-<li>Primarily scales with the LoRA rank, not the training data size.</li>
-<li>2x increase in rank results in a 2x increase in trainable parameters.</li>
-<li>Increasing rank beyond a certain point leads to diminishing returns and increased training costs.</li>
-</ul>
-</section>
-<section id="layer-targeting" class="level4">
-<h4 class="anchored" data-anchor-id="layer-targeting">Layer Targeting</h4>
-<ul>
-<li>Explore targeting specific layers for LoRA application beyond the default QKV or QV layers.</li>
-<li><strong>Generative Use Cases:</strong> Targeting all linear layers, embedding, and LM head can be beneficial.</li>
-</ul>
-</section>
-</section>
-<section id="fine-tuning-for-question-answering-and-verbatim-quoting" class="level3">
-<h3 class="anchored" data-anchor-id="fine-tuning-for-question-answering-and-verbatim-quoting">Fine-Tuning for Question Answering and Verbatim Quoting</h3>
-<section id="scenario-1" class="level4">
-<h4 class="anchored" data-anchor-id="scenario-1">Scenario</h4>
-<ul>
-<li>Fine-tuning a model on a corpus of books for question answering and verbatim quoting.</li>
-</ul>
-</section>
-<section id="recommendations-1" class="level4">
-<h4 class="anchored" data-anchor-id="recommendations-1">Recommendations</h4>
-<ul>
-<li><strong>RAG for Verbatim Quoting:</strong> Use RAG to retrieve and cite specific passages from the books verbatim.</li>
-<li><strong>Fine-Tuning for Question Answering:</strong> Fine-tune the model to improve its ability to answer questions based on the corpus.</li>
-<li><strong>Hybrid Approach:</strong> Combine RAG and fine-tuning to leverage the strengths of both approaches.</li>
-</ul>
-</section>
-</section>
-<section id="fine-tuning-for-function-calling-lora-per-function-type-vs.-multi-skill-lora" class="level3">
-<h3 class="anchored" data-anchor-id="fine-tuning-for-function-calling-lora-per-function-type-vs.-multi-skill-lora">Fine-Tuning for Function Calling: LoRA per Function Type vs.&nbsp;Multi-Skill LoRA</h3>
-<section id="recommendation-1" class="level4">
-<h4 class="anchored" data-anchor-id="recommendation-1">Recommendation</h4>
-<ul>
-<li>Use a LoRA per function type if the function type can be determined at request time.
-<ul>
-<li>Leverages the principle of narrower tasks leading to better fine-tuning performance.</li>
-</ul></li>
-<li>If function type is unknown beforehand, consider a multi-skill LoRA or explore alternative approaches.</li>
-</ul>
-</section>
-<section id="granularity" class="level4">
-<h4 class="anchored" data-anchor-id="granularity">Granularity</h4>
-<ul>
-<li>Determine the appropriate level of granularity for LoRA specialization based on available request metadata.</li>
-</ul>
-</section>
-<section id="further-exploration" class="level4">
-<h4 class="anchored" data-anchor-id="further-exploration">Further Exploration</h4>
-<ul>
-<li>Attend the upcoming session on fine-tuning for function calling for more in-depth insights and recommendations.</li>
-</ul>
-<hr>
-<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-About Me:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
-<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
-<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
-</ul>
-</div>
-</div>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>notes</category>
-  <category>llms</category>
-  <guid>https://christianjmills.com/posts/mastering-llms-course-notes/office-hours-008/</guid>
-  <pubDate>Thu, 29 Aug 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>
