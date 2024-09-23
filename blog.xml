@@ -17,807 +17,7 @@
 <width>144</width>
 </image>
 <generator>quarto-1.5.57</generator>
-<lastBuildDate>Sat, 21 Sep 2024 07:00:00 GMT</lastBuildDate>
-<item>
-  <title>Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/</link>
-  <description><![CDATA[ 
-
-
-
-
-<ul>
-<li>Introduction</li>
-<li>Enable Resizable BAR in BIOS</li>
-<li>Install Drivers</li>
-<li>Install Microsoft Visual C++ Redistributable</li>
-<li>Disable Integrated Graphics</li>
-<li>Set Up a Python Environment<br>
-</li>
-<li>Modify PyTorch Code<br>
-</li>
-<li>Conclusion</li>
-</ul>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://www.microsoft.com/en-us/windows">Windows</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it includes support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
-<p>The XMX engines are dedicated hardware for performing matrix operations like those in deep-learning workloads. Intel’s PyTorch extension allows us to leverage this hardware with minimal changes to existing PyTorch code.</p>
-<p>To illustrate this, we’ll adapt the training code from my <a href="https://christianjmills.com/posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all steps required to set up Windows for training PyTorch models using Arc GPUs.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The current setup process is for version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/2.3.110+xpu/"><code>2.3.110+xpu</code></a> of Intel’s PyTorch extension.</p>
-</div>
-</div>
-</section>
-<section id="enable-resizable-bar-in-bios" class="level2">
-<h2 class="anchored" data-anchor-id="enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</h2>
-<p>If you have an Arc GPU, one of the first things you should do is enable Resizable BAR. Resizable BAR allows a computer’s processor to access the graphics card’s entire memory instead of in small chunks. The Arc GPUs currently require this feature to perform as intended. You can enable the feature in your motherboard’s BIOS.</p>
-<p>Here are links on how to do this for some of the popular motherboard manufacturers:</p>
-<ul>
-<li><a href="https://www.asrock.com/support/faq.asp?id=498">ASRock</a></li>
-<li><a href="https://www.asus.com/support/FAQ/1046107/">Asus</a></li>
-<li><a href="https://www.evga.com/support/faq/FAQdetails.aspx?faqid=59772">EVGA</a></li>
-<li><a href="https://www.gigabyte.com/WebPage/785/NVIDIA_resizable_bar.html">Gigabyte</a></li>
-<li><a href="https://www.msi.com/blog/unlock-system-performance-to-extreme-resizable-bar">MSI</a></li>
-</ul>
-<p>With Resizable BAR enabled, let’s ensure we have the latest drivers for our Arc GPU.</p>
-</section>
-<section id="install-drivers" class="level2">
-<h2 class="anchored" data-anchor-id="install-drivers">Install Drivers</h2>
-<p>We can download the latest Arc GPU drivers from Intel’s website at the link below:</p>
-<ul>
-<li><a href="https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html?">Intel® Arc™ &amp; Iris® Xe Graphics - Windows</a></li>
-</ul>
-<p>The latest driver version available was <code>32.0.101.6078</code> at the time of writing. Click the <code>Download</code> button under <code>Available Downloads</code> to download the installer.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/download-intel-graphics-driver-installer-windows.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>Once downloaded, double-click the installer executable and follow the prompts to install the drivers.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/intel-graphics-driver-installer-begin-installation.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>You don’t need to agree to join the Intel Computing Improvement program to install the drivers.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/intel-graphics-driver-installer-intel-computing-improvement-program.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>Once the installation completes, click the <code>Reboot Recommended</code> button to reboot the computer.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/intel-graphics-driver-installer-installation-complete-reboot.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>We can continue with the next step once we’re back in Windows.</p>
-</section>
-<section id="install-microsoft-visual-c-redistributable" class="level2">
-<h2 class="anchored" data-anchor-id="install-microsoft-visual-c-redistributable">Install Microsoft Visual C++ Redistributable</h2>
-<p>Intel’s documentation also lists the Microsoft Visual C++ Redistributable as a dependency for this extension version, so make sure to install it as well. You can download the latest version at the link below:</p>
-<ul>
-<li><a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version">Latest Microsoft Visual C++ Redistributable Version</a></li>
-</ul>
-</section>
-<section id="disable-integrated-graphics" class="level2">
-<h2 class="anchored" data-anchor-id="disable-integrated-graphics">Disable Integrated Graphics</h2>
-<p>I encountered the following error when I attempted to use this version of Intel’s PyTorch extension on Windows:</p>
-<pre class="text"><code>RuntimeError: Can't add devices across platforms to a single context. -33 (PI_ERROR_INVALID_DEVICE)</code></pre>
-<p>I could only resolve the issue by deactivating the iGPU in the Windows Device Manager. Future versions of the extension may eliminate this bug, but I’ll include the steps to turn off the iGPU for now.</p>
-<p>Type Device Manager into the Windows search bar and click Open.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-search-device-manager.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>You will see the following popup message if you are not using an Administrator account. Click <code>OK</code> to continue.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-standard-user-warning.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>In the Device Manager window, open the <code>Display adapters</code> dropdown. There should be at least two options: the Arc GPU and the iGPU included with the CPU. Double-click the iGPU listing to open its properties window.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-select-integrated-graphics.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>Non-Administrator users must click the <code>Change settings</code> button to enable changes to the iGPU device properties.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-integrated-graphics-properties-change-settings.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>Next, select the <code>Driver</code> tab and click the <code>Disable Device</code> button.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-integrated-graphics-properties-disable-device.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<p>Click <code>Yes</code> in the popup window to confirm the changes.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-integrated-graphics-properties-disable-device-confirm.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>You will need to repeat this step when you install new graphics drivers in the future, assuming future releases of Intel’s extension do not resolve the issue.</p>
-</div>
-</div>
-</section>
-<section id="set-up-a-python-environment" class="level2">
-<h2 class="anchored" data-anchor-id="set-up-a-python-environment">Set Up a Python Environment</h2>
-<p>Now, we can create a Python environment to run the training code. We’ll install a patched version of PyTorch needed for Intel’s extension, the extension itself, and the other dependencies for the training code.</p>
-<section id="install-mamba-package-manager" class="level3">
-<h3 class="anchored" data-anchor-id="install-mamba-package-manager">Install Mamba Package Manager</h3>
-<p>We’ll use the <a href="https://mamba.readthedocs.io/en/latest/">Mamba</a> package manager to create the Python environment. I have a dedicated tutorial for setting up Mamba on Windows:</p>
-<ul>
-<li><a href="../../../posts/mamba-getting-started-tutorial-windows/"><strong>Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows</strong></a></li>
-</ul>
-<p>Open a command prompt window with the mamba environment active and navigate to a folder to store the training notebooks. For convenience, here is the command to activate the mamba environment from any command prompt window:</p>
-<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb2-1"><span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">%</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">USERPROFILE</span><span class="pp" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">%</span>\mambaforge\Scripts\activate</span></code></pre></div>
-</section>
-<section id="create-a-python-environment" class="level3">
-<h3 class="anchored" data-anchor-id="create-a-python-environment">Create a Python Environment</h3>
-<p>Next, we’ll create a Python environment and activate it. The current version of the extension supports Python 3.11, so we’ll use that.</p>
-<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb3-1">mamba create -<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-name</span> pytorch<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-arc</span> python=3.11 <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-y</span></span>
-<span id="cb3-2">mamba activate pytorch<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-arc</span></span></code></pre></div>
-</section>
-<section id="install-prerequisite-packages" class="level3">
-<h3 class="anchored" data-anchor-id="install-prerequisite-packages">Install Prerequisite Packages</h3>
-<p>The package for Intel’s PyTorch extension requires the <a href="https://anaconda.org/conda-forge/libuv">libuv</a> conda package:</p>
-<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb4-1">mamba install libuv <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-y</span></span></code></pre></div>
-</section>
-<section id="install-pytorch-and-intels-pytorch-extension" class="level3">
-<h3 class="anchored" data-anchor-id="install-pytorch-and-intels-pytorch-extension">Install PyTorch and Intel’s PyTorch extension</h3>
-<p>The following command will install the patched version of PyTorch and the extension itself:</p>
-<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb5-1">pip install torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi torchaudio==2.3.1+cxx11.abi intel<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-extension-for-pytorch</span>==2.3.110+xpu -<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-extra-index-url</span> https:/<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/pytorch-extension</span>.intel.com<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/release-whl/stable/xpu/us</span>/</span></code></pre></div>
-</section>
-<section id="install-training-code-dependencies" class="level3">
-<h3 class="anchored" data-anchor-id="install-training-code-dependencies">Install Training Code Dependencies</h3>
-<p>After that, we’ll install the training code dependencies. You can learn about these dependencies (<a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/#installing-additional-libraries">here</a>).</p>
-<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb6-1">pip install jupyter matplotlib pandas pillow timm torcheval torchtnt tqdm</span>
-<span id="cb6-2">pip install cjm_pandas_utils cjm_psl_utils cjm_pil_utils cjm_pytorch_utils cjm_torchvision_tfms</span></code></pre></div>
-<div class="callout callout-style-default callout-important callout-titled" title="oneDNN Memory Layout">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-oneDNN Memory Layout
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The previous version of this tutorial set an environment variable for the oneDNN memory layout to improve training speed. The performance improvement from this step is no longer significant and even prevents successful training for other model types.</p>
-<p>If you followed the previous version of this tutorial, run the following commands to deactivate this environment variable:</p>
-<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb7-1"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">set</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">IPEX_XPU_ONEDNN_LAYOUT</span>=0</span>
-<span id="cb7-2">setx IPEX_XPU_ONEDNN_LAYOUT 0</span></code></pre></div>
-</div>
-</div>
-</section>
-</section>
-<section id="modify-pytorch-code" class="level2">
-<h2 class="anchored" data-anchor-id="modify-pytorch-code">Modify PyTorch Code</h2>
-<p>It’s finally time to train a model. The Jupyter Notebooks with the original and modified training code are available on GitHub at the links below.</p>
-<ul>
-<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/pytorch-timm-image-classifier-training-windows.ipynb">notebooks/pytorch-timm-image-classifier-training-windows.ipynb</a></li>
-<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/intel-arc-pytorch-timm-image-classifier-training-windows.ipynb">notebooks/intel-arc-pytorch-timm-image-classifier-training-windows.ipynb</a></li>
-<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/windows_utils.py">notebooks/windows_utils.py</a></li>
-</ul>
-<p>You can also download the notebooks to the current directory by running the following commands:</p>
-<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb8-1">curl <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-o</span> pytorch<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-timm-image-classifier-training-windows</span>.ipynb https:/<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/github</span>.com<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/pytorch-timm-image-classifier-training-windows</span>.ipynb</span></code></pre></div>
-<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb9-1">curl <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-o</span> intel<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-arc-pytorch-timm-image-classifier-training-windows-without-hf-datasets</span>.ipynb https:/<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/raw</span>.githubusercontent.com<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/intel-arc-pytorch-timm-image-classifier-training-windows</span>.ipynb</span></code></pre></div>
-<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb10-1">curl <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">-o</span> windows_utils.py https:/<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/github</span>.com<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/windows_utils</span>.py</span></code></pre></div>
-<p>Once downloaded, run the following command to launch the Jupyter Notebook Environment:</p>
-<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb11-1">jupyter notebook</span></code></pre></div>
-<section id="import-pytorch-extension" class="level3">
-<h3 class="anchored" data-anchor-id="import-pytorch-extension">Import PyTorch Extension</h3>
-<p>We import Intel’s PyTorch extension with the following code:</p>
-<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb12-1">import torch</span>
-<span id="cb12-2">import intel_extension_for_pytorch as ipex</span>
-<span id="cb12-3"></span>
-<span id="cb12-4"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">print</span>(f'PyTorch Version: {torch.__version__}'<span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">)</span></span>
-<span id="cb12-5"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">print</span>(f'Intel PyTorch Extension Version: {ipex.__version__}'<span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">)</span></span></code></pre></div>
-<pre class="text"><code>C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\torchvision\io\image.py:13: UserWarning: Failed to load image Python extension: 'Could not find module 'C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\torchvision\image.pyd' (or one of its dependencies). Try using the full path with constructor syntax.'If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
-  warn(
-
-PyTorch Version: 2.3.1+cxx11.abi
-Intel PyTorch Extension Version: 2.3.110+xpu
-
-C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\intel_extension_for_pytorch\llm\__init__.py:9: UserWarning: failed to use huggingface generation fuctions due to: No module named 'transformers'.
-  warnings.warn(f"failed to use huggingface generation fuctions due to: {e}.")</code></pre>
-</section>
-<section id="update-pytorch-imports" class="level3">
-<h3 class="anchored" data-anchor-id="update-pytorch-imports">Update PyTorch Imports</h3>
-<p>We don’t want to re-import <code>torch</code> after the extension, so we’ll remove that line from the <code>Import PyTorch dependencies</code> section.</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false">Original</a></li></ul>
-<div class="tab-content">
-<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
-<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Import PyTorch dependencies</span></span>
-<span id="cb14-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> torch.nn <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">as</span> nn</span>
-<span id="cb14-3"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> torch.amp <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> autocast</span>
-<span id="cb14-4"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> torch.cuda.amp <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> GradScaler</span>
-<span id="cb14-5"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> torch.utils.data <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Dataset, DataLoader</span></code></pre></div>
-</div>
-<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
-<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Import PyTorch dependencies</span></span>
-<span id="cb15-2"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> torch</span>
-<span id="cb15-3"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> torch.nn <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">as</span> nn</span>
-<span id="cb15-4"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> torch.amp <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> autocast</span>
-<span id="cb15-5"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> torch.cuda.amp <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> GradScaler</span>
-<span id="cb15-6"><span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">from</span> torch.utils.data <span class="im" style="color: #00769E;
-background-color: null;
-font-style: inherit;">import</span> Dataset, DataLoader</span></code></pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="verify-arc-gpu-availability" class="level3">
-<h3 class="anchored" data-anchor-id="verify-arc-gpu-availability">Verify Arc GPU Availability</h3>
-<p>We can double-check that the extension can use the Arc GPU by getting the properties of the available <code>xpu</code> devices.</p>
-<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">def</span> get_public_properties(obj):</span>
-<span id="cb16-2">    <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">return</span> {</span>
-<span id="cb16-3">        prop: <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">getattr</span>(obj, prop)</span>
-<span id="cb16-4">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> prop <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">dir</span>(obj)</span>
-<span id="cb16-5">        <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">not</span> prop.startswith(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"__"</span>) <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">and</span> <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">not</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">callable</span>(<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">getattr</span>(obj, prop))</span>
-<span id="cb16-6">    }</span>
-<span id="cb16-7"></span>
-<span id="cb16-8">xpu_device_count <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.xpu.device_count()</span>
-<span id="cb16-9">dict_properties_list <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> [get_public_properties(torch.xpu.get_device_properties(i)) <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> <span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">range</span>(xpu_device_count)]</span>
-<span id="cb16-10">pd.DataFrame(dict_properties_list)</span></code></pre></div>
-<div style="overflow-x:auto;">
-<table class="dataframe table table-sm table-striped small">
-<thead>
-<tr>
-<th>
-</th>
-<th>
-driver_version
-</th>
-<th>
-gpu_eu_count
-</th>
-<th>
-gpu_subslice_count
-</th>
-<th>
-has_atomic64
-</th>
-<th>
-has_fp16
-</th>
-<th>
-has_fp64
-</th>
-<th>
-max_compute_units
-</th>
-<th>
-max_num_sub_groups
-</th>
-<th>
-max_work_group_size
-</th>
-<th>
-name
-</th>
-<th>
-platform_name
-</th>
-<th>
-sub_group_sizes
-</th>
-<th>
-total_memory
-</th>
-<th>
-type
-</th>
-<th>
-vendor
-</th>
-<th>
-version
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>
-0
-</th>
-<td>
-1.3.30714
-</td>
-<td>
-512
-</td>
-<td>
-64
-</td>
-<td>
-True
-</td>
-<td>
-True
-</td>
-<td>
-False
-</td>
-<td>
-512
-</td>
-<td>
-128
-</td>
-<td>
-1024
-</td>
-<td>
-Intel(R) Arc(TM) A770 Graphics
-</td>
-<td>
-Intel(R) Level-Zero
-</td>
-<td>
-[8, 16, 32]
-</td>
-<td>
-16704737280
-</td>
-<td>
-gpu
-</td>
-<td>
-Intel(R) Corporation
-</td>
-<td>
-1.5
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>In this case, the A770 is the only device listed since we deactivated the integrated graphics on the CPU.</p>
-</section>
-<section id="update-the-device-name" class="level3">
-<h3 class="anchored" data-anchor-id="update-the-device-name">Update the Device Name</h3>
-<p>Next, we’ll manually set the device name to <code>xpu</code>.</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" aria-controls="tabset-2-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" aria-controls="tabset-2-2" aria-selected="false">Original</a></li></ul>
-<div class="tab-content">
-<div id="tabset-2-1" class="tab-pane active" aria-labelledby="tabset-2-1-tab">
-<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1">device <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'xpu'</span></span>
-<span id="cb17-2">dtype <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.float32</span>
-<span id="cb17-3">device, dtype</span></code></pre></div>
-</div>
-<div id="tabset-2-2" class="tab-pane" aria-labelledby="tabset-2-2-tab">
-<div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">device <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> get_torch_device()</span>
-<span id="cb18-2">dtype <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.float32</span>
-<span id="cb18-3">device, dtype</span></code></pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="optimize-the-model-and-optimizer-objects" class="level3">
-<h3 class="anchored" data-anchor-id="optimize-the-model-and-optimizer-objects">Optimize the <code>model</code> and <code>optimizer</code> Objects</h3>
-<p>Before we run the <code>train_loop</code> function, we’ll use Intel’s PyTorch extension to apply optimizations to the model and optimizer objects. We’ll also cast the model to the <code>bfloat16</code> data type, so we can train using mixed precision.</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" aria-controls="tabset-3-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" aria-controls="tabset-3-2" aria-selected="false">Original</a></li></ul>
-<div class="tab-content">
-<div id="tabset-3-1" class="tab-pane active" aria-labelledby="tabset-3-1-tab">
-<div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Learning rate for the model</span></span>
-<span id="cb19-2">lr <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1e-3</span></span>
-<span id="cb19-3"></span>
-<span id="cb19-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Number of training epochs</span></span>
-<span id="cb19-5">epochs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">3</span></span>
-<span id="cb19-6"></span>
-<span id="cb19-7"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># AdamW optimizer; includes weight decay for regularization</span></span>
-<span id="cb19-8">optimizer <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>lr, eps<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1e-5</span>)</span>
-<span id="cb19-9"></span>
-<span id="cb19-10"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Optimize the model and optimizer objects</span></span>
-<span id="cb19-11">model, optimizer <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> ipex.optimize(model, optimizer<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>optimizer, dtype<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>torch.bfloat16)</span>
-<span id="cb19-12"></span>
-<span id="cb19-13"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Learning rate scheduler; adjusts the learning rate during training</span></span>
-<span id="cb19-14">lr_scheduler <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
-<span id="cb19-15">                                                   max_lr<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>lr, </span>
-<span id="cb19-16">                                                   total_steps<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>epochs<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">len</span>(train_dataloader))</span>
-<span id="cb19-17"></span>
-<span id="cb19-18"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Performance metric: Multiclass Accuracy</span></span>
-<span id="cb19-19">metric <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> MulticlassAccuracy()</span></code></pre></div>
-</div>
-<div id="tabset-3-2" class="tab-pane" aria-labelledby="tabset-3-2-tab">
-<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Learning rate for the model</span></span>
-<span id="cb20-2">lr <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1e-3</span></span>
-<span id="cb20-3"></span>
-<span id="cb20-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Number of training epochs</span></span>
-<span id="cb20-5">epochs <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">3</span></span>
-<span id="cb20-6"></span>
-<span id="cb20-7"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># AdamW optimizer; includes weight decay for regularization</span></span>
-<span id="cb20-8">optimizer <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>lr, eps<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1e-5</span>)</span>
-<span id="cb20-9"></span>
-<span id="cb20-10"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Learning rate scheduler; adjusts the learning rate during training</span></span>
-<span id="cb20-11">lr_scheduler <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
-<span id="cb20-12">                                                   max_lr<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>lr, </span>
-<span id="cb20-13">                                                   total_steps<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>epochs<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">len</span>(train_dataloader))</span>
-<span id="cb20-14"></span>
-<span id="cb20-15"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Performance metric: Multiclass Accuracy</span></span>
-<span id="cb20-16">metric <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> MulticlassAccuracy()</span></code></pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="train-the-model" class="level3">
-<h3 class="anchored" data-anchor-id="train-the-model">Train the Model</h3>
-<p>That’s it for the required changes to the training code. We can now run the <code>train_loop</code> function.</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" aria-controls="tabset-4-1" aria-selected="true">Current</a></li><li class="nav-item"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" aria-controls="tabset-4-2" aria-selected="false">Previous</a></li></ul>
-<div class="tab-content">
-<div id="tabset-4-1" class="tab-pane active" aria-labelledby="tabset-4-1-tab">
-<pre class="text"><code>Epochs: 100% |█████████| 3/3 [24:21&lt;00:00, 478.44s/it]
-Train: 100% |█████████| 4324/4324 [07:56&lt;00:00, 10.52it/s, accuracy=0.844, avg_loss=0.535, loss=0.572, lr=0.000994]
-Eval: 100% |█████████| 481/481 [00:49&lt;00:00, 28.10it/s, accuracy=0.95, avg_loss=0.162, loss=0.0692, lr=]
-Train: 100% |█████████| 4324/4324 [07:41&lt;00:00, 10.73it/s, accuracy=0.914, avg_loss=0.281, loss=0.412, lr=0.000462]
-Eval: 100% |█████████| 481/481 [00:23&lt;00:00, 28.84it/s, accuracy=0.979, avg_loss=0.0653, loss=0.0793, lr=]
-Train: 100% |█████████| 4324/4324 [07:09&lt;00:00, 11.16it/s, accuracy=0.96, avg_loss=0.124, loss=0.0497, lr=4.03e-9]
-Eval: 100% |█████████| 481/481 [00:21&lt;00:00, 29.63it/s, accuracy=0.99, avg_loss=0.0314, loss=0.0783, lr=]</code></pre>
-</div>
-<div id="tabset-4-2" class="tab-pane" aria-labelledby="tabset-4-2-tab">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/arc-a770-pytorch-training-session-native-windows.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-<p>The training speed is significantly slower with this extension version. Although, it seems to improve with each iteration through the dataset.</p>
-</section>
-<section id="update-the-inference-code" class="level3">
-<h3 class="anchored" data-anchor-id="update-the-inference-code">Update the Inference Code</h3>
-<p>Since we cast the model to <code>bloat16</code>, we must ensure input data use the same type. We can update the inference code using the auto-cast context manager as shown below:</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" aria-controls="tabset-5-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" aria-controls="tabset-5-2" aria-selected="false">Original</a></li></ul>
-<div class="tab-content">
-<div id="tabset-5-1" class="tab-pane active" aria-labelledby="tabset-5-1-tab">
-<div class="sourceCode" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Make a prediction with the model</span></span>
-<span id="cb22-2"><span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">with</span> torch.no_grad(), autocast(torch.device(device).<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">type</span>):</span>
-<span id="cb22-3">    pred <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model(img_tensor)</span></code></pre></div>
-</div>
-<div id="tabset-5-2" class="tab-pane" aria-labelledby="tabset-5-2-tab">
-<div class="sourceCode" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Make a prediction with the model</span></span>
-<span id="cb23-2"><span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">with</span> torch.no_grad():</span>
-<span id="cb23-3">    pred <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> model(img_tensor)</span></code></pre></div>
-</div>
-</div>
-</div>
-</section>
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>In this tutorial, we set up Intel’s PyTorch extension for the Windows OS and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=windows&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="Questions:">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Questions:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>Feel free to post questions or problems related to this tutorial in the comments below. I try to make time to address them on Thursdays and Fridays.</li>
-</ul>
-</div>
-</div>
-<hr>
-<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-About Me:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
-<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
-<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
-</ul>
-</div>
-</div>
-
-
-</section>
-
- ]]></description>
-  <category>pytorch</category>
-  <category>windows</category>
-  <category>image-classification</category>
-  <category>arc-gpu</category>
-  <category>getting-started</category>
-  <guid>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/</guid>
-  <pubDate>Sat, 21 Sep 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
+<lastBuildDate>Sun, 22 Sep 2024 07:00:00 GMT</lastBuildDate>
 <item>
   <title>Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -838,13 +38,15 @@ About Me:
 </li>
 <li>Modify PyTorch Code<br>
 </li>
+<li>Local LLM Inference with <code>IPEX-LLM</code><br>
+</li>
 <li>Conclusion</li>
 </ul>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://ubuntu.com/download/desktop">Ubuntu</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it includes support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
 <p>The XMX engines are dedicated hardware for performing matrix operations like those in deep-learning workloads. Intel’s PyTorch extension allows us to leverage this hardware with minimal changes to existing PyTorch code.</p>
-<p>To illustrate this, we’ll adapt the training code from my <a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all the steps required to set up Ubuntu for training PyTorch models using Arc GPUs.</p>
+<p>To illustrate this, we will walk through two use cases. First, we’ll adapt the training code from my beginner-level PyTorch tutorial, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. Second, we will use the <a href="https://github.com/intel-analytics/ipex-llm"><code>ipex-llm</code></a> library, which builds on Intel’s PyTorch extension, to perform inference with the <a href="https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct">LLaMA 3.1 8B Instruct</a> model.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1705,9 +907,776 @@ font-style: inherit;">=</span> model(img_tensor)</span></code></pre></div>
 </div>
 </section>
 </section>
+<section id="local-llm-inference-with-ipex-llm" class="level2">
+<h2 class="anchored" data-anchor-id="local-llm-inference-with-ipex-llm">Local LLM Inference with <code>IPEX-LLM</code></h2>
+<p>To close out this tutorial, we will cover how to perform local LLM inference using Intel’s <a href="https://github.com/intel-analytics/ipex-llm"><code>ipex-llm</code></a> library. This library allows us to run many popular LLMs in INT4 precision on our Arc GPU.</p>
+<section id="install-oneapi-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-oneapi-packages">Install oneAPI Packages</h3>
+<p>The <code>ipex-llm</code> library requires packages from the oneAPI toolkit. Run the following commands to install them:</p>
+<div class="sourceCode" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Refresh sudo credentials without running a command</span></span>
+<span id="cb25-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-v</span></span>
+<span id="cb25-3"></span>
+<span id="cb25-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Download Intel's GPG key, convert it to a format for the package manager, and save it</span></span>
+<span id="cb25-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wget</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-O-</span> https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">gpg</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--dearmor</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> tee /usr/share/keyrings/oneapi-archive-keyring.gpg <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> /dev/null</span>
+<span id="cb25-6"></span>
+<span id="cb25-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Add Intel's repository to the system's package sources</span></span>
+<span id="cb25-8"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">echo</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main"</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> tee /etc/apt/sources.list.d/oneAPI.list</span>
+<span id="cb25-9"></span>
+<span id="cb25-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Update the package list to include Intel's repository</span></span>
+<span id="cb25-11"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt update</span>
+<span id="cb25-12"></span>
+<span id="cb25-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Install specific versions of Intel oneAPI components</span></span>
+<span id="cb25-14"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt install intel-oneapi-common-vars=2024.0.0-49406 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-15">  intel-oneapi-common-oneapi-vars=2024.0.0-49406 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-16">  intel-oneapi-diagnostics-utility=2024.0.0-49093 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-17">  intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-18">  intel-oneapi-dpcpp-ct=2024.0.0-49381 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-19">  intel-oneapi-mkl=2024.0.0-49656 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-20">  intel-oneapi-mkl-devel=2024.0.0-49656 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-21">  intel-oneapi-mpi=2021.11.0-49493 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-22">  intel-oneapi-mpi-devel=2021.11.0-49493 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-23">  intel-oneapi-dal=2024.0.1-25 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-24">  intel-oneapi-dal-devel=2024.0.1-25 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-25">  intel-oneapi-ippcp=2021.9.1-5 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-26">  intel-oneapi-ippcp-devel=2021.9.1-5 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-27">  intel-oneapi-ipp=2021.10.1-13 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-28">  intel-oneapi-ipp-devel=2021.10.1-13 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-29">  intel-oneapi-tlt=2024.0.0-352 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-30">  intel-oneapi-ccl=2021.11.2-5 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-31">  intel-oneapi-ccl-devel=2021.11.2-5 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-32">  intel-oneapi-dnnl-devel=2024.0.0-49521 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-33">  intel-oneapi-dnnl=2024.0.0-49521 <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb25-34">  intel-oneapi-tcm-1.0=1.0.0-435</span></code></pre></div>
+<section id="set-the-oneapi-environment-variables" class="level4">
+<h4 class="anchored" data-anchor-id="set-the-oneapi-environment-variables">Set the oneAPI Environment Variables</h4>
+<p>You will need to run the following command to activate the oneAPI environment variables after starting a new shell:</p>
+<div class="sourceCode" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set up the oneAPI environment variables for the current shell session</span></span>
+<span id="cb26-2"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">source</span> /opt/intel/oneapi/setvars.sh</span></code></pre></div>
+<p>Alternatively, you can run the following command to add it to the <code>.bashrc</code> file:</p>
+<div class="sourceCode" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">echo</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'source /opt/intel/oneapi/setvars.sh &gt; /dev/null 2&gt;&amp;1'</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;</span> ~/.bashrc</span></code></pre></div>
+</section>
+</section>
+<section id="create-a-new-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-new-python-environment">Create a New Python Environment</h3>
+<p>Each library version depends on specific versions of Intel’s PyTorch extension. The most recent release of <code>ipex-llm</code> still depends on version <code>2.1.10+xpu</code> of the extension.</p>
+<p>We can create a dedicated mamba environment for this library to avoid dependency conflicts:</p>
+<div class="sourceCode" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> create <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--name</span> ipex-llm-env python=3.11 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb28-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mamba</span> activate ipex-llm-env</span></code></pre></div>
+</section>
+<section id="install-pip-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-pip-packages">Install PIP Packages</h3>
+<p>We will use the LLaMA 3.1 8B Instruct model for demonstration purposes, which requires <a href="https://github.com/huggingface/transformers"><code>transformers</code></a> <code>4.43.1</code> or newer. We also need the <a href="https://huggingface.co/docs/trl/en/index"><code>trl</code></a> (Transformer Reinforcement Learning) package.</p>
+<div class="sourceCode" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Installs intel_extension_for_pytorch==2.1.10+xpu as default</span></span>
+<span id="cb29-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--pre</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--upgrade</span> ipex-llm<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">[</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">xpu</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">]</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--extra-index-url</span> https://pytorch-extension.intel.com/release-whl/stable/xpu/us/</span>
+<span id="cb29-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install jupyter transformers==4.43.1 trl</span></code></pre></div>
+<p>We can launch a new Jupyter Notebook environment once the dependencies finish installing.</p>
+<div class="sourceCode" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">jupyter</span> notebook</span></code></pre></div>
+</section>
+<section id="set-environment-variables-1" class="level3">
+<h3 class="anchored" data-anchor-id="set-environment-variables-1">Set Environment Variables</h3>
+<p>With our environment set up, we can dive into the code. First, we need to set the following environment variables:</p>
+<div class="sourceCode" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb31-2">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'OCL_ICD_VENDORS'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'/etc/OpenCL/vendors'</span></span>
+<span id="cb31-3">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CCL_ROOT'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> os.environ.get(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CONDA_PREFIX'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">''</span>)</span>
+<span id="cb31-4">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'USE_XETLA'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'OFF'</span></span>
+<span id="cb31-5">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'SYCL_CACHE_PERSISTENT'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'1'</span></span>
+<span id="cb31-6">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'1'</span></span></code></pre></div>
+</section>
+<section id="import-the-required-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="import-the-required-dependencies">Import the Required Dependencies</h3>
+<p>Next, we will import the necessary Python packages into our Jupyter Notebook.</p>
+<div class="sourceCode" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb32-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> time</span>
+<span id="cb32-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> argparse</span>
+<span id="cb32-4"></span>
+<span id="cb32-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> ipex_llm.transformers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> AutoModelForCausalLM</span>
+<span id="cb32-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> transformers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> AutoTokenizer</span>
+<span id="cb32-7"></span>
+<span id="cb32-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> IPython.display <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Markdown</span></code></pre></div>
+<p>We can use the <code>Markdown</code> class from IPython to render Markdown output from the model inside the notebook.</p>
+</section>
+<section id="define-a-function-to-prepare-the-prompt" class="level3">
+<h3 class="anchored" data-anchor-id="define-a-function-to-prepare-the-prompt">Define a Function to Prepare the Prompt</h3>
+<p>We can use the following function from this <a href="https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/HuggingFace/LLM/llama3.1/generate.py">example script</a> to prepare prompts for the LLama 3.1 model:</p>
+<div class="sourceCode" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> get_prompt(user_input: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>, chat_history: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>[<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">tuple</span>[<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>, <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>]], system_prompt: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-&gt;</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>:</span>
+<span id="cb33-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb33-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Generate a formatted prompt for a LLaMA 3.1 chatbot conversation.</span></span>
+<span id="cb33-4"></span>
+<span id="cb33-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    This function takes the user's input, chat history, and system prompt,</span></span>
+<span id="cb33-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    and combines them into a single formatted string for use in a LLaMA 3.1 chatbot system.</span></span>
+<span id="cb33-7"></span>
+<span id="cb33-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Parameters:</span></span>
+<span id="cb33-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    user_input (str): The current input from the user.</span></span>
+<span id="cb33-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    chat_history (list[tuple[str, str]]): A list of tuples containing previous </span></span>
+<span id="cb33-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">                                          (user_input, assistant_response) pairs.</span></span>
+<span id="cb33-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    system_prompt (str): Initial instructions or context for the LLaMA 3.1 chatbot.</span></span>
+<span id="cb33-13"></span>
+<span id="cb33-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Returns:</span></span>
+<span id="cb33-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    str: A formatted string containing the entire conversation history and current input.</span></span>
+<span id="cb33-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb33-17">    </span>
+<span id="cb33-18">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Start the prompt with a special token</span></span>
+<span id="cb33-19">    prompt_texts <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'&lt;|begin_of_text|&gt;'</span>]</span>
+<span id="cb33-20"></span>
+<span id="cb33-21">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Add system prompt if it's not empty</span></span>
+<span id="cb33-22">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> system_prompt <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">''</span>:</span>
+<span id="cb33-23">        prompt_texts.append(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'&lt;|start_header_id|&gt;system&lt;|end_header_id|&gt;</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>system_prompt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">&lt;|eot_id|&gt;'</span>)</span>
+<span id="cb33-24"></span>
+<span id="cb33-25">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Add each pair of user input and assistant response from the chat history</span></span>
+<span id="cb33-26">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> history_input, history_response <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> chat_history:</span>
+<span id="cb33-27">        prompt_texts.append(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>history_input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>strip()<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">&lt;|eot_id|&gt;'</span>)</span>
+<span id="cb33-28">        prompt_texts.append(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>history_response<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>strip()<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">&lt;|eot_id|&gt;'</span>)</span>
+<span id="cb33-29"></span>
+<span id="cb33-30">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Add the current user input and prepare for assistant's response</span></span>
+<span id="cb33-31">    prompt_texts.append(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>user_input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>strip()<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">&lt;|eot_id|&gt;&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span>
+<span id="cb33-32">    </span>
+<span id="cb33-33">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Join all parts of the prompt into a single string</span></span>
+<span id="cb33-34">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">''</span>.join(prompt_texts)</span></code></pre></div>
+</section>
+<section id="load-the-model-in-int4" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-model-in-int4">Load the Model in INT4</h3>
+<p>Next, we can load the LLaMA 3.1 8B Instruct model in 4-bit precision.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You will need to accept Meta’s license agreement through the model’s HuggingFace Hub page to access the model:</p>
+<ul>
+<li><a href="https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct">meta-llama/Meta-Llama-3.1-8B-Instruct</a></li>
+</ul>
+</div>
+</div>
+<div class="sourceCode" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1">model_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"meta-llama/Meta-Llama-3.1-8B-Instruct"</span></span>
+<span id="cb34-2"></span>
+<span id="cb34-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load model in 4 bit, which converts the relevant layers in the model into INT4 format</span></span>
+<span id="cb34-4">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> AutoModelForCausalLM.from_pretrained(model_path,</span>
+<span id="cb34-5">                                             load_in_4bit<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>,</span>
+<span id="cb34-6">                                             optimize_model<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>,</span>
+<span id="cb34-7">                                             trust_remote_code<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>,</span>
+<span id="cb34-8">                                             use_cache<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb34-9">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.half().to(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'xpu'</span>)</span>
+<span id="cb34-10"></span>
+<span id="cb34-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load tokenizer</span></span>
+<span id="cb34-12">tokenizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> AutoTokenizer.from_pretrained(model_path, trust_remote_code<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span></code></pre></div>
+</section>
+<section id="define-inference-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="define-inference-parameters">Define Inference Parameters</h3>
+<p>Before running the model, we must define our prompts and the maximum number of tokens the model should generate.</p>
+<div class="sourceCode" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1">DEFAULT_SYSTEM_PROMPT <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\</span></span>
+<span id="cb35-2"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb35-3"></span>
+<span id="cb35-4">prompt_str <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Provide a clear, concise, and intuitive description of AI for beginners."</span></span>
+<span id="cb35-5">max_new_tokens <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span></span></code></pre></div>
+</section>
+<section id="perform-inference" class="level3">
+<h3 class="anchored" data-anchor-id="perform-inference">Perform Inference</h3>
+<p>Finally, we can run the model.</p>
+<div class="sourceCode" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Disable gradient computation for inference</span></span>
+<span id="cb36-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.inference_mode():</span>
+<span id="cb36-3">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Generate the input prompt using a custom function</span></span>
+<span id="cb36-4">    prompt <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_prompt(prompt_str, [], system_prompt<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>DEFAULT_SYSTEM_PROMPT)</span>
+<span id="cb36-5">    </span>
+<span id="cb36-6">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Encode the prompt into token IDs and move to the XPU (Intel's GPU)</span></span>
+<span id="cb36-7">    input_ids <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tokenizer.encode(prompt, return_tensors<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"pt"</span>).to(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'xpu'</span>)</span>
+<span id="cb36-8">    </span>
+<span id="cb36-9">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Perform a warmup run to optimize the model</span></span>
+<span id="cb36-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># This run's output is discarded</span></span>
+<span id="cb36-11">    output <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.generate(input_ids, max_new_tokens<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>max_new_tokens)</span>
+<span id="cb36-12"></span>
+<span id="cb36-13">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Start the actual inference</span></span>
+<span id="cb36-14">    st <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> time.time()  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Record the start time</span></span>
+<span id="cb36-15">    </span>
+<span id="cb36-16">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Generate the output using the language model</span></span>
+<span id="cb36-17">    output <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.generate(input_ids, max_new_tokens<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>max_new_tokens)</span>
+<span id="cb36-18">    </span>
+<span id="cb36-19">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ensure all XPU operations are completed before recording end time</span></span>
+<span id="cb36-20">    torch.xpu.synchronize()</span>
+<span id="cb36-21">    </span>
+<span id="cb36-22">    end <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> time.time()  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Record the end time</span></span>
+<span id="cb36-23">    </span>
+<span id="cb36-24">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Move the output back to CPU for further processing</span></span>
+<span id="cb36-25">    output <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> output.cpu()</span>
+<span id="cb36-26">    </span>
+<span id="cb36-27">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Decode the output tokens into a human-readable string</span></span>
+<span id="cb36-28">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># skip_special_tokens=False means we keep all special tokens in the output</span></span>
+<span id="cb36-29">    output_str <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tokenizer.decode(output[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>], skip_special_tokens<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb36-30">    </span>
+<span id="cb36-31">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print the inference time</span></span>
+<span id="cb36-32">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'Inference time: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>end<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>st<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> seconds'</span>)</span>
+<span id="cb36-33">    </span>
+<span id="cb36-34">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print the original prompt</span></span>
+<span id="cb36-35">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'-'</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Prompt'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'-'</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>)</span>
+<span id="cb36-36">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(prompt)</span>
+<span id="cb36-37"></span>
+<span id="cb36-38"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Print the model's response</span></span>
+<span id="cb36-39"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'-'</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Response (skip_special_tokens=False)'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'-'</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>)</span>
+<span id="cb36-40"></span>
+<span id="cb36-41"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Extract the actual response from the output string</span></span>
+<span id="cb36-42"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># This assumes the response is between the last '&lt;|end_header_id|&gt;\n\n' and '&lt;|eot_id|&gt;'</span></span>
+<span id="cb36-43">response <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> output_str.split(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'&lt;|end_header_id|&gt;</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>].split(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'&lt;|eot_id|&gt;'</span>)[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="cb36-44"></span>
+<span id="cb36-45"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Display the response using Markdown formatting</span></span>
+<span id="cb36-46">Markdown(response)</span></code></pre></div>
+<pre class="text"><code>Inference time: 51.17 seconds
+-------------------- Prompt --------------------
+&lt;|begin_of_text|&gt;&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;
+
+Provide a clear, concise, and intuitive description of AI for beginners.&lt;|eot_id|&gt;&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;
+
+
+-------------------- Response (skip_special_tokens=False) --------------------</code></pre>
+<div class="callout callout-style-default callout-note callout-titled" title="Model Response:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Model Response:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Here’s a clear, concise, and intuitive description of AI for beginners:</p>
+<p><strong>What is AI?</strong></p>
+<p>Artificial Intelligence (AI) is a type of computer technology that allows machines to think and learn like humans. It’s a way to create intelligent systems that can perform tasks that typically require human intelligence, such as:</p>
+<ul>
+<li>Recognizing images and objects</li>
+<li>Understanding natural language</li>
+<li>Making decisions</li>
+<li>Solving problems</li>
+<li>Learning from data</li>
+</ul>
+<p><strong>How does AI work?</strong></p>
+<p>AI uses a combination of algorithms, data, and computer power to mimic human thought processes. Here’s a simplified overview:</p>
+<ol type="1">
+<li><strong>Data collection</strong>: Large amounts of data are gathered from various sources, such as images, text, or sensor readings.</li>
+<li><strong>Pattern recognition</strong>: AI algorithms analyze the data to identify patterns, relationships, and trends.</li>
+<li><strong>Machine learning</strong>: The AI system uses this analysis to make predictions, classify data, or make decisions.</li>
+<li><strong>Improvement</strong>: The AI system learns from its experiences and adjusts its performance over time.</li>
+</ol>
+<p><strong>Types of AI</strong></p>
+<p>There are several types of AI, including:</p>
+<ul>
+<li><strong>Narrow or Weak AI</strong>: Designed to perform a specific task, like facial recognition or language translation.</li>
+<li><strong>Strong or General AI</strong>: A hypothetical AI that can perform any intellectual task that humans can.</li>
+<li><strong>Superintelligence</strong>: A hypothetical AI that surpasses human intelligence in all domains.</li>
+</ul>
+<p><strong>Key benefits of AI</strong></p>
+<p>AI has many benefits, including:</p>
+<ul>
+<li><strong>Improved efficiency</strong>: AI can automate repetitive tasks, freeing up human time for more complex and creative work.</li>
+<li><strong>Enhanced decision-making</strong>: AI can analyze vast amounts of data to make informed decisions.</li>
+<li><strong>Personalization</strong>: AI can tailor experiences to individual preferences and needs.</li>
+</ul>
+<p><strong>Key concepts</strong></p>
+<p>Some key concepts to keep in mind:</p>
+<ul>
+<li><strong>Machine learning</strong>: A type of AI that improves over time based on data experience.</li>
+<li><strong>Deep learning</strong>: A type of machine learning that uses neural networks to analyze complex data.</li>
+<li><strong>Natural language processing</strong>: A type of AI that enables computers to understand and generate human-like language.</li>
+</ul>
+<p>That’s a basic introduction to AI for beginners! I hope this helps you understand the basics of this exciting and rapidly evolving field.</p>
+</div>
+</div>
+</section>
+</section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>In this tutorial, we set up Intel’s PyTorch extension on Ubuntu and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=linux%2fwsl2&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
+<p>In this tutorial, we set up Intel’s PyTorch extension on Ubuntu to train an image classification model and run a local Large Language Model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=linux%2fwsl2&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Questions:">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1752,6 +1721,806 @@ About Me:
   <category>arc-gpu</category>
   <category>getting-started</category>
   <guid>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-ubuntu/</guid>
+  <pubDate>Sun, 22 Sep 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
+<item>
+  <title>Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/</link>
+  <description><![CDATA[ 
+
+
+
+
+<ul>
+<li>Introduction</li>
+<li>Enable Resizable BAR in BIOS</li>
+<li>Install Drivers</li>
+<li>Install Microsoft Visual C++ Redistributable</li>
+<li>Disable Integrated Graphics</li>
+<li>Set Up a Python Environment<br>
+</li>
+<li>Modify PyTorch Code<br>
+</li>
+<li>Conclusion</li>
+</ul>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://www.microsoft.com/en-us/windows">Windows</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it includes support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
+<p>The XMX engines are dedicated hardware for performing matrix operations like those in deep-learning workloads. Intel’s PyTorch extension allows us to leverage this hardware with minimal changes to existing PyTorch code.</p>
+<p>To illustrate this, we’ll adapt the training code from my <a href="https://christianjmills.com/posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all steps required to set up Windows for training PyTorch models using Arc GPUs.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The current setup process is for version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/2.3.110+xpu/"><code>2.3.110+xpu</code></a> of Intel’s PyTorch extension.</p>
+</div>
+</div>
+</section>
+<section id="enable-resizable-bar-in-bios" class="level2">
+<h2 class="anchored" data-anchor-id="enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</h2>
+<p>If you have an Arc GPU, one of the first things you should do is enable Resizable BAR. Resizable BAR allows a computer’s processor to access the graphics card’s entire memory instead of in small chunks. The Arc GPUs currently require this feature to perform as intended. You can enable the feature in your motherboard’s BIOS.</p>
+<p>Here are links on how to do this for some of the popular motherboard manufacturers:</p>
+<ul>
+<li><a href="https://www.asrock.com/support/faq.asp?id=498">ASRock</a></li>
+<li><a href="https://www.asus.com/support/FAQ/1046107/">Asus</a></li>
+<li><a href="https://www.evga.com/support/faq/FAQdetails.aspx?faqid=59772">EVGA</a></li>
+<li><a href="https://www.gigabyte.com/WebPage/785/NVIDIA_resizable_bar.html">Gigabyte</a></li>
+<li><a href="https://www.msi.com/blog/unlock-system-performance-to-extreme-resizable-bar">MSI</a></li>
+</ul>
+<p>With Resizable BAR enabled, let’s ensure we have the latest drivers for our Arc GPU.</p>
+</section>
+<section id="install-drivers" class="level2">
+<h2 class="anchored" data-anchor-id="install-drivers">Install Drivers</h2>
+<p>We can download the latest Arc GPU drivers from Intel’s website at the link below:</p>
+<ul>
+<li><a href="https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html?">Intel® Arc™ &amp; Iris® Xe Graphics - Windows</a></li>
+</ul>
+<p>The latest driver version available was <code>32.0.101.6078</code> at the time of writing. Click the <code>Download</code> button under <code>Available Downloads</code> to download the installer.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/download-intel-graphics-driver-installer-windows.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>Once downloaded, double-click the installer executable and follow the prompts to install the drivers.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/intel-graphics-driver-installer-begin-installation.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>You don’t need to agree to join the Intel Computing Improvement program to install the drivers.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/intel-graphics-driver-installer-intel-computing-improvement-program.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>Once the installation completes, click the <code>Reboot Recommended</code> button to reboot the computer.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/intel-graphics-driver-installer-installation-complete-reboot.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>We can continue with the next step once we’re back in Windows.</p>
+</section>
+<section id="install-microsoft-visual-c-redistributable" class="level2">
+<h2 class="anchored" data-anchor-id="install-microsoft-visual-c-redistributable">Install Microsoft Visual C++ Redistributable</h2>
+<p>Intel’s documentation also lists the Microsoft Visual C++ Redistributable as a dependency for this extension version, so make sure to install it as well. You can download the latest version at the link below:</p>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version">Latest Microsoft Visual C++ Redistributable Version</a></li>
+</ul>
+</section>
+<section id="disable-integrated-graphics" class="level2">
+<h2 class="anchored" data-anchor-id="disable-integrated-graphics">Disable Integrated Graphics</h2>
+<p>I encountered the following error when I attempted to use this version of Intel’s PyTorch extension on Windows:</p>
+<pre class="text"><code>RuntimeError: Can't add devices across platforms to a single context. -33 (PI_ERROR_INVALID_DEVICE)</code></pre>
+<p>I could only resolve the issue by deactivating the iGPU in the Windows Device Manager. Future versions of the extension may eliminate this bug, but I’ll include the steps to turn off the iGPU for now.</p>
+<p>Type Device Manager into the Windows search bar and click Open.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-search-device-manager.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>You will see the following popup message if you are not using an Administrator account. Click <code>OK</code> to continue.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-standard-user-warning.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>In the Device Manager window, open the <code>Display adapters</code> dropdown. There should be at least two options: the Arc GPU and the iGPU included with the CPU. Double-click the iGPU listing to open its properties window.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-select-integrated-graphics.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>Non-Administrator users must click the <code>Change settings</code> button to enable changes to the iGPU device properties.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-integrated-graphics-properties-change-settings.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>Next, select the <code>Driver</code> tab and click the <code>Disable Device</code> button.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-integrated-graphics-properties-disable-device.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<p>Click <code>Yes</code> in the popup window to confirm the changes.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/windows-device-manager-integrated-graphics-properties-disable-device-confirm.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You will need to repeat this step when you install new graphics drivers in the future, assuming future releases of Intel’s extension do not resolve the issue.</p>
+</div>
+</div>
+</section>
+<section id="set-up-a-python-environment" class="level2">
+<h2 class="anchored" data-anchor-id="set-up-a-python-environment">Set Up a Python Environment</h2>
+<p>Now, we can create a Python environment to run the training code. We’ll install a patched version of PyTorch needed for Intel’s extension, the extension itself, and the other dependencies for the training code.</p>
+<section id="install-mamba-package-manager" class="level3">
+<h3 class="anchored" data-anchor-id="install-mamba-package-manager">Install Mamba Package Manager</h3>
+<p>We’ll use the <a href="https://mamba.readthedocs.io/en/latest/">Mamba</a> package manager to create the Python environment. I have a dedicated tutorial for setting up Mamba on Windows:</p>
+<ul>
+<li><a href="../../../posts/mamba-getting-started-tutorial-windows/"><strong>Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows</strong></a></li>
+</ul>
+<p>Open a command prompt window with the mamba environment active and navigate to a folder to store the training notebooks. For convenience, here is the command to activate the mamba environment from any command prompt window:</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb2-1"><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">%</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">USERPROFILE</span><span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">%</span>\mambaforge\Scripts\activate</span></code></pre></div>
+</section>
+<section id="create-a-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-python-environment">Create a Python Environment</h3>
+<p>Next, we’ll create a Python environment and activate it. The current version of the extension supports Python 3.11, so we’ll use that.</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb3-1">mamba create -<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-name</span> pytorch<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-arc</span> python=3.11 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span>
+<span id="cb3-2">mamba activate pytorch<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-arc</span></span></code></pre></div>
+</section>
+<section id="install-prerequisite-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-prerequisite-packages">Install Prerequisite Packages</h3>
+<p>The package for Intel’s PyTorch extension requires the <a href="https://anaconda.org/conda-forge/libuv">libuv</a> conda package:</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb4-1">mamba install libuv <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-y</span></span></code></pre></div>
+</section>
+<section id="install-pytorch-and-intels-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="install-pytorch-and-intels-pytorch-extension">Install PyTorch and Intel’s PyTorch extension</h3>
+<p>The following command will install the patched version of PyTorch and the extension itself:</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb5-1">pip install torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi torchaudio==2.3.1+cxx11.abi intel<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-extension-for-pytorch</span>==2.3.110+xpu -<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-extra-index-url</span> https:/<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/pytorch-extension</span>.intel.com<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/release-whl/stable/xpu/us</span>/</span></code></pre></div>
+</section>
+<section id="install-training-code-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="install-training-code-dependencies">Install Training Code Dependencies</h3>
+<p>After that, we’ll install the training code dependencies. You can learn about these dependencies (<a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/#installing-additional-libraries">here</a>).</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb6-1">pip install jupyter matplotlib pandas pillow timm torcheval torchtnt tqdm</span>
+<span id="cb6-2">pip install cjm_pandas_utils cjm_psl_utils cjm_pil_utils cjm_pytorch_utils cjm_torchvision_tfms</span></code></pre></div>
+<div class="callout callout-style-default callout-important callout-titled" title="oneDNN Memory Layout">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+oneDNN Memory Layout
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The previous version of this tutorial set an environment variable for the oneDNN memory layout to improve training speed. The performance improvement from this step is no longer significant and even prevents successful training for other model types.</p>
+<p>If you followed the previous version of this tutorial, run the following commands to deactivate this environment variable:</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb7-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">IPEX_XPU_ONEDNN_LAYOUT</span>=0</span>
+<span id="cb7-2">setx IPEX_XPU_ONEDNN_LAYOUT 0</span></code></pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="modify-pytorch-code" class="level2">
+<h2 class="anchored" data-anchor-id="modify-pytorch-code">Modify PyTorch Code</h2>
+<p>It’s finally time to train a model. The Jupyter Notebooks with the original and modified training code are available on GitHub at the links below.</p>
+<ul>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/pytorch-timm-image-classifier-training-windows.ipynb">notebooks/pytorch-timm-image-classifier-training-windows.ipynb</a></li>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/intel-arc-pytorch-timm-image-classifier-training-windows.ipynb">notebooks/intel-arc-pytorch-timm-image-classifier-training-windows.ipynb</a></li>
+<li><a href="https://github.com/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/windows_utils.py">notebooks/windows_utils.py</a></li>
+</ul>
+<p>You can also download the notebooks to the current directory by running the following commands:</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb8-1">curl <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-o</span> pytorch<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-timm-image-classifier-training-windows</span>.ipynb https:/<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/github</span>.com<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/pytorch-timm-image-classifier-training-windows</span>.ipynb</span></code></pre></div>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb9-1">curl <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-o</span> intel<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-arc-pytorch-timm-image-classifier-training-windows-without-hf-datasets</span>.ipynb https:/<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/raw</span>.githubusercontent.com<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/main/notebooks/intel-arc-pytorch-timm-image-classifier-training-windows</span>.ipynb</span></code></pre></div>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb10-1">curl <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-o</span> windows_utils.py https:/<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/github</span>.com<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">/cj-mills/pytorch-timm-gesture-recognition-tutorial-code/blob/main/notebooks/windows_utils</span>.py</span></code></pre></div>
+<p>Once downloaded, run the following command to launch the Jupyter Notebook Environment:</p>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb11-1">jupyter notebook</span></code></pre></div>
+<section id="import-pytorch-extension" class="level3">
+<h3 class="anchored" data-anchor-id="import-pytorch-extension">Import PyTorch Extension</h3>
+<p>We import Intel’s PyTorch extension with the following code:</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode cmd code-with-copy"><code class="sourceCode dosbat"><span id="cb12-1">import torch</span>
+<span id="cb12-2">import intel_extension_for_pytorch as ipex</span>
+<span id="cb12-3"></span>
+<span id="cb12-4"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">print</span>(f'PyTorch Version: {torch.__version__}'<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb12-5"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">print</span>(f'Intel PyTorch Extension Version: {ipex.__version__}'<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span></code></pre></div>
+<pre class="text"><code>C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\torchvision\io\image.py:13: UserWarning: Failed to load image Python extension: 'Could not find module 'C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\torchvision\image.pyd' (or one of its dependencies). Try using the full path with constructor syntax.'If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
+  warn(
+
+PyTorch Version: 2.3.1+cxx11.abi
+Intel PyTorch Extension Version: 2.3.110+xpu
+
+C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\intel_extension_for_pytorch\llm\__init__.py:9: UserWarning: failed to use huggingface generation fuctions due to: No module named 'transformers'.
+  warnings.warn(f"failed to use huggingface generation fuctions due to: {e}.")</code></pre>
+</section>
+<section id="update-pytorch-imports" class="level3">
+<h3 class="anchored" data-anchor-id="update-pytorch-imports">Update PyTorch Imports</h3>
+<p>We don’t want to re-import <code>torch</code> after the extension, so we’ll remove that line from the <code>Import PyTorch dependencies</code> section.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PyTorch dependencies</span></span>
+<span id="cb14-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch.nn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> nn</span>
+<span id="cb14-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> autocast</span>
+<span id="cb14-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.cuda.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> GradScaler</span>
+<span id="cb14-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.utils.data <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Dataset, DataLoader</span></code></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Import PyTorch dependencies</span></span>
+<span id="cb15-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb15-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch.nn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> nn</span>
+<span id="cb15-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> autocast</span>
+<span id="cb15-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.cuda.amp <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> GradScaler</span>
+<span id="cb15-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torch.utils.data <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Dataset, DataLoader</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="verify-arc-gpu-availability" class="level3">
+<h3 class="anchored" data-anchor-id="verify-arc-gpu-availability">Verify Arc GPU Availability</h3>
+<p>We can double-check that the extension can use the Arc GPU by getting the properties of the available <code>xpu</code> devices.</p>
+<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> get_public_properties(obj):</span>
+<span id="cb16-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> {</span>
+<span id="cb16-3">        prop: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">getattr</span>(obj, prop)</span>
+<span id="cb16-4">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> prop <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">dir</span>(obj)</span>
+<span id="cb16-5">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> prop.startswith(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"__"</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">callable</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">getattr</span>(obj, prop))</span>
+<span id="cb16-6">    }</span>
+<span id="cb16-7"></span>
+<span id="cb16-8">xpu_device_count <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.xpu.device_count()</span>
+<span id="cb16-9">dict_properties_list <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [get_public_properties(torch.xpu.get_device_properties(i)) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(xpu_device_count)]</span>
+<span id="cb16-10">pd.DataFrame(dict_properties_list)</span></code></pre></div>
+<div style="overflow-x:auto;">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+driver_version
+</th>
+<th>
+gpu_eu_count
+</th>
+<th>
+gpu_subslice_count
+</th>
+<th>
+has_atomic64
+</th>
+<th>
+has_fp16
+</th>
+<th>
+has_fp64
+</th>
+<th>
+max_compute_units
+</th>
+<th>
+max_num_sub_groups
+</th>
+<th>
+max_work_group_size
+</th>
+<th>
+name
+</th>
+<th>
+platform_name
+</th>
+<th>
+sub_group_sizes
+</th>
+<th>
+total_memory
+</th>
+<th>
+type
+</th>
+<th>
+vendor
+</th>
+<th>
+version
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+1.3.30714
+</td>
+<td>
+512
+</td>
+<td>
+64
+</td>
+<td>
+True
+</td>
+<td>
+True
+</td>
+<td>
+False
+</td>
+<td>
+512
+</td>
+<td>
+128
+</td>
+<td>
+1024
+</td>
+<td>
+Intel(R) Arc(TM) A770 Graphics
+</td>
+<td>
+Intel(R) Level-Zero
+</td>
+<td>
+[8, 16, 32]
+</td>
+<td>
+16704737280
+</td>
+<td>
+gpu
+</td>
+<td>
+Intel(R) Corporation
+</td>
+<td>
+1.5
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>In this case, the A770 is the only device listed since we deactivated the integrated graphics on the CPU.</p>
+</section>
+<section id="update-the-device-name" class="level3">
+<h3 class="anchored" data-anchor-id="update-the-device-name">Update the Device Name</h3>
+<p>Next, we’ll manually set the device name to <code>xpu</code>.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" aria-controls="tabset-2-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" aria-controls="tabset-2-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1">device <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'xpu'</span></span>
+<span id="cb17-2">dtype <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.float32</span>
+<span id="cb17-3">device, dtype</span></code></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" aria-labelledby="tabset-2-2-tab">
+<div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">device <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_torch_device()</span>
+<span id="cb18-2">dtype <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.float32</span>
+<span id="cb18-3">device, dtype</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="optimize-the-model-and-optimizer-objects" class="level3">
+<h3 class="anchored" data-anchor-id="optimize-the-model-and-optimizer-objects">Optimize the <code>model</code> and <code>optimizer</code> Objects</h3>
+<p>Before we run the <code>train_loop</code> function, we’ll use Intel’s PyTorch extension to apply optimizations to the model and optimizer objects. We’ll also cast the model to the <code>bfloat16</code> data type, so we can train using mixed precision.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" aria-controls="tabset-3-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" aria-controls="tabset-3-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" aria-labelledby="tabset-3-1-tab">
+<div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate for the model</span></span>
+<span id="cb19-2">lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-3</span></span>
+<span id="cb19-3"></span>
+<span id="cb19-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Number of training epochs</span></span>
+<span id="cb19-5">epochs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb19-6"></span>
+<span id="cb19-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb19-8">optimizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, eps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-5</span>)</span>
+<span id="cb19-9"></span>
+<span id="cb19-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Optimize the model and optimizer objects</span></span>
+<span id="cb19-11">model, optimizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> ipex.optimize(model, optimizer<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>optimizer, dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>torch.bfloat16)</span>
+<span id="cb19-12"></span>
+<span id="cb19-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb19-14">lr_scheduler <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb19-15">                                                   max_lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, </span>
+<span id="cb19-16">                                                   total_steps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>epochs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(train_dataloader))</span>
+<span id="cb19-17"></span>
+<span id="cb19-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb19-19">metric <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> MulticlassAccuracy()</span></code></pre></div>
+</div>
+<div id="tabset-3-2" class="tab-pane" aria-labelledby="tabset-3-2-tab">
+<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate for the model</span></span>
+<span id="cb20-2">lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-3</span></span>
+<span id="cb20-3"></span>
+<span id="cb20-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Number of training epochs</span></span>
+<span id="cb20-5">epochs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb20-6"></span>
+<span id="cb20-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># AdamW optimizer; includes weight decay for regularization</span></span>
+<span id="cb20-8">optimizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, eps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-5</span>)</span>
+<span id="cb20-9"></span>
+<span id="cb20-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Learning rate scheduler; adjusts the learning rate during training</span></span>
+<span id="cb20-11">lr_scheduler <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.optim.lr_scheduler.OneCycleLR(optimizer, </span>
+<span id="cb20-12">                                                   max_lr<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>lr, </span>
+<span id="cb20-13">                                                   total_steps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>epochs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(train_dataloader))</span>
+<span id="cb20-14"></span>
+<span id="cb20-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Performance metric: Multiclass Accuracy</span></span>
+<span id="cb20-16">metric <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> MulticlassAccuracy()</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="train-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="train-the-model">Train the Model</h3>
+<p>That’s it for the required changes to the training code. We can now run the <code>train_loop</code> function.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" aria-controls="tabset-4-1" aria-selected="true">Current</a></li><li class="nav-item"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" aria-controls="tabset-4-2" aria-selected="false">Previous</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" aria-labelledby="tabset-4-1-tab">
+<pre class="text"><code>Epochs: 100% |█████████| 3/3 [24:21&lt;00:00, 478.44s/it]
+Train: 100% |█████████| 4324/4324 [07:56&lt;00:00, 10.52it/s, accuracy=0.844, avg_loss=0.535, loss=0.572, lr=0.000994]
+Eval: 100% |█████████| 481/481 [00:49&lt;00:00, 28.10it/s, accuracy=0.95, avg_loss=0.162, loss=0.0692, lr=]
+Train: 100% |█████████| 4324/4324 [07:41&lt;00:00, 10.73it/s, accuracy=0.914, avg_loss=0.281, loss=0.412, lr=0.000462]
+Eval: 100% |█████████| 481/481 [00:23&lt;00:00, 28.84it/s, accuracy=0.979, avg_loss=0.0653, loss=0.0793, lr=]
+Train: 100% |█████████| 4324/4324 [07:09&lt;00:00, 11.16it/s, accuracy=0.96, avg_loss=0.124, loss=0.0497, lr=4.03e-9]
+Eval: 100% |█████████| 481/481 [00:21&lt;00:00, 29.63it/s, accuracy=0.99, avg_loss=0.0314, loss=0.0783, lr=]</code></pre>
+</div>
+<div id="tabset-4-2" class="tab-pane" aria-labelledby="tabset-4-2-tab">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/images/arc-a770-pytorch-training-session-native-windows.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>The training speed is significantly slower with this extension version. Although, it seems to improve with each iteration through the dataset.</p>
+</section>
+<section id="update-the-inference-code" class="level3">
+<h3 class="anchored" data-anchor-id="update-the-inference-code">Update the Inference Code</h3>
+<p>Since we cast the model to <code>bloat16</code>, we must ensure input data use the same type. We can update the inference code using the auto-cast context manager as shown below:</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" aria-controls="tabset-5-1" aria-selected="true">Modified</a></li><li class="nav-item"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" aria-controls="tabset-5-2" aria-selected="false">Original</a></li></ul>
+<div class="tab-content">
+<div id="tabset-5-1" class="tab-pane active" aria-labelledby="tabset-5-1-tab">
+<div class="sourceCode" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Make a prediction with the model</span></span>
+<span id="cb22-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.no_grad(), autocast(torch.device(device).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span>):</span>
+<span id="cb22-3">    pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model(img_tensor)</span></code></pre></div>
+</div>
+<div id="tabset-5-2" class="tab-pane" aria-labelledby="tabset-5-2-tab">
+<div class="sourceCode" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Make a prediction with the model</span></span>
+<span id="cb23-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.no_grad():</span>
+<span id="cb23-3">    pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model(img_tensor)</span></code></pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>In this tutorial, we set up Intel’s PyTorch extension for the Windows OS and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=windows&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Questions:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Questions:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Feel free to post questions or problems related to this tutorial in the comments below. I try to make time to address them on Thursdays and Fridays.</li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>I’m Christian Mills, a deep learning consultant specializing in computer vision and practical AI implementations.</li>
+<li>I help clients leverage cutting-edge AI technologies to solve real-world problems.</li>
+<li>Learn more <a href="../../../about.html">about me</a> or reach out via email at <a href="mailto:christian@christianjmills.com">christian@christianjmills.com</a> to discuss your project.</li>
+</ul>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>pytorch</category>
+  <category>windows</category>
+  <category>image-classification</category>
+  <category>arc-gpu</category>
+  <category>getting-started</category>
+  <guid>https://christianjmills.com/posts/intel-pytorch-extension-tutorial/native-windows/</guid>
   <pubDate>Sat, 21 Sep 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>

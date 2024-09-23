@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Christian Mills">
-<meta name="dcterms.date" content="2024-09-21">
-<meta name="description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs.">
+<meta name="dcterms.date" content="2024-09-22">
+<meta name="description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train computer vision models and run local large language models with Arc GPUs.">
 
 <title>Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu – Christian Mills</title>
 <style>
@@ -110,13 +110,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <link rel="stylesheet" href="../../../styles.css">
 <meta property="og:title" content="Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu – Christian Mills">
-<meta property="og:description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs.">
+<meta property="og:description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train computer vision models and run local large language models with Arc GPUs.">
 <meta property="og:image" content="https://christianjmills.com/images/default-preview-image-black.png">
 <meta property="og:site_name" content="Christian Mills">
 <meta property="og:image:height" content="284">
 <meta property="og:image:width" content="526">
 <meta name="twitter:title" content="Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu – Christian Mills">
-<meta name="twitter:description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs.">
+<meta name="twitter:description" content="This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train computer vision models and run local large language models with Arc GPUs.">
 <meta name="twitter:image" content="https://christianjmills.com/images/default-preview-image-black.png">
 <meta name="twitter:creator" content="@cdotjdotmills">
 <meta name="twitter:site" content="@cdotjdotmills">
@@ -227,6 +227,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#train-the-model" id="toc-train-the-model" class="nav-link" data-scroll-target="#train-the-model">Train the Model</a></li>
   <li><a href="#update-the-inference-code" id="toc-update-the-inference-code" class="nav-link" data-scroll-target="#update-the-inference-code">Update the Inference Code</a></li>
   </ul></li>
+  <li><a href="#local-llm-inference-with-ipex-llm" id="toc-local-llm-inference-with-ipex-llm" class="nav-link" data-scroll-target="#local-llm-inference-with-ipex-llm">Local LLM Inference with <code>IPEX-LLM</code></a>
+  <ul>
+  <li><a href="#install-oneapi-packages" id="toc-install-oneapi-packages" class="nav-link" data-scroll-target="#install-oneapi-packages">Install oneAPI Packages</a>
+  <ul class="collapse">
+  <li><a href="#set-the-oneapi-environment-variables" id="toc-set-the-oneapi-environment-variables" class="nav-link" data-scroll-target="#set-the-oneapi-environment-variables">Set the oneAPI Environment Variables</a></li>
+  </ul></li>
+  <li><a href="#create-a-new-python-environment" id="toc-create-a-new-python-environment" class="nav-link" data-scroll-target="#create-a-new-python-environment">Create a New Python Environment</a></li>
+  <li><a href="#install-pip-packages" id="toc-install-pip-packages" class="nav-link" data-scroll-target="#install-pip-packages">Install PIP Packages</a></li>
+  <li><a href="#set-environment-variables-1" id="toc-set-environment-variables-1" class="nav-link" data-scroll-target="#set-environment-variables-1">Set Environment Variables</a></li>
+  <li><a href="#import-the-required-dependencies" id="toc-import-the-required-dependencies" class="nav-link" data-scroll-target="#import-the-required-dependencies">Import the Required Dependencies</a></li>
+  <li><a href="#define-a-function-to-prepare-the-prompt" id="toc-define-a-function-to-prepare-the-prompt" class="nav-link" data-scroll-target="#define-a-function-to-prepare-the-prompt">Define a Function to Prepare the Prompt</a></li>
+  <li><a href="#load-the-model-in-int4" id="toc-load-the-model-in-int4" class="nav-link" data-scroll-target="#load-the-model-in-int4">Load the Model in INT4</a></li>
+  <li><a href="#define-inference-parameters" id="toc-define-inference-parameters" class="nav-link" data-scroll-target="#define-inference-parameters">Define Inference Parameters</a></li>
+  <li><a href="#perform-inference" id="toc-perform-inference" class="nav-link" data-scroll-target="#perform-inference">Perform Inference</a></li>
+  </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
@@ -248,7 +263,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div>
   <div class="description">
-    This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs.
+    This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train computer vision models and run local large language models with Arc GPUs.
   </div>
 </div>
 
@@ -265,7 +280,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 21, 2024</p>
+      <p class="date">September 22, 2024</p>
     </div>
   </div>
   
@@ -288,13 +303,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
 <li><a href="#modify-pytorch-code">Modify PyTorch Code</a><br>
 </li>
+<li><a href="#local-llm-inference-with-ipex-llm">Local LLM Inference with <code>IPEX-LLM</code></a><br>
+</li>
 <li><a href="#conclusion">Conclusion</a></li>
 </ul>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>In this tutorial, I’ll guide you through setting up Intel’s <a href="https://github.com/intel/intel-extension-for-pytorch">PyTorch extension</a> on <a href="https://ubuntu.com/download/desktop">Ubuntu</a> to train models with their <a href="https://www.intel.com/content/www/us/en/products/docs/discrete-gpus/arc/desktop/a-series/overview.html">Arc GPUs</a>. The extension provides Intel’s latest feature optimizations and hardware support before they get added to PyTorch. Most importantly for our case, it includes support for Intel’s Arc GPUs and optimizations to take advantage of their Xe Matrix Extensions (XMX).</p>
 <p>The XMX engines are dedicated hardware for performing matrix operations like those in deep-learning workloads. Intel’s PyTorch extension allows us to leverage this hardware with minimal changes to existing PyTorch code.</p>
-<p>To illustrate this, we’ll adapt the training code from my <a href="../../../posts/pytorch-train-image-classifier-timm-hf-tutorial/">beginner-level PyTorch tutorial</a>, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. By the end of this tutorial, you’ll know all the steps required to set up Ubuntu for training PyTorch models using Arc GPUs.</p>
+<p>To illustrate this, we will walk through two use cases. First, we’ll adapt the training code from my beginner-level PyTorch tutorial, where we fine-tune an image classification model from the <a href="https://github.com/huggingface/pytorch-image-models">timm library</a> for hand gesture recognition. Second, we will use the <a href="https://github.com/intel-analytics/ipex-llm"><code>ipex-llm</code></a> library, which builds on Intel’s PyTorch extension, to perform inference with the <a href="https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct">LLaMA 3.1 8B Instruct</a> model.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -785,9 +802,287 @@ Eval: 100% |█████████| 481/481 [00:13&lt;00:00, 43.28it/
 </div>
 </section>
 </section>
+<section id="local-llm-inference-with-ipex-llm" class="level2">
+<h2 class="anchored" data-anchor-id="local-llm-inference-with-ipex-llm">Local LLM Inference with <code>IPEX-LLM</code></h2>
+<p>To close out this tutorial, we will cover how to perform local LLM inference using Intel’s <a href="https://github.com/intel-analytics/ipex-llm"><code>ipex-llm</code></a> library. This library allows us to run many popular LLMs in INT4 precision on our Arc GPU.</p>
+<section id="install-oneapi-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-oneapi-packages">Install oneAPI Packages</h3>
+<p>The <code>ipex-llm</code> library requires packages from the oneAPI toolkit. Run the following commands to install them:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Refresh sudo credentials without running a command</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-v</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Download Intel's GPG key, convert it to a format for the package manager, and save it</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-O-</span> https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB <span class="kw">|</span> <span class="ex">gpg</span> <span class="at">--dearmor</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /usr/share/keyrings/oneapi-archive-keyring.gpg <span class="op">&gt;</span> /dev/null</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Add Intel's repository to the system's package sources</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main"</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/apt/sources.list.d/oneAPI.list</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Update the package list to include Intel's repository</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt update</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Install specific versions of Intel oneAPI components</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install intel-oneapi-common-vars=2024.0.0-49406 <span class="dt">\</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-common-oneapi-vars=2024.0.0-49406 <span class="dt">\</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-diagnostics-utility=2024.0.0-49093 <span class="dt">\</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 <span class="dt">\</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-dpcpp-ct=2024.0.0-49381 <span class="dt">\</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-mkl=2024.0.0-49656 <span class="dt">\</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-mkl-devel=2024.0.0-49656 <span class="dt">\</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-mpi=2021.11.0-49493 <span class="dt">\</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-mpi-devel=2021.11.0-49493 <span class="dt">\</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-dal=2024.0.1-25 <span class="dt">\</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-dal-devel=2024.0.1-25 <span class="dt">\</span></span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-ippcp=2021.9.1-5 <span class="dt">\</span></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-ippcp-devel=2021.9.1-5 <span class="dt">\</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-ipp=2021.10.1-13 <span class="dt">\</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-ipp-devel=2021.10.1-13 <span class="dt">\</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-tlt=2024.0.0-352 <span class="dt">\</span></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-ccl=2021.11.2-5 <span class="dt">\</span></span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-ccl-devel=2021.11.2-5 <span class="dt">\</span></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-dnnl-devel=2024.0.0-49521 <span class="dt">\</span></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-dnnl=2024.0.0-49521 <span class="dt">\</span></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>  intel-oneapi-tcm-1.0=1.0.0-435</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="set-the-oneapi-environment-variables" class="level4">
+<h4 class="anchored" data-anchor-id="set-the-oneapi-environment-variables">Set the oneAPI Environment Variables</h4>
+<p>You will need to run the following command to activate the oneAPI environment variables after starting a new shell:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up the oneAPI environment variables for the current shell session</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> /opt/intel/oneapi/setvars.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Alternatively, you can run the following command to add it to the <code>.bashrc</code> file:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">'source /opt/intel/oneapi/setvars.sh &gt; /dev/null 2&gt;&amp;1'</span> <span class="op">&gt;&gt;</span> ~/.bashrc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="create-a-new-python-environment" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-new-python-environment">Create a New Python Environment</h3>
+<p>Each library version depends on specific versions of Intel’s PyTorch extension. The most recent release of <code>ipex-llm</code> still depends on version <code>2.1.10+xpu</code> of the extension.</p>
+<p>We can create a dedicated mamba environment for this library to avoid dependency conflicts:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> create <span class="at">--name</span> ipex-llm-env python=3.11 <span class="at">-y</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> activate ipex-llm-env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="install-pip-packages" class="level3">
+<h3 class="anchored" data-anchor-id="install-pip-packages">Install PIP Packages</h3>
+<p>We will use the LLaMA 3.1 8B Instruct model for demonstration purposes, which requires <a href="https://github.com/huggingface/transformers"><code>transformers</code></a> <code>4.43.1</code> or newer. We also need the <a href="https://huggingface.co/docs/trl/en/index"><code>trl</code></a> (Transformer Reinforcement Learning) package.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Installs intel_extension_for_pytorch==2.1.10+xpu as default</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">--pre</span> <span class="at">--upgrade</span> ipex-llm<span class="pp">[</span><span class="ss">xpu</span><span class="pp">]</span> <span class="at">--extra-index-url</span> https://pytorch-extension.intel.com/release-whl/stable/xpu/us/</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install jupyter transformers==4.43.1 trl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can launch a new Jupyter Notebook environment once the dependencies finish installing.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="set-environment-variables-1" class="level3">
+<h3 class="anchored" data-anchor-id="set-environment-variables-1">Set Environment Variables</h3>
+<p>With our environment set up, we can dive into the code. First, we need to set the following environment variables:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'OCL_ICD_VENDORS'</span>] <span class="op">=</span> <span class="st">'/etc/OpenCL/vendors'</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'CCL_ROOT'</span>] <span class="op">=</span> os.environ.get(<span class="st">'CONDA_PREFIX'</span>, <span class="st">''</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'USE_XETLA'</span>] <span class="op">=</span> <span class="st">'OFF'</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'SYCL_CACHE_PERSISTENT'</span>] <span class="op">=</span> <span class="st">'1'</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS'</span>] <span class="op">=</span> <span class="st">'1'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="import-the-required-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="import-the-required-dependencies">Import the Required Dependencies</h3>
+<p>Next, we will import the necessary Python packages into our Jupyter Notebook.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> argparse</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ipex_llm.transformers <span class="im">import</span> AutoModelForCausalLM</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> Markdown</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can use the <code>Markdown</code> class from IPython to render Markdown output from the model inside the notebook.</p>
+</section>
+<section id="define-a-function-to-prepare-the-prompt" class="level3">
+<h3 class="anchored" data-anchor-id="define-a-function-to-prepare-the-prompt">Define a Function to Prepare the Prompt</h3>
+<p>We can use the following function from this <a href="https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/HuggingFace/LLM/llama3.1/generate.py">example script</a> to prepare prompts for the LLama 3.1 model:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_prompt(user_input: <span class="bu">str</span>, chat_history: <span class="bu">list</span>[<span class="bu">tuple</span>[<span class="bu">str</span>, <span class="bu">str</span>]], system_prompt: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Generate a formatted prompt for a LLaMA 3.1 chatbot conversation.</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co">    This function takes the user's input, chat history, and system prompt,</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="co">    and combines them into a single formatted string for use in a LLaMA 3.1 chatbot system.</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="co">    user_input (str): The current input from the user.</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="co">    chat_history (list[tuple[str, str]]): A list of tuples containing previous </span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="co">                                          (user_input, assistant_response) pairs.</span></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a><span class="co">    system_prompt (str): Initial instructions or context for the LLaMA 3.1 chatbot.</span></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a><span class="co">    str: A formatted string containing the entire conversation history and current input.</span></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Start the prompt with a special token</span></span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>    prompt_texts <span class="op">=</span> [<span class="st">'&lt;|begin_of_text|&gt;'</span>]</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add system prompt if it's not empty</span></span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> system_prompt <span class="op">!=</span> <span class="st">''</span>:</span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>        prompt_texts.append(<span class="ss">f'&lt;|start_header_id|&gt;system&lt;|end_header_id|&gt;</span><span class="ch">\n\n</span><span class="sc">{</span>system_prompt<span class="sc">}</span><span class="ss">&lt;|eot_id|&gt;'</span>)</span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add each pair of user input and assistant response from the chat history</span></span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> history_input, history_response <span class="kw">in</span> chat_history:</span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a>        prompt_texts.append(<span class="ss">f'&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;</span><span class="ch">\n\n</span><span class="sc">{</span>history_input<span class="sc">.</span>strip()<span class="sc">}</span><span class="ss">&lt;|eot_id|&gt;'</span>)</span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>        prompt_texts.append(<span class="ss">f'&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;</span><span class="ch">\n\n</span><span class="sc">{</span>history_response<span class="sc">.</span>strip()<span class="sc">}</span><span class="ss">&lt;|eot_id|&gt;'</span>)</span>
+<span id="cb33-29"><a href="#cb33-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-30"><a href="#cb33-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add the current user input and prepare for assistant's response</span></span>
+<span id="cb33-31"><a href="#cb33-31" aria-hidden="true" tabindex="-1"></a>    prompt_texts.append(<span class="ss">f'&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;</span><span class="ch">\n\n</span><span class="sc">{</span>user_input<span class="sc">.</span>strip()<span class="sc">}</span><span class="ss">&lt;|eot_id|&gt;&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;</span><span class="ch">\n\n</span><span class="ss">'</span>)</span>
+<span id="cb33-32"><a href="#cb33-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb33-33"><a href="#cb33-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Join all parts of the prompt into a single string</span></span>
+<span id="cb33-34"><a href="#cb33-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">''</span>.join(prompt_texts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="load-the-model-in-int4" class="level3">
+<h3 class="anchored" data-anchor-id="load-the-model-in-int4">Load the Model in INT4</h3>
+<p>Next, we can load the LLaMA 3.1 8B Instruct model in 4-bit precision.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You will need to accept Meta’s license agreement through the model’s HuggingFace Hub page to access the model:</p>
+<ul>
+<li><a href="https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct">meta-llama/Meta-Llama-3.1-8B-Instruct</a></li>
+</ul>
+</div>
+</div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>model_path <span class="op">=</span> <span class="st">"meta-llama/Meta-Llama-3.1-8B-Instruct"</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load model in 4 bit, which converts the relevant layers in the model into INT4 format</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForCausalLM.from_pretrained(model_path,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                                             load_in_4bit<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                                             optimize_model<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>                                             trust_remote_code<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>                                             use_cache<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> model.half().to(<span class="st">'xpu'</span>)</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Load tokenizer</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(model_path, trust_remote_code<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="define-inference-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="define-inference-parameters">Define Inference Parameters</h3>
+<p>Before running the model, we must define our prompts and the maximum number of tokens the model should generate.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>DEFAULT_SYSTEM_PROMPT <span class="op">=</span> <span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>prompt_str <span class="op">=</span> <span class="st">"Provide a clear, concise, and intuitive description of AI for beginners."</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>max_new_tokens <span class="op">=</span> <span class="dv">512</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="perform-inference" class="level3">
+<h3 class="anchored" data-anchor-id="perform-inference">Perform Inference</h3>
+<p>Finally, we can run the model.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Disable gradient computation for inference</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.inference_mode():</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Generate the input prompt using a custom function</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    prompt <span class="op">=</span> get_prompt(prompt_str, [], system_prompt<span class="op">=</span>DEFAULT_SYSTEM_PROMPT)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Encode the prompt into token IDs and move to the XPU (Intel's GPU)</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    input_ids <span class="op">=</span> tokenizer.encode(prompt, return_tensors<span class="op">=</span><span class="st">"pt"</span>).to(<span class="st">'xpu'</span>)</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Perform a warmup run to optimize the model</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This run's output is discarded</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> model.generate(input_ids, max_new_tokens<span class="op">=</span>max_new_tokens)</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Start the actual inference</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    st <span class="op">=</span> time.time()  <span class="co"># Record the start time</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Generate the output using the language model</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> model.generate(input_ids, max_new_tokens<span class="op">=</span>max_new_tokens)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Ensure all XPU operations are completed before recording end time</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>    torch.xpu.synchronize()</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>    end <span class="op">=</span> time.time()  <span class="co"># Record the end time</span></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Move the output back to CPU for further processing</span></span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> output.cpu()</span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Decode the output tokens into a human-readable string</span></span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># skip_special_tokens=False means we keep all special tokens in the output</span></span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>    output_str <span class="op">=</span> tokenizer.decode(output[<span class="dv">0</span>], skip_special_tokens<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Print the inference time</span></span>
+<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'Inference time: </span><span class="sc">{</span>end<span class="op">-</span>st<span class="sc">:.2f}</span><span class="ss"> seconds'</span>)</span>
+<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Print the original prompt</span></span>
+<span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">'-'</span><span class="op">*</span><span class="dv">20</span>, <span class="st">'Prompt'</span>, <span class="st">'-'</span><span class="op">*</span><span class="dv">20</span>)</span>
+<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(prompt)</span>
+<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-38"><a href="#cb36-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the model's response</span></span>
+<span id="cb36-39"><a href="#cb36-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'-'</span><span class="op">*</span><span class="dv">20</span>, <span class="st">'Response (skip_special_tokens=False)'</span>, <span class="st">'-'</span><span class="op">*</span><span class="dv">20</span>)</span>
+<span id="cb36-40"><a href="#cb36-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-41"><a href="#cb36-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the actual response from the output string</span></span>
+<span id="cb36-42"><a href="#cb36-42" aria-hidden="true" tabindex="-1"></a><span class="co"># This assumes the response is between the last '&lt;|end_header_id|&gt;\n\n' and '&lt;|eot_id|&gt;'</span></span>
+<span id="cb36-43"><a href="#cb36-43" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> output_str.split(<span class="st">'&lt;|end_header_id|&gt;</span><span class="ch">\n\n</span><span class="st">'</span>)[<span class="op">-</span><span class="dv">1</span>].split(<span class="st">'&lt;|eot_id|&gt;'</span>)[<span class="dv">0</span>]</span>
+<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the response using Markdown formatting</span></span>
+<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a>Markdown(response)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>Inference time: 51.17 seconds
+-------------------- Prompt --------------------
+&lt;|begin_of_text|&gt;&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;
+
+Provide a clear, concise, and intuitive description of AI for beginners.&lt;|eot_id|&gt;&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;
+
+
+-------------------- Response (skip_special_tokens=False) --------------------</code></pre>
+<div class="callout callout-style-default callout-note callout-titled" title="Model Response:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Model Response:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Here’s a clear, concise, and intuitive description of AI for beginners:</p>
+<p><strong>What is AI?</strong></p>
+<p>Artificial Intelligence (AI) is a type of computer technology that allows machines to think and learn like humans. It’s a way to create intelligent systems that can perform tasks that typically require human intelligence, such as:</p>
+<ul>
+<li>Recognizing images and objects</li>
+<li>Understanding natural language</li>
+<li>Making decisions</li>
+<li>Solving problems</li>
+<li>Learning from data</li>
+</ul>
+<p><strong>How does AI work?</strong></p>
+<p>AI uses a combination of algorithms, data, and computer power to mimic human thought processes. Here’s a simplified overview:</p>
+<ol type="1">
+<li><strong>Data collection</strong>: Large amounts of data are gathered from various sources, such as images, text, or sensor readings.</li>
+<li><strong>Pattern recognition</strong>: AI algorithms analyze the data to identify patterns, relationships, and trends.</li>
+<li><strong>Machine learning</strong>: The AI system uses this analysis to make predictions, classify data, or make decisions.</li>
+<li><strong>Improvement</strong>: The AI system learns from its experiences and adjusts its performance over time.</li>
+</ol>
+<p><strong>Types of AI</strong></p>
+<p>There are several types of AI, including:</p>
+<ul>
+<li><strong>Narrow or Weak AI</strong>: Designed to perform a specific task, like facial recognition or language translation.</li>
+<li><strong>Strong or General AI</strong>: A hypothetical AI that can perform any intellectual task that humans can.</li>
+<li><strong>Superintelligence</strong>: A hypothetical AI that surpasses human intelligence in all domains.</li>
+</ul>
+<p><strong>Key benefits of AI</strong></p>
+<p>AI has many benefits, including:</p>
+<ul>
+<li><strong>Improved efficiency</strong>: AI can automate repetitive tasks, freeing up human time for more complex and creative work.</li>
+<li><strong>Enhanced decision-making</strong>: AI can analyze vast amounts of data to make informed decisions.</li>
+<li><strong>Personalization</strong>: AI can tailor experiences to individual preferences and needs.</li>
+</ul>
+<p><strong>Key concepts</strong></p>
+<p>Some key concepts to keep in mind:</p>
+<ul>
+<li><strong>Machine learning</strong>: A type of AI that improves over time based on data experience.</li>
+<li><strong>Deep learning</strong>: A type of machine learning that uses neural networks to analyze complex data.</li>
+<li><strong>Natural language processing</strong>: A type of AI that enables computers to understand and generate human-like language.</li>
+</ul>
+<p>That’s a basic introduction to AI for beginners! I hope this helps you understand the basics of this exciting and rapidly evolving field.</p>
+</div>
+</div>
+</section>
+</section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>In this tutorial, we set up Intel’s PyTorch extension on Ubuntu and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=linux%2fwsl2&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
+<p>In this tutorial, we set up Intel’s PyTorch extension on Ubuntu to train an image classification model and run a local Large Language Model using an Arc GPU. The exact setup steps may change with new versions, so check the <a href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.3.110%2bxpu&amp;os=linux%2fwsl2&amp;package=pip">documentation</a> for the latest version to see if there are any changes. I’ll try to keep this tutorial updated with any significant changes to the process.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Questions:">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
