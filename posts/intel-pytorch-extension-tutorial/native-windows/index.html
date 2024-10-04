@@ -303,6 +303,26 @@ Note
 <p>The current setup process is for version <a href="https://intel.github.io/intel-extension-for-pytorch/xpu/2.3.110+xpu/"><code>2.3.110+xpu</code></a> of Intel’s PyTorch extension.</p>
 </div>
 </div>
+<div class="callout callout-style-default callout-tip callout-titled" title="WSL">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+WSL
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To use the extension in WSL (Windows Subsystem for Linux), follow the Ubuntu version of this tutorial starting from the section linked below after enabling Resizable BAR:</p>
+<ul>
+<li><a href="../../../posts/intel-pytorch-extension-tutorial/native-ubuntu/#install-drivers">Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu - Install Drivers</a></li>
+</ul>
+<p>Follow the steps in the linked section below to deactivate the Integrated Graphics. This step is still required to use the extension in WSL.</p>
+<ul>
+<li><a href="#disable-integrated-graphics">Disable Integrated Graphics</a></li>
+</ul>
+</div>
+</div>
 </section>
 <section id="enable-resizable-bar-in-bios" class="level2">
 <h2 class="anchored" data-anchor-id="enable-resizable-bar-in-bios">Enable Resizable BAR in BIOS</h2>
@@ -520,16 +540,35 @@ C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\intel_extension_
 <section id="verify-arc-gpu-availability" class="level3">
 <h3 class="anchored" data-anchor-id="verify-arc-gpu-availability">Verify Arc GPU Availability</h3>
 <p>We can double-check that the extension can use the Arc GPU by getting the properties of the available <code>xpu</code> devices.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_public_properties(obj):</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>        prop: <span class="bu">getattr</span>(obj, prop)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> prop <span class="kw">in</span> <span class="bu">dir</span>(obj)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> prop.startswith(<span class="st">"__"</span>) <span class="kw">and</span> <span class="kw">not</span> <span class="bu">callable</span>(<span class="bu">getattr</span>(obj, prop))</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>xpu_device_count <span class="op">=</span> torch.xpu.device_count()</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>dict_properties_list <span class="op">=</span> [get_public_properties(torch.xpu.get_device_properties(i)) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(xpu_device_count)]</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(dict_properties_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_public_properties(obj):</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Extract all public properties from an object.</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co">    obj: The object to extract properties from.</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">    dict: A dictionary containing the object's public properties and their values.</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        prop: <span class="bu">getattr</span>(obj, prop)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> prop <span class="kw">in</span> <span class="bu">dir</span>(obj)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> prop.startswith(<span class="st">"__"</span>) <span class="kw">and</span> <span class="kw">not</span> <span class="bu">callable</span>(<span class="bu">getattr</span>(obj, prop))</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the number of available XPU devices</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>xpu_device_count <span class="op">=</span> torch.xpu.device_count()</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of dictionaries containing properties for each XPU device</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>dict_properties_list <span class="op">=</span> [</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    get_public_properties(torch.xpu.get_device_properties(i))</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(xpu_device_count)</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the list of dictionaries to a pandas DataFrame for easy viewing</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(dict_properties_list)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto;">
 <table class="dataframe table table-sm table-striped small">
 <thead>
