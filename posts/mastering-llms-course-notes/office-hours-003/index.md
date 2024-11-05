@@ -10,9 +10,9 @@ description: "Freddy showcases Gradio's features, advantages, and repository con
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -250,3 +250,8 @@ open-graph:
 
 * Freddy expresses enthusiasm for the idea of an LLM fine-tuned on Gradio documentation to provide accurate and up-to-date code snippets.
 * He acknowledges the prevalence of outdated or hallucinated Gradio code from existing LLMs and encourages the community to contribute to this effort.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -14,6 +14,14 @@ categories: [fastai, libtorch, unity, tutorial]
 aliases:
 - /Fastai-to-LibTorch-to-Unity-Tutorial-Windows-3/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -758,3 +766,8 @@ This tutorial series covered creating a LibTorch plugin to perform inference wit
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

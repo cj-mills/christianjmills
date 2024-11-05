@@ -15,6 +15,15 @@ title: Notes on fastai Book Ch. 17
 
 aliases:
 - /Notes-on-Fastai-Book-17/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1558,3 +1567,8 @@ class Model(Module):
 
 **Next:** [Notes on fastai Book Ch. 18](../chapter-18/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

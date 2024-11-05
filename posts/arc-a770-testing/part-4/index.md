@@ -10,9 +10,9 @@ description: "This post covers my findings testing the first version of Intel's 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -157,3 +157,8 @@ I'm glad we now have the option to run PyTorch on Windows with the Arc GPUs with
 However, the fact the YOLOX training notebook does not reach usable performance on the Arc GPU is incredibly disappointing and concerning. That it temporarily worked on Windows only makes it more frustrating. I'd honestly rather it just fail outright and throw an error. That way, I would at least have a better idea of what is causing the problem.
 
 It's quite the opposite of how I expected things to turn out. I thought the first Windows version of the extension would have more problems and that the YOLOX training code would work without issue.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "Walk through the code for the Unity CV Image Gallery package, an i
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -439,3 +439,8 @@ You can find the code for the demo project shown in the video at the beginning o
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

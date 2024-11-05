@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 2: Ch.1-3 PMPP Book"
+title: "GPU MODE Lecture 2: Ch.1-3 PMPP Book"
 date: 2024-6-6
 image: /images/empty.gif
 hide: false
@@ -10,16 +10,16 @@ description: "Lecture #2 provides an introduction to parallel programming with C
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
 
 ::: {.callout-tip}
 ## This post is part of the following series:
-* [**CUDA Mode Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **CUDA MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
+* [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
 
 
@@ -37,17 +37,20 @@ open-graph:
 
 ## Lecture Information
 
-**Speaker:**  Andreas Kopf
+* **Speaker:**  Andreas Kopf
+* **Topic:** PMPP Book Ch. 1-3
+* **Resources:**
 
-**Topic:** PMPP Book Ch. 1-3
+  - **Lecture Slides:** [CUDA Mode: Lecture 2](https://docs.google.com/presentation/d/1deqvEHdqEC4LHUpStO6z3TT77Dt84fNAvTIAxBJgDck/edit#slide=id.g2b1444253e5_1_75)
 
-**Resources:**
+  - **Textbook:** [Programming Massively Parallel Processors](https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/)
 
-- **Lecture Slides:** [CUDA Mode: Lecture 2](https://docs.google.com/presentation/d/1deqvEHdqEC4LHUpStO6z3TT77Dt84fNAvTIAxBJgDck/edit#slide=id.g2b1444253e5_1_75)
-- **Textbook:** [Programming Massively Parallel Processors](https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/)
-- **GitHub Repository:** [CUDA MODE Lecture 2](https://github.com/cuda-mode/lectures/tree/main/lecture_002)
-- **Discord Channel:** [CUDA MODE](https://discord.gg/cudamode)
-- **YouTube Channel:** [CUDA MODE](https://www.youtube.com/@CUDAMODE)
+  - **GitHub Repository:** [GPU MODE Lecture 2](https://github.com/cuda-mode/lectures/tree/main/lecture_002)
+
+  - **Discord Channel:** [GPU MODE](https://discord.gg/cudamode)
+
+  - **YouTube Channel:** [GPU MODE](https://www.youtube.com/@CUDAMODE)
+
 
 
 
@@ -59,7 +62,6 @@ open-graph:
 ### Motivation 
 
 * Optimize GPU performance as much as possible
-
 * Applications:
   * simulate and model worlds
     * games
@@ -154,9 +156,7 @@ open-graph:
 ## Heterogeneous Data Parallel Computing
 
 * Timestamp: [8:31](https://youtu.be/NQ-0D5Ti2dc?si=ZeFGj3WVYDF_TI96&t=511)
-
 * heterogeneous: CPU + GPU
-
 * data parallelism: break work down into computations that can be executed independently
 
 
@@ -182,13 +182,9 @@ open-graph:
 ### CUDA Essentials: Memory Allocation
 
 * NVIDIA devices come with their own DRAM (device) global memory
-
 * `cudaMalloc` & `cudaFree`:
-
   * `cudaMalloc`: Allocate device global memory
-
   * `cudaFree`: Free device global memory
-
   * ```c
     float *A_d;
     size_t size = n * sizeof(float); // size in bytes
@@ -196,16 +192,12 @@ open-graph:
     ...
     cudaFree(A_d);
     ```
-
   * Code convention
 
     * `_d` for device pointer
     * `_h` for host
-
   * `cudaMemcpy`
-
     * Copy data from CPU memory to GPU memory and vice versa
-
     * ```c
       // copy input vectors to device (host -> device)
       cudaMemcpy(A_d, A_h, size, cudaMemcpyHostToDevice);
@@ -233,20 +225,16 @@ open-graph:
 ### Kernel Coordinates
 
 * Built-in variables available inside the kernel
-
   * `blockIdx`: the area code for a telephone
     * Note: Blocks are a logical organization of threads, not physical
   * `threadIdx`: the local phone number
   * These are 'coordinates' that allow threads to identify which portion of the data to process
   * Can use `blockIdx` and `threadIdx` to uniquely identify threads
   * `blockDim`: tells us the number of threads in a block
-
 * For vector addition, we can calculate the array index of the thread
-
   * ```c
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     ```
-
 * All threads in a grid execute the same kernel code
 
 
@@ -261,15 +249,12 @@ open-graph:
 | `__device__`         | Device           | Device      | Caller device thread       |
 
 * `__global__` & `__host__`
-
   * Tell the compiler whether the function should live on the device or host
   * Declare a kernel function with `__global__`
     * Calling a `__global__` function launches new grid of CUDA threads
-
 * Functions declared with `__device__` can be called from within CUDA thread
   * Does not launch a new thread
   * Only accessible from within kernels
-
 * If both `__host__` and `__device__` are used in a function declaration
   * CPU and GPU versions will be compiled
 
@@ -279,9 +264,7 @@ open-graph:
 ### Calling Kernels
 
 * Kernel configuration is specified between `<<<` and `>>>`
-
 * Number of blocks, number of threads in each block
-
 * ```c
   // Define the number of threads per block.
   // Each block will have 256 threads.
@@ -313,10 +296,8 @@ open-graph:
 ### Code Example: Vector addition
 
 * main concept: replace loop with a grid of threads
-
 * easily parallelizable
   * all additions can be computed independently
-
 * Naive GPU vector addition
   1. Allocate device memory for vectors
   2. Transfer inputs from host to device
@@ -325,19 +306,13 @@ open-graph:
   5. Free device memory
   *  The ratio of data transfer vs compute is not very good 
      *  Normally keep data on the GPU as long as possible to asynchronously schedule many kernel launches
-
 * Figure from slide 13:
-
   * One thread per vector element
-
    ![slide-13-figure](./images/slide-13-figure.png){fig-align="center"}
 
 * Data sizes might not be perfectly divisible by block sizes
-
   * always check bounds
-
 * Prevent threads of boundary block to read/write outside allocated memory
-
 * ```c
   /**
    * @brief CUDA kernel to compute the element-wise sum of two vectors.
@@ -366,11 +341,9 @@ open-graph:
 ### Code Example: Kernel to convert an RGB image to grayscale
 
 * Each RGB pixel can be converted individually
-
 * $$
   Luminance = r\cdot{0.21} + g\cdot{0.72} + b\cdot{0.07}
   $$
-
 * Simple weighted sum
 
 ![Programming Massively Parallel Processors - Figure 2.2](./images/book-figure-2-2.png){fig-align="center"}
@@ -387,50 +360,31 @@ open-graph:
 ### CUDA Grid
 
 * 2-level hierarchy
-
   * Blocks and threads
-
 * Idea: Map threads to multi-dimensional data (e.g., an image)
-
 * All threads in a grid execute the same kernel
-
 * Threads in the same block can access the same shared memory
-
 * Max block size: 1024
-
 * Built-in 3D coordinates of a thread 
-
   * `blockIdx` and `threadIdx` identify which portion of the data to process
-
 * shape of grid & blocks
-
   * `gridDim`: number of blocks in the grid
   * `blockDim`: number of threads in a block
-
 * A multidimensional example of CUDA grid organization:
 
 ![Programming Massively Parallel Processors - Figure 3.1](./images/book-figure-3-1.png){width=67% fig-align="center"} 
 
 * Grid can be different for each kernel launch
-
   * Normally dependent on data shapes
-
 * Typical grids contain thousands to millions of threads
-
 * Simple Strategy
-
   * One thread per output element
     * One thread per pixel
     * One thread per tensor element
-
 * Threads can be scheduled in any order
-
    * A larger thread index does not necessarily indicate the thread is running after a thread with a lower index 
-
 * Can use fewer than 3 dims (set others to 1)
-
   * 1D for sequences, 2D for images, etc.
-
   * ```c
     dim3 grid(32, 1, 1);
     dim3 block(128, 1, 1);
@@ -441,14 +395,12 @@ open-graph:
 ### Built-in Variables
 
 * Built-in variables inside kernels:
-
   * ```c
     blockIdx // dim3 block coordinate
     threadIdx // dim3 thread coordinate
     blockDim // number of threads in a block
     gridDim // number of blocks in a grid
     ```
-
   * `blockDim` and `gridDim` have the same values in all threads
 
 ### nd-Arrays in Memory
@@ -462,40 +414,30 @@ open-graph:
 
 
 * 2d array can be linearized in different ways
-
   * ```text
     A B C D E F G H I
     ```
-
   * row-major
-
     * ```text
       A B C
       D E F
       G H I
       ```
-
     * Most common
-
   * column-major
-
     * ```text
       A D G
       B E H
       C F I
       ```
-
     * Used in fortran
-
 * PyTorch tensors and numpy arrays use strides to specify how elements are laid out in memory
-
   * For a $4 \times 4$ matrix, the stride would be $4$ to get to the next row.
     * After four elements, you end up in the next row.
 
 ### Code Example: Image Blur
 
 * mean filter example `blurKernel`:
-
   * ```c
     // CUDA kernel to perform a simple box blur on an input image
     __global__
@@ -802,13 +744,9 @@ output_img
 ### Matrix Multiplication
 
 * Staple of science, engineering, and deep learning
-
 * Computer inner-products of rows and columns
-
 * Strategy: 1 thread per output matrix element
-
 * Example: Multiplying square matrices (rows == cols)
-
   * ```c
     /**
      * @brief Matrix multiplication kernel function.
@@ -840,7 +778,6 @@ output_img
         }
     }
     ```
-
 * Matrix multiplication using multiple blocks by tiling P:
 
 ![Programming Massively Parallel Processors - Figure 3.10](./images/book-figure-3-10.png){width=85% fig-align="center"} 
@@ -855,3 +792,8 @@ output_img
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

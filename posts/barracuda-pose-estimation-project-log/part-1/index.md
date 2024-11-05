@@ -10,6 +10,15 @@ title: Barracuda Pose Estimation Project Log Pt. 1
 
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-1/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Update 3/29/2021: [Barracuda PoseNet Tutorial](../../barracuda-posenet-tutorial/part-1/)
@@ -106,3 +115,8 @@ That's all for now. I'm feel like I'm forgetting to mention a bunch of stuff. It
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

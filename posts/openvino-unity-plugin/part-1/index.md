@@ -15,6 +15,15 @@ categories: [openvino, style-transfer, tutorial, unity]
 
 aliases:
 - /OpenVINO-Plugin-for-Unity-Tutorial-1/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -200,3 +209,8 @@ That takes care of the required setup. In the next part, we will cover how to cr
 ### Next: [Part 2](../part-2/)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

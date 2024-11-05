@@ -15,6 +15,15 @@ categories: [ai, fastai, notes, pytorch]
 aliases:
 - /Notes-on-Fastai-Book-02/
 
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -860,3 +869,8 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 
 **Next:** [Notes on fastai Book Ch. 3](../chapter-3/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -11,6 +11,15 @@ title: Barracuda Pose Estimation Project Log Pt. 5
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-5/
 - /log/project/unity/2020/10/19/Barracuda-Pose-Estimation-Project-Log-5
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Update 7/31/2021: [Barracuda PoseNet Tutorial 2nd Edition](../../barracuda-posenet-tutorial-v2/part-1/)
@@ -43,3 +52,8 @@ The current preview release for Barracuda adds a [TopKIndices](https://docs.unit
 It could be that I haven't figured out how to use the layer properly. After digging through the source code, it seems the [TopKIndices](https://docs.unity3d.com/Packages/com.unity.barracuda@1.1/api/Unity.Barracuda.ModelBuilder.html#Unity_Barracuda_ModelBuilder_TopKIndices_System_String_System_Object_System_Object_System_Int32_System_Boolean_System_Boolean_) layer expects another layer object as the k parameter. I'm not sure what to do with that. I would have thought that k would just be an integer. Perhaps it wants an input layer that specifies k? It's also possible that the functionality for the layer hasn't been fully implemented yet. This release does seem quite buggy. I think I'll wait until it's out of preview before spending more time with it.
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

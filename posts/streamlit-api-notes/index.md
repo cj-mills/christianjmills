@@ -13,6 +13,14 @@ title: Notes on the Streamlit API
 
 aliases:
 - /Notes-on-Streamlit-API/
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -801,3 +809,8 @@ st.exception(e)
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

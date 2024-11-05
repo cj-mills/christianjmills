@@ -11,9 +11,9 @@ description: "Learn how to export Keypoint R-CNN models from PyTorch to ONNX and
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -547,3 +547,8 @@ As you move forward, consider exploring more about ONNX and its ecosystem. Check
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -17,7 +17,11 @@ aliases:
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
 open-graph:
+  image: /images/default-preview-image-black.png
+  
+
 ---
 
 * [Introduction](#introduction)
@@ -1564,3 +1568,8 @@ This post covered how to modify the training code from the [fastai-to-unity tuto
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

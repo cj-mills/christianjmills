@@ -15,6 +15,16 @@ categories: [style-transfer, pytorch, unity, tutorial]
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-1/
 - /posts/basic-in-game-style-transfer-tutorial/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
+
 ---
 
 * [Introduction](#introduction)
@@ -142,3 +152,8 @@ That takes care of the required setup. In the next post I'll cover the optional 
 
 [GitHub Repository](https://github.com/cj-mills/End-to-End-In-Game-Style-Transfer-Tutorial)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "This post covers my experience training image classification model
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -266,3 +266,8 @@ While there is much more testing to do, I believe the Arc GPUs are now credible 
 
 
 There are likely still edge cases or certain operations that cause problems, and I'll make updates to this post if I encounter any. I'll also try to keep the [setup tutorial](../../intel-pytorch-extension-tutorial/native-ubuntu/) updated as new versions of Intel's PyTorch extension come out.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

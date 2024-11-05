@@ -17,7 +17,10 @@ aliases:
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
 open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -914,3 +917,8 @@ This tutorial series covered creating an OpenVINO plugin to improve inference sp
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/fastai-to-openvino-to-unity-tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

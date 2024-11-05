@@ -12,6 +12,15 @@ title: Barracuda Pose Estimation Project Log Pt. 4
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-4/
 - /log/project/unity/2020/09/24/Barracuda-Pose-Estimation-Project-Log-4
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Update 7/31/2021: [Barracuda PoseNet Tutorial 2nd Edition](../../barracuda-posenet-tutorial-v2/part-1/)
@@ -41,3 +50,8 @@ Annoyingly, now that I've finally fixed this issue the post processing bottlenec
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

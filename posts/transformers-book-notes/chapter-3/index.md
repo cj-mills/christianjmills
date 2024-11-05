@@ -15,6 +15,14 @@ categories: [ai, huggingface, nlp, notes]
 aliases:
 - /Notes-on-Transformers-Book-03/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1144,3 +1152,8 @@ def scaled_dot_product_attention(query, key, value, mask=None):
 
 **Next:** [Notes on Transformers Book Ch. 4](../chapter-4/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

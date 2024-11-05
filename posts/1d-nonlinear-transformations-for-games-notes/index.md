@@ -9,6 +9,15 @@ hide: false
 search_exclude: false
 title: Notes on 1D Nonlinear Transformations for Games
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
+
 aliases:
 - /Notes-on-1D-Nonlinear-Transformations-for-Games/
 ---
@@ -201,3 +210,8 @@ $BellCurve6(t) = SmoothStop3(t) \cdot SmoothStart3(t)$
 * [Math for Game Programmers: Fast and Funky 1D Nonlinear Transformations](https://www.youtube.com/watch?v=mr5xkf6zSzk)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

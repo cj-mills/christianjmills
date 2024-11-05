@@ -10,9 +10,9 @@ description: "Learn how to work with LabelMe keypoint annotations in torchvision
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -1286,3 +1286,8 @@ As a next step, perhaps try annotating a custom keypoint estimation dataset with
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

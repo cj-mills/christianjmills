@@ -10,9 +10,9 @@ description: "In this talk, **Hailey Schoelkopf** from **Eleuther AI** provides 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -219,3 +219,8 @@ open-graph:
   * **Structured Generation:** Use techniques that constrain the model's output to specific formats. 
   * **System Prompts:** Provide clear instructions to the model to only output the answer. 
   * **Log Likelihoods:** Rely on log likelihood-based multiple-choice evaluations if structured generation isn't possible.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

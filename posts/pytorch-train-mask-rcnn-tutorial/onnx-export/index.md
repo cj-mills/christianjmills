@@ -11,9 +11,9 @@ description: "Learn how to export Mask R-CNN models from PyTorch to ONNX and per
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -677,3 +677,8 @@ As you move forward, consider exploring more about ONNX and its ecosystem. Check
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -15,9 +15,9 @@ aliases:
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -84,6 +84,12 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 
 :::
+
+
+
+
+
+{{< include /_python-multiprocessing-warning.qmd >}}
 
 
 
@@ -2774,3 +2780,8 @@ Congratulations on completing this tutorial for training real-time object detect
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

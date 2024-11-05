@@ -13,6 +13,15 @@ categories: [ai, fastai, notes, pytorch]
 
 aliases:
 - /Notes-on-Fastai-Book-14/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1768,3 +1777,8 @@ learn.fit_one_cycle(100, 1e-3)
 
 **Next:** [Notes on fastai Book Ch. 15](../chapter-15/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

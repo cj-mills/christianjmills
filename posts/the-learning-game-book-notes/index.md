@@ -10,9 +10,9 @@ description: "My notes from the book **The Learning Game: Teaching Kids to Think
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -771,3 +771,8 @@ This section offers guidance for parents seeking to create a more engaging and e
 23. **Utilize Mental Models (Parenting):**  Apply the concept of mental models to better understand and respond to your child's behavior, creating a more harmonious dynamic.
 24. **Avoid Overprotection:**  Allow your child to face age-appropriate challenges and develop resilience through experience.
 25. **Find Balance:**  Strive for a balanced approach that encourages both challenge and support, knowing when to push and when to offer guidance and encouragement.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

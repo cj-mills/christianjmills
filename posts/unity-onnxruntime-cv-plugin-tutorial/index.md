@@ -11,6 +11,14 @@ aliases:
 - /posts/icevision-openvino-unity-tutorial/part-2/
 - /posts/onnx-directml-unity-tutorial/part-1/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -554,3 +562,8 @@ Check out the [follow-up post](./unity-integration) to learn how to integrate th
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

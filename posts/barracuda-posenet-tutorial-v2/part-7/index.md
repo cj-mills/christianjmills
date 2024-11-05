@@ -14,6 +14,14 @@ categories: [unity, barracuda, tutorial]
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-7/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -693,3 +701,8 @@ Now we can compare the estimated key point locations to the source video feed.
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

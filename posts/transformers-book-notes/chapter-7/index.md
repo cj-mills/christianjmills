@@ -15,6 +15,14 @@ categories: [ai, huggingface, nlp, notes]
 aliases:
 - /Notes-on-Transformers-Book-07/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -2539,3 +2547,8 @@ generate_answers("What is the main drawback?")
 
 **Next:** [Notes on Transformers Book Ch. 8](../chapter-8/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

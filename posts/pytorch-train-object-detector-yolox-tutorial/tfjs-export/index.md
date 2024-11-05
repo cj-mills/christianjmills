@@ -10,9 +10,9 @@ description: "Learn how to export YOLOX models from PyTorch to TensorFlow.js to 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -90,6 +90,18 @@ Run the following command to install these additional libraries:
 # Install additional packages
 pip install nobuco tensorflowjs
 ```
+
+
+
+::: {.callout-warning title="Update 09/26/2024"}
+
+You will need to downgrade the following TensorFlow-related packages for nobuco:
+
+
+```bash
+pip install "keras<3.0.0" "tensorflow<2.16" "tensorflow-decision-forests<1.10.0"
+```
+:::
 
 
 
@@ -427,3 +439,8 @@ Congratulations on reaching the end of this tutorial! We previously trained a YO
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

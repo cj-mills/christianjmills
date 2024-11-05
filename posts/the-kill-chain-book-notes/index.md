@@ -1,5 +1,5 @@
 ---
-title: "Notes on The *Kill Chain꞉ Defending America in the Future of High-Tech Warfare*"
+title: "Notes on *The Kill Chain꞉ Defending America in the Future of High-Tech Warfare*"
 date: 2024-08-27
 image: /images/empty.gif
 hide: false
@@ -10,9 +10,9 @@ description: "My notes from the book **The Kill Chain꞉ Defending America in th
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
   
   
 aliases:
@@ -1948,3 +1948,8 @@ This chapter argues that the U.S. defense establishment needs significant change
 
 - While the author acknowledges the difficulty of implementing necessary changes in a dysfunctional political environment, they emphasize the dire consequences of inaction.
 - The author concludes with a stark warning: failure to adapt will result in a loss of control over America's fate. 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 6: Optimizing Optimizers in PyTorch"
+title: "GPU MODE Lecture 6: Optimizing Optimizers in PyTorch"
 date: 2024-9-02
 image: /images/empty.gif
 hide: false
@@ -10,16 +10,16 @@ description: "Lecture #6 explores PyTorch's optimization strategies for speeding
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
 
 ::: {.callout-tip}
 ## This post is part of the following series:
-* [**CUDA Mode Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **CUDA MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
+* [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
 
 
@@ -41,7 +41,6 @@ open-graph:
 
 ## Introduction
 
-- **Welcome:** To the Cuda Mode Discord server and lecture 6 on advanced PyTorch topics, focusing on **optimizer performance optimization**.
 - **Presenter:** Jane, a member of the PyTorch core team specializing in optimizers.
 - **Focus:** Runtime optimization (speed) of optimizers, not memory optimization.
 - **Disclaimer:** Some optimization techniques discussed may require increased memory usage.
@@ -321,3 +320,8 @@ open-graph:
     - Device-to-device copy can be performed through CPU API calls or directly within GPU threads using warp-level primitives.
     - Specific requirements for direct peer-to-peer copy are not readily available but involve factors like GPU topology and interconnect capabilities.
     - Device-to-device copy is less common than other types of memory transfers.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "This Q&A session covered various topics, including template-free p
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -299,3 +299,8 @@ open-graph:
 * **Challenge:** Axolotl's sample packing happens at runtime, making it difficult to visualize tokenization in batches during pre-processing.
 * **Potential Approach:** Modify the Transformers or LLAMA model code to print or log input IDs during the forward pass.
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

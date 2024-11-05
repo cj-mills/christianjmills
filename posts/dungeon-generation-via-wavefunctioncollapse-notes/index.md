@@ -11,6 +11,15 @@ title: Notes on Dungeon Generation via WaveFunctionCollapse
 
 aliases:
 - /Notes-on-Dungeon-Generation-via-WaveFunctionCollapse/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -132,3 +141,8 @@ Solution:
 * [Brian Bucklew - Dungeon Generation via Wave Function Collapse](https://www.youtube.com/watch?v=fnFj3dOKcIQ)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

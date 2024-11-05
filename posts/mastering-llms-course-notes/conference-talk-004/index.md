@@ -11,9 +11,9 @@ code-annotations: below
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -884,3 +884,8 @@ if __name__ == '__main__':
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

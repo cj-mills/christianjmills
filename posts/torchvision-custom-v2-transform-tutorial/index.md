@@ -10,9 +10,9 @@ description: "Learn how to create custom Torchvision V2 Transforms that support 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -1294,3 +1294,8 @@ See how adjusting the intensity of the data augmentations impacts the model accu
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

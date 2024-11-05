@@ -10,9 +10,9 @@ description: "This tutorial provides a step-by-step guide to obtaining a Kaggle 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -148,3 +148,8 @@ You have successfully obtained your Kaggle API key. You can now use it to downlo
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

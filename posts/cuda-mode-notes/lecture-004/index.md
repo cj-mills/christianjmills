@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 4: Compute and Memory Basics"
+title: "GPU MODE Lecture 4: Compute and Memory Basics"
 date: 2024-8-31
 image: /images/empty.gif
 hide: false
@@ -10,16 +10,20 @@ description: "Lecture #4 provides an overview of CUDA programming fundamentals, 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
+
+
+
+
 
 
 
 ::: {.callout-tip}
 ## This post is part of the following series:
-* [**CUDA Mode Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **CUDA MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
+* [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
 
 
@@ -1042,3 +1046,8 @@ open-graph:
 ### **Next Steps:**
 
 *   The next chapter will focus on **coalesced memory access**, a technique to optimize global memory reads and writes for maximum efficiency.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

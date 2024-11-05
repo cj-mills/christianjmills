@@ -11,6 +11,15 @@ comments:
 description: Set up a video player and webcam in Unity.
 categories: [unity, barracuda, tutorial]
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
+
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-2/
 
@@ -378,3 +387,8 @@ We now have a video player that we can use to feed input to the PoseNet model. I
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

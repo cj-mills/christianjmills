@@ -17,7 +17,11 @@ aliases:
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
 open-graph:
+  image: /images/default-preview-image-black.png
+
+
 ---
 
 * [Overview](#overview)
@@ -560,3 +564,8 @@ This post covered creating a dynamic link library ([DLL](https://docs.microsoft.
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/fastai-to-libtorch-to-unity-tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

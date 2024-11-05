@@ -14,6 +14,15 @@ categories: [style-transfer, pytorch, unity, tutorial]
 
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-1-5/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Previous: [Part 1](../part-1/)
@@ -102,3 +111,8 @@ That's all that's needed to generate custom training data from your Unity projec
 [GitHub Repository](https://github.com/cj-mills/End-to-End-In-Game-Style-Transfer-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "My notes from the book ***Why Greatness Cannot Be Planned: The Myt
 twitter-card:
  creator: "@cdotjdotmills"
  site: "@cdotjdotmills"
- image: ../social-media/cover.jpg
+ image: /images/default-preview-image-black.png
 open-graph:
- image: ../social-media/cover.jpg
+ image: /images/default-preview-image-black.png
 ---
 
 
@@ -1183,3 +1183,8 @@ open-graph:
 *   **Conclusion**: 
     *   The AI community, and scientific communities in general, should move beyond rigid objective heuristics and embrace a more open-minded approach to evaluating new ideas, focusing on their potential to inspire further creativity and lead to unforeseen discoveries.  
     *   This shift requires trusting experts to use their judgment and considering a broader range of factors beyond performance and guarantees, ultimately fostering a more fruitful and innovative scientific landscape. 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -14,6 +14,14 @@ categories: [unity, barracuda, tutorial]
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-5/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -352,3 +360,8 @@ That is all we need to perform pose estimation when there is a single person in 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

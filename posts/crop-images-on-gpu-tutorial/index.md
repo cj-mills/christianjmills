@@ -277,3 +277,8 @@ That is one method to efficiently crop images on the GPU in Unity. As mentioned 
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

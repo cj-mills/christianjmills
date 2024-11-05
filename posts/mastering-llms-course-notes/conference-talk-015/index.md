@@ -10,9 +10,9 @@ description: "In this talk, **Charles Frye** provides a deeper dive into Modal, 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -469,3 +469,8 @@ open-graph:
 ##### Blog Post about Suno.ai's Choice of Modal
 
 - The blog post provides insights into Suno.ai's decision to use Modal and their experience with the platform.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

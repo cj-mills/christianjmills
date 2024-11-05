@@ -7,6 +7,15 @@ categories: [github, notes]
 
 aliases:
 - /Notes-on-Customizing-Your-GitHub-Profile/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Introduction](#introduction)
@@ -257,3 +266,8 @@ I finally got around to making my [GitHub profile](https://github.com/cj-mills) 
 * [How To Create An Amazing Profile ReadMe With GitHub Actions](https://www.youtube.com/watch?v=ECuqb5Tv9qI)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -11,9 +11,9 @@ description: "Learn how to train Keypoint R-CNN models on custom datasets with P
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -77,6 +77,10 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 
 :::
+
+
+
+{{< include /_python-multiprocessing-warning.qmd >}}
 
 
 
@@ -2055,3 +2059,8 @@ As a next step, perhaps try annotating a keypoint dataset with [LabelMe](https:/
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

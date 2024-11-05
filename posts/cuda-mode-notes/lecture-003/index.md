@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 3: Getting Started With CUDA for Python Programmers"
+title: "GPU MODE Lecture 3: Getting Started With CUDA for Python Programmers"
 date: 2024-8-31
 image: /images/empty.gif
 hide: false
@@ -10,16 +10,16 @@ description: "Lecture #3 provides a beginner-friendly introduction to CUDA progr
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
 
 ::: {.callout-tip}
 ## This post is part of the following series:
-* [**CUDA Mode Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **CUDA MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
+* [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
 
 
@@ -1434,3 +1434,8 @@ open-graph:
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

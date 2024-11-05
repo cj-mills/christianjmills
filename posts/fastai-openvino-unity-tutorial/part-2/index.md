@@ -17,7 +17,10 @@ aliases:
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
 open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -702,3 +705,8 @@ This post covered creating a dynamic link library ([DLL](https://docs.microsoft.
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

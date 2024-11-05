@@ -10,6 +10,15 @@ description: My notes from Martin Donald's video on using the WaveFunctionCollap
 hide: false
 search_exclude: false
 title: Notes on WaveFunctionCollapse for 3D
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -185,3 +194,8 @@ Here are some notes I took while watching Martin Donald's [video](https://www.yo
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "This Q&A session on LangChain/LangSmith covers topics like product
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -165,3 +165,8 @@ open-graph:
     * Leverage LLMs (like ChatGPT) to assist with JavaScript/TypeScript code generation and understanding.
     * Don't shy away from forking and modifying existing repositories to learn and adapt. 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -17,6 +17,14 @@ title: Notes on fastai Book Ch. 3
 aliases:
 - /Notes-on-Fastai-Book-03/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -341,3 +349,8 @@ aliases:
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

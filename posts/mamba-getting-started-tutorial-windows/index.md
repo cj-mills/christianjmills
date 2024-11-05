@@ -1,24 +1,27 @@
 ---
 title: "Setting Up a Local Python Environment with Mamba for Machine Learning Projects on Windows"
-date: 2023-5-15
+date: 2024-10-05
 image: /images/empty.gif
 hide: false
 search_exclude: false
-categories: [mamba, conda, getting-started, tutorial]
+categories: [mamba, conda, getting-started, tutorial, windows]
 description: "Learn how to install the Mamba package manager on Windows, set up a local Python environment, and install PyTorch and Jupyter for machine learning projects."
 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
+
+
 
 
 
 * [Introduction](#introduction)
 * [An Overview of Machine Learning, PyTorch, and Jupyter](#an-overview-of-machine-learning-pytorch-and-jupyter)
+* [Further Learning](#further-learning)
 * [Installing Mamba](#installing-mamba)
 * [Access the Miniforge Prompt](#access-the-miniforge-prompt)
 * [Benefits of Using Virtual Environments](#benefits-of-using-virtual-environments)
@@ -26,7 +29,7 @@ open-graph:
 * [Package Overview](#package-overview)
 * [Installing PyTorch and Jupyter](#installing-pytorch-and-jupyter)
 * [Testing PyTorch and Jupyter Notebook Setup](#testing-pytorch-and-jupyter-notebook-setup)
-* [Managing and Updating Packages with Mamba](managing-and-updating-packages-with-mamba)
+* [Managing and Updating Packages with Mamba](#managing-and-updating-packages-with-mamba)  
 * [Conclusion](#conclusion)
 
 
@@ -34,25 +37,21 @@ open-graph:
 
 ## Introduction
 
-In this beginner-friendly tutorial, I'll guide you through installing the [Mamba](https://mamba.readthedocs.io/en/latest/index.html) package manager on your local Windows machine and using it to create Python environments. Mamba is a powerful tool that helps you create and manage virtual environments, allowing you to maintain separate configurations for different projects without conflicts. It provides a drop-in replacement for [conda](https://docs.conda.io/en/latest/) and offers higher speed and more reliable environment solutions.
+This tutorial will guide you through installing [Mamba](https://mamba.readthedocs.io/en/latest/index.html) on your Windows machine and using it to create Python environments. Mamba is a high-performance package manager for managing virtual environments, allowing you to maintain separate configurations for different projects without conflicts. It serves as a faster and more reliable drop-in replacement for [conda](https://docs.conda.io/en/latest/).
 
-
-
-In this tutorial, we'll use a practical example to demonstrate the effectiveness of Mamba. We'll install PyTorch and Jupyter, two essential tools for machine learning projects. To ensure we set up everything correctly, we'll verify the PyTorch installation by running a simple test in a Jupyter Notebook. By the end of this tutorial, you'll be well-equipped to begin your machine-learning projects using Mamba, PyTorch, and Jupyter.
-
-
-
-
+We'll demonstrate Mamba's effectiveness by installing PyTorch and Jupyter—essential tools for machine learning projects. We'll verify the PyTorch installation by running a simple test in a Jupyter Notebook. By the end of this tutorial, you'll be ready to start your machine learning projects using Mamba, PyTorch, and Jupyter.
 
 ## An Overview of Machine Learning, PyTorch, and Jupyter
 
-Machine learning is a subset of artificial intelligence that enables computers to learn from data and make decisions or predictions without being explicitly programmed. It has become an essential tool across various domains, including natural language processing, computer vision, and speech recognition.
+**Machine Learning** enables computers to learn from data and make decisions or predictions without explicit programming. It's crucial in fields like natural language processing, computer vision, and speech recognition.
 
-[PyTorch](https://pytorch.org/) is a popular open-source machine learning framework that enables users to perform tensor computations, build dynamic computational graphs, and implement custom machine learning architectures. PyTorch has gained widespread adoption due to its flexibility, ease of use, and strong community support.
+**[PyTorch](https://pytorch.org/)** is a popular open-source machine learning framework that allows for tensor computations and dynamic computational graphs. Its flexibility and ease of use have led to widespread adoption.
 
-[Jupyter](https://jupyter.org/) is an open-source project that provides an interactive computing environment where you can create and share documents containing live code, equations, visualizations, and narrative text. Jupyter Notebook is a web-based platform that allows users to write, run, and debug code. You can also create visualizations and explanatory text.
+**[Jupyter](https://jupyter.org/)** provides an interactive computing environment for creating and sharing documents containing live code, equations, visualizations, and narrative text. Jupyter Notebooks let you write, run, and debug code in a web-based platform.
 
-This tutorial will help kickstart your machine-learning projects by guiding you through setting up a local Python environment using Mamba, PyTorch, and Jupyter. If you're new to machine learning and want to learn more, I recommend the [Practical Deep Learning for Coders](https://course.fast.ai/) course. The course uses a hands-on approach to teach students to apply deep learning and machine learning to practical problems using PyTorch and the [fastai library](https://docs.fast.ai/).
+## Further Learning
+
+If you're new to machine learning and want to learn more, consider exploring the [Practical Deep Learning for Coders](https://course.fast.ai/) course. It uses a hands-on approach with PyTorch and the [fastai library](https://docs.fast.ai/) to teach you how to apply deep learning to real-world problems.
 
 
 
@@ -60,61 +59,77 @@ This tutorial will help kickstart your machine-learning projects by guiding you 
 
 ## Installing Mamba
 
-1. Download the Mambaforge installer for Windows from the [official Miniforge GitHub repository](https://github.com/conda-forge/miniforge#mambaforge).
+We can install Mamba using [PowerShell](https://learn.microsoft.com/en-us/powershell/). Type `powershell` into the Windows search bar and click `Open`.
 
+::: {.callout-tip title="Installing PowerShell" collapse="false"}
+
+PowerShell is preinstalled on modern Windows versions. If it's not present on your machine, you can follow the installation steps at the link below:
+
+* [Installing PowerShell on Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4) 
+
+:::
+
+![](./images/windows-search-powershell.png){fig-align="center"}
+
+
+
+A command-line interface should open in a new window:
+
+![](./images/powershell-interface.png){fig-align="center"}
+
+
+
+
+
+Next, we will run the following commands inside the PowerShell interface to download and run the Miniforge3 installer:
+
+1. **Download the Miniforge3 installer:**
+
+   ```powershell
+   Invoke-WebRequest -Uri "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe" -OutFile "Miniforge3-Windows-x86_64.exe"
+   ```
+
+   This command downloads the latest Miniforge3 installer for Windows from [official Miniforge GitHub repository](https://github.com/conda-forge/miniforge?tab=readme-ov-file#download).
+
+   * `Invoke-WebRequest`: This cmdlet downloads content from a web page.
+   * `-Uri`: Specifies the URL to download from.
+   * `-OutFile`: Specifies where to save the downloaded file.
+
+2. **Install Miniforge3:**
+
+   ```powershell
+   Start-Process -FilePath "Miniforge3-Windows-x86_64.exe" -ArgumentList "/S /InstallationType=JustMe /AddToPath=0 /RegisterPython=0" -Wait
+   ```
+
+   This command silently runs the Miniforge3 installer.
+
+   - `Start-Process`: Starts a new process (in this case, the installer).
+
+   - `-FilePath`: Specifies the program to run.
+     - `-ArgumentList`: Provides arguments to the installer:
+       - `/S`: Runs the installer silently (no user interface).
+       - `/InstallationType=JustMe`: Installs for the current user only.
+       - `/AddToPath=0`: Doesn't add Miniforge to the system PATH.
+       - `/RegisterPython=0`: Doesn't register this as the system's default Python.
+   
+   
+      - `-Wait`: Waits for the installation to complete before continuing.
    
 
-   ![mambaforge-github-readme-download-windows-installer](./images/mambaforge-github-readme-download-windows-installer.png){fig-align="center"}<br>
 
-   
+3. **Clean up:**
 
-2. Run the installer executable.
+   ```powershell
+   Remove-Item "Miniforge3-Windows-x86_64.exe"
+   ```
 
-   1. You might get a popup from Microsoft Defender SmartScreen like the one below, saying it prevented an unrecognized app from starting. If so, click More info.
+   This command deletes the installer file after installation.
 
-      ![microsoft-defender-smartscreen-popup-click-more-info](./images/microsoft-defender-smartscreen-popup-click-more-info.png){fig-align="center"}<br>
-
-   2. Then click the "Run anyway" button.
-
-      ![microsoft-defender-smartscreen-popup-click-run-anyway](./images/microsoft-defender-smartscreen-popup-click-run-anyway.png){fig-align="center"}<br>
-
-   
-
-3. Follow the on-screen instructions in the setup window.
-
-   1. Click the `Next >` button in the setup window.
-
-      ![mambaforge-windows-installer-window-page-1](./images/mambaforge-windows-installer-window-page-1.png){fig-align="center"}<br>
-
-   2. Click the `I Agree` button to accept the license agreement.
-
-      ![mambaforge-windows-installer-window-page-2](./images/mambaforge-windows-installer-window-page-2.png){fig-align="center"}<br>
-
-   3. Select `Just Me` for the installation type and click the `Next >` button.
-
-      ![mambaforge-windows-installer-window-page-3](./images/mambaforge-windows-installer-window-page-3.png){fig-align="center"}<br>
-
-   4. Stick with the default install location and click the `Next >` button.
-
-      ![mambaforge-windows-installer-window-page-4](./images/mambaforge-windows-installer-window-page-4.png){fig-align="center"}<br>
-
-   5. Check the box to clear the package cache upon completion under installation options and click the `Install` button to start the installation process.
-
-      ![mambaforge-windows-installer-window-page-5](./images/mambaforge-windows-installer-window-page-5.png){fig-align="center"}<br>
-
-   6. Wait for the installation process to complete, then click the `Next >` button.
-
-      ![mambaforge-windows-installer-window-installation-complete](./images/mambaforge-windows-installer-window-installation-complete.png){fig-align="center"}<br>
-
-   7. Finally, click the `Finish` button to close the setup window.
-
-      ![mambaforge-windows-installer-window-finish-setup](./images/mambaforge-windows-installer-window-finish-setup.png){fig-align="center"}<br>
+   - `Remove-Item`: Deletes the specified file.
 
 
 
-
-
-
+We can close the PowerShell interface after running the last command. 
 
 
 
@@ -124,11 +139,11 @@ On Windows, we use Mamba through the Miniforge Prompt. It is a dedicated command
 
 
 
-Type "Miniforge Prompt" into the Windows search bar and click Open.
+Type `Miniforge Prompt` into the Windows search bar and click `Open`.
 
 
 
-![windows-search-miniforge-prompt](./images/windows-search-miniforge-prompt.png){fig-align="center"}<br>
+![](./images/windows-search-miniforge-prompt.png){fig-align="center"}
 
 
 
@@ -136,7 +151,7 @@ A new command prompt will open at the location of your Windows user folder.
 
 
 
-![miniforge-prompt-new](./images/miniforge-prompt-new.png){fig-align="center"}<br>
+![](./images/miniforge-prompt-new.png){fig-align="center"}
 
 
 
@@ -149,10 +164,10 @@ Alternatively, you can activate the Miniforge Prompt from any regular command pr
 
 
 ```bash
-%USERPROFILE%\mambaforge\Scripts\activate
+%USERPROFILE%\miniforge3\Scripts\activate
 ```
 
-![command-prompt-activate-miniforge-prompt](./images/command-prompt-activate-miniforge-prompt.png){fig-align="center"}<br>
+![](./images/command-prompt-activate-miniforge-prompt.png){fig-align="center"}
 
 
 
@@ -162,7 +177,7 @@ The text in front of the current directory path indicates the name of the curren
 
 
 
-![miniforge-prompt-new](./images/miniforge-prompt-new-highlight-env-name.png){fig-align="center"}<br>
+![](./images/miniforge-prompt-new-highlight-env-name.png){fig-align="center"}
 
 
 
@@ -172,17 +187,15 @@ We can get a list of the available conda environments and their locations using 
 mamba env list
 ```
 
-![mamba-env-list](./images/mamba-env-list.png){fig-align="center"}<br>
+![](./images/mamba-env-list.png){fig-align="center"}
 
 
 
-The only one listed is "base." If we go to the associated directory path in File Explorer, we'll see the contents for the Mambaforge installation. Mambaforge will store any conda environments we create in the "envs" folder.
+The only one listed is `base`. If we go to the associated directory path in File Explorer, we'll see the contents for the Miniforge3 installation. Miniforge3 will store any conda environments we create in the "envs" folder.
 
 
 
-![mambaforge-env-location](./images/mambaforge-env-location.png){fig-align="center"}<br>
-
-
+![](./images/miniforge3-env-location.png){fig-align="center"}
 
 
 
@@ -192,11 +205,15 @@ The only one listed is "base." If we go to the associated directory path in File
 
 ## Benefits of Using Virtual Environments
 
-Before creating a new Python environment, let's cover the benefits of using virtual environments and why they are essential when working with Python projects.
+Before we create a new Python virtual environment, let's discuss why virtual environments are essential and how they benefit your Python projects.
 
-- **Isolation of Dependencies**: Virtual environments create isolated spaces for each project, allowing developers to install and manage different package versions without conflicts. This isolation ensures that the specific dependencies required for one project do not interfere with or break the dependencies of another project.
-- **Easier Project Management**: Virtual environments help streamline project management by maintaining separate configurations for different projects. Developers can replicate or share project environments with team members, ensuring consistent behavior across various machines. Shareable project environments help developers collaborate, troubleshoot, and deploy projects.
-- **Simplified System Maintenance**: Using virtual environments helps developers avoid cluttering their system-wide Python installation with numerous packages and varying versions. System maintenance is cleaner as developers can easily add, update, or remove packages within individual project environments without affecting other projects or the system as a whole.
+- **Isolation of Dependencies**: Virtual environments create isolated spaces for each project. This allows you to install and manage different package versions without conflicts. The dependencies of one project won't interfere with those of another.
+
+- **Easier Project Management**: By maintaining separate configurations for each project, virtual environments make it easy to replicate or share environments with team members. This ensures consistent behavior across different machines and aids collaboration, troubleshooting, and deployment.
+
+- **Simplified System Maintenance**: Using virtual environments prevents cluttering your system-wide Python installation with various packages and versions. You can manage packages within each project's environment without affecting other projects or your system.
+
+
 
 
 
@@ -209,13 +226,13 @@ We can create new Python environments using the `mamba create` command. The foll
 ```bash
 mamba create --name "pytorch-env" python=3.10
 ```
-![mamba-create-env-command](./images/mamba-create-env-command.png){fig-align="center"}<br>
+![](./images/mamba-create-env-command.png){fig-align="center"}
 
 
 
 Mamba will ask you to confirm that you want to install the packages required to create the new conda environment. Type `Y` into the "Confirm changes" prompt.
 
-![mamba-create-env-command-confirm-changes](./images/mamba-create-env-command-confirm-changes.png){fig-align="center"}<br>
+![](./images/mamba-create-env-command-confirm-changes.png){fig-align="center"}
 
 
 
@@ -223,14 +240,14 @@ Mamba will ask you to confirm that you want to install the packages required to 
 Alternatively, you can pre-approve the package installations by adding a `-y` to the end of the `mamba create` command.
 
 ```bash
-   mamba create --name "pytorch-env" python=3.10 -y
+mamba create --name "pytorch-env" python=3.10 -y
 ```
 
    
 
-Looking in the "envs" directory, we see a new folder for the conda environment we created.
+Looking in the `envs` directory, we see a new folder for the conda environment we created.
 
-![mambaforge-inspect-envs-folder](./images/mambaforge-inspect-envs-folder.png){fig-align="center"}<br>
+![](./images/miniforge-inspect-envs-folder.png){fig-align="center"}
 
 
 
@@ -245,7 +262,7 @@ mamba activate pytorch-env
 ```bash
 mamba deactivate
 ```
-![mamba-env-created](./images/mamba-env-created.png){fig-align="center"}<br>
+![](./images/mamba-env-created.png){fig-align="center"}
 
 
 
@@ -253,7 +270,7 @@ When we activate it, the name in front of the current directory will change acco
 
 
 
-![mamba-activate-env](./images/mamba-activate-env.png){fig-align="center"}<br>
+![](./images/mamba-activate-env.png){fig-align="center"}
 
 
 
@@ -263,12 +280,19 @@ When we activate it, the name in front of the current directory will change acco
 
 ## Package Overview
 
-Before we install PyTorch and Jupyter, let's briefly explore the purpose of each package and why they're essential for machine learning projects.
+Before installing PyTorch and Jupyter, let's briefly explore what each package does and why they're important for machine learning projects.
 
-- [**PyTorch**](https://pytorch.org/docs/stable/index.html): PyTorch is a fast, flexible, user-friendly, open-source machine learning framework. PyTorch allows developers to perform tensor computations, create dynamic computational graphs, and implement custom machine-learning architectures.
-- [**torchvision**](https://pytorch.org/vision/stable/index.html): `torchvision` provides benchmark datasets, model architectures, and image transformations for computer vision.
-- [**torchaudio**](https://pytorch.org/audio/stable/index.html): This package provides various tools and datasets for audio processing, including input/output functions, data loaders for popular audio datasets, and audio-specific transformations.
-- [**Jupyter**](https://jupyter.org/): Jupyter is an open-source project that enables users to create and share documents containing live code, equations, visualizations, and narrative text. Jupyter Notebook is a web-based interactive computing environment where you can write, run, and debug code. You can also include visualizations and explanatory text.
+- **PyTorch**: [Documentation](https://pytorch.org/docs/stable/index.html)
+  - PyTorch is a fast and flexible open-source machine learning framework. It allows you to perform tensor computations, build dynamic computational graphs, and create custom machine learning models.
+
+- **torchvision**: [Documentation](https://pytorch.org/vision/stable/index.html)
+  - `torchvision` provides tools for computer vision tasks, including popular datasets, model architectures, and image transformations.
+
+- **torchaudio**: [Documentation](https://pytorch.org/audio/stable/index.html)
+  - `torchaudio` offers utilities and datasets for audio processing, such as functions for reading and writing audio files, loading popular audio datasets, and applying audio-specific transformations.
+
+- **Jupyter**: [Website](https://jupyter.org/)
+  - Jupyter is an open-source project that lets you create and share documents containing live code, equations, visualizations, and text. With Jupyter Notebook, you can write, run, and debug code in a web-based environment while including visualizations and explanatory text.
 
 
 
@@ -281,53 +305,103 @@ Before we install PyTorch and Jupyter, let's briefly explore the purpose of each
 
 We can install packages in our custom Python environment using `mamba` or the [`pip`](https://packaging.python.org/en/latest/key_projects/#pip) package installer. To use `mamba,` we replace the word `conda` in any `conda` install commands. 
 
-For example, this is the `conda` command to install [PyTorch](https://pytorch.org/) on computers with Nvidia GPUs. 
+These are the `mamba` and `pip` commands to install [PyTorch](https://pytorch.org/) on Windows machines with Nvidia GPUs: 
+
+
+
+::: {.panel-tabset}
+
+
+
+## Mamba
 
 ```bash
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+mamba install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
 ```
+
+
+
+## Pip
+
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
+
+
+
+:::
+
+
 
 For users without an Nvidia GPU:
 
+
+
+::: {.panel-tabset}
+
+## Mamba
+
 ```bash
-conda install pytorch torchvision torchaudio cpuonly -c pytorch
+mamba install pytorch torchvision torchaudio cpuonly -c pytorch
 ```
 
 
 
-Here is the modified command, which uses Mamba.
+## Pip
 
 ```bash
-mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+pip install torch torchvision torchaudio
 ```
 
-![mamba-install-pytorch-command](./images/mamba-install-pytorch-command.png){fig-align="center"}<br>
+
+
+:::
 
 
 
-As before, type `Y` into the "Confirm changes" prompt.
+I'll install the packages with `mamba` for this tutorial. As before, type `Y` into the "Confirm changes" prompt.
 
-![mamba-install-pytorch-confirm-changes](./images/mamba-install-pytorch-confirm-changes.png){fig-align="center"}<br>
+![](./images/mamba-install-pytorch-confirm-changes.png){fig-align="center"}
 
 
 
 Alternatively, you can pre-approve the package installations by adding a `-y` to the end of the `mamba install` command.
 
 ```bash
-mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+mamba install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia -y
 ```
 
 
 
 Installation time can vary depending on your system's hardware and Internet speed. Once it finishes, we'll install Jupyter using the following command:
 
+
+
+::: {.panel-tabset}
+
+
+
+## Mamba
+
 ```bash
 mamba install jupyter -y
 ```
 
-![mamba-install-jupyter](./images/mamba-install-jupyter.png){fig-align="center"}<br>
 
 
+## Pip
+
+```bash
+pip install jupyter
+```
+
+
+
+:::
+
+
+
+![](./images/mamba-install-jupyter.png){fig-align="center"}
 
 
 
@@ -335,16 +409,7 @@ mamba install jupyter -y
 
 ## Testing PyTorch and Jupyter Notebook Setup
 
-Now that we have PyTorch and Jupyter installed in our Python environment, we can verify everything works as expected by importing PyTorch into a Jupyter Notebook. Before that, I recommend changing the current directory to something more appropriate. I switched to a new folder outside my `G` drive using the following commands:
-
-```bash
-G:
-cd Projects\Current_Projects\mamba-tutorial
-```
-
-![cmd-switch-drive-and-folder](./images/cmd-switch-drive-and-folder.png){fig-align="center"}<br>
-
-
+Now that we have PyTorch and Jupyter installed in our Python environment, we can verify everything works as expected by importing PyTorch into a Jupyter Notebook.
 
 We can launch a Jupyter Notebook environment using the following command:
 
@@ -352,7 +417,7 @@ We can launch a Jupyter Notebook environment using the following command:
 jupyter notebook
 ```
 
-![jupyter-notebook-command](./images/jupyter-notebook-command.png){fig-align="center"}<br>
+![](./images/jupyter-notebook-command.png){fig-align="center"}
 
 
 
@@ -360,19 +425,19 @@ jupyter notebook
 
 The Jupyter Notebook environment will launch in a new tab in your default web browser.
 
-![new-jupyter-notebook-environment](./images/new-jupyter-notebook-environment.png){fig-align="center"}<br>
+![](./images/new-jupyter-notebook-environment.png){fig-align="center"}
 
 
 
 To create a new Jupyter Notebook, open the `New` drop-down menu and select the `Python 3 (ipykernel)`option.
 
-![jupyter-create-new-notebook](./images/jupyter-create-new-notebook.png){fig-align="center"}<br>
+![](./images/jupyter-create-new-notebook.png){fig-align="center"}
 
 
 
 The notebook will open in a new tab.
 
-![jupyter-new-notebook](./images/jupyter-new-notebook.png){fig-align="center"}<br>
+![](./images/jupyter-new-notebook.png){fig-align="center"}
 
 
 
@@ -385,7 +450,9 @@ import torch
 torch.cuda.is_available()
 ```
 
-![jupyter-notebook-torch-cuda-is-available](./images/jupyter-notebook-torch-cuda-is-available.png){fig-align="center"}<br>
+Select the code cell with your mouse and press `Ctrl+Enter` to run the code or `Shift+Enter` to run the code and move to the next cell. 
+
+![](./images/jupyter-notebook-torch-cuda-is-available.png){fig-align="center"}
 
 
 
@@ -475,13 +542,19 @@ With these commands, you can effectively manage and update packages in your Pyth
 
 
 
-
-
 ## Conclusion
 
-In this tutorial, we successfully installed the Mamba package manager on a Windows machine and used it to create a local Python environment for our machine-learning project. We also installed tools like PyTorch and Jupyter to help us build machine-learning models.
+In this tutorial, you accomplished the following:
 
-By leveraging the power of virtual environments, we can maintain separate configurations for different projects, avoiding dependency conflicts and streamlining project management.
+- **Installed the Mamba package manager** on your Windows machine.
+- **Created a local Python virtual environment** for your machine learning project.
+- **Installed essential tools** like PyTorch and Jupyter to help build machine learning models.
+
+By leveraging virtual environments, you can:
+
+- Maintain separate configurations for different projects.
+- Avoid dependency conflicts between packages.
+- Streamline project management and collaboration.
 
 
 
@@ -492,3 +565,8 @@ By leveraging the power of virtual environments, we can maintain separate config
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

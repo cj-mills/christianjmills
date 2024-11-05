@@ -14,6 +14,15 @@ categories: [ai, huggingface, nlp, notes]
 
 aliases:
 - /Notes-on-Transformers-Book-09/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -3540,3 +3549,8 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 
 **Next:** [Notes on Transformers Book Ch. 10](../chapter-10/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

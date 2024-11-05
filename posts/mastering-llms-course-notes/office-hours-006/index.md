@@ -10,9 +10,9 @@ description: "This Q&A session covers a wide range of topics related to LLMs, in
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -238,3 +238,8 @@ open-graph:
     * **GitHub Repository:** [pykan](https://github.com/KindXiaoming/pykan)
 * **SSMs and Long Sequences:**  SSMs show promise for tasks involving long sequences, such as text-to-speech and DNA analysis. 
 * **Practical Implications:** The emergence of viable alternatives provides practitioners with more tools. The core focus remains on performance and benchmark results. 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

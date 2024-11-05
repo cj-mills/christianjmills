@@ -10,9 +10,9 @@ description: "Workshop #1 provides a practical overview of fine-tuning large lan
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -504,3 +504,8 @@ This Q&A session addressed various questions related to model quantization, hand
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

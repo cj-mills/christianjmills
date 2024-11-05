@@ -14,6 +14,14 @@ categories: [ai, fastai, notes, pytorch]
 aliases:
 - /Notes-on-Fastai-Book-11/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1806,3 +1814,8 @@ dls = tls.dataloaders(after_item=[Resize(224), ToTensor],
 
 **Next:** [Notes on fastai Book Ch. 12](../chapter-12/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

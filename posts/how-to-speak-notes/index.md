@@ -6,210 +6,267 @@ categories:
 - professional-growth
 - notes
 date: '2021-12-16'
+date-modified: last-modified
 description: My notes for Patrick Winston's course on how to speak.
 hide: false
 search_exclude: false
-title: Notes on How To Speak
+title: "Notes on *How To Speak*"
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
 
 ---
 
-* [Overview](#overview)
 * [Introduction](#introduction)
-* [How To Start](#how-to-start)
-* [Four Sample Heuristics](#four-sample-heuristics)
-* [Build Up Your Personal Repertoire and Style](#build-up-your-personal-repertoire-and-style)
-* [Special Cases](#special-cases)
-* [How to Stop](#how-to-stop)
+* [How to Start a Talk](#how-to-start-a-talk)
+* [Sample Heuristics for Presentations](#sample-heuristics-for-presentations)  
+* [Developing Your Personal Style](#developing-your-personal-style)
+* [Time and Place](#time-and-place)  
+* [Boards, Props, and Slides](#boards-props-and-slides)  
+* [Special Cases](#special-cases)  
+* [How to Stop](#how-to-stop)  
+* [Conclusion](#conclusion)
 
 
 
-## Overview
+::: {.callout-tip title="Source Material:"}
 
-Here are some notes I took while watching Patrick Winston's [course](https://www.youtube.com/watch?v=Unzc731iCUY) on how to speak.
+* **MIT OpenCourseWare  Video:** [How To Speak by Patrick Winston](https://www.youtube.com/watch?v=Unzc731iCUY)
+
+:::
+
+
 
 
 
 ## Introduction
 
-- [The Uniform Code of Military Justice](https://www.law.cornell.edu/uscode/text/10/subtitle-A/part-II/chapter-47) specifies court martial for any officer who sends a soldier into battle without a weapon
-- Students should not go out into life without the ability to communicate.
-- Your success in life will largely be determined by your ability to speak, your ability to write, and the quality of your ideas
-    - Your ability to speak is the most important
-- Quality of communication is a function of your knowledge, how much you practice with that knowledge, and your inherent talent
-    - Knowledge is the most important factor
-    - Inherent talent is the least important factor
-- You can get a lot better than people who have inherent talents when you have the right amount of knowledge
+- **[Uniform Code of Military Justice (UCMJ)](https://www.law.cornell.edu/uscode/text/10/subtitle-A/part-II/chapter-47)** analogy: Sending soldiers into battle without weapons is punishable under UCMJ.
+    - Similar protection should exist for students entering life without communication skills.
+- **Success Formula:** Success is determined by speaking ability, writing ability, and quality of ideas (in that order).
+    - Communication quality (speaking and writing) is determined by **knowledge**, **practice (P)**, and **inherent talent (t)**.
+      - Knowledge is the most important factor.
+      - Inherent talent is the least important factor.
+- **Mary Lou Retton Analogy:** Observing Olympic gymnast Mary Lou Retton's novice skiing skills at Sun Valley highlighted the importance of **K** and **P**.
+    - Despite Retton's athletic talent, the speaker's superior skiing skills stemmed from greater knowledge and practice.
+- **Empowerment Promise:** This lecture will provide speaking techniques that can significantly improve your ability to communicate and have your ideas valued.
+- **Rule of Engagement:** No laptops or cell phones allowed.
+    - **Rationale:** Humans have a single language processor, and distractions hinder learning and speaker performance.
+
+## How to Start a Talk
+
+- **Avoid Jokes:** Jokes are ineffective at the beginning of a talk because the audience is not yet fully engaged.
+- **Empowerment Promise:** Start with an empowerment promise that tells the audience what they will gain from the talk.
+    - **Example:** "At the end of this 60 minutes, you will know things about speaking you don't know now, and something among those things you know will make a difference in your life."
 
 
 
-## How To Start
+## Sample Heuristics for Presentations
 
-- Do not start with a joke
-    - People are not ready for a joke at the beginning
-- Start with empowerment promise
-    - The reason for being here
-    - Example: Tell people what they are going to know by the end of the conversation that they did not know at the start
+### 1. Cycling
 
+- **Definition:** Repeatedly circling back to the main subject throughout the presentation.
+- **Rationale:** Ensures that everyone grasps the core message, as some audience members may be temporarily disengaged at any given time.
+- **Example:** Repeating a key concept three times in different ways.
 
+### 2. Building a Fence
 
-## Four Sample Heuristics
+- **Definition:** Clearly defining and delimiting your idea to prevent confusion with other ideas.
+- **Rationale:** Helps the audience distinguish your unique contribution from existing work.
+- **Example:** Comparing your algorithm to a similar one while highlighting the key differences (e.g., linear vs. exponential complexity).
 
-- Cycle on the subject
-    - Go around it again and again
-    - Tell them what you are going to tell them, tell them, tell them again, and again (3 times total)
-    - Helps increase the probability that your audience will absorb what you are trying to communicate
-- Build a fence around your idea so that it is not confused with someone else's idea
-    - Explain how your idea is different
-- Verbal Punctuation
-    - Provide landmarks where you announce to people who lose focus that it is a good time to start paying attention again
-    - Enumerate through what you have covered
-    - Provide numbers
-    - Give a sense that there is a seam in the talk and they can get back on
-- Ask a Question
-    - You can wait for about seven seconds for an answer
-    - The question has to be carefully chosen
-        - Can't be too obvious
-        - Can't be too hard
-    
+### 3. Verbal Punctuation
+
+- **Definition:** Using clear markers to signal transitions and create natural re-entry points for the audience.
+- **Rationale:** Helps listeners who have drifted off to easily rejoin the flow of the presentation.
+- **Example:** Providing an outline, using enumerations, or explicitly announcing transitions between sections.
+
+### 4. Asking Questions
+
+- **Definition:** Posing questions to the audience to re-engage them and check for understanding.
+- **Rationale:** Encourages active listening and participation.
+- **Guidelines:**
+    - Choose questions that are neither too obvious nor too difficult.
+    - Allow sufficient wait time (up to 7 seconds) for audience responses.
 
 
 
-## Build Up Your Personal Repertoire and Style
+## Developing Your Personal Style
 
-The Tools
+- **Observe and Analyze:** Study effective speakers to identify the techniques they use and understand why they are successful.
+- **Build Your Repertoire:** Incorporate techniques that resonate with you and develop your own unique presentation style.
 
-- Time and Place
-    - Best time to have a lecture is often 11AM
-        - Most people are awake and have not gone back to sleep
-        - It's not right after a meal
-        - People are not fatigued
-    - The place needs to be well lit
-        - Low light tends to signal that it is time to go to sleep
-    - The place should be "cased"
-        - Go there before the talk and see what it is like
-        - Make sure there are no surprises
-        - Imagine the seats are filled with disinterested farm animals
-    - The place should be reasonably populated
-        - Get a an appropriately sized place for the expected audience size
-        - More than half full
-- Boards, Props, and Slides
-    - Chalk is a good tool when your purpose is informing
-        - You can exploit the fact that you can use graphics in your presentation
-        - Speed with which you write on the board is approximately the speed at which people can absorb ideas
-        - Gives you something that you can do with your hands as either something to write on or point at.
-    - Slides are good when your purpose is exposition
-        - Example: job talks and conference talks
-        - Use fewer slides and fewer words
-        - Don't read the words on your slides
-        - Be in view when the audience is looking at the slides
-            - Don't force your audience to constantly shift their view from the slide to the speaker
-        - Slides should be condiments to what you are saying
-        - Keep images simple
-        - Eliminate Clutter
-            - remove logos
-            - remove titles: tell them the title
-            - remove the bullet points from lists
-        - Reducing what what is on the slide allows the audience to pay more attention to what you say
-        - Use a sample slide to determine the minimum font size that is easily ledgible
-            - Probably font size of 40 - 50
-        - Don't use laser pointers or pointing sticks
-            - When you are using these, you are not making eye contact with the audience
-        - Use onscreen arrows to point to things on a slide
-        - Print your presentation out and lay it out on a table
-            - Makes it easy to see if there is too much in it
-        - When you need to have text, give your audience time to read it
-        - You can have at most one visually complex slide in a presentation
-            - Example: to make a point of how incomprehensibly complex something is
-    - Props
-        - give the audience an idea of where the talk is going
-        - helps to view a problem in a different way
-        - helps emphasize a point
-        - helps make the talk memorable
-    - Chalk and props can help with empathetic mirroring
-        - Your might feel like they are writing on the chalkboard
-        - Can't do that with slides
+
+
+## Time and Place
+
+### Time
+
+- **Ideal Time:** 11 a.m.
+- **Rationale:**
+    - Most people are awake and alert.
+    - Avoids post-meal fatigue.
+
+### Place
+
+- **Well-Lit:** 
+    - **Rationale:** Dim lighting signals sleepiness.
+    - **Counterargument:** Slides are more visible in a dark room.
+    - **Rebuttal:** "It's extremely hard to see slides through closed eyelids."
+- **Cased:** 
+    - **Definition:** Familiarize yourself with the venue beforehand to avoid surprises.
+    - **Rationale:** Allows you to anticipate and address any potential challenges.
+- **Reasonably Populated:** 
+    - **Rationale:** Avoids the impression of a poorly attended or unimportant event.
+
+
+
+## Boards, Props, and Slides
+
+### Boards
+
+- **Purpose:** Informing and teaching.
+- **Advantages:**
+    - **Graphic Quality:** Allows for easy incorporation of visuals.
+    - **Speed Property:** Writing speed aligns with the audience's information processing speed.
+    - **Target:** Provides a natural outlet for hand gestures.
+    - **Example:** Seymour Papert's use of the board for constant pointing, even if unrelated to the content.
+
+### Props
+
+- **Custodians of Knowledge:** Playwrights understand the power of props.
+- **Hedda Gabler Example:** Ibsen's use of a pot-bellied stove and a manuscript as props to build tension and foreshadow events.
+- **Bicycle Wheel Example:** Seymour Papert's demonstration of how to determine the direction a spinning bicycle wheel will fall when torque is applied.
+    - **Lesson:** Thinking about the problem in the right way (e.g., focusing on a small section of the wheel) leads to a clear solution.
+- **Steel Ball Example:** Alan Lazarus's demonstration of conservation of energy using a pendulum in 8.01.
+    - **Caution:** Do not try this at home due to the risk of pushing the ball instead of letting go.
+- **Empathetic Mirroring:** Physical props and blackboards engage mirror neurons in the audience's brains, enhancing understanding and retention.
+
+### Slides
+
+- **Purpose:** Exposing ideas (e.g., job talks, conference talks).
+- **Common Crimes:**
+    - **Too Many Slides:** Overwhelms the audience.
+    - **Too Many Words:** Distracts from the speaker and hinders information processing.
+    - **Reading Slides:** Annoys the audience, who can read themselves.
+    - **Small Font Size:** Makes slides difficult to read.
+    - **Distant Speaker:** Creates a disconnect between the speaker and the slides.
+    - **Laser Pointer Abuse:** Distracting and disrupts eye contact.
+    - **Too Heavy:** Dense slides with minimal white space are overwhelming.
+- **Rules for Slide Preparation:**
+    - **Eliminate Background Junk:** Remove unnecessary distractions.
+    - **Reduce Words:** Use slides as visual aids, not as text dumps.
+    - **Remove Logos:** Unless essential for branding.
+    - **Remove Titles:** State the title verbally.
+    - **Eliminate Clutter:** Use white space effectively.
+- **Minimum Font Size:** 40-50 points recommended.
+- **Alternative to Laser Pointers:** Use arrows or other visual cues to highlight specific elements on the slide.
+- **Hapax Legomenon:** A slide that is so complex or unusual that it can only be used once in a presentation.
+    - **Example:** A diagram illustrating the complexities of governance in Afghanistan.
 
 
 
 ## Special Cases
 
-- Informing
-    - Start with a promise
-        - Express how cool the topic is
-    - Inspiration
-        - Tell beginners they can do it
-        - Help the experienced see a problem in a new way
-        - Exhibit passion about what you are doing
-    - Teaching people how to think
-        - Provide audiences with the stories they need to know
-        - Provide audiences with the questions they need to ask about those stories
-        - Provide mechanisms for analyzing those stories
-        - Provide ways of putting stories together
-        - Provide ways of evaluating how reliable a story is
-- Persuading
-    - Oral Exams
-        - The most common reason for people failing an oral exam is a failure to situate and a failure to practice
-        - situate
-            - It is important to talk about your research in context
-                - Example: This is a problem that is being pursued all over the world
-                - Example: There has not been any progress on this before me in the past 30 years
-                - Everyone is looking for a solution because it will have impact on so many other things
-        - practice
-            - practice does not mean sharing your slides with people you share an office with
-                - If people know what you are doing, they will hallucinate that there is explanatory material in your presentation that is not there
-            - a faculty supervisor is not a good person to help you debug a talk
-            - you need to practice presenting with friends who do no know what you are doing
-                - Start your practice session by saying if they can't make you cry, you won't value them as a friend anymore
-            - It is better to have an examining committee that is much older
-    - Job Talks
-        - Show them that you have some kind of vision
-            - a vision is in part a problem that somebody cares about and something new in your approach
-        - Show them that you have done something
-            - List the steps that need to be taken in order to achieve the solution to a problem (preferably the problem is the one expressed in the vision)
-            - Enumerate your contributions
-        - You have five minutes to express your vision and tell them what you have done
-    - Getting Famous (How to ensure your work is recognized)
-        - Why would you want to be famous?
-            - You get used to being famous, you never get used to being ignored
-            - Your ideas are like your children. You don't want them to go into the world in rags
-        - How to get remembered
-            - Have a symbol associated with your work
-            - Have a (simple) slogan that provides a handle on the work
-            - Have a surprising attribute in your work
-            - Have a salient idea (an idea that sticks out)
-            - Have a story that tells how you did it, how it works, and why it's important
+### Informing/Inspiring
+
+- **Promise:** Start with a clear empowerment promise.
+- **Inspiration Techniques:**
+    - **Expressing Passion:** Share your enthusiasm for the subject.
+    - **Highlighting Coolness:** Emphasize the fascinating aspects of your work.
+    - **Demonstrating Impact:** Show how your ideas can solve significant problems.
+    - **Example:** Resource allocation lecture demonstrating a dramatic speedup in a coloring problem.
+
+### Teaching How to Think
+
+- **Storytelling Animals:** Humans are inherently storytellers, and thinking involves understanding and manipulating stories.
+- **Teaching Methods:**
+    - Provide relevant stories.
+    - Encourage critical questioning of stories.
+    - Teach mechanisms for story analysis and synthesis.
+    - Develop methods for evaluating story reliability.
+
+### Persuading
+
+#### Oral Exams
+
+- **Challenges:**
+    - **Failure to Situate:** Not placing research in context.
+    - **Failure to Practice:** Insufficient rehearsal with a critical audience.
+- **Effective Strategies:**
+    - **Situate Research:** Explain the problem's significance, historical context, and potential impact.
+    - **Practice Extensively:** Rehearse with individuals unfamiliar with your work to get honest feedback.
+- **Examining Committees:** Older examiners tend to be less harsh than younger ones.
+
+#### Job Talks
+
+- **Key Objectives (5-minute Rule):**
+    - **Vision:** Articulate a compelling research vision.
+    - **Accomplishment:** Demonstrate significant achievements.
+- **Expressing Vision:**
+    - **Problem:** Identify a problem that is important and unsolved.
+    - **Approach:** Present a novel or unique approach to address the problem.
+    - **Example:** Research on human intelligence focusing on the symbolic nature of human thought.
+- **Demonstrating Accomplishment:**
+    - **Enumerate Steps:** List the key steps required to achieve the vision, highlighting your contributions.
+    - **Example:** Specifying behavior, enumerating constraints, implementing a system, and demonstrating results.
+- **Job Talk Structure:**
+    - **Vision:** Introduce the problem and your approach (5 minutes).
+    - **Body:** Explain your methods, results, and contributions.
+    - **Conclusion:** Summarize your contributions and highlight future directions.
+
+#### Getting Famous
+
+- **Importance:** 
+    - Ensuring your ideas are recognized and valued.
+    - "You never get used to being ignored."
+- **Winston Star (Techniques for Memorability):**
+    - **Symbol:** Associate a memorable visual with your work (e.g., the arch).
+    - **Slogan:** Create a catchy phrase that captures the essence of your idea (e.g., "one-shot learning").
+    - **Surprise:** Highlight an unexpected or counterintuitive aspect of your work.
+    - **Salient Idea:** Focus on a single key idea that stands out.
+    - **Story:** Tell a compelling narrative about your research process and its implications.
 
 
 
 ## How to Stop
 
-- What is the final slide?
-    - Recognize collaborators on the first slide, not the last
-    - Do not end with a slide saying "Questions?"
-        - This is a wast of real estate as the last slide can be up there for 20 minutes
-    - Do not end with a URL address
-    - Do not end with a slide saying "THE END" or "Thank You"
-    - The last slide is an opportunity to leave people with who you are
-    - The last slide should end with your contributions
-        - What you talked about
-        - What you demonstrated
-        - What the audience got out of it
+### Final Slide
 
-- What are the final words?
-    - Can finish with a joke
-        - The audience is ready for it by then
-    - Don't end with "Thank You"
-        - It's a weak move
-    - Could say "It's been great to be here and look forward to coming back"
+- **Avoid:**
+    - **Long Lists of Collaborators:** Diminishes the perceived individual contribution.
+    - **Thank You Slides:** Wastes valuable space and is a weak ending.
+    - **Blank Slides:** Wastes an opportunity to reinforce your message.
+    - **Questions? Slides:** Unnecessary and wastes space.
+    - **Conclusions Slides:** Focuses on conclusions rather than contributions.
+- **Recommended:** **Contributions Slide:** 
+    - **Purpose:** Reinforces your key contributions while the audience asks questions and departs.
+    - **Example:** A slide summarizing the key achievements and insights of your work.
 
+### Final Words
 
-
-
-**References:**
-
-* 
-MIT OpenCourseWare  Video: [How To Speak by Patrick Winston](https://www.youtube.com/watch?v=Unzc731iCUY)
+- **Acceptable:** Telling a joke (audience is now warmed up).
+- **Avoid:** Saying "Thank You": 
+    - Implies the audience stayed out of obligation rather than genuine interest.
+- **Alternatives:**
+    - **Benediction Ending:** "God bless you, and God bless [institution/country]." (e.g., Governor Christie, Bill Clinton)
+    - **Saluting the Audience:** Expressing appreciation for their engagement and the opportunity to speak. (e.g., "It's been a great fun being here...")
+    - **Using Established Conventions:** Mimicking culturally accepted signals for the end of an event (e.g., "Ite, missa est" in the Latin Mass).
 
 
+## Conclusion
+
+- **Importance of Presentation Skills:** Acknowledging the value of effective communication in conveying ideas.
+- **Call to Action:** Encouraging continued learning and application of the presented techniques.
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

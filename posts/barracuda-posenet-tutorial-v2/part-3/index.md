@@ -14,6 +14,14 @@ categories: [unity, barracuda, tutorial]
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-3/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -633,3 +641,8 @@ Now that we have prepared the input, we are ready to feed it to the model. In th
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

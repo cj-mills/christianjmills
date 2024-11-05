@@ -10,9 +10,9 @@ description: "This Q&A session on the Replicate platform covers topics like ente
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -116,3 +116,8 @@ open-graph:
 - **User Benefits and Future Implications:**
   - If implemented, this model could provide financial benefits to model creators based on the usage of their models.
   - It could foster a more vibrant and active community around model development on the platform. 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "This Q&A session with Predibase compares and contrasts Lorax, an o
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -358,3 +358,8 @@ open-graph:
 #### Further Exploration
 
 - Attend the upcoming session on fine-tuning for function calling for more in-depth insights and recommendations.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "Learn how to export timm image classification models from Fastai t
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -767,3 +767,8 @@ Congratulations on reaching the end of this tutorial! We previously fine-tuned a
 As you move forward, consider exploring more about ONNX and its ecosystem. Check out the available [Execution Providers](https://onnxruntime.ai/docs/execution-providers/) that provide flexible interfaces to different hardware acceleration libraries.
 
 If you found this guide helpful, consider sharing it with others.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

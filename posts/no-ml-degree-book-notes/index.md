@@ -9,6 +9,15 @@ title: "Notes on *No ML Degree: How to Build an AI Portfolio*"
 
 aliases:
 - /Notes-on-No-ML-Degree-Book/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -459,3 +468,8 @@ Jane
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

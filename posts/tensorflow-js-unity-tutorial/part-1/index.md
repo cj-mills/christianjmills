@@ -11,6 +11,13 @@ comments:
 description: Train a hand gesture classifier using [fastai](https://docs.fast.ai/) and export it to [TensorFlow.js](https://www.tensorflow.org/js/).
 categories: [fastai, unity, tensorflow, webgl, tutorial]
 
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -2161,3 +2168,8 @@ In this post, we finetuned an image classifier from the timm library using fasta
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/tensorflow-js-unity-tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

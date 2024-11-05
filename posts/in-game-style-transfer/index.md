@@ -10,6 +10,13 @@ hide: false
 search_exclude: false
 title: In-Game Style Transfer
 
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -58,3 +65,8 @@ It's not 100% perfect. There's still a tiny bit of flickering in the background.
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

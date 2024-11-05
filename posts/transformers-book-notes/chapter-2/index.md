@@ -15,6 +15,14 @@ categories: [ai, huggingface, nlp, notes]
 aliases:
 - /Notes-on-Transformers-Book-02/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -3028,3 +3036,8 @@ plt.show()
 
 **Next:** [Notes on Transformers Book Ch. 3](../chapter-3/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

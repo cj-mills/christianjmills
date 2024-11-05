@@ -10,9 +10,9 @@ description: "In this talk, **Steven Heidel** from OpenAI's fine-tuning team cov
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -284,3 +284,8 @@ open-graph:
     - Steven confirms that all inputs, including JSON schemas, are converted into OpenAI's internal token format.
     - He can't share specifics about the internal representation or translation process.
     - **General Direction:** OpenAI aims to make the default function calling experience (using JSON schemas) the most effective, without requiring users to rely on workarounds or internal knowledge. 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "In this talk, **Mark Saroufim** and **Jane Xu**, discuss technique
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -315,3 +315,8 @@ open-graph:
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "In this talk, **Sophia Yang** from Mistal AI covers best practices
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -310,3 +310,8 @@ open-graph:
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

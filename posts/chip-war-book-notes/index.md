@@ -10,9 +10,9 @@ description: "My notes from the book **Chip War: The Fight for the World's Most 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
   
   
 aliases:
@@ -3967,3 +3967,8 @@ Despite the perceived success of the U.S. semiconductor industry, Andy Grove's c
 * **1958**: The year that witnessed the convergence of key figures like Morris Chang, Pat Haggerty, Weldon Word, Jay Lathrop, and Jack Kilby at Texas Instruments also saw a pivotal electronics conference in Washington, D.C.
 * **Unsung Heroes**: Chang, Gordon Moore, and Bob Noyce, future titans of technology, were unknown to the world as they enjoyed a night of camaraderie amidst the snowdrifts.
 * **A Lasting Legacy**: The chips they invented and the industry they built have profoundly shaped our world, providing the unseen circuitry that powers our lives and will continue to mold our future.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

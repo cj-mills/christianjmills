@@ -10,9 +10,9 @@ description: "Learn the fundamentals of Google Colab, a free cloud-based Jupyter
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -460,3 +460,8 @@ Keep exploring Google Colab to uncover more features that can enhance your proje
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

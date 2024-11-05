@@ -10,9 +10,9 @@ description: "Walk through the code for the Unity Barracuda Inference Base packa
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -309,3 +309,8 @@ You can find the code for the demo projects shown in the videos at the beginning
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

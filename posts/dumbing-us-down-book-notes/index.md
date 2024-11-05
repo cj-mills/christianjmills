@@ -10,9 +10,9 @@ description: "My notes from the book **Dumbing Us Down: The Hidden Curriculum of
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -700,3 +700,8 @@ Gatto explores the history of colonial New England's Congregationalist movement 
 - **Social engineering:** The attempt to control and manipulate human behavior through social policies and institutions.
 - **The Seven-Lesson Schoolteacher:** The title of John Taylor Gatto's essay, in which he outlines seven harmful lessons instilled by the compulsory schooling system: confusion, class position, indifference, emotional dependency, intellectual dependency, provisional self-esteem, and constant surveillance. 
 - **The Psychopathic School:** The title of another John Taylor Gatto essay which describes the school system as lacking conscience and serving the interests of a centralized, industrial economy at the expense of individual growth and well-being.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

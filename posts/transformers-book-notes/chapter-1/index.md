@@ -14,6 +14,14 @@ categories: [ai, huggingface, nlp, notes]
 aliases:
 - /Notes-on-Transformers-Book-01/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -704,3 +712,8 @@ Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was c
 
 **Next:** [Notes on Transformers Book Ch. 2](../chapter-2/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

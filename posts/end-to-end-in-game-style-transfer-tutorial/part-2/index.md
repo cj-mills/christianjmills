@@ -14,6 +14,15 @@ categories: [style-transfer, pytorch, unity, tutorial]
 
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-2/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Previous: [Part 1](../part-1/) [Part 1.5](../part-1-5/)
@@ -891,3 +900,8 @@ That's everything needed to train your own style transfer models. In the next po
 [GitHub Repository](https://github.com/cj-mills/End-to-End-In-Game-Style-Transfer-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

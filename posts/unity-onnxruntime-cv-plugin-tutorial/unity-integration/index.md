@@ -11,6 +11,13 @@ aliases:
 - /posts/icevision-openvino-unity-tutorial/part-3/
 - /posts/onnx-directml-unity-tutorial/part-2/
 
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -988,3 +995,8 @@ Congratulations on completing this tutorial! We previously created a native plug
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

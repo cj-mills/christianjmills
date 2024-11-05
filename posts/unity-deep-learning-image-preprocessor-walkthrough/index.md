@@ -10,9 +10,9 @@ description: "Walk through the code for the Unity Deep Learning Image Preprocess
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -887,3 +887,8 @@ You can explore demo projects that use this package at the links below.
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -14,6 +14,14 @@ categories: [ai, fastai, notes, pytorch]
 aliases:
 - /Notes-on-Fastai-Book-08/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -2082,3 +2090,8 @@ fastai.tabular.model.TabularModel
 
 **Next:** [Notes on fastai Book Ch. 9](../chapter-9/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -11,9 +11,9 @@ description: "Learn how to fine-tune image classification models with PyTorch an
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -82,6 +82,14 @@ No matter your choice of environment, you'll be well-prepared to follow along wi
 
 
 :::
+
+
+
+{{< include /_python-multiprocessing-warning.qmd >}}
+
+
+
+
 
 
 
@@ -194,7 +202,7 @@ Finally, we will install some utility packages I made to help us handle images (
 
 ```bash
 # Install utility packages
-pip install cjm_pandas_utils cjm_pil_utils cjm_pytorch_utils cjm_torchvision_tfms
+pip install cjm_pandas_utils cjm_psl_utils cjm_pil_utils cjm_pytorch_utils cjm_torchvision_tfms
 ```
 
 Now, our environment is all setup and ready to go! Remember, these libraries are just tools. If you don't fully understand them yet, don't worry. As we go through the tutorial, we'll learn more about these tools and see them in action.
@@ -2605,3 +2613,8 @@ Once again, congratulations on your achievement, and keep learning!
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

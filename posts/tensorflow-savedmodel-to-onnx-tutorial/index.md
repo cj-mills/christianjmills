@@ -15,6 +15,13 @@ categories: [tensorflow, onnx, tutorial]
 aliases:
 -  /How-to-Convert-a-TensorFlow-SavedModel-to-ONNX/
 
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -97,3 +104,8 @@ Be sure to check out the GitHub [repo](https://github.com/onnx/tensorflow-onnx) 
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

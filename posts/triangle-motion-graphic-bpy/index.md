@@ -14,6 +14,14 @@ categories: [blender, python, tutorial]
 aliases:
 - /Create-a-Triangle-Motion-Graphic-With-the-Blender-Python-API/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -373,3 +381,8 @@ This tutorial did not require learning any new parts of the API after the last t
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

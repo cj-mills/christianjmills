@@ -17,6 +17,15 @@ title: Notes on fastai Book Ch. 15
 aliases:
 - /Notes-on-Fastai-Book-15/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
+
 ---
 
 ::: {.callout-tip}
@@ -806,3 +815,8 @@ def forward(self, x_cat, x_cont=None):
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,6 +10,14 @@ comments:
     repo: cj-mills/christianjmills
 description: Create a [TensorFlow.js](https://www.tensorflow.org/js) plugin for the [Unity](https://unity.com/) game engine.
 categories: [fastai, unity, tensorflow, webgl, tutorial]
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -1620,3 +1628,8 @@ In this post, we installed Unity Hub, downloaded a Unity Editor, and created a n
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/tensorflow-js-unity-tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

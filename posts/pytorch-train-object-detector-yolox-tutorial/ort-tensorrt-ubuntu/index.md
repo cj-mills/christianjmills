@@ -10,9 +10,9 @@ description: "Learn how to quantize YOLOX models with ONNX Runtime and TensorRT 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -471,7 +471,6 @@ Using every image in the dataset for the calibration process would be unnecessar
 ```python
 random.seed(1234) # Set random seed for consistency 
 sample_percentage = 0.1
-random.shuffle(img_file_paths)
 sample_img_paths = random.sample(img_file_paths, int(len(img_file_paths)*sample_percentage))
 ```
 
@@ -1211,3 +1210,8 @@ Congratulations on reaching the end of this tutorial. We previously trained a YO
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}
